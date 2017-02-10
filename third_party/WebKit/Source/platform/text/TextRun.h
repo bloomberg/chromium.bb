@@ -183,19 +183,19 @@ class PLATFORM_EXPORT TextRun final {
   }
 
   UChar32 codepointAt(unsigned i) const {
+    SECURITY_DCHECK(i < m_len);
     if (is8Bit())
       return (*this)[i];
     UChar32 codepoint;
-    SECURITY_DCHECK(i < m_len);
     U16_GET(characters16(), 0, i, m_len, codepoint);
     return codepoint;
   }
 
   UChar32 codepointAtAndNext(unsigned& i) const {
+    SECURITY_DCHECK(i < m_len);
     if (is8Bit())
       return (*this)[i++];
     UChar32 codepoint;
-    SECURITY_DCHECK(i < m_len);
     U16_NEXT(characters16(), i, m_len, codepoint);
     return codepoint;
   }
