@@ -24,8 +24,21 @@ namespace {
 // The delay given to the web page to render after the PageLoaded callback.
 const int64_t kPageLoadDelayInSeconds = 2;
 
+// This script retrieve the href parameter of the <link rel="amphtml"> element
+// of the page if it exists. If it does not exist, it returns the src of the
+// first iframe of the page.
 const char* kGetIframeURLJavaScript =
-    "document.getElementsByTagName('iframe')[0].src;";
+    "(() => {"
+    "  var link = document.evaluate('//link[@rel=\"amphtml\"]',"
+    "                               document,"
+    "                               null,"
+    "                               XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,"
+    "                               null ).snapshotItem(0);"
+    "  if (link !== null) {"
+    "    return link.getAttribute('href');"
+    "  }"
+    "  return document.getElementsByTagName('iframe')[0].src;"
+    "})()";
 }  // namespace
 
 namespace reading_list {
@@ -209,14 +222,7 @@ bool ReadingListDistillerPage::HandleGoogleCachedAMPPageJavaScriptResult(
   if (!new_url) {
     return false;
   }
-  bool is_cdn_ampproject =
-      [[new_url host] isEqualToString:@"cdn.ampproject.org"];
-  bool is_cdn_ampproject_subdomain =
-      [[new_url host] hasSuffix:@".cdn.ampproject.org"];
 
-  if (!is_cdn_ampproject && !is_cdn_ampproject_subdomain) {
-    return false;
-  }
   GURL new_gurl = net::GURLWithNSURL(new_url);
   if (!new_gurl.is_valid()) {
     return false;
