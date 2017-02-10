@@ -63,16 +63,20 @@ enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-// Inject a script into the page. Used by tests that check for visible
-// password fields to wait for notifications about these
-// fields. Notifications about visible password fields are queued at the
-// end of the event loop, so waiting for a dummy script to run ensures
-// that these notifcations have been sent.
+// Inject a script into every frame in the page. Used by tests that check for
+// visible password fields to wait for notifications about these
+// fields. Notifications about visible password fields are queued at the end of
+// the event loop, so waiting for a dummy script to run ensures that these
+// notifications have been sent.
 void InjectScript(content::WebContents* contents) {
-  bool js_result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents, "window.domAutomationController.send(true);", &js_result));
-  EXPECT_TRUE(js_result);
+  // Any frame in the page might have a password field, so inject scripts into
+  // all of them to ensure that notifications from all of them have been sent.
+  for (const auto& frame : contents->GetAllFrames()) {
+    bool js_result = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        frame, "window.domAutomationController.send(true);", &js_result));
+    EXPECT_TRUE(js_result);
+  }
 }
 
 // A WebContentsObserver useful for testing the DidChangeVisibleSecurityState()
@@ -1152,16 +1156,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
 // on an HTTP page load, and when the command-line flag is set, the
 // security level is downgraded to HTTP_SHOW_WARNING, even if the iframe
 // itself was loaded over HTTPS.
-#if defined(OS_LINUX)
-// Flaky on Linux. See https://crbug.com/662485.
-#define MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe \
-  DISABLED_PasswordSecurityLevelDowngradedFromHttpsIframe
-#else
-#define MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe \
-  PasswordSecurityLevelDowngradedFromHttpsIframe
-#endif
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
-                       MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe) {
+                       PasswordSecurityLevelDowngradedFromHttpsIframe) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
