@@ -21,7 +21,7 @@ if ($content_type == "text/plain") {
 
 $data = file_get_contents("php://input");
 
-if($data == "f1=This is field #1 &!@$%\r\n='<>\r\nf2=This is field #2 \"\"") {
+if($data == "f1=This is field #1 &!@$%\r\n='<>\r\nf2=This is field #2 \"\"\r\n") {
     echo "<p>SUCCESS</p>";
 } else {
     echo "<p>FAILURE: $data</p>";
