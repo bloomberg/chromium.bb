@@ -1456,6 +1456,10 @@ class CORE_EXPORT UseCounter {
     HTMLIFrameElementAllowfullscreenAttributeSetAfterContentLoad = 1805,
     PointerEventSetCaptureOutsideDispatch = 1806,
     NotificationPermissionRequestedInsecureOrigin = 1807,
+    V8DeprecatedStorageInfo_QueryUsageAndQuota_Method = 1808,
+    V8DeprecatedStorageInfo_RequestQuota_Method = 1809,
+    V8DeprecatedStorageQuota_QueryUsageAndQuota_Method = 1810,
+    V8DeprecatedStorageQuota_RequestQuota_Method = 1811,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
