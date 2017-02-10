@@ -75,6 +75,16 @@ bool WindowSelectorController::IsSelecting() const {
   return window_selector_.get() != NULL;
 }
 
+void WindowSelectorController::IncrementSelection(int increment) {
+  DCHECK(IsSelecting());
+  window_selector_->IncrementSelection(increment);
+}
+
+bool WindowSelectorController::AcceptSelection() {
+  DCHECK(IsSelecting());
+  return window_selector_->AcceptSelection();
+}
+
 bool WindowSelectorController::IsRestoringMinimizedWindows() const {
   return window_selector_.get() != NULL &&
          window_selector_->restoring_minimized_windows();

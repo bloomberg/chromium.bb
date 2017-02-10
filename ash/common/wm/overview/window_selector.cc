@@ -404,6 +404,20 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
     CancelSelection();
 }
 
+void WindowSelector::IncrementSelection(int increment) {
+  const Direction direction =
+      increment > 0 ? WindowSelector::RIGHT : WindowSelector::LEFT;
+  for (int step = 0; step < abs(increment); ++step)
+    Move(direction, true);
+}
+
+bool WindowSelector::AcceptSelection() {
+  if (!grid_list_[selected_grid_index_]->is_selecting())
+    return false;
+  SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
+  return true;
+}
+
 void WindowSelector::SelectWindow(WindowSelectorItem* item) {
   WmWindow* window = item->GetWindow();
   std::vector<WmWindow*> window_list =

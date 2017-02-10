@@ -61,6 +61,14 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Called when the last window selector item from a grid is deleted.
   void OnGridEmpty(WindowGrid* grid);
 
+  // Moves the current selection by |increment| items. Positive values of
+  // |increment| move the selection forward, negative values move it backward.
+  void IncrementSelection(int increment);
+
+  // Accepts current selection if any. Returns true if a selection was made,
+  // false otherwise.
+  bool AcceptSelection();
+
   // Activates |item's| window.
   void SelectWindow(WindowSelectorItem* item);
 

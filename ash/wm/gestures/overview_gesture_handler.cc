@@ -10,13 +10,13 @@
 #include "ui/events/event_constants.h"
 
 namespace ash {
-namespace {
 
-// The threshold before engaging overview on a three finger swipe on the
-// touchpad.
-const float kSwipeThresholdPixels = 300;
+// The threshold before engaging overview with a touchpad three-finger scroll.
+const float OverviewGestureHandler::vertical_threshold_pixels_ = 300;
 
-}  // namespace
+// The threshold before moving selector horizontally when using a touchpad
+// three-finger scroll.
+const float OverviewGestureHandler::horizontal_threshold_pixels_ = 330;
 
 OverviewGestureHandler::OverviewGestureHandler() : scroll_x_(0), scroll_y_(0) {}
 
@@ -32,31 +32,44 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   scroll_x_ += event.x_offset();
   scroll_y_ += event.y_offset();
 
-  // Horizontal swiping is ignored.
-  if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
-    scroll_x_ = scroll_y_ = 0;
-    return false;
-  }
-
-  // Only allow swipe up to enter overview, down to exit. Ignore extra swiping
-  // in the wrong direction.
   WindowSelectorController* window_selector_controller =
       WmShell::Get()->window_selector_controller();
+
+  // Horizontal 3-finger scroll moves selection when already in overview mode.
+  if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
+    if (!window_selector_controller->IsSelecting()) {
+      scroll_x_ = scroll_y_ = 0;
+      return false;
+    }
+    if (std::fabs(scroll_x_) < horizontal_threshold_pixels_)
+      return false;
+
+    const int increment = scroll_x_ > 0 ? 1 : -1;
+    scroll_x_ = scroll_y_ = 0;
+    window_selector_controller->IncrementSelection(increment);
+    return true;
+  }
+
+  // Use vertical 3-finger scroll gesture up to enter overview, down to exit.
   if (window_selector_controller->IsSelecting()) {
     if (scroll_y_ < 0)
       scroll_x_ = scroll_y_ = 0;
-    if (scroll_y_ < kSwipeThresholdPixels)
+    if (scroll_y_ < vertical_threshold_pixels_)
       return false;
   } else {
     if (scroll_y_ > 0)
       scroll_x_ = scroll_y_ = 0;
-    if (scroll_y_ > -kSwipeThresholdPixels)
+    if (scroll_y_ > -vertical_threshold_pixels_)
       return false;
   }
 
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
   WmShell::Get()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
+  if (window_selector_controller->IsSelecting() &&
+      window_selector_controller->AcceptSelection()) {
+    return true;
+  }
   window_selector_controller->ToggleOverview();
   return true;
 }

@@ -37,6 +37,14 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // Returns true if window selection mode is active.
   bool IsSelecting() const;
 
+  // Moves the current selection by |increment| items. Positive values of
+  // |increment| move the selection forward, negative values move it backward.
+  void IncrementSelection(int increment);
+
+  // Accepts current selection if any. Returns true if a selection was made,
+  // false otherwise.
+  bool AcceptSelection();
+
   // Returns true if overview mode is restoring minimized windows so that they
   // are visible during overview mode.
   bool IsRestoringMinimizedWindows() const;
