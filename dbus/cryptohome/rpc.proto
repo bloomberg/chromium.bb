@@ -292,6 +292,7 @@ enum FirmwareManagementParametersFlags {
   DEVELOPER_ENABLE_USB = 8;
   DEVELOPER_ENABLE_LEGACY = 16;
   DEVELOPER_USE_KEY_HASH = 32;
+  DEVELOPER_DISABLE_CASE_CLOSED_DEBUGGING_UNLOCK = 64;
 }
 
 message GetFirmwareManagementParametersRequest {
