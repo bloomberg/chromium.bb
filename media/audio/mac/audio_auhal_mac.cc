@@ -7,6 +7,7 @@
 #include <CoreServices/CoreServices.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <string>
 
 #include "base/bind.h"
@@ -21,6 +22,32 @@
 #include "media/base/audio_timestamp_helper.h"
 
 namespace media {
+
+// Mapping from Chrome's channel layout to CoreAudio layout. This must match the
+// layout of the Channels enum in |channel_layout.h|
+static const AudioChannelLabel kCoreAudioChannelMapping[] = {
+    kAudioChannelLabel_Left,
+    kAudioChannelLabel_Right,
+    kAudioChannelLabel_Center,
+    kAudioChannelLabel_LFEScreen,
+    kAudioChannelLabel_LeftSurround,
+    kAudioChannelLabel_RightSurround,
+    kAudioChannelLabel_LeftCenter,
+    kAudioChannelLabel_RightCenter,
+    kAudioChannelLabel_CenterSurround,
+    kAudioChannelLabel_LeftSurroundDirect,
+    kAudioChannelLabel_RightSurroundDirect,
+};
+static_assert(0 == LEFT && 1 == RIGHT && 2 == CENTER && 3 == LFE &&
+                  4 == BACK_LEFT &&
+                  5 == BACK_RIGHT &&
+                  6 == LEFT_OF_CENTER &&
+                  7 == RIGHT_OF_CENTER &&
+                  8 == BACK_CENTER &&
+                  9 == SIDE_LEFT &&
+                  10 == SIDE_RIGHT &&
+                  10 == CHANNELS_MAX,
+              "Channel positions must match CoreAudio channel order.");
 
 static void WrapBufferList(AudioBufferList* buffer_list,
                            AudioBus* bus,
@@ -535,6 +562,8 @@ bool AUHALStream::ConfigureAUHAL() {
     return false;
   }
 
+  SetAudioChannelLayout();
+
   result = AudioUnitInitialize(audio_unit_);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitInitialize() failed.";
@@ -557,6 +586,61 @@ void AUHALStream::CloseAudioUnit() {
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioComponentInstanceDispose() failed.";
   audio_unit_ = 0;
+}
+
+void AUHALStream::SetAudioChannelLayout() {
+  DCHECK(audio_unit_);
+
+  // AudioChannelLayout is structure ending in a variable length array, so we
+  // can't directly allocate one. Instead compute the size and and allocate one
+  // inside of a byte array.
+  //
+  // Code modeled after example from Apple documentation here:
+  // https://developer.apple.com/library/content/qa/qa1627/_index.html
+  const size_t layout_size =
+      offsetof(AudioChannelLayout, mChannelDescriptions[params_.channels()]);
+  std::unique_ptr<uint8_t[]> layout_storage(new uint8_t[layout_size]);
+  memset(layout_storage.get(), 0, layout_size);
+  AudioChannelLayout* channel_layout =
+      reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
+
+  channel_layout->mNumberChannelDescriptions = params_.channels();
+  channel_layout->mChannelLayoutTag =
+      kAudioChannelLayoutTag_UseChannelDescriptions;
+  AudioChannelDescription* descriptions = channel_layout->mChannelDescriptions;
+
+  if (params_.channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
+    // For the discrete case just assume common input mappings; once we run out
+    // of known channels mark them as unknown.
+    for (int ch = 0; ch < params_.channels(); ++ch) {
+      descriptions[ch].mChannelLabel = ch > CHANNELS_MAX
+                                           ? kAudioChannelLabel_Unknown
+                                           : kCoreAudioChannelMapping[ch];
+      descriptions[ch].mChannelFlags = kAudioChannelFlags_AllOff;
+    }
+  } else if (params_.channel_layout() == CHANNEL_LAYOUT_MONO) {
+    // CoreAudio has a special label for mono.
+    DCHECK_EQ(params_.channels(), 1);
+    descriptions[0].mChannelLabel = kAudioChannelLabel_Mono;
+    descriptions[0].mChannelFlags = kAudioChannelFlags_AllOff;
+  } else {
+    for (int ch = 0; ch <= CHANNELS_MAX; ++ch) {
+      const int order =
+          ChannelOrder(params_.channel_layout(), static_cast<Channels>(ch));
+      if (order == -1)
+        continue;
+      descriptions[order].mChannelLabel = kCoreAudioChannelMapping[ch];
+      descriptions[order].mChannelFlags = kAudioChannelFlags_AllOff;
+    }
+  }
+
+  OSStatus result = AudioUnitSetProperty(
+      audio_unit_, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Input,
+      0, channel_layout, layout_size);
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result)
+        << "Failed to set audio channel layout. Using default layout.";
+  }
 }
 
 }  // namespace media

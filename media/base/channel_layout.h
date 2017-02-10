@@ -112,6 +112,8 @@ enum ChannelLayout {
   CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_4_1_QUAD_SIDE
 };
 
+// Note: Do not reorder or reassign these values; other code depends on their
+// ordering to operate correctly. E.g., CoreAudio channel layout computations.
 enum Channels {
   LEFT = 0,
   RIGHT,

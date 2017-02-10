@@ -141,6 +141,10 @@ class AUHALStream : public AudioOutputStream {
   // Called from the dtor and when the stream is reset.
   void ReportAndResetStats();
 
+  // Converts |params_.channel_layout()| into CoreAudio format and sets up the
+  // AUHAL with our layout information so it knows how to remap the channels.
+  void SetAudioChannelLayout();
+
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerMac* const manager_;
 
