@@ -22,6 +22,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
 
 namespace content {
@@ -52,9 +53,12 @@ class CursorRendererAuraTest : public AuraTestBase {
     cursor_renderer_.reset(
         new CursorRendererAura(window_.get(), kCursorEnabledOnMouseMovement));
     new wm::DefaultActivationClient(root_window());
+    aura::client::SetScreenPositionClient(root_window(),
+                                          &screen_position_client_);
   }
 
   void TearDown() override {
+    aura::client::SetScreenPositionClient(root_window(), nullptr);
     cursor_renderer_.reset();
     window_.reset();
     AuraTestBase::TearDown();
@@ -124,6 +128,7 @@ class CursorRendererAuraTest : public AuraTestBase {
   }
 
  protected:
+  wm::DefaultScreenPositionClient screen_position_client_;
   std::unique_ptr<aura::Window> window_;
   std::unique_ptr<CursorRendererAura> cursor_renderer_;
 };

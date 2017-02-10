@@ -5,7 +5,9 @@
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/events/event_utils.h"
@@ -79,12 +81,19 @@ gfx::Size CursorRendererAura::GetCapturedViewSize() {
 
 gfx::Point CursorRendererAura::GetCursorPositionInView() {
   if (!window_) {
-    return gfx::Point();
+    return gfx::Point(-1, -1);
   }
 
-  const gfx::Rect window_bounds = window_->GetBoundsInScreen();
+  // Convert from screen coordinates to view coordinates.
+  aura::Window* const root_window = window_->GetRootWindow();
+  if (!root_window)
+    return gfx::Point(-1, -1);
+  aura::client::ScreenPositionClient* const client =
+      aura::client::GetScreenPositionClient(root_window);
+  if (!client)
+    return gfx::Point(-1, -1);
   gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
-  cursor_position.Offset(-window_bounds.x(), -window_bounds.y());
+  client->ConvertPointFromScreen(window_, &cursor_position);
   return cursor_position;
 }
 
