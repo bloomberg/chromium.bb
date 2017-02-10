@@ -249,9 +249,11 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
       stages.append(alert_stage)
 
   # Add the alert to the summary.
+  key = '%s:%s:%d' % (build['waterfall'], build['build_config'],
+                      build['build_number'])
   alert_name = '%s:%d %s' % (build['build_config'], build['build_number'],
                              MapCIDBToSOMStatus(build['status']))
-  return som.Alert(build['build_config'], alert_name, alert_name, severity,
+  return som.Alert(key, alert_name, alert_name, int(severity),
                    ToEpoch(now), ToEpoch(build['finish_time'] or now),
                    links, [], 'cros-failure',
                    som.CrosBuildFailure(stages, builders))
