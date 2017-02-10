@@ -8,7 +8,7 @@ traits_headers = [ "//content/common/resource_messages.h" ]
 deps = [
   "//content:export",
   "//net:net",
-  "//third_party/WebKit/public:blink_minimal",
+  "//third_party/WebKit/public:blink_headers",
 ]
 type_mappings =
     [ "content.mojom.URLLoaderStatus=content::ResourceRequestCompletionStatus" ]
