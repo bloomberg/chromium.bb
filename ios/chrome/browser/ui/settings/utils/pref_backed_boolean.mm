@@ -8,6 +8,10 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Adaptor function to allow invoking onChange as a base::Closure.

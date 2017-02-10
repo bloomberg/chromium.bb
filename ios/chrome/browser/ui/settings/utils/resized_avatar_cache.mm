@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/settings/utils/resized_avatar_cache.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kAccountProfilePhotoDimension = 40.0f;
@@ -17,18 +20,18 @@ const CGFloat kAccountProfilePhotoDimension = 40.0f;
 
 @implementation ResizedAvatarCache {
   // Retains resized images. Key is Chrome Identity.
-  base::scoped_nsobject<NSCache<ChromeIdentity*, UIImage*>> _resizedImages;
+  NSCache<ChromeIdentity*, UIImage*>* _resizedImages;
 
   // Holds weak references to the cached avatar image from the
   // ChromeIdentityService. Key is Chrome Identity.
-  base::scoped_nsobject<NSMapTable<ChromeIdentity*, UIImage*>> _originalImages;
+  NSMapTable<ChromeIdentity*, UIImage*>* _originalImages;
 }
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _resizedImages.reset([[NSCache alloc] init]);
-    _originalImages.reset([[NSMapTable strongToWeakObjectsMapTable] retain]);
+    _resizedImages = [[NSCache alloc] init];
+    _originalImages = [NSMapTable strongToWeakObjectsMapTable];
   }
   return self;
 }

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "content_setting_backed_boolean.h",
     "content_setting_backed_boolean.mm",

@@ -4,13 +4,16 @@
 
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/scoped_observer.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface ContentSettingBackedBoolean ()
 
