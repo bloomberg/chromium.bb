@@ -113,7 +113,11 @@ class MicrodumpInfo {
   MicrodumpInfo()
       : microdump_build_fingerprint_(nullptr),
         microdump_product_info_(nullptr),
-        microdump_gpu_fingerprint_(nullptr) {}
+        microdump_gpu_fingerprint_(nullptr),
+        microdump_process_type_(nullptr),
+        skip_dump_if_principal_mapping_not_referenced_(false),
+        address_within_principal_mapping_(0ul),
+        should_sanitize_dumps_(false) {}
 
   // The order in which SetGpuFingerprint and Initialize are called
   // may be dependent on the timing of the availability of GPU
@@ -129,6 +133,11 @@ class MicrodumpInfo {
   // which a microdump is generated, then the GPU fingerprint will be
   // UNKNOWN.
   void SetGpuFingerprint(const std::string& gpu_fingerprint);
+  void SetSkipDumpIfPrincipalMappingNotReferenced(
+      uintptr_t address_within_principal_mapping);
+  void SetShouldSanitizeDumps(bool should_sanitize_dumps);
+  void UpdateMinidumpDescriptor(MinidumpDescriptor* minidump_descriptor);
+  void UpdateExceptionHandlers();
   void Initialize(const std::string& process_type,
                   const char* product_name,
                   const char* product_version,
@@ -140,6 +149,9 @@ class MicrodumpInfo {
   const char* microdump_product_info_;
   const char* microdump_gpu_fingerprint_;
   const char* microdump_process_type_;
+  bool skip_dump_if_principal_mapping_not_referenced_;
+  uintptr_t address_within_principal_mapping_;
+  bool should_sanitize_dumps_;
 };
 
 base::LazyInstance<MicrodumpInfo> g_microdump_info =
@@ -730,7 +742,12 @@ void DumpProcess() {
 #if defined(OS_ANDROID)
   // Don't use g_breakpad and g_microdump directly here, because their
   // output might currently be suppressed.
-  if (g_breakpad) {
+
+  // If a breakpad handler is installed, but its target is a file
+  // descriptor, we can't generate a dump because we can't risk
+  // writing multiple minidumps to the FD, so it can only be used for
+  // dumps that are associated with a crash.
+  if (g_breakpad && !g_breakpad->minidump_descriptor().IsFD()) {
     ExceptionHandler(g_breakpad->minidump_descriptor(),
                      nullptr,
                      CrashDoneNoUpload,
@@ -788,6 +805,7 @@ void EnableCrashDumping(bool unattended) {
   }
 #if defined(OS_ANDROID)
   unattended = true;  // Android never uploads directly.
+  g_microdump_info.Get().UpdateMinidumpDescriptor(&minidump_descriptor);
 #endif
   if (unattended) {
     g_breakpad = new ExceptionHandler(
@@ -841,8 +859,10 @@ bool CrashDoneInProcessNoUpload(
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
   if (!succeeded) {
-    static const char msg[] = "Crash dump generation failed.\n";
-    WriteLog(msg, sizeof(msg) - 1);
+    if (ShouldGenerateDump(nullptr)) {
+      static const char msg[] = "Crash dump generation failed.\n";
+      WriteLog(msg, sizeof(msg) - 1);
+    }
     return false;
   }
 
@@ -890,8 +910,12 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
   const size_t process_type_len = process_type.size() + 1;
   g_process_type = new char[process_type_len];
   strncpy(g_process_type, process_type.c_str(), process_type_len);
-  new ExceptionHandler(MinidumpDescriptor(minidump_fd), ShouldGenerateDump,
-                       CrashDoneInProcessNoUpload, nullptr, true, -1);
+
+  MinidumpDescriptor descriptor(minidump_fd);
+  g_microdump_info.Get().UpdateMinidumpDescriptor(&descriptor);
+  g_breakpad =
+      new ExceptionHandler(descriptor, ShouldGenerateDump,
+                           CrashDoneInProcessNoUpload, nullptr, true, -1);
 }
 
 void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
@@ -900,11 +924,52 @@ void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
   microdump_gpu_fingerprint_ = strdup(gpu_fingerprint.c_str());
   ANNOTATE_LEAKING_OBJECT_PTR(microdump_gpu_fingerprint_);
 
+  UpdateExceptionHandlers();
+}
+
+void MicrodumpInfo::SetSkipDumpIfPrincipalMappingNotReferenced(
+    uintptr_t address_within_principal_mapping) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  skip_dump_if_principal_mapping_not_referenced_ = true;
+  address_within_principal_mapping_ = address_within_principal_mapping;
+
+  UpdateExceptionHandlers();
+}
+
+void MicrodumpInfo::SetShouldSanitizeDumps(bool should_sanitize_dumps) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  should_sanitize_dumps_ = should_sanitize_dumps;
+
+  UpdateExceptionHandlers();
+}
+
+void MicrodumpInfo::UpdateMinidumpDescriptor(
+    MinidumpDescriptor* minidump_descriptor) {
+  google_breakpad::MicrodumpExtraInfo* microdump_extra_info =
+      minidump_descriptor->microdump_extra_info();
+
+  minidump_descriptor->set_skip_dump_if_principal_mapping_not_referenced(
+      skip_dump_if_principal_mapping_not_referenced_);
+  minidump_descriptor->set_address_within_principal_mapping(
+      address_within_principal_mapping_);
+  minidump_descriptor->set_sanitize_stacks(should_sanitize_dumps_);
+
+  microdump_extra_info->gpu_fingerprint = microdump_gpu_fingerprint_;
+  microdump_extra_info->product_info = microdump_product_info_;
+  microdump_extra_info->process_type = microdump_process_type_;
+  microdump_extra_info->build_fingerprint = microdump_build_fingerprint_;
+}
+
+void MicrodumpInfo::UpdateExceptionHandlers() {
+  if (g_breakpad) {
+    MinidumpDescriptor descriptor(g_breakpad->minidump_descriptor());
+    UpdateMinidumpDescriptor(&descriptor);
+    g_breakpad->set_minidump_descriptor(descriptor);
+  }
   if (g_microdump) {
-    MinidumpDescriptor minidump_descriptor(g_microdump->minidump_descriptor());
-    minidump_descriptor.microdump_extra_info()->gpu_fingerprint =
-        microdump_gpu_fingerprint_;
-    g_microdump->set_minidump_descriptor(minidump_descriptor);
+    MinidumpDescriptor descriptor(g_microdump->minidump_descriptor());
+    UpdateMinidumpDescriptor(&descriptor);
+    g_microdump->set_minidump_descriptor(descriptor);
   }
 }
 
@@ -927,25 +992,18 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
     microdump_product_info_ =
         strdup((product_name + std::string(":") + product_version).c_str());
     ANNOTATE_LEAKING_OBJECT_PTR(microdump_product_info_);
-    descriptor.microdump_extra_info()->product_info = microdump_product_info_;
   }
 
   microdump_process_type_ =
       strdup(process_type.empty() ? kBrowserProcessType : process_type.c_str());
   ANNOTATE_LEAKING_OBJECT_PTR(microdump_process_type_);
-  descriptor.microdump_extra_info()->process_type = microdump_process_type_;
 
   if (android_build_fp) {
     microdump_build_fingerprint_ = strdup(android_build_fp);
     ANNOTATE_LEAKING_OBJECT_PTR(microdump_build_fingerprint_);
-    descriptor.microdump_extra_info()->build_fingerprint =
-        microdump_build_fingerprint_;
   }
 
-  if (microdump_gpu_fingerprint_) {
-    descriptor.microdump_extra_info()->gpu_fingerprint =
-        microdump_gpu_fingerprint_;
-  }
+  UpdateMinidumpDescriptor(&descriptor);
 
   g_microdump =
       new ExceptionHandler(descriptor, ShouldGenerateDump, MicrodumpCrashDone,
@@ -2002,6 +2060,16 @@ void GenerateMinidumpOnDemandForAndroid(int dump_fd) {
 
 void SuppressDumpGeneration() {
   g_dumps_suppressed = G_DUMPS_SUPPRESSED_MAGIC;
+}
+
+void SetSkipDumpIfPrincipalMappingNotReferenced(
+    uintptr_t address_within_principal_mapping) {
+  g_microdump_info.Get().SetSkipDumpIfPrincipalMappingNotReferenced(
+      address_within_principal_mapping);
+}
+
+void SetShouldSanitizeDumps(bool should_sanitize_dumps) {
+  g_microdump_info.Get().SetShouldSanitizeDumps(should_sanitize_dumps);
 }
 #endif  // OS_ANDROID
 

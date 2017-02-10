@@ -149,6 +149,11 @@ void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
     client->set_crash_signal_fd(crash_signal_fd);
   }
   ::crash_reporter::SetCrashReporterClient(client);
+  breakpad::SetShouldSanitizeDumps(true);
+#if !defined(COMPONENT_BUILD)
+  breakpad::SetSkipDumpIfPrincipalMappingNotReferenced(
+        reinterpret_cast<uintptr_t>(&EnableCrashReporter));
+#endif
 
   bool is_browser_process =
       process_type.empty() ||
