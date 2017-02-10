@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
@@ -95,7 +96,13 @@ public class MainPreferences extends PreferenceFragment
 
     private void updatePreferences() {
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
-        addPreferencesFromResource(R.xml.main_preferences);
+
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            addPreferencesFromResource(R.xml.main_preferences);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
 
         if (TemplateUrlService.getInstance().isLoaded()) {
             updateSummary();
