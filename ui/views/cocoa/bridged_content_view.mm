@@ -24,7 +24,6 @@
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/decorated_text.h"
-#import "ui/gfx/decorated_text_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/path.h"
@@ -201,6 +200,42 @@ base::string16 AttributedSubstringForRangeHelper(
   return substring;
 }
 
+NSAttributedString* GetAttributedString(
+    const gfx::DecoratedText& decorated_text) {
+  base::scoped_nsobject<NSMutableAttributedString> str(
+      [[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(decorated_text.text)]);
+  [str beginEditing];
+
+  NSValue* const line_style =
+      @(NSUnderlineStyleSingle | NSUnderlinePatternSolid);
+
+  for (const auto& attribute : decorated_text.attributes) {
+    DCHECK(!attribute.range.is_reversed());
+    DCHECK_LE(attribute.range.end(), [str length]);
+
+    NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
+    NSRange range = attribute.range.ToNSRange();
+
+    if (attribute.font.GetNativeFont())
+      attrs[NSFontAttributeName] = attribute.font.GetNativeFont();
+
+    // NSFont does not have underline as an attribute. Hence handle it
+    // separately.
+    const bool underline = attribute.font.GetStyle() & gfx::Font::UNDERLINE;
+    if (underline)
+      attrs[NSUnderlineStyleAttributeName] = line_style;
+
+    if (attribute.strike)
+      attrs[NSStrikethroughStyleAttributeName] = line_style;
+
+    [str setAttributes:attrs range:range];
+  }
+
+  [str endEditing];
+  return str.autorelease();
+}
+
 ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (action == @selector(undo:))
     return ui::TextEditCommand::UNDO;
@@ -219,8 +254,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 }  // namespace
 
-// TODO(spqchan): Implement support when the Speech submenu is in the main
-// menu.
 @interface BridgedContentView ()
 
 // Returns the active menu controller corresponding to |hostedView_|,
@@ -818,7 +851,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   views::View::ConvertPointToTarget(hostedView_, target, &locationInTarget);
   gfx::DecoratedText decoratedWord;
   gfx::Point baselinePoint;
-  if (!wordLookupClient->GetDecoratedWordAndBaselineAtPoint(
+  if (!wordLookupClient->GetDecoratedWordAtPoint(
           locationInTarget, &decoratedWord, &baselinePoint)) {
     return;
   }
@@ -827,8 +860,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   views::View::ConvertPointToTarget(target, hostedView_, &baselinePoint);
   NSPoint baselinePointAppKit = NSMakePoint(
       baselinePoint.x(), NSHeight([self frame]) - baselinePoint.y());
-  [self showDefinitionForAttributedString:
-            gfx::GetAttributedStringFromDecoratedText(decoratedWord)
+  [self showDefinitionForAttributedString:GetAttributedString(decoratedWord)
                                   atPoint:baselinePointAppKit];
 }
 

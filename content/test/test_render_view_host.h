@@ -81,7 +81,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
+  bool SupportsSpeech() const override;
   void SpeakSelection() override;
+  bool IsSpeaking() const override;
+  void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                              cc::CompositorFrame frame) override;

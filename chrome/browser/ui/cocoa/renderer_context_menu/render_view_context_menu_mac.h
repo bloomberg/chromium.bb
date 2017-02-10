@@ -10,36 +10,30 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "ui/base/cocoa/text_services_context_menu.h"
 
 @class MenuController;
 
 // Mac implementation of the context menu display code. Uses a Cocoa NSMenu
 // to display the context menu. Internally uses an obj-c object as the
 // target of the NSMenu, bridging back to this C++ class.
-class RenderViewContextMenuMac : public RenderViewContextMenu,
-                                 public ui::TextServicesContextMenu::Delegate {
+class RenderViewContextMenuMac : public RenderViewContextMenu {
  public:
   RenderViewContextMenuMac(content::RenderFrameHost* render_frame_host,
                            const content::ContextMenuParams& params,
                            NSView* parent_view);
   ~RenderViewContextMenuMac() override;
 
-  // SimpleMenuModel::Delegate:
+  // SimpleMenuModel::Delegate implementation.
+  void ExecuteCommand(int command_id, int event_flags) override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
 
-  // TextServicesContextMenu::Delegate:
-  base::string16 GetSelectedText() const override;
-  bool IsTextDirectionEnabled(
-      base::i18n::TextDirection direction) const override;
-  bool IsTextDirectionChecked(
-      base::i18n::TextDirection direction) const override;
-  void UpdateTextDirection(base::i18n::TextDirection direction) override;
-
-  // RenderViewContextMenuBase:
+  // RenderViewContextMenuBase implementation.
   void Show() override;
+
+ protected:
+  // RenderViewContextMenu implementation.
+  void AppendPlatformEditableItems() override;
 
  private:
   friend class ToolkitDelegateMac;
@@ -56,20 +50,29 @@ class RenderViewContextMenuMac : public RenderViewContextMenu,
                              bool hidden,
                              const base::string16& title);
 
-  // Handler for the "Look Up" menu item.
+  // Adds writing direction submenu.
+  void AppendBidiSubMenu();
+
+  // Handler for the "Look Up in Dictionary" menu item.
   void LookUpInDictionary();
 
-  // Returns value of the context menu parameter associated with |direction|.
-  int ParamsForTextDirection(base::i18n::TextDirection direction) const;
+  // Handler for the "Start Speaking" menu item.
+  void StartSpeaking();
+
+  // Handler for the "Stop Speaking" menu item.
+  void StopSpeaking();
 
   // The Cocoa menu controller for this menu.
   base::scoped_nsobject<MenuController> menu_controller_;
 
+  // Model for the "Speech" submenu.
+  ui::SimpleMenuModel speech_submenu_model_;
+
+  // Model for the BiDi input submenu.
+  ui::SimpleMenuModel bidi_submenu_model_;
+
   // The Cocoa parent view.
   NSView* parent_view_;
-
-  // The context menu that adds and handles Speech, Lookup and BiDi.
-  ui::TextServicesContextMenu text_services_context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMac);
 };

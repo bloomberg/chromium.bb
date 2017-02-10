@@ -274,9 +274,6 @@ component("views") {
     "controls/tree/tree_view.h",
     "controls/tree/tree_view_controller.cc",
     "controls/tree/tree_view_controller.h",
-    "controls/views_text_services_context_menu.cc",
-    "controls/views_text_services_context_menu.h",
-    "controls/views_text_services_context_menu_mac.mm",
     "debug_utils.cc",
     "debug_utils.h",
     "drag_controller.h",
@@ -656,7 +653,6 @@ component("views") {
   }
 
   if (is_mac) {
-    sources -= [ "controls/views_text_services_context_menu.cc" ]
     deps += [
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",

@@ -22,7 +22,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
 
 using content::WebContents;
 
@@ -176,73 +175,22 @@ class ToolkitDelegateMac : public RenderViewContextMenuBase::ToolkitDelegate {
   DISALLOW_COPY_AND_ASSIGN(ToolkitDelegateMac);
 };
 
+// Obj-C bridge class that is the target of all items in the context menu.
+// Relies on the tag being set to the command id.
+
 RenderViewContextMenuMac::RenderViewContextMenuMac(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params,
     NSView* parent_view)
     : RenderViewContextMenu(render_frame_host, params),
-      parent_view_(parent_view),
-      text_services_context_menu_(this) {
+      speech_submenu_model_(this),
+      bidi_submenu_model_(this),
+      parent_view_(parent_view) {
   std::unique_ptr<ToolkitDelegate> delegate(new ToolkitDelegateMac(this));
   set_toolkit_delegate(std::move(delegate));
 }
 
 RenderViewContextMenuMac::~RenderViewContextMenuMac() {
-}
-
-bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
-  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
-    return false;
-
-  return RenderViewContextMenu::IsCommandIdChecked(command_id);
-}
-
-bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
-  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
-    return true;
-
-  return RenderViewContextMenu::IsCommandIdEnabled(command_id);
-}
-
-void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
-    LookUpInDictionary();
-  else
-    RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
-}
-
-base::string16 RenderViewContextMenuMac::GetSelectedText() const {
-  return params_.selection_text;
-}
-
-bool RenderViewContextMenuMac::IsTextDirectionEnabled(
-    base::i18n::TextDirection direction) const {
-  return ParamsForTextDirection(direction) &
-         blink::WebContextMenuData::CheckableMenuItemEnabled;
-}
-
-bool RenderViewContextMenuMac::IsTextDirectionChecked(
-    base::i18n::TextDirection direction) const {
-  return ParamsForTextDirection(direction) &
-         blink::WebContextMenuData::CheckableMenuItemChecked;
-}
-
-void RenderViewContextMenuMac::UpdateTextDirection(
-    base::i18n::TextDirection direction) {
-  DCHECK_NE(direction, base::i18n::UNKNOWN_DIRECTION);
-
-  blink::WebTextDirection dir = blink::WebTextDirectionLeftToRight;
-  int command_id = IDC_WRITING_DIRECTION_LTR;
-  if (direction == base::i18n::RIGHT_TO_LEFT) {
-    dir = blink::WebTextDirectionRightToLeft;
-    command_id = IDC_WRITING_DIRECTION_RTL;
-  }
-
-  content::RenderViewHost* view_host = GetRenderViewHost();
-  view_host->GetWidget()->UpdateTextDirection(dir);
-  view_host->GetWidget()->NotifyTextDirection();
-
-  RenderViewContextMenu::RecordUsedItem(command_id);
 }
 
 void RenderViewContextMenuMac::Show() {
@@ -296,7 +244,104 @@ void RenderViewContextMenuMac::Show() {
   }
 }
 
+void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    case IDC_CONTENT_CONTEXT_LOOK_UP:
+      LookUpInDictionary();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING:
+      StartSpeaking();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING:
+      StopSpeaking();
+      break;
+
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      // WebKit's current behavior is for this menu item to always be disabled.
+      NOTREACHED();
+      break;
+
+    case IDC_WRITING_DIRECTION_RTL:
+    case IDC_WRITING_DIRECTION_LTR: {
+      content::RenderViewHost* view_host = GetRenderViewHost();
+      blink::WebTextDirection dir = blink::WebTextDirectionLeftToRight;
+      if (command_id == IDC_WRITING_DIRECTION_RTL)
+        dir = blink::WebTextDirectionRightToLeft;
+      view_host->GetWidget()->UpdateTextDirection(dir);
+      view_host->GetWidget()->NotifyTextDirection();
+      RenderViewContextMenu::RecordUsedItem(command_id);
+      break;
+    }
+
+    default:
+      RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
+      break;
+  }
+}
+
+bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      return params_.writing_direction_default &
+             blink::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+             blink::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+             blink::WebContextMenuData::CheckableMenuItemChecked;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdChecked(command_id);
+  }
+}
+
+bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDC_CONTENT_CONTEXT_LOOK_UP:
+      // This is OK because the menu is not shown when it isn't
+      // appropriate.
+      return true;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING:
+      // This is OK because the menu is not shown when it isn't
+      // appropriate.
+      return true;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING: {
+      content::RenderWidgetHostView* view =
+          GetRenderViewHost()->GetWidget()->GetView();
+      return view && view->IsSpeaking();
+    }
+
+    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
+      return params_.writing_direction_default &
+             blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+             blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+             blink::WebContextMenuData::CheckableMenuItemEnabled;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdEnabled(command_id);
+  }
+}
+
+void RenderViewContextMenuMac::AppendPlatformEditableItems() {
+  // OS X provides a contextual menu to set writing direction for BiDi
+  // languages.
+  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
+  AppendBidiSubMenu();
+}
+
 void RenderViewContextMenuMac::InitToolkitMenu() {
+  if (params_.selection_text.empty())
+    return;
+
   if (params_.link_url.is_empty()) {
     // In case the user has selected a word that triggers spelling suggestions,
     // show the dictionary lookup under the group that contains the command to
@@ -306,9 +351,9 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
     if (index < 0) {
       index = 0;
     } else {
-      while (menu_model_.GetTypeAt(index) != ui::MenuModel::TYPE_SEPARATOR)
+      while (menu_model_.GetTypeAt(index) != ui::MenuModel::TYPE_SEPARATOR) {
         index++;
-
+      }
       index += 1; // Place it below the separator.
     }
 
@@ -318,10 +363,22 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
         index++, IDC_CONTENT_CONTEXT_LOOK_UP,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP,
                                    printable_selection_text));
-    menu_model_.InsertSeparatorAt(index, ui::NORMAL_SEPARATOR);
+    menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 
-  text_services_context_menu_.AppendToContextMenu(&menu_model_);
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
+  if (view && view->SupportsSpeech()) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    speech_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING,
+        IDS_SPEECH_START_SPEAKING_MAC);
+    speech_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING, IDS_SPEECH_STOP_SPEAKING_MAC);
+    menu_model_.AddSubMenu(IDC_CONTENT_CONTEXT_SPEECH_MENU,
+                           l10n_util::GetStringUTF16(IDS_SPEECH_MAC),
+                           &speech_submenu_model_);
+  }
 }
 
 void RenderViewContextMenuMac::CancelToolkitMenu() {
@@ -345,6 +402,23 @@ void RenderViewContextMenuMac::UpdateToolkitMenuItem(
   [[item menu] itemChanged:item];
 }
 
+void RenderViewContextMenuMac::AppendBidiSubMenu() {
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_DEFAULT,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_LTR,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_RTL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
+
+  menu_model_.AddSubMenu(
+      IDC_WRITING_DIRECTION_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
+      &bidi_submenu_model_);
+}
+
 void RenderViewContextMenuMac::LookUpInDictionary() {
   content::RenderWidgetHostView* view =
       GetRenderViewHost()->GetWidget()->GetView();
@@ -352,14 +426,16 @@ void RenderViewContextMenuMac::LookUpInDictionary() {
     view->ShowDefinitionForSelection();
 }
 
-int RenderViewContextMenuMac::ParamsForTextDirection(
-    base::i18n::TextDirection direction) const {
-  switch (direction) {
-    case base::i18n::UNKNOWN_DIRECTION:
-      return params_.writing_direction_default;
-    case base::i18n::RIGHT_TO_LEFT:
-      return params_.writing_direction_right_to_left;
-    case base::i18n::LEFT_TO_RIGHT:
-      return params_.writing_direction_left_to_right;
-  }
+void RenderViewContextMenuMac::StartSpeaking() {
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
+  if (view)
+    view->SpeakSelection();
+}
+
+void RenderViewContextMenuMac::StopSpeaking() {
+  content::RenderWidgetHostView* view =
+      GetRenderViewHost()->GetWidget()->GetView();
+  if (view)
+    view->StopSpeaking();
 }

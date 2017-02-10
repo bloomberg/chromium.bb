@@ -73,7 +73,6 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
-#include "ui/base/cocoa/text_services_context_menu.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
@@ -138,6 +137,13 @@ RenderWidgetHostView* GetRenderWidgetHostViewToUse(
 }
 
 }  // namespace
+
+// These are not documented, so use only after checking -respondsToSelector:.
+@interface NSApplication (UndocumentedSpeechMethods)
+- (void)speakString:(NSString*)string;
+- (void)stopSpeaking:(id)sender;
+- (BOOL)isSpeaking;
+@end
 
 // Private methods:
 @interface RenderWidgetHostViewCocoa ()
@@ -722,6 +728,10 @@ void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
   browser_compositor_->UpdateVSyncParameters(vsync_timebase_, vsync_interval_);
 }
 
+void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
+  [NSApp speakString:base::SysUTF8ToNSString(text)];
+}
+
 RenderWidgetHostViewBase*
     RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
@@ -1021,7 +1031,7 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   base::string16 text;
   if (!selection->GetSelectedText(&text))
     return;
-  selected_text_ = text;
+  selected_text_ = base::UTF16ToUTF8(text);
 
   [cocoa_view_ setSelectedRange:selection->range.ToNSRange()];
   // Updates markedRange when there is no marked text so that retrieving
@@ -1109,7 +1119,15 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
+bool RenderWidgetHostViewMac::SupportsSpeech() const {
+  return [NSApp respondsToSelector:@selector(speakString:)] &&
+         [NSApp respondsToSelector:@selector(stopSpeaking:)];
+}
+
 void RenderWidgetHostViewMac::SpeakSelection() {
+  if (![NSApp respondsToSelector:@selector(speakString:)])
+    return;
+
   if (selected_text_.empty() && render_widget_host_) {
     // If there's no selection, speak all text. Send an asynchronous IPC
     // request for fetching all the text for a webcontent.
@@ -1119,7 +1137,16 @@ void RenderWidgetHostViewMac::SpeakSelection() {
     return;
   }
 
-  ui::TextServicesContextMenu::SpeakText(selected_text_);
+  SpeakText(selected_text_);
+}
+
+bool RenderWidgetHostViewMac::IsSpeaking() const {
+  return [NSApp respondsToSelector:@selector(isSpeaking)] && [NSApp isSpeaking];
+}
+
+void RenderWidgetHostViewMac::StopSpeaking() {
+  if ([NSApp respondsToSelector:@selector(stopSpeaking:)])
+    [NSApp stopSpeaking:cocoa_view_];
 }
 
 //
@@ -1670,7 +1697,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
     const std::string& text) {
-  ui::TextServicesContextMenu::SpeakText(base::UTF8ToUTF16(text));
+  SpeakText(text);
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
@@ -2356,7 +2383,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
     // See crbug.com/152438.
     NSString* text =
-        base::SysUTF16ToNSString(renderWidgetHostView_->selected_text());
+        base::SysUTF8ToNSString(renderWidgetHostView_->selected_text());
     if ([text length] == 0)
       return;
     scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
@@ -2750,10 +2777,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       nullptr;
 
   if (action == @selector(stopSpeaking:))
-    return is_render_view && ui::TextServicesContextMenu::IsSpeaking();
+    return is_render_view && renderWidgetHostView_->IsSpeaking();
 
   if (action == @selector(startSpeaking:))
-    return is_render_view;
+    return is_render_view && renderWidgetHostView_->SupportsSpeech();
 
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
@@ -3347,7 +3374,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)stopSpeaking:(id)sender {
-  ui::TextServicesContextMenu::StopSpeaking();
+  GetRenderWidgetHostViewToUse(renderWidgetHostView_.get())->StopSpeaking();
 }
 
 - (void)cancelComposition {
@@ -3418,12 +3445,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard
                              types:(NSArray*)types {
-  const base::string16& str = renderWidgetHostView_->selected_text();
+  const std::string& str = renderWidgetHostView_->selected_text();
   if (![types containsObject:NSStringPboardType] || str.empty()) return NO;
 
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithUTF8String:str.c_str()]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
   [pboard declareTypes:toDeclare owner:nil];
-  return [pboard setString:SysUTF16ToNSString(str) forType:NSStringPboardType];
+  return [pboard setString:text forType:NSStringPboardType];
 }
 
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {

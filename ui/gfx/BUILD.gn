@@ -67,8 +67,6 @@ component("gfx") {
     "color_utils.h",
     "decorated_text.cc",
     "decorated_text.h",
-    "decorated_text_mac.h",
-    "decorated_text_mac.mm",
     "favicon_size.cc",
     "favicon_size.h",
     "font.cc",

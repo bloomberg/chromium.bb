@@ -272,7 +272,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetShowingContextMenu(bool showing) override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
+  bool SupportsSpeech() const override;
   void SpeakSelection() override;
+  bool IsSpeaking() const override;
+  void StopSpeaking() override;
   void SetBackgroundColor(SkColor color) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
@@ -374,7 +377,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void SetTextInputActive(bool active);
 
-  const base::string16& selected_text() const { return selected_text_; }
+  const std::string& selected_text() const { return selected_text_; }
   const gfx::Range& composition_range() const { return composition_range_; }
   const base::string16& selection_text() const { return selection_text_; }
   size_t selection_text_offset() const { return selection_text_offset_; }
@@ -485,11 +488,13 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ShutdownHost();
 
   // IPC message handlers.
-  // TODO(spqchan): Change |text| to be the type string16.
   void OnGetRenderedTextCompleted(const std::string& text);
 
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
+
+  // Dispatches a TTS session.
+  void SpeakText(const std::string& text);
 
   // Get the focused view that should be used for retrieving the text selection.
   RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
@@ -518,8 +523,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
-  // Selected text on the renderer.
-  base::string16 selected_text_;
+  // selected text on the renderer.
+  std::string selected_text_;
 
   // The window used for popup widgets.
   base::scoped_nsobject<NSWindow> popup_window_;
@@ -550,8 +555,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // TODO(ekaramad): Remove the following locals and get the selection
   // information directly from TextInputManager.
-  // A buffer containing the text inside and around the current selection
-  // range. This is for text selected in an editable element.
+  // A buffer containing the text inside and around the current selection range.
   base::string16 selection_text_;
 
   // The offset of the text stored in |selection_text_| relative to the start of

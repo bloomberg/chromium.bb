@@ -1032,10 +1032,9 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
   return offset;
 }
 
-bool RenderText::GetDecoratedWordAndBaselineAtPoint(
-    const Point& point,
-    DecoratedText* decorated_word,
-    Point* baseline_point) {
+bool RenderText::GetDecoratedWordAtPoint(const Point& point,
+                                         DecoratedText* decorated_word,
+                                         Point* baseline_point) {
   if (obscured())
     return false;
 
@@ -1050,19 +1049,9 @@ bool RenderText::GetDecoratedWordAndBaselineAtPoint(
   DCHECK(!word_range.is_reversed());
   DCHECK(!word_range.is_empty());
 
-  return GetDecoratedTextAndBaselineForRange(word_range, decorated_word,
-                                             baseline_point);
-}
-
-bool RenderText::GetDecoratedTextAndBaselineForRange(
-    const Range& word_range,
-    DecoratedText* decorated_text,
-    Point* baseline_point) {
-  EnsureLayout();
-
   const std::vector<Rect> word_bounds = GetSubstringBounds(word_range);
   if (word_bounds.empty() ||
-      !GetDecoratedTextForRange(word_range, decorated_text)) {
+      !GetDecoratedTextForRange(word_range, decorated_word)) {
     return false;
   }
 

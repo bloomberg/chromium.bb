@@ -42,7 +42,6 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
-#include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -648,28 +647,15 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
                                           bool can_undo,
                                           ui::MenuModel* menu) {
-    int menu_index = 0;
-#if defined(OS_MACOSX)
-    // On Mac, the Look Up item should appear at the top of the menu if the
-    // textfield has a selection.
-    if (textfield_has_selection) {
-      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* LOOK UP */));
-      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
-    }
-#endif
-
-    EXPECT_EQ(can_undo, menu->IsEnabledAt(menu_index++ /* UNDO */));
-    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
-    EXPECT_EQ(textfield_has_selection,
-              menu->IsEnabledAt(menu_index++ /* CUT */));
-    EXPECT_EQ(textfield_has_selection,
-              menu->IsEnabledAt(menu_index++ /* COPY */));
+    EXPECT_EQ(can_undo, menu->IsEnabledAt(0 /* UNDO */));
+    EXPECT_TRUE(menu->IsEnabledAt(1 /* Separator */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(2 /* CUT */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(3 /* COPY */));
     EXPECT_NE(GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE).empty(),
-              menu->IsEnabledAt(menu_index++ /* PASTE */));
-    EXPECT_EQ(textfield_has_selection,
-              menu->IsEnabledAt(menu_index++ /* DELETE */));
-    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
-    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* SELECT ALL */));
+              menu->IsEnabledAt(4 /* PASTE */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(5 /* DELETE */));
+    EXPECT_TRUE(menu->IsEnabledAt(6 /* Separator */));
+    EXPECT_TRUE(menu->IsEnabledAt(7 /* SELECT ALL */));
   }
 
   void PressMouseButton(ui::EventFlags mouse_button_flags, int extra_flags) {
@@ -3071,59 +3057,5 @@ TEST_F(TextfieldTest, AccessiblePasswordTest) {
             node_data_protected.GetString16Attribute(ui::AX_ATTR_VALUE));
   EXPECT_TRUE(node_data_protected.HasStateFlag(ui::AX_STATE_PROTECTED));
 }
-
-// Tests to see if the context menu is updated along with the textfield's
-// caret bounds.
-TEST_F(TextfieldTest, ContextMenuUpdate) {
-  InitTextfield();
-  EXPECT_TRUE(textfield_->context_menu_controller());
-
-  ui::MenuModel* context_menu = GetContextMenuModel();
-  EXPECT_TRUE(context_menu);
-
-  // Select all the text and get the new context menu.
-  textfield_->SelectAll(false);
-  ui::MenuModel* new_context_menu = GetContextMenuModel();
-  EXPECT_TRUE(new_context_menu);
-
-  // Check if the new context menu is different.
-  EXPECT_NE(&context_menu, &new_context_menu);
-}
-
-#if defined(OS_MACOSX)
-// Tests to see if the BiDi submenu items are updated correctly when the
-// textfield's text direction is changed.
-TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
-  InitTextfield();
-  EXPECT_TRUE(textfield_->context_menu_controller());
-
-  EXPECT_TRUE(GetContextMenuModel());
-
-  textfield_->ChangeTextDirectionAndLayoutAlignment(
-      base::i18n::TextDirection::LEFT_TO_RIGHT);
-  test_api_->UpdateContextMenu();
-  ViewsTextServicesContextMenu* text_services_menu =
-      test_api_->text_services_context_menu();
-
-  EXPECT_FALSE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::UNKNOWN_DIRECTION));
-  EXPECT_TRUE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::LEFT_TO_RIGHT));
-  EXPECT_FALSE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::RIGHT_TO_LEFT));
-
-  textfield_->ChangeTextDirectionAndLayoutAlignment(
-      base::i18n::TextDirection::RIGHT_TO_LEFT);
-  test_api_->UpdateContextMenu();
-  text_services_menu = test_api_->text_services_context_menu();
-
-  EXPECT_FALSE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::UNKNOWN_DIRECTION));
-  EXPECT_FALSE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::LEFT_TO_RIGHT));
-  EXPECT_TRUE(text_services_menu->IsTextDirectionCheckedForTesting(
-      base::i18n::TextDirection::RIGHT_TO_LEFT));
-}
-#endif  // defined(OS_MACOSX)
 
 }  // namespace views
