@@ -6,5 +6,5 @@
 [
     OriginTrialEnabled=LongTaskObserver,
 ] interface PerformanceLongTaskTiming : PerformanceEntry {
-    readonly attribute sequence<TaskAttributionTiming> attribution;
+    readonly attribute FrozenArray<TaskAttributionTiming> attribution;
 };
