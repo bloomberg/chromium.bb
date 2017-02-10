@@ -76,7 +76,7 @@ class TestImporterTest(LoggingTestCase):
         host = MockHost()
         host.executive = MockExecutive(output='Last commit message\n\n')
         importer = TestImporter(host)
-        description = importer._cl_description()
+        description = importer._cl_description(directory_owners={})
         self.assertEqual(
             description,
             ('Last commit message\n\n'
@@ -91,7 +91,7 @@ class TestImporterTest(LoggingTestCase):
         importer.host.environ['BUILDBOT_MASTERNAME'] = 'my.master'
         importer.host.environ['BUILDBOT_BUILDERNAME'] = 'b'
         importer.host.environ['BUILDBOT_BUILDNUMBER'] = '123'
-        description = importer._cl_description()
+        description = importer._cl_description(directory_owners={})
         self.assertEqual(
             description,
             ('Last commit message\n'
@@ -104,10 +104,30 @@ class TestImporterTest(LoggingTestCase):
         host = MockHost()
         host.executive = MockExecutive(output='Summary\n\nNOEXPORT=true\n\n')
         importer = TestImporter(host)
-        description = importer._cl_description()
+        description = importer._cl_description(directory_owners={})
         self.assertEqual(
             description,
             ('Summary\n\n'
+             'TBR=qyearsley@chromium.org\n'
+             'NOEXPORT=true'))
+
+    def test_cl_description_with_directory_owners(self):
+        host = MockHost()
+        host.executive = MockExecutive(output='Last commit message\n\n')
+        importer = TestImporter(host)
+        description = importer._cl_description(directory_owners={
+            'someone@chromium.org': ['external/wpt/foo', 'external/wpt/bar'],
+            'someone-else@chromium.org': ['external/wpt/baz'],
+        })
+        self.assertEqual(
+            description,
+            ('Last commit message\n\n'
+             'Directory owners for changes in this CL:\n'
+             'someone-else@chromium.org:\n'
+             '  external/wpt/baz\n'
+             'someone@chromium.org:\n'
+             '  external/wpt/foo\n'
+             '  external/wpt/bar\n\n'
              'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
 

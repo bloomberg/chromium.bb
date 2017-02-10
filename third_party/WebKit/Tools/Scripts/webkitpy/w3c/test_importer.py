@@ -364,15 +364,15 @@ class TestImporter(object):
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
-        cc_list = self.get_directory_owners()
-        description = self._cl_description()
+        directory_owners = self.get_directory_owners()
+        description = self._cl_description(directory_owners)
         self.git_cl.run([
             'upload',
             '-f',
             '--rietveld',
             '-m',
             description,
-        ] + ['--cc=' + email for email in cc_list])
+        ] + ['--cc=' + email_address for email_address in directory_owners])
 
     def get_directory_owners(self):
         """Returns a list of email addresses of owners of changed tests."""
@@ -382,17 +382,29 @@ class TestImporter(object):
         extractor.read_owner_map()
         return extractor.list_owners(changed_files)
 
-    def _cl_description(self):
+    def _cl_description(self, directory_owners):
         description = self.check_run(['git', 'log', '-1', '--format=%B'])
         build_link = current_build_link(self.host)
         if build_link:
             description += 'Build: %s\n\n' % build_link
+
+        if directory_owners:
+            description += self._format_directory_owners(directory_owners) + '\n\n'
         description += 'TBR=qyearsley@chromium.org\n'
+
         # Move any NOEXPORT tag to the end of the description.
         description = description.replace('NOEXPORT=true', '')
         description = description.replace('\n\n\n\n', '\n\n')
         description += 'NOEXPORT=true'
         return description
+
+    @staticmethod
+    def _format_directory_owners(directory_owners):
+        message_lines = ['Directory owners for changes in this CL:']
+        for owner, directories in sorted(directory_owners.items()):
+            message_lines.append(owner + ':')
+            message_lines.extend(['  ' + d for d in directories])
+        return '\n'.join(message_lines)
 
     def fetch_new_expectations_and_baselines(self):
         """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""
