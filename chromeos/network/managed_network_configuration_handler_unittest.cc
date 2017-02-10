@@ -275,12 +275,13 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     if (managed_network_configuration_handler_)
       managed_network_configuration_handler_->RemoveObserver(&policy_observer_);
-    network_state_handler_.reset();
     managed_network_configuration_handler_.reset();
     network_configuration_handler_.reset();
     network_profile_handler_.reset();
+    network_state_handler_.reset();
     DBusThreadManager::Shutdown();
   }
 

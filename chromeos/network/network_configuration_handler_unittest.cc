@@ -208,6 +208,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     network_configuration_handler_.reset();
     network_state_handler_.reset();
     DBusThreadManager::Shutdown();
@@ -508,6 +509,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     network_configuration_handler_.reset();
     network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
     network_state_handler_.reset();

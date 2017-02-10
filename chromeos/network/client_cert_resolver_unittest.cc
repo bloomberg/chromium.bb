@@ -87,6 +87,7 @@ class ClientCertResolverTest : public testing::Test,
     client_cert_resolver_->RemoveObserver(this);
     client_cert_resolver_.reset();
     test_clock_.reset();
+    network_state_handler_->Shutdown();
     managed_config_handler_.reset();
     network_config_handler_.reset();
     network_profile_handler_.reset();

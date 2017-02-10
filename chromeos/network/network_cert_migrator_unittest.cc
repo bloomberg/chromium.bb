@@ -67,6 +67,7 @@ class NetworkCertMigratorTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     network_cert_migrator_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();

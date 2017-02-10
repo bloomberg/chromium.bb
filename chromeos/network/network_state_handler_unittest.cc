@@ -193,6 +193,7 @@ class NetworkStateHandlerTest : public testing::Test {
 
   void TearDown() override {
     network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
+    network_state_handler_->Shutdown();
     test_observer_.reset();
     network_state_handler_.reset();
     DBusThreadManager::Shutdown();

@@ -160,6 +160,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     managed_config_handler_.reset();
     network_profile_handler_.reset();
     network_connection_handler_->RemoveObserver(

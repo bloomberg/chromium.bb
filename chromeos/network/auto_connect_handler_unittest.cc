@@ -137,6 +137,7 @@ class AutoConnectHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     auto_connect_handler_.reset();
     client_cert_resolver_.reset();
     managed_config_handler_.reset();

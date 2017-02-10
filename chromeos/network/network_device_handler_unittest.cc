@@ -71,6 +71,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_state_handler_->Shutdown();
     network_device_handler_.reset();
     network_state_handler_.reset();
     DBusThreadManager::Shutdown();

@@ -42,6 +42,7 @@ class NetworkThrottlingObserverTest : public ::testing::Test {
   }
 
   ~NetworkThrottlingObserverTest() override {
+    network_state_handler_->Shutdown();
     observer_.reset();
     local_state_.reset();
     network_state_handler_.reset();
