@@ -1260,7 +1260,7 @@ GlobalActivityTracker::GlobalActivityTracker(
 
   // Ensure that there is no other global object and then make this one such.
   DCHECK(!g_tracker_);
-  subtle::NoBarrier_Store(&g_tracker_, reinterpret_cast<uintptr_t>(this));
+  subtle::Release_Store(&g_tracker_, reinterpret_cast<uintptr_t>(this));
 
   // The global records must be iterable in order to be found by an analyzer.
   allocator_->MakeIterable(allocator_->GetAsReference(
@@ -1276,7 +1276,7 @@ GlobalActivityTracker::GlobalActivityTracker(
 GlobalActivityTracker::~GlobalActivityTracker() {
   DCHECK_EQ(Get(), this);
   DCHECK_EQ(0, thread_tracker_count_.load(std::memory_order_relaxed));
-  subtle::NoBarrier_Store(&g_tracker_, 0);
+  subtle::Release_Store(&g_tracker_, 0);
 }
 
 void GlobalActivityTracker::ReturnTrackerMemory(

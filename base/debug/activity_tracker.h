@@ -748,7 +748,7 @@ class BASE_EXPORT GlobalActivityTracker {
   // Gets the global activity-tracker or null if none exists.
   static GlobalActivityTracker* Get() {
     return reinterpret_cast<GlobalActivityTracker*>(
-        subtle::NoBarrier_Load(&g_tracker_));
+        subtle::Acquire_Load(&g_tracker_));
   }
 
   // Gets the persistent-memory-allocator in which data is stored. Callers
