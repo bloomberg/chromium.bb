@@ -8,7 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_mus.h"
@@ -179,12 +181,33 @@ TEST_F(DesktopWindowTreeHostMusTest, Deactivate) {
   widget2->Show();
 
   widget1->Activate();
+  EXPECT_TRUE(widget1->GetNativeWindow()->HasFocus());
+
   RunPendingMessages();
   EXPECT_TRUE(widget1->IsActive());
+  EXPECT_TRUE(widget1->GetNativeWindow()->HasFocus());
   EXPECT_EQ(widget_activated(), widget1.get());
 
   DeactivateAndWait(widget1.get());
   EXPECT_FALSE(widget1->IsActive());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, ActivateBeforeShow) {
+  std::unique_ptr<Widget> widget1(CreateWidget());
+  // Activation can be attempted before visible.
+  widget1->Activate();
+  widget1->Show();
+  widget1->Activate();
+  EXPECT_TRUE(widget1->IsActive());
+  // The Widget's NativeWindow (|DesktopNativeWidgetAura::content_window_|)
+  // should be active.
+  EXPECT_TRUE(widget1->GetNativeWindow()->HasFocus());
+  // Env's active FocusClient should match the active window.
+  aura::client::FocusClient* widget_focus_client =
+      aura::client::GetFocusClient(widget1->GetNativeWindow());
+  ASSERT_TRUE(widget_focus_client);
+  EXPECT_EQ(widget_focus_client,
+            aura::Env::GetInstance()->active_focus_client());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {

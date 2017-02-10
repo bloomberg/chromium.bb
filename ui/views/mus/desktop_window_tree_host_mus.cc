@@ -531,13 +531,16 @@ void DesktopWindowTreeHostMus::SetShape(
 }
 
 void DesktopWindowTreeHostMus::Activate() {
+  if (!IsVisible())
+    return;
+
+  // This should result in OnActiveFocusClientChanged() being called, which
+  // triggers a call to DesktopNativeWidgetAura::HandleActivationChanged(),
+  // which focuses the right window.
   aura::Env::GetInstance()->SetActiveFocusClient(
       aura::client::GetFocusClient(window()), window());
-  if (is_active_) {
-    window()->Focus();
-    if (window()->GetProperty(aura::client::kDrawAttentionKey))
-      window()->SetProperty(aura::client::kDrawAttentionKey, false);
-  }
+  if (is_active_)
+    window()->SetProperty(aura::client::kDrawAttentionKey, false);
 }
 
 void DesktopWindowTreeHostMus::Deactivate() {
