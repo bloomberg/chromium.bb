@@ -362,7 +362,8 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
                 false);
       return;
     case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_STORE_DM_TOKEN_FAILED, false);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_SAVE_DEVICE_CONFIGURATION,
+                false);
       return;
   }
   NOTREACHED();
