@@ -292,6 +292,9 @@ class SSLClientSocketImpl::SSLContext {
 
     SSL_CTX_set_grease_enabled(ssl_ctx_.get(), 1);
 
+    // Deduplicate all certificates minted from the SSL_CTX in memory.
+    SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
+
     if (base::FeatureList::IsEnabled(kShortRecordHeaderFeature)) {
       SSL_CTX_set_short_header_enabled(ssl_ctx_.get(), 1);
     }
