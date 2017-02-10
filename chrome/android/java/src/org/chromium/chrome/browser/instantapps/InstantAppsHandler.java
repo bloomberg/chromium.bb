@@ -11,6 +11,7 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
@@ -159,18 +160,32 @@ public class InstantAppsHandler {
         }
     }
 
-    /** Handle incoming intent. */
+    /**
+     * Handle incoming intent.
+     * @param context Context.
+     * @param intent The incoming intent being handled.
+     * @param isCustomTabsIntent Whether we are in custom tabs.
+     * @param isRedirect Whether this is the redirect resolve case where incoming intent was
+     *        resolved to another URL.
+     * @return Whether Instant Apps is handling the URL request.
+     */
     public boolean handleIncomingIntent(Context context, Intent intent,
-            boolean isCustomTabsIntent) {
+            boolean isCustomTabsIntent, boolean isRedirect) {
         long startTimeStamp = SystemClock.elapsedRealtime();
         boolean result = handleIncomingIntentInternal(context, intent, isCustomTabsIntent,
-                startTimeStamp);
+                startTimeStamp, isRedirect);
         recordHandleIntentDuration(startTimeStamp);
         return result;
     }
 
     private boolean handleIncomingIntentInternal(
-            Context context, Intent intent, boolean isCustomTabsIntent, long startTime) {
+            Context context, Intent intent, boolean isCustomTabsIntent, long startTime,
+            boolean isRedirect) {
+        if (!isRedirect && !isCustomTabsIntent && BuildInfo.isAtLeastO()) {
+            Log.i(TAG, "Disabled for Android O+");
+            return false;
+        }
+
         if (isCustomTabsIntent && !IntentUtils.safeGetBooleanExtra(
                 intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false)) {
             Log.i(TAG, "Not handling with Instant Apps (missing CUSTOM_APPS_INSTANT_APP_EXTRA)");

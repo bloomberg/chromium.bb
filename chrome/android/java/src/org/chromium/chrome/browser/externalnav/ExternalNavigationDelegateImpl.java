@@ -586,7 +586,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             Intent resolvedIntent = new Intent(intent);
             resolvedIntent.setData(Uri.parse(url));
             return handler.handleIncomingIntent(getAvailableContext(), resolvedIntent,
-                    ChromeLauncherActivity.isCustomTabIntent(resolvedIntent));
+                    ChromeLauncherActivity.isCustomTabIntent(resolvedIntent), true);
         } else if (!isIncomingRedirect) {
             // Check if the navigation is coming from SERP and skip instant app handling.
             if (isSerpReferrer(tab)) return false;
