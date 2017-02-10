@@ -5,7 +5,11 @@
 #ifndef CONTENT_RENDERER_RENDER_PROCESS_H_
 #define CONTENT_RENDERER_RENDER_PROCESS_H_
 
+#include <vector>
+
 #include "base/macros.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "content/child/child_process.h"
 
 namespace content {
@@ -19,7 +23,11 @@ namespace content {
 // ones derived from RenderViewTest.
 class RenderProcess : public ChildProcess {
  public:
-  RenderProcess() {}
+  RenderProcess() = default;
+  RenderProcess(
+      const std::vector<base::SchedulerWorkerPoolParams>& worker_pool_params,
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+          worker_pool_index_for_traits_callback);
   ~RenderProcess() override {}
 
   // Keep track of the cumulative set of enabled bindings for this process,

@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
@@ -13,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
@@ -36,9 +36,11 @@ base::LazyInstance<base::ThreadLocalPointer<ChildProcess> > g_lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
 }
 
-ChildProcess::ChildProcess() : ChildProcess(base::ThreadPriority::NORMAL) {}
-
-ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority)
+ChildProcess::ChildProcess(
+    base::ThreadPriority io_thread_priority,
+    const std::vector<base::SchedulerWorkerPoolParams>& worker_pool_params,
+    base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+        worker_pool_index_for_traits_callback)
     : ref_count_(0),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -52,7 +54,16 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority)
   // exist when ChildProcess is instantiated in the browser process or in a
   // test process.
   if (!base::TaskScheduler::GetInstance()) {
-    InitializeTaskScheduler();
+    if (worker_pool_params.empty()) {
+      DCHECK(!worker_pool_index_for_traits_callback);
+      constexpr int kMaxThreads = 2;
+      base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxThreads);
+    } else {
+      DCHECK(worker_pool_index_for_traits_callback);
+      base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
+          worker_pool_params, std::move(worker_pool_index_for_traits_callback));
+    }
+
     DCHECK(base::TaskScheduler::GetInstance());
     initialized_task_scheduler_ = true;
   }
@@ -175,11 +186,6 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   pause();
 #endif  // defined(OS_ANDROID)
 #endif  // defined(OS_POSIX)
-}
-
-void ChildProcess::InitializeTaskScheduler() {
-  constexpr int kMaxThreads = 2;
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxThreads);
 }
 
 }  // namespace content

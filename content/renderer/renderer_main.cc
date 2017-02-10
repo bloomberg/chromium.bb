@@ -176,7 +176,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
-    RenderProcessImpl render_process;
+    auto render_process = RenderProcessImpl::Create();
     RenderThreadImpl::Create(std::move(main_message_loop),
                              std::move(renderer_scheduler));
 #endif
@@ -184,7 +184,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     if (!no_sandbox)
       run_loop = platform.EnableSandbox();
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    RenderProcessImpl render_process;
+    auto render_process = RenderProcessImpl::Create();
     RenderThreadImpl::Create(std::move(main_message_loop),
                              std::move(renderer_scheduler));
 #endif

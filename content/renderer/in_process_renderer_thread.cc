@@ -46,7 +46,7 @@ void InProcessRendererThread::Init() {
   // Android. Temporary CHECK() to debug http://crbug.com/514141
   CHECK(!render_process_);
 #endif
-  render_process_.reset(new RenderProcessImpl());
+  render_process_ = RenderProcessImpl::Create();
   RenderThreadImpl::Create(params_);
 }
 

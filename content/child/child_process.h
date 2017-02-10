@@ -6,9 +6,13 @@
 #define CONTENT_CHILD_CHILD_PROCESS_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 
@@ -33,8 +37,17 @@ class CONTENT_EXPORT ChildProcess {
  public:
   // Child processes should have an object that derives from this class.
   // Normally you would immediately call set_main_thread after construction.
-  ChildProcess();
-  explicit ChildProcess(base::ThreadPriority io_thread_priority);
+  // |io_thread_priority| is the priority of the IO thread. |worker_pool_params|
+  // and |worker_pool_index_for_traits_callback| are used to initialize
+  // TaskScheduler. TaskScheduler is initialized with default values if these
+  // arguments are left empty.
+  ChildProcess(
+      base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL,
+      const std::vector<base::SchedulerWorkerPoolParams>& worker_pool_params =
+          std::vector<base::SchedulerWorkerPoolParams>(),
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+          worker_pool_index_for_traits_callback =
+              base::TaskScheduler::WorkerPoolIndexForTraitsCallback());
   virtual ~ChildProcess();
 
   // May be NULL if the main thread hasn't been set explicitly.
@@ -78,11 +91,8 @@ class CONTENT_EXPORT ChildProcess {
   static ChildProcess* current();
 
   static void WaitForDebugger(const std::string& label);
- private:
-  // Initializes TaskScheduler. May be overridden to initialize TaskScheduler
-  // with custom arguments.
-  virtual void InitializeTaskScheduler();
 
+ private:
   int ref_count_;
 
   // An event that will be signalled when we shutdown.
