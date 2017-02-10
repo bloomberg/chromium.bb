@@ -242,8 +242,9 @@ TEST_F(SpeechRecognizerImplTest, StartNoInputDevices) {
   audio_manager_->SetHasInputDevices(false);
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -311,9 +312,10 @@ TEST_F(SpeechRecognizerImplTest, StopNoData) {
   // Check for callbacks when stopping record before any audio gets recorded.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
   recognizer_->StopAudioCapture();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START and EVENT_STOP processing.
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -326,9 +328,10 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   // recorded.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
   recognizer_->AbortRecognition();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START and EVENT_ABORT processing.
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -341,8 +344,9 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // network callback to arrive before completion.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -404,8 +408,9 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   // Start recording, give some data and then cancel.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -426,8 +431,9 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   // with a connection error and verify that the recognizer bubbles the error up
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -463,8 +469,9 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   // with a 500 error and verify that the recognizer bubbles the error up
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -498,8 +505,9 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
   // Check if things tear down properly if AudioInputController threw an error.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -518,8 +526,9 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   // after giving some audio data.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -540,8 +549,9 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   // This should trigger the no-speech detector and issue a callback.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -567,8 +577,9 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   // triggered.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -605,8 +616,9 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   // samples and proper volume for the loud audio.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();  // EVENT_PREPARE processing.
   WaitForAudioThreadToPostDeviceInfo();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();  // EVENT_START processing.
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
