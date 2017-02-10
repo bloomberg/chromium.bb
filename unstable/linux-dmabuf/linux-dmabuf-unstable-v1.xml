@@ -24,13 +24,13 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwp_linux_dmabuf_v1" version="1">
+  <interface name="zwp_linux_dmabuf_v1" version="2">
     <description summary="factory for creating dmabuf-based wl_buffers">
       Following the interfaces from:
       https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
       and the Linux DRM sub-system's AddFb2 ioctl.
 
-      This interface offers a way to create generic dmabuf-based
+      This interface offers ways to create generic dmabuf-based
       wl_buffers. Immediately after a client binds to this interface,
       the set of supported formats is sent with 'format' events.
 
@@ -56,10 +56,23 @@
       To create a wl_buffer from one or more dmabufs, a client creates a
       zwp_linux_dmabuf_params_v1 object with a zwp_linux_dmabuf_v1.create_params
       request. All planes required by the intended format are added with
-      the 'add' request. Finally, a 'create' request is issued. The server
-      will reply with either a 'created' event which provides the final
-      wl_buffer or a 'failed' event saying that it cannot use the dmabufs
-      provided.
+      the 'add' request. Finally, a 'create' or 'create_immed' request is
+      issued, which has the following outcome depending on the import success.
+
+      The 'create' request,
+      - on success, triggers a 'created' event which provides the final
+        wl_buffer to the client.
+      - on failure, triggers a 'failed' event to convey that the server
+        cannot use the dmabufs received from the client.
+
+      For the 'create_immed' request,
+      - on success, the server immediately imports the added dmabufs to
+        create a wl_buffer. No event is sent from the server in this case.
+      - on failure, the server can choose to either:
+        - terminate the client by raising a fatal error.
+        - mark the wl_buffer as failed, and send a 'failed' event to the
+          client. If the client uses a failed wl_buffer as an argument to any
+          request, the behaviour is compositor implementation-defined.
 
       Warning! The protocol described in this file is experimental and
       backward incompatible changes may be made. Backward compatible changes
@@ -105,7 +118,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_linux_buffer_params_v1" version="1">
+  <interface name="zwp_linux_buffer_params_v1" version="2">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
@@ -138,6 +151,9 @@
              summary="invalid width or height"/>
       <entry name="out_of_bounds" value="6"
              summary="offset + stride * height goes out of dmabuf bounds"/>
+      <entry name="invalid_wl_buffer" value="7"
+             summary="invalid wl_buffer resulted from importing dmabufs via
+               the create_immed request on given buffer_params"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -269,6 +285,42 @@
         zlinux_buffer_params object.
       </description>
     </event>
+
+    <request name="create_immed" since="2">
+      <description summary="immediately create a wl_buffer from the given
+                     dmabufs">
+        This asks for immediate creation of a wl_buffer by importing the
+        added dmabufs.
+
+        In case of import success, no event is sent from the server, and the
+        wl_buffer is ready to be used by the client.
+
+        Upon import failure, either of the following may happen, as seen fit
+        by the implementation:
+        - the client is terminated with one of the following fatal protocol
+          errors:
+          - INCOMPLETE, INVALID_FORMAT, INVALID_DIMENSIONS, OUT_OF_BOUNDS,
+            in case of argument errors such as mismatch between the number
+            of planes and the format, bad format, non-positive width or
+            height, or bad offset or stride.
+          - INVALID_WL_BUFFER, in case the cause for failure is unknown or
+            plaform specific.
+        - the server creates an invalid wl_buffer, marks it as failed and
+          sends a 'failed' event to the client. The result of using this
+          invalid wl_buffer as an argument in any request by the client is
+          defined by the compositor implementation.
+
+        This takes the same arguments as a 'create' request, and obeys the
+        same restrictions.
+      </description>
+      <arg name="buffer_id" type="new_id" interface="wl_buffer"
+           summary="id for the newly created wl_buffer"/>
+      <arg name="width" type="int" summary="base plane width in pixels"/>
+      <arg name="height" type="int" summary="base plane height in pixels"/>
+      <arg name="format" type="uint" summary="DRM_FORMAT code"/>
+      <arg name="flags" type="uint" summary="see enum flags"/>
+    </request>
+
   </interface>
 
 </protocol>
