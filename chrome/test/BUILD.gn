@@ -2767,6 +2767,7 @@ if (!is_android) {
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
       "$root_out_dir/pyproto/",
+      "//testing/xvfb.py",
     ]
 
     if (is_linux || is_win) {
