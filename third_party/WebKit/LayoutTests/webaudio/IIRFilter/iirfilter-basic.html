@@ -2,16 +2,14 @@
 <html>
   <head>
     <title>Test Basic IIRFilterNode Properties</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test Basic IIRFilterNode Properties");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       var testFrames = 100;
 
@@ -27,7 +25,9 @@
       });
 
       audit.defineTask("existence", function (done) {
-        shouldBeDefined("context.createIIRFilter");
+        Should("context.createIIRFilter exists",
+          context.createIIRFilter != undefined)
+          .beEqualTo(true);
         done();
       });
 
@@ -44,10 +44,8 @@
         success = Should("channelCountMode", f.channelCountMode).beEqualTo("max") && success;
         success = Should("channelInterpretation", f.channelInterpretation).beEqualTo("speakers") && success;
 
-        if (success)
-          testPassed("All basic IIRFilter parameters are correct.\n");
-        else
-          testFailed("Some basic IIRFilter parameter was not correct.\n");
+        Should("Basic IRRFilter parameters", success)
+          .summarize("were all correct", "were not all correct");
         done();
       });
 
@@ -133,10 +131,9 @@
           context.createIIRFilter([1, "abc", []], [1]);
         }).throw("InvalidStateError") && success;
 
-        if (success)
-          testPassed("All exceptions for createIIRFilter were correctly thrown.\n");
-        else
-          testFailed("Some exceptions for createIIRFilter were not thrown as expected.\n");
+        Should("Exceptions for createIIRFilter", success)
+          .summarize("were all correctly thrown",
+                     "were not all correctly thrown");
         done();
       });
 
@@ -191,20 +188,12 @@
               30));
           }).notThrow() && success;
 
-        if (success)
-          testPassed("getFrequencyResponse exceptions handled correctly.\n");
-        else
-          testFailed("getFrequencyResponse exceptions not handled correctly.\n");
-
-        done();
-      });
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
+        Should("getFrequencyResponse exceptions handled", success)
+          .summarize("correctly", "incorrectly");
         done();
       });
 
       audit.runTasks();
-      successfullyParsed = true;
     </script>
   </body>
 </html>

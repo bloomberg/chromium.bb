@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Test IIRFilter getFrequencyResponse() functionality</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/biquad-filters.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test IIRFilter getFrequencyResponse() functionality");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       // Some short duration; we're not actually looking at the rendered output.
       var testDurationSec = 0.01;
@@ -76,11 +74,10 @@
         success = Should("1-pole IIR Magnitude Response", iirMag).beCloseToArray(trueMag, 2.8611e-6);
         success = Should("1-pole IIR Phase Response", iirPhase).beCloseToArray(truePhase, 1.7882e-7)
           && success;
-        if (success)
-          testPassed("1-pole IIR response matched expected response.\n");
-        else
-          testFailed("1-pole IIR response did not match expected response.\n");
 
+        Should('1-pole IIR response', success)
+            .summarize(
+                'matched expected response', 'did not match expected response');
         done();
       });
 
@@ -112,21 +109,14 @@
         success = Should("IIR Magnitude Response", iirMag).beCloseToArray(biquadMag, 2.7419e-5);
         success = Should("IIR Phase Response", iirPhase).beCloseToArray(biquadPhase, 2.7657e-5) && success;
 
-        if (success)
-          testPassed("IIR response matched equivalent " + biquad.type + " Biquad response.\n");
-        else
-          testFailed("IIR response did not equivalent " + biquad.type + " Biquad response.\n");
-
-        done();
-      });
-
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
+        var suffix = " equivalent " + biquad.type + " Biquad response";
+        Should("IIR response", success)
+          .summarize("matched" + suffix,
+                     "did not match" + suffix);
         done();
       });
 
       audit.runTasks();
-      successfullyParsed = true;
     </script>
   </body>
 </html>

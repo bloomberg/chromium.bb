@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Test Basic IIRFilterNode Operation</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/biquad-filters.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test Basic IIRFilterNode Operation");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       var testDurationSec = 1;
       var testFrames = testDurationSec * sampleRate;
@@ -88,10 +86,8 @@
           // IIRFilterNode and the BiquadFilterNode.
           success = Should("Output of IIR filter with unnormalized coefficients", iir2Data)
             .beCloseToArray(iir1Data, 2.1958e-38) && success;
-          if (success)
-            testPassed("IIRFilter coefficients correctly normalized.\n");
-          else
-            testFailed("IIRFilter coefficients not correctly normalized.\n");
+          Should("IIRFilter coefficients normalized", success)
+            .summarize("correctly", "incorrectly");
         }).then(done);
       });
 
@@ -367,13 +363,10 @@
               }).beLessThanOrEqualTo(errorThresholds[channel]);
           }
 
-          if (success) {
-            testPassed("IIRFilter correctly processed " + result.numberOfChannels +
-              "-channel input.");
-          } else {
-            testFailed("IIRFilter failed to correctly process " + result.numberOfChannels +
-              "-channel input.");
-          }
+          Should("IIRFIlter processed " + result.numberOfChannels +
+            "-channel input",
+            success)
+            .summarize("correctly", "incorrectly");
         }).then(done);
       });
 
@@ -566,13 +559,7 @@
         }).then(done);
       });
 
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
-        done();
-      });
-
       audit.runTasks();
-      successfullyParsed = true;
     </script>
   </body>
 </html>
