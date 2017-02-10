@@ -39,13 +39,13 @@ class GitClApi(recipe_api.RecipeApi):
 
     return self(
         'description', args, stdout=self.m.raw_io.output(),
-        stdin=self.m.raw_io.input(data=description),
+        stdin=self.m.raw_io.input_text(description),
         name='git_cl set description', **kwargs)
 
   def upload(self, message, upload_args=None, **kwargs):
     upload_args = upload_args or []
 
-    upload_args.extend(['--message-file', self.m.raw_io.input(message)])
+    upload_args.extend(['--message-file', self.m.raw_io.input_text(message)])
 
     return self('upload', upload_args, **kwargs)
 
