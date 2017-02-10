@@ -535,7 +535,6 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
       SurfaceSequence(kArbitraryFrameSinkId, 4));
   factory2->EvictSurface();
 
-  CompositorFrame frame;
   DCHECK(manager_.GetSurfaceForId(id2));
   manager_.SatisfySequence(SurfaceSequence(kArbitraryFrameSinkId, 4));
   manager_.SatisfySequence(SurfaceSequence(kArbitraryFrameSinkId, 6));
