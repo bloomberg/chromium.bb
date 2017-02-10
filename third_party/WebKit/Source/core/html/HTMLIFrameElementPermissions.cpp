@@ -14,17 +14,18 @@ namespace {
 
 struct SupportedPermission {
   const char* name;
-  WebPermissionType type;
+  mojom::blink::PermissionName type;
 };
 
 const SupportedPermission kSupportedPermissions[] = {
-    {"geolocation", WebPermissionTypeGeolocation},
-    {"notifications", WebPermissionTypeNotifications},
-    {"midi", WebPermissionTypeMidiSysEx},
+    {"geolocation", mojom::blink::PermissionName::GEOLOCATION},
+    {"notifications", mojom::blink::PermissionName::NOTIFICATIONS},
+    {"midi", mojom::blink::PermissionName::MIDI},
 };
 
 // Returns true if the name is valid and the type is stored in |result|.
-bool getPermissionType(const AtomicString& name, WebPermissionType* result) {
+bool getPermissionType(const AtomicString& name,
+                       mojom::blink::PermissionName* result) {
   for (const SupportedPermission& permission : kSupportedPermissions) {
     if (name == permission.name) {
       if (result)
@@ -49,16 +50,16 @@ DEFINE_TRACE(HTMLIFrameElementPermissions) {
   DOMTokenListObserver::trace(visitor);
 }
 
-Vector<WebPermissionType>
+Vector<mojom::blink::PermissionName>
 HTMLIFrameElementPermissions::parseDelegatedPermissions(
     String& invalidTokensErrorMessage) const {
-  Vector<WebPermissionType> permissions;
+  Vector<blink::mojom::blink::PermissionName> permissions;
   unsigned numTokenErrors = 0;
   StringBuilder tokenErrors;
   const SpaceSplitString& tokens = this->tokens();
 
   for (size_t i = 0; i < tokens.size(); ++i) {
-    WebPermissionType type;
+    blink::mojom::blink::PermissionName type;
     if (getPermissionType(tokens[i], &type)) {
       permissions.push_back(type);
     } else {
@@ -86,7 +87,7 @@ HTMLIFrameElementPermissions::parseDelegatedPermissions(
 bool HTMLIFrameElementPermissions::validateTokenValue(
     const AtomicString& tokenValue,
     ExceptionState&) const {
-  WebPermissionType unused;
+  mojom::blink::PermissionName unused;
   return getPermissionType(tokenValue, &unused);
 }
 

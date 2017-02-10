@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMTokenList.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/permissions/WebPermissionType.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ class CORE_EXPORT HTMLIFrameElementPermissions final
 
   ~HTMLIFrameElementPermissions() override;
 
-  Vector<WebPermissionType> parseDelegatedPermissions(
+  Vector<mojom::blink::PermissionName> parseDelegatedPermissions(
       String& invalidTokensErrorMessage) const;
 
   DECLARE_VIRTUAL_TRACE();

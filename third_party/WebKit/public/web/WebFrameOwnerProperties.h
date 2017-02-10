@@ -7,7 +7,8 @@
 
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
-#include "../platform/modules/permissions/WebPermissionType.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-shared.h"
+
 #include <algorithm>
 
 namespace blink {
@@ -22,7 +23,7 @@ struct WebFrameOwnerProperties {
   bool allowFullscreen;
   bool allowPaymentRequest;
   WebString requiredCsp;
-  WebVector<WebPermissionType> delegatedPermissions;
+  WebVector<mojom::PermissionName> delegatedPermissions;
 
   WebFrameOwnerProperties()
       : scrollingMode(ScrollingMode::Auto),
@@ -40,7 +41,7 @@ struct WebFrameOwnerProperties {
       bool allowFullscreen,
       bool allowPaymentRequest,
       const WebString& requiredCsp,
-      const WebVector<WebPermissionType>& delegatedPermissions)
+      const WebVector<mojom::PermissionName>& delegatedPermissions)
       : name(name),
         scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
         marginWidth(marginWidth),

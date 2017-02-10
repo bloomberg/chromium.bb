@@ -30,7 +30,7 @@
 #include "core/html/HTMLIFrameElementSandbox.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/permissions/WebPermissionType.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 
 namespace blink {
 
@@ -77,7 +77,8 @@ class CORE_EXPORT HTMLIFrameElement final
   bool allowFullscreen() const override { return m_allowFullscreen; }
   bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
   AtomicString csp() const override { return m_csp; }
-  const WebVector<WebPermissionType>& delegatedPermissions() const override {
+  const WebVector<mojom::blink::PermissionName>& delegatedPermissions()
+      const override {
     return m_delegatedPermissions;
   }
 
@@ -91,7 +92,7 @@ class CORE_EXPORT HTMLIFrameElement final
   Member<HTMLIFrameElementSandbox> m_sandbox;
   Member<HTMLIFrameElementPermissions> m_permissions;
 
-  WebVector<WebPermissionType> m_delegatedPermissions;
+  WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
 
   ReferrerPolicy m_referrerPolicy;
 };

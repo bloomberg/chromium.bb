@@ -91,7 +91,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool allowFullscreen() const override { return false; }
   bool allowPaymentRequest() const override { return false; }
   AtomicString csp() const override { return nullAtom; }
-  const WebVector<WebPermissionType>& delegatedPermissions() const override;
+  const WebVector<mojom::blink::PermissionName>& delegatedPermissions()
+      const override;
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -359,7 +359,6 @@ source_set("blink_headers") {
     "platform/modules/payments/WebPaymentDetailsModifier.h",
     "platform/modules/payments/WebPaymentItem.h",
     "platform/modules/payments/WebPaymentMethodData.h",
-    "platform/modules/permissions/WebPermissionType.h",
     "platform/modules/presentation/WebPresentationAvailabilityObserver.h",
     "platform/modules/presentation/WebPresentationClient.h",
     "platform/modules/presentation/WebPresentationConnection.h",

@@ -43,7 +43,7 @@ blink::WebFrameOwnerProperties FrameOwnerProperties::ToWebFrameOwnerProperties()
   result.allowPaymentRequest = allow_payment_request;
   result.requiredCsp = blink::WebString::fromUTF8(required_csp);
   result.delegatedPermissions =
-      blink::WebVector<blink::WebPermissionType>(delegated_permissions);
+      blink::WebVector<blink::mojom::PermissionName>(delegated_permissions);
 
   return result;
 }

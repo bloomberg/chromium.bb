@@ -225,9 +225,9 @@ void HTMLFrameOwnerElement::dispatchLoad() {
   dispatchScopedEvent(Event::create(EventTypeNames::load));
 }
 
-const WebVector<WebPermissionType>&
+const WebVector<mojom::blink::PermissionName>&
 HTMLFrameOwnerElement::delegatedPermissions() const {
-  DEFINE_STATIC_LOCAL(WebVector<WebPermissionType>, permissions, ());
+  DEFINE_STATIC_LOCAL(WebVector<mojom::blink::PermissionName>, permissions, ());
   return permissions;
 }
 
