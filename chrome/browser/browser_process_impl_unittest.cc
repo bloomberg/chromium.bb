@@ -7,11 +7,9 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -48,8 +46,6 @@ class BrowserProcessImplTest : public ::testing::Test {
   // The UI thread needs to be alive while BrowserProcessImpl is alive, and is
   // managed separately.
   void StartSecondaryThreads() {
-    scoped_task_scheduler_ = base::MakeUnique<base::test::ScopedTaskScheduler>(
-        base::MessageLoop::current());
     file_thread_->StartIOThread();
     io_thread_->StartIOThread();
   }
@@ -64,7 +60,6 @@ class BrowserProcessImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
     file_thread_.reset();
     base::RunLoop().RunUntilIdle();
-    scoped_task_scheduler_.reset();
   }
 
   BrowserProcessImpl* browser_process_impl() {
@@ -75,7 +70,6 @@ class BrowserProcessImplTest : public ::testing::Test {
   BrowserProcess* stashed_browser_process_;
   base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
-  std::unique_ptr<base::test::ScopedTaskScheduler> scoped_task_scheduler_;
   std::unique_ptr<content::TestBrowserThread> file_thread_;
   std::unique_ptr<content::TestBrowserThread> io_thread_;
   base::CommandLine command_line_;
