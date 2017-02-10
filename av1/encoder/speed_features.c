@@ -457,6 +457,9 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
   if (AOMMIN(cm->width, cm->height) > 1080) {
     sf->use_upsampled_references = 0;
   }
+  if ((AOMMIN(cm->width, cm->height) > 720) && (oxcf->profile != PROFILE_0)) {
+    sf->use_upsampled_references = 0;
+  }
 
   if (oxcf->mode == REALTIME) {
     set_rt_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
