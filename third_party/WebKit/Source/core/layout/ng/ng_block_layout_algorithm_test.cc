@@ -813,8 +813,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
 
 // Verifies that floats can be correctly positioned if they are inside of nested
 // empty blocks.
-// TODO(glebl): Enable with new the float/margins collapsing algorithm.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFloatInsideEmptyBlocks) {
+TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   setBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"
@@ -879,8 +878,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_PositionFloatInsideEmptyBlocks) {
   int empty2_inline_offset = 35;
   EXPECT_THAT(LayoutUnit(empty2_inline_offset), empty2_fragment->LeftOffset());
 
-  ASSERT_EQ(1UL, body_fragment->PositionedFloats().size());
-  auto float_fragment = body_fragment->PositionedFloats().at(0)->fragment;
+  ASSERT_EQ(1UL, container_fragment->PositionedFloats().size());
+  auto float_fragment = container_fragment->PositionedFloats().at(0)->fragment;
   // 10 = float's padding
   EXPECT_THAT(LayoutUnit(10), float_fragment->TopOffset());
   // 25 = empty2's padding(15) + float's padding(10)

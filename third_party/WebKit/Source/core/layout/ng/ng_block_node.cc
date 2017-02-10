@@ -38,10 +38,10 @@ void FragmentPositionUpdated(const NGPhysicalBoxFragment& box_fragment) {
 // Similar to FragmentPositionUpdated but for floats.
 // - Updates layout object's geometric information.
 // - Creates legacy FloatingObject and attached it to the provided parent.
-void FloatingObjectPositionedUpdated(NGFloatingObject* floating_object,
+void FloatingObjectPositionedUpdated(NGFloatingObject* ng_floating_object,
                                      LayoutBox* parent) {
   NGPhysicalBoxFragment* box_fragment =
-      toNGPhysicalBoxFragment(floating_object->fragment.get());
+      toNGPhysicalBoxFragment(ng_floating_object->fragment.get());
   FragmentPositionUpdated(*box_fragment);
 
   LayoutBox* layout_box = toLayoutBox(box_fragment->GetLayoutObject());
@@ -50,9 +50,7 @@ void FloatingObjectPositionedUpdated(NGFloatingObject* floating_object,
   if (parent && parent->isLayoutBlockFlow()) {
     FloatingObject* floating_object =
         toLayoutBlockFlow(parent)->insertFloatingObject(*layout_box);
-    // TODO(glebl): Fix floating_object's inline offset if it's attached to
-    // parent != layout_box_->parent
-    floating_object->setX(box_fragment->LeftOffset());
+    floating_object->setX(ng_floating_object->left_offset);
     floating_object->setY(box_fragment->TopOffset());
     floating_object->setIsPlaced(true);
   }
