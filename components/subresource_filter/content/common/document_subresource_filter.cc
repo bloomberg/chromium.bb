@@ -159,8 +159,40 @@ blink::WebDocumentSubresourceFilter::LoadPolicy
 DocumentSubresourceFilter::getLoadPolicy(
     const blink::WebURL& resourceUrl,
     blink::WebURLRequest::RequestContext request_context) {
-  TRACE_EVENT1("loader", "DocumentSubresourceFilter::getLoadPolicy", "url",
-               resourceUrl.string().utf8());
+  ++statistics_.num_loads_total;
+
+  if (activation_state_.filtering_disabled_for_document)
+    return Allow;
+  if (resourceUrl.protocolIs(url::kDataScheme))
+    return Allow;
+
+  // TODO(pkalinnikov): Would be good to avoid converting to GURL.
+  return EvaluateLoadPolicy(GURL(resourceUrl), ToElementType(request_context));
+}
+
+blink::WebDocumentSubresourceFilter::LoadPolicy
+DocumentSubresourceFilter::GetLoadPolicyForSubdocument(
+    const GURL& subdocument_url) {
+  ++statistics_.num_loads_total;
+
+  if (activation_state_.filtering_disabled_for_document)
+    return Allow;
+  if (subdocument_url.SchemeIs(url::kDataScheme))
+    return Allow;
+  return EvaluateLoadPolicy(subdocument_url, proto::ELEMENT_TYPE_SUBDOCUMENT);
+}
+
+void DocumentSubresourceFilter::reportDisallowedLoad() {
+  if (first_disallowed_load_callback_.is_null())
+    return;
+  std::move(first_disallowed_load_callback_).Run();
+}
+
+blink::WebDocumentSubresourceFilter::LoadPolicy
+DocumentSubresourceFilter::EvaluateLoadPolicy(const GURL& resource_url,
+                                              proto::ElementType element_type) {
+  TRACE_EVENT1("loader", "DocumentSubresourceFilter::EvaluateLoadPolicy", "url",
+               resource_url.spec());
 
   auto wall_duration_timer = ScopedTimers::StartIf(
       activation_state_.measure_performance &&
@@ -177,18 +209,10 @@ DocumentSubresourceFilter::getLoadPolicy(
             "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);
       });
 
-  ++statistics_.num_loads_total;
-
-  if (activation_state_.filtering_disabled_for_document)
-    return Allow;
-
-  if (resourceUrl.protocolIs(url::kDataScheme))
-    return Allow;
-
   ++statistics_.num_loads_evaluated;
   DCHECK(document_origin_);
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
-          GURL(resourceUrl), *document_origin_, ToElementType(request_context),
+          resource_url, *document_origin_, element_type,
           activation_state_.generic_blocking_rules_disabled)) {
     ++statistics_.num_loads_matching_rules;
     if (activation_state_.activation_level == ActivationLevel::ENABLED) {
@@ -199,13 +223,6 @@ DocumentSubresourceFilter::getLoadPolicy(
     }
   }
   return Allow;
-}
-
-void DocumentSubresourceFilter::reportDisallowedLoad() {
-  if (first_disallowed_load_callback_.is_null())
-    return;
-
-  std::move(first_disallowed_load_callback_).Run();
 }
 
 }  // namespace subresource_filter

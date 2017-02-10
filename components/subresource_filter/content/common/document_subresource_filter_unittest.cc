@@ -98,11 +98,15 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
             filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
   EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
             filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
+  EXPECT_EQ(blink::WebDocumentSubresourceFilter::WouldDisallow,
+            filter.GetLoadPolicyForSubdocument(GURL(kTestAlphaURL)));
+  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+            filter.GetLoadPolicyForSubdocument(GURL(kTestBetaURL)));
 
   const auto& statistics = filter.statistics();
-  EXPECT_EQ(3, statistics.num_loads_total);
-  EXPECT_EQ(2, statistics.num_loads_evaluated);
-  EXPECT_EQ(1, statistics.num_loads_matching_rules);
+  EXPECT_EQ(5, statistics.num_loads_total);
+  EXPECT_EQ(4, statistics.num_loads_evaluated);
+  EXPECT_EQ(2, statistics.num_loads_matching_rules);
   EXPECT_EQ(0, statistics.num_loads_disallowed);
 
   EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
@@ -116,18 +120,23 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
     activation_state.measure_performance = measure_performance;
     DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset(),
                                      base::OnceClosure());
+
     EXPECT_EQ(blink::WebDocumentSubresourceFilter::Disallow,
               filter.getLoadPolicy(GURL(kTestAlphaURL), request_context));
     EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
               filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
     EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
               filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
+    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Disallow,
+              filter.GetLoadPolicyForSubdocument(GURL(kTestAlphaURL)));
+    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+              filter.GetLoadPolicyForSubdocument(GURL(kTestBetaURL)));
 
     const auto& statistics = filter.statistics();
-    EXPECT_EQ(3, statistics.num_loads_total);
-    EXPECT_EQ(2, statistics.num_loads_evaluated);
-    EXPECT_EQ(1, statistics.num_loads_matching_rules);
-    EXPECT_EQ(1, statistics.num_loads_disallowed);
+    EXPECT_EQ(5, statistics.num_loads_total);
+    EXPECT_EQ(4, statistics.num_loads_evaluated);
+    EXPECT_EQ(2, statistics.num_loads_matching_rules);
+    EXPECT_EQ(2, statistics.num_loads_disallowed);
 
     if (!measure_performance) {
       EXPECT_TRUE(statistics.evaluation_total_cpu_duration.is_zero());

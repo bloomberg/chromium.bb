@@ -19,6 +19,7 @@
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
+#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -77,7 +78,12 @@ class DocumentSubresourceFilter
                            blink::WebURLRequest::RequestContext) override;
   void reportDisallowedLoad() override;
 
+  LoadPolicy GetLoadPolicyForSubdocument(const GURL& subdocument_url);
+
  private:
+  LoadPolicy EvaluateLoadPolicy(const GURL& resource_url,
+                                proto::ElementType element_type);
+
   const ActivationState activation_state_;
   const scoped_refptr<const MemoryMappedRuleset> ruleset_;
   const IndexedRulesetMatcher ruleset_matcher_;
