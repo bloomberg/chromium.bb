@@ -12,5 +12,5 @@ package org.chromium.chrome.browser.widget.displaystyle;
  * @see org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter
  */
 public interface DisplayStyleObserver {
-    void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle);
+    void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle);
 }

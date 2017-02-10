@@ -4,42 +4,30 @@
 
 package org.chromium.chrome.browser.widget.displaystyle;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.view.View;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.widget.Toast;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Exposes general configuration info about the display style for a given reference View.
  */
 public class UiConfig {
-    /** The different supported UI setups. Observers can register to be notified of changes.*/
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DISPLAY_STYLE_UNDEFINED, DISPLAY_STYLE_NARROW, DISPLAY_STYLE_REGULAR,
-            DISPLAY_STYLE_WIDE})
-    public @interface DisplayStyle {}
-    public static final int DISPLAY_STYLE_UNDEFINED = -1;
-    public static final int DISPLAY_STYLE_NARROW = 0;
-    public static final int DISPLAY_STYLE_REGULAR = 1;
-    public static final int DISPLAY_STYLE_WIDE = 2;
 
     public static final int REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP = 360;
     public static final int WIDE_DISPLAY_STYLE_MIN_WIDTH_DP = 600;
+    public static final int REGULAR_DISPLAY_STYLE_MIN_HEIGHT_DP = 360;
 
     private static final String TAG = "DisplayStyle";
     private static final boolean DEBUG = false;
 
-    @DisplayStyle
-    private int mCurrentDisplayStyle;
+    private DisplayStyle mCurrentDisplayStyle;
 
     private final List<DisplayStyleObserver> mObservers = new ArrayList<>();
     private final Context mContext;
@@ -79,54 +67,118 @@ public class UiConfig {
     }
 
     /**
+     * Returns the currently used display style.
+     */
+    public DisplayStyle getCurrentDisplayStyle() {
+        return mCurrentDisplayStyle;
+    }
+
+    /**
      * Sets the display style, notifying observers of changes. Should only be used in testing.
      */
     @VisibleForTesting
-    public void setDisplayStyleForTesting(@DisplayStyle int displayStyle) {
+    public void setDisplayStyleForTesting(DisplayStyle displayStyle) {
         updateDisplayStyle(displayStyle);
     }
 
-    private void updateDisplayStyle(@DisplayStyle int displayStyle) {
+    private void updateDisplayStyle(DisplayStyle displayStyle) {
         mCurrentDisplayStyle = displayStyle;
         for (DisplayStyleObserver observer : mObservers) {
             observer.onDisplayStyleChanged(displayStyle);
         }
     }
 
-    /**
-     * Returns the currently used display style.
-     */
-    @DisplayStyle
-    public int getCurrentDisplayStyle() {
-        return mCurrentDisplayStyle;
+    private DisplayStyle computeDisplayStyleForCurrentConfig() {
+        int widthDp = mContext.getResources().getConfiguration().screenWidthDp;
+        int heightDp = mContext.getResources().getConfiguration().screenHeightDp;
+
+        @HorizontalDisplayStyle
+        int newHorizontalDisplayStyle;
+        if (widthDp < REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP) {
+            newHorizontalDisplayStyle = HorizontalDisplayStyle.NARROW;
+        } else if (widthDp >= WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) {
+            newHorizontalDisplayStyle = HorizontalDisplayStyle.WIDE;
+        } else {
+            newHorizontalDisplayStyle = HorizontalDisplayStyle.REGULAR;
+        }
+
+        @VerticalDisplayStyle
+        int newVerticalDisplayStyle =
+                heightDp < REGULAR_DISPLAY_STYLE_MIN_HEIGHT_DP ? VerticalDisplayStyle.FLAT
+                                                               : VerticalDisplayStyle.REGULAR;
+
+        final DisplayStyle displayStyle =
+                new DisplayStyle(newHorizontalDisplayStyle, newVerticalDisplayStyle);
+        if (DEBUG) debug(displayStyle, widthDp, heightDp);
+
+        return displayStyle;
     }
 
-    @DisplayStyle
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("DefaultLocale")
-    private int computeDisplayStyleForCurrentConfig() {
-        int widthDp = mContext.getResources().getConfiguration().screenWidthDp;
+    private void debug(DisplayStyle displayStyle, int widthDp, int heightDp) {
+        String horizontalStyleName;
+        String verticalStyleName;
 
-        String debugString;
-
-        @DisplayStyle
-        int newDisplayStyle;
-        if (widthDp < REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP) {
-            newDisplayStyle = DISPLAY_STYLE_NARROW;
-            if (DEBUG) debugString = String.format("DISPLAY_STYLE_NARROW (w=%ddp)", widthDp);
-        } else if (widthDp >= WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) {
-            newDisplayStyle = DISPLAY_STYLE_WIDE;
-            if (DEBUG) debugString = String.format("DISPLAY_STYLE_WIDE (w=%ddp)", widthDp);
-        } else {
-            newDisplayStyle = DISPLAY_STYLE_REGULAR;
-            if (DEBUG) debugString = String.format("DISPLAY_STYLE_REGULAR (w=%ddp)", widthDp);
+        switch (displayStyle.horizontal) {
+            case HorizontalDisplayStyle.NARROW:
+                horizontalStyleName = "NARROW";
+                break;
+            case HorizontalDisplayStyle.REGULAR:
+                horizontalStyleName = "REGULAR";
+                break;
+            case HorizontalDisplayStyle.WIDE:
+                horizontalStyleName = "WIDE";
+                break;
+            default:
+                throw new IllegalStateException();
         }
 
-        if (DEBUG) {
-            Log.d(TAG, debugString);
-            Toast.makeText(mContext, debugString, Toast.LENGTH_SHORT).show();
+        switch (displayStyle.vertical) {
+            case VerticalDisplayStyle.FLAT:
+                verticalStyleName = "FLAT";
+                break;
+            case VerticalDisplayStyle.REGULAR:
+                verticalStyleName = "REGULAR";
+                break;
+            default:
+                throw new IllegalStateException();
         }
 
-        return newDisplayStyle;
+        String debugString = String.format(Locale.US, "%s | %s (w=%ddp, h=%ddp)",
+                horizontalStyleName, verticalStyleName, widthDp, heightDp);
+        Log.d(TAG, debugString);
+        Toast.makeText(mContext, debugString, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * The different supported UI setups. {@link DisplayStyleObserver} can register to be notified
+     * of changes.
+     * @see HorizontalDisplayStyle
+     * @see VerticalDisplayStyle
+     */
+    public static final class DisplayStyle {
+        @HorizontalDisplayStyle
+        public final int horizontal;
+        @VerticalDisplayStyle
+        public final int vertical;
+
+        public DisplayStyle(
+                @HorizontalDisplayStyle int horizontal, @VerticalDisplayStyle int vertical) {
+            this.horizontal = horizontal;
+            this.vertical = vertical;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DisplayStyle that = (DisplayStyle) o;
+            return horizontal == that.horizontal && vertical == that.vertical;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * horizontal + vertical;
+        }
     }
 }

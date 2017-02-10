@@ -31,7 +31,9 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -109,7 +111,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                         mRecyclerView.getResources().getDisplayMetrics());
                 mContentView.setLayoutParams(params);
 
-                mUiConfig.setDisplayStyleForTesting(UiConfig.DISPLAY_STYLE_NARROW);
+                mUiConfig.setDisplayStyleForTesting(new UiConfig.DisplayStyle(
+                        HorizontalDisplayStyle.NARROW, VerticalDisplayStyle.REGULAR));
             }
         });
 

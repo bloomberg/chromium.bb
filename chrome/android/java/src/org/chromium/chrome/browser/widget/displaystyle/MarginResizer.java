@@ -17,7 +17,7 @@ public class MarginResizer implements DisplayStyleObserver {
     private int mWideMarginSizePixels;
     private final View mView;
 
-    @UiConfig.DisplayStyle
+    @HorizontalDisplayStyle
     private int mCurrentDisplayStyle;
 
     /**
@@ -25,8 +25,8 @@ public class MarginResizer implements DisplayStyleObserver {
      * {@link DisplayStyleObserverAdapter} that will take care of invoking it when appropriate.
      * @param view The view that will have its margins resized.
      * @param config The UiConfig object to subscribe to.
-     * @param defaultMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_REGULAR}.
-     * @param wideMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     * @param defaultMarginPixels Margin size to use in {@link HorizontalDisplayStyle#REGULAR}.
+     * @param wideMarginPixels Margin size to use in {@link HorizontalDisplayStyle#WIDE}.
      * @return The newly created {@link MarginResizer}.
      */
     public static MarginResizer createWithViewAdapter(View view, UiConfig config,
@@ -44,16 +44,16 @@ public class MarginResizer implements DisplayStyleObserver {
     }
 
     @Override
-    public void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle) {
-        mCurrentDisplayStyle = newDisplayStyle;
+    public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
+        mCurrentDisplayStyle = newDisplayStyle.horizontal;
         updateMargins();
     }
 
     /**
      * Sets the lateral margins on the associated view, using the appropriate value depending on
      * the current display style.
-     * @param defaultMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_REGULAR}.
-     * @param wideMarginPixels Margin size to use in {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     * @param defaultMarginPixels Margin size to use in {@link HorizontalDisplayStyle#REGULAR}.
+     * @param wideMarginPixels Margin size to use in {@link HorizontalDisplayStyle#WIDE}.
      */
     public void setMargins(int defaultMarginPixels, int wideMarginPixels) {
         mDefaultMarginSizePixels = defaultMarginPixels;
@@ -63,7 +63,7 @@ public class MarginResizer implements DisplayStyleObserver {
 
     private void updateMargins() {
         MarginLayoutParams layoutParams = (MarginLayoutParams) mView.getLayoutParams();
-        if (mCurrentDisplayStyle == UiConfig.DISPLAY_STYLE_WIDE) {
+        if (mCurrentDisplayStyle == HorizontalDisplayStyle.WIDE) {
             layoutParams.setMargins(mWideMarginSizePixels, layoutParams.topMargin,
                     mWideMarginSizePixels, layoutParams.bottomMargin);
         } else {

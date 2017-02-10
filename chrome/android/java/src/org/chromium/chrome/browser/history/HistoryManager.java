@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -112,8 +111,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mToolbarShadow = (FadingShadowView) mSelectableListLayout.findViewById(R.id.shadow);
         mToolbarShadow.setVisibility(View.GONE);
 
-        // 4. Configure values for {@link UiConfig#DISPLAY_STYLE_WIDE} and
-        //    {@link UiConfig#DISPLAY_STYLE_REGULAR}.
+        // 4. Configure values for HorizontalDisplayStyle.WIDE and HorizontalDisplayStyle.REGULAR.
         // The list item shadow is part of the drawable nine-patch used as the list item background.
         // Use the dimensions of the shadow (from the drawable's padding) to calculate the margins
         // to use in the regular and wide display styles.
@@ -124,11 +122,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 R.dimen.card_corner_radius);
 
         assert listItemShadow.left == listItemShadow.right;
-        // The list item shadow size is used in {@link UiConfig#DISPLAY_STYLE_WIDE} to visually
-        // align other elements with the edge of the list items.
+        // The list item shadow size is used in HorizontalDisplayStyle.WIDE to visually align other
+        // elements with the edge of the list items.
         mListItemLateralShadowSizePx = listItemShadow.left;
-        // A negative margin is used in {@link UiConfig#DISPLAY_STYLE_REGULAR} to hide the lateral
-        // shadow.
+        // A negative margin is used in HorizontalDisplayStyle.REGULAR to hide the lateral shadow.
         mDefaultLateralListItemMarginPx = -(listItemShadow.left + cardCornerRadius);
 
         mSelectableListLayout.setHasWideDisplayStyle(mListItemLateralShadowSizePx);
@@ -338,17 +335,18 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
     /**
      * @return The px size of the lateral shadow in the 9-patch used for the list item background.
-     *         This value should be used in {@link UiConfig#DISPLAY_STYLE_REGULAR} to visually align
+     *         This value should be used in the regular horizontal display style to visually align
      *         elements with the edge of the list items.
+     * @see org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle#REGULAR
      */
     public int getListItemLateralShadowSizePx() {
         return mListItemLateralShadowSizePx;
     }
 
     /**
-     * @return The start and end margin for list items when in
-     *         {@link UiConfig#DISPLAY_STYLE_REGULAR}. This value should be used to hide the lateral
-     *         shadows on list items.
+     * @return The start and end margin for list items when in the regular horizontal display style.
+     *         This value should be used to hide the lateral shadows on list items.
+     * @see org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle#REGULAR
      */
     public int getDefaultLateralListItemMarginPx() {
         return mDefaultLateralListItemMarginPx;

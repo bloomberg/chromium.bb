@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.UiUtils;
@@ -399,7 +400,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
      * adding padding to both sides.
      *
      * @param wideDisplayLateralOffsetPx The offset to use for the lateral padding when in
-     *                                   {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     *                                   {@link HorizontalDisplayStyle#WIDE}.
      */
     public void setHasWideDisplayStyle(int wideDisplayLateralOffsetPx, UiConfig uiConfig) {
         mWideDisplayLateralOffsetPx = wideDisplayLateralOffsetPx;
@@ -415,7 +416,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     }
 
     @Override
-    public void onDisplayStyleChanged(int newDisplayStyle) {
+    public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
         int padding =
                 SelectableListLayout.getPaddingForDisplayStyle(newDisplayStyle, getResources());
         int paddingStartOffset = 0;
@@ -425,7 +426,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         int contentInsetEnd = mOriginalContentInsetEnd;
         int contentInsetEndWithActions = mOriginalContentInsetEndWithActions;
 
-        if (newDisplayStyle == UiConfig.DISPLAY_STYLE_WIDE) {
+        if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE) {
             paddingStartOffset = mWideDisplayLateralOffsetPx;
 
             // The title and nav buttons are inset in the normal display style. In the wide display

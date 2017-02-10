@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -39,7 +40,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  *   routed through {@link #onCardTapped()} for subclasses to override.
  *
  * - Cards will get some lateral margins when the viewport is sufficiently wide.
- *   (see {@link UiConfig#DISPLAY_STYLE_WIDE})
+ *   (see {@link HorizontalDisplayStyle#WIDE})
  *
  * Note: If a subclass overrides {@link #onBindViewHolder()}, it should call the
  * parent implementation to reset the private state when a card is recycled.
@@ -234,6 +235,7 @@ public abstract class CardViewHolder
         // By default the apparent distance between two cards is the sum of the bottom and top
         // height of their shadows. We want |mCardGap| instead, so we set the bottom margin to
         // the difference.
+        // noinspection ResourceType
         getParams().bottomMargin =
                 hasCardBelow ? (mCardGap - (mCardShadow.top + mCardShadow.bottom)) : 0;
     }
@@ -285,7 +287,7 @@ public abstract class CardViewHolder
         // Modify the padding so as the margin increases, the padding decreases, keeping the card's
         // contents in the same position. The top and bottom remain the same.
         int lateralPadding;
-        if (mUiConfig.getCurrentDisplayStyle() != UiConfig.DISPLAY_STYLE_WIDE) {
+        if (mUiConfig.getCurrentDisplayStyle().horizontal != HorizontalDisplayStyle.WIDE) {
             lateralPadding = peekPadding;
         } else {
             lateralPadding = mMaxPeekPadding;

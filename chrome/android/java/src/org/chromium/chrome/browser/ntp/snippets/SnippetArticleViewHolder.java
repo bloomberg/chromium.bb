@@ -38,7 +38,9 @@ import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -103,7 +105,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mUiConfig = uiConfig;
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
             @Override
-            public void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle) {
+            public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
                 updateLayout();
             }
         });
@@ -154,39 +156,60 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      * Updates the layout taking into account screen dimensions and the type of snippet displayed.
      */
     private void updateLayout() {
-        boolean narrow = mUiConfig.getCurrentDisplayStyle() == UiConfig.DISPLAY_STYLE_NARROW;
-        boolean minimal =
-                mCategoryInfo.getCardLayout() == ContentSuggestionsCardLayout.MINIMAL_CARD;
+        final int horizontalStyle = mUiConfig.getCurrentDisplayStyle().horizontal;
+        final int verticalStyle = mUiConfig.getCurrentDisplayStyle().vertical;
+        final int layout = mCategoryInfo.getCardLayout();
 
-        // If the screen is narrow or we are using the minimal layout, hide the article snippet.
-        boolean hideSnippet = narrow || minimal;
-        mArticleSnippetTextView.setVisibility(hideSnippet ? View.GONE : View.VISIBLE);
+        boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
+        boolean showThumbnail = shouldShowThumbnail(horizontalStyle, verticalStyle, layout);
 
-        // If we are using minimal layout, hide the thumbnail.
-        boolean hideThumbnail = minimal;
-        mThumbnailView.setVisibility(hideThumbnail ? View.GONE : View.VISIBLE);
-
-        // If the screen is narrow, increase the number of lines in the header.
-        mHeadlineTextView.setMaxLines(narrow ? 4 : 2);
-
-        // If the screen is narrow, ensure a minimum number of lines to prevent overlap between the
-        // publisher and the header.
-        mHeadlineTextView.setMinLines((narrow && !hideThumbnail) ? 3 : 1);
+        mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
+        mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
+        mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
+        mHeadlineTextView.setMinLines(getHeaderMinLines(showDescription, showThumbnail));
 
         // If we aren't showing the article snippet, reduce the top margin for publisher text.
         ViewGroup.MarginLayoutParams params =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
 
-        int topMargin = mPublisherBar.getResources().getDimensionPixelSize(
-                hideSnippet ? R.dimen.snippets_publisher_margin_top_without_article_snippet
-                            : R.dimen.snippets_publisher_margin_top_with_article_snippet);
-
-        params.setMargins(params.leftMargin,
-                          topMargin,
-                          params.rightMargin,
-                          params.bottomMargin);
-
+        params.topMargin = mPublisherBar.getResources().getDimensionPixelSize(showThumbnail
+                        ? R.dimen.snippets_publisher_margin_top_with_article_snippet
+                        : R.dimen.snippets_publisher_margin_top_without_article_snippet);
         mPublisherBar.setLayoutParams(params);
+    }
+
+    private boolean shouldShowDescription(int horizontalStyle, int verticalStyle, int layout) {
+        // Minimal cards don't have a description.
+        if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
+
+        // When the screen is too small (narrow or flat) we don't show the description to have more
+        // space for the header.
+        if (horizontalStyle == HorizontalDisplayStyle.NARROW) return false;
+        if (verticalStyle == VerticalDisplayStyle.FLAT) return false;
+
+        return true;
+    }
+
+    private boolean shouldShowThumbnail(int horizontalStyle, int verticalStyle, int layout) {
+        // Minimal cards don't have a thumbnail
+        if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
+
+        return true;
+    }
+
+    private int getHeaderMaxLines(int horizontalStyle, int verticalStyle, int layout) {
+        // When the screen is too small (narrow or flat) we don't show the description so we have
+        // more space for the header.
+        if (verticalStyle == VerticalDisplayStyle.FLAT) return 3;
+        if (horizontalStyle == HorizontalDisplayStyle.NARROW) return 4;
+        return 2;
+    }
+
+    private int getHeaderMinLines(boolean showDescription, boolean showThumbnail) {
+        // When we have a thumbnail, we try to ensure we have enough content to push the
+        // attribution line below it. So when the description is hidden, we have to force the
+        // header to reserve that space.
+        return showThumbnail && !showDescription ? 3 : 1;
     }
 
     private static String getAttributionString(SnippetArticle article) {

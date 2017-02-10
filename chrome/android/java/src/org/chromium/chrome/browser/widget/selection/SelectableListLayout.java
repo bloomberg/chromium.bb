@@ -27,7 +27,9 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig.DisplayStyle;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import javax.annotation.Nullable;
@@ -195,7 +197,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
      * This method should be called after the toolbar and RecyclerView are initialized.
      *
      * @param wideDisplayToolbarLateralOffsetPx The offset to use for the toolbar's lateral padding
-     *                                          when in {@link UiConfig#DISPLAY_STYLE_WIDE}.
+     *                                          when in {@link HorizontalDisplayStyle#WIDE}.
      */
     public void setHasWideDisplayStyle(int wideDisplayToolbarLateralOffsetPx) {
         mUiConfig = new UiConfig(this);
@@ -212,7 +214,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
     }
 
     @Override
-    public void onDisplayStyleChanged(int newDisplayStyle) {
+    public void onDisplayStyleChanged(DisplayStyle newDisplayStyle) {
         int padding = getPaddingForDisplayStyle(newDisplayStyle, getResources());
 
         ApiCompatibilityUtils.setPaddingRelative(mRecyclerView,
@@ -221,13 +223,13 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
     }
 
     /**
-     * @param displayStyle See UiConfig.DisplayStyle.
+     * @param displayStyle The current display style.
      * @param resources The {@link Resources} used to retrieve configuration and display metrics.
      * @return The lateral padding to use for the current display style.
      */
-    public static int getPaddingForDisplayStyle(int displayStyle, Resources resources) {
+    public static int getPaddingForDisplayStyle(DisplayStyle displayStyle, Resources resources) {
         int padding = 0;
-        if (displayStyle == UiConfig.DISPLAY_STYLE_WIDE) {
+        if (displayStyle.horizontal == HorizontalDisplayStyle.WIDE) {
             int screenWidthDp = resources.getConfiguration().screenWidthDp;
             float dpToPx = resources.getDisplayMetrics().density;
             padding = (int) (((screenWidthDp - UiConfig.WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) / 2.f)

@@ -16,15 +16,14 @@ public class DisplayStyleObserverAdapter
     private final DisplayStyleObserver mObserver;
 
     /** Current display style, gets updated as the UiConfig detects changes and notifies us. */
-    @UiConfig.DisplayStyle
-    private int mCurrentDisplayStyle;
+    private UiConfig.DisplayStyle mCurrentDisplayStyle;
 
     /**
      * Latest value that we transmitted to the adapted observer. If we didn't transfer any yet,
-     * the value is null. @see UiConfig.DisplayStyle.
+     * the value is {@code null}.
+     * @see UiConfig.DisplayStyle
      */
-    @UiConfig.DisplayStyle
-    private Integer mNotifiedDisplayStyle;
+    private UiConfig.DisplayStyle mNotifiedDisplayStyle;
 
     private boolean mIsViewAttached;
 
@@ -50,11 +49,12 @@ public class DisplayStyleObserverAdapter
     }
 
     @Override
-    public void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle) {
+    public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
+        assert newDisplayStyle != null;
         mCurrentDisplayStyle = newDisplayStyle;
 
         if (!mIsViewAttached) return;
-        if (mNotifiedDisplayStyle != null && mCurrentDisplayStyle == mNotifiedDisplayStyle) return;
+        if (mCurrentDisplayStyle.equals(mNotifiedDisplayStyle)) return;
 
         mNotifiedDisplayStyle = mCurrentDisplayStyle;
 
