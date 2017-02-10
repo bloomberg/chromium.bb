@@ -76,6 +76,9 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSubresourceFilter.store",
                GetUrlSubresourceFilterId(), SB_THREAT_TYPE_SUBRESOURCE_FILTER),
   });
+  // NOTE(vakh): IMPORTANT: Please make sure that the server already supports
+  // any list before adding it to this list otherwise the prefix updates break
+  // for all Canary users.
 }
 
 // Returns the severity information about a given SafeBrowsing list. The lowest
