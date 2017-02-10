@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "skia/ext/analysis_canvas.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace {
