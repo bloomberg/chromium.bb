@@ -34,7 +34,6 @@ CookieNotificationBridge::~CookieNotificationBridge() {
 
 void CookieNotificationBridge::OnNotificationReceived(
     NSNotification* notification) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK([[notification name]
       isEqualToString:NSHTTPCookieManagerCookiesChangedNotification]);
   web::WebThread::PostTask(

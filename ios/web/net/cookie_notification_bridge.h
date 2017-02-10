@@ -7,7 +7,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
 
 @class NSNotification;
 
@@ -22,9 +21,8 @@ class CookieNotificationBridge {
   ~CookieNotificationBridge();
 
  private:
-  void OnNotificationReceived(NSNotification* notification);
+  static void OnNotificationReceived(NSNotification* notification);
   base::scoped_nsprotocol<id> observer_;
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieNotificationBridge);
 };
