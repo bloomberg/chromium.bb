@@ -73,24 +73,24 @@ class WebCString {
   // Returns 0 if both strings are equals, a value greater than zero if the
   // first character that does not match has a greater value in this string
   // than in |other|, or a value less than zero to indicate the opposite.
-  BLINK_COMMON_EXPORT int compare(const WebCString& other) const;
+  BLINK_PLATFORM_EXPORT int compare(const WebCString& other) const;
 
-  BLINK_COMMON_EXPORT void reset();
-  BLINK_COMMON_EXPORT void assign(const WebCString&);
-  BLINK_COMMON_EXPORT void assign(const char* data, size_t len);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebCString&);
+  BLINK_PLATFORM_EXPORT void assign(const char* data, size_t len);
 
-  BLINK_COMMON_EXPORT size_t length() const;
-  BLINK_COMMON_EXPORT const char* data() const;
+  BLINK_PLATFORM_EXPORT size_t length() const;
+  BLINK_PLATFORM_EXPORT const char* data() const;
 
   bool isEmpty() const { return !length(); }
   bool isNull() const { return m_private.isNull(); }
 
-  BLINK_COMMON_EXPORT WebString utf16() const;
+  BLINK_PLATFORM_EXPORT WebString utf16() const;
 
 #if INSIDE_BLINK
-  BLINK_COMMON_EXPORT WebCString(const WTF::CString&);
-  BLINK_COMMON_EXPORT WebCString& operator=(const WTF::CString&);
-  BLINK_COMMON_EXPORT operator WTF::CString() const;
+  BLINK_PLATFORM_EXPORT WebCString(const WTF::CString&);
+  BLINK_PLATFORM_EXPORT WebCString& operator=(const WTF::CString&);
+  BLINK_PLATFORM_EXPORT operator WTF::CString() const;
 #else
   WebCString(const std::string& s) { assign(s.data(), s.length()); }
 
@@ -112,7 +112,7 @@ class WebCString {
 #endif
 
  private:
-  BLINK_COMMON_EXPORT void assign(WTF::CStringImpl*);
+  BLINK_PLATFORM_EXPORT void assign(WTF::CStringImpl*);
   WebPrivatePtr<WTF::CStringImpl> m_private;
 };
 

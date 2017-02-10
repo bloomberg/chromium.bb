@@ -24,7 +24,6 @@ component("blink_common") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
   sources = [
-    "exported/WebCString.cpp",
     "exported/WebString.cpp",
   ]
 
@@ -497,6 +496,7 @@ component("platform") {
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
     "exported/WebBlobData.cpp",
+    "exported/WebCString.cpp",
     "exported/WebCache.cpp",
     "exported/WebCanvasCaptureHandler.cpp",
     "exported/WebCoalescedInputEvent.cpp",
