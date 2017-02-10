@@ -5,7 +5,6 @@
 #ifndef SerializedScriptValueFactory_h
 #define SerializedScriptValueFactory_h
 
-#include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"

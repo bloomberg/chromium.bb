@@ -34,7 +34,6 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/Transferables.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -205,7 +204,7 @@ static void accumulateArrayBuffersForAllWorlds(
   }
 }
 
-std::unique_ptr<ImageBitmapContentsArray>
+std::unique_ptr<SerializedScriptValue::ImageBitmapContentsArray>
 SerializedScriptValue::transferImageBitmapContents(
     v8::Isolate* isolate,
     const ImageBitmapArray& imageBitmaps,
@@ -391,7 +390,7 @@ bool SerializedScriptValue::extractTransferables(
   return true;
 }
 
-std::unique_ptr<ArrayBufferContentsArray>
+std::unique_ptr<SerializedScriptValue::ArrayBufferContentsArray>
 SerializedScriptValue::transferArrayBufferContents(
     v8::Isolate* isolate,
     const ArrayBufferArray& arrayBuffers,
