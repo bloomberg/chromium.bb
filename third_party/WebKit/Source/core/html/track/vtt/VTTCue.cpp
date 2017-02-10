@@ -44,7 +44,7 @@
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/html/track/vtt/VTTParser.h"
-#include "core/html/track/vtt/VTTRegionList.h"
+#include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTScanner.h"
 #include "core/layout/LayoutVTTCue.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -472,12 +472,11 @@ DocumentFragment* VTTCue::getCueAsHTML() {
   return clonedFragment;
 }
 
-void VTTCue::setRegionId(const String& regionId) {
-  if (m_regionId == regionId)
+void VTTCue::setRegion(VTTRegion* region) {
+  if (m_region == region)
     return;
-
   cueWillChange();
-  m_regionId = regionId;
+  m_region = region;
   cueDidChange();
 }
 
@@ -812,10 +811,7 @@ VTTCueBox* VTTCue::getDisplayTree() {
   m_cueBackgroundBox->removeChildren();
   m_vttNodeTree->cloneChildNodes(m_cueBackgroundBox.get());
 
-  // TODO(foolip): The region identifier may be non-empty without there being
-  // a corresponding region, in which case this VTTCueBox will be added
-  // directly to the text track container in updateDisplay().
-  if (regionId().isEmpty()) {
+  if (!region()) {
     VTTDisplayParameters displayParameters = calculateDisplayParameters();
     m_displayTree->applyCSSProperties(displayParameters);
   } else {
@@ -832,11 +828,9 @@ VTTCueBox* VTTCue::getDisplayTree() {
 }
 
 void VTTCue::removeDisplayTree(RemovalNotification removalNotification) {
-  if (removalNotification == NotifyRegion && track()->regions()) {
+  if (region() && removalNotification == NotifyRegion) {
     // The region needs to be informed about the cue removal.
-    VTTRegion* region = track()->regions()->getRegionById(m_regionId);
-    if (region)
-      region->willRemoveVTTCueBox(m_displayTree.get());
+    region()->willRemoveVTTCueBox(m_displayTree);
   }
 
   if (m_displayTree)
@@ -867,29 +861,20 @@ void VTTCue::updateDisplay(HTMLDivElement& container) {
     UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotMiddle);
 
   VTTCueBox* displayBox = getDisplayTree();
-  VTTRegion* region = 0;
-  if (track()->regions())
-    region = track()->regions()->getRegionById(regionId());
-
-  if (!region) {
-    // If cue has an empty region identifier or there is no WebVTT region
-    // whose region identifier is identical to cue's region identifier, run
-    // the following substeps:
+  if (!region()) {
     if (displayBox->hasChildren() && !container.contains(displayBox)) {
       // Note: the display tree of a cue is removed when the active flag of the
       // cue is unset.
       container.appendChild(displayBox);
     }
   } else {
-    // Let region be the WebVTT region whose region identifier matches the
-    // region identifier of cue.
-    HTMLDivElement* regionNode = region->getDisplayTree(document());
+    HTMLDivElement* regionNode = region()->getDisplayTree(document());
 
     // Append the region to the viewport, if it was not already.
     if (!container.contains(regionNode))
       container.appendChild(regionNode);
 
-    region->appendVTTCueBox(displayBox);
+    region()->appendVTTCueBox(displayBox);
   }
 }
 
@@ -934,7 +919,8 @@ static bool scanPercentage(VTTScanner& input, float& number) {
   return input.scanPercentage(number) && !isInvalidPercentage(number);
 }
 
-void VTTCue::parseSettings(const String& inputString) {
+void VTTCue::parseSettings(const VTTRegionMap* regionMap,
+                           const String& inputString) {
   VTTScanner input(inputString);
 
   while (!input.isAtEnd()) {
@@ -1086,7 +1072,8 @@ void VTTCue::parseSettings(const String& inputString) {
         break;
       }
       case RegionId:
-        m_regionId = input.extractString(valueRun);
+        if (regionMap)
+          m_region = regionMap->get(input.extractString(valueRun));
         break;
       case None:
         break;
@@ -1095,15 +1082,6 @@ void VTTCue::parseSettings(const String& inputString) {
     // Make sure the entire run is consumed.
     input.skipRun(valueRun);
   }
-
-  // If cue's line position is not auto or cue's size is not 100 or cue's
-  // writing direction is not horizontal, but cue's region identifier is not
-  // the empty string, let cue's region identifier be the empty string.
-  if (m_regionId.isEmpty())
-    return;
-
-  if (!lineIsAuto() || m_cueSize != 100 || m_writingDirection != Horizontal)
-    m_regionId = emptyString;
 }
 
 void VTTCue::applyUserOverrideCSSProperties() {
@@ -1139,6 +1117,7 @@ Document& VTTCue::document() const {
 }
 
 DEFINE_TRACE(VTTCue) {
+  visitor->trace(m_region);
   visitor->trace(m_vttNodeTree);
   visitor->trace(m_cueBackgroundBox);
   visitor->trace(m_displayTree);

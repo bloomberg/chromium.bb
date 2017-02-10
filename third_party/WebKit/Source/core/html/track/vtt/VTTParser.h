@@ -142,6 +142,7 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
 
   HeapVector<Member<TextTrackCue>> m_cueList;
 
+  VTTRegionMap m_regionMap;
   HeapVector<Member<VTTRegion>> m_regionList;
 };
 

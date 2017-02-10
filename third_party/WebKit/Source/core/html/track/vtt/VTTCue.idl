@@ -40,8 +40,7 @@ enum AlignSetting { "start", "middle", "end", "left", "right" };
     ConstructorCallWith=Document,
     DependentLifetime,
 ] interface VTTCue : TextTrackCue {
-    // TODO(foolip): regionId has been replaced by a region attribute.
-    [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;
+    [RuntimeEnabled=WebVTTRegions] attribute VTTRegion? region;
     attribute DirectionSetting vertical;
     attribute boolean snapToLines;
     attribute (double or AutoKeyword) line;

@@ -111,6 +111,7 @@ void VTTParser::flush() {
   m_lineReader.setEndOfStream();
   parse();
   flushPendingCue();
+  m_regionMap.clear();
 }
 
 void VTTParser::parse() {
@@ -376,7 +377,7 @@ void VTTParser::createNewCue() {
   VTTCue* cue = VTTCue::create(*m_document, m_currentStartTime,
                                m_currentEndTime, m_currentContent.toString());
   cue->setId(m_currentId);
-  cue->parseSettings(m_currentSettings);
+  cue->parseSettings(&m_regionMap, m_currentSettings);
 
   m_cueList.push_back(cue);
   if (m_client)
@@ -410,6 +411,10 @@ void VTTParser::createNewRegion(const String& headerValue) {
 
   // Step 12.5.11
   m_regionList.push_back(region);
+
+  if (region->id().isEmpty())
+    return;
+  m_regionMap.set(region->id(), region);
 }
 
 bool VTTParser::collectTimeStamp(const String& line, double& timeStamp) {
@@ -577,6 +582,7 @@ DEFINE_TRACE(VTTParser) {
   visitor->trace(m_document);
   visitor->trace(m_client);
   visitor->trace(m_cueList);
+  visitor->trace(m_regionMap);
   visitor->trace(m_regionList);
 }
 

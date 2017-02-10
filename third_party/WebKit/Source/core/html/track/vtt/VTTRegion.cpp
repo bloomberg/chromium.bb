@@ -86,19 +86,14 @@ static bool isNonPercentage(double value,
 VTTRegion::VTTRegion()
     : m_id(emptyString),
       m_width(defaultWidth),
-      m_heightInLines(defaultHeightInLines),
+      m_lines(defaultHeightInLines),
       m_regionAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY)),
       m_viewportAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY)),
       m_scroll(defaultScroll),
-      m_track(nullptr),
       m_currentTop(0),
       m_scrollTimer(this, &VTTRegion::scrollTimerFired) {}
 
 VTTRegion::~VTTRegion() {}
-
-void VTTRegion::setTrack(TextTrack* track) {
-  m_track = track;
-}
 
 void VTTRegion::setId(const String& id) {
   m_id = id;
@@ -111,15 +106,14 @@ void VTTRegion::setWidth(double value, ExceptionState& exceptionState) {
   m_width = value;
 }
 
-void VTTRegion::setHeight(long value, ExceptionState& exceptionState) {
+void VTTRegion::setLines(long value, ExceptionState& exceptionState) {
   if (value < 0) {
     exceptionState.throwDOMException(
         IndexSizeError,
         "The height provided (" + String::number(value) + ") is negative.");
     return;
   }
-
-  m_heightInLines = value;
+  m_lines = value;
 }
 
 void VTTRegion::setRegionAnchorX(double value, ExceptionState& exceptionState) {
@@ -154,37 +148,23 @@ void VTTRegion::setViewportAnchorY(double value,
 
 const AtomicString VTTRegion::scroll() const {
   DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up"));
-
-  if (m_scroll)
-    return upScrollValueKeyword;
-
-  return "";
+  return m_scroll ? upScrollValueKeyword : emptyAtom;
 }
 
-void VTTRegion::setScroll(const AtomicString& value,
-                          ExceptionState& exceptionState) {
-  DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up"));
-
-  if (value != emptyString && value != upScrollValueKeyword) {
-    exceptionState.throwDOMException(
-        SyntaxError, "The value provided ('" + value +
-                         "') is invalid. The 'scroll' property must be either "
-                         "the empty string, or 'up'.");
-    return;
-  }
-
-  m_scroll = value == upScrollValueKeyword;
+void VTTRegion::setScroll(const AtomicString& value) {
+  DCHECK(value == "up" || value == emptyAtom);
+  m_scroll = value != emptyAtom;
 }
 
 void VTTRegion::updateParametersFromRegion(VTTRegion* region) {
-  m_heightInLines = region->height();
+  m_lines = region->lines();
   m_width = region->width();
 
   m_regionAnchor = FloatPoint(region->regionAnchorX(), region->regionAnchorY());
   m_viewportAnchor =
       FloatPoint(region->viewportAnchorX(), region->viewportAnchorY());
 
-  setScroll(region->scroll(), ASSERT_NO_EXCEPTION);
+  setScroll(region->scroll());
 }
 
 void VTTRegion::setRegionSettings(const String& inputString) {
@@ -258,7 +238,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input) {
     case Height: {
       int number;
       if (input.scanDigits(number) && parsedEntireRun(input, valueRun))
-        m_heightInLines = number;
+        m_lines = number;
       else
         DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Height";
       break;
@@ -404,7 +384,7 @@ void VTTRegion::prepareRegionDisplayTree() {
   // Let lineHeight be '0.0533vh' ('vh' is a CSS unit) and regionHeight be
   // the text track region height. Let height be 'lineHeight' multiplied
   // by regionHeight.
-  double height = lineHeight * m_heightInLines;
+  double height = lineHeight * m_lines;
   m_regionDisplayTree->setInlineStyleProperty(
       CSSPropertyHeight, height, CSSPrimitiveValue::UnitType::ViewportHeight);
 
@@ -464,7 +444,6 @@ void VTTRegion::scrollTimerFired(TimerBase*) {
 DEFINE_TRACE(VTTRegion) {
   visitor->trace(m_cueContainer);
   visitor->trace(m_regionDisplayTree);
-  visitor->trace(m_track);
 }
 
 }  // namespace blink

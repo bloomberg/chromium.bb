@@ -6928,7 +6928,7 @@ interface VTTCue : TextTrackCue
     getter align
     getter line
     getter position
-    getter regionId
+    getter region
     getter size
     getter snapToLines
     getter text
@@ -6938,25 +6938,22 @@ interface VTTCue : TextTrackCue
     setter align
     setter line
     setter position
-    setter regionId
+    setter region
     setter size
     setter snapToLines
     setter text
     setter vertical
 interface VTTRegion
     attribute @@toStringTag
-    getter height
-    getter id
+    getter lines
     getter regionAnchorX
     getter regionAnchorY
     getter scroll
-    getter track
     getter viewportAnchorX
     getter viewportAnchorY
     getter width
     method constructor
-    setter height
-    setter id
+    setter lines
     setter regionAnchorX
     setter regionAnchorY
     setter scroll

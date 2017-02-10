@@ -49,10 +49,10 @@ async_test(function() {
 
                 for (var i = 0; i < container.children.length; ++i) {
                     var cue = container.children[i];
-                    totalVisibleLines += countVisibleLines(cue);;
+                    totalVisibleLines += countVisibleLines(cue);
                 }
 
-                assert_less_than_equal(totalVisibleLines, track.regions[0].height);
+                assert_less_than_equal(totalVisibleLines, track.regions[0].lines);
 
                 if (seekTimeIndex == seekTimes.length)
                     this.done();

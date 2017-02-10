@@ -97,7 +97,7 @@ void InbandTextTrack::addWebVTTCue(double start,
   DCHECK(owner);
   VTTCue* cue = VTTCue::create(owner->document(), start, end, content);
   cue->setId(id);
-  cue->parseSettings(settings);
+  cue->parseSettings(nullptr, settings);
   addCue(cue);
 }
 

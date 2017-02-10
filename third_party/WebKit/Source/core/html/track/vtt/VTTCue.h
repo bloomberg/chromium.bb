@@ -40,7 +40,10 @@ class Document;
 class DoubleOrAutoKeyword;
 class ExecutionContext;
 class VTTCue;
+class VTTRegion;
 class VTTScanner;
+
+using VTTRegionMap = HeapHashMap<String, Member<VTTRegion>>;
 
 struct VTTDisplayParameters {
   STACK_ALLOCATED();
@@ -86,6 +89,9 @@ class VTTCue final : public TextTrackCue {
 
   ~VTTCue() override;
 
+  VTTRegion* region() const { return m_region; }
+  void setRegion(VTTRegion*);
+
   const String& vertical() const;
   void setVertical(const String&);
 
@@ -107,15 +113,12 @@ class VTTCue final : public TextTrackCue {
   const String& text() const { return m_text; }
   void setText(const String&);
 
-  void parseSettings(const String&);
+  void parseSettings(const VTTRegionMap*, const String&);
 
   // Applies CSS override style from user settings.
   void applyUserOverrideCSSProperties();
 
   DocumentFragment* getCueAsHTML();
-
-  const String& regionId() const { return m_regionId; }
-  void setRegionId(const String&);
 
   void updateDisplay(HTMLDivElement& container) override;
 
@@ -172,8 +175,8 @@ class VTTCue final : public TextTrackCue {
   float m_cueSize;
   WritingDirection m_writingDirection;
   CueAlignment m_cueAlignment;
-  String m_regionId;
 
+  Member<VTTRegion> m_region;
   Member<DocumentFragment> m_vttNodeTree;
   Member<HTMLDivElement> m_cueBackgroundBox;
   Member<VTTCueBox> m_displayTree;

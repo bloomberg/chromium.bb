@@ -7,16 +7,15 @@ test(function() {
     var region = new VTTRegion();
     assert_true(region instanceof VTTRegion, "instanceof");
 
-    assert_equals(region.track, null);
     assert_equals(region.scroll, "");
     assert_equals(region.viewportAnchorX, 0);
     assert_equals(region.viewportAnchorY, 100);
     assert_equals(region.regionAnchorX, 0);
     assert_equals(region.regionAnchorY, 100);
-    assert_equals(region.height, 3);
+    assert_equals(region.lines, 3);
     assert_equals(region.width, 100);
 
-    assert_throws(new SyntaxError, function() { region.scroll = "invalid-scroll-value"; });
+    region.scroll = "invalid-scroll-value";
     assert_equals(region.scroll, "");
 
     var invalidPercentageValues = [-1, 101];
@@ -47,11 +46,11 @@ test(function() {
       assert_equals(region.width, 100);
     }
 
-    assert_throws("IndexSizeError", function() { region.height = -1; });
-    assert_equals(region.height, 3);
+    assert_throws("IndexSizeError", function() { region.lines = -1; });
+    assert_equals(region.lines, 3);
 
-    region.height = 130;
-    assert_equals(region.height, 130);
+    region.lines = 130;
+    assert_equals(region.lines, 130);
     region.viewportAnchorX = 64;
     assert_equals(region.viewportAnchorX, 64);
     region.viewportAnchorY = 32;

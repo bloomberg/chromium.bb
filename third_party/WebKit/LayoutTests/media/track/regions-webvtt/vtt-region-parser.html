@@ -4,40 +4,43 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script>
+const regionDefaults = {
+    width: 100,
+    lines: 3,
+    regionAnchorX: 0,
+    regionAnchorY: 100,
+    viewportAnchorX: 0,
+    viewportAnchorY: 100,
+    scroll: ''
+};
+
+function checkProperties(region, expected, i) {
+    for (var prop in regionDefaults) {
+        if (!(prop in expected))
+            expected[prop] = regionDefaults[prop];
+        assert_equals(region[prop], expected[prop], prop + ' (cue '+(i+1)+')');
+    }
+}
+
+function checkCueRegions(cues) {
+    for (let i = 0; i < cues.length; ++i) {
+        let cue = cues[i];
+        let expected = JSON.parse(cue.text);
+        if (cue.region)
+            checkProperties(cue.region, expected, i);
+        else
+            assert_equals(expected, 'no region');
+    }
+}
+
 async_test(function(t) {
     var video = document.createElement('video');
     video.src = findMediaFile('video', '../../content/test');
     var testTrack = document.createElement('track');
     testTrack.onload = t.step_func_done(function() {
         var track = testTrack.track;
-        assert_equals(track.regions.length, 5);
-
-        var region = track.regions[0];
-        assert_equals(region.id, 'region_without_settings');
-
-        region = track.regions[1];
-        assert_equals(region.id, 'region_with_all_settings');
-        assert_equals(region.width, 32);
-        assert_equals(region.height, 5);
-        assert_equals(region.regionAnchorX, 41);
-        assert_equals(region.regionAnchorY, 20);
-        assert_equals(region.viewportAnchorX, 31);
-        assert_equals(region.viewportAnchorY, 84);
-        assert_equals(region.scroll, 'up');
-
-        region = track.regions[2];
-        assert_equals(region.id, 'region_floating_point_anchor');
-        assert_equals(Math.round(region.regionAnchorX * 1000), 41133);
-        assert_equals(Math.round(region.regionAnchorY * 1000), 20420);
-        assert_equals(Math.round(region.viewportAnchorX * 1000), 32330);
-        assert_equals(Math.round(region.viewportAnchorY * 1000), 32440);
-
-        region = track.regions[3];
-        assert_equals(region.id, 'not_unique_id');
-        assert_equals(region.width, 67);
-
-        region = track.regions[4];
-        assert_equals(region.id, '');
+        assert_equals(track.cues.length, 9);
+        checkCueRegions(track.cues);
     });
     testTrack.src = '../captions-webvtt/header-regions.vtt';
     testTrack.kind = 'captions';
