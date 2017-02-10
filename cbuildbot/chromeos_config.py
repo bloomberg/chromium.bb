@@ -868,7 +868,7 @@ def SiteParameters():
 
       # List of remotes that are okay to include in the external manifest.
       EXTERNAL_REMOTES=(
-          external_remote, chromium_remote, aosp_remote
+          external_remote, chromium_remote, aosp_remote, weave_remote,
       ),
 
       # Mapping 'remote name' -> regexp that matches names of repositories on

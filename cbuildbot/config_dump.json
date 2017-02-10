@@ -140,7 +140,8 @@
         "EXTERNAL_REMOTES": [
             "cros",
             "chromium",
-            "aosp"
+            "aosp",
+            "weave"
         ],
         "GERRIT_HOSTS": {
             "aosp": "android-review.googlesource.com",
