@@ -32,7 +32,9 @@ bool DecodeAudioFileData(
   if (!destination_bus)
     return false;
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if defined(MEDIA_DISABLE_FFMPEG)
+  return false
+#else
   // Uses the FFmpeg library for audio file reading.
   InMemoryUrlProtocol url_protocol(reinterpret_cast<const uint8_t*>(data),
                                    data_size, false);
@@ -43,7 +45,6 @@ bool DecodeAudioFileData(
 
   size_t number_of_channels = reader.channels();
   double file_sample_rate = reader.sample_rate();
-  size_t number_of_frames = static_cast<size_t>(reader.GetNumberOfFrames());
 
   // Apply sanity checks to make sure crazy values aren't coming out of
   // FFmpeg.
@@ -53,47 +54,41 @@ bool DecodeAudioFileData(
       file_sample_rate > media::limits::kMaxSampleRate)
     return false;
 
-  // Allocate and configure the output audio channel data.
-  destination_bus->initialize(number_of_channels,
-                              number_of_frames,
+  std::vector<std::unique_ptr<AudioBus>> decoded_audio_packets;
+  int number_of_frames = reader.Read(&decoded_audio_packets);
+
+  if (number_of_frames <= 0)
+    return false;
+
+  // Allocate and configure the output audio channel data and then
+  // copy the decoded data to the destination.
+  destination_bus->initialize(number_of_channels, number_of_frames,
                               file_sample_rate);
 
-  // Wrap the channel pointers which will receive the decoded PCM audio.
-  vector<float*> audio_data;
-  audio_data.reserve(number_of_channels);
-  for (size_t i = 0; i < number_of_channels; ++i) {
-    audio_data.push_back(destination_bus->channelData(i));
+  int dest_frame_offset = 0;
+  for (size_t k = 0; k < decoded_audio_packets.size(); ++k) {
+    AudioBus* packet = decoded_audio_packets[k].get();
+    int packet_length = packet->frames();
+    for (size_t ch = 0; ch < number_of_channels; ++ch) {
+      float* dst = destination_bus->channelData(ch);
+      float* src = packet->channel(ch);
+      DCHECK_LE(dest_frame_offset + packet_length, number_of_frames);
+      memcpy(dst + dest_frame_offset, src, packet_length * sizeof(*dst));
+    }
+    dest_frame_offset += packet_length;
   }
 
-  std::unique_ptr<AudioBus> audio_bus =
-      AudioBus::WrapVector(number_of_frames, audio_data);
+  DVLOG(1) << "Decoded file data (unknown duration)-"
+           << " data: " << data << " data size: " << data_size
+           << ", decoded duration: " << (number_of_frames / file_sample_rate)
+           << ", number of frames: " << number_of_frames
+           << ", estimated frames (if available): "
+           << (reader.HasKnownDuration() ? reader.GetNumberOfFrames() : 0)
+           << ", sample rate: " << file_sample_rate
+           << ", number of channels: " << number_of_channels;
 
-  // Decode the audio file data.
-  // TODO(crogers): If our estimate was low, then we still may fail to read
-  // all of the data from the file.
-  size_t actual_frames = reader.Read(audio_bus.get());
-
-  // Adjust WebKit's bus to account for the actual file length
-  // and valid data read.
-  if (actual_frames != number_of_frames) {
-    DCHECK_LE(actual_frames, number_of_frames);
-    destination_bus->resizeSmaller(actual_frames);
-  }
-
-  double duration = actual_frames / file_sample_rate;
-
-  DVLOG(1) << "Decoded file data -"
-           << " data: " << data
-           << " data size: " << data_size
-           << " duration: " << duration
-           << " number of frames: " << actual_frames
-           << " sample rate: " << file_sample_rate
-           << " number of channels: " << number_of_channels;
-
-  return actual_frames > 0;
-#else
-  return false;
-#endif  // !defined(MEDIA_DISABLE_FFMPEG)
+  return number_of_frames > 0;
+#endif  // defined(MEDIA_DISABLE_FFMPEG)
 }
 
 }  // namespace content

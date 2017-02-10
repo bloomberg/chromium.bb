@@ -35,9 +35,18 @@ class AudioFileReaderTest : public testing::Test {
 
   // Reads and the entire file provided to Initialize().
   void ReadAndVerify(const char* expected_audio_hash, int expected_frames) {
+    std::vector<std::unique_ptr<AudioBus>> decoded_audio_packets;
+    int actual_frames = reader_->Read(&decoded_audio_packets);
     std::unique_ptr<AudioBus> decoded_audio_data =
-        AudioBus::Create(reader_->channels(), reader_->GetNumberOfFrames());
-    int actual_frames = reader_->Read(decoded_audio_data.get());
+        AudioBus::Create(reader_->channels(), actual_frames);
+    int dest_start_frame = 0;
+    for (size_t k = 0; k < decoded_audio_packets.size(); ++k) {
+      const AudioBus* packet = decoded_audio_packets[k].get();
+      int frame_count = packet->frames();
+      packet->CopyPartialFramesTo(0, frame_count, dest_start_frame,
+                                  decoded_audio_data.get());
+      dest_start_frame += frame_count;
+    }
     ASSERT_LE(actual_frames, decoded_audio_data->frames());
     ASSERT_EQ(expected_frames, actual_frames);
 
@@ -89,17 +98,22 @@ class AudioFileReaderTest : public testing::Test {
                int sample_rate,
                base::TimeDelta duration,
                int frames,
-               int trimmed_frames) {
+               int expected_frames) {
     Initialize(fn);
     ASSERT_TRUE(reader_->Open());
     EXPECT_EQ(channels, reader_->channels());
     EXPECT_EQ(sample_rate, reader_->sample_rate());
-    EXPECT_EQ(duration.InMicroseconds(),
-              reader_->GetDuration().InMicroseconds());
-    EXPECT_EQ(frames, reader_->GetNumberOfFrames());
+    if (frames >= 0) {
+      EXPECT_EQ(duration.InMicroseconds(),
+                reader_->GetDuration().InMicroseconds());
+      EXPECT_EQ(frames, reader_->GetNumberOfFrames());
+      EXPECT_EQ(reader_->HasKnownDuration(), true);
+    } else {
+      EXPECT_EQ(reader_->HasKnownDuration(), false);
+    }
     if (!packet_verification_disabled_)
       ASSERT_NO_FATAL_FAILURE(VerifyPackets());
-    ReadAndVerify(hash, trimmed_frames);
+    ReadAndVerify(hash, expected_frames);
   }
 
   void RunTestFailingDemux(const char* fn) {
@@ -110,9 +124,8 @@ class AudioFileReaderTest : public testing::Test {
   void RunTestFailingDecode(const char* fn) {
     Initialize(fn);
     EXPECT_TRUE(reader_->Open());
-    std::unique_ptr<AudioBus> decoded_audio_data =
-        AudioBus::Create(reader_->channels(), reader_->GetNumberOfFrames());
-    EXPECT_EQ(reader_->Read(decoded_audio_data.get()), 0);
+    std::vector<std::unique_ptr<AudioBus>> decoded_audio_packets;
+    EXPECT_EQ(reader_->Read(&decoded_audio_packets), 0);
   }
 
   void disable_packet_verification() {
@@ -136,28 +149,19 @@ TEST_F(AudioFileReaderTest, InvalidFile) {
   RunTestFailingDemux("ten_byte_file");
 }
 
-TEST_F(AudioFileReaderTest, InfiniteDuration) {
-  RunTestFailingDemux("bear-320x240-live.webm");
+TEST_F(AudioFileReaderTest, UnknownDuration) {
+  RunTest("bear-320x240-live.webm", "-3.59,-2.06,-0.43,2.15,0.77,-0.95,", 2,
+          44100, base::TimeDelta::FromMicroseconds(-1), -1, 121024);
 }
 
 TEST_F(AudioFileReaderTest, WithVideo) {
-  RunTest("bear.ogv",
-          "-2.49,-0.75,0.38,1.60,0.70,-1.22,",
-          2,
-          44100,
-          base::TimeDelta::FromMicroseconds(1011520),
-          44609,
-          44609);
+  RunTest("bear.ogv", "-0.73,0.92,0.48,-0.07,-0.92,-0.88,", 2, 44100,
+          base::TimeDelta::FromMicroseconds(1011520), 44609, 45632);
 }
 
 TEST_F(AudioFileReaderTest, Vorbis) {
-  RunTest("sfx.ogg",
-          "4.36,4.81,4.84,4.45,4.61,4.63,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(350001),
-          15436,
-          15436);
+  RunTest("sfx.ogg", "2.17,3.31,5.15,6.33,5.97,4.35,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(350001), 15436, 15936);
 }
 
 TEST_F(AudioFileReaderTest, WaveU8) {

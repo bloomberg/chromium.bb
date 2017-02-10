@@ -7,11 +7,13 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {
@@ -33,14 +35,7 @@ AudioFileReader::~AudioFileReader() {
 }
 
 bool AudioFileReader::Open() {
-  if (!OpenDemuxer())
-    return false;
-  if (!OpenDecoder())
-    return false;
-
-  // If the duration is unknown, fail out; this API can not work with streams of
-  // unknown duration currently.
-  return glue_->format_context()->duration != AV_NOPTS_VALUE;
+  return OpenDemuxer() && OpenDecoder();
 }
 
 bool AudioFileReader::OpenDemuxer() {
@@ -127,31 +122,29 @@ bool AudioFileReader::OpenDecoder() {
   return true;
 }
 
+bool AudioFileReader::HasKnownDuration() const {
+  return glue_->format_context()->duration != AV_NOPTS_VALUE;
+}
+
 void AudioFileReader::Close() {
   codec_context_.reset();
   glue_.reset();
 }
 
-int AudioFileReader::Read(AudioBus* audio_bus) {
-  DCHECK(glue_.get() && codec_context_) <<
-      "AudioFileReader::Read() : reader is not opened!";
-
-  DCHECK_EQ(audio_bus->channels(), channels());
-  if (audio_bus->channels() != channels())
-    return 0;
-
+int AudioFileReader::Read(
+    std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets) {
+  DCHECK(glue_.get() && codec_context_)
+      << "AudioFileReader::Read() : reader is not opened!";
   size_t bytes_per_sample = av_get_bytes_per_sample(codec_context_->sample_fmt);
 
   // Holds decoded audio.
   std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame(av_frame_alloc());
 
-  // Read until we hit EOF or we've read the requested number of frames.
   AVPacket packet;
-  int current_frame = 0;
+  int total_frames = 0;
   bool continue_decoding = true;
 
-  while (current_frame < audio_bus->frames() && continue_decoding &&
-         ReadPacket(&packet)) {
+  while (continue_decoding && ReadPacket(&packet)) {
     // Make a shallow copy of packet so we can slide packet.data as frames are
     // decoded from the packet; otherwise av_packet_unref() will corrupt memory.
     AVPacket packet_temp = packet;
@@ -164,6 +157,8 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
                                          &frame_decoded, &packet_temp);
 
       if (result < 0) {
+        // Unable to decode this current packet.  We'll skip it and
+        // continue decoding the next packet.
         DLOG(WARNING)
             << "AudioFileReader::Read() : error in avcodec_decode_audio4() -"
             << result;
@@ -186,68 +181,51 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
       }
 
 #ifdef CHROMIUM_NO_AVFRAME_CHANNELS
-      int channels = av_get_channel_layout_nb_channels(
-          av_frame->channel_layout);
+      int channels =
+          av_get_channel_layout_nb_channels(av_frame->channel_layout);
 #else
       int channels = av_frame->channels;
 #endif
-      if (av_frame->sample_rate != sample_rate_ ||
-          channels != channels_ ||
+      if (av_frame->sample_rate != sample_rate_ || channels != channels_ ||
           av_frame->format != av_sample_format_) {
         DLOG(ERROR) << "Unsupported midstream configuration change!"
                     << " Sample Rate: " << av_frame->sample_rate << " vs "
-                    << sample_rate_
-                    << ", Channels: " << channels << " vs "
-                    << channels_
-                    << ", Sample Format: " << av_frame->format << " vs "
-                    << av_sample_format_;
+                    << sample_rate_ << ", Channels: " << channels << " vs "
+                    << channels_ << ", Sample Format: " << av_frame->format
+                    << " vs " << av_sample_format_;
 
-        // This is an unrecoverable error, so bail out.
+        // This is an unrecoverable error, so bail out.  We'll return
+        // whatever we've decoded up to this point.
         continue_decoding = false;
         break;
-      }
-
-      // Truncate, if necessary, if the destination isn't big enough.
-      if (current_frame + frames_read > audio_bus->frames()) {
-        DLOG(ERROR) << "Truncating decoded data due to output size.";
-        frames_read = audio_bus->frames() - current_frame;
       }
 
       // Deinterleave each channel and convert to 32bit floating-point with
       // nominal range -1.0 -> +1.0.  If the output is already in float planar
       // format, just copy it into the AudioBus.
+      decoded_audio_packets->emplace_back(
+          AudioBus::Create(channels, frames_read));
+      AudioBus* audio_bus = decoded_audio_packets->back().get();
+
       if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT) {
-        float* decoded_audio_data = reinterpret_cast<float*>(av_frame->data[0]);
-        int channels = audio_bus->channels();
-        for (int ch = 0; ch < channels; ++ch) {
-          float* bus_data = audio_bus->channel(ch) + current_frame;
-          for (int i = 0, offset = ch; i < frames_read;
-               ++i, offset += channels) {
-            bus_data[i] = decoded_audio_data[offset];
-          }
-        }
+        audio_bus->FromInterleaved<Float32SampleTypeTraits>(
+            reinterpret_cast<float*>(av_frame->data[0]), frames_read);
       } else if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLTP) {
         for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-          memcpy(audio_bus->channel(ch) + current_frame,
-                 av_frame->extended_data[ch], sizeof(float) * frames_read);
+          memcpy(audio_bus->channel(ch), av_frame->extended_data[ch],
+                 sizeof(float) * frames_read);
         }
       } else {
-        audio_bus->FromInterleavedPartial(
-            av_frame->data[0], current_frame, frames_read, bytes_per_sample);
+        audio_bus->FromInterleaved(av_frame->data[0], frames_read,
+                                   bytes_per_sample);
       }
 
-      current_frame += frames_read;
+      total_frames += frames_read;
     } while (packet_temp.size > 0);
     av_packet_unref(&packet);
   }
 
-  // Zero any remaining frames.
-  audio_bus->ZeroFramesPartial(
-      current_frame, audio_bus->frames() - current_frame);
-
-  // Returns the actual number of sample-frames decoded.
-  // Ideally this represents the "true" exact length of the file.
-  return current_frame;
+  return total_frames;
 }
 
 base::TimeDelta AudioFileReader::GetDuration() const {

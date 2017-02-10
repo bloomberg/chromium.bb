@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_AUDIO_FILE_READER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "media/base/audio_codecs.h"
@@ -38,18 +39,23 @@ class MEDIA_EXPORT AudioFileReader {
   bool Open();
   void Close();
 
-  // After a call to Open(), attempts to fully fill |audio_bus| with decoded
-  // audio data.  Any unfilled frames will be zeroed out.
-  // |audio_data| must be of the same size as channels().
-  // The audio data will be decoded as floating-point linear PCM with
-  // a nominal range of -1.0 -> +1.0.
-  // Returns the number of sample-frames actually read which will always be
-  // <= audio_bus->frames()
-  int Read(AudioBus* audio_bus);
+  // After a call to Open(), attempts to decode the entire data,
+  // updating |decodedAudioPackets| with each decoded packet in order.
+  // The caller must convert these packets into one complete set of
+  // decoded audio data.  The audio data will be decoded as
+  // floating-point linear PCM with a nominal range of -1.0 -> +1.0.
+  // Returns the number of sample-frames actually read which will
+  // always be the total size of all the frames in
+  // |decodedAudioPackets|.
+  int Read(std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets);
 
   // These methods can be called once Open() has been called.
   int channels() const { return channels_; }
   int sample_rate() const { return sample_rate_; }
+
+  // Returns true if (an estimated) duration of the audio data is
+  // known.  Must be called after Open();
+  bool HasKnownDuration() const;
 
   // Please note that GetDuration() and GetNumberOfFrames() attempt to be
   // accurate, but are only estimates.  For some encoded formats, the actual
