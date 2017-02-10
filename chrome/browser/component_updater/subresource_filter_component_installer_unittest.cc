@@ -170,9 +170,10 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir component_install_dir_;
   base::ScopedTempDir ruleset_service_dir_;
+
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<SubresourceFilterComponentInstallerTraits> traits_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestingPrefServiceSimple pref_service_;

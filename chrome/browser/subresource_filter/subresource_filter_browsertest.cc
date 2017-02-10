@@ -331,6 +331,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   }
 
  private:
+  TestRulesetCreator ruleset_creator_;
   safe_browsing::TestSafeBrowsingServiceFactory test_safe_browsing_factory_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
 
@@ -338,7 +339,6 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   TestRulesetPublisher test_ruleset_publisher_;
   const bool measure_performance_;
   const bool whitelist_site_on_reload_;
-  TestRulesetCreator ruleset_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTestImpl);
 };

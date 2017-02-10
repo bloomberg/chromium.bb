@@ -127,11 +127,11 @@ class SubresourceFilterContentRulesetServiceDelegateTest
   }
 
  private:
+  base::ScopedTempDir scoped_temp_dir_;
   TestContentBrowserClient browser_client_;
   content::ContentBrowserClient* old_browser_client_;
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
-  base::ScopedTempDir scoped_temp_dir_;
   NotifyingMockRenderProcessHost existing_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentRulesetServiceDelegateTest);

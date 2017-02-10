@@ -284,6 +284,8 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
  private:
+  base::ScopedTempDir scoped_temp_dir_;
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestingPrefServiceSimple pref_service_;
@@ -293,7 +295,6 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   TestRulesetPair test_ruleset_2_;
   TestRulesetPair test_ruleset_3_;
 
-  base::ScopedTempDir scoped_temp_dir_;
   std::unique_ptr<RulesetService> service_;
   MockRulesetServiceDelegate* mock_delegate_;  // Weak, owned by |service_|.
 
