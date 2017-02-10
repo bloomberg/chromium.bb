@@ -23,6 +23,19 @@
 <script>
 assertInterpolation({
   property: 'translate',
+  from: 'none',
+  to: '300px 200px 100px',
+}, [
+  {at: -1, is: '-300px -200px -100px'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: '75px 50px 25px'},
+  {at: 0.75, is: '225px 150px 75px'},
+  {at: 1, is: '300px 200px 100px'},
+  {at: 2, is: '600px 400px 200px'},
+]);
+
+assertInterpolation({
+  property: 'translate',
   from: neutralKeyframe,
   to: '20px',
 }, [
@@ -40,7 +53,7 @@ assertInterpolation({
   to: '20px',
 }, [
   {at: -1, is: '-20px'},
-  {at: 0, is: '0px'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '5px'},
   {at: 0.75, is: '15px'},
   {at: 1, is: '20px'},
@@ -157,7 +170,7 @@ assertInterpolation({
   to: '200px 100px 200px',
 }, [
   {at: -1, is: '-200px -100px -200px'},
-  {at: 0, is: '0px'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '50px 25px 50px'},
   {at: 0.75, is: '150px 75px 150px'},
   {at: 1, is: '200px 100px 200px'},
@@ -166,15 +179,15 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'translate',
-  from: '200px 100px 200px',
+  from: '200px 100px 400px',
   to: 'initial',
 }, [
-  {at: -1, is: '400px 200px 400px'},
-  {at: 0, is: '200px 100px 200px'},
-  {at: 0.25, is: '150px 75px 150px'},
-  {at: 0.75, is: '50px 25px 50px'},
-  {at: 1, is: '0px'},
-  {at: 2, is: '-200px -100px -200px'},
+  {at: -1, is: '400px 200px 800px'},
+  {at: 0, is: '200px 100px 400px'},
+  {at: 0.25, is: '150px 75px 300px'},
+  {at: 0.75, is: '50px 25px 100px'},
+  {at: 1, is: 'none'},
+  {at: 2, is: '-200px -100px -400px'},
 ]);
 
 assertInterpolation({
@@ -183,7 +196,7 @@ assertInterpolation({
   to: 'inherit',
 }, [
   {at: -1, is: '-100px -200px -300px'},
-  {at: 0, is: '0px'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '25px 50px 75px'},
   {at: 0.75, is: '75px 150px 225px'},
   {at: 1, is: '100px 200px 300px'},
@@ -199,7 +212,7 @@ assertInterpolation({
   {at: 0, is: '100px 200px 300px'},
   {at: 0.25, is: '75px 150px 225px'},
   {at: 0.75, is: '25px 50px 75px'},
-  {at: 1, is: '0px'},
+  {at: 1, is: 'none'},
   {at: 2, is: '-100px -200px -300px'},
 ]);
 </script>

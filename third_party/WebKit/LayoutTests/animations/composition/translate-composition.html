@@ -49,5 +49,91 @@ assertComposition({
   {at: 1, is: '300px 250px 400px'},
   {at: 2, is: '550px 400px 800px'},
 ]);
+
+assertComposition({
+  property: 'translate',
+  underlying: 'none',
+  replaceFrom: 'none',
+  addTo: '100px',
+}, [
+  {at: -1, is: '-100px'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: '25px'},
+  {at: 0.75, is: '75px'},
+  {at: 1, is: '100px'},
+  {at: 2, is: '200px'},
+]);
+
+assertComposition({
+  property: 'translate',
+  underlying: 'none',
+  addFrom: 'none',
+  addTo: '100px',
+}, [
+  {at: -1, is: '-100px'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: '25px'},
+  {at: 0.75, is: '75px'},
+  {at: 1, is: '100px'},
+  {at: 2, is: '200px'},
+]);
+
+assertComposition({
+  property: 'translate',
+  underlying: 'none',
+  replaceFrom: '0px 40px 60px',
+  replaceTo: 'none',
+}, [
+  {at: -1, is: '0px 80px 120px'},
+  {at: 0, is: '0px 40px 60px'},
+  {at: 0.25, is: '0px 30px 45px'},
+  {at: 0.75, is: '0px 10px 15px'},
+  {at: 1, is: 'none'},
+  {at: 2, is: '0px -40px -60px'},
+]);
+
+assertComposition({
+  property: 'translate',
+  underlying: 'none',
+  replaceFrom: '0px 40px 60px',
+  addTo: 'none',
+}, [
+  {at: -1, is: '0px 80px 120px'},
+  {at: 0, is: '0px 40px 60px'},
+  {at: 0.25, is: '0px 30px 45px'},
+  {at: 0.75, is: '0px 10px 15px'},
+  {at: 1, is: 'none'},
+  {at: 2, is: '0px -40px -60px'},
+]);
+
+assertComposition({
+  property: 'translate',
+  underlying: '80px 20px',
+  addFrom: 'none',
+  replaceTo: '0px 40px 60px',
+}, [
+  {at: -1, is: '160px 0px -60px'},
+  {at: 0, is: '80px 20px'},
+  {at: 0.25, is: '60px 25px 15px'},
+  {at: 0.5, is: '40px 30px 30px'},
+  {at: 0.75, is: '20px 35px 45px'},
+  {at: 1, is: '0px 40px 60px'},
+  {at: 2, is: '-80px 60px 120px'},
+]);
+
+assertComposition({
+  property: 'translate',
+  underlying: '80px 20px',
+  addFrom: '0px 40px 60px',
+  replaceTo: 'none',
+}, [
+  {at: -1, is: '160px 120px 120px'},
+  {at: 0, is: '80px 60px 60px'},
+  {at: 0.25, is: '60px 45px 45px'},
+  {at: 0.5, is: '40px 30px 30px'},
+  {at: 0.75, is: '20px 15px 15px'},
+  {at: 1, is: 'none'},
+  {at: 2, is: '-80px -60px -60px'},
+]);
 </script>
 </body>

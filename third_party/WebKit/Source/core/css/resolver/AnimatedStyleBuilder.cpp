@@ -749,6 +749,10 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
       TranslateTransformOperation* translate =
           toTranslateTransformOperation(animatableValueToTransformOperation(
               value, TransformOperation::Translate3D));
+      if (!translate) {
+        style->setTranslate(nullptr);
+        return;
+      }
       double sourceZoom = toAnimatableTransform(value)->zoom();
       double destinationZoom = style->effectiveZoom();
       style->setTranslate(

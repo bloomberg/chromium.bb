@@ -18,6 +18,10 @@ class CSSTranslateInterpolationType : public CSSInterpolationType {
 
   InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
+  void composite(UnderlyingValueOwner&,
+                 double underlyingFraction,
+                 const InterpolationValue&,
+                 double interpolationFraction) const final;
   void applyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
@@ -32,6 +36,10 @@ class CSSTranslateInterpolationType : public CSSInterpolationType {
   InterpolationValue maybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
+
+  PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&&,
+      InterpolationValue&&) const final;
 };
 
 }  // namespace blink

@@ -15,6 +15,14 @@ namespace blink {
 
 namespace {
 
+InterpolationValue createNoneValue() {
+  return InterpolationValue(InterpolableList::create(0));
+}
+
+bool isNoneValue(const InterpolationValue& value) {
+  return toInterpolableList(*value.interpolableValue).length() == 0;
+}
+
 class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
  public:
   ~InheritedTranslateChecker() {}
@@ -51,7 +59,7 @@ enum TranslateComponentIndex : unsigned {
   TranslateComponentIndexCount,
 };
 
-InterpolationValue createNeutralValue() {
+std::unique_ptr<InterpolableValue> createIdentityInterpolableValue() {
   std::unique_ptr<InterpolableList> result =
       InterpolableList::create(TranslateComponentIndexCount);
   result->set(TranslateX,
@@ -60,14 +68,14 @@ InterpolationValue createNeutralValue() {
               LengthInterpolationFunctions::createNeutralInterpolableValue());
   result->set(TranslateZ,
               LengthInterpolationFunctions::createNeutralInterpolableValue());
-  return InterpolationValue(std::move(result));
+  return std::move(result);
 }
 
 InterpolationValue convertTranslateOperation(
     const TranslateTransformOperation* translate,
     double zoom) {
   if (!translate)
-    return createNeutralValue();
+    return createNoneValue();
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::create(TranslateComponentIndexCount);
@@ -88,13 +96,13 @@ InterpolationValue convertTranslateOperation(
 InterpolationValue CSSTranslateInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers&) const {
-  return createNeutralValue();
+  return InterpolationValue(createIdentityInterpolableValue());
 }
 
 InterpolationValue CSSTranslateInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return createNeutralValue();
+  return createNoneValue();
 }
 
 InterpolationValue CSSTranslateInterpolationType::maybeConvertInherit(
@@ -112,8 +120,9 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isBaseValueList())
-    return nullptr;
+  if (!value.isBaseValueList()) {
+    return createNoneValue();
+  }
 
   const CSSValueList& list = toCSSValueList(value);
   if (list.length() < 1 || list.length() > 3)
@@ -137,10 +146,43 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(
   return InterpolationValue(std::move(result));
 }
 
+PairwiseInterpolationValue CSSTranslateInterpolationType::maybeMergeSingles(
+    InterpolationValue&& start,
+    InterpolationValue&& end) const {
+  size_t startListLength =
+      toInterpolableList(*start.interpolableValue).length();
+  size_t endListLength = toInterpolableList(*end.interpolableValue).length();
+  if (startListLength < endListLength)
+    start.interpolableValue = createIdentityInterpolableValue();
+  else if (endListLength < startListLength)
+    end.interpolableValue = createIdentityInterpolableValue();
+
+  return PairwiseInterpolationValue(std::move(start.interpolableValue),
+                                    std::move(end.interpolableValue));
+}
+
 InterpolationValue
 CSSTranslateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return convertTranslateOperation(style.translate(), style.effectiveZoom());
+}
+
+void CSSTranslateInterpolationType::composite(
+    UnderlyingValueOwner& underlyingValueOwner,
+    double underlyingFraction,
+    const InterpolationValue& value,
+    double interpolationFraction) const {
+  if (isNoneValue(value)) {
+    return;
+  }
+
+  if (isNoneValue(underlyingValueOwner.mutableValue())) {
+    underlyingValueOwner.mutableValue().interpolableValue =
+        createIdentityInterpolableValue();
+  }
+
+  return CSSInterpolationType::composite(
+      underlyingValueOwner, underlyingFraction, value, interpolationFraction);
 }
 
 void CSSTranslateInterpolationType::applyStandardPropertyValue(
@@ -148,6 +190,10 @@ void CSSTranslateInterpolationType::applyStandardPropertyValue(
     const NonInterpolableValue*,
     StyleResolverState& state) const {
   const InterpolableList& list = toInterpolableList(interpolableValue);
+  if (list.length() == 0) {
+    state.style()->setTranslate(nullptr);
+    return;
+  }
   const CSSToLengthConversionData& conversionData =
       state.cssToLengthConversionData();
   Length x = LengthInterpolationFunctions::createLength(

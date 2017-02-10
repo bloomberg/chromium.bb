@@ -610,12 +610,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
       return AnimatableTransform::create(style.transform(),
                                          style.effectiveZoom());
     case CSSPropertyTranslate: {
-      DEFINE_STATIC_REF(TranslateTransformOperation, initialTranslate,
-                        TranslateTransformOperation::create(
-                            Length(0, Fixed), Length(0, Fixed), 0,
-                            TransformOperation::Translate3D));
-      return createFromTransformProperties(
-          style.translate(), style.effectiveZoom(), initialTranslate);
+      return createFromTransformProperties(style.translate(),
+                                           style.effectiveZoom(), nullptr);
     }
     case CSSPropertyRotate: {
       return createFromTransformProperties(style.rotate(),
