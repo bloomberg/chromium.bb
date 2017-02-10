@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -13,6 +12,10 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -41,17 +44,17 @@ using LightSS = std::vector<LightDS>;
 @end
 
 @implementation DelegateTester {
-  base::scoped_nsobject<NSArray> _expectedSessionRemoved;
-  base::scoped_nsobject<NSArray> _expectedSessionInserted;
+  NSArray* _expectedSessionRemoved;
+  NSArray* _expectedSessionInserted;
   std::set<std::string> _expectedTagsOfTheSessionsNeedingUpdates;
 }
 
 - (void)expectSessionsRemoved:(NSArray*)expectedIndexes {
-  _expectedSessionRemoved.reset([expectedIndexes retain]);
+  _expectedSessionRemoved = expectedIndexes;
 }
 
 - (void)expectSessionsInserted:(NSArray*)expectedIndexes {
-  _expectedSessionInserted.reset([expectedIndexes retain]);
+  _expectedSessionInserted = expectedIndexes;
 }
 
 - (void)expectSessionMayNeedUpdate:(std::set<std::string> const&)tags {
@@ -68,12 +71,12 @@ using LightSS = std::vector<LightDS>;
 
 - (void)distantSessionsRemovedAtSortedIndexes:(NSArray*)removedIndexes
                       insertedAtSortedIndexes:(NSArray*)insertedIndexes {
-  EXPECT_TRUE(removedIndexes == _expectedSessionRemoved.get() ||
-              [removedIndexes isEqualToArray:_expectedSessionRemoved.get()]);
-  EXPECT_TRUE(insertedIndexes == _expectedSessionInserted.get() ||
-              [insertedIndexes isEqualToArray:_expectedSessionInserted.get()]);
-  _expectedSessionRemoved.reset();
-  _expectedSessionInserted.reset();
+  EXPECT_TRUE(removedIndexes == _expectedSessionRemoved ||
+              [removedIndexes isEqualToArray:_expectedSessionRemoved]);
+  EXPECT_TRUE(insertedIndexes == _expectedSessionInserted ||
+              [insertedIndexes isEqualToArray:_expectedSessionInserted]);
+  _expectedSessionRemoved = nil;
+  _expectedSessionInserted = nil;
 }
 
 - (void)distantSessionMayNeedUpdate:(std::string const&)tag {
@@ -97,7 +100,7 @@ namespace {
 
 class TabSwitcherModelTest : public PlatformTest {
  protected:
-  void SetUp() override { delegate_.reset([[DelegateTester alloc] init]); }
+  void SetUp() override { delegate_ = [[DelegateTester alloc] init]; }
 
   void AddSessionToSessions(synced_sessions::SyncedSessions& sessions,
                             std::string const& session_tag,
@@ -137,8 +140,8 @@ class TabSwitcherModelTest : public PlatformTest {
 
     sessions.AddDistantSessionForTest(std::move(distant_session));
   }
-  base::scoped_nsobject<DelegateTester> delegate_;
-  base::scoped_nsobject<TabSwitcherModel> model_;
+  DelegateTester* delegate_;
+  TabSwitcherModel* model_;
 };
 
 TEST_F(TabSwitcherModelTest, TestNoDiffs) {

@@ -157,6 +157,7 @@ source_set("utils") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tab_model_snapshot_unittest.mm",

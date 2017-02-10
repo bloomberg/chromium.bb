@@ -4,13 +4,16 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_model_snapshot.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface TabModelMock : NSObject<NSFastEnumeration> {
-  base::scoped_nsobject<NSArray> tabs_;
+  NSArray* tabs_;
 }
 @end
 
@@ -18,13 +21,13 @@
 
 - (id)initWithTabs:(NSArray*)tabs {
   if ((self = [super init])) {
-    tabs_.reset([tabs retain]);
+    tabs_ = tabs;
   }
   return self;
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id*)stackbuf
+                                  objects:(id __unsafe_unretained*)stackbuf
                                     count:(NSUInteger)len {
   return [tabs_ countByEnumeratingWithState:state objects:stackbuf count:len];
 }
@@ -75,10 +78,9 @@ TEST_F(TabModelSnapshotTest, TestSnapshotHashes) {
   Tab* tab1 = TabMock(@"id1", @"url1", 12345.6789);
   Tab* tab2 = TabMock(@"id2", @"url1", 12345.6789);
 
-  base::scoped_nsobject<TabModelMock> tabModel(
-      [[TabModelMock alloc] initWithTabs:@[ tab1, tab2 ]]);
-  TabModelSnapshot tabModelSnapshot((TabModel*)tabModel.get());
-  tabModel.reset();
+  TabModelMock* tabModel = [[TabModelMock alloc] initWithTabs:@[ tab1, tab2 ]];
+  TabModelSnapshot tabModelSnapshot((TabModel*)tabModel);
+  tabModel = nil;
 
   EXPECT_EQ(tabModelSnapshot.hashes().size(), 2UL);
   EXPECT_EQ(tabModelSnapshot.hashes()[0],
