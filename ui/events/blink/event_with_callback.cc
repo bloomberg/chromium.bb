@@ -15,7 +15,7 @@ using blink::WebGestureEvent;
 namespace ui {
 
 EventWithCallback::EventWithCallback(
-    blink::WebScopedInputEvent event,
+    WebScopedInputEvent event,
     const LatencyInfo& latency,
     base::TimeTicks timestamp_now,
     const InputHandlerProxy::EventDispositionCallback& callback)
@@ -27,7 +27,7 @@ EventWithCallback::EventWithCallback(
 }
 
 EventWithCallback::EventWithCallback(
-    blink::WebScopedInputEvent event,
+    WebScopedInputEvent event,
     const LatencyInfo& latency,
     base::TimeTicks creation_timestamp,
     base::TimeTicks last_coalesced_timestamp,
@@ -84,7 +84,7 @@ void EventWithCallback::RunCallbacks(
 }
 
 EventWithCallback::OriginalEventWithCallback::OriginalEventWithCallback(
-    blink::WebScopedInputEvent event,
+    WebScopedInputEvent event,
     const InputHandlerProxy::EventDispositionCallback& callback)
     : event_(std::move(event)), callback_(callback) {}
 

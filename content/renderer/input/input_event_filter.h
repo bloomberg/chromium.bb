@@ -68,7 +68,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void DidStopFlinging(int routing_id) override;
   void DispatchNonBlockingEventToMainThread(
       int routing_id,
-      blink::WebScopedInputEvent event,
+      ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) override;
 
   void NotifyInputEventHandled(int routing_id,
@@ -107,7 +107,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
       int routing_id,
       InputEventDispatchType dispatch_type,
       InputEventAckState ack_state,
-      blink::WebScopedInputEvent event,
+      ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
   void SendMessage(std::unique_ptr<IPC::Message> message);

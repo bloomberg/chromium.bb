@@ -84,12 +84,12 @@ class CONTENT_EXPORT InputHandlerManager {
 
   using InputEventAckStateCallback =
       base::Callback<void(InputEventAckState,
-                          blink::WebScopedInputEvent,
+                          ui::WebScopedInputEvent,
                           const ui::LatencyInfo&,
                           std::unique_ptr<ui::DidOverscrollParams>)>;
   // Called from the compositor's thread.
   virtual void HandleInputEvent(int routing_id,
-                                blink::WebScopedInputEvent input_event,
+                                ui::WebScopedInputEvent input_event,
                                 const ui::LatencyInfo& latency_info,
                                 const InputEventAckStateCallback& callback);
 
@@ -108,7 +108,7 @@ class CONTENT_EXPORT InputHandlerManager {
   // Called from the compositor's thread.
   void DispatchNonBlockingEventToMainThread(
       int routing_id,
-      blink::WebScopedInputEvent event,
+      ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info);
 
  private:
@@ -136,7 +136,7 @@ class CONTENT_EXPORT InputHandlerManager {
   void DidHandleInputEventAndOverscroll(
       const InputEventAckStateCallback& callback,
       ui::InputHandlerProxy::EventDisposition event_disposition,
-      blink::WebScopedInputEvent input_event,
+      ui::WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
 

@@ -30,7 +30,7 @@ bool IsContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
 }  // namespace
 
 EventWithDispatchType::EventWithDispatchType(
-    blink::WebScopedInputEvent event,
+    ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType dispatch_type)
     : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
@@ -99,7 +99,7 @@ MainThreadEventQueue::MainThreadEventQueue(
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
 bool MainThreadEventQueue::HandleEvent(
-    blink::WebScopedInputEvent event,
+    ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType original_dispatch_type,
     InputEventAckState ack_result) {

@@ -30,7 +30,7 @@ source_set("blink") {
 
   deps = [
     "//cc:cc",
-    "//third_party/WebKit/public:blink_minimal",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",

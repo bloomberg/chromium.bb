@@ -5,7 +5,6 @@
 #ifndef UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 #define UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 
-#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 
@@ -16,13 +15,19 @@ class WebMouseWheelEvent;
 
 namespace ui {
 
+struct WebInputEventDeleter {
+  void operator()(blink::WebInputEvent*) const;
+};
+
+using WebScopedInputEvent =
+    std::unique_ptr<blink::WebInputEvent, WebInputEventDeleter>;
+
 // Utility class for performing operations on and with WebInputEvents.
 class WebInputEventTraits {
  public:
   static std::string ToString(const blink::WebInputEvent& event);
   static size_t GetSize(blink::WebInputEvent::Type type);
-  static blink::WebScopedInputEvent Clone(const blink::WebInputEvent& event);
-  static void Delete(blink::WebInputEvent* event);
+  static WebScopedInputEvent Clone(const blink::WebInputEvent& event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event);
 
   static bool CanCauseScroll(const blink::WebMouseWheelEvent& event);

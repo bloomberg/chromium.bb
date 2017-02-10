@@ -195,6 +195,7 @@ component("web") {
     "WebImageCache.cpp",
     "WebImageDecoder.cpp",
     "WebInputElement.cpp",
+    "WebInputEvent.cpp",
     "WebInputEventConversion.cpp",
     "WebInputEventConversion.h",
     "WebInputMethodControllerImpl.cpp",

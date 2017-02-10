@@ -20,20 +20,20 @@ class EventWithCallback {
  public:
   struct OriginalEventWithCallback {
     OriginalEventWithCallback(
-        blink::WebScopedInputEvent event,
+        WebScopedInputEvent event,
         const InputHandlerProxy::EventDispositionCallback& callback);
     ~OriginalEventWithCallback();
-    blink::WebScopedInputEvent event_;
+    WebScopedInputEvent event_;
     InputHandlerProxy::EventDispositionCallback callback_;
   };
   using OriginalEventList = std::list<OriginalEventWithCallback>;
 
   EventWithCallback(
-      blink::WebScopedInputEvent event,
+      WebScopedInputEvent event,
       const LatencyInfo& latency,
       base::TimeTicks timestamp_now,
       const InputHandlerProxy::EventDispositionCallback& callback);
-  EventWithCallback(blink::WebScopedInputEvent event,
+  EventWithCallback(WebScopedInputEvent event,
                     const LatencyInfo& latency,
                     base::TimeTicks creation_timestamp,
                     base::TimeTicks last_coalesced_timestamp,
@@ -61,7 +61,7 @@ class EventWithCallback {
 
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
-  blink::WebScopedInputEvent event_;
+  WebScopedInputEvent event_;
   LatencyInfo latency_;
   OriginalEventList original_events_;
 

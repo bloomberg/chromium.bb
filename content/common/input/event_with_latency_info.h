@@ -8,36 +8,14 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
-
-class ScopedWebInputEventWithLatencyInfo {
- public:
-  ScopedWebInputEventWithLatencyInfo(blink::WebScopedInputEvent,
-                                     const ui::LatencyInfo&);
-
-  ~ScopedWebInputEventWithLatencyInfo();
-
-  bool CanCoalesceWith(const ScopedWebInputEventWithLatencyInfo& other) const
-      WARN_UNUSED_RESULT;
-
-  const blink::WebInputEvent& event() const;
-  const blink::WebCoalescedInputEvent& coalesced_event() const;
-  blink::WebInputEvent& event();
-  const ui::LatencyInfo latencyInfo() const { return latency_; }
-
-  void CoalesceWith(const ScopedWebInputEventWithLatencyInfo& other);
-
- private:
-  blink::WebScopedCoalescedInputEvent event_;
-  mutable ui::LatencyInfo latency_;
-};
 
 template <typename T>
 class EventWithLatencyInfo {

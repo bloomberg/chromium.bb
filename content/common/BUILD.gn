@@ -146,7 +146,6 @@ source_set("common") {
     "indexed_db/indexed_db_metadata.h",
     "indexed_db/indexed_db_struct_traits.cc",
     "indexed_db/indexed_db_struct_traits.h",
-    "input/event_with_latency_info.cc",
     "input/event_with_latency_info.h",
     "input/gesture_event_stream_validator.cc",
     "input/gesture_event_stream_validator.h",

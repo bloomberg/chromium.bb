@@ -291,7 +291,7 @@ void InputHandlerProxy::WillShutdown() {
 }
 
 void InputHandlerProxy::HandleInputEventWithLatencyInfo(
-    blink::WebScopedInputEvent event,
+    WebScopedInputEvent event,
     const LatencyInfo& latency_info,
     const EventDispositionCallback& callback) {
   DCHECK(input_handler_);

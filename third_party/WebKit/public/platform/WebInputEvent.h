@@ -268,7 +268,51 @@ class WebInputEvent {
     return m_type == other.m_type;
   }
 
-  BLINK_COMMON_EXPORT static const char* GetName(WebInputEvent::Type);
+  static const char* GetName(WebInputEvent::Type type) {
+#define CASE_TYPE(t)     \
+  case WebInputEvent::t: \
+    return #t
+    switch (type) {
+      CASE_TYPE(Undefined);
+      CASE_TYPE(MouseDown);
+      CASE_TYPE(MouseUp);
+      CASE_TYPE(MouseMove);
+      CASE_TYPE(MouseEnter);
+      CASE_TYPE(MouseLeave);
+      CASE_TYPE(ContextMenu);
+      CASE_TYPE(MouseWheel);
+      CASE_TYPE(RawKeyDown);
+      CASE_TYPE(KeyDown);
+      CASE_TYPE(KeyUp);
+      CASE_TYPE(Char);
+      CASE_TYPE(GestureScrollBegin);
+      CASE_TYPE(GestureScrollEnd);
+      CASE_TYPE(GestureScrollUpdate);
+      CASE_TYPE(GestureFlingStart);
+      CASE_TYPE(GestureFlingCancel);
+      CASE_TYPE(GestureShowPress);
+      CASE_TYPE(GestureTap);
+      CASE_TYPE(GestureTapUnconfirmed);
+      CASE_TYPE(GestureTapDown);
+      CASE_TYPE(GestureTapCancel);
+      CASE_TYPE(GestureDoubleTap);
+      CASE_TYPE(GestureTwoFingerTap);
+      CASE_TYPE(GestureLongPress);
+      CASE_TYPE(GestureLongTap);
+      CASE_TYPE(GesturePinchBegin);
+      CASE_TYPE(GesturePinchEnd);
+      CASE_TYPE(GesturePinchUpdate);
+      CASE_TYPE(TouchStart);
+      CASE_TYPE(TouchMove);
+      CASE_TYPE(TouchEnd);
+      CASE_TYPE(TouchCancel);
+      CASE_TYPE(TouchScrollStarted);
+      default:
+        NOTREACHED();
+        return "";
+    }
+#undef CASE_TYPE
+  }
 
   float frameScale() const { return m_frameScale; }
   void setFrameScale(float scale) { m_frameScale = scale; }

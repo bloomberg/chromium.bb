@@ -1,17 +1,17 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/input/event_with_latency_info.h"
+#include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 
 using blink::WebInputEvent;
 
 namespace content {
 
 ScopedWebInputEventWithLatencyInfo::ScopedWebInputEventWithLatencyInfo(
-    blink::WebScopedInputEvent event,
+    ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info)
-    : event_(new blink::WebCoalescedInputEvent(std::move(event))),
+    : event_(new blink::WebCoalescedInputEvent(*(event.get()))),
       latency_(latency_info) {}
 
 ScopedWebInputEventWithLatencyInfo::~ScopedWebInputEventWithLatencyInfo() {}
