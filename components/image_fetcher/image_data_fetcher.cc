@@ -6,6 +6,7 @@
 
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -78,13 +79,16 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   auto request_iter = pending_requests_.find(source);
   DCHECK(request_iter != pending_requests_.end());
 
+  bool success = source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
+
   RequestMetadata metadata;
-  if (source->GetResponseHeaders()) {
+  if (success && source->GetResponseHeaders()) {
     source->GetResponseHeaders()->GetMimeType(&metadata.mime_type);
+    success &= (source->GetResponseHeaders()->response_code() == net::HTTP_OK);
   }
 
   std::string image_data;
-  if (source->GetStatus().status() == net::URLRequestStatus::SUCCESS) {
+  if (success) {
     source->GetResponseAsString(&image_data);
   }
   request_iter->second->callback.Run(image_data, metadata);
