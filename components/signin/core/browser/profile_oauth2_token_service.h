@@ -32,7 +32,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
                                   public OAuth2TokenService::Observer,
                                   public KeyedService {
  public:
-  ProfileOAuth2TokenService(OAuth2TokenServiceDelegate* delegate);
+  ProfileOAuth2TokenService(
+      std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~ProfileOAuth2TokenService() override;
 
   // KeyedService implementation.

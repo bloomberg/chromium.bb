@@ -295,12 +295,9 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
-    fake_token_service_delegate_ =
-        new FakeOAuth2TokenServiceDelegate(request_context_getter.get());
-    // Not a memleak because OAuth2TokenService takes ownership of the raw
-    // pointer (crbug.com/688387).
     fake_token_service_ = base::MakeUnique<FakeProfileOAuth2TokenService>(
-        fake_token_service_delegate_);
+        base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
+            request_context_getter.get()));
 
     fetcher_ = base::MakeUnique<RemoteSuggestionsFetcher>(
         utils_.fake_signin_manager(), fake_token_service_.get(),
@@ -313,7 +310,7 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
   void SignIn() { utils_.fake_signin_manager()->SignIn(kTestEmail); }
 
   void IssueRefreshToken() {
-    fake_token_service_delegate_->UpdateCredentials(kTestEmail, "token");
+    fake_token_service_->GetDelegate()->UpdateCredentials(kTestEmail, "token");
   }
 
   void IssueOAuth2Token() {
@@ -386,7 +383,6 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
-  FakeOAuth2TokenServiceDelegate* fake_token_service_delegate_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
   std::unique_ptr<RemoteSuggestionsFetcher> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;

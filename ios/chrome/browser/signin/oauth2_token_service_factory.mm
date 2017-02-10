@@ -51,13 +51,12 @@ OAuth2TokenServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  ProfileOAuth2TokenServiceIOSDelegate* delegate =
-      new ProfileOAuth2TokenServiceIOSDelegate(
-          SigninClientFactory::GetForBrowserState(chrome_browser_state),
-          base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-          ios::AccountTrackerServiceFactory::GetForBrowserState(
-              chrome_browser_state),
-          ios::SigninErrorControllerFactory::GetForBrowserState(
-              chrome_browser_state));
-  return base::WrapUnique(new ProfileOAuth2TokenService(delegate));
+  auto delegate = base::MakeUnique<ProfileOAuth2TokenServiceIOSDelegate>(
+      SigninClientFactory::GetForBrowserState(chrome_browser_state),
+      base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
+      ios::AccountTrackerServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      ios::SigninErrorControllerFactory::GetForBrowserState(
+          chrome_browser_state));
+  return base::MakeUnique<ProfileOAuth2TokenService>(std::move(delegate));
 }

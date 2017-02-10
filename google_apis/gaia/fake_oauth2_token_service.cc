@@ -4,6 +4,8 @@
 
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 
+#include "base/memory/ptr_util.h"
+
 FakeOAuth2TokenService::PendingRequest::PendingRequest() {
 }
 
@@ -14,8 +16,8 @@ FakeOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 
 FakeOAuth2TokenService::FakeOAuth2TokenService()
-    : OAuth2TokenService(new FakeOAuth2TokenServiceDelegate(nullptr)) {
-}
+    : OAuth2TokenService(
+          base::MakeUnique<FakeOAuth2TokenServiceDelegate>(nullptr)) {}
 
 FakeOAuth2TokenService::~FakeOAuth2TokenService() {
 }

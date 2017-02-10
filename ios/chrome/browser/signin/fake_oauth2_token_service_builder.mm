@@ -17,11 +17,11 @@ std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  OAuth2TokenServiceDelegate* delegate =
-      new ProfileOAuth2TokenServiceIOSDelegate(
+  std::unique_ptr<OAuth2TokenServiceDelegate> delegate =
+      base::MakeUnique<ProfileOAuth2TokenServiceIOSDelegate>(
           SigninClientFactory::GetForBrowserState(browser_state),
           base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(browser_state));
-  return base::MakeUnique<FakeProfileOAuth2TokenService>(delegate);
+  return base::MakeUnique<FakeProfileOAuth2TokenService>(std::move(delegate));
 }

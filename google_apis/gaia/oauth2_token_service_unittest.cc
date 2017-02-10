@@ -47,8 +47,9 @@ class RetryingTestingOAuth2TokenServiceConsumer
 
 class TestOAuth2TokenService : public OAuth2TokenService {
  public:
-  explicit TestOAuth2TokenService(FakeOAuth2TokenServiceDelegate* delegate)
-      : OAuth2TokenService(delegate) {}
+  explicit TestOAuth2TokenService(
+      std::unique_ptr<FakeOAuth2TokenServiceDelegate> delegate)
+      : OAuth2TokenService(std::move(delegate)) {}
 
   void CancelAllRequestsForTest() { CancelAllRequests(); }
 
@@ -65,8 +66,9 @@ class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
     oauth2_service_.reset(new TestOAuth2TokenService(
-        new FakeOAuth2TokenServiceDelegate(new net::TestURLRequestContextGetter(
-            message_loop_.task_runner()))));
+        base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
+            new net::TestURLRequestContextGetter(
+                message_loop_.task_runner()))));
     account_id_ = "test_user@gmail.com";
   }
 

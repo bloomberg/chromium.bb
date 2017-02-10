@@ -17,8 +17,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
-    OAuth2TokenServiceDelegate* delegate)
-    : OAuth2TokenService(delegate) {
+    std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
+    : OAuth2TokenService(std::move(delegate)) {
   AddObserver(this);
 }
 

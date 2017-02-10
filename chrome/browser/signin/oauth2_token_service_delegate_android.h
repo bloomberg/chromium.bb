@@ -31,6 +31,10 @@
 // request from other thread, please use OAuth2TokenServiceRequest.
 class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
  public:
+  OAuth2TokenServiceDelegateAndroid(
+      AccountTrackerService* account_tracker_service);
+  ~OAuth2TokenServiceDelegateAndroid() override;
+
   // Registers the OAuth2TokenServiceDelegateAndroid's native methods through
   // JNI.
   static bool Register(JNIEnv* env);
@@ -96,11 +100,6 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   void LoadCredentials(const std::string& primary_account_id) override;
 
  protected:
-  friend class ProfileOAuth2TokenServiceFactory;
-  OAuth2TokenServiceDelegateAndroid(
-      AccountTrackerService* account_tracker_service);
-  ~OAuth2TokenServiceDelegateAndroid() override;
-
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,

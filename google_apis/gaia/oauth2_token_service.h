@@ -136,7 +136,8 @@ class OAuth2TokenService : public base::NonThreadSafe {
                                 const ScopeSet& scopes) = 0;
   };
 
-  explicit OAuth2TokenService(OAuth2TokenServiceDelegate* delegate);
+  explicit OAuth2TokenService(
+      std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   virtual ~OAuth2TokenService();
 
   // Add or remove observers of this token service.
@@ -213,6 +214,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
       const ScopeSet& scopes) const;
 
   OAuth2TokenServiceDelegate* GetDelegate();
+  const OAuth2TokenServiceDelegate* GetDelegate() const;
 
  protected:
   // Implements a cancelable |OAuth2TokenService::Request|, which should be

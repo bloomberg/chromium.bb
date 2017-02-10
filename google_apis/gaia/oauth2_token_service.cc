@@ -388,8 +388,9 @@ OAuth2TokenService::Consumer::Consumer(const std::string& id)
 OAuth2TokenService::Consumer::~Consumer() {
 }
 
-OAuth2TokenService::OAuth2TokenService(OAuth2TokenServiceDelegate* delegate)
-    : delegate_(delegate) {
+OAuth2TokenService::OAuth2TokenService(
+    std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
+    : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
 }
 
@@ -399,6 +400,10 @@ OAuth2TokenService::~OAuth2TokenService() {
 }
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
+  return delegate_.get();
+}
+
+const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 

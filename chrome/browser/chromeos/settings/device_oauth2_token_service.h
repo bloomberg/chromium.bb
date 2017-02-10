@@ -67,8 +67,8 @@ class DeviceOAuth2TokenService
   void OnValidationCompleted(GoogleServiceAuthError::State error) override;
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
-  // Ownership of |token_encryptor| will be taken.
-  explicit DeviceOAuth2TokenService(DeviceOAuth2TokenServiceDelegate* delegate);
+  explicit DeviceOAuth2TokenService(
+      std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate);
   ~DeviceOAuth2TokenService() override;
 
   // Flushes |pending_requests_|, indicating the specified result.
@@ -78,11 +78,12 @@ class DeviceOAuth2TokenService
   // Signals failure on the specified request, passing |error| as the reason.
   void FailRequest(RequestImpl* request, GoogleServiceAuthError::State error);
 
+  DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate();
+  const DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate() const;
+
   // Currently open requests that are waiting while loading the system salt or
   // validating the token.
   std::vector<PendingRequest*> pending_requests_;
-
-  DeviceOAuth2TokenServiceDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };
