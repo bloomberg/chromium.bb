@@ -303,18 +303,12 @@ bool HeapCompact::shouldCompact(ThreadState* state,
       reason != BlinkGC::ForcedGC)
     return false;
 
-  const ThreadHeap& heap = state->heap();
-  // If any of the participating threads require a stack scan,
-  // do not compact.
-  //
+  // If the GCing thread requires a stack scan, do not compact.
   // Why? Should the stack contain an iterator pointing into its
   // associated backing store, its references wouldn't be
   // correctly relocated.
-  for (ThreadState* state : heap.threads()) {
-    if (state->stackState() == BlinkGC::HeapPointersOnStack) {
-      return false;
-    }
-  }
+  if (state->stackState() == BlinkGC::HeapPointersOnStack)
+    return false;
 
   // Compaction enable rules:
   //  - It's been a while since the last time.
