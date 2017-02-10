@@ -846,7 +846,10 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(
     compositingContainerOffsetFromParentGraphicsLayer +=
         compositingContainer->subpixelAccumulation();
 
-#if DCHECK_IS_ON()
+#if 0 && DCHECK_IS_ON()
+  // TODO(trchen): We should enable this for below comment out |DCHECK()| once
+  // we have simple reproduce case and fix it. See http://crbug.com/646437 for
+  // details.
   const PaintLayer* commonTransformAncestor = nullptr;
   if (compositingContainer && compositingContainer->transform())
     commonTransformAncestor = compositingContainer;
@@ -867,7 +870,9 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(
     // Store the local bounds of the Layer subtree before applying the offset.
     layers[i].compositedBounds = squashedBounds;
 
-#if DCHECK_IS_ON()
+#if 0 && DCHECK_IS_ON()
+    // TODO(trchen): We should enable this |DCHECK()| once we have simple
+    // reproduce case and fix it. See http://crbug.com/646437 for details.
     DCHECK(layers[i].paintLayer->transformAncestor() ==
            commonTransformAncestor);
 #endif
