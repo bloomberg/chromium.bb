@@ -1594,9 +1594,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
       switches::kNumRasterThreads,
       base::IntToString(NumberOfRendererRasterThreads()));
 
-  if (IsGpuRasterizationEnabled())
-    command_line->AppendSwitch(switches::kEnableGpuRasterization);
-
   if (IsAsyncWorkerContextEnabled())
     command_line->AppendSwitch(switches::kEnableGpuAsyncWorkerContext);
 
@@ -1610,9 +1607,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableZeroCopy);
   if (!IsPartialRasterEnabled())
     command_line->AppendSwitch(switches::kDisablePartialRaster);
-
-  if (IsForceGpuRasterizationEnabled())
-    command_line->AppendSwitch(switches::kForceGpuRasterization);
 
   if (IsGpuMemoryBufferCompositorResourcesEnabled()) {
     command_line->AppendSwitch(
@@ -1792,6 +1786,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceDeviceScaleFactor,
     switches::kForceDisplayList2dCanvas,
     switches::kForceGpuMemAvailableMb,
+    switches::kForceGpuRasterization,
     switches::kEnableCanvas2dDynamicRenderingModeSwitching,
     switches::kForceOverlayFullscreenVideo,
     switches::kFullMemoryCrashReport,

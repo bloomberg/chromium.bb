@@ -154,7 +154,8 @@ void GpuMain::InitOnGpuThread(
 
   gpu_service_ = base::MakeUnique<GpuService>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-      gpu_memory_buffer_factory_.get(), io_runner);
+      gpu_memory_buffer_factory_.get(), io_runner,
+      gpu_init_->gpu_feature_info());
 }
 
 void GpuMain::CreateDisplayCompositorInternal(

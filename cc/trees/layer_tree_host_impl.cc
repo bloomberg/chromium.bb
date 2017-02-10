@@ -1760,8 +1760,10 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   int max_msaa_samples = 0;
   ContextProvider* compositor_context_provider =
       compositor_frame_sink_->context_provider();
+  bool gpu_rasterization_enabled = false;
   if (compositor_context_provider) {
     const auto& caps = compositor_context_provider->ContextCapabilities();
+    gpu_rasterization_enabled = caps.gpu_rasterization;
     if (!caps.msaa_is_slow)
       max_msaa_samples = caps.max_samples;
   }
@@ -1778,7 +1780,7 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     if (use_msaa) {
       gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
     }
-  } else if (!settings_.gpu_rasterization_enabled) {
+  } else if (!gpu_rasterization_enabled) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
   } else if (!has_gpu_rasterization_trigger_) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_VIEWPORT;

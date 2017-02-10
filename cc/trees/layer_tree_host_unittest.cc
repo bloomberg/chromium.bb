@@ -467,7 +467,6 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
   }
 
@@ -1659,7 +1658,6 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
   }
 
@@ -5164,7 +5162,6 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
 class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    EXPECT_FALSE(settings->gpu_rasterization_enabled);
     EXPECT_FALSE(settings->gpu_rasterization_forced);
   }
 
@@ -5271,13 +5268,22 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestEmptyLayerGpuRasterization);
 
-class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
+class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    EXPECT_FALSE(settings->gpu_rasterization_enabled);
-    settings->gpu_rasterization_enabled = true;
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    auto context = TestWebGraphicsContext3D::Create();
+    context->set_gpu_rasterization(true);
+    auto context_provider = TestContextProvider::Create(std::move(context));
+    return LayerTreeHostTest::CreateCompositorFrameSink(
+        std::move(context_provider), std::move(worker_context_provider));
   }
+};
 
+class LayerTreeHostTestGpuRasterizationEnabled
+    : public LayerTreeHostWithGpuRasterizationTest {
+ protected:
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
@@ -5339,13 +5345,9 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
-class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
+class LayerTreeHostTestGpuRasterizationReenabled
+    : public LayerTreeHostWithGpuRasterizationTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    EXPECT_FALSE(settings->gpu_rasterization_enabled);
-    settings->gpu_rasterization_enabled = true;
-  }
-
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
@@ -6151,7 +6153,6 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   GpuRasterizationRasterizesBorderTiles() : viewport_size_(1024, 2048) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
   }
 
@@ -6979,7 +6980,6 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
       : viewport_size_(1024, 2048), large_image_size_(20000, 10) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
 
     /// Set to 0 to force at-raster GPU image decode.

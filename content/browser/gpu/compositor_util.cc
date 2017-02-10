@@ -242,21 +242,8 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
 }
 
 bool IsGpuRasterizationEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableGpuRasterization))
-    return false;
-  else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
-    return true;
-
-  if (IsGpuRasterizationBlacklisted()) {
-    return false;
-  }
-
-  // Gpu Rasterization on platforms that are not fully enabled is controlled by
-  // a finch experiment.
-  return base::FeatureList::IsEnabled(features::kDefaultEnableGpuRasterization);
+  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+  return manager->IsFeatureEnabled(gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
 }
 
 bool IsAsyncWorkerContextEnabled() {

@@ -3758,6 +3758,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       query_manager_->GPUTimingAvailable();
   caps.disable_multisampling_color_mask_usage =
       workarounds().disable_multisampling_color_mask_usage;
+  caps.gpu_rasterization =
+      group_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
   caps.disable_webgl_rgb_multisampling_usage =
       workarounds().disable_webgl_rgb_multisampling_usage;
   caps.emulate_rgb_buffer_with_rgba =

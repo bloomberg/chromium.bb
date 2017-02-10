@@ -299,7 +299,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
       content_is_suitable_for_gpu_rasterization_);
-  RecordGpuRasterizationHistogram();
+  RecordGpuRasterizationHistogram(host_impl);
 
   host_impl->SetViewportSize(device_viewport_size_);
   sync_tree->SetDeviceScaleFactor(device_scale_factor_);
@@ -578,19 +578,30 @@ void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
 
-void LayerTreeHost::RecordGpuRasterizationHistogram() {
+void LayerTreeHost::RecordGpuRasterizationHistogram(
+    const LayerTreeHostImpl* host_impl) {
   // Gpu rasterization is only supported for Renderer compositors.
   // Checking for IsSingleThreaded() to exclude Browser compositors.
   if (gpu_rasterization_histogram_recorded_ || IsSingleThreaded())
     return;
+
+  bool gpu_rasterization_enabled = false;
+  if (host_impl->compositor_frame_sink()) {
+    ContextProvider* compositor_context_provider =
+        host_impl->compositor_frame_sink()->context_provider();
+    if (compositor_context_provider) {
+      gpu_rasterization_enabled =
+          compositor_context_provider->ContextCapabilities().gpu_rasterization;
+    }
+  }
 
   // Record how widely gpu rasterization is enabled.
   // This number takes device/gpu whitelisting/backlisting into account.
   // Note that we do not consider the forced gpu rasterization mode, which is
   // mostly used for debugging purposes.
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
-                        settings_.gpu_rasterization_enabled);
-  if (settings_.gpu_rasterization_enabled) {
+                        gpu_rasterization_enabled);
+  if (gpu_rasterization_enabled) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationTriggered",
                           has_gpu_rasterization_trigger_);
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSuitableContent",

@@ -9,6 +9,8 @@
 
 namespace switches {
 
+GPU_EXPORT extern const char kDisableGpuRasterization[];
+GPU_EXPORT extern const char kEnableGpuRasterization[];
 GPU_EXPORT extern const char kGpuActiveVendorID[];
 GPU_EXPORT extern const char kGpuActiveDeviceID[];
 GPU_EXPORT extern const char kGpuDeviceID[];
@@ -29,6 +31,7 @@ GPU_EXPORT extern const char kGpuTestingGLVendor[];
 GPU_EXPORT extern const char kGpuTestingGLRenderer[];
 GPU_EXPORT extern const char kGpuTestingGLVersion[];
 GPU_EXPORT extern const char kGpuVendorID[];
+GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
 
 }  // namespace switches
 

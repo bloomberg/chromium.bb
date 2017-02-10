@@ -257,7 +257,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
       gpu_preferences_, nullptr, nullptr,
       new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
       new gpu::gles2::FramebufferCompletenessCache, feature_info, true, nullptr,
-      nullptr));
+      nullptr, gpu::GpuFeatureInfo()));
 
   std::unique_ptr<gpu::gles2::GLES2Decoder> decoder(
       gpu::gles2::GLES2Decoder::Create(group.get()));

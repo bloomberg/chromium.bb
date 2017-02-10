@@ -46,6 +46,15 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
         TestContextProvider::CreateWorker()));
   }
 
+  static std::unique_ptr<FakeCompositorFrameSink>
+  Create3dForGpuRasterization() {
+    auto context = TestWebGraphicsContext3D::Create();
+    context->set_gpu_rasterization(true);
+    auto context_provider = TestContextProvider::Create(std::move(context));
+    return base::WrapUnique(new FakeCompositorFrameSink(
+        std::move(context_provider), TestContextProvider::CreateWorker()));
+  }
+
   static std::unique_ptr<FakeCompositorFrameSink> CreateSoftware() {
     return base::WrapUnique(new FakeCompositorFrameSink(nullptr, nullptr));
   }

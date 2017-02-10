@@ -61,13 +61,6 @@ namespace content {
 
 namespace {
 
-enum GpuFeatureStatus {
-    kGpuFeatureEnabled = 0,
-    kGpuFeatureBlacklisted = 1,
-    kGpuFeatureDisabled = 2,  // disabled by user but not blacklisted
-    kGpuFeatureNumStatus
-};
-
 #if defined(OS_WIN)
 
 enum WinSubVersion {
@@ -82,7 +75,7 @@ enum WinSubVersion {
   kNumWinSubVersions
 };
 
-int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
+int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   static WinSubVersion sub_version = kNumWinSubVersions;
   if (sub_version == kNumWinSubVersions) {
     sub_version = kWinOthers;
@@ -110,17 +103,18 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
         break;
     }
   }
-  int entry_index = static_cast<int>(sub_version) * kGpuFeatureNumStatus;
+  int entry_index = static_cast<int>(sub_version) * gpu::kGpuFeatureStatusMax;
   switch (status) {
-    case kGpuFeatureEnabled:
+    case gpu::kGpuFeatureStatusEnabled:
       break;
-    case kGpuFeatureBlacklisted:
+    case gpu::kGpuFeatureStatusBlacklisted:
       entry_index++;
       break;
-    case kGpuFeatureDisabled:
+    case gpu::kGpuFeatureStatusDisabled:
       entry_index += 2;
       break;
-    case kGpuFeatureNumStatus:
+    case gpu::kGpuFeatureStatusUndefined:
+    case gpu::kGpuFeatureStatusMax:
       NOTREACHED();
       break;
   }
@@ -201,21 +195,21 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   for (size_t i = 0; i < kNumFeatures; ++i) {
     // We can't use UMA_HISTOGRAM_ENUMERATION here because the same name is
     // expected if the macro is used within a loop.
-    GpuFeatureStatus value = kGpuFeatureEnabled;
+    gpu::GpuFeatureStatus value = gpu::kGpuFeatureStatusEnabled;
     if (blacklisted_features.count(kGpuFeatures[i]))
-      value = kGpuFeatureBlacklisted;
+      value = gpu::kGpuFeatureStatusBlacklisted;
     else if (kGpuFeatureUserFlags[i])
-      value = kGpuFeatureDisabled;
+      value = gpu::kGpuFeatureStatusDisabled;
     base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-        kGpuBlacklistFeatureHistogramNames[i],
-        1, kGpuFeatureNumStatus, kGpuFeatureNumStatus + 1,
+        kGpuBlacklistFeatureHistogramNames[i], 1, gpu::kGpuFeatureStatusMax,
+        gpu::kGpuFeatureStatusMax + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(value);
 #if defined(OS_WIN)
     histogram_pointer = base::LinearHistogram::FactoryGet(
-        kGpuBlacklistFeatureHistogramNamesWin[i],
-        1, kNumWinSubVersions * kGpuFeatureNumStatus,
-        kNumWinSubVersions * kGpuFeatureNumStatus + 1,
+        kGpuBlacklistFeatureHistogramNamesWin[i], 1,
+        kNumWinSubVersions * gpu::kGpuFeatureStatusMax,
+        kNumWinSubVersions * gpu::kGpuFeatureStatusMax + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
 #endif
@@ -307,6 +301,13 @@ bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
   }
 
   return (blacklisted_features_.count(feature) == 1);
+}
+
+bool GpuDataManagerImplPrivate::IsFeatureEnabled(int feature) const {
+  DCHECK_EQ(feature, gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
+  return gpu_feature_info_
+             .status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+         gpu::kGpuFeatureStatusEnabled;
 }
 
 bool GpuDataManagerImplPrivate::IsDriverBugWorkaroundActive(int feature) const {
@@ -680,6 +681,11 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   }
 
   UpdateGpuInfoHelper();
+}
+
+void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
+  gpu_feature_info_ = gpu_feature_info;
 }
 
 void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(

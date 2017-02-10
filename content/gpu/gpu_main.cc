@@ -285,7 +285,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   GpuProcess gpu_process(io_thread_priority);
   GpuChildThread* child_thread = new GpuChildThread(
       gpu_init.TakeWatchdogThread(), dead_on_arrival, gpu_init.gpu_info(),
-      deferred_messages.Get(), gpu_memory_buffer_factory.get());
+      gpu_init.gpu_feature_info(), deferred_messages.Get(),
+      gpu_memory_buffer_factory.get());
   while (!deferred_messages.Get().empty())
     deferred_messages.Get().pop();
 

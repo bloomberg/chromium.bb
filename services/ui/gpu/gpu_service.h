@@ -48,7 +48,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   GpuService(const gpu::GPUInfo& gpu_info,
              std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
              gpu::GpuMemoryBufferFactory* memory_buffer_factory,
-             scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+             scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+             const gpu::GpuFeatureInfo& gpu_feature_info);
 
   ~GpuService() override;
 
@@ -67,6 +68,10 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   }
 
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
+
+  const gpu::GpuFeatureInfo& gpu_feature_info() const {
+    return gpu_feature_info_;
+  }
 
  private:
   friend class GpuMain;
@@ -138,6 +143,9 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
+
+  // Information about general chrome feature support for the GPU.
+  gpu::GpuFeatureInfo gpu_feature_info_;
 
   mojom::GpuHostPtr gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

@@ -571,7 +571,8 @@ bool GpuCommandBufferStub::Initialize(
         manager->framebuffer_completeness_cache(), feature_info,
         init_params.attribs.bind_generates_resource,
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-        channel_->watchdog() /* progress_reporter */);
+        channel_->watchdog() /* progress_reporter */,
+        manager->gpu_feature_info());
   }
 
 #if defined(OS_MACOSX)

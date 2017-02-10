@@ -135,7 +135,8 @@ class CommandBufferSetup {
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, mailbox_manager_.get(), nullptr, translator_cache_,
         completeness_cache_, feature_info, true /* bind_generates_resource */,
-        nullptr /* image_factory */, nullptr /* progress_reporter */);
+        nullptr /* image_factory */, nullptr /* progress_reporter */,
+        GpuFeatureInfo());
     command_buffer_.reset(
         new CommandBufferService(context_group->transfer_buffer_manager()));
     command_buffer_->SetPutOffsetChangeCallback(

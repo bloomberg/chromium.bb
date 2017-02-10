@@ -6,6 +6,15 @@
 
 namespace switches {
 
+// Disable GPU rasterization, i.e. rasterize on the CPU only.
+// Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
+const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
+
+// Allow heuristics to determine when a layer tile should be drawn with the
+// Skia GPU backend. Only valid with GPU accelerated compositing +
+// impl-side painting.
+const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
+
 // Passes active gpu vendor id from browser process to GPU process.
 const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
 
@@ -66,5 +75,8 @@ const char kGpuTestingGLVersion[] = "gpu-testing-gl-version";
 
 // Passes gpu vendor_id from browser process to GPU process.
 const char kGpuVendorID[] = "gpu-vendor-id";
+
+// Ignores GPU blacklist.
+const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 
 }  // namespace switches

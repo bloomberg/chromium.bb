@@ -21,6 +21,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -65,11 +66,13 @@ class GpuChildThread : public ChildThreadImpl,
   GpuChildThread(std::unique_ptr<gpu::GpuWatchdogThread> gpu_watchdog_thread,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
+                 const gpu::GpuFeatureInfo& gpu_feature_info,
                  const DeferredMessages& deferred_messages,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   GpuChildThread(const InProcessChildThreadParams& params,
                  const gpu::GPUInfo& gpu_info,
+                 const gpu::GpuFeatureInfo& gpu_feature_info,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   ~GpuChildThread() override;

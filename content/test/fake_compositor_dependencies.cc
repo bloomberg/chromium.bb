@@ -24,10 +24,6 @@ bool FakeCompositorDependencies::IsGpuRasterizationForced() {
   return false;
 }
 
-bool FakeCompositorDependencies::IsGpuRasterizationEnabled() {
-  return false;
-}
-
 bool FakeCompositorDependencies::IsAsyncWorkerContextEnabled() {
   return false;
 }

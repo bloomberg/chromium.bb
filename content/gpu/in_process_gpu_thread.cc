@@ -9,6 +9,7 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gl/init/gl_factory.h"
@@ -56,10 +57,13 @@ void InProcessGpuThread::Init() {
   else
     gpu::CollectContextGraphicsInfo(&gpu_info);
 
+  gpu::GpuFeatureInfo gpu_feature_info =
+      gpu::GetGpuFeatureInfo(gpu_info, *base::CommandLine::ForCurrentProcess());
+
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
-  GpuChildThread* child_thread =
-      new GpuChildThread(params_, gpu_info, gpu_memory_buffer_factory_.get());
+  GpuChildThread* child_thread = new GpuChildThread(
+      params_, gpu_info, gpu_feature_info, gpu_memory_buffer_factory_.get());
 
   // Since we are in the browser process, use the thread start time as the
   // process start time.

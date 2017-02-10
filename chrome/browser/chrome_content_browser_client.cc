@@ -185,6 +185,7 @@
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/features/features.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/media_features.h"
 #include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

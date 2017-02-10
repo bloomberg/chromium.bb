@@ -116,6 +116,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBreakpad,
     switches::kDisableES3GLContext,
+    switches::kDisableGpuRasterization,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuWatchdog,
     switches::kDisableGLExtensions,
@@ -127,6 +128,7 @@ static const char* const kSwitchNames[] = {
 #if defined(OS_WIN)
     switches::kEnableAcceleratedVpxDecode,
 #endif
+    switches::kEnableGpuRasterization,
     switches::kEnableHeapProfiling,
     switches::kEnableLogging,
 #if defined(OS_CHROMEOS)
@@ -777,15 +779,20 @@ void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
 }
 #endif
 
-void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
+void GpuProcessHost::OnInitialized(
+    bool result,
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
   initialized_ = result;
   gpu_info_ = gpu_info;
 
-  if (!initialized_)
+  if (!initialized_) {
     GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
-  else
-    GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
+    return;
+  }
+  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
+  GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
 void GpuProcessHost::OnChannelEstablished(

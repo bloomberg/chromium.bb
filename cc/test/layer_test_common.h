@@ -54,7 +54,11 @@ class LayerTestCommon {
   class LayerImplTest {
    public:
     LayerImplTest();
+    explicit LayerImplTest(
+        std::unique_ptr<CompositorFrameSink> compositor_frame_sink);
     explicit LayerImplTest(const LayerTreeSettings& settings);
+    LayerImplTest(const LayerTreeSettings& settings,
+                  std::unique_ptr<CompositorFrameSink> compositor_frame_sink);
     ~LayerImplTest();
 
     template <typename T>

@@ -213,6 +213,8 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   }
 #endif  // !defined(OS_MACOSX)
 
+  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
+
   base::TimeDelta collect_context_time =
       base::TimeTicks::Now() - before_collect_context_graphics_info;
   UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);

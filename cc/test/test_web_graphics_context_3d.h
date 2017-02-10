@@ -344,6 +344,9 @@ class TestWebGraphicsContext3D {
   void set_msaa_is_slow(bool msaa_is_slow) {
     test_capabilities_.msaa_is_slow = msaa_is_slow;
   }
+  void set_gpu_rasterization(bool gpu_rasterization) {
+    test_capabilities_.gpu_rasterization = gpu_rasterization;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

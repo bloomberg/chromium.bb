@@ -774,8 +774,6 @@ void RenderThreadImpl::Init(
 #endif
   }
 
-  is_gpu_rasterization_enabled_ =
-      command_line.HasSwitch(switches::kEnableGpuRasterization);
   is_gpu_rasterization_forced_ =
       command_line.HasSwitch(switches::kForceGpuRasterization);
   is_async_worker_context_enabled_ =
@@ -1491,10 +1489,6 @@ void RenderThreadImpl::OnAssociatedInterfaceRequest(
 
 bool RenderThreadImpl::IsGpuRasterizationForced() {
   return is_gpu_rasterization_forced_;
-}
-
-bool RenderThreadImpl::IsGpuRasterizationEnabled() {
-  return is_gpu_rasterization_enabled_;
 }
 
 bool RenderThreadImpl::IsAsyncWorkerContextEnabled() {

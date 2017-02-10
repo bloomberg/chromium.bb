@@ -32,7 +32,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          enable_latency_recovery == other.enable_latency_recovery &&
          can_use_lcd_text == other.can_use_lcd_text &&
          use_distance_field_text == other.use_distance_field_text &&
-         gpu_rasterization_enabled == other.gpu_rasterization_enabled &&
          gpu_rasterization_forced == other.gpu_rasterization_forced &&
          async_worker_context_enabled == other.async_worker_context_enabled &&
          gpu_rasterization_msaa_sample_count ==

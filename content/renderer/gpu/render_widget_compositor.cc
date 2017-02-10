@@ -313,8 +313,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->GetGpuRasterizationMSAASampleCount();
   settings.gpu_rasterization_forced =
       compositor_deps->IsGpuRasterizationForced();
-  settings.gpu_rasterization_enabled =
-      compositor_deps->IsGpuRasterizationEnabled();
   settings.async_worker_context_enabled =
       compositor_deps->IsAsyncWorkerContextEnabled();
 
@@ -381,10 +379,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   bool using_synchronous_compositor =
       GetContentClient()->UsingSynchronousCompositing();
 
-  // We can't use GPU rasterization on low-end devices, because the Ganesh
-  // cache would consume too much memory.
-  if (base::SysInfo::IsLowEndDevice())
-    settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
   if (using_synchronous_compositor) {
     // Android WebView uses system scrollbars, so make ours invisible.

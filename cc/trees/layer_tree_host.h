@@ -472,7 +472,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   void OnCommitForSwapPromises();
 
-  void RecordGpuRasterizationHistogram();
+  void RecordGpuRasterizationHistogram(const LayerTreeHostImpl* host_impl);
 
   MicroBenchmarkController micro_benchmark_controller_;
 

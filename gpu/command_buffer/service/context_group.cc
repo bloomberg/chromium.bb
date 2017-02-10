@@ -67,7 +67,8 @@ ContextGroup::ContextGroup(
     const scoped_refptr<FeatureInfo>& feature_info,
     bool bind_generates_resource,
     gpu::ImageFactory* image_factory,
-    ProgressReporter* progress_reporter)
+    ProgressReporter* progress_reporter,
+    const GpuFeatureInfo& gpu_feature_info)
     : gpu_preferences_(gpu_preferences),
       mailbox_manager_(mailbox_manager),
       memory_tracker_(memory_tracker),
@@ -106,7 +107,8 @@ ContextGroup::ContextGroup(
       feature_info_(feature_info),
       image_factory_(image_factory),
       passthrough_resources_(new PassthroughResources),
-      progress_reporter_(progress_reporter) {
+      progress_reporter_(progress_reporter),
+      gpu_feature_info_(gpu_feature_info) {
   {
     DCHECK(feature_info_);
     if (!mailbox_manager_.get())

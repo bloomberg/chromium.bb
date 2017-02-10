@@ -32,7 +32,6 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/gpu_rasterization_enabled_settings.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -80,13 +79,16 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
 
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
-    settings.gpu_rasterization_enabled = true;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
     settings.verify_clip_tree_calculations = true;
     settings.renderer_settings.buffer_to_texture_target_map =
         DefaultBufferToTextureTargetMapForTesting();
     return settings;
+  }
+
+  std::unique_ptr<CompositorFrameSink> CreateCompositorFrameSink() override {
+    return FakeCompositorFrameSink::Create3dForGpuRasterization();
   }
 
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,

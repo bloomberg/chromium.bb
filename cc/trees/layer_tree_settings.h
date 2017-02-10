@@ -37,7 +37,6 @@ class CC_EXPORT LayerTreeSettings {
   bool enable_latency_recovery = true;
   bool can_use_lcd_text = true;
   bool use_distance_field_text = false;
-  bool gpu_rasterization_enabled = false;
   bool gpu_rasterization_forced = false;
   bool async_worker_context_enabled = false;
   int gpu_rasterization_msaa_sample_count = 0;

@@ -73,6 +73,7 @@
 #include "content/public/common/features.h"
 #include "extensions/features/features.h"
 #include "gin/public/gin_features.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"

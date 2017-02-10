@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
@@ -124,9 +125,6 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 }
 
 }  // anonyous namespace
-
-InProcessCommandBuffer::Service::Service()
-    : gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
 
 InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
     : gpu_preferences_(gpu_preferences),
@@ -317,7 +315,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 service_->gpu_preferences(), service_->mailbox_manager(), NULL,
                 service_->shader_translator_cache(),
                 service_->framebuffer_completeness_cache(), feature_info,
-                bind_generates_resource, nullptr, nullptr);
+                bind_generates_resource, nullptr, nullptr, GpuFeatureInfo());
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
 

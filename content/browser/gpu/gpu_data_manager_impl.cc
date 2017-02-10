@@ -30,6 +30,11 @@ bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
   return private_->IsFeatureBlacklisted(feature);
 }
 
+bool GpuDataManagerImpl::IsFeatureEnabled(int feature) const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsFeatureEnabled(feature);
+}
+
 bool GpuDataManagerImpl::IsDriverBugWorkaroundActive(int feature) const {
   base::AutoLock auto_lock(lock_);
   return private_->IsDriverBugWorkaroundActive(feature);
@@ -142,6 +147,12 @@ void GpuDataManagerImpl::Initialize() {
 void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuInfo(gpu_info);
+}
+
+void GpuDataManagerImpl::UpdateGpuFeatureInfo(
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
 void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(

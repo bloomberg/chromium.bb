@@ -58,7 +58,8 @@ TestGpuChannelManager::TestGpuChannelManager(
                         io_task_runner,
                         nullptr,
                         sync_point_manager,
-                        gpu_memory_buffer_factory) {}
+                        gpu_memory_buffer_factory,
+                        GpuFeatureInfo()) {}
 
 TestGpuChannelManager::~TestGpuChannelManager() {
   // Clear gpu channels here so that any IPC messages sent are handled using the

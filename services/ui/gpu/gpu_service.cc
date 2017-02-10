@@ -40,13 +40,15 @@ namespace ui {
 GpuService::GpuService(const gpu::GPUInfo& gpu_info,
                        std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
                        gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                       scoped_refptr<base::SingleThreadTaskRunner> io_runner)
+                       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+                       const gpu::GpuFeatureInfo& gpu_feature_info)
     : io_runner_(std::move(io_runner)),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info),
+      gpu_feature_info_(gpu_feature_info),
       sync_point_manager_(nullptr) {}
 
 GpuService::~GpuService() {
@@ -93,7 +95,7 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
       gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
       shutdown_event ? shutdown_event : &shutdown_event_, sync_point_manager_,
-      gpu_memory_buffer_factory_));
+      gpu_memory_buffer_factory_, gpu_feature_info_));
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

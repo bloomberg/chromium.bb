@@ -50,12 +50,10 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
         settings->use_partial_raster = false;
         break;
       case PARTIAL_GPU:
-        settings->gpu_rasterization_enabled = true;
         settings->gpu_rasterization_forced = true;
         settings->use_partial_raster = true;
         break;
       case FULL_GPU:
-        settings->gpu_rasterization_enabled = true;
         settings->gpu_rasterization_forced = true;
         settings->use_partial_raster = false;
         break;

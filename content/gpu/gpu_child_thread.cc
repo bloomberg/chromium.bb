@@ -148,6 +148,7 @@ GpuChildThread::GpuChildThread(
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     const DeferredMessages& deferred_messages,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
@@ -155,11 +156,11 @@ GpuChildThread::GpuChildThread(
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false),
-      gpu_service_(
-          new ui::GpuService(gpu_info,
-                             std::move(watchdog_thread),
-                             gpu_memory_buffer_factory,
-                             ChildProcess::current()->io_task_runner())),
+      gpu_service_(new ui::GpuService(gpu_info,
+                                      std::move(watchdog_thread),
+                                      gpu_memory_buffer_factory,
+                                      ChildProcess::current()->io_task_runner(),
+                                      gpu_feature_info)),
       gpu_main_binding_(this) {
 #if defined(OS_WIN)
   target_services_ = NULL;
@@ -170,6 +171,7 @@ GpuChildThread::GpuChildThread(
 GpuChildThread::GpuChildThread(
     const InProcessChildThreadParams& params,
     const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
@@ -180,11 +182,11 @@ GpuChildThread::GpuChildThread(
       dead_on_arrival_(false),
       gpu_info_(gpu_info),
       in_browser_process_(true),
-      gpu_service_(
-          new ui::GpuService(gpu_info,
-                             nullptr /* watchdog thread */,
-                             gpu_memory_buffer_factory,
-                             ChildProcess::current()->io_task_runner())),
+      gpu_service_(new ui::GpuService(gpu_info,
+                                      nullptr /* watchdog thread */,
+                                      gpu_memory_buffer_factory,
+                                      ChildProcess::current()->io_task_runner(),
+                                      gpu_feature_info)),
       gpu_main_binding_(this) {
 #if defined(OS_WIN)
   target_services_ = NULL;
@@ -311,7 +313,8 @@ void GpuChildThread::CreateGpuService(
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - process_start_time_;
-  Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_info_));
+  Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_info_,
+                                  gpu_service_->gpu_feature_info()));
   while (!deferred_messages_.empty()) {
     const LogMessage& log = deferred_messages_.front();
     Send(new GpuHostMsg_OnLogMessage(log.severity, log.header, log.message));

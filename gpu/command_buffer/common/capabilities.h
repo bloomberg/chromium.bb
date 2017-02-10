@@ -153,6 +153,7 @@ struct GPU_EXPORT Capabilities {
   bool disable_one_component_textures = false;
   bool disable_multisampling_color_mask_usage = false;
   bool disable_webgl_rgb_multisampling_usage = false;
+  bool gpu_rasterization = false;
 
   // When this parameter is true, a CHROMIUM image created with RGB format will
   // actually have RGBA format. The client is responsible for handling most of

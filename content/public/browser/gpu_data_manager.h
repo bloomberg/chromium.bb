@@ -39,6 +39,7 @@ class GpuDataManager {
                                     const gpu::GPUInfo& gpu_info) = 0;
 
   virtual bool IsFeatureBlacklisted(int feature) const = 0;
+  virtual bool IsFeatureEnabled(int feature) const = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() const = 0;
 

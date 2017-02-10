@@ -319,7 +319,8 @@ void GLManager::InitializeWithCommandLine(
         gpu_preferences_, mailbox_manager_.get(), nullptr,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
         new gpu::gles2::FramebufferCompletenessCache, feature_info,
-        options.bind_generates_resource, options.image_factory, nullptr);
+        options.bind_generates_resource, options.image_factory, nullptr,
+        GpuFeatureInfo());
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));

@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/three_d_api_types.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 
 class GURL;
@@ -68,6 +69,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void InitializeForTesting(const std::string& gpu_blacklist_json,
                             const gpu::GPUInfo& gpu_info) override;
   bool IsFeatureBlacklisted(int feature) const override;
+  bool IsFeatureEnabled(int feature) const override;
   gpu::GPUInfo GetGPUInfo() const override;
   void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const override;
@@ -105,6 +107,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
+
+  // Update the GPU feature info. This updates the blacklist and enabled status
+  // of GPU rasterization. In the future this will be used for more features.
+  void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
 
   void UpdateVideoMemoryUsageStats(
       const gpu::VideoMemoryUsageStats& video_memory_usage_stats);

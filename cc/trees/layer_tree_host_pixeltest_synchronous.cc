@@ -51,7 +51,6 @@ class LayerTreeHostSynchronousGPUPixelTest : public LayerTreePixelTest {
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
-    settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
   }
 

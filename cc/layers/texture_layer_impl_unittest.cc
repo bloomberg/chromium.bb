@@ -10,6 +10,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/layer_test_common.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,10 +149,9 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
 }
 
 TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
-  LayerTreeSettings settings;
-  settings.gpu_rasterization_enabled = true;
   bool released = false;
-  LayerTestCommon::LayerImplTest impl(settings);
+  LayerTestCommon::LayerImplTest impl(
+      FakeCompositorFrameSink::Create3dForGpuRasterization());
   impl.host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size layer_size(1000, 1000);

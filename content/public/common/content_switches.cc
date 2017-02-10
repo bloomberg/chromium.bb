@@ -170,10 +170,6 @@ const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 // Disable async GL worker context. Overrides kEnableGpuAsyncWorkerContext.
 const char kDisableGpuAsyncWorkerContext[] = "disable-gpu-async-worker-context";
 
-// Disable GPU rasterization, i.e. rasterize on the CPU only.
-// Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
-const char kDisableGpuRasterization[]       = "disable-gpu-rasterization";
-
 // When using CPU rasterizing disable low resolution tiling. This uses
 // less power, particularly during animations, but more white may be seen
 // during fast scrolling especially on slower devices.
@@ -413,11 +409,6 @@ const char kEnableGpuMemoryBufferCompositorResources[] =
 const char kEnableGpuMemoryBufferVideoFrames[] =
     "enable-gpu-memory-buffer-video-frames";
 
-// Allow heuristics to determine when a layer tile should be drawn with the
-// Skia GPU backend. Only valid with GPU accelerated compositing +
-// impl-side painting.
-const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
-
 // When using CPU rasterizing generate low resolution tiling. Low res
 // tiles may be displayed during fast scrolls especially on slower devices.
 const char kEnableLowResTiling[] = "enable-low-res-tiling";
@@ -608,9 +599,6 @@ const char kHistoryEntryRequiresUserGesture[] =
 
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
-
-// Ignores GPU blacklist.
-const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
 // Makes all APIs reflect the layout viewport.
 const char kInertVisualViewport[]           = "inert-visual-viewport";

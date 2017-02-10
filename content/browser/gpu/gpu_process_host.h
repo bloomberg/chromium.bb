@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
@@ -196,7 +197,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                          const std::string& shader) override;
 
   // Message handlers.
-  void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
+  void OnInitialized(bool result,
+                     const gpu::GPUInfo& gpu_info,
+                     const gpu::GpuFeatureInfo& gpu_feature_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
 #if defined(OS_ANDROID)

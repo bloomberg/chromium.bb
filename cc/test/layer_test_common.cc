@@ -118,8 +118,18 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 LayerTestCommon::LayerImplTest::LayerImplTest()
     : LayerImplTest(LayerTreeSettingsForTesting()) {}
 
+LayerTestCommon::LayerImplTest::LayerImplTest(
+    std::unique_ptr<CompositorFrameSink> compositor_frame_sink)
+    : LayerImplTest(LayerTreeSettingsForTesting(),
+                    std::move(compositor_frame_sink)) {}
+
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
-    : compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
+    : LayerImplTest(settings, FakeCompositorFrameSink::Create3d()) {}
+
+LayerTestCommon::LayerImplTest::LayerImplTest(
+    const LayerTreeSettings& settings,
+    std::unique_ptr<CompositorFrameSink> compositor_frame_sink)
+    : compositor_frame_sink_(std::move(compositor_frame_sink)),
       animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
       host_(FakeLayerTreeHost::Create(&client_,
                                       &task_graph_runner_,

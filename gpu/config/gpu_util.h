@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_export.h"
 
 namespace base {
@@ -38,6 +39,13 @@ GPU_EXPORT void ParseSecondaryGpuDevicesFromCommandLine(
 
 GPU_EXPORT void InitializeDualGpusIfSupported(
     const std::set<int>& driver_bug_workarounds);
+
+// This function should only be called from the GPU process, or the Browser
+// process while using in-process GPU. This function is safe to call at any
+// point, and is not dependent on sandbox initialization.
+GPU_EXPORT GpuFeatureInfo
+GetGpuFeatureInfo(const GPUInfo& gpu_info,
+                  const base::CommandLine& command_line);
 
 }  // namespace gpu
 

@@ -10,6 +10,7 @@
 #include "content/common/establish_channel_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
@@ -169,9 +170,10 @@ IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 // These are messages to the browser.
 
 // Response from GPU to a GputMsg_Initialize message.
-IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
+IPC_MESSAGE_CONTROL3(GpuHostMsg_Initialized,
                      bool /* result */,
-                     ::gpu::GPUInfo /* gpu_info */)
+                     ::gpu::GPUInfo /* gpu_info */,
+                     ::gpu::GpuFeatureInfo /* gpu_feature_info */)
 
 // Response from GPU to a GpuHostMsg_EstablishChannel message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
