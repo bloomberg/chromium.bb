@@ -375,14 +375,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "https://www.chromestatus.com/features/6750456638341120 for more "
              "details.";
 
-    case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
-      return String::format(
-          "EME requires that contentType strings accepted by "
-          "requestMediaKeySystemAccess() include codecs. Non-standard support "
-          "for contentType strings without codecs will be removed in %s. "
-          "Please specify the desired codec(s) as part of the contentType.",
-          milestoneString(M58));
-
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
                         "projection matrices provided by VRFrameData");

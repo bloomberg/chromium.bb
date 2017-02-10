@@ -995,8 +995,6 @@ class CORE_EXPORT UseCounter {
     FileAPINativeLineEndings = 1320,
     PointerEventAttributeCount = 1321,
     CompositedReplication = 1322,
-    EncryptedMediaAllSelectedContentTypesHaveCodecs = 1323,
-    EncryptedMediaAllSelectedContentTypesMissingCodecs = 1324,
     V8DataTransferItem_WebkitGetAsEntry_Method = 1325,
     V8HTMLInputElement_WebkitEntries_AttributeGetter = 1326,
     Entry_Filesystem_AttributeGetter_IsolatedFileSystem = 1327,

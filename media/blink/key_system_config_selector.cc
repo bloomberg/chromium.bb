@@ -306,22 +306,11 @@ bool IsSupportedMediaFormat(const std::string& container_mime_type,
       use_aes_decryptor
           ? IsSupportedMediaFormat(container_mime_type, codec_vector)
           : IsSupportedEncryptedMediaFormat(container_mime_type, codec_vector);
-  switch (support_result) {
-    case IsSupported:
-      return true;
-    case MayBeSupported:
-      // If no codecs were specified, the best possible result is
-      // MayBeSupported, indicating support for the container.
-      return codec_vector.empty();
-    case IsNotSupported:
-      return false;
-  }
-  NOTREACHED();
-  return false;
+  return (support_result == IsSupported);
 }
 
 // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
-// parameters can be rejected. http://crbug.com/417561
+// parameters can be rejected. http://crbug.com/449690, http://crbug.com/690131
 bool KeySystemConfigSelector::IsSupportedContentType(
     const std::string& key_system,
     EmeMediaType media_type,
@@ -334,17 +323,8 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // contentTypes must provide a codec string unless the container implies a
   // particular codec. For EME, none of the currently supported containers
   // imply a codec, so |codecs| must be provided.
-  if (codecs.empty()) {
-    // Since the spec didn't initially require this, add an exemption for
-    // some existing containers to give clients time to adapt.
-    // TODO(jrummell): Remove this exemption once the number of contentTypes
-    // without codecs drops low enough (UMA added in the blink code).
-    // http://crbug.com/605661.
-    if (container_lower != "audio/webm" && container_lower != "video/webm" &&
-        container_lower != "audio/mp4" && container_lower != "video/mp4") {
-      return false;
-    }
-  }
+  if (codecs.empty())
+    return false;
 
   // Check that |container_mime_type| and |codecs| are supported by Chrome. This
   // is done primarily to validate extended codecs, but it also ensures that the

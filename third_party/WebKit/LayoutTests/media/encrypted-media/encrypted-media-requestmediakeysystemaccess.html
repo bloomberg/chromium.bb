@@ -80,29 +80,56 @@
             expect_error('org.w3.clearkey', [], 'TypeError', 'Empty supportedConfigurations');
             expect_error('org.w3.clearkey', [{}], 'NotSupportedError', 'Empty configuration');
 
-            // Various combinations of supportedConfigurations.
-            // TODO(jrummell): Specifying contentType without codecs is
-            // deprecated, so this test should fail. http://crbug.com/605661.
-            expect_config('org.w3.clearkey', [{
+            // contentType without codecs is not supported.
+            expect_error('org.w3.clearkey', [{
                 initDataTypes: ['webm'],
                 audioCapabilities: [{contentType: 'audio/webm'}],
                 videoCapabilities: [{contentType: 'video/webm'}],
-            }], {
-                initDataTypes: ['webm'],
-                audioCapabilities: [{contentType: 'audio/webm'}],
-                videoCapabilities: [{contentType: 'video/webm'}],
-            }, 'Basic supported configuration');
+            }], 'NotSupportedError', 'Basic supported configuration without codecs');
 
-            // TODO(jrummell): Specifying contentType without codecs is
-            // deprecated, so this test should fail. http://crbug.com/605661.
-            expect_config('org.w3.clearkey', [{
+            expect_error('org.w3.clearkey', [{
+                initDataTypes: ['webm'],
+                audioCapabilities: [{contentType: 'audio/webm'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+            }], 'NotSupportedError', 'Basic supported configuration without audio codecs');
+
+            expect_error('org.w3.clearkey', [{
+                initDataTypes: ['webm'],
+                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+                videoCapabilities: [{contentType: 'video/webm'}],
+            }], 'NotSupportedError', 'Basic supported configuration without video codecs');
+
+            expect_error('org.w3.clearkey', [{
                 initDataTypes: ['fakeidt', 'webm'],
                 audioCapabilities: [{contentType: 'audio/fake'}, {contentType: 'audio/webm'}],
                 videoCapabilities: [{contentType: 'video/fake'}, {contentType: 'video/webm'}],
+            }], 'NotSupportedError', 'Partially supported configuration without codecs');
+
+            // Various combinations of supportedConfigurations.
+            expect_config('org.w3.clearkey', [{
+                initDataTypes: ['webm'],
+                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
             }], {
                 initDataTypes: ['webm'],
-                audioCapabilities: [{contentType: 'audio/webm'}],
-                videoCapabilities: [{contentType: 'video/webm'}],
+                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+            }, 'Basic supported configuration');
+
+            expect_config('org.w3.clearkey', [{
+                initDataTypes: ['fakeidt', 'webm'],
+                audioCapabilities: [
+                    {contentType: 'audio/fake; codecs=vorbis'},
+                    {contentType: 'audio/webm; codecs=vorbis'}
+                ],
+                videoCapabilities: [
+                    {contentType: 'video/fake; codecs=vp8'},
+                    {contentType: 'video/webm; codecs=vp8'}
+                ],
+            }], {
+                initDataTypes: ['webm'],
+                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
             }, 'Partially supported configuration');
 
             expect_config('org.w3.clearkey', [{

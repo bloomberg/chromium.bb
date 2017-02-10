@@ -633,6 +633,7 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_SubsetSupported) {
   video_capabilities[0].mimeType = kUnsupportedContainer;
   video_capabilities[1].contentType = "b";
   video_capabilities[1].mimeType = kSupportedVideoContainer;
+  video_capabilities[1].codecs = kSupportedVideoCodec;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
   config.videoCapabilities = video_capabilities;
@@ -648,6 +649,7 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_AllSupported) {
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(2);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodecs;
   video_capabilities[1].contentType = "b";
   video_capabilities[1].mimeType = kSupportedVideoContainer;
   video_capabilities[1].codecs = kSupportedVideoCodecs;
@@ -691,10 +693,23 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Codecs_AllSupported) {
   EXPECT_EQ(kSupportedVideoCodecs, config_.videoCapabilities[0].codecs);
 }
 
+TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Missing_Codecs) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].contentType = "a";
+  video_capabilities[0].mimeType = kSupportedVideoContainer;
+
+  blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
+  config.videoCapabilities = video_capabilities;
+  configs_.push_back(config);
+
+  ASSERT_TRUE(SelectConfigReturnsError());
+}
+
 TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Empty) {
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
   ASSERT_TRUE(video_capabilities[0].robustness.isEmpty());
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
@@ -710,6 +725,7 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Supported) {
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
   video_capabilities[0].robustness = kSupported;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
@@ -725,6 +741,7 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Unsupported) {
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
   video_capabilities[0].robustness = kUnsupported;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
@@ -742,6 +759,7 @@ TEST_F(KeySystemConfigSelectorTest,
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
   video_capabilities[0].robustness = kRequireIdentifier;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
@@ -761,6 +779,7 @@ TEST_F(KeySystemConfigSelectorTest,
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
   video_capabilities[0].mimeType = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
   video_capabilities[0].robustness = kRecommendIdentifier;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
@@ -782,6 +801,7 @@ TEST_F(KeySystemConfigSelectorTest, AudioCapabilities_SubsetSupported) {
   audio_capabilities[0].mimeType = kUnsupportedContainer;
   audio_capabilities[1].contentType = "b";
   audio_capabilities[1].mimeType = kSupportedAudioContainer;
+  audio_capabilities[1].codecs = kSupportedAudioCodec;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
   config.audioCapabilities = audio_capabilities;
