@@ -27,6 +27,7 @@ from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
+from webkitpy.w3c.wpt_manifest import WPTManifest
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
@@ -196,12 +197,11 @@ class TestImporter(object):
         Runs the (newly-updated) manifest command if it's found, and then
         stages the generated MANIFEST.json in the git index, ready to commit.
         """
-        manifest_command = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
         if 'css' in dest_path:
             # Do nothing for csswg-test.
             return
         _log.info('Generating MANIFEST.json')
-        self.run([manifest_command, '--work', '--tests-root', dest_path])
+        WPTManifest.generate_manifest(self.host, dest_path)
         self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
 
     def update(self, dest_dir_name, temp_repo_path, revision):

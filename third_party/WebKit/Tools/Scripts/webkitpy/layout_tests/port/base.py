@@ -57,6 +57,7 @@ from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http
 from webkitpy.layout_tests.servers import pywebsocket
 from webkitpy.layout_tests.servers import wptserve
+from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -668,13 +669,9 @@ class Port(object):
         if not match:
             return []
         path_in_wpt = match.group(1)
-        all_items = self._wpt_manifest()['items']
-        if path_in_wpt not in all_items['reftest']:
-            return []
-        for item in all_items['reftest'][path_in_wpt]:
-            for ref_path_in_wpt, expectation in item[1]:
-                ref_absolute_path = self._filesystem.join(self.layout_tests_dir(), 'external/wpt' + ref_path_in_wpt)
-                reftest_list.append((expectation, ref_absolute_path))
+        for expectation, ref_path_in_wpt in self._wpt_manifest().extract_reference_list(path_in_wpt):
+            ref_absolute_path = self._filesystem.join(self.layout_tests_dir(), 'external/wpt' + ref_path_in_wpt)
+            reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
     def tests(self, paths):
@@ -723,7 +720,7 @@ class Port(object):
                 path_in_wpt = match.group(1)[1:].replace('\\', '/') + '/' + filename
             else:
                 path_in_wpt = filename
-            return self._manifest_items_for_path(path_in_wpt) is not None
+            return self._wpt_manifest().is_test_file(path_in_wpt)
         if 'inspector-unit' in dirname:
             return filesystem.splitext(filename)[1] == '.js'
         return Port._has_supported_extension(
@@ -737,57 +734,21 @@ class Port(object):
             if not match:
                 tests.append(file_path)
                 continue
-            path_in_wpt = match.group(1)
-            manifest_items = self._manifest_items_for_path(path_in_wpt)
-            assert manifest_items is not None
-            if len(manifest_items) != 1:
-                continue
-            url = manifest_items[0][0]
-            if url[1:] != path_in_wpt:
-                # TODO(tkent): foo.any.js and bar.worker.js should be accessed
-                # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
-                continue
-            tests.append(file_path)
+            urls = self._wpt_manifest().file_path_to_url_paths(match.group(1))
+            for url in urls:
+                tests.append(file_path[0:match.start(1)] + url)
         return tests
 
     @memoized
     def _wpt_manifest(self):
-        path = self._filesystem.join(self.layout_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
-        return json.loads(self._filesystem.read_text_file(path))
-
-    def _manifest_items_for_path(self, path_in_wpt):
-        """Returns a manifest item for the given WPT path, or None if not found.
-
-        The format of a manifest item depends on
-        https://github.com/w3c/wpt-tools/blob/master/manifest/item.py
-        and is assumed to be a list of the format [url, extras],
-        or [url, references, extras] for reftests, or None if not found.
-
-        For most testharness tests, the returned manifest_items is expected
-        to look like this:: [["/some/test/path.html", {}]]
-        """
-        items = self._wpt_manifest()['items']
-        if path_in_wpt in items['manual']:
-            return items['manual'][path_in_wpt]
-        elif path_in_wpt in items['reftest']:
-            return items['reftest'][path_in_wpt]
-        elif path_in_wpt in items['testharness']:
-            return items['testharness'][path_in_wpt]
-        return None
-
-    @staticmethod
-    def _get_extras_from_manifest_item(item):
-        return item[-1]
+        manifest_path = self._filesystem.join(self.layout_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
+        return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):
         match = re.match(r'external/wpt/(.*)', test_file)
         if not match:
             return False
-        items = self._manifest_items_for_path(match.group(1))
-        if not items:
-            return False
-        extras = Port._get_extras_from_manifest_item(items[0])
-        return 'timeout' in extras and extras['timeout'] == 'long'
+        return self._wpt_manifest().is_slow_test(match.group(1))
 
     ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
 
