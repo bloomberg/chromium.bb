@@ -123,6 +123,7 @@ Polymer({
 
     if (loadTimeData.getBoolean('isGuest')) {
       this.pageVisibility_ = {
+        passwordsAndForms: false,
         people: false,
         onStartup: false,
         reset: false,
@@ -144,7 +145,6 @@ Polymer({
           searchPrediction: false,
           networkPrediction: false,
         },
-        passwordsAndForms: false,
         downloads: {
           googleDrive: false,
         },
