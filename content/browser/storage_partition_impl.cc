@@ -497,6 +497,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->broadcast_channel_provider_ = new BroadcastChannelProvider();
 
+  partition->bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
+
   return partition;
 }
 
@@ -574,6 +576,11 @@ PaymentAppContextImpl* StoragePartitionImpl::GetPaymentAppContext() {
 
 BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {
   return broadcast_channel_provider_.get();
+}
+
+BluetoothAllowedDevicesMap*
+StoragePartitionImpl::GetBluetoothAllowedDevicesMap() {
+  return bluetooth_allowed_devices_map_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(
@@ -864,6 +871,10 @@ void StoragePartitionImpl::Flush() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetDOMStorageContext())
     GetDOMStorageContext()->Flush();
+}
+
+void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
+  bluetooth_allowed_devices_map_->Clear();
 }
 
 BrowserContext* StoragePartitionImpl::browser_context() const {

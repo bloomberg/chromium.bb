@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -75,10 +76,12 @@ class CONTENT_EXPORT  StoragePartitionImpl
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
+  void ClearBluetoothAllowedDevicesMapForTesting() override;
 
   BackgroundSyncContext* GetBackgroundSyncContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
+  BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
@@ -220,6 +223,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<BackgroundSyncContext> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
+  scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
 
   mojo::BindingSet<mojom::StoragePartitionService> bindings_;
 

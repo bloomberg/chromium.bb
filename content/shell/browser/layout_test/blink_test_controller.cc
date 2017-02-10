@@ -659,6 +659,7 @@ void BlinkTestController::OnTestFinished() {
       base::Bind(base::IgnoreResult(&BlinkTestController::Send),
                  base::Unretained(this),
                  new ShellViewMsg_Reset(render_view_host->GetRoutingID())));
+  storage_partition->ClearBluetoothAllowedDevicesMapForTesting();
 }
 
 void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,

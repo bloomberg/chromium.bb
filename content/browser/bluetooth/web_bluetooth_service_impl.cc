@@ -19,7 +19,9 @@
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/bluetooth/web_bluetooth_device_id.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -190,8 +192,7 @@ void WebBluetoothServiceImpl::SetClientConnectionErrorHandler(
 
 bool WebBluetoothServiceImpl::IsDevicePaired(
     const std::string& device_address) {
-  return allowed_devices_map_.GetDeviceId(GetOrigin(), device_address) !=
-         nullptr;
+  return allowed_devices().GetDeviceId(device_address) != nullptr;
 }
 
 void WebBluetoothServiceImpl::DidFinishNavigation(
@@ -389,8 +390,7 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
           : UMAWebBluetoothFunction::GET_PRIMARY_SERVICES);
   RecordGetPrimaryServicesServices(quantity, services_uuid);
 
-  if (!allowed_devices_map_.IsOriginAllowedToAccessAtLeastOneService(
-          GetOrigin(), device_id)) {
+  if (!allowed_devices().IsAllowedToAccessAtLeastOneService(device_id)) {
     callback.Run(
         blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_ANY_SERVICE,
         base::nullopt /* service */);
@@ -398,8 +398,8 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
   }
 
   if (services_uuid &&
-      !allowed_devices_map_.IsOriginAllowedToAccessService(
-          GetOrigin(), device_id, services_uuid.value())) {
+      !allowed_devices().IsAllowedToAccessService(device_id,
+                                                  services_uuid.value())) {
     callback.Run(
         blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_SERVICE,
         base::nullopt /* service */);
@@ -855,8 +855,8 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTServicePtr> response_services;
   for (device::BluetoothRemoteGattService* service : services) {
-    if (!allowed_devices_map_.IsOriginAllowedToAccessService(
-            GetOrigin(), device_id, service->GetUUID())) {
+    if (!allowed_devices().IsAllowedToAccessService(device_id,
+                                                    service->GetUUID())) {
       continue;
     }
     std::string service_instance_id = service->GetIdentifier();
@@ -913,14 +913,14 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
     return;
   }
 
-  const WebBluetoothDeviceId device_id_for_origin =
-      allowed_devices_map_.AddDevice(GetOrigin(), device_address, options);
+  const WebBluetoothDeviceId device_id =
+      allowed_devices().AddDevice(device_address, options);
 
   DVLOG(1) << "Device: " << device->GetNameForDisplay();
 
   blink::mojom::WebBluetoothDevicePtr device_ptr =
       blink::mojom::WebBluetoothDevice::New();
-  device_ptr->id = device_id_for_origin;
+  device_ptr->id = device_id;
   device_ptr->name = device->GetName();
 
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);
@@ -1055,7 +1055,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
 CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(
     const WebBluetoothDeviceId& device_id) {
   const std::string& device_address =
-      allowed_devices_map_.GetDeviceAddress(GetOrigin(), device_id);
+      allowed_devices().GetDeviceAddress(device_id);
   if (device_address.empty()) {
     CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
@@ -1084,7 +1084,7 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
   }
 
   const WebBluetoothDeviceId* device_id =
-      allowed_devices_map_.GetDeviceId(GetOrigin(), device_iter->second);
+      allowed_devices().GetDeviceId(device_iter->second);
   // Kill the renderer if origin is not allowed to access the device.
   if (device_id == nullptr) {
     CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
@@ -1099,8 +1099,8 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
   result.service = result.device->GetGattService(service_instance_id);
   if (result.service == nullptr) {
     result.outcome = CacheQueryOutcome::NO_SERVICE;
-  } else if (!allowed_devices_map_.IsOriginAllowedToAccessService(
-                 GetOrigin(), *device_id, result.service->GetUUID())) {
+  } else if (!allowed_devices().IsAllowedToAccessService(
+                 *device_id, result.service->GetUUID())) {
     CrashRendererAndClosePipe(bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
@@ -1180,6 +1180,15 @@ url::Origin WebBluetoothServiceImpl::GetOrigin() {
   return render_frame_host_->GetLastCommittedOrigin();
 }
 
+BluetoothAllowedDevices& WebBluetoothServiceImpl::allowed_devices() {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(
+          web_contents()->GetBrowserContext()));
+  scoped_refptr<BluetoothAllowedDevicesMap> allowed_devices_map =
+      partition->GetBluetoothAllowedDevicesMap();
+  return allowed_devices_map->GetOrCreateAllowedDevices(GetOrigin());
+}
+
 void WebBluetoothServiceImpl::ClearState() {
   characteristic_id_to_notify_session_.clear();
   pending_primary_services_requests_.clear();
@@ -1188,7 +1197,6 @@ void WebBluetoothServiceImpl::ClearState() {
   service_id_to_device_address_.clear();
   connected_devices_.reset(
       new FrameConnectedBluetoothDevices(render_frame_host_));
-  allowed_devices_map_ = BluetoothAllowedDevicesMap();
   device_chooser_controller_.reset();
   BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
 }

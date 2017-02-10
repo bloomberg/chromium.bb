@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script>
+'use restrict';
+  let device;
+  window.onmessage = messageEvent => {
+    if (messageEvent.data === 'Iframe1RequestAndConnect') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
+      })
+      .then(device => device.gatt.connect())
+      .then(gattServer => {
+        // iframe1 can access heart_rate service.
+        gattServer.getPrimaryService('heart_rate');
+        parent.postMessage('Iframe1Connected', '*');
+      }).catch(err => {
+        console.error(err);
+        parent.postMessage('FAIL: ' + err, '*');
+      });
+    } else if (messageEvent.data === 'Iframe2RequestAndConnect') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['generic_access']}]
+      })
+      .then(device => device.gatt.connect())
+      .then(gattServer => {
+        gattServer.getPrimaryService('generic_access');
+        // Since iframe1 can access heart_rate service, and iframe2 has the
+        // same origin as iframe1, iframe2 should also be able to access
+        // heart_rate service.
+        gattServer.getPrimaryService('heart_rate');
+        parent.postMessage('Iframe2Connected', '*');
+      }).catch(err => {
+        console.error(err);
+        parent.postMessage('FAIL: ' + err, '*');
+      });
+    } else if (messageEvent.data === 'TestIframe1HasGenericAccessService') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
+      })
+      .then(device => device.gatt.connect())
+      .then(gattServer => {
+        // Since iframe2 can access generic_access service, and iframe1 has the
+        // same origin as iframe2, iframe1 should also be able to access
+        // generic_access service.
+        gattServer.getPrimaryService('generic_access');
+        parent.postMessage('DoneTest', '*');
+      }).catch(err => {
+        console.error(err);
+        parent.postMessage('FAIL: ' + err, '*');
+      });
+    }
+  };
+  parent.postMessage("Ready", "*");
+</script>

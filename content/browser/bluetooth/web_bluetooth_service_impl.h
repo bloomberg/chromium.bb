@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
+#include "content/browser/bluetooth/bluetooth_allowed_devices.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -248,15 +248,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   RenderProcessHost* GetRenderProcessHost();
   device::BluetoothAdapter* GetAdapter();
   url::Origin GetOrigin();
+  BluetoothAllowedDevices& allowed_devices();
 
   // Clears all state (maps, sets, etc).
   void ClearState();
 
   // Used to open a BluetoothChooser and start a device discovery session.
   std::unique_ptr<BluetoothDeviceChooserController> device_chooser_controller_;
-
-  // Keeps track of which devices the frame's origin is allowed to access.
-  BluetoothAllowedDevicesMap allowed_devices_map_;
 
   // Maps to get the object's parent based on its instanceID.
   std::unordered_map<std::string, std::string> service_id_to_device_address_;

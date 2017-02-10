@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+  "use strict";
+  var firstIframe = true;
+  var iframe1 = document.createElement('iframe');
+  iframe1.src = '../../../resources/bluetooth/heart-rate-two-iframes.html';
+  iframe1.id = 'iframe1';
+  var iframe2 = document.createElement('iframe');
+  iframe2.src = '../../../resources/bluetooth/heart-rate-two-iframes.html';
+  iframe2.id = 'iframe2';
+  async_test(test => {
+    window.onmessage = messageEvent => test.step(() => {
+      if (messageEvent.data === 'Ready') {
+        if (firstIframe) {
+          callWithKeyDown(() => {
+            iframe1.contentWindow.postMessage('Iframe1RequestAndConnect', '*');
+          });
+        } else {
+          callWithKeyDown(() => {
+            iframe2.contentWindow.postMessage('Iframe2RequestAndConnect', '*');
+          });
+        }
+        firstIframe = false;
+      } else if (messageEvent.data === 'Iframe1Connected') {
+        document.body.appendChild(iframe2);
+      } else if (messageEvent.data === 'Iframe2Connected') {
+        callWithKeyDown(() => {
+          iframe1.contentWindow.postMessage('TestIframe1HasGenericAccessService', '*');
+        });
+      }
+      else if (messageEvent.data === 'DoneTest') {
+        test.done();
+      } else {
+        assert_unreached('iframe sent invalid data: ' + messageEvent.data);
+      }
+    });
+
+    setBluetoothFakeAdapter('HeartRateAdapter')
+      .then(() => {
+        document.body.appendChild(iframe1);
+      });
+  }, 'Two iframes in the same origin should be able to access each other\'s services');
+</script>

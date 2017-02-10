@@ -166,6 +166,9 @@ class CONTENT_EXPORT StoragePartition {
   // unwritten data has been written out to the filesystem.
   virtual void Flush() = 0;
 
+  // Clear the bluetooth allowed devices map. For test use only.
+  virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

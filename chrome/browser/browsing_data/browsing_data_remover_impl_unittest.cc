@@ -234,6 +234,8 @@ class TestStoragePartition : public StoragePartition {
 
   void Flush() override {}
 
+  void ClearBluetoothAllowedDevicesMapForTesting() override {}
+
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
     return storage_partition_removal_data_;
   }
