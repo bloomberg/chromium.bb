@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
@@ -191,11 +192,6 @@ class SnapshotCacheTest : public PlatformTest {
     }
   }
 
-  const char* GetPixelData(CGImageRef cgImage) {
-    CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
-    return reinterpret_cast<const char*>(CFDataGetBytePtr(data));
-  }
-
   void TriggerMemoryWarning() {
     // _performMemoryWarning is a private API and must not be compiled into
     // official builds.
@@ -271,12 +267,18 @@ TEST_F(SnapshotCacheTest, SaveToDisk) {
     UIImage* image =
         [UIImage imageWithContentsOfFile:base::SysUTF8ToNSString(path.value())];
     CGImageRef cgImage = [image CGImage];
-    const char* pixels = GetPixelData(cgImage);
+    base::ScopedCFTypeRef<CFDataRef> pixelData(
+        CGDataProviderCopyData(CGImageGetDataProvider(cgImage)));
+    const char* pixels =
+        reinterpret_cast<const char*>(CFDataGetBytePtr(pixelData));
     EXPECT_TRUE(pixels);
 
     UIImage* referenceImage = [testImages_ objectAtIndex:i];
     CGImageRef referenceCgImage = [referenceImage CGImage];
-    const char* referencePixels = GetPixelData(referenceCgImage);
+    base::ScopedCFTypeRef<CFDataRef> referenceData(
+        CGDataProviderCopyData(CGImageGetDataProvider(referenceCgImage)));
+    const char* referencePixels =
+        reinterpret_cast<const char*>(CFDataGetBytePtr(referenceData));
     EXPECT_TRUE(referencePixels);
 
     if (pixels != nil && referencePixels != nil) {
