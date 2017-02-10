@@ -32,6 +32,9 @@ declare_args() {
   webapk_background_color = "2147483648L"  #HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
   webapk_icon_urls_and_icon_murmur2_hashes = "http://www.template.com/icon1.png $webapk_icon_murmur2_hash http://www.template.com/icon2.png $webapk_icon_murmur2_hash"
 
+  # Scheme part of |webapk_scope_url|.
+  webapk_scope_url_scheme = "https"
+
   # Host part of |webapk_scope_url|.
   webapk_scope_url_host = "www.template.com"
 
@@ -67,6 +70,7 @@ jinja_template("shell_apk_manifest") {
     "theme_color=$webapk_theme_color",
     "background_color=$webapk_background_color",
     "icon_urls_and_icon_murmur2_hashes=$webapk_icon_urls_and_icon_murmur2_hashes",
+    "scope_url_scheme=$webapk_scope_url_scheme",
     "scope_url_host=$webapk_scope_url_host",
     "scope_url_path=$webapk_scope_url_path",
     "web_manifest_url=$webapk_web_manifest_url",
