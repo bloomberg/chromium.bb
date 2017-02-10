@@ -48,6 +48,7 @@ struct MidiEvent {
 
 class FakeMidiManager : public midi::MidiManager {
  public:
+  FakeMidiManager() : MidiManager(nullptr) {}
   void DispatchSendMidiData(midi::MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,

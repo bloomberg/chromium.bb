@@ -907,7 +907,8 @@ class MidiManagerWinrt::MidiOutPortManager final
   DISALLOW_COPY_AND_ASSIGN(MidiOutPortManager);
 };
 
-MidiManagerWinrt::MidiManagerWinrt() : com_thread_("Windows MIDI COM Thread") {}
+MidiManagerWinrt::MidiManagerWinrt(MidiService* service)
+    : MidiManager(service), com_thread_("Windows MIDI COM Thread") {}
 
 MidiManagerWinrt::~MidiManagerWinrt() {
   base::AutoLock auto_lock(lazy_init_member_lock_);

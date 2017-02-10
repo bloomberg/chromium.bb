@@ -51,14 +51,16 @@ bool IsMidiManagerAndroidEnabled() {
 
 }  // namespace
 
-MidiManager* MidiManager::Create() {
+MidiManager* MidiManager::Create(MidiService* service) {
   if (IsMidiManagerAndroidEnabled())
-    return new MidiManagerAndroid();
+    return new MidiManagerAndroid(service);
 
-  return new MidiManagerUsb(base::MakeUnique<UsbMidiDeviceFactoryAndroid>());
+  return new MidiManagerUsb(service,
+                            base::MakeUnique<UsbMidiDeviceFactoryAndroid>());
 }
 
-MidiManagerAndroid::MidiManagerAndroid() {}
+MidiManagerAndroid::MidiManagerAndroid(MidiService* service)
+    : MidiManager(service) {}
 
 MidiManagerAndroid::~MidiManagerAndroid() {
   base::AutoLock auto_lock(scheduler_lock_);

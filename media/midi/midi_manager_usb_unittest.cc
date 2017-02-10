@@ -170,7 +170,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
  public:
   explicit MidiManagerUsbForTesting(
       std::unique_ptr<UsbMidiDevice::Factory> device_factory)
-      : MidiManagerUsb(std::move(device_factory)) {}
+      : MidiManagerUsb(nullptr, std::move(device_factory)) {}
   ~MidiManagerUsbForTesting() override {}
 
   void CallCompleteInitialization(Result result) {

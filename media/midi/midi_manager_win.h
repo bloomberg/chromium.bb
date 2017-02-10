@@ -18,6 +18,8 @@
 
 namespace midi {
 
+class MidiService;
+
 class MidiServiceWinDelegate {
  public:
   virtual ~MidiServiceWinDelegate() {}
@@ -46,7 +48,7 @@ class MidiServiceWin {
 
 class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
  public:
-  MidiManagerWin();
+  explicit MidiManagerWin(MidiService* service);
   ~MidiManagerWin() override;
 
   // MidiManager overrides:

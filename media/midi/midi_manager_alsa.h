@@ -31,7 +31,7 @@ namespace midi {
 
 class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
  public:
-  MidiManagerAlsa();
+  explicit MidiManagerAlsa(MidiService* service);
   ~MidiManagerAlsa() override;
 
   // MidiManager implementation.
@@ -373,10 +373,12 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       std::unique_ptr<snd_midi_event_t, SndMidiEventDeleter>;
 
   // An internal callback that runs on MidiSendThread.
-  void SendMidiData(uint32_t port_index, const std::vector<uint8_t>& data);
+  void SendMidiData(int instance_id,
+                    MidiManagerClient* client,
+                    uint32_t port_index,
+                    const std::vector<uint8_t>& data);
 
-  void ScheduleEventLoop();
-  void EventLoop();
+  void EventLoop(int instance_id);
   void ProcessSingleEvent(snd_seq_event_t* event, double timestamp);
   void ProcessClientStartEvent(int client_id);
   void ProcessPortStartEvent(const snd_seq_addr_t& addr);
@@ -420,9 +422,6 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // wait for our information from ALSA and udev to get back in sync.
   int alsa_card_midi_count_ = 0;
 
-  base::Lock shutdown_lock_;            // guards event_thread_shutdown_
-  bool event_thread_shutdown_ = false;  // guarded by shutdown_lock_
-
   // This lock is needed to ensure that members destroyed in Finalize
   // will be visibly destroyed before the destructor is run in the
   // other thread. Otherwise, the same objects may have their destructors
@@ -447,10 +446,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr udev_monitor_;
 
-  // Threads for sending and receiving. These are initialized in the
-  // constructor, but are started at the end of StartInitialization.
-  base::Thread event_thread_;
-  base::Thread send_thread_;
+  int instance_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };

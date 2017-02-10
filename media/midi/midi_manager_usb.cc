@@ -17,8 +17,9 @@ namespace midi {
 using mojom::PortState;
 using mojom::Result;
 
-MidiManagerUsb::MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory> factory)
-    : device_factory_(std::move(factory)) {}
+MidiManagerUsb::MidiManagerUsb(MidiService* service,
+                               std::unique_ptr<UsbMidiDevice::Factory> factory)
+    : MidiManager(service), device_factory_(std::move(factory)) {}
 
 MidiManagerUsb::~MidiManagerUsb() {
   base::AutoLock auto_lock(scheduler_lock_);

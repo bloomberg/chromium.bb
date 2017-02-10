@@ -21,9 +21,11 @@
 
 namespace midi {
 
+class MidiService;
+
 class MIDI_EXPORT MidiManagerMac final : public MidiManager {
  public:
-  MidiManagerMac();
+  explicit MidiManagerMac(MidiService* service);
   ~MidiManagerMac() override;
 
   // MidiManager implementation.

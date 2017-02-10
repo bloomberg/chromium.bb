@@ -1137,8 +1137,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
 
 }  // namespace
 
-MidiManagerWin::MidiManagerWin() {
-}
+MidiManagerWin::MidiManagerWin(MidiService* service) : MidiManager(service) {}
 
 MidiManagerWin::~MidiManagerWin() {
 }
@@ -1200,11 +1199,11 @@ void MidiManagerWin::OnReceiveMidiData(uint32_t port_index,
   ReceiveMidiData(port_index, &data[0], data.size(), time);
 }
 
-MidiManager* MidiManager::Create() {
+MidiManager* MidiManager::Create(MidiService* service) {
   if (base::FeatureList::IsEnabled(features::kMidiManagerWinrt) &&
       base::win::GetVersion() >= base::win::VERSION_WIN10)
-    return new MidiManagerWinrt();
-  return new MidiManagerWin();
+    return new MidiManagerWinrt(service);
+  return new MidiManagerWin(service);
 }
 
 }  // namespace midi

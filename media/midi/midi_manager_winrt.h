@@ -18,10 +18,11 @@ class ThreadChecker;
 namespace midi {
 
 class MidiScheduler;
+class MidiService;
 
 class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
  public:
-  MidiManagerWinrt();
+  explicit MidiManagerWinrt(MidiService* service);
   ~MidiManagerWinrt() override;
 
   // MidiManager overrides:

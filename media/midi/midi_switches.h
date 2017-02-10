@@ -22,6 +22,8 @@ MIDI_EXPORT extern const base::Feature kMidiManagerAndroid;
 MIDI_EXPORT extern const base::Feature kMidiManagerWinrt;
 #endif
 
+MIDI_EXPORT extern const base::Feature kMidiManagerDynamicInstantiation;
+
 }  // namespace features
 }  // namespace midi
 

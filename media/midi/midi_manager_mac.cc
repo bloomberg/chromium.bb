@@ -104,17 +104,17 @@ MIDITimeStamp SecondsToMIDITimeStamp(double seconds) {
 
 }  // namespace
 
-MidiManager* MidiManager::Create() {
-  return new MidiManagerMac();
+MidiManager* MidiManager::Create(MidiService* service) {
+  return new MidiManagerMac(service);
 }
 
-MidiManagerMac::MidiManagerMac()
-    : midi_client_(0),
+MidiManagerMac::MidiManagerMac(MidiService* service)
+    : MidiManager(service),
+      midi_client_(0),
       coremidi_input_(0),
       coremidi_output_(0),
       client_thread_("MidiClientThread"),
-      shutdown_(false) {
-}
+      shutdown_(false) {}
 
 MidiManagerMac::~MidiManagerMac() = default;
 

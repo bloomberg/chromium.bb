@@ -25,6 +25,8 @@ class SingleThreadTaskRunner;
 
 namespace midi {
 
+class MidiService;
+
 // A MidiManagerClient registers with the MidiManager to receive MIDI data.
 // See MidiManager::RequestAccess() and MidiManager::ReleaseAccess()
 // for details.
@@ -73,19 +75,24 @@ class MIDI_EXPORT MidiManagerClient {
 };
 
 // Manages access to all MIDI hardware.
+// *** Note ***: If dynamic instantiation feature is enabled, all MidiManager
+// methods will be called on Chrome_IOThread. See comments on Shutdown() too.
 class MIDI_EXPORT MidiManager {
  public:
   static const size_t kMaxPendingClientCount = 128;
 
-  MidiManager();
+  explicit MidiManager(MidiService* service);
   virtual ~MidiManager();
 
   // The constructor and the destructor will be called on the CrBrowserMain
   // thread.
-  static MidiManager* Create();
+  static MidiManager* Create(MidiService* service);
 
   // Called on the CrBrowserMain thread to notify the Chrome_IOThread will stop
   // and the instance will be destructed on the CrBrowserMain thread soon.
+  // *** Note ***: If dynamic instantiation feature is enabled, MidiService
+  // calls this on Chrome_IOThread and ShutdownOnSessionThread() will be called
+  // synchronously so that MidiService can destruct MidiManager synchronously.
   void Shutdown();
 
   // A client calls StartSession() to receive and send MIDI data.
@@ -174,6 +181,7 @@ class MIDI_EXPORT MidiManager {
 
   const MidiPortInfoList& input_ports() const { return input_ports_; }
   const MidiPortInfoList& output_ports() const { return output_ports_; }
+  MidiService* service() { return service_; }
 
  private:
   enum class InitializationState {
@@ -215,6 +223,9 @@ class MIDI_EXPORT MidiManager {
   // |session_thread_runner_|, |initialization_state_|, |finalize_|, |result_|,
   // |input_ports_| and |output_ports_|.
   base::Lock lock_;
+
+  // MidiService outlives MidiManager.
+  MidiService* const service_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManager);
 };

@@ -25,13 +25,14 @@ namespace midi {
 
 class MidiDeviceAndroid;
 class MidiOutputPortAndroid;
+class MidiService;
 
 // MidiManagerAndroid is a MidiManager subclass for Android M or newer. For
 // older android OSes, we use MidiManagerUsb.
 class MidiManagerAndroid final : public MidiManager,
                                  public MidiInputPortAndroid::Delegate {
  public:
-  MidiManagerAndroid();
+  explicit MidiManagerAndroid(MidiService* service);
   ~MidiManagerAndroid() override;
 
   // MidiManager implementation.

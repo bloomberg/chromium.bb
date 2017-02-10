@@ -11,19 +11,26 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
 
 namespace midi {
+
+class MidiManagerAlsa;
 
 // Manages MidiManager backends.  This class expects to be constructed and
 // destructed on the browser main thread, but methods can be called on both
 // the main thread and the I/O thread.
 class MIDI_EXPORT MidiService final {
  public:
+  // Use the first constructor for production code.
+  MidiService();
   // |MidiManager| can be explicitly specified in the constructor for testing.
-  explicit MidiService(std::unique_ptr<MidiManager> manager = nullptr);
+  explicit MidiService(std::unique_ptr<MidiManager> manager);
   ~MidiService();
 
   // Called on the browser main thread to notify the I/O thread will stop and
@@ -37,13 +44,43 @@ class MIDI_EXPORT MidiService final {
   void EndSession(MidiManagerClient* client);
 
   // A client calls DispatchSendMidiData() to send MIDI data.
-  virtual void DispatchSendMidiData(MidiManagerClient* client,
-                                    uint32_t port_index,
-                                    const std::vector<uint8_t>& data,
-                                    double timestamp);
+  void DispatchSendMidiData(MidiManagerClient* client,
+                            uint32_t port_index,
+                            const std::vector<uint8_t>& data,
+                            double timestamp);
 
+ private:
+  friend class MidiManagerAlsa;
+
+  // Returns a SingleThreadTaskRunner reference to serve MidiManager. Each
+  // TaskRunner will be constructed on demand.
+  // MidiManager that supports the dynamic instantiation feature will use this
+  // method to post tasks that should not run on I/O. Since TaskRunners outlive
+  // MidiManager, each task should ensure that MidiManager that posted the task
+  // is still alive while accessing |this|. TaskRunners will be reused when
+  // another MidiManager is instantiated.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(size_t runner_id);
+
+  // Holds MidiManager instance. If the dynamic instantiation feature is
+  // enabled, the MidiManager would be constructed and destructed on the I/O
+  // thread, and all MidiManager methods would be called on the I/O thread.
   std::unique_ptr<MidiManager> manager_;
+
+  // A flag to indicate if the dynamic instantiation feature is supported and
+  // actually enabled.
+  const bool is_dynamic_instantiation_enabled_;
+
+  // Counts active clients to manage dynamic MidiManager instantiation.
+  size_t active_clients_;
+
+  // Protects all members above.
   base::Lock lock_;
+
+  // Threads to host SingleThreadTaskRunners.
+  std::vector<std::unique_ptr<base::Thread>> threads_;
+
+  // Protects |threads_|.
+  base::Lock threads_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiService);
 };

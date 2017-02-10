@@ -112,7 +112,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
 class MidiManagerMacTest : public ::testing::Test {
  public:
   MidiManagerMacTest()
-      : manager_(new MidiManagerMac),
+      : manager_(new MidiManagerMac(nullptr)),
         message_loop_(new base::MessageLoop) {}
   ~MidiManagerMacTest() override {
     manager_->Shutdown();

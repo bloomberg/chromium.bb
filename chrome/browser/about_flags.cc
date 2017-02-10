@@ -2202,6 +2202,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ash::switches::kAshForceEnablePalette)},
 #endif // defined(OS_CHROMEOS)
 
+    {"enable-midi-manager-dynamic-instantiation",
+     IDS_FLAGS_ENABLE_MIDI_MANAGER_DYNAMIC_INSTANTIATION_NAME,
+     IDS_FLAGS_ENABLE_MIDI_MANAGER_DYNAMIC_INSTANTIATION_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(midi::features::kMidiManagerDynamicInstantiation)}
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
