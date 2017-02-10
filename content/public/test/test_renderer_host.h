@@ -158,11 +158,6 @@ class RenderViewHostTester {
                                     int proxy_routing_id,
                                     bool created_with_opener) = 0;
 
-  // Makes the WasHidden/WasShown calls to the RenderWidget that
-  // tell it it has been hidden or restored from having been hidden.
-  virtual void SimulateWasHidden() = 0;
-  virtual void SimulateWasShown() = 0;
-
   // Promote ComputeWebkitPrefs to public.
   virtual WebPreferences TestComputeWebkitPrefs() = 0;
 };

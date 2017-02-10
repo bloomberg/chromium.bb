@@ -60,7 +60,6 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
-      is_showing_(false),
       is_occluded_(false),
       did_swap_compositor_frame_(false) {
 #if defined(OS_ANDROID)
@@ -122,16 +121,18 @@ bool TestRenderWidgetHostView::IsSurfaceAvailableForCopy() const {
 }
 
 void TestRenderWidgetHostView::Show() {
-  is_showing_ = true;
   is_occluded_ = false;
+  if (rwh_->is_hidden())
+    rwh_->WasShown(ui::LatencyInfo());
 }
 
 void TestRenderWidgetHostView::Hide() {
-  is_showing_ = false;
+  if (!rwh_->is_hidden())
+    rwh_->WasHidden();
 }
 
 bool TestRenderWidgetHostView::IsShowing() {
-  return is_showing_;
+  return !rwh_->is_hidden();
 }
 
 void TestRenderWidgetHostView::WasUnOccluded() {
@@ -269,14 +270,6 @@ bool TestRenderViewHost::CreateRenderView(
 
 MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderViewHostImpl::GetProcess());
-}
-
-void TestRenderViewHost::SimulateWasHidden() {
-  GetWidget()->WasHidden();
-}
-
-void TestRenderViewHost::SimulateWasShown() {
-  GetWidget()->WasShown(ui::LatencyInfo());
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {

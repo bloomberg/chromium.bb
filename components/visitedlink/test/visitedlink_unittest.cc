@@ -30,6 +30,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -787,7 +789,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(1, context()->reset_event_count());
 
   // Simulate tab becoming inactive.
-  RenderViewHostTester::For(rvh())->SimulateWasHidden();
+  web_contents()->GetRenderWidgetHostView()->Hide();
 
   // Add a few URLs.
   master()->AddURL(GURL("http://acidtests.org/"));
@@ -802,7 +804,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(1, context()->reset_event_count());
 
   // Simulate the tab becoming active.
-  RenderViewHostTester::For(rvh())->SimulateWasShown();
+  web_contents()->GetRenderWidgetHostView()->Show();
   context()->WaitForUpdate();
 
   // We should now have 3 add events, still no reset events.
@@ -810,7 +812,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(1, context()->reset_event_count());
 
   // Deactivate the tab again.
-  RenderViewHostTester::For(rvh())->SimulateWasHidden();
+  web_contents()->GetRenderWidgetHostView()->Hide();
 
   // Add a bunch of URLs (over 50) to exhaust the link event buffer.
   for (int i = 0; i < 100; i++)
@@ -825,7 +827,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(1, context()->reset_event_count());
 
   // Activate the tab.
-  RenderViewHostTester::For(rvh())->SimulateWasShown();
+  web_contents()->GetRenderWidgetHostView()->Show();
   EXPECT_FALSE(timer_->IsRunning());
   context()->WaitForUpdate();
 
