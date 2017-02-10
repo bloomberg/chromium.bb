@@ -924,16 +924,6 @@ void LayoutReplaced::setSelectionState(SelectionState state) {
   if (!inlineBoxWrapper())
     return;
 
-  // We only include the space below the baseline in our layer's cached paint
-  // invalidation rect if the image is selected. Since the selection state has
-  // changed update the rect.
-  if (hasLayer()) {
-    LayoutRect rect = localVisualRect();
-    PaintLayer::mapRectToPaintInvalidationBacking(
-        *this, containerForPaintInvalidation(), rect);
-    setPreviousVisualRect(rect);
-  }
-
   if (canUpdateSelectionOnRootLineBoxes())
     inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
