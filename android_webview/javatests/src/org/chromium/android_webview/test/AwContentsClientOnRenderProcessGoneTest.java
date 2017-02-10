@@ -12,6 +12,7 @@ import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 
@@ -55,6 +56,7 @@ public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
         }
     }
 
+    @DisabledTest  // http://crbug.com/689292
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags
