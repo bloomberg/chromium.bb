@@ -23,6 +23,48 @@ using api::audio::OutputDeviceInfo;
 using api::audio::InputDeviceInfo;
 using api::audio::AudioDeviceInfo;
 
+namespace {
+
+api::audio::DeviceType GetAsAudioApiDeviceType(chromeos::AudioDeviceType type) {
+  switch (type) {
+    case chromeos::AUDIO_TYPE_HEADPHONE:
+      return api::audio::DEVICE_TYPE_HEADPHONE;
+    case chromeos::AUDIO_TYPE_MIC:
+      return api::audio::DEVICE_TYPE_MIC;
+    case chromeos::AUDIO_TYPE_USB:
+      return api::audio::DEVICE_TYPE_USB;
+    case chromeos::AUDIO_TYPE_BLUETOOTH:
+      return api::audio::DEVICE_TYPE_BLUETOOTH;
+    case chromeos::AUDIO_TYPE_HDMI:
+      return api::audio::DEVICE_TYPE_HDMI;
+    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
+      return api::audio::DEVICE_TYPE_INTERNAL_SPEAKER;
+    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+      return api::audio::DEVICE_TYPE_INTERNAL_MIC;
+    case chromeos::AUDIO_TYPE_FRONT_MIC:
+      return api::audio::DEVICE_TYPE_FRONT_MIC;
+    case chromeos::AUDIO_TYPE_REAR_MIC:
+      return api::audio::DEVICE_TYPE_REAR_MIC;
+    case chromeos::AUDIO_TYPE_KEYBOARD_MIC:
+      return api::audio::DEVICE_TYPE_KEYBOARD_MIC;
+    case chromeos::AUDIO_TYPE_HOTWORD:
+      return api::audio::DEVICE_TYPE_HOTWORD;
+    case chromeos::AUDIO_TYPE_LINEOUT:
+      return api::audio::DEVICE_TYPE_LINEOUT;
+    case chromeos::AUDIO_TYPE_POST_MIX_LOOPBACK:
+      return api::audio::DEVICE_TYPE_POST_MIX_LOOPBACK;
+    case chromeos::AUDIO_TYPE_POST_DSP_LOOPBACK:
+      return api::audio::DEVICE_TYPE_POST_DSP_LOOPBACK;
+    case chromeos::AUDIO_TYPE_OTHER:
+      return api::audio::DEVICE_TYPE_OTHER;
+  }
+
+  NOTREACHED();
+  return api::audio::DEVICE_TYPE_OTHER;
+}
+
+}  // namespace
+
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {
  public:
@@ -335,7 +377,7 @@ void AudioServiceImpl::NotifyDevicesChanged() {
                            ? extensions::api::audio::STREAM_TYPE_INPUT
                            : extensions::api::audio::STREAM_TYPE_OUTPUT;
     info.is_input = devices[i].is_input;
-    info.device_type = chromeos::AudioDevice::GetTypeString(devices[i].type);
+    info.device_type = GetAsAudioApiDeviceType(devices[i].type);
     info.display_name = devices[i].display_name;
     info.device_name = devices[i].device_name;
     info.is_active = devices[i].active;

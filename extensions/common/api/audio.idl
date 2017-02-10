@@ -13,6 +13,25 @@ namespace audio {
     OUTPUT
   };
 
+  // Available audio device types.
+  enum DeviceType {
+    HEADPHONE,
+    MIC,
+    USB,
+    BLUETOOTH,
+    HDMI,
+    INTERNAL_SPEAKER,
+    INTERNAL_MIC,
+    FRONT_MIC,
+    REAR_MIC,
+    KEYBOARD_MIC,
+    HOTWORD,
+    LINEOUT,
+    POST_MIX_LOOPBACK,
+    POST_DSP_LOOPBACK,
+    OTHER
+  };
+
   dictionary OutputDeviceInfo {
     // The unique identifier of the audio output device.
     DOMString id;
@@ -46,10 +65,8 @@ namespace audio {
     StreamType streamType;
     // True for input device; false for output device.
     [deprecated="Use |streamType|."] boolean isInput;
-    // Type of the device, including "INTERNAL_SPEAKER", "INTERNAL_MIC",
-    // "HEADPHONE", "USB", "BLUETOOTH", "HDMI", "MIC", "KEYBOARD_MIC",
-    // "AOKR", and "OTHER".
-    DOMString deviceType;
+    // Type of the device.
+    DeviceType deviceType;
     // The user-friendly name (e.g. "USB Microphone").
     DOMString displayName;
     // Device name.
