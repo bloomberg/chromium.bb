@@ -36,7 +36,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
@@ -353,9 +352,9 @@ void FileReader::abort() {
   // called from the event handler and we do not want the resource loading code
   // to be on the stack when doing so. The persistent reference keeps the
   // reader alive until the task has completed.
-  getExecutionContext()->postTask(
-      TaskType::FileReading, BLINK_FROM_HERE,
-      createSameThreadTask(&FileReader::terminate, wrapPersistent(this)));
+  TaskRunnerHelper::get(TaskType::FileReading, getExecutionContext())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&FileReader::terminate, wrapPersistent(this)));
 }
 
 void FileReader::result(StringOrArrayBuffer& resultAttribute) const {

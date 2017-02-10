@@ -25,12 +25,12 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/EventQueue.h"
@@ -71,7 +71,6 @@
 #include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
-#include <memory>
 
 namespace blink {
 
@@ -1137,9 +1136,9 @@ void ContentSecurityPolicy::reportViolation(
   // Fire a violation event if we're working within an execution context (e.g.
   // we're not processing 'frame-ancestors').
   if (m_executionContext) {
-    m_executionContext->postTask(
-        TaskType::Networking, BLINK_FROM_HERE,
-        createSameThreadTask(&ContentSecurityPolicy::dispatchViolationEvents,
+    TaskRunnerHelper::get(TaskType::Networking, m_executionContext)
+        ->postTask(BLINK_FROM_HERE,
+                   WTF::bind(&ContentSecurityPolicy::dispatchViolationEvents,
                              wrapPersistent(this), violationData,
                              wrapPersistent(element)));
   }

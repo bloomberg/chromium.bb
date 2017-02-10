@@ -33,10 +33,9 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/StringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
@@ -69,6 +68,14 @@ String DataTransferItem::type() const {
   return m_item->type();
 }
 
+static void runGetAsStringTask(ExecutionContext* context,
+                               StringCallback* callback,
+                               const String& data) {
+  InspectorInstrumentation::AsyncTask asyncTask(context, callback);
+  if (context)
+    callback->handleEvent(data);
+}
+
 void DataTransferItem::getAsString(ScriptState* scriptState,
                                    StringCallback* callback) const {
   if (!m_dataTransfer->canReadData())
@@ -76,11 +83,13 @@ void DataTransferItem::getAsString(ScriptState* scriptState,
   if (!callback || m_item->kind() != DataObjectItem::StringKind)
     return;
 
-  scriptState->getExecutionContext()->postTask(
-      TaskType::UserInteraction, BLINK_FROM_HERE,
-      createSameThreadTask(&StringCallback::handleEvent,
-                           wrapPersistent(callback), m_item->getAsString()),
-      "DataTransferItem.getAsString");
+  ExecutionContext* context = scriptState->getExecutionContext();
+  InspectorInstrumentation::asyncTaskScheduled(
+      context, "DataTransferItem.getAsString", callback);
+  TaskRunnerHelper::get(TaskType::UserInteraction, context)
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&runGetAsStringTask, wrapWeakPersistent(context),
+                           wrapPersistent(callback), m_item->getAsString()));
 }
 
 File* DataTransferItem::getAsFile() const {
