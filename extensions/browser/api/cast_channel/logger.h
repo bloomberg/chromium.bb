@@ -35,7 +35,7 @@ static const int kMaxEventsPerSocket = 2000;
 
 // Logs information of each channel and sockets and exports the log as
 // a blob. Logger is done on the IO thread.
-class Logger : public base::RefCounted<Logger> {
+class Logger : public base::RefCountedThreadSafe<Logger> {
  public:
   // |clock|: Clock used for generating timestamps for the events. Owned by
   // this class.
@@ -92,7 +92,7 @@ class Logger : public base::RefCounted<Logger> {
   LastErrors GetLastErrors(int channel_id) const;
 
  private:
-  friend class base::RefCounted<Logger>;
+  friend class base::RefCountedThreadSafe<Logger>;
   ~Logger();
 
   struct AggregatedSocketEventLog {
