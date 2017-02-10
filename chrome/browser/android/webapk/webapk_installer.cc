@@ -416,6 +416,13 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   GURL signed_download_url(response->signed_download_url());
+  // https://crbug.com/680131. The server sends an empty URL if the server does
+  // not have a newer WebAPK to update to.
+  if (task_type_ == UPDATE && signed_download_url.is_empty()) {
+    OnSuccess();
+    return;
+  }
+
   if (!signed_download_url.is_valid() || response->package_name().empty()) {
     OnFailure();
     return;

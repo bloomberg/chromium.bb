@@ -421,6 +421,21 @@ TEST_F(WebApkInstallerTest, UpdateSuccess) {
   EXPECT_TRUE(runner->success());
 }
 
+// Test that an update suceeds if the WebAPK server returns a HTTP response with
+// an empty download URL. The WebAPK server sends an empty download URL when:
+// - The server is unable to update the WebAPK in the way that the client
+//   requested.
+// AND
+// - The most up to date version of the WebAPK on the server is identical to the
+//   one installed on the client.
+TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
+  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, GURL()));
+
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->RunUpdateWebApk();
+  EXPECT_TRUE(runner->success());
+}
+
 // Test installation succeeds using Google Play.
 TEST_F(WebApkInstallerTest, InstallFromGooglePlaySuccess) {
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
