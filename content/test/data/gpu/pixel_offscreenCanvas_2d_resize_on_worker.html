@@ -29,9 +29,9 @@ self.onmessage = function(e) {
   ctx2d.fillRect(0, 0, transfered.width, transfered.height);
   ctx2d.fillStyle = "red";
   ctx2d.fillRect(10, 10, 20, 20);
-  ctx2d.commit();
-
-  self.postMessage("");
+  ctx2d.commit().then(function() {
+    self.postMessage("");
+  });
 };
 </script>
 <script>
