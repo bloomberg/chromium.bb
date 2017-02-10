@@ -117,7 +117,6 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(const std::string&)prefName;
-- (ToolbarView*)toolbarView;
 // Height of the toolbar in pixels when the bookmark bar is closed.
 - (CGFloat)baseToolbarHeight;
 - (void)toolbarFrameChanged;
@@ -212,8 +211,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
-               browser:(Browser*)browser
-        resizeDelegate:(id<ViewResizer>)resizeDelegate {
+               browser:(Browser*)browser {
   DCHECK(commands && profile);
   if ((self = [super initWithNibName:@"Toolbar"
                               bundle:base::mac::FrameworkBundle()])) {
@@ -235,8 +233,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     // NOTE: Don't remove the command observers. ToolbarController is
     // autoreleased at about the same time as the CommandUpdater (owned by the
     // Browser), so |commands_| may not be valid any more.
-
-    [[self toolbarView] setResizeDelegate:resizeDelegate];
 
     // Start global error services now so we badge the menu correctly.
     SyncGlobalErrorFactory::GetForProfile(profile);
@@ -566,6 +562,10 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [self mouseMoved:event];
 }
 
+- (ToolbarView*)toolbarView {
+  return base::mac::ObjCCastStrict<ToolbarView>([self view]);
+}
+
 - (LocationBarViewMac*)locationBarBridge {
   return locationBarView_.get();
 }
@@ -663,11 +663,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // the toolbar with only the location bar inside it.
   if (!hasToolbar_ && hasLocationBar_)
     [self showLocationBarOnly];
-}
-
-// (Private) Returns the backdrop to the toolbar as a ToolbarView.
-- (ToolbarView*)toolbarView{
-  return base::mac::ObjCCastStrict<ToolbarView>([self view]);
 }
 
 - (id)customFieldEditorForObject:(id)obj {

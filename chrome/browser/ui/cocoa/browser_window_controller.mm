@@ -319,8 +319,8 @@ bool IsTabDetachingInFullscreenEnabled() {
     toolbarController_.reset([[ToolbarController alloc]
         initWithCommands:browser->command_controller()->command_updater()
                  profile:browser->profile()
-                 browser:browser
-          resizeDelegate:self]);
+                 browser:browser]);
+    [[toolbarController_ toolbarView] setResizeDelegate:self];
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
 

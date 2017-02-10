@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
@@ -125,8 +126,8 @@ class ToolbarControllerTest : public CocoaProfileTest {
     bar_.reset([[TestToolbarController alloc]
         initWithCommands:browser()->command_controller()->command_updater()
                  profile:profile()
-                 browser:browser()
-          resizeDelegate:resizeDelegate_.get()]);
+                 browser:browser()]);
+    [[bar_ toolbarView] setResizeDelegate:resizeDelegate_.get()];
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];

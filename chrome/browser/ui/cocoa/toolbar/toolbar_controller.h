@@ -28,6 +28,7 @@ class LocationBarViewMac;
 class Profile;
 @class ReloadButton;
 @class ToolbarButton;
+@class ToolbarView;
 @class AppMenuController;
 
 namespace content {
@@ -99,12 +100,13 @@ class NotificationBridge;
 
 // Initialize the toolbar and register for command updates. The profile is
 // needed for initializing the location bar. The browser is needed for
-// the toolbar model and back/forward menus. The resizeDelegate is used
-// to smoothly animate height changes for the toolbar.
+// the toolbar model and back/forward menus.
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
-               browser:(Browser*)browser
-        resizeDelegate:(id<ViewResizer>)resizeDelegate;
+               browser:(Browser*)browser;
+
+// Strongly typed controlled view.
+- (ToolbarView*)toolbarView;
 
 // Get the C++ bridge object representing the location bar for this tab.
 - (LocationBarViewMac*)locationBarBridge;
