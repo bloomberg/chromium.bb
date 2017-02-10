@@ -919,6 +919,11 @@ void BoxPainter::paintNormalBoxShadow(const PaintInfo& info,
   if (!style.boxShadow())
     return;
   GraphicsContext& context = info.context;
+
+  // https://bugs.chromium.org/p/skia/issues/detail?id=237
+  if (context.printing())
+    return;
+
   FloatRoundedRect border = style.getRoundedBorderFor(
       paintRect, includeLogicalLeftEdge, includeLogicalRightEdge);
 
@@ -1040,6 +1045,10 @@ void BoxPainter::paintInsetBoxShadowInBounds(const PaintInfo& info,
   // The caller should have checked style.boxShadow() when computing bounds.
   DCHECK(style.boxShadow());
   GraphicsContext& context = info.context;
+
+  // https://bugs.chromium.org/p/skia/issues/detail?id=237
+  if (context.printing())
+    return;
 
   bool isHorizontal = style.isHorizontalWritingMode();
   GraphicsContextStateSaver stateSaver(context, false);
