@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.makeUiConfig;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 
 import org.junit.Before;
@@ -33,10 +34,14 @@ import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.List;
@@ -94,7 +99,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1 + CATEGORY2, 0);
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, makeUiConfig());
 
         bindViewHolders(sectionList);
 
@@ -128,7 +133,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1 + CATEGORY2, 0);
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, makeUiConfig());
 
         bindViewHolders(sectionList, 0, 5); // Bind until after the third item from |suggestions1|.
 
@@ -223,7 +228,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource,
                 new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, makeUiConfig());
         bindViewHolders(sectionList);
 
         assertThat(sectionList.getSectionForTesting(CATEGORY1)
@@ -242,7 +247,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource,
                 new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, makeUiConfig());
         bindViewHolders(sectionList);
 
         ArgumentCaptor<DestructionObserver> argument =
@@ -260,5 +265,49 @@ public class SectionListTest {
         // Verify that the section has been detached by notifying its parent about changes. If not
         // detached, it should crash.
         section.notifyItemRangeChanged(0, 1);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArticlesHeaderShownOnRegularDisplays() {
+        registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
+
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, makeUiConfig());
+        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        assertTrue(articles.getHeaderItemForTesting().isVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArticlesHeaderHiddenOnNarrowDisplays() {
+        registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
+
+        UiConfig config = makeUiConfig(HorizontalDisplayStyle.NARROW, VerticalDisplayStyle.REGULAR);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, config);
+        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        assertFalse(articles.getHeaderItemForTesting().isVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArticlesHeaderHiddenOnFlatDisplays() {
+        registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
+
+        UiConfig config = makeUiConfig(HorizontalDisplayStyle.REGULAR, VerticalDisplayStyle.FLAT);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, config);
+        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        assertFalse(articles.getHeaderItemForTesting().isVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArticlesHeaderShownWithOtherSections() {
+        registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
+        registerCategory(mSuggestionSource, CATEGORY1, 1);
+
+        UiConfig config = makeUiConfig(HorizontalDisplayStyle.REGULAR, VerticalDisplayStyle.FLAT);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, config);
+        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        assertTrue(articles.getHeaderItemForTesting().isVisible());
     }
 }

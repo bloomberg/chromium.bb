@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -14,6 +15,9 @@ import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,6 +179,18 @@ public final class ContentSuggestionsTestUtils {
             default:
                 return mock(NewTabPageViewHolder.class);
         }
+    }
+
+    public static UiConfig makeUiConfig(
+            @HorizontalDisplayStyle int horizontal, @VerticalDisplayStyle int vertical) {
+        UiConfig uiConfig = mock(UiConfig.class);
+        when(uiConfig.getCurrentDisplayStyle())
+                .thenReturn(new UiConfig.DisplayStyle(horizontal, vertical));
+        return uiConfig;
+    }
+
+    public static UiConfig makeUiConfig() {
+        return makeUiConfig(HorizontalDisplayStyle.REGULAR, VerticalDisplayStyle.REGULAR);
     }
 
     /** Helper method to print the current state of a node. */

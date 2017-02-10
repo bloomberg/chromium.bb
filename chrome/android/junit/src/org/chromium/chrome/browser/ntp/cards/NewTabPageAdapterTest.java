@@ -24,6 +24,7 @@ import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.explainFailedExpectation;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.makeUiConfig;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.viewTypeToString;
 
@@ -991,8 +992,8 @@ public class NewTabPageAdapterTest {
     }
 
     private void reloadNtp() {
-        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), null, mOfflinePageBridge,
-                mock(ContextMenuManager.class), /* tileGroupDelegate = */ null);
+        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), makeUiConfig(),
+                mOfflinePageBridge, mock(ContextMenuManager.class), /* tileGroupDelegate = */ null);
     }
 
     private void assertArticlesEqual(List<SnippetArticle> articles, int start, int end) {

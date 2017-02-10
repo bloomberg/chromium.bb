@@ -5,35 +5,25 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.browser.ntp.cards.Leaf;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 
 /**
  * Represents the data for a header of a group of snippets
  */
-public class SectionHeader extends Leaf {
-    /** Whether the header should be shown. */
-    private final boolean mVisible;
-
+public class SectionHeader extends OptionalLeaf {
     /** The header text to be shown. */
     private final String mHeaderText;
 
     public SectionHeader(String headerText) {
-        // TODO(mvanouwerkerk): Configure mVisible in the constructor when we have a global status
-        // section without a visible header.
-        mVisible = true;
-
         this.mHeaderText = headerText;
+        setVisible(true);
     }
 
     @Override
     @ItemViewType
     public int getItemViewType() {
         return ItemViewType.HEADER;
-    }
-
-    public boolean isVisible() {
-        return mVisible;
     }
 
     public String getHeaderText() {

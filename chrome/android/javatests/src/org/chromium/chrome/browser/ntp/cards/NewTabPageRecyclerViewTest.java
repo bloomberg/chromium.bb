@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NTPTileSource;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageView;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
@@ -51,6 +52,12 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] {""};
     private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {NTPTileSource.TOP_SITES};
 
+    // TODO(dgn): Properly bypass the native code when testing with a fake suggestions source.
+    // We currently mix the fake and the snippets bridge, resulting in crashes with unregistered
+    // categories.
+    @CategoryInt
+    private static final int TEST_CATEGORY = KnownCategories.BOOKMARKS;
+
     private Tab mTab;
     private NewTabPage mNtp;
     private String[] mSiteSuggestionUrls;
@@ -64,11 +71,11 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
 
         mSource = new FakeSuggestionsSource();
-        mSource.setInfoForCategory(KnownCategories.ARTICLES,
-                new SuggestionsCategoryInfo(KnownCategories.ARTICLES, "Articles test title",
+        mSource.setInfoForCategory(TEST_CATEGORY,
+                new SuggestionsCategoryInfo(TEST_CATEGORY, "Suggestions test title",
                         ContentSuggestionsCardLayout.FULL_CARD, /*hasFetchAction=*/true,
                         /*hasViewAllAction=*/false, /*showIfEmpty=*/true, "noSuggestionsMessage"));
-        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
         NewTabPage.setSuggestionsSourceForTests(mSource);
 
         super.setUp();
@@ -112,8 +119,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     @CommandLineFlags.Add("enable-features=NTPSnippets")
     public void testClickSuggestion() throws InterruptedException {
         setSuggestionsAndWaitForUpdate(10);
-        List<SnippetArticle> suggestions =
-                mSource.getSuggestionsForCategory(KnownCategories.ARTICLES);
+        List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
 
         // Scroll the last suggestion into view and click it.
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
@@ -133,11 +139,11 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
-        assertEquals(3, mSource.getSuggestionsForCategory(KnownCategories.ARTICLES).size());
+        assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
         assertEquals(RecyclerView.NO_POSITION,
                 getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED));
         assertEquals(1, mSource.getCategories().length);
-        assertEquals(KnownCategories.ARTICLES, mSource.getCategories()[0]);
+        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
 
         // Dismiss the sign in promo.
         int signinPromoPosition = getAdapter().getFirstPositionForType(ItemViewType.PROMO);
@@ -158,7 +164,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         singleClickView(allDismissedView.findViewById(R.id.action_button));
         waitForViewToDetach(allDismissedView);
         assertEquals(1, mSource.getCategories().length);
-        assertEquals(KnownCategories.ARTICLES, mSource.getCategories()[0]);
+        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
     }
 
     @MediumTest
@@ -166,8 +172,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     @CommandLineFlags.Add("enable-features=NTPSnippets")
     public void testDismissArticleWithContextMenu() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(10);
-        List<SnippetArticle> suggestions =
-                mSource.getSuggestionsForCategory(KnownCategories.ARTICLES);
+        List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
         assertEquals(10, suggestions.size());
 
         // Scroll a suggestion into view.
@@ -178,7 +183,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         invokeContextMenu(suggestionView, ContextMenuManager.ID_REMOVE);
         waitForViewToDetach(suggestionView);
 
-        suggestions = mSource.getSuggestionsForCategory(KnownCategories.ARTICLES);
+        suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
         assertEquals(9, suggestions.size());
     }
 
@@ -188,7 +193,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     public void testDismissStatusCardWithContextMenu()
             throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(0);
-        assertArrayEquals(new int[] {KnownCategories.ARTICLES}, mSource.getCategories());
+        assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
         // Scroll the status card into view.
         int cardPosition = getAdapter().getFirstCardPosition();
@@ -209,7 +214,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     public void testDismissActionItemWithContextMenu()
             throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(0);
-        assertArrayEquals(new int[] {KnownCategories.ARTICLES}, mSource.getCategories());
+        assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
         // Scroll the action item into view.
         int actionItemPosition = getAdapter().getFirstCardPosition() + 1;
@@ -288,9 +293,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                source.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
-                source.setSuggestionsForCategory(
-                        KnownCategories.ARTICLES, buildSuggestions(suggestionsCount));
+                source.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
+                source.setSuggestionsForCategory(TEST_CATEGORY, buildSuggestions(suggestionsCount));
             }
         });
         waitForStableRecyclerView();
@@ -300,7 +304,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         List<SnippetArticle> suggestions = new ArrayList<>();
         for (int i = 0; i < suggestionsCount; i++) {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
-            suggestions.add(new SnippetArticle(KnownCategories.ARTICLES, "id" + i, "title" + i,
+            suggestions.add(new SnippetArticle(TEST_CATEGORY, "id" + i, "title" + i,
                     "publisher" + i, "previewText" + i, url, 1466614774 + i, 10f));
         }
         return suggestions;

@@ -22,8 +22,6 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
 
     private final int mMaxSnippetHeaderHeight;
 
-    private SectionHeader mHeaderListItem;
-
     public SectionHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
                         .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
@@ -37,8 +35,7 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     }
 
     public void onBindViewHolder(SectionHeader header) {
-        mHeaderListItem = header;
-        ((TextView) itemView).setText(mHeaderListItem.getHeaderText());
+        ((TextView) itemView).setText(header.getHeaderText());
         updateDisplay(0, false);
     }
 
@@ -46,10 +43,7 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
      * @return The header height we want to set.
      */
     private int getHeaderHeight(int amountScrolled, boolean canTransition) {
-        if (!mHeaderListItem.isVisible()) return 0;
-
-        // If the header cannot transition but is visible - set the height to the maximum so
-        // it always displays
+        // If the header cannot transition set the height to the maximum so it always displays.
         if (!canTransition) return mMaxSnippetHeaderHeight;
 
         // Check if snippet header top is within range to start showing. Set the header height,

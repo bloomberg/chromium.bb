@@ -167,6 +167,15 @@ public class UiConfig {
             this.vertical = vertical;
         }
 
+        /**
+         * @return whether the display is small enough to be considered below the regular size in
+         * any of the 2 dimensions.
+         */
+        public boolean isSmall() {
+            return horizontal == HorizontalDisplayStyle.NARROW
+                    || vertical == VerticalDisplayStyle.FLAT;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

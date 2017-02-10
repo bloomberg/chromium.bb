@@ -312,13 +312,13 @@ public class SuggestionsSection extends InnerNode {
      */
     private void childSeen(int position) {
         Log.d(TAG, "childSeen: position %d in category %d", position, mCategoryInfo.getCategory());
-        assert getStartingOffsetForChild(mSuggestionsList) == 1;
-        // We assume all non-snippet cards come after all cards of type SNIPPET.
+
         if (getItemViewType(position) == ItemViewType.SNIPPET) {
-            // As asserted above, first suggestion has position 1, etc., so the position of this
-            // child coincides with the number of suggestions above this child (including this one).
+            // We assume that all suggestions are clustered together, so the number seen can be
+            // obtained from the index of the last suggestion seen.
+            int firstSuggestionPosition = getStartingOffsetForChild(mSuggestionsList);
             mNumberOfSuggestionsSeen =
-                    Math.max(mNumberOfSuggestionsSeen, position);
+                    Math.max(mNumberOfSuggestionsSeen, position - firstSuggestionPosition + 1);
         }
     }
 
@@ -475,6 +475,11 @@ public class SuggestionsSection extends InnerNode {
         return super.getItemDismissalGroup(position);
     }
 
+    /** Sets the visibility of this section's header. */
+    public void setHeaderVisibility(boolean headerVisibility) {
+        mHeader.setVisible(headerVisibility);
+    }
+
     /**
      * @return The set of indices corresponding to items that can dismiss this entire section
      * (as opposed to individual items in it).
@@ -506,5 +511,9 @@ public class SuggestionsSection extends InnerNode {
 
     ActionItem getActionItemForTesting() {
         return mMoreButton;
+    }
+
+    SectionHeader getHeaderItemForTesting() {
+        return mHeader;
     }
 }
