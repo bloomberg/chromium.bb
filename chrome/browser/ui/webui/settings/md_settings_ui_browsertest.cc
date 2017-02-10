@@ -24,9 +24,9 @@ using ui_test_utils::NavigateToURL;
 using content::WaitForLoadStop;
 
 IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
-  NavigateToURL(browser(),
-      GURL(content::kViewSourceScheme + std::string(":") +
-           chrome::kChromeUIMdSettingsURL));
+  NavigateToURL(browser(), GURL(content::kViewSourceScheme + std::string(":") +
+                                chrome::kChromeUIMdSettingsURL +
+                                std::string("strings.js")));
 }
 
 // May not complete on memory and Windows debug bots. TODO(dbeam): investigate
