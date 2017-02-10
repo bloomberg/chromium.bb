@@ -15,7 +15,7 @@ BASE_DIR = os.path.abspath(os.path.join(
     CURRENT_DIR, '..', '..', '..', '..', '..'))
 sys.path.append(os.path.join(BASE_DIR, 'third_party', 'markupsafe'))
 sys.path.append(os.path.join(BASE_DIR, 'third_party', 'jinja2'))
-import jinja2
+import jinja2  # pylint: disable=import-error
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     autoescape=True)
