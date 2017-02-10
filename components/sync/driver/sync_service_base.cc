@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -147,12 +148,14 @@ bool SyncServiceBase::GetLocalSyncConfig(
   *local_sync_backend_folder = sync_prefs_.GetLocalSyncBackendDir();
 #if defined(OS_WIN)
   enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
+  UMA_HISTOGRAM_BOOLEAN("Sync.Local.Enabled", enable_local_sync_backend);
   if (local_sync_backend_folder->empty()) {
     // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
     // this code and move the logic in its right place. See crbug/657810.
     if (!base::PathService::Get(base::DIR_APP_DATA,
                                 local_sync_backend_folder)) {
       SYSLOG(WARNING) << "Local sync can not get the roaming profile folder.";
+      UMA_HISTOGRAM_BOOLEAN("Sync.Local.RoamingProfileUnavailable", false);
       return false;
     }
     *local_sync_backend_folder = local_sync_backend_folder->Append(
