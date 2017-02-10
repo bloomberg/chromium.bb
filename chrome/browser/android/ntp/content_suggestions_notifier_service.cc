@@ -67,11 +67,9 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     : public ContentSuggestionsService::Observer {
  public:
   NotifyingObserver(ContentSuggestionsService* service,
-                    Profile* profile,
-                    PrefService* prefs)
+                    Profile* profile)
       : service_(service),
         profile_(profile),
-        prefs_(prefs),
         app_status_listener_(base::Bind(&NotifyingObserver::AppStatusChanged,
                                         base::Unretained(this))),
         weak_ptr_factory_(this) {}
@@ -128,13 +126,8 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   void OnSuggestionInvalidated(
       const ContentSuggestion::ID& suggestion_id) override {
-    // TODO(sfiera): handle concurrent notifications and non-articles properly.
-    if (suggestion_id.category().IsKnownCategory(KnownCategories::ARTICLES) &&
-        (suggestion_id.id_within_category() ==
-         prefs_->GetString(kNotificationIDWithinCategory))) {
-      ContentSuggestionsNotificationHelper::HideNotification(
-          suggestion_id, CONTENT_SUGGESTIONS_HIDE_EXPIRY);
-    }
+    ContentSuggestionsNotificationHelper::HideNotification(
+        suggestion_id, CONTENT_SUGGESTIONS_HIDE_EXPIRY);
   }
 
   void OnFullRefreshRequired() override {
@@ -194,7 +187,6 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     // check if suggestion is still valid.
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
-    prefs_->ClearPref(kNotificationIDWithinCategory);
     if (ContentSuggestionsNotificationHelper::SendNotification(
             id, url, title, text, CropSquare(image), timeout_at)) {
       RecordContentSuggestionsNotificationImpression(
@@ -206,7 +198,6 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   ContentSuggestionsService* const service_;
   Profile* const profile_;
-  PrefService* const prefs_;
   base::android::ApplicationStatusListener app_status_listener_;
 
   base::WeakPtrFactory<NotifyingObserver> weak_ptr_factory_;
@@ -216,11 +207,8 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
 ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
     Profile* profile,
-    ContentSuggestionsService* suggestions,
-    PrefService* prefs)
-    : observer_(base::MakeUnique<NotifyingObserver>(suggestions,
-                                                    profile,
-                                                    profile->GetPrefs())) {
+    ContentSuggestionsService* suggestions)
+    : observer_(base::MakeUnique<NotifyingObserver>(suggestions, profile)) {
   ContentSuggestionsNotificationHelper::FlushCachedMetrics();
   suggestions->AddObserver(observer_.get());
 }
@@ -230,7 +218,9 @@ ContentSuggestionsNotifierService::~ContentSuggestionsNotifierService() =
 
 void ContentSuggestionsNotifierService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
   registry->RegisterIntegerPref(
       prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
+
+  // TODO(sfiera): remove after M62; no longer (and never really) used.
+  registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
 }

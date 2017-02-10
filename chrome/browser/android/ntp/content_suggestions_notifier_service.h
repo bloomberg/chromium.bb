@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class PrefService;
 class Profile;
 
 namespace ntp_snippets {
@@ -25,8 +24,7 @@ class ContentSuggestionsNotifierService : public KeyedService {
  public:
   ContentSuggestionsNotifierService(
       Profile* profile,
-      ntp_snippets::ContentSuggestionsService* suggestions,
-      PrefService* prefs);
+      ntp_snippets::ContentSuggestionsService* suggestions);
 
   ~ContentSuggestionsNotifierService() override;
 

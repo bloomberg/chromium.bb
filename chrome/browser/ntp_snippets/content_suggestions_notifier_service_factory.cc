@@ -61,8 +61,7 @@ KeyedService* ContentSuggestionsNotifierServiceFactory::BuildServiceInstanceFor(
     Profile* profile = Profile::FromBrowserContext(context);
     ntp_snippets::ContentSuggestionsService* suggestions =
         ContentSuggestionsServiceFactory::GetForProfile(profile);
-    return new ContentSuggestionsNotifierService(profile, suggestions,
-                                                 profile->GetPrefs());
+    return new ContentSuggestionsNotifierService(profile, suggestions);
   }
 #endif
   return nullptr;
