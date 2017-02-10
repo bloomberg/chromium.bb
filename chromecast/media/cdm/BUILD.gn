@@ -6,29 +6,37 @@ import("//chromecast/chromecast.gni")
 
 source_set("cdm") {
   sources = [
-    "cast_cdm.cc",
-    "cast_cdm.h",
-    "cast_cdm_context.cc",
-    "cast_cdm_context.h",
-    "cast_cdm_factory.cc",
-    "cast_cdm_factory.h",
     "chromecast_init_data.cc",
     "chromecast_init_data.h",
   ]
 
   deps = [
     "//base",
-    "//chromecast/media/base",
     "//media",
-    "//url:url",
   ]
 
-  if (is_android && use_playready) {
+  if (!is_android) {
     sources += [
-      "playready_drm_delegate_android.cc",
-      "playready_drm_delegate_android.h",
+      "cast_cdm.cc",
+      "cast_cdm.h",
+      "cast_cdm_context.cc",
+      "cast_cdm_context.h",
+      "cast_cdm_factory.cc",
+      "cast_cdm_factory.h",
     ]
 
-    deps += [ "//media/base/android" ]
+    deps += [
+      "//chromecast/media/base",
+      "//url:url",
+    ]
+  } else {
+    if (use_playready) {
+      sources += [
+        "playready_drm_delegate_android.cc",
+        "playready_drm_delegate_android.h",
+      ]
+
+      deps += [ "//media/base/android" ]
+    }
   }
 }
