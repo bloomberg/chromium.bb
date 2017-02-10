@@ -579,11 +579,9 @@ Resource* ResourceFetcher::requestResource(
   }
   if (!resource)
     return nullptr;
-  if (resource->getType() != factory.type()) {
-    DCHECK(request.isSpeculativePreload() || request.isLinkPreload());
-    // TODO(yoav): What's the scenario where this can actually happen?
-    return nullptr;
-  }
+
+  // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
+  CHECK_EQ(resource->getType(), factory.type());
 
   if (!resource->isAlive())
     m_deadStatsRecorder.update(policy);
@@ -827,10 +825,6 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (existingResource->response().wasFallbackRequiredByServiceWorker())
     return Reload;
 
-  // We already have a preload going for this URL.
-  if (fetchRequest.isSpeculativePreload() && existingResource->isPreloaded())
-    return Use;
-
   // If the same URL has been loaded as a different type, we need to reload.
   if (existingResource->getType() != type) {
     // FIXME: If existingResource is a Preload and the new type is LinkPrefetch
@@ -841,6 +835,10 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
                                  "reloading due to type mismatch.";
     return Reload;
   }
+
+  // We already have a preload going for this URL.
+  if (fetchRequest.isSpeculativePreload() && existingResource->isPreloaded())
+    return Use;
 
   // Do not load from cache if images are not enabled. There are two general
   // cases:
