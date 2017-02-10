@@ -54,19 +54,21 @@ void AddCdmHostFilePaths(
   base::FilePath chrome_exe_dir;
   if (!PathService::Get(base::DIR_EXE, &chrome_exe_dir))
     NOTREACHED();
+  base::FilePath version_dir(chrome_exe_dir.AppendASCII(CHROME_VERSION_STRING));
 
   cdm_host_file_paths->reserve(arraysize(kUnversionedFiles) +
                                arraysize(kVersionedFiles));
 
+  // Signature files are always in the version directory.
   for (size_t i = 0; i < arraysize(kUnversionedFiles); ++i) {
     base::FilePath file_path = chrome_exe_dir.Append(kUnversionedFiles[i]);
+    base::FilePath sig_path =
+        GetSigFilePath(version_dir.Append(kUnversionedFiles[i]));
     DVLOG(2) << __func__ << ": unversioned file " << i << " at "
-             << file_path.value();
-    cdm_host_file_paths->push_back(
-        CdmHostFilePath(file_path, GetSigFilePath(file_path)));
+             << file_path.value() << ", signature file " << sig_path.value();
+    cdm_host_file_paths->push_back(CdmHostFilePath(file_path, sig_path));
   }
 
-  base::FilePath version_dir(chrome_exe_dir.AppendASCII(CHROME_VERSION_STRING));
   for (size_t i = 0; i < arraysize(kVersionedFiles); ++i) {
     base::FilePath file_path = version_dir.Append(kVersionedFiles[i]);
     DVLOG(2) << __func__ << ": versioned file " << i << " at "
@@ -77,13 +79,19 @@ void AddCdmHostFilePaths(
 
 #elif defined(OS_MACOSX)
 
+  // Framework signature is next to the framework directory, not next to
+  // the actual framework executable.
   base::FilePath chrome_framework_path =
       base::mac::FrameworkBundlePath().Append(chrome::kFrameworkExecutableName);
+  base::FilePath chrome_framework_sig_path =
+      GetSigFilePath(base::mac::FrameworkBundlePath().DirName().Append(
+          chrome::kFrameworkExecutableName));
 
   DVLOG(2) << __func__
-           << ": chrome_framework_path=" << chrome_framework_path.value();
-  cdm_host_file_paths->push_back(CdmHostFilePath(
-      chrome_framework_path, GetSigFilePath(chrome_framework_path)));
+           << ": chrome_framework_path=" << chrome_framework_path.value()
+           << ", signature_path=" << chrome_framework_sig_path.value();
+  cdm_host_file_paths->push_back(
+      CdmHostFilePath(chrome_framework_path, chrome_framework_sig_path));
 
 #elif defined(OS_LINUX)
 
