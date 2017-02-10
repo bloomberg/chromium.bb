@@ -324,7 +324,7 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
     return false;
   for (cc::SurfaceId id :
        surface_manager_->GetSurfaceForId(container_surface_id)
-           ->referenced_surfaces()) {
+           ->active_referenced_surfaces()) {
     if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
       return true;
   }

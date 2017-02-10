@@ -1171,9 +1171,9 @@ bool ContainsSurfaceId(cc::SurfaceId container_surface_id,
                        RenderWidgetHostViewChildFrame* target_view) {
   if (!container_surface_id.is_valid())
     return false;
-  for (cc::SurfaceId id :
-       GetSurfaceManager()->GetSurfaceForId(container_surface_id)
-           ->referenced_surfaces()) {
+  for (cc::SurfaceId id : GetSurfaceManager()
+                              ->GetSurfaceForId(container_surface_id)
+                              ->active_referenced_surfaces()) {
     if (id == target_view->SurfaceIdForTesting() ||
         ContainsSurfaceId(id, target_view))
       return true;

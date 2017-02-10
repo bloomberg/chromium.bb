@@ -50,12 +50,16 @@ CompositorFrame MakeCompositorFrame(
 class CompositorFrameSinkSupportTest : public testing::Test,
                                        public CompositorFrameSinkSupportClient {
  public:
-  CompositorFrameSinkSupportTest() {}
+  CompositorFrameSinkSupportTest()
+      : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
   ~CompositorFrameSinkSupportTest() override {}
 
   CompositorFrameSinkSupport& parent_support() { return *supports_[0]; }
   Surface* parent_surface() {
     return parent_support().current_surface_for_testing();
+  }
+  const ReferencedSurfaceTracker& parent_reference_tracker() {
+    return parent_support().ReferenceTrackerForTesting();
   }
 
   CompositorFrameSinkSupport& child_support1() { return *supports_[1]; }
@@ -105,7 +109,11 @@ class CompositorFrameSinkSupportTest : public testing::Test,
 
   void TearDown() override {
     surface_manager_.SetDependencyTracker(nullptr);
+
+    // SurfaceDependencyTracker depends on this BeginFrameSource and so it must
+    // be destroyed AFTER the dependency tracker is destroyed.
     begin_frame_source_.reset();
+
     supports_.clear();
   }
 
@@ -385,6 +393,54 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+}
+
+// This test verifies that the set of references from a Surface includes both
+// the pending and active CompositorFrames.
+TEST_F(CompositorFrameSinkSupportTest,
+       DisplayCompositorLockingReferencesFromPendingAndActiveFrames) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const SurfaceReference parent_child_reference(parent_id, child_id);
+  const SurfaceReference parent_arbitrary_reference(parent_id, arbitrary_id);
+
+  // child_support1 submits a CompositorFrame without any dependencies.
+  child_support1().SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+
+  // Verify that the child surface is not blocked.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+
+  // parent_support submits a CompositorFrame that depends on |child_id1|
+  // which is already active. Thus, this CompositorFrame should activate
+  // immediately.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  // Verify that the parent will add a reference to the |child_id|.
+  EXPECT_THAT(parent_reference_tracker().references_to_add(),
+              UnorderedElementsAre(parent_child_reference));
+  EXPECT_THAT(parent_reference_tracker().references_to_remove(), IsEmpty());
+
+  // parent_support now submits another CompositorFrame to the same surface
+  // but depends on arbitrary_id. The parent surface should now have both
+  // a pending and active CompositorFrame.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({arbitrary_id}));
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+              UnorderedElementsAre(arbitrary_id));
+  // Verify that the parent will add a reference to |arbitrary_id| and will not
+  // remove a reference to |child_id|.
+  EXPECT_THAT(parent_reference_tracker().references_to_add(),
+              UnorderedElementsAre(parent_arbitrary_reference));
+  EXPECT_THAT(parent_reference_tracker().references_to_remove(), IsEmpty());
 }
 
 }  // namespace test

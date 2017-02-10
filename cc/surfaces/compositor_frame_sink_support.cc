@@ -76,25 +76,34 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   ++ack_pending_count_;
   float device_scale_factor = frame.metadata.device_scale_factor;
 
+  surface_factory_.SubmitCompositorFrame(
+      local_surface_id, std::move(frame),
+      base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
+                 weak_factory_.GetWeakPtr()));
+
   if (surface_manager_->using_surface_references()) {
     SurfaceId last_surface_id = reference_tracker_.current_surface_id();
 
     // Populate list of surface references to add and remove based on reference
-    // surfaces in current frame compared with the last frame.
-    reference_tracker_.UpdateReferences(local_surface_id,
-                                        frame.metadata.referenced_surfaces);
+    // surfaces in current frame compared with the last frame. The list of
+    // surface references includes references from both the pending and active
+    // frame if any.
+    SurfaceId current_surface_id(frame_sink_id_, local_surface_id);
+    Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id);
+    // TODO(fsamuel): This is pretty inefficent. We copy over referenced
+    // surfaces. Then we pass them into the ReferencedSurfaceTracker to copy
+    // them again into a set. ReferencedSurfaceTracker should just take in two
+    // vectors, one for pending referenced surfaces and one for active
+    // referenced surfaces.
+    std::vector<SurfaceId> referenced_surfaces =
+        surface->active_referenced_surfaces();
 
-    surface_factory_.SubmitCompositorFrame(
-        local_surface_id, std::move(frame),
-        base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                   weak_factory_.GetWeakPtr()));
+    referenced_surfaces.insert(referenced_surfaces.end(),
+                               surface->pending_referenced_surfaces().begin(),
+                               surface->pending_referenced_surfaces().end());
+    reference_tracker_.UpdateReferences(local_surface_id, referenced_surfaces);
 
     UpdateSurfaceReferences(last_surface_id, local_surface_id);
-  } else {
-    surface_factory_.SubmitCompositorFrame(
-        local_surface_id, std::move(frame),
-        base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                   weak_factory_.GetWeakPtr()));
   }
 
   if (display_)

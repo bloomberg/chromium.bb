@@ -63,6 +63,8 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
     pending_frame_ = std::move(frame);
     if (pending_frame_) {
       factory_->ReceiveFromChild(pending_frame_->resource_list);
+      pending_referenced_surfaces_ =
+          pending_frame_->metadata.referenced_surfaces;
       // Ask the surface manager to inform |this| when its dependencies are
       // resolved.
       factory_->manager()->RequestSurfaceResolution(this);
@@ -149,6 +151,7 @@ void Surface::ActivatePendingFrame() {
   DCHECK(pending_frame_);
   ActivateFrame(std::move(pending_frame_.value()));
   pending_frame_.reset();
+  pending_referenced_surfaces_.clear();
   // ActiveFrame resources are now double ref-ed. Unref.
   UnrefFrameResources(*active_frame_);
 }
@@ -177,7 +180,7 @@ void Surface::ActivateFrame(CompositorFrame frame) {
   if (previous_frame)
     UnrefFrameResources(*previous_frame);
 
-  referenced_surfaces_ = active_frame_->metadata.referenced_surfaces;
+  active_referenced_surfaces_ = active_frame_->metadata.referenced_surfaces;
 
   for (auto& observer : observers_)
     observer.OnSurfaceActivated(this);

@@ -46,6 +46,10 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     return surface_factory_.current_surface_for_testing();
   }
 
+  const ReferencedSurfaceTracker& ReferenceTrackerForTesting() const {
+    return reference_tracker_;
+  }
+
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,

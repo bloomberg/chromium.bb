@@ -26,6 +26,9 @@ SurfaceDependencyTracker::SurfaceDependencyTracker(
 SurfaceDependencyTracker::~SurfaceDependencyTracker() {
   surface_manager_->RemoveObserver(this);
   begin_frame_source_->RemoveObserver(this);
+  for (Surface* pending_surface : pending_surfaces_)
+    pending_surface->RemoveObserver(this);
+  pending_surfaces_.clear();
 }
 
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {

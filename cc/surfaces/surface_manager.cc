@@ -327,7 +327,9 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
     Surface* surf = surface_map_[live_surfaces[i]];
     DCHECK(surf);
 
-    for (const SurfaceId& id : surf->referenced_surfaces()) {
+    // TODO(fsamuel): We should probably keep alive pending referenced surfaces
+    // too.
+    for (const SurfaceId& id : surf->active_referenced_surfaces()) {
       if (live_surfaces_set.count(id))
         continue;
 
