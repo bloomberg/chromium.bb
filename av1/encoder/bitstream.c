@@ -2226,8 +2226,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       int max_blocks_wide;
       int max_blocks_high;
       int step = (1 << tx_size);
-      const int step_xy = 1 << (tx_size << 1);
-      int block = 0;
 
       if (tx_size == TX_4X4 && bsize <= BLOCK_8X8) {
         num_4x4_w = 2 >> xd->plane[plane].subsampling_x;
@@ -2273,7 +2271,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 
           // AC coeffs coded?
           if (pvq->ac_dc_coded & AC_CODED) {
-            assert(pvq->bs <= tx_size);
+            assert(pvq->bs == tx_size);
             for (i = 0; i < pvq->nb_bands; i++) {
               if (i == 0 || (!pvq->skip_rest &&
                              !(pvq->skip_dir & (1 << ((i - 1) % 3))))) {
@@ -2304,7 +2302,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
           if ((pvq->ac_dc_coded & DC_CODED)) {
             aom_write_bit(w, pvq->dq_dc_residue < 0);
           }
-          block += step_xy;
         }
       }  // for (idy = 0;
     }    // for (plane =
