@@ -1,12 +1,15 @@
 # Web Platform Tests
 
-The Web Platform Tests project provides a large number of conformance tests for
-different aspects of the Web Platform. Currently the tests are hosted on GitHub.
-There are two main repositories, one for the CSS Working Group (aka csswg-test),
-and one for pretty much everything else (aka web-platform-tests).
-
-There is a plan to merge csswg-test into web-platform-tests, so later, there
-will be only one repository.
+Interoperability between browsers is
+[critical](https://www.chromium.org/blink/platform-predictability) to
+Chromium's mission of improving the web. We believe that leveraging and
+contributing to a shared test suite is one of the most important tools in
+achieving interoperability between browsers.  The [web-platform-tests
+repository](https://github.com/w3c/web-platform-tests) is the primary shared
+test suite where all browser engines are collaborating.  There's also a
+[csswg-test repository](https://github.com/w3c/csswg-test) for CSS tests, but
+that will [soon be merged into
+web-platform-tests](https://github.com/w3c/csswg-test/issues/1102).
 
 [TOC]
 
@@ -69,6 +72,11 @@ If you need to make changes to Web Platform Tests, just commit your changes
 directly to
 [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
 and the changes will be automatically upstreamed within 24 hours.
+
+Note that tests in Web Platform Tests are expected to match behavior defined by
+the relevant WHATWG or W3C specification, not simply Blink's behavior.  If in
+doubt, please request code review from someone with expertise in the relevant
+specification text.
 
 Note: if you're adding a new test in `external/wpt`, you'll need to re-generate
 MANIFEST.json manually until [CL 2644783003](https://crrev.com/2644783003) is
