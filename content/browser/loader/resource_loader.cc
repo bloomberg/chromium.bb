@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -637,10 +636,6 @@ void ResourceLoader::CompleteResponseStarted() {
 
   delegate_->DidReceiveResponse(this);
 
-  // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseStarted()"));
-
   read_deferral_start_time_ = base::TimeTicks::Now();
   // Using a ScopedDeferral here would result in calling ReadMore(true) on sync
   // success. Calling ReadMore(false) here instead allows small responses to be
@@ -666,17 +661,11 @@ void ResourceLoader::ReadMore(bool handle_result_async) {
   // doesn't use the buffer.
   scoped_refptr<net::IOBuffer> buf;
   int buf_size;
-  {
-    // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnWillRead()"));
-
-    if (!handler_->OnWillRead(&buf, &buf_size)) {
-      // Cancel the request, which will then call back into |this| to inform it
-      // of a "read error".
-      Cancel();
-      return;
-    }
+  if (!handler_->OnWillRead(&buf, &buf_size)) {
+    // Cancel the request, which will then call back into |this| to inform it of
+    // a "read error".
+    Cancel();
+    return;
   }
 
   DCHECK(buf.get());
@@ -721,10 +710,6 @@ void ResourceLoader::CompleteRead(int bytes_read) {
   DCHECK(bytes_read >= 0);
   DCHECK(request_->status().is_success());
 
-  // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnReadCompleted()"));
-
   ScopedDeferral scoped_deferral(
       this, bytes_read > 0 ? DEFERRED_READ : DEFERRED_RESPONSE_COMPLETE);
   handler_->OnReadCompleted(bytes_read, base::MakeUnique<Controller>(this));
@@ -736,10 +721,6 @@ void ResourceLoader::ResponseCompleted() {
 
   DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
   RecordHistograms();
-
-  // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseCompleted()"));
 
   ScopedDeferral scoped_deferral(this, DEFERRED_FINISH);
   handler_->OnResponseCompleted(request_->status(),
