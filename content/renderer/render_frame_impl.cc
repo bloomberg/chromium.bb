@@ -822,54 +822,37 @@ MhtmlSaveStatus WriteMHTMLToDisk(std::vector<WebThreadSafeData> mhtml_contents,
 }
 
 #if defined(OS_ANDROID)
-// Returns true if WMPI should be used for playback, false otherwise.
+// Returns true if the MediaPlayerRenderer should be used for playback, false
+// if the default renderer should be used instead.
 //
 // Note that HLS and MP4 detection are pre-redirect and path-based. It is
 // possible to load such a URL and find different content.
-bool UseWebMediaPlayerImpl(const GURL& url) {
-  // Always use WMPI for playing blob URLs since WMPA could never play them very
-  // well and no longer has support for MSE based playbacks.
+bool UseMediaPlayerRenderer(const GURL& url) {
+  // Always use the default renderer for playing blob URLs.
   if (url.SchemeIsBlob())
-    return true;
-
-  // WMPI does not support HLS.
-  if (media::MediaCodecUtil::IsHLSURL(url))
     return false;
 
-  // Don't use WMPI if the container likely contains a codec we can't decode in
-  // software and platform decoders are not available.
+  // The default renderer does not support HLS.
+  if (media::MediaCodecUtil::IsHLSURL(url))
+    return true;
+
+  // Don't use the default renderer if the container likely contains a codec we
+  // can't decode in software and platform decoders are not available.
   if (!media::HasPlatformDecoderSupport()) {
     // Assume that "mp4" means H264. Without platform decoder support we cannot
     // play it with Spitzer, thus fall back to AVDA. http://crbug.com/642988.
     if (base::ToLowerASCII(url.spec()).find("mp4") != std::string::npos)
-      return false;
+      return true;
   }
 
   // Indicates if the Android MediaPlayer should be used instead of WMPI.
   if (GetContentClient()->renderer()->ShouldUseMediaPlayerForURL(url))
-    return false;
+    return true;
 
-  // Otherwise enable WMPI if indicated via experiment or command line.
-  return media::IsUnifiedMediaPipelineEnabled();
+  // Otherwise, use the default renderer.
+  return false;
 }
 #endif  // defined(OS_ANDROID)
-
-#if defined(ENABLE_MOJO_CDM)
-// Returns whether mojo CDM should be used at runtime. Note that even when mojo
-// CDM is enabled at compile time (ENABLE_MOJO_CDM is defined), there are cases
-// where we want to choose other CDM types. For example, in the future, when we
-// experiment mojo CDM on desktop, we will choose between mojo CDM and pepper
-// CDM at runtime.
-// TODO(xhwang): Remove this when we use mojo CDM for all remote CDM cases by
-// default.
-bool UseMojoCdm() {
-#if defined(OS_ANDROID)
-  return media::IsUnifiedMediaPipelineEnabled();
-#else
-  return true;
-#endif
-}
-#endif  // defined(ENABLE_MOJO_CDM)
 
 double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
@@ -2821,7 +2804,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL()));
 
 #if defined(OS_ANDROID)
-  if (UseWebMediaPlayerImpl(url) && !media_surface_manager_)
+  if (!UseMediaPlayerRenderer(url) && !media_surface_manager_)
     media_surface_manager_ = new RendererSurfaceViewManager(this);
 #endif  // defined(OS_ANDROID)
 
@@ -2860,7 +2843,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   bool use_fallback_path = false;
 #if defined(OS_ANDROID)
-  use_fallback_path = !UseWebMediaPlayerImpl(url);
+  use_fallback_path = UseMediaPlayerRenderer(url);
 #endif  // defined(OS_ANDROID)
 
   std::unique_ptr<media::RendererFactory> media_renderer_factory;
@@ -6562,10 +6545,8 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
     return cdm_factory_.get();
 
 #if defined(ENABLE_MOJO_CDM)
-  if (UseMojoCdm()) {
-    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
-    return cdm_factory_.get();
-  }
+  cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
+  return cdm_factory_.get();
 #endif  //  defined(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)

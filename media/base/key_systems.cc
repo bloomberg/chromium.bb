@@ -443,7 +443,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
 #if defined(OS_ANDROID)
     // Ensure that the renderer can access the decoders necessary to use the
     // key system.
-    if (!properties->UseAesDecryptor() && !ArePlatformDecodersAvailable()) {
+    if (!properties->UseAesDecryptor() && !HasPlatformDecoderSupport()) {
       DLOG(WARNING) << properties->GetKeySystemName() << " not registered";
       continue;
     }

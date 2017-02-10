@@ -33,11 +33,6 @@ enum class MediaSuspend {
   DISABLED,
 };
 
-enum class Pipeline {
-  WMPI,
-  WMPA,
-};
-
 enum class BackgroundResuming {
   ENABLED,
   DISABLED,
@@ -65,8 +60,7 @@ struct VisibilityTestData {
 // media_session_visibility_browsertest_instances.cc for examples.
 class MediaSessionImplVisibilityBrowserTest
     : public ContentBrowserTest,
-      public ::testing::WithParamInterface<
-          std::tr1::tuple<VisibilityTestData, Pipeline>> {
+      public ::testing::WithParamInterface<VisibilityTestData> {
  public:
   MediaSessionImplVisibilityBrowserTest() = default;
   ~MediaSessionImplVisibilityBrowserTest() override = default;
@@ -116,12 +110,6 @@ class MediaSessionImplVisibilityBrowserTest
     else
       command_line->AppendSwitch(switches::kDisableMediaSuspend);
 
-#if defined(OS_ANDROID)
-    Pipeline pipeline = std::tr1::get<1>(GetParam());
-    if (pipeline == Pipeline::WMPA)
-      command_line->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
-#endif  // defined(OS_ANDROID)
-
     if (params.background_resuming == BackgroundResuming::ENABLED) {
       command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                       media::kResumeBackgroundVideo.name);
@@ -132,7 +120,7 @@ class MediaSessionImplVisibilityBrowserTest
   }
 
   const VisibilityTestData& GetVisibilityTestData() {
-    return std::tr1::get<0>(GetParam());
+    return GetParam();
   }
 
   void StartPlayer() {
@@ -276,14 +264,6 @@ VisibilityTestData kTestParams[] = {
      SessionState::SUSPENDED, SessionState::SUSPENDED},
 };
 
-Pipeline kPipelines[] = {
-    Pipeline::WMPI,
-#if defined(OS_ANDROID)
-// Disabling WMPA tests because of https://crbug.com/646312
-// Pipeline::WMPA,
-#endif  // defined(OS_ANDROID)
-};
-
 }  // anonymous namespace
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest, TestEntryPoint) {
@@ -295,7 +275,6 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest, TestEntryPoint) {
 
 INSTANTIATE_TEST_CASE_P(MediaSessionImplVisibilityBrowserTestInstances,
                         MediaSessionImplVisibilityBrowserTest,
-                        ::testing::Combine(::testing::ValuesIn(kTestParams),
-                                           ::testing::ValuesIn(kPipelines)));
+                        ::testing::ValuesIn(kTestParams));
 
 }  // namespace content

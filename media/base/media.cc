@@ -86,17 +86,6 @@ bool HasPlatformDecoderSupport() {
 bool PlatformHasOpusSupport() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 }
-
-bool IsUnifiedMediaPipelineEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableUnifiedMediaPipeline);
-}
-
-bool ArePlatformDecodersAvailable() {
-  return IsUnifiedMediaPipelineEnabled()
-             ? HasPlatformDecoderSupport()
-             : MediaCodecUtil::IsMediaCodecAvailable();
-}
 #endif
 
 }  // namespace media

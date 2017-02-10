@@ -6352,9 +6352,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE" desc="The value of the Data Saver prompt flag which always shows prompt on network properties change.">
         Demo mode
       </message>
-      <message name="IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_NAME" desc="Title for the flag to disable the unified media pipeline on Android.">
-        Disables the unified media pipeline on Android.
-      </message>
       <message name="IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION" desc="Description for the flag to disable the unified media pipeline on Android.">
         Disables the unified (Android and desktop) media pipeline on Android.
       </message>

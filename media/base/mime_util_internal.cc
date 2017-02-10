@@ -122,12 +122,10 @@ static bool IsValidH264Level(uint8_t level_idc) {
 
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
 #if defined(OS_ANDROID)
-  platform_info_.is_unified_media_pipeline_enabled =
-      IsUnifiedMediaPipelineEnabled();
   // When the unified media pipeline is enabled, we need support for both GPU
   // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
   // When the Android pipeline is used, we only need access to MediaCodec.
-  platform_info_.has_platform_decoders = ArePlatformDecodersAvailable();
+  platform_info_.has_platform_decoders = HasPlatformDecoderSupport();
   platform_info_.has_platform_vp8_decoder =
       MediaCodecUtil::IsVp8DecoderAvailable();
   platform_info_.has_platform_vp9_decoder =
@@ -464,11 +462,11 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
                          base::CompareCase::SENSITIVE)) {
         return false;
       }
-      return !is_encrypted && platform_info.is_unified_media_pipeline_enabled;
+      return !is_encrypted;
 
     case OPUS:
       // If clear, the unified pipeline can always decode Opus in software.
-      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+      if (!is_encrypted)
         return true;
 
       // Otherwise, platform support is required.
@@ -491,10 +489,8 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
 
     case HEVC:
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-      if (platform_info.is_unified_media_pipeline_enabled &&
-          !platform_info.has_platform_decoders) {
+      if (!platform_info.has_platform_decoders)
         return false;
-      }
 
 #if defined(OS_ANDROID)
       // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
@@ -509,7 +505,7 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
 
     case VP8:
       // If clear, the unified pipeline can always decode VP8 in software.
-      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+      if (!is_encrypted)
         return true;
 
       if (is_encrypted)
@@ -526,7 +522,7 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
       }
 
       // If clear, the unified pipeline can always decode VP9 in software.
-      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+      if (!is_encrypted)
         return true;
 
       if (!platform_info.has_platform_vp9_decoder)

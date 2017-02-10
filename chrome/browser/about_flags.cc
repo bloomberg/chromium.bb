@@ -1766,12 +1766,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEB_USB_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebUsb)},
 #if defined(OS_ANDROID)
-    {"disable-unified-media-pipeline",
-     IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_NAME,
-     IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kDisableUnifiedMediaPipeline)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"force-show-update-menu-item", IDS_FLAGS_UPDATE_MENU_ITEM_NAME,
      IDS_FLAGS_UPDATE_MENU_ITEM_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuItem)},
