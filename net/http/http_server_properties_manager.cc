@@ -375,17 +375,8 @@ void HttpServerPropertiesManager::ScheduleUpdateCacheOnPrefThread() {
   if (pref_cache_update_timer_->IsRunning())
     return;
 
-  StartCacheUpdateTimerOnPrefThread(
-      base::TimeDelta::FromMilliseconds(kUpdateCacheDelayMs));
-}
-
-void HttpServerPropertiesManager::StartCacheUpdateTimerOnPrefThread(
-    base::TimeDelta delay) {
-  DCHECK(pref_task_runner_->RunsTasksOnCurrentThread());
   pref_cache_update_timer_->Start(
-      FROM_HERE,
-      delay,
-      this,
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdateCacheDelayMs), this,
       &HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread);
 }
 
@@ -800,22 +791,13 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefsOnNetworkThread(
   if (network_prefs_update_timer_->IsRunning())
     return;
 
-  StartPrefsUpdateTimerOnNetworkThread(
-      base::TimeDelta::FromMilliseconds(kUpdatePrefsDelayMs));
+  network_prefs_update_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdatePrefsDelayMs), this,
+      &HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread);
+
   // TODO(rtenneti): Delete the following histogram after collecting some data.
   UMA_HISTOGRAM_ENUMERATION("Net.HttpServerProperties.UpdatePrefs", location,
                             HttpServerPropertiesManager::NUM_LOCATIONS);
-}
-
-void HttpServerPropertiesManager::StartPrefsUpdateTimerOnNetworkThread(
-    base::TimeDelta delay) {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  // This is overridden in tests to post the task without the delay.
-  network_prefs_update_timer_->Start(
-      FROM_HERE,
-      delay,
-      this,
-      &HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread);
 }
 
 // This is required so we can set this as the callback for a timer.
