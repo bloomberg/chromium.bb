@@ -372,7 +372,6 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("disable-features=NTPSnippets") // Exercise the old ui.
     @UiThreadTest
     public void testSetSearchProviderHasLogo() {
         NewTabPageView ntpView = mNtp.getNewTabPageView();
@@ -382,6 +381,23 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertEquals(View.GONE, logoView.getVisibility());
         ntpView.setSearchProviderHasLogo(true);
         assertEquals(View.VISIBLE, logoView.getVisibility());
+    }
+
+    /**
+     * Tests setting whether the search provider has a logo when the condensed UI is enabled.
+     */
+    @SmallTest
+    @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("enable-features=NTPCondensedLayout")
+    @UiThreadTest
+    public void testSetSearchProviderHasLogoCondensedUi() {
+        NewTabPageView ntpView = mNtp.getNewTabPageView();
+        View logoView = ntpView.findViewById(R.id.search_provider_logo);
+        assertEquals(View.GONE, logoView.getVisibility());
+        ntpView.setSearchProviderHasLogo(false);
+        assertEquals(View.GONE, logoView.getVisibility());
+        ntpView.setSearchProviderHasLogo(true);
+        assertEquals(View.GONE, logoView.getVisibility());
     }
 
     /**

@@ -88,6 +88,7 @@ public class NewTabPageView
     private boolean mFirstShow = true;
     private boolean mSearchProviderHasLogo = true;
     private boolean mPendingSnapScroll;
+    private boolean mInitialized;
 
     /**
      * The number of asynchronous tasks that need to complete before the page is done loading.
@@ -230,9 +231,6 @@ public class NewTabPageView
 
         mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
-        mSearchProviderLogoView.setVisibility(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT) ? View.GONE
-                                                                                    : View.VISIBLE);
 
         mPendingLoadTasks++;
         mTileGroup.startObserving(MAX_TILES);
@@ -285,6 +283,8 @@ public class NewTabPageView
                 onChanged();
             }
         });
+
+        mInitialized = true;
 
         TraceEvent.end(TAG + ".initialize()");
     }
@@ -497,24 +497,32 @@ public class NewTabPageView
      * @param hasLogo Whether the search provider has a logo.
      */
     public void setSearchProviderHasLogo(boolean hasLogo) {
-        if (hasLogo == mSearchProviderHasLogo) return;
+        if (hasLogo == mSearchProviderHasLogo && mInitialized) return;
         mSearchProviderHasLogo = hasLogo;
+        boolean showLogo = mSearchProviderHasLogo
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT);
 
-        // Set a bit more top padding if there is no logo.
-        int paddingTop = getResources().getDimensionPixelSize(hasLogo
+        // Set a bit more top padding on the tile grid if there is no logo.
+        int paddingTop = getResources().getDimensionPixelSize(showLogo
                         ? R.dimen.tile_grid_layout_padding_top
                         : R.dimen.tile_grid_layout_no_logo_padding_top);
         mTileGridLayout.setPadding(0, paddingTop, 0, mTileGridLayout.getPaddingBottom());
 
-        // Hide or show all the views above the Most Visited items.
-        int visibility = hasLogo ? View.VISIBLE : View.GONE;
+        // Hide or show the views above the tile grid as needed, including logo, search box, and
+        // spacers.
+        int visibility = mSearchProviderHasLogo ? View.VISIBLE : View.GONE;
+        int logoVisibility = showLogo ? View.VISIBLE : View.GONE;
         int childCount = mNewTabPageLayout.getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = mNewTabPageLayout.getChildAt(i);
             if (child == mTileGridLayout) break;
             // Don't change the visibility of a ViewStub as that will automagically inflate it.
             if (child instanceof ViewStub) continue;
-            child.setVisibility(visibility);
+            if (child == mSearchProviderLogoView) {
+                child.setVisibility(logoVisibility);
+            } else {
+                child.setVisibility(visibility);
+            }
         }
 
         updateTileGridPlaceholderVisibility();
