@@ -30,16 +30,11 @@
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace content {
 class PeerConnectionDependencyFactory;
 class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
-struct VideoCaptureSourceSelectionResult;
 
 // UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
 // It ties together WebKit and MediaStreamManager
@@ -56,8 +51,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   UserMediaClientImpl(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner);
+      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher);
   ~UserMediaClientImpl() override;
 
   MediaStreamDispatcher* media_stream_dispatcher() const {
@@ -288,40 +282,19 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
-  struct RequestSettings;
-
-  void SelectAudioInputDevice(
+  void SelectUserMediaDevice(
       int request_id,
       const blink::WebUserMediaRequest& user_media_request,
       std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
+      bool enable_automatic_output_device_selection,
+      const url::Origin& security_origin,
       const EnumerationResult& device_enumeration);
-
-  void SetupVideoInput(int request_id,
-                       const blink::WebUserMediaRequest& user_media_request,
-                       std::unique_ptr<StreamControls> controls,
-                       const RequestSettings& request_settings);
-
-  void SelectVideoDeviceSourceSettings(
-      int request_id,
-      const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
-      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
-          video_input_capabilities);
-
-  void FinalizeSelectVideoDeviceSourceSettings(
-      int request_id,
-      const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
-      const VideoCaptureSourceSelectionResult& selection_result);
-
   void FinalizeRequestUserMedia(
       int request_id,
       const blink::WebUserMediaRequest& user_media_request,
       std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings);
+      bool enable_automatic_output_device_selection,
+      const url::Origin& security_origin);
 
   // Callback invoked by MediaDevicesEventDispatcher when a device-change
   // notification arrives.
@@ -348,8 +321,6 @@ class CONTENT_EXPORT UserMediaClientImpl
       device_change_subscription_ids_;
 
   blink::WebMediaDeviceChangeObserver media_device_change_observer_;
-
-  const scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.

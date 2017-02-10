@@ -45,8 +45,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamControls& controls,
-      const url::Origin& security_origin,
-      bool is_processing_user_gesture);
+      const url::Origin& security_origin);
 
   // Cancel the request for a new media stream to be created.
   virtual void CancelGenerateStream(

@@ -6123,16 +6123,14 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 }
 
 void RenderFrameImpl::InitializeUserMediaClient() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (!render_thread)  // Will be NULL during unit tests.
+  if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      base::MakeUnique<MediaStreamDispatcher>(this),
-      render_thread->GetWorkerTaskRunner());
+      base::MakeUnique<MediaStreamDispatcher>(this));
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&MediaDevicesListenerImpl::Create, GetRoutingID()));
 #endif
