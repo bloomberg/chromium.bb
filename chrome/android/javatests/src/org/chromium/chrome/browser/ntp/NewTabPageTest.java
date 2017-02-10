@@ -92,9 +92,10 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                 public void run() {
                     // Create FakeMostVisitedSites after starting the activity, since it depends on
                     // native code.
-                    mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
-                            FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
-                            FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
+                    mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile());
+                    mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES,
+                            mSiteSuggestionUrls, FAKE_MOST_VISITED_WHITELIST_ICON_PATHS,
+                            FAKE_MOST_VISITED_SOURCES);
                 }
             });
         } catch (Throwable t) {
@@ -381,6 +382,58 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertEquals(View.GONE, logoView.getVisibility());
         ntpView.setSearchProviderHasLogo(true);
         assertEquals(View.VISIBLE, logoView.getVisibility());
+    }
+
+    /**
+     * Verifies that the placeholder is only shown when there are no tile suggestions and the search
+     * provider has no logo.
+     */
+    @SmallTest
+    @Feature({"NewTabPage"})
+    public void testPlaceholder() {
+        final NewTabPageView ntpView = mNtp.getNewTabPageView();
+        final View logoView = ntpView.findViewById(R.id.search_provider_logo);
+        final View searchBoxView = ntpView.findViewById(R.id.search_box);
+
+        // Initially, the logo is visible, the search box is visible, there is one tile suggestion,
+        // and the placeholder has not been inflated yet.
+        assertEquals(View.VISIBLE, logoView.getVisibility());
+        assertEquals(View.VISIBLE, searchBoxView.getVisibility());
+        assertEquals(1, mTileGridLayout.getChildCount());
+        assertNull(ntpView.getPlaceholder());
+
+        // When the search provider has no logo and there are no tile suggestions, the placeholder
+        // is shown.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ntpView.setSearchProviderHasLogo(false);
+                assertEquals(View.GONE, logoView.getVisibility());
+                assertEquals(View.GONE, searchBoxView.getVisibility());
+            }
+        });
+        mMostVisitedSites.setTileSuggestions(
+                new String[] {}, new String[] {}, new String[] {}, new int[] {});
+        CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {
+            @Override
+            public boolean isSatisfied() {
+                return mTileGridLayout.getChildCount() == 0;
+            }
+        });
+        assertNotNull(ntpView.getPlaceholder());
+        assertEquals(View.VISIBLE, ntpView.getPlaceholder().getVisibility());
+
+        // Once the search provider has a logo again, the logo and search box are shown again and
+        // the placeholder is hidden.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ntpView.setSearchProviderHasLogo(true);
+                assertEquals(View.VISIBLE, logoView.getVisibility());
+                assertEquals(View.VISIBLE, searchBoxView.getVisibility());
+                assertEquals(View.GONE, ntpView.getPlaceholder().getVisibility());
+            }
+        });
     }
 
     private void assertThumbnailInvalidAndRecapture() {

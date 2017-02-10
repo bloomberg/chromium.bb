@@ -400,6 +400,16 @@ public class NewTabPageView
     }
 
     /**
+     * @return The placeholder that is shown above the fold when there is no other content to show,
+     *         or null if it has not been inflated yet.
+     */
+    @VisibleForTesting
+    @Nullable
+    public View getPlaceholder() {
+        return mTileGridPlaceholder;
+    }
+
+    /**
      * Adds listeners to scrolling to take care of snap scrolling and updating the search box on
      * scroll.
      */
@@ -738,8 +748,8 @@ public class NewTabPageView
      * items and there is no search provider logo.
      */
     private void updateTileGridPlaceholderVisibility() {
-        boolean showPlaceholder = mTileGroup.hasReceivedData()
-                && mTileGridLayout.getChildCount() == 0 && !mSearchProviderHasLogo;
+        boolean showPlaceholder = mTileGroup.hasReceivedData() && mTileGroup.getTiles().length == 0
+                && !mSearchProviderHasLogo;
 
         mNoSearchLogoSpacer.setVisibility(
                 (mSearchProviderHasLogo || showPlaceholder) ? View.GONE : View.INVISIBLE);

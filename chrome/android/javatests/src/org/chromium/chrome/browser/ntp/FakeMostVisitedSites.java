@@ -15,39 +15,26 @@ import java.util.List;
  * A fake implementation of MostVisitedSites that returns a fixed list of most visited sites.
  */
 public class FakeMostVisitedSites extends MostVisitedSites {
-    private final String[] mTitles;
-    private final String[] mUrls;
-    private final String[] mWhitelistIconPaths;
-    private final int[] mSources;
     private final List<String> mBlacklistedUrls = new ArrayList<>();
+
+    private String[] mTitles = new String[] {};
+    private String[] mUrls = new String[] {};
+    private String[] mWhitelistIconPaths = new String[] {};
+    private int[] mSources = new int[] {};
+    private MostVisitedURLsObserver mObserver;
 
     /**
      * @param profile The profile for which to fetch site suggestions.
-     * @param titles The titles of the site suggestions.
-     * @param urls The URLs of the site suggestions.
-     * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
-     *                           strings otherwise.
-     * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
      */
-    public FakeMostVisitedSites(Profile profile, String[] titles, String[] urls,
-            String[] whitelistIconPaths, int[] sources) {
+    public FakeMostVisitedSites(Profile profile) {
+        // TODO(mvanouwerkerk): Do not let the fake inherit from the real implementation.
         super(profile);
-        assert titles.length == urls.length;
-        mTitles = titles.clone();
-        mUrls = urls.clone();
-        mWhitelistIconPaths = whitelistIconPaths.clone();
-        mSources = sources.clone();
     }
 
     @Override
-    public void setMostVisitedURLsObserver(final MostVisitedURLsObserver observer, int numResults) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                observer.onMostVisitedURLsAvailable(mTitles.clone(), mUrls.clone(),
-                        mWhitelistIconPaths.clone(), mSources.clone());
-            }
-        });
+    public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {
+        mObserver = observer;
+        notifyTileSuggestionsAvailable();
     }
 
     @Override
@@ -75,5 +62,34 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     @Override
     public void recordOpenedMostVisitedItem(int index, int tileType, int source) {
         //  Metrics are stubbed out.
+    }
+
+    /**
+     * Sets new tile suggestion data. If there is an observer it is notified.
+     * @param titles The titles of the site suggestions.
+     * @param urls The URLs of the site suggestions.
+     * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
+     *                           strings otherwise.
+     * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
+     */
+    public void setTileSuggestions(
+            String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources) {
+        assert titles.length == urls.length;
+        mTitles = titles.clone();
+        mUrls = urls.clone();
+        mWhitelistIconPaths = whitelistIconPaths.clone();
+        mSources = sources.clone();
+        notifyTileSuggestionsAvailable();
+    }
+
+    private void notifyTileSuggestionsAvailable() {
+        if (mObserver == null) return;
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mObserver.onMostVisitedURLsAvailable(mTitles.clone(), mUrls.clone(),
+                        mWhitelistIconPaths.clone(), mSources.clone());
+            }
+        });
     }
 }

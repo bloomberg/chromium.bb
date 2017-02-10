@@ -93,8 +93,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 // Create FakeMostVisitedSites after starting the activity, since it depends on
                 // native code.
-                mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
-                        FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
+                mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile());
+                mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
                         FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
             }
         });
