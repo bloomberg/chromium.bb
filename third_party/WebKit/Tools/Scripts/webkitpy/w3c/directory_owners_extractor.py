@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import re
 
 from webkitpy.common.system.filesystem import FileSystem
@@ -61,14 +62,15 @@ class DirectoryOwnersExtractor(object):
             changed_files: A list of file paths relative to the repository root.
 
         Returns:
-            A dict mapping (owner) email addresses to (owned) directories.
+            A dict mapping owner email addresses to lists of owned directories.
         """
         tests = [self.finder.layout_test_name(path) for path in changed_files]
         tests = [t for t in tests if t is not None]
-        email_map = {}
+        email_map = collections.defaultdict(list)
         for directory, owners in self.owner_map.iteritems():
             owned_tests = [t for t in tests if t.startswith(directory)]
-            if owned_tests:
-                for owner in owners:
-                    email_map[owner] = directory
+            if not owned_tests:
+                continue
+            for owner in owners:
+                email_map[owner].append(directory)
         return email_map
