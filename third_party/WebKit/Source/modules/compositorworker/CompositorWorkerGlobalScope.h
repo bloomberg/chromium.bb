@@ -5,7 +5,6 @@
 #ifndef CompositorWorkerGlobalScope_h
 #define CompositorWorkerGlobalScope_h
 
-#include "core/dom/CompositorProxyClient.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerGlobalScope.h"

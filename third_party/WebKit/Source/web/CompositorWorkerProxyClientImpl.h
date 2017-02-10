@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorProxyClientImpl_h
-#define CompositorProxyClientImpl_h
+#ifndef CompositorWorkerProxyClientImpl_h
+#define CompositorWorkerProxyClientImpl_h
 
-#include "core/dom/CompositorProxyClient.h"
+#include "core/dom/CompositorWorkerProxyClient.h"
 #include "platform/heap/Handle.h"
+#include "web/CompositorAnimator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -17,27 +18,26 @@ class CompositorWorkerGlobalScope;
 class WorkerGlobalScope;
 
 // Mediates between one CompositorWorkerGlobalScope and the associated
-// CompositorMutatorImpl.  There is one CompositorProxyClientImpl per worker
-// but there may be multiple for a given mutator, e.g. if a single document
-// creates multiple CompositorWorker objects.
+// CompositorMutatorImpl. There is one CompositorWorkerProxyClientImpl per
+// worker but there may be multiple for a given mutator, e.g. if a single
+// document creates multiple CompositorWorker objects.
 //
 // Should be accessed only on the compositor thread.
-class CompositorProxyClientImpl final
-    : public GarbageCollectedFinalized<CompositorProxyClientImpl>,
-      public CompositorProxyClient {
-  USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
-  WTF_MAKE_NONCOPYABLE(CompositorProxyClientImpl);
+class CompositorWorkerProxyClientImpl final
+    : public CompositorWorkerProxyClient,
+      public CompositorAnimator {
+  WTF_MAKE_NONCOPYABLE(CompositorWorkerProxyClientImpl);
+  USING_GARBAGE_COLLECTED_MIXIN(CompositorWorkerProxyClientImpl);
 
  public:
-  CompositorProxyClientImpl(CompositorMutatorImpl*);
-  DECLARE_VIRTUAL_TRACE();
+  explicit CompositorWorkerProxyClientImpl(CompositorMutatorImpl*);
+  DECLARE_TRACE();
 
-  // Runs the animation frame callback for the frame starting at the given time.
-  // Returns true if another animation frame was requested (i.e. should be
-  // reinvoked next frame).
-  bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
+  // CompositorAnimator:
+  bool mutate(double monotonicTimeNow,
+              CompositorMutableStateProvider*) override;
 
-  // CompositorProxyClient:
+  // CompositorWorkerProxyClient:
   void dispose() override;
   void setGlobalScope(WorkerGlobalScope*) override;
   void requestAnimationFrame() override;
@@ -52,9 +52,10 @@ class CompositorProxyClientImpl final
   CrossThreadPersistent<CompositorWorkerGlobalScope> m_globalScope;
   bool m_requestedAnimationFrameCallbacks;
 
+  // TODO(majidvp): move this out to a separate class that can be composed in.
   HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
 };
 
 }  // namespace blink
 
-#endif  // CompositorProxyClientImpl_h
+#endif  // CompositorWorkerProxyClientImpl_h

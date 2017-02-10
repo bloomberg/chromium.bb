@@ -6,29 +6,18 @@
 #define CompositorProxyClient_h
 
 #include "core/CoreExport.h"
-#include "core/workers/WorkerClients.h"
-#include "wtf/Noncopyable.h"
-
-#include <v8.h>
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class CompositorProxy;
-class WorkerClients;
-class WorkerGlobalScope;
 
-class CORE_EXPORT CompositorProxyClient : public Supplement<WorkerClients> {
-  WTF_MAKE_NONCOPYABLE(CompositorProxyClient);
-
+class CORE_EXPORT CompositorProxyClient
+    : public GarbageCollectedFinalized<CompositorProxyClient> {
  public:
-  CompositorProxyClient() {}
+  virtual ~CompositorProxyClient(){};
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  static CompositorProxyClient* from(WorkerClients*);
-  static const char* supplementName();
-
-  virtual void dispose() = 0;
-  virtual void setGlobalScope(WorkerGlobalScope*) = 0;
-  virtual void requestAnimationFrame() = 0;
   virtual void registerCompositorProxy(CompositorProxy*) = 0;
   // It is not guaranteed to receive an unregister call for every registered
   // proxy. In fact we only receive one when a proxy is explicitly
@@ -36,9 +25,6 @@ class CORE_EXPORT CompositorProxyClient : public Supplement<WorkerClients> {
   // weak reference to the proxy.
   virtual void unregisterCompositorProxy(CompositorProxy*) = 0;
 };
-
-CORE_EXPORT void provideCompositorProxyClientTo(WorkerClients*,
-                                                CompositorProxyClient*);
 
 }  // namespace blink
 

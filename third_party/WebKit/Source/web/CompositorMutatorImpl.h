@@ -14,14 +14,14 @@
 
 namespace blink {
 
-class CompositorProxy;
-class CompositorProxyClientImpl;
+class CompositorAnimator;
 class CompositorMutatorClient;
 
-// Fans out requests from the compositor to all of the registered ProxyClients
-// which can then mutate layers through their CompositorProxy interfaces.
-// Requests for animation frames are received from ProxyClients and sent to the
-// compositor to generate a new compositor frame.
+// Fans out requests from the compositor to all of the registered
+// CompositorAnimators which can then mutate layers through their respective
+// mutate interface. Requests for animation frames are received from
+// CompositorAnimators and sent to the compositor to generate a new compositor
+// frame.
 //
 // Should be accessed only on the compositor thread.
 class CompositorMutatorImpl final : public CompositorMutator {
@@ -35,8 +35,8 @@ class CompositorMutatorImpl final : public CompositorMutator {
   bool mutate(double monotonicTimeNow,
               CompositorMutableStateProvider*) override;
 
-  void registerProxyClient(CompositorProxyClientImpl*);
-  void unregisterProxyClient(CompositorProxyClientImpl*);
+  void registerCompositorAnimator(CompositorAnimator*);
+  void unregisterCompositorAnimator(CompositorAnimator*);
 
   void setNeedsMutate();
 
@@ -48,9 +48,9 @@ class CompositorMutatorImpl final : public CompositorMutator {
  private:
   CompositorMutatorImpl();
 
-  using ProxyClients =
-      HashSet<CrossThreadPersistent<CompositorProxyClientImpl>>;
-  ProxyClients m_proxyClients;
+  using CompositorAnimators =
+      HashSet<CrossThreadPersistent<CompositorAnimator>>;
+  CompositorAnimators m_animators;
 
   std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
   CompositorMutatorClient* m_client;

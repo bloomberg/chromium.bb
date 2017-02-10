@@ -5,7 +5,7 @@
 #include "modules/compositorworker/CompositorWorker.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/CompositorProxyClient.h"
+#include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
@@ -55,10 +55,10 @@ CompositorWorker::createInProcessWorkerMessagingProxy(
     ExecutionContext* context) {
   Document* document = toDocument(context);
   WorkerClients* workerClients = WorkerClients::create();
-  provideCompositorProxyClientTo(
-      workerClients,
-      document->frame()->chromeClient().createCompositorProxyClient(
-          document->frame()));
+  CompositorWorkerProxyClient* client =
+      document->frame()->chromeClient().createCompositorWorkerProxyClient(
+          document->frame());
+  provideCompositorWorkerProxyClientTo(workerClients, client);
   return new CompositorWorkerMessagingProxy(this, workerClients);
 }
 

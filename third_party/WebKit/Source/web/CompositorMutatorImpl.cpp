@@ -13,7 +13,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
-#include "web/CompositorProxyClientImpl.h"
+#include "web/CompositorAnimator.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient() {
     createCompositorMutatorClient(&mutatorClient, &doneEvent);
   }
   // TODO(flackr): Instead of waiting for this event, we may be able to just set
-  // the mutator on the CompositorProxyClient directly from the compositor
+  // the mutator on the CompositorWorkerProxyClient directly from the compositor
   // thread before it gets used there. We still need to make sure we only
   // create one mutator though.
   doneEvent.wait();
@@ -66,26 +66,27 @@ bool CompositorMutatorImpl::mutate(
   // TODO(vollick): we should avoid executing the animation frame
   // callbacks if none of the proxies in the global scope are affected by
   // m_mutations.
-  for (CompositorProxyClientImpl* client : m_proxyClients) {
-    if (client->mutate(monotonicTimeNow, stateProvider))
+  for (CompositorAnimator* animator : m_animators) {
+    if (animator->mutate(monotonicTimeNow, stateProvider))
       needToReinvoke = true;
   }
 
   return needToReinvoke;
 }
 
-void CompositorMutatorImpl::registerProxyClient(
-    CompositorProxyClientImpl* client) {
-  TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::registerClient");
-  DCHECK(!m_proxyClients.contains(client));
-  m_proxyClients.insert(client);
+void CompositorMutatorImpl::registerCompositorAnimator(
+    CompositorAnimator* animator) {
+  TRACE_EVENT0("compositor-worker",
+               "CompositorMutatorImpl::registerCompositorAnimator");
+  DCHECK(!m_animators.contains(animator));
+  m_animators.add(animator);
   setNeedsMutate();
 }
 
-void CompositorMutatorImpl::unregisterProxyClient(
-    CompositorProxyClientImpl* client) {
-  DCHECK(m_proxyClients.contains(client));
-  m_proxyClients.remove(client);
+void CompositorMutatorImpl::unregisterCompositorAnimator(
+    CompositorAnimator* animator) {
+  DCHECK(m_animators.contains(animator));
+  m_animators.remove(animator);
 }
 
 void CompositorMutatorImpl::setNeedsMutate() {

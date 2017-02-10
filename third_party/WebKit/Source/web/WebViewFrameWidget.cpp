@@ -211,8 +211,14 @@ void WebViewFrameWidget::scheduleAnimation() {
   m_webView->scheduleAnimationForWidget();
 }
 
-CompositorProxyClient* WebViewFrameWidget::createCompositorProxyClient() {
-  return m_webView->createCompositorProxyClient();
+CompositorWorkerProxyClient*
+WebViewFrameWidget::createCompositorWorkerProxyClient() {
+  return m_webView->createCompositorWorkerProxyClient();
+}
+
+AnimationWorkletProxyClient*
+WebViewFrameWidget::createAnimationWorkletProxyClient() {
+  return m_webView->createAnimationWorkletProxyClient();
 }
 
 void WebViewFrameWidget::setRootGraphicsLayer(GraphicsLayer* layer) {

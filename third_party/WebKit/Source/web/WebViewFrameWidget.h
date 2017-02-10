@@ -96,7 +96,8 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   bool forSubframe() const override { return false; }
   void scheduleAnimation() override;
-  CompositorProxyClient* createCompositorProxyClient() override;
+  CompositorWorkerProxyClient* createCompositorWorkerProxyClient() override;
+  AnimationWorkletProxyClient* createAnimationWorkletProxyClient() override;
   void setRootGraphicsLayer(GraphicsLayer*) override;
   void setRootLayer(WebLayer*) override;
   WebLayerTreeView* getLayerTreeView() const override;

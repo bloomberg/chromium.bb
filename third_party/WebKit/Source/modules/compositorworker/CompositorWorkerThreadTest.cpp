@@ -8,7 +8,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/CompositorProxyClient.h"
+#include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -62,13 +62,9 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
       : InProcessWorkerObjectProxy(nullptr, parentFrameTaskRunners) {}
 };
 
-class TestCompositorProxyClient
-    : public GarbageCollected<TestCompositorProxyClient>,
-      public CompositorProxyClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestCompositorProxyClient);
-
+class TestCompositorWorkerProxyClient : public CompositorWorkerProxyClient {
  public:
-  TestCompositorProxyClient() {}
+  TestCompositorWorkerProxyClient() {}
 
   void dispose() override {}
   void setGlobalScope(WorkerGlobalScope*) override {}
@@ -115,7 +111,8 @@ class CompositorWorkerThreadTest : public ::testing::Test {
         CompositorWorkerThread::create(nullptr, *m_objectProxy,
                                        m_parentFrameTaskRunners.get(), 0);
     WorkerClients* clients = WorkerClients::create();
-    provideCompositorProxyClientTo(clients, new TestCompositorProxyClient);
+    provideCompositorWorkerProxyClientTo(clients,
+                                         new TestCompositorWorkerProxyClient);
     workerThread->start(WorkerThreadStartupData::create(
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent",
         "//fake source code", nullptr, DontPauseWorkerGlobalScopeOnStart,

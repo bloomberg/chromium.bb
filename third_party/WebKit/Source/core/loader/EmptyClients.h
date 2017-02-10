@@ -218,7 +218,13 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void annotatedRegionsChanged() override {}
   String acceptLanguages() override;
 
-  CompositorProxyClient* createCompositorProxyClient(LocalFrame*) override {
+  CompositorWorkerProxyClient* createCompositorWorkerProxyClient(
+      LocalFrame*) override {
+    return nullptr;
+  }
+
+  AnimationWorkletProxyClient* createAnimationWorkletProxyClient(
+      LocalFrame*) override {
     return nullptr;
   }
 

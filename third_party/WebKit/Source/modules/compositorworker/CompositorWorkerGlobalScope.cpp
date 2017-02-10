@@ -5,6 +5,7 @@
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
@@ -47,14 +48,14 @@ CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(
                         workerClients),
       m_executingAnimationFrameCallbacks(false),
       m_callbackCollection(this) {
-  CompositorProxyClient::from(clients())->setGlobalScope(this);
+  CompositorWorkerProxyClient::from(clients())->setGlobalScope(this);
 }
 
 CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope() {}
 
 void CompositorWorkerGlobalScope::dispose() {
   WorkerGlobalScope::dispose();
-  CompositorProxyClient::from(clients())->dispose();
+  CompositorWorkerProxyClient::from(clients())->dispose();
 }
 
 DEFINE_TRACE(CompositorWorkerGlobalScope) {
@@ -85,7 +86,7 @@ int CompositorWorkerGlobalScope::requestAnimationFrame(
   const bool shouldSignal =
       !m_executingAnimationFrameCallbacks && m_callbackCollection.isEmpty();
   if (shouldSignal)
-    CompositorProxyClient::from(clients())->requestAnimationFrame();
+    CompositorWorkerProxyClient::from(clients())->requestAnimationFrame();
   return m_callbackCollection.registerCallback(callback);
 }
 

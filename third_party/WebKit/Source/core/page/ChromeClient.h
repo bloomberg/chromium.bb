@@ -26,6 +26,7 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationPolicy.h"
@@ -49,8 +50,8 @@ namespace blink {
 class AXObject;
 class ColorChooser;
 class ColorChooserClient;
+class CompositorWorkerProxyClient;
 class CompositorAnimationTimeline;
-class CompositorProxyClient;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
@@ -325,7 +326,10 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void registerPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
 
-  virtual CompositorProxyClient* createCompositorProxyClient(LocalFrame*) = 0;
+  virtual CompositorWorkerProxyClient* createCompositorWorkerProxyClient(
+      LocalFrame*) = 0;
+  virtual AnimationWorkletProxyClient* createAnimationWorkletProxyClient(
+      LocalFrame*) = 0;
 
   virtual FloatSize elasticOverscroll() const { return FloatSize(); }
 

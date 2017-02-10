@@ -58,9 +58,10 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/AnimationWorkletProxyClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/CompositorMutatorImpl.h"
-#include "web/CompositorProxyClientImpl.h"
+#include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/InspectorOverlay.h"
 #include "web/PageOverlay.h"
@@ -417,14 +418,25 @@ void WebFrameWidgetImpl::scheduleAnimation() {
     m_client->scheduleAnimation();
 }
 
-CompositorProxyClient* WebFrameWidgetImpl::createCompositorProxyClient() {
+CompositorMutatorImpl& WebFrameWidgetImpl::mutator() {
   if (!m_mutator) {
     std::unique_ptr<CompositorMutatorClient> mutatorClient =
         CompositorMutatorImpl::createClient();
     m_mutator = static_cast<CompositorMutatorImpl*>(mutatorClient->mutator());
     m_layerTreeView->setMutatorClient(std::move(mutatorClient));
   }
-  return new CompositorProxyClientImpl(m_mutator);
+
+  return *m_mutator;
+}
+
+CompositorWorkerProxyClient*
+WebFrameWidgetImpl::createCompositorWorkerProxyClient() {
+  return new CompositorWorkerProxyClientImpl(&mutator());
+}
+
+AnimationWorkletProxyClient*
+WebFrameWidgetImpl::createAnimationWorkletProxyClient() {
+  return new AnimationWorkletProxyClientImpl(&mutator());
 }
 
 void WebFrameWidgetImpl::applyViewportDeltas(

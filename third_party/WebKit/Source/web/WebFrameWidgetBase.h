@@ -6,14 +6,16 @@
 #define WebFrameWidgetBase_h
 
 #include "core/clipboard/DataObject.h"
+
 #include "public/platform/WebDragData.h"
 #include "public/web/WebFrameWidget.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
+class AnimationWorkletProxyClient;
 class CompositorAnimationHost;
-class CompositorProxyClient;
+class CompositorWorkerProxyClient;
 class GraphicsLayer;
 class WebImage;
 class WebLayer;
@@ -26,7 +28,8 @@ class WebFrameWidgetBase : public WebFrameWidget {
  public:
   virtual bool forSubframe() const = 0;
   virtual void scheduleAnimation() = 0;
-  virtual CompositorProxyClient* createCompositorProxyClient() = 0;
+  virtual CompositorWorkerProxyClient* createCompositorWorkerProxyClient() = 0;
+  virtual AnimationWorkletProxyClient* createAnimationWorkletProxyClient() = 0;
   virtual WebWidgetClient* client() const = 0;
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching

@@ -1152,10 +1152,20 @@ void ChromeClientImpl::didUpdateBrowserControls() const {
   m_webView->didUpdateBrowserControls();
 }
 
-CompositorProxyClient* ChromeClientImpl::createCompositorProxyClient(
-    LocalFrame* frame) {
+CompositorWorkerProxyClient*
+ChromeClientImpl::createCompositorWorkerProxyClient(LocalFrame* frame) {
   WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-  return webFrame->localRoot()->frameWidget()->createCompositorProxyClient();
+  return webFrame->localRoot()
+      ->frameWidget()
+      ->createCompositorWorkerProxyClient();
+}
+
+AnimationWorkletProxyClient*
+ChromeClientImpl::createAnimationWorkletProxyClient(LocalFrame* frame) {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  return webFrame->localRoot()
+      ->frameWidget()
+      ->createAnimationWorkletProxyClient();
 }
 
 void ChromeClientImpl::registerPopupOpeningObserver(

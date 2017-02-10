@@ -10,6 +10,7 @@ blink_core_sources("dom") {
   sources = [
     "AXObjectCache.cpp",
     "AXObjectCache.h",
+    "AnimationWorkletProxyClient.h",
     "Attr.cpp",
     "AttributeCollection.h",
     "CDATASection.cpp",
@@ -35,8 +36,9 @@ blink_core_sources("dom") {
     "CompositorProxiedPropertySet.h",
     "CompositorProxy.cpp",
     "CompositorProxy.h",
-    "CompositorProxyClient.cpp",
     "CompositorProxyClient.h",
+    "CompositorWorkerProxyClient.cpp",
+    "CompositorWorkerProxyClient.h",
     "ContainerNode.cpp",
     "ContextFeatures.cpp",
     "ContextFeatures.h",

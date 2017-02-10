@@ -18,7 +18,7 @@ class CompositorMutator : public GarbageCollectedFinalized<CompositorMutator> {
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   // Called from compositor thread to run the animation frame callbacks from all
-  // connected CompositorWorkers.
+  // connected CompositorWorkers and AnimationWorklets.
   // Returns true if any animation callbacks requested an animation frame
   // (i.e. should be reinvoked next frame).
   virtual bool mutate(double monotonicTimeNow,

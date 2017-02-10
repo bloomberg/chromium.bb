@@ -46,7 +46,7 @@ WorkerOrWorkletGlobalScope* AnimationWorkletThread::createWorkerGlobalScope(
         std::move(startupData->m_starterOriginPrivilegeData));
 
   // TODO(ikilpatrick): The AnimationWorkletGlobalScope will need to store a
-  // WorkerClients object for using a CompositorProxyClient object.
+  // WorkerClients object for using a CompositorWorkerProxyClient object.
   return AnimationWorkletGlobalScope::create(
       startupData->m_scriptURL, startupData->m_userAgent,
       securityOrigin.release(), this->isolate(), this);

@@ -5,8 +5,10 @@
 #include "modules/compositorworker/AnimationWorklet.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/ChromeClient.h"
 #include "modules/compositorworker/AnimationWorkletMessagingProxy.h"
 #include "modules/compositorworker/AnimationWorkletThread.h"
 
@@ -30,9 +32,13 @@ void AnimationWorklet::initialize() {
 
   DCHECK(!m_workletMessagingProxy);
   DCHECK(getExecutionContext());
+  Document* document = toDocument(getExecutionContext());
+  AnimationWorkletProxyClient* proxyClient =
+      document->frame()->chromeClient().createAnimationWorkletProxyClient(
+          document->frame());
 
   m_workletMessagingProxy =
-      new AnimationWorkletMessagingProxy(getExecutionContext());
+      new AnimationWorkletMessagingProxy(getExecutionContext(), proxyClient);
   m_workletMessagingProxy->initialize();
 }
 

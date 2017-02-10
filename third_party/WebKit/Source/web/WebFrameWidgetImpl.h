@@ -133,7 +133,9 @@ class WebFrameWidgetImpl final
   // WebFrameWidgetBase overrides:
   bool forSubframe() const override { return true; }
   void scheduleAnimation() override;
-  CompositorProxyClient* createCompositorProxyClient() override;
+  CompositorWorkerProxyClient* createCompositorWorkerProxyClient() override;
+  AnimationWorkletProxyClient* createAnimationWorkletProxyClient() override;
+
   WebWidgetClient* client() const override { return m_client; }
   void setRootGraphicsLayer(GraphicsLayer*) override;
   void setRootLayer(WebLayer*) override;
@@ -192,6 +194,8 @@ class WebFrameWidgetImpl final
   WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*) const;
 
   LocalFrame* focusedLocalFrameAvailableForIme() const;
+
+  CompositorMutatorImpl& mutator();
 
   WebWidgetClient* m_client;
 

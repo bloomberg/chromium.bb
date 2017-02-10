@@ -483,7 +483,9 @@ class WEB_EXPORT WebViewImpl final
   void forceNextWebGLContextCreationToFail() override;
   void forceNextDrawingBufferCreationToFail() override;
 
-  CompositorProxyClient* createCompositorProxyClient();
+  CompositorWorkerProxyClient* createCompositorWorkerProxyClient();
+  AnimationWorkletProxyClient* createAnimationWorkletProxyClient();
+
   IntSize mainFrameSize();
   WebDisplayMode displayMode() const { return m_displayMode; }
 
@@ -598,6 +600,8 @@ class WEB_EXPORT WebViewImpl final
 
   LocalFrame* focusedLocalFrameInWidget() const;
   LocalFrame* focusedLocalFrameAvailableForIme() const;
+
+  CompositorMutatorImpl& mutator();
 
   WebViewClient* m_client;  // Can be 0 (e.g. unittests, shared workers, etc.)
   WebSpellCheckClient* m_spellCheckClient;

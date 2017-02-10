@@ -147,9 +147,10 @@
 #include "public/web/WebSelection.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWindowFeatures.h"
+#include "web/AnimationWorkletProxyClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/CompositorMutatorImpl.h"
-#include "web/CompositorProxyClientImpl.h"
+#include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/ContextFeaturesClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/DatabaseClientImpl.h"
@@ -4128,14 +4129,23 @@ void WebViewImpl::forceNextDrawingBufferCreationToFail() {
   DrawingBuffer::forceNextDrawingBufferCreationToFail();
 }
 
-CompositorProxyClient* WebViewImpl::createCompositorProxyClient() {
+CompositorMutatorImpl& WebViewImpl::mutator() {
   if (!m_mutator) {
     std::unique_ptr<CompositorMutatorClient> mutatorClient =
         CompositorMutatorImpl::createClient();
     m_mutator = static_cast<CompositorMutatorImpl*>(mutatorClient->mutator());
     m_layerTreeView->setMutatorClient(std::move(mutatorClient));
   }
-  return new CompositorProxyClientImpl(m_mutator);
+
+  return *m_mutator;
+}
+
+CompositorWorkerProxyClient* WebViewImpl::createCompositorWorkerProxyClient() {
+  return new CompositorWorkerProxyClientImpl(&mutator());
+}
+
+AnimationWorkletProxyClient* WebViewImpl::createAnimationWorkletProxyClient() {
+  return new AnimationWorkletProxyClientImpl(&mutator());
 }
 
 void WebViewImpl::updatePageOverlays() {

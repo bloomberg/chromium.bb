@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/CompositorProxyClientImpl.h"
+#include "web/CompositorWorkerProxyClientImpl.h"
 
 #include "core/dom/CompositorProxy.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
@@ -25,9 +25,10 @@ class ScopedCompositorMutableState final {
       HeapHashSet<WeakMember<CompositorProxy>>& proxies,
       CompositorMutableStateProvider* stateProvider)
       : m_proxies(proxies) {
-    for (CompositorProxy* proxy : m_proxies)
+    for (CompositorProxy* proxy : m_proxies) {
       proxy->takeCompositorMutableState(
           stateProvider->getMutableStateFor(proxy->elementId()));
+    }
   }
   ~ScopedCompositorMutableState() {
     for (CompositorProxy* proxy : m_proxies)
@@ -38,50 +39,51 @@ class ScopedCompositorMutableState final {
   HeapHashSet<WeakMember<CompositorProxy>>& m_proxies;
 };
 
-CompositorProxyClientImpl::CompositorProxyClientImpl(
+CompositorWorkerProxyClientImpl::CompositorWorkerProxyClientImpl(
     CompositorMutatorImpl* mutator)
     : m_mutator(mutator), m_globalScope(nullptr) {
   DCHECK(isMainThread());
 }
 
-DEFINE_TRACE(CompositorProxyClientImpl) {
-  CompositorProxyClient::trace(visitor);
+DEFINE_TRACE(CompositorWorkerProxyClientImpl) {
   visitor->trace(m_proxies);
+  CompositorAnimator::trace(visitor);
+  CompositorWorkerProxyClient::trace(visitor);
 }
 
-void CompositorProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope) {
+void CompositorWorkerProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope) {
   TRACE_EVENT0("compositor-worker",
-               "CompositorProxyClientImpl::setGlobalScope");
+               "CompositorWorkerProxyClientImpl::setGlobalScope");
   DCHECK(!m_globalScope);
   DCHECK(scope);
   m_globalScope = static_cast<CompositorWorkerGlobalScope*>(scope);
-  m_mutator->registerProxyClient(this);
+  m_mutator->registerCompositorAnimator(this);
 }
 
-void CompositorProxyClientImpl::dispose() {
-  // CompositorProxyClientImpl and CompositorMutatorImpl form a reference
-  // cycle. CompositorWorkerGlobalScope and CompositorProxyClientImpl
+void CompositorWorkerProxyClientImpl::dispose() {
+  // CompositorWorkerProxyClientImpl and CompositorMutatorImpl form a reference
+  // cycle. CompositorWorkerGlobalScope and CompositorWorkerProxyClientImpl
   // also form another big reference cycle. So dispose needs to be called on
   // Worker termination to break these cycles. If not, layout test leak
   // detection will report a WorkerGlobalScope leak.
-  m_mutator->unregisterProxyClient(this);
+  m_mutator->unregisterCompositorAnimator(this);
   m_globalScope = nullptr;
 }
 
-void CompositorProxyClientImpl::requestAnimationFrame() {
+void CompositorWorkerProxyClientImpl::requestAnimationFrame() {
   TRACE_EVENT0("compositor-worker",
-               "CompositorProxyClientImpl::requestAnimationFrame");
+               "CompositorWorkerProxyClientImpl::requestAnimationFrame");
   m_requestedAnimationFrameCallbacks = true;
   m_mutator->setNeedsMutate();
 }
 
-bool CompositorProxyClientImpl::mutate(
+bool CompositorWorkerProxyClientImpl::mutate(
     double monotonicTimeNow,
     CompositorMutableStateProvider* stateProvider) {
   if (!m_globalScope)
     return false;
 
-  TRACE_EVENT0("compositor-worker", "CompositorProxyClientImpl::mutate");
+  TRACE_EVENT0("compositor-worker", "CompositorWorkerProxyClientImpl::mutate");
   if (!m_requestedAnimationFrameCallbacks)
     return false;
 
@@ -94,10 +96,11 @@ bool CompositorProxyClientImpl::mutate(
   return m_requestedAnimationFrameCallbacks;
 }
 
-bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(
+bool CompositorWorkerProxyClientImpl::executeAnimationFrameCallbacks(
     double monotonicTimeNow) {
-  TRACE_EVENT0("compositor-worker",
-               "CompositorProxyClientImpl::executeAnimationFrameCallbacks");
+  TRACE_EVENT0(
+      "compositor-worker",
+      "CompositorWorkerProxyClientImpl::executeAnimationFrameCallbacks");
 
   DCHECK(m_globalScope);
   // Convert to zero based document time in milliseconds consistent with
@@ -107,12 +110,12 @@ bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(
   return m_globalScope->executeAnimationFrameCallbacks(highResTimeMs);
 }
 
-void CompositorProxyClientImpl::registerCompositorProxy(
+void CompositorWorkerProxyClientImpl::registerCompositorProxy(
     CompositorProxy* proxy) {
   m_proxies.insert(proxy);
 }
 
-void CompositorProxyClientImpl::unregisterCompositorProxy(
+void CompositorWorkerProxyClientImpl::unregisterCompositorProxy(
     CompositorProxy* proxy) {
   m_proxies.remove(proxy);
 }

@@ -10,8 +10,10 @@
 namespace blink {
 
 AnimationWorkletMessagingProxy::AnimationWorkletMessagingProxy(
-    ExecutionContext* executionContext)
-    : ThreadedWorkletMessagingProxy(executionContext) {}
+    ExecutionContext* executionContext,
+    AnimationWorkletProxyClient* proxyClient)
+    : ThreadedWorkletMessagingProxy(executionContext),
+      m_proxyClient(proxyClient) {}
 
 AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
 
