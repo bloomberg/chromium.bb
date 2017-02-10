@@ -24,6 +24,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/child_frame_compositing_helper.h"
+#include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -368,7 +369,8 @@ void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(
     const FrameOwnerProperties& properties) {
-  web_frame_->setFrameOwnerProperties(properties.ToWebFrameOwnerProperties());
+  web_frame_->setFrameOwnerProperties(
+      ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(properties));
 }
 
 void RenderFrameProxy::OnDidUpdateOrigin(

@@ -19,11 +19,7 @@ namespace content {
 struct CONTENT_EXPORT FrameOwnerProperties {
   FrameOwnerProperties();
   FrameOwnerProperties(const FrameOwnerProperties& other);
-  explicit FrameOwnerProperties(
-      const blink::WebFrameOwnerProperties& web_frame_owner_properties);
   ~FrameOwnerProperties();
-
-  blink::WebFrameOwnerProperties ToWebFrameOwnerProperties() const;
 
   bool operator==(const FrameOwnerProperties& other) const;
   bool operator!=(const FrameOwnerProperties& other) const {

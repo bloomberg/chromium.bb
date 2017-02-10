@@ -100,6 +100,7 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
+#include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
@@ -962,7 +963,8 @@ void RenderFrameImpl::CreateFrame(
         render_frame->blink_interface_provider_.get(),
         render_frame->blink_interface_registry_.get(),
         previous_sibling_web_frame,
-        frame_owner_properties.ToWebFrameOwnerProperties(),
+        ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
+            frame_owner_properties),
         ResolveOpener(opener_routing_id));
 
     // The RenderFrame is created and inserted into the frame tree in the above
@@ -2139,7 +2141,8 @@ void RenderFrameImpl::OnSetFrameOwnerProperties(
     const FrameOwnerProperties& frame_owner_properties) {
   DCHECK(frame_);
   frame_->setFrameOwnerProperties(
-      frame_owner_properties.ToWebFrameOwnerProperties());
+      ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
+          frame_owner_properties));
 }
 
 void RenderFrameImpl::OnAdvanceFocus(blink::WebFocusType type,
@@ -3036,7 +3039,9 @@ blink::WebLocalFrame* RenderFrameImpl::createChildFrame(
   params.frame_name = name.utf8();
   params.frame_unique_name = unique_name.utf8();
   params.sandbox_flags = sandbox_flags;
-  params.frame_owner_properties = FrameOwnerProperties(frame_owner_properties);
+  params.frame_owner_properties =
+      ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
+          frame_owner_properties);
   Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
@@ -3218,7 +3223,8 @@ void RenderFrameImpl::didChangeFrameOwnerProperties(
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   Send(new FrameHostMsg_DidChangeFrameOwnerProperties(
       routing_id_, GetRoutingIdForFrameOrProxy(child_frame),
-      FrameOwnerProperties(frame_owner_properties)));
+      ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
+          frame_owner_properties)));
 }
 
 void RenderFrameImpl::didMatchCSS(
