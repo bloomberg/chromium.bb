@@ -19,6 +19,9 @@ if (NOT AOM_TARGET_CPU)
   # TODO(tomfinegan): This will not work for a cross compile. Target CPU and
   # system will have to come from a toolchain file or the cmake command line.
   set(AOM_TARGET_CPU ${CMAKE_SYSTEM_PROCESSOR})
+  if (AOM_TARGET_CPU STREQUAL "AMD64")
+    set(AOM_TARGET_CPU "x86_64")
+  endif ()
   set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
   if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
     message("No RTCD template for ${AOM_TARGET_CPU}, using generic.")
@@ -69,23 +72,19 @@ else ()
 endif ()
 
 # Test compiler support.
-if (MSVC)
-else ()
-  AomCheckSourceCompiles("inline_check" "static inline void function(void) {}"
-                         HAVE_INLINE)
-  if (HAVE_INLINE EQUAL 1)
-    set(INLINE "inline")
-  endif ()
-  # TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
-  # anywhere in the aom sources. To be removed after parity with the legacy
-  # build system stops being important.
-  AomCheckSourceCompiles("aom_ports_check"
-                         "#include \"${AOM_ROOT}/aom/aom_integer.h\""
-                         HAVE_AOM_PORTS)
-  AomCheckSourceCompiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
-  AomCheckSourceCompiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
+AomCheckSourceCompiles("inline_check" "static inline void function(void) {}"
+                       HAVE_INLINE)
+if (HAVE_INLINE EQUAL 1)
+  set(INLINE "inline")
 endif ()
-
+# TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
+# anywhere in the aom sources. To be removed after parity with the legacy
+# build system stops being important.
+AomCheckSourceCompiles("aom_ports_check"
+                       "#include \"${AOM_ROOT}/aom/aom_integer.h\""
+                       HAVE_AOM_PORTS)
+AomCheckSourceCompiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
+AomCheckSourceCompiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 
 # TODO(tomfinegan): consume trailing whitespace after configure_file() when
 # target platform check produces empty INLINE and RESTRICT values (aka empty

@@ -9,6 +9,19 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
+# Translate $flag to one which MSVC understands, and write the new flag to the
+# variable named by $translated_flag (or unset it, when MSVC needs no flag).
+function (get_msvc_intrinsic_flag flag translated_flag)
+  if ("${flag}" STREQUAL "-msse2")
+    # MSVC does not require a flag for SSE2 (as of MSVS 14).
+    unset(${translated_flag} PARENT_SCOPE)
+  elseif ("${flag}" STREQUAL "-mavx2")
+    set(${translated_flag} "/arch:AVX2" PARENT_SCOPE)
+  else ()
+    set(${translated_flag} "/arch:AVX" PARENT_SCOPE)
+  endif ()
+endfunction ()
+
 # Adds an object library target. Terminates generation if $flag is not supported
 # by the current compiler. $flag is the intrinsics flag required by the current
 # compiler, and is added to the compile flags for all sources in $sources.
@@ -19,12 +32,17 @@
 # that disallow the direct addition of .o files to them as dependencies. Static
 # libraries do not have this limitation.
 function (add_intrinsics_object_library flag opt_name target_to_update sources)
-  if (MSVC)
-    message(FATAL_ERROR "MSVC instrinics support not implemented.")
-  endif ()
   set(target_name ${target_to_update}_${opt_name}_intrinsics)
   add_library(${target_name} OBJECT ${${sources}})
-  target_compile_options(${target_name} PUBLIC ${flag})
+
+  if (MSVC)
+    get_msvc_intrinsic_flag(${flag} "flag")
+  endif ()
+
+  if (flag)
+    target_compile_options(${target_name} PUBLIC ${flag})
+  endif ()
+
   target_sources(aom PUBLIC $<TARGET_OBJECTS:${target_name}>)
 
   # Add the new lib target to the global list of aom library targets.
@@ -35,44 +53,60 @@ endfunction ()
 # Adds sources in list named by $sources to $target and adds $flag to the
 # compile flags for each source file.
 function (add_intrinsics_source_to_target flag target sources)
-  if (MSVC)
-    message(FATAL_ERROR "MSVC instrinics support not implemented.")
-  endif ()
   target_sources(${target} PUBLIC ${${sources}})
-  foreach (source ${${sources}})
-    set_property(SOURCE ${source} APPEND PROPERTY COMPILE_FLAGS ${flag})
-  endforeach ()
+  if (MSVC)
+    get_msvc_intrinsic_flag(${flag} "flag")
+  endif ()
+  if (flag)
+    foreach (source ${${sources}})
+      set_property(SOURCE ${source} APPEND PROPERTY COMPILE_FLAGS ${flag})
+    endforeach ()
+  endif ()
 endfunction ()
 
-# Adds build commands for ASM files in $sources and uses $asm_build_name to
-# build an output directory path. Adds ASM objects to libaom directly. $sources
-# must be the name of a variable containing a list of sources.
-#
-# Note: the libaom target is always updated because OBJECT libraries have rules
-# that disallow the direct addition of .o files to them as dependencies. Static
-# libraries do not have this limitation.
-function (add_asm_build asm_build_name sources)
-  set(AOM_ASM_OBJECTS_DIR "${AOM_CONFIG_DIR}/asm_objects/${asm_build_name}")
-  if (NOT EXISTS "${AOM_ASM_OBJECTS_DIR}")
-    file(MAKE_DIRECTORY "${AOM_ASM_OBJECTS_DIR}")
-  endif ()
-
-  # TODO(tomfinegan): This might get rather lengthy; probably best to move it
-  # out into its own function or macro.
-  if ("${AOM_TARGET_CPU}" STREQUAL "x86_64" AND
-      "${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
-    set(objformat "macho64")
-  elseif ("${AOM_TARGET_CPU}" STREQUAL "x86_64" AND
-      "${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
-    set(objformat "elf64")
+# Writes object format for the current target to the var named by $out_format,
+# or terminates the build when the object format for the current target is
+# unknown.
+function (get_asm_obj_format out_format)
+  if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
+    if ("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
+      set(objformat "macho64")
+    elseif ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
+      set(objformat "elf64")
+    elseif ("${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
+      set(objformat "win64")
+    else ()
+      message(FATAL_ERROR "Unknown obj format: ${AOM_TARGET_SYSTEM}")
+    endif ()
   else ()
     message(FATAL_ERROR
             "Unknown obj format: ${AOM_TARGET_CPU}-${AOM_TARGET_SYSTEM}")
   endif ()
 
-  foreach (asm_source ${${sources}})
+  set(${out_format} ${objformat} PARENT_SCOPE)
+endfunction ()
+
+# Adds library target named $lib_name for ASM files in variable named by
+# $asm_sources. Builds an output directory path from $lib_name. Links $lib_name
+# into $dependent_target. Generates a dummy C file with a dummy function to
+# ensure that all cmake generators can determine the linker language, and that
+# build tools don't complain that an object exposes no symbols.
+function (add_asm_library lib_name asm_sources dependent_target)
+  set(asm_lib_obj_dir "${AOM_CONFIG_DIR}/asm_objects/${lib_name}")
+  if (NOT EXISTS "${asm_lib_obj_dir}")
+    file(MAKE_DIRECTORY "${asm_lib_obj_dir}")
+  endif ()
+
+  # TODO(tomfinegan): If cmake ever allows addition of .o files to OBJECT lib
+  # targets, make this OBJECT instead of STATIC to hide the target from
+  # consumers of the AOM cmake build.
+  add_library(${lib_name} STATIC ${${asm_sources}})
+
+  get_asm_obj_format("objformat")
+
+  foreach (asm_source ${${asm_sources}})
     get_filename_component(asm_source_name "${asm_source}" NAME)
-    set(asm_object "${AOM_ASM_OBJECTS_DIR}/${asm_source_name}.o")
+    set(asm_object "${asm_lib_obj_dir}/${asm_source_name}.o")
     add_custom_command(OUTPUT "${asm_object}"
                        COMMAND ${YASM_EXECUTABLE}
                        ARGS -f ${objformat}
@@ -82,6 +116,20 @@ function (add_asm_build asm_build_name sources)
                        COMMENT "Building ASM object ${asm_object}"
                        WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
                        VERBATIM)
-    target_sources(aom PUBLIC "${asm_source}" "${asm_object}")
+    target_sources(${lib_name} PRIVATE "${asm_object}")
   endforeach ()
+
+  # The above created a target containing only ASM sources. Cmake needs help
+  # here to determine the linker language. Add a dummy C file to force the
+  # linker language to C. We don't bother with setting the LINKER_LANGUAGE
+  # property on the library target because not all generators obey it (looking
+  # at you, xcode generator).
+  set(dummy_c_file "${AOM_CONFIG_DIR}/${lib_name}_dummy.c")
+  file(WRITE "${dummy_c_file}"
+       "// Generated file. DO NOT EDIT!\n"
+       "// ${lib_name} needs C file to force link language, ignore me.\n"
+       "void ${lib_name}_dummy_function(void) {}\n")
+  target_sources(${lib_name} PUBLIC ${dummy_c_file})
+
+  target_link_libraries(${dependent_target} PRIVATE ${lib_name})
 endfunction ()

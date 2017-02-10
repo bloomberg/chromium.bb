@@ -22,6 +22,7 @@ set(HAVE_AVX 1)
 set(HAVE_AVX2 1)
 
 # RTCD versions of assembly flavor flags ("yes" means on in rtcd.pl, not 1).
+set(RTCD_ARCH_X86_64 "yes")
 set(RTCD_HAVE_MMX "yes")
 set(RTCD_HAVE_SSE "yes")
 set(RTCD_HAVE_SSE2 "yes")
@@ -49,6 +50,7 @@ set(RTCD_CONFIG_SPATIAL_RESAMPLING "yes")
 set(RTCD_CONFIG_STATIC "yes")
 set(RTCD_CONFIG_OS_SUPPORT "yes")
 set(RTCD_CONFIG_TEMPORAL_DENOISING "yes")
+set(RTCD_CONFIG_RUNTIME_CPU_DETECT "yes")
 
 if (CONFIG_AOM_HIGHBITDEPTH)
   set(RTCD_CONFIG_AOM_HIGHBITDEPTH "yes")
