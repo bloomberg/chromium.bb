@@ -11,6 +11,7 @@ Note, in the standard library module difflib, there is also a HtmlDiff class,
 although it outputs a larger and more complex HTML table than we need.
 """
 
+import cgi
 import difflib
 
 _TEMPLATE = """<html>
@@ -53,12 +54,12 @@ def _format_chunk(tag, a_chunk, b_chunk):
     if tag == 'replace':
         return _format_delete(a_chunk) + _format_insert(b_chunk)
     assert tag == 'equal'
-    return a_chunk
+    return cgi.escape(a_chunk)
 
 
 def _format_insert(chunk):
-    return '<span class="add">%s</span>' % chunk
+    return '<span class="add">%s</span>' % cgi.escape(chunk)
 
 
 def _format_delete(chunk):
-    return '<span class="del">%s</span>' % chunk
+    return '<span class="del">%s</span>' % cgi.escape(chunk)

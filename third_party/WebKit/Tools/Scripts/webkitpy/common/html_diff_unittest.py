@@ -29,16 +29,25 @@ class TestHtmlDiff(unittest.TestCase):
         self.assertEqual(
             html_diff_body(['one line\n'], ['one line\n']),
             'one line\n')
+        self.assertEqual(
+            html_diff_body(['<script>\n'], ['<script>\n']),
+            '&lt;script&gt;\n')
 
     def test_html_diff_delete(self):
         self.assertEqual(
             html_diff_body(['one line\n'], []),
             '<span class="del">one line\n</span>')
+        self.assertEqual(
+            html_diff_body(['</pre>\n'], []),
+            '<span class="del">&lt;/pre&gt;\n</span>')
 
     def test_html_diff_insert(self):
         self.assertEqual(
             html_diff_body([], ['one line\n']),
             '<span class="add">one line\n</span>')
+        self.assertEqual(
+            html_diff_body([], ['<!--\n']),
+            '<span class="add">&lt;!--\n</span>')
 
     def test_html_diff_ending_newline(self):
         self.assertEqual(
