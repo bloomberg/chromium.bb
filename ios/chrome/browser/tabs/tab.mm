@@ -63,6 +63,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
+#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
@@ -273,9 +274,6 @@ enum class RendererTerminationTabState {
 
   // Handles autofill.
   base::scoped_nsobject<AutofillController> autofillController_;
-
-  // Handles find on page.
-  base::scoped_nsobject<FindInPageController> findInPageController_;
 
   // Handles GAL infobar on web pages.
   base::scoped_nsobject<NativeAppNavigationController>
@@ -550,10 +548,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         initWithSnapshotManager:snapshotManager_
                             tab:self]);
 
-    findInPageController_.reset([[FindInPageController alloc]
-        initWithWebState:self.webState
-                delegate:self]);
-
     [self initNativeAppNavigationController];
 
     if (attachTabHelpers) {
@@ -568,6 +562,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       IOSSecurityStateTabHelper::CreateForWebState(self.webState);
       RepostFormTabHelper::CreateForWebState(self.webState);
       BlockedPopupTabHelper::CreateForWebState(self.webState);
+      FindTabHelper::CreateForWebState(self.webState, self);
 
       if (reading_list::switches::IsReadingListEnabled()) {
         ReadingListModel* model =
@@ -1199,9 +1194,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-  [findInPageController_ detachFromWebState];
-  findInPageController_.reset();
-
   [passwordController_ detach];
   passwordController_.reset();
   tabInfoBarObserver_.reset();
@@ -1705,7 +1697,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // TODO(crbug.com/381201): Move this call there once that bug is fixed so that
   // |disableFullScreen| is called only from one place.
   [fullScreenController_ disableFullScreen];
-  [findInPageController_ disableFindInPageWithCompletionHandler:nil];
   GURL lastCommittedURL = webState->GetLastCommittedURL();
   [autoReloadBridge_ loadStartedForURL:lastCommittedURL];
 
@@ -2180,10 +2171,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         [[GenericChromeCommand alloc] initWithTag:IDC_NEW_INCOGNITO_TAB]);
     [self.view chromeExecuteCommand:chromeCommand];
   }
-}
-
-- (FindInPageController*)findInPageController {
-  return findInPageController_;
 }
 
 - (NativeAppNavigationController*)nativeAppNavigationController {

@@ -118,6 +118,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/crash_report:unit_tests",
     "//ios/chrome/browser/device_sharing:unit_tests",
     "//ios/chrome/browser/favicon:unit_tests",
+    "//ios/chrome/browser/find_in_page:unit_tests",
     "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/itunes_links:unit_tests",
     "//ios/chrome/browser/metrics:unit_tests",

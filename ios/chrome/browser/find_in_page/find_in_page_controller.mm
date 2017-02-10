@@ -39,7 +39,7 @@ static NSString* gSearchTerm;
 }
 
 @interface FindInPageController () <DOMAltering, CRWWebStateObserver>
-// The find in page controller delegate.
+// The find in page controller delegate.  Can be nil.
 @property(nonatomic, readonly) id<FindInPageControllerDelegate> delegate;
 
 // The web view's scroll view.
@@ -103,7 +103,6 @@ static NSString* gSearchTerm;
               delegate:(id<FindInPageControllerDelegate>)delegate {
   self = [super init];
   if (self) {
-    DCHECK(delegate);
     _findInPageJsManager = base::mac::ObjCCastStrict<JsFindinpageManager>(
         [webState->GetJSInjectionReceiver()
             instanceOfClass:[JsFindinpageManager class]]);

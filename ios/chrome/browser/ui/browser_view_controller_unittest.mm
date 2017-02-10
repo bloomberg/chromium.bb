@@ -25,8 +25,6 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -144,14 +142,12 @@ class BrowserViewControllerTest : public BlockCleanupTest {
             chrome_browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
-    // Set up mock TabModel, Tab, CRWWebController and FindInPageController.
+    // Set up mock TabModel, Tab, and CRWWebController.
     id tabModel = [OCMockObject mockForClass:[TabModel class]];
     base::scoped_nsobject<id> currentTab([[BVCTestTabMock alloc]
         initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]]);
     id webControllerMock =
         [OCMockObject niceMockForClass:[CRWWebController class]];
-    id findInPageControllerMock =
-        [OCMockObject niceMockForClass:[FindInPageController class]];
 
     // Stub methods for TabModel.
     NSUInteger tabCount = 1;
@@ -174,8 +170,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     UIView* dummyView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
     [[[currentTab stub] andReturn:dummyView] view];
     [[[currentTab stub] andReturn:webControllerMock] webController];
-    [[[currentTab stub] andReturn:findInPageControllerMock]
-        findInPageController];
 
     id sessionControllerMock =
         [OCMockObject niceMockForClass:[CRWSessionController class]];
@@ -217,7 +211,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];
 
     webController_.reset([webControllerMock retain]);
-    findInPageController_.reset([findInPageControllerMock retain]);
     tabModel_.reset([tabModel retain]);
     tab_.reset([currentTab retain]);
     dependencyFactory_.reset([factory retain]);
@@ -260,7 +253,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   base::scoped_nsobject<TabModel> tabModel_;
   ToolbarModelIOS* toolbarModelIOS_;
   base::scoped_nsprotocol<id<ShareProtocol>> shareController_;
-  base::scoped_nsobject<FindInPageController> findInPageController_;
   base::scoped_nsobject<PKAddPassesViewController> passKitViewController_;
   base::scoped_nsobject<OCMockObject> dependencyFactory_;
   base::scoped_nsobject<BrowserViewController> bvc_;

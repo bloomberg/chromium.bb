@@ -11,6 +11,8 @@ source_set("find_in_page") {
     "find_in_page_controller.mm",
     "find_in_page_model.h",
     "find_in_page_model.mm",
+    "find_tab_helper.h",
+    "find_tab_helper.mm",
     "js_findinpage_manager.h",
     "js_findinpage_manager.mm",
   ]
@@ -28,5 +30,19 @@ source_set("find_in_page") {
 js_compile_unchecked("injected_js") {
   sources = [
     "resources/find_in_page.js",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "find_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":find_in_page",
+    "//base",
+    "//ios/web",
+    "//ios/web:test_support",
   ]
 }

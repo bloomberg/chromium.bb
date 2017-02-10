@@ -22,7 +22,6 @@
 @class CRWSessionEntry;
 @class CRWWebController;
 @class ExternalAppLauncher;
-@class FindInPageController;
 @class FormInputAccessoryViewController;
 @class FullScreenController;
 @protocol FullScreenControllerDelegate;
@@ -284,9 +283,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Remove the UIWebView and reload the current url.  Used by request desktop
 // so the updated user agent is used.
 - (void)reloadForDesktopUserAgent;
-
-// Accessor for Find in Page Controller.
-- (FindInPageController*)findInPageController;
 
 // Ensures the toolbar visibility matches |visible|.
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
