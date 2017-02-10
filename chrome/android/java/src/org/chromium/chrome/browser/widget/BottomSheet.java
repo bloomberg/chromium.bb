@@ -180,7 +180,6 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
 
             // Cancel the settling animation if it is running so it doesn't conflict with where the
             // user wants to move the sheet.
-            boolean wasSettleAnimatorRunning = isRunningSettleAnimation();
             cancelAnimation();
 
             mVelocityTracker.addMovement(e2);
@@ -211,12 +210,6 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
             if (currentShownRatio <= getPeekRatio() && distanceY < 0) {
                 mIsScrolling = false;
                 return false;
-            }
-
-            // Send a notification that the sheet is exiting the peeking state into something that
-            // will show content.
-            if (!mIsScrolling && mCurrentState == SHEET_STATE_PEEK && !wasSettleAnimatorRunning) {
-                onExitPeekState();
             }
 
             float newOffset = getSheetOffsetFromBottom() + distanceY;
@@ -553,6 +546,11 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
      * @param offset The offset that the sheet should be.
      */
     private void setSheetOffsetFromBottom(float offset) {
+        if (MathUtils.areFloatsEqual(getSheetOffsetFromBottom(), getMinOffset())
+                && offset > getMinOffset()) {
+            onExitPeekState();
+        }
+
         setTranslationY(mContainerHeight - offset);
         sendUpdatePeekToHalfEvent();
     }
