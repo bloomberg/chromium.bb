@@ -23,6 +23,9 @@ class CC_PAINT_EXPORT PaintCanvasPassThrough : public SkNWayCanvas {
   ~PaintCanvasPassThrough() override;
 };
 
+// PaintCanvas equivalent of skia::GetWritablePixels.
+CC_PAINT_EXPORT bool ToPixmap(PaintCanvas* canvas, SkPixmap* output);
+
 }  // namespace cc
 
 #endif  // CC_PAINT_PAINT_CANVAS_H_

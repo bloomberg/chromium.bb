@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
+#include "cc/paint/paint_surface.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
@@ -47,7 +48,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
         frame->natural_size(), frame->timestamp());
 
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+    sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
         frame->visible_rect().width(), frame->visible_rect().height());
 
     ui::ContextProviderCommandBuffer* const provider =
@@ -65,7 +66,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
 
     SkPixmap pixmap;
     const bool result = surface->getCanvas()->peekPixels(&pixmap);
-    DCHECK(result) << "Error trying to access SkSurface's pixels";
+    DCHECK(result) << "Error trying to access PaintSurface's pixels";
 
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR

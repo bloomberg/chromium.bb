@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/paint_surface.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/timestamp_constants.h"
@@ -20,7 +21,6 @@
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/webrtc/api/video/video_rotation.h"
 
 namespace content {
@@ -101,7 +101,7 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
            frame->format() == media::PIXEL_FORMAT_UYVY ||
            frame->format() == media::PIXEL_FORMAT_NV12);
     ScopedWaitableEvent event(waiter);
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+    sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
         frame->visible_rect().width(), frame->visible_rect().height());
 
     if (!surface || !provider_) {
@@ -121,7 +121,7 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
 
     SkPixmap pixmap;
     const bool result = surface->getCanvas()->peekPixels(&pixmap);
-    DCHECK(result) << "Error trying to access SkSurface's pixels";
+    DCHECK(result) << "Error trying to access PaintSurface's pixels";
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? cricket::FOURCC_ABGR
                                                      : cricket::FOURCC_ARGB;

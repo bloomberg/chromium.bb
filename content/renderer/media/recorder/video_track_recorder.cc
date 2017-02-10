@@ -16,6 +16,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_surface.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -26,8 +28,6 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -240,7 +240,7 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
   // textures). Created on-demand on |main_task_runner_|.
   std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
-  sk_sp<SkSurface> surface_;
+  sk_sp<cc::PaintSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(Encoder);
 };
@@ -313,7 +313,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     // Create |surface_| if it doesn't exist or incoming resolution has changed.
     if (!surface_ || surface_->width() != info.width() ||
         surface_->height() != info.height()) {
-      surface_ = SkSurface::MakeRaster(info);
+      surface_ = cc::PaintSurface::MakeRaster(info);
     }
     if (!video_renderer_)
       video_renderer_.reset(new media::SkCanvasVideoRenderer);
@@ -324,8 +324,8 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
                                            context_provider->GrContext()));
 
     SkPixmap pixmap;
-    if (!skia::GetWritablePixels(surface_->getCanvas(), &pixmap)) {
-      DLOG(ERROR) << "Error trying to map SkSurface's pixels";
+    if (!cc::ToPixmap(surface_->getCanvas(), &pixmap)) {
+      DLOG(ERROR) << "Error trying to map PaintSurface's pixels";
       return;
     }
     // TODO(mcasas): Use the incoming frame's rotation when

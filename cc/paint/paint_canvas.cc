@@ -21,4 +21,17 @@ PaintCanvasPassThrough::PaintCanvasPassThrough(int width, int height)
 
 PaintCanvasPassThrough::~PaintCanvasPassThrough() = default;
 
+bool ToPixmap(PaintCanvas* canvas, SkPixmap* output) {
+  SkImageInfo info;
+  size_t row_bytes;
+  void* pixels = canvas->accessTopLayerPixels(&info, &row_bytes);
+  if (!pixels) {
+    output->reset();
+    return false;
+  }
+
+  output->reset(info, pixels, row_bytes);
+  return true;
+}
+
 }  // namespace cc

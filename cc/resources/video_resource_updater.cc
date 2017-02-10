@@ -517,7 +517,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
         ResourceProvider::ScopedWriteLockSoftware lock(
             resource_provider_, plane_resource.resource_id());
-        SkCanvas canvas(lock.sk_bitmap());
+        PaintCanvas canvas(lock.sk_bitmap());
         // This is software path, so canvas and video_frame are always backed
         // by software.
         video_renderer_->Copy(video_frame, &canvas, media::Context3D());

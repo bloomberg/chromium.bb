@@ -511,7 +511,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     bitmap.allocN32Pixels(video_frame->visible_rect().width(),
                           video_frame->visible_rect().height());
     // Don't clear the canvas because drawing a video frame by Src mode.
-    SkCanvas canvas(bitmap);
+    cc::PaintCanvas canvas(bitmap);
     video_renderer.Copy(video_frame, &canvas, media::Context3D());
 
     ReadbackRequestCallbackTest(quit_callback, bitmap, READBACK_SUCCESS);

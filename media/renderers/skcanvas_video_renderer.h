@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "cc/paint/paint_canvas.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -21,7 +22,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkCanvas;
 
 namespace gfx {
 class RectF;
@@ -29,7 +29,8 @@ class RectF;
 
 namespace media {
 
-// Handles rendering of VideoFrames to SkCanvases.
+// TODO(enne): rename to PaintCanvasVideoRenderer
+// Handles rendering of VideoFrames to PaintCanvases.
 class MEDIA_EXPORT SkCanvasVideoRenderer {
  public:
   SkCanvasVideoRenderer();
@@ -42,7 +43,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   //
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
-             SkCanvas* canvas,
+             cc::PaintCanvas* canvas,
              const gfx::RectF& dest_rect,
              SkPaint& paint,
              VideoRotation video_rotation,
@@ -52,7 +53,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // must be provided.
   void Copy(const scoped_refptr<VideoFrame>& video_frame,
-            SkCanvas* canvas,
+            cc::PaintCanvas* canvas,
             const Context3D& context_3d);
 
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|

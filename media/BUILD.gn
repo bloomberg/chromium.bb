@@ -279,6 +279,7 @@ component("media") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//crypto",
     "//crypto:platform",
     "//gpu/command_buffer/client:gles2_interface",
@@ -836,6 +837,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//cc/paint",
     "//gpu/command_buffer/common",
     "//skia",
     "//testing/gmock",

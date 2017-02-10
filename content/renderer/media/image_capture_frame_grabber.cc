@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/image_capture_frame_grabber.h"
 
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_surface.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -13,7 +15,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 namespace content {
 
@@ -35,7 +36,7 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
   SingleShotFrameHandler() : first_frame_received_(false) {}
 
   // Receives a |frame| and converts its pixels into a SkImage via an internal
-  // SkSurface and SkPixmap. Alpha channel, if any, is copied.
+  // PaintSurface and SkPixmap. Alpha channel, if any, is copied.
   void OnVideoFrameOnIOThread(SkImageDeliverCB callback,
                               const scoped_refptr<media::VideoFrame>& frame,
                               base::TimeTicks current_time);
@@ -69,12 +70,12 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   const SkImageInfo info = SkImageInfo::MakeN32(
       frame->visible_rect().width(), frame->visible_rect().height(), alpha);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRaster(info);
   DCHECK(surface);
 
   SkPixmap pixmap;
-  if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
-    DLOG(ERROR) << "Error trying to map SkSurface's pixels";
+  if (!cc::ToPixmap(surface->getCanvas(), &pixmap)) {
+    DLOG(ERROR) << "Error trying to map PaintSurface's pixels";
     callback.Run(sk_sp<SkImage>());
     return;
   }
