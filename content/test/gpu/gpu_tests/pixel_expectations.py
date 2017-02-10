@@ -50,3 +50,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kainino): remove this once golden images are generated
     self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
               bug=666259)
+
+    self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
+        ['win10', ('intel', 0x1912)], bug=690663)
