@@ -7,8 +7,12 @@ cr.define('settings_test', function() {
   suite('SearchSettingsTest', function() {
     var searchManager;
 
+    // Don't import script if already imported (happens in Vulcanized mode).
     suiteSetup(function() {
-      return PolymerTest.loadScript('chrome://md-settings/search_settings.js');
+      if (!window.settings || !settings.getSearchManager) {
+        return PolymerTest.loadScript(
+            'chrome://md-settings/search_settings.js');
+      }
     });
 
     setup(function() {

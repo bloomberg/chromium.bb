@@ -34,6 +34,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
+    PolymerTest.clearBody();
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
@@ -170,8 +171,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
   suite('PasswordsSection', function() {
     test('verifyNoSavedPasswords', function() {
-      assertEquals(self.browsePreload, document.location.href);
-
       var passwordsSection = self.createPasswordsSection_([], []);
 
       self.validatePasswordList(passwordsSection.$.passwordList, []);
@@ -181,8 +180,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     });
 
     test('verifySavedPasswordLength', function() {
-      assertEquals(self.browsePreload, document.location.href);
-
       var passwordList = [
         FakeDataMaker.passwordEntry('site1.com', 'luigi', 1),
         FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7),

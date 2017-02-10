@@ -187,14 +187,6 @@ cr.define('settings_people_page_quick_unlock', function() {
         fakeSettings.setPref(ENABLE_LOCK_SCREEN_PREF, value, '', assertTrue);
       }
 
-      suiteSetup(function() {
-        var urls = [
-          'chrome://md-settings/i18n_setup.html',
-          'chrome://md-settings/prefs/prefs.html',
-        ];
-        return Promise.all(urls.map(PolymerTest.importHtml));
-      });
-
       setup(function(done) {
         PolymerTest.clearBody();
 
