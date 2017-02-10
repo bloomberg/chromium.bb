@@ -231,7 +231,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
 
 void Bluetooth::addToConnectedDevicesMap(const String& deviceId,
                                          BluetoothDevice* device) {
-  m_connectedDevices.add(deviceId, device);
+  m_connectedDevices.insert(deviceId, device);
 }
 
 void Bluetooth::removeFromConnectedDevicesMap(const String& deviceId) {
@@ -241,7 +241,7 @@ void Bluetooth::removeFromConnectedDevicesMap(const String& deviceId) {
 void Bluetooth::registerCharacteristicObject(
     const String& characteristicInstanceId,
     BluetoothRemoteGATTCharacteristic* characteristic) {
-  m_activeCharacteristics.add(characteristicInstanceId, characteristic);
+  m_activeCharacteristics.insert(characteristicInstanceId, characteristic);
 }
 
 void Bluetooth::characteristicObjectRemoved(
@@ -284,7 +284,7 @@ BluetoothDevice* Bluetooth::getBluetoothDeviceRepresentingDevice(
   BluetoothDevice* device = m_deviceInstanceMap.get(id);
   if (!device) {
     device = BluetoothDevice::take(resolver, std::move(devicePtr), this);
-    auto result = m_deviceInstanceMap.add(id, device);
+    auto result = m_deviceInstanceMap.insert(id, device);
     DCHECK(result.isNewEntry);
   }
   return device;

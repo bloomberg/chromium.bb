@@ -2329,7 +2329,7 @@ int InspectorCSSAgent::getStyleIndexForNode(
                              .build());
 
   size_t index = styleToIndexMap.size();
-  styleToIndexMap.add(std::move(style), index);
+  styleToIndexMap.insert(std::move(style), index);
   return index;
 }
 

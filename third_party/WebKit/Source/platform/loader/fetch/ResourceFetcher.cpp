@@ -771,7 +771,7 @@ void ResourceFetcher::storePerformanceTimingInitiatorInformation(
 
   if (!isMainResource ||
       context().updateTimingInfoForIFrameNavigation(info.get())) {
-    m_resourceTimingInfoMap.add(resource, std::move(info));
+    m_resourceTimingInfoMap.insert(resource, std::move(info));
   }
 }
 

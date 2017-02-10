@@ -6251,7 +6251,7 @@ Locale& Document::getCachedLocale(const AtomicString& locale) {
       !RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     return Locale::defaultLocale();
   LocaleIdentifierToLocaleMap::AddResult result =
-      m_localeCache.add(localeKey, nullptr);
+      m_localeCache.insert(localeKey, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = Locale::create(localeKey);
   return *(result.storedValue->value);

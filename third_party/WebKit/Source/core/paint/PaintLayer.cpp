@@ -3089,7 +3089,7 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const {
       if (const PaintLayer* parentLayer = parent()) {
         LayerHitTestRects::iterator iter = rects.find(parentLayer);
         if (iter == rects.end()) {
-          rects.add(parentLayer, Vector<LayoutRect>())
+          rects.insert(parentLayer, Vector<LayoutRect>())
               .storedValue->value.push_back(physicalBoundingBox(parentLayer));
         } else {
           iter->value.push_back(physicalBoundingBox(parentLayer));

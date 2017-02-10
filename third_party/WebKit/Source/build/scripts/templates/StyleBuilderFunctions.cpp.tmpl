@@ -337,7 +337,7 @@ static bool borderImageLengthMatchesAllSides(
   typedef CounterDirectiveMap::const_iterator Iterator;
   Iterator end = parentMap->end();
   for (Iterator it = parentMap->begin(); it != end; ++it) {
-    CounterDirectives& directives = map.add(it->key, CounterDirectives()).storedValue->value;
+    CounterDirectives& directives = map.insert(it->key, CounterDirectives()).storedValue->value;
     directives.inherit{{action}}(it->value);
   }
 }
@@ -360,7 +360,7 @@ static bool borderImageLengthMatchesAllSides(
     AtomicString identifier(toCSSCustomIdentValue(pair.first()).value());
     int value = toCSSPrimitiveValue(pair.second()).getIntValue();
     CounterDirectives& directives =
-        map.add(identifier, CounterDirectives()).storedValue->value;
+        map.insert(identifier, CounterDirectives()).storedValue->value;
     {% if action == 'Reset' %}
     directives.setResetValue(value);
     {% else %}

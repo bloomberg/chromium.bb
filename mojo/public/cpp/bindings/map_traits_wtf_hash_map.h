@@ -52,7 +52,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
       LOG(ERROR) << "The key value is disallowed by WTF::HashMap";
       return false;
     }
-    input.add(std::forward<IK>(key), std::forward<IV>(value));
+    input.insert(std::forward<IK>(key), std::forward<IV>(value));
     return true;
   }
 

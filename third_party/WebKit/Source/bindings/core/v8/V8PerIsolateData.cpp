@@ -292,7 +292,7 @@ v8::Local<v8::FunctionTemplate> V8PerIsolateData::findOrCreateOperationTemplate(
   v8::Local<v8::FunctionTemplate> templ =
       v8::FunctionTemplate::New(isolate(), callback, data, signature, length);
   templ->RemovePrototype();
-  map.add(key, v8::Eternal<v8::FunctionTemplate>(isolate(), templ));
+  map.insert(key, v8::Eternal<v8::FunctionTemplate>(isolate(), templ));
   return templ;
 }
 
@@ -311,7 +311,7 @@ void V8PerIsolateData::setInterfaceTemplate(
     const void* key,
     v8::Local<v8::FunctionTemplate> value) {
   auto& map = selectInterfaceTemplateMap(world);
-  map.add(key, v8::Eternal<v8::FunctionTemplate>(isolate(), value));
+  map.insert(key, v8::Eternal<v8::FunctionTemplate>(isolate(), value));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext() {

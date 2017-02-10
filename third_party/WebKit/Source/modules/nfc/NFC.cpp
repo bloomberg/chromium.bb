@@ -816,7 +816,7 @@ void NFC::OnWatchRegistered(MessageCallback* callback,
   }
 
   if (error.is_null()) {
-    m_callbacks.add(id, callback);
+    m_callbacks.insert(id, callback);
     resolver->resolve(id);
   } else {
     resolver->reject(NFCError::take(resolver, error->error_type));

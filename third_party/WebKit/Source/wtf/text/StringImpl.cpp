@@ -450,7 +450,7 @@ StringImpl* StringImpl::createStatic(const char* string,
 
   DCHECK(isMainThread());
   m_highestStaticStringLength = std::max(m_highestStaticStringLength, length);
-  staticStrings().add(hash, impl);
+  staticStrings().insert(hash, impl);
   WTF_ANNOTATE_BENIGN_RACE(impl,
                            "Benign race on the reference counter of a static "
                            "string created by StringImpl::createStatic");

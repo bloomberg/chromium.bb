@@ -398,7 +398,7 @@ WebScrollbarLayer* ScrollingCoordinator::addWebScrollbarLayer(
   ScrollbarMap& scrollbars = orientation == HorizontalScrollbar
                                  ? m_horizontalScrollbars
                                  : m_verticalScrollbars;
-  return scrollbars.add(scrollableArea, std::move(scrollbarLayer))
+  return scrollbars.insert(scrollableArea, std::move(scrollbarLayer))
       .storedValue->value.get();
 }
 
@@ -558,7 +558,7 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame,
     const PaintLayer* containingLayer = ownerLayoutItem.enclosingLayer();
     LayerFrameMap::iterator iter = map->find(containingLayer);
     if (iter == map->end())
-      map->add(containingLayer, HeapVector<Member<const LocalFrame>>())
+      map->insert(containingLayer, HeapVector<Member<const LocalFrame>>())
           .storedValue->value.push_back(toLocalFrame(child));
     else
       iter->value.push_back(toLocalFrame(child));
@@ -594,7 +594,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
         graphicsRects.find(graphicsLayer);
     Vector<LayoutRect>* glRects;
     if (glIter == graphicsRects.end())
-      glRects = &graphicsRects.add(graphicsLayer, Vector<LayoutRect>())
+      glRects = &graphicsRects.insert(graphicsLayer, Vector<LayoutRect>())
                      .storedValue->value;
     else
       glRects = &glIter->value;
@@ -749,10 +749,10 @@ void ScrollingCoordinator::setTouchEventTargetRects(
     GraphicsLayer* mainGraphicsLayer =
         layer->graphicsLayerBacking(layer->layoutObject());
     if (mainGraphicsLayer)
-      graphicsLayerRects.add(mainGraphicsLayer, Vector<LayoutRect>());
+      graphicsLayerRects.insert(mainGraphicsLayer, Vector<LayoutRect>());
     GraphicsLayer* scrollingContentsLayer = layer->graphicsLayerBacking();
     if (scrollingContentsLayer && scrollingContentsLayer != mainGraphicsLayer)
-      graphicsLayerRects.add(scrollingContentsLayer, Vector<LayoutRect>());
+      graphicsLayerRects.insert(scrollingContentsLayer, Vector<LayoutRect>());
   }
 
   m_layersWithTouchRects.clear();

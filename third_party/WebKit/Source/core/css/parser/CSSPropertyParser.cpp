@@ -1735,7 +1735,7 @@ static bool parseGridTemplateAreasRow(const String& gridRowNames,
 
     NamedGridAreaMap::iterator gridAreaIt = gridAreaMap.find(gridAreaName);
     if (gridAreaIt == gridAreaMap.end()) {
-      gridAreaMap.add(
+      gridAreaMap.insert(
           gridAreaName,
           GridArea(GridSpan::translatedDefiniteGridSpan(rowCount, rowCount + 1),
                    GridSpan::translatedDefiniteGridSpan(currentColumn,

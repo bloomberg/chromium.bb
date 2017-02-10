@@ -283,7 +283,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState,
     return promise;
   }
 
-  m_scheduledSuspends.add(frame, resolver);
+  m_scheduledSuspends.insert(frame, resolver);
 
   return promise;
 }

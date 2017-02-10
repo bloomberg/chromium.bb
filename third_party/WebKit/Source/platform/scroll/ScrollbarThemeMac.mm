@@ -218,7 +218,7 @@ void ScrollbarThemeMac::registerScrollbar(ScrollbarThemeClient& scrollbar) {
       [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar
                                                 painter:scrollbarPainter]);
 
-  scrollbarPainterMap().add(&scrollbar, observer);
+  scrollbarPainterMap().insert(&scrollbar, observer);
   updateEnabledState(scrollbar);
   updateScrollbarOverlayColorTheme(scrollbar);
 }

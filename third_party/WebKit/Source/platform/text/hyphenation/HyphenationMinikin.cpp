@@ -151,7 +151,7 @@ static LocaleMap createLocaleFallbackMap() {
   };
   LocaleMap map;
   for (const auto& it : localeFallbackData)
-    map.add(it[0], it[1]);
+    map.insert(it[0], it[1]);
   return map;
 }
 

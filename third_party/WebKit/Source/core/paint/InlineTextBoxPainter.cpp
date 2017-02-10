@@ -457,7 +457,7 @@ void InlineTextBoxPainter::removeFromTextBlobCache(
 static TextBlobPtr* addToTextBlobCache(const InlineTextBox& inlineTextBox) {
   if (!gTextBlobCache)
     gTextBlobCache = new InlineTextBoxBlobCacheMap;
-  return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
+  return &gTextBlobCache->insert(&inlineTextBox, nullptr).storedValue->value;
 }
 
 LayoutObject& InlineTextBoxPainter::inlineLayoutObject() const {
