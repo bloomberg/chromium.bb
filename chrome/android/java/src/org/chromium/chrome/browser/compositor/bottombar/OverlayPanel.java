@@ -368,6 +368,14 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     /**
+     * Call this when a loadUrl request has failed to notify the panel that the WebContents can
+     * be reused.  See crbug.com/682953 for details.
+     */
+    public void onLoadUrlFailed() {
+        if (mContent != null) mContent.onLoadUrlFailed();
+    }
+
+    /**
      * Create a new OverlayPanelContent object. This can be overridden for tests.
      * @return A new OverlayPanelContent object.
      */

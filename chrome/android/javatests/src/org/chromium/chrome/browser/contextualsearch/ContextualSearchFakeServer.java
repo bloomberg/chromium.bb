@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.net.Uri;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -50,6 +52,7 @@ class ContextualSearchFakeServer
 
     private String mLoadedUrl;
     private int mLoadedUrlCount;
+    private boolean mUseInvalidLowPriorityPath;
 
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
@@ -358,6 +361,9 @@ class ContextualSearchFakeServer
 
         @Override
         public void loadUrl(String url, boolean shouldLoadImmediately) {
+            if (mUseInvalidLowPriorityPath && isLowPriorityUrl(url)) {
+                url = makeInvalidUrl(url);
+            }
             mLoadedUrl = url;
             mLoadedUrlCount++;
             super.loadUrl(url, shouldLoadImmediately);
@@ -372,6 +378,23 @@ class ContextualSearchFakeServer
         @Override
         protected ContentViewCore createContentViewCore(ChromeActivity activity) {
             return new ContentViewCoreWrapper(activity);
+        }
+
+        /**
+         * Creates an invalid version of the given URL.
+         * @param baseUrl The URL to build upon / modify.
+         * @return The same URL but with an invalid path.
+         */
+        private String makeInvalidUrl(String baseUrl) {
+            return Uri.parse(baseUrl).buildUpon().appendPath("invalid").build().toString();
+        }
+
+        /**
+         * @return Whether the given URL is a low-priority URL.
+         */
+        private boolean isLowPriorityUrl(String url) {
+            // Just check if it's set up to prefetch.
+            return url.contains("&pf=c");
         }
     }
 
@@ -504,6 +527,23 @@ class ContextualSearchFakeServer
         mShouldUseHttps = false;
         mIsOnline = true;
         mLoadedUrlCount = 0;
+        mUseInvalidLowPriorityPath = false;
+    }
+
+    /**
+     * Sets a flag to build low-priority paths that are invalid in order to test failover.
+     */
+    @VisibleForTesting
+    void setLowPriorityPathInvalid() {
+        mUseInvalidLowPriorityPath = true;
+    }
+
+    /**
+     * @return Whether the most recent loadUrl was on an invalid path.
+     */
+    @VisibleForTesting
+    boolean didAttemptLoadInvalidUrl() {
+        return mUseInvalidLowPriorityPath && mLoadedUrl.contains("invalid");
     }
 
     //============================================================================================

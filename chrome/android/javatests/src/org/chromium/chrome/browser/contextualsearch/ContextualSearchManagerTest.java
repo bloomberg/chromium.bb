@@ -98,6 +98,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     // is fully supported.
     private static final String NORMAL_PRIORITY_SEARCH_ENDPOINT = "/search?";
     private static final String LOW_PRIORITY_SEARCH_ENDPOINT = "/s?";
+    private static final String LOW_PRIORITY_INVALID_SEARCH_ENDPOINT = "/s/invalid";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
     // The number of ms to delay startup for all tests.
     private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
@@ -261,6 +262,25 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                 return search.didFinishSearchTermResolution();
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Waits for a Normal priority URL to be loaded, or asserts that the load never happened.
+     * This is needed when we test with a live internet connection and an invalid url fails to
+     * load (as expected.  See crbug.com/682953 for background.
+     */
+    private void waitForNormalPriorityUrlLoaded() {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Normal priority URL was not loaded: "
+                        + String.valueOf(mFakeServer.getLoadedUrl())) {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mFakeServer.getLoadedUrl() != null
+                                && mFakeServer.getLoadedUrl().contains(
+                                           NORMAL_PRIORITY_SEARCH_ENDPOINT);
+                    }
+                },
+                TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -584,24 +604,32 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertTrue("Expected to find searchTerm '" + searchTerm + "', " + message, doesMatch);
     }
 
+    /**
+     * Asserts that the given parameters are present in the most recently loaded URL.
+     */
     private void assertContainsParameters(String searchTerm, String alternateTerm) {
         assertTrue(mFakeServer.getSearchTermRequested() == null
                 || mFakeServer.getLoadedUrl().contains(searchTerm)
                         && mFakeServer.getLoadedUrl().contains(alternateTerm));
     }
 
-    private void assertContainsNoParameters() {
-        assertTrue(mFakeServer.getLoadedUrl() == null);
-    }
-
+    /**
+     * Asserts that a Search Term has been requested.
+     */
     private void assertSearchTermRequested() {
         assertNotNull(mFakeServer.getSearchTermRequested());
     }
 
+    /**
+     * Asserts that there has not been any Search Term requested.
+     */
     private void assertSearchTermNotRequested() {
         assertNull(mFakeServer.getSearchTermRequested());
     }
 
+    /**
+     * Asserts that the panel is currently closed or in an undefined state.
+     */
     private void assertPanelClosedOrUndefined() {
         boolean success = false;
         if (mPanel == null) {
@@ -613,15 +641,24 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertTrue(success);
     }
 
+    /**
+     * Asserts that the panel is currently in the "peeking" state (just showing the Bar).
+     */
     private void assertPanelPeeked() {
         assertTrue(mPanel.getPanelState() == PanelState.PEEKED);
     }
 
+    /**
+     * Asserts that no URL has been loaded in the Overlay Panel.
+     */
     private void assertLoadedNoUrl() {
         assertTrue("Requested a search or preload when none was expected!",
                 mFakeServer.getLoadedUrl() == null);
     }
 
+    /**
+     * Asserts that a low-priority URL has been loaded in the Overlay Panel.
+     */
     private void assertLoadedLowPriorityUrl() {
         String message = "Expected a low priority search request URL, but got "
                 + (mFakeServer.getLoadedUrl() != null ? mFakeServer.getLoadedUrl() : "null");
@@ -632,6 +669,24 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                         && mFakeServer.getLoadedUrl().contains(CONTEXTUAL_SEARCH_PREFETCH_PARAM));
     }
 
+    /**
+     * Asserts that a low-priority URL that is intentionally invalid has been loaded in the Overlay
+     * Panel (in order to produce an error).
+     */
+    private void assertLoadedLowPriorityInvalidUrl() {
+        String message = "Expected a low priority invalid search request URL, but got "
+                + (String.valueOf(mFakeServer.getLoadedUrl()));
+        assertTrue(message, mFakeServer.getLoadedUrl() != null
+                        && mFakeServer.getLoadedUrl().contains(
+                                   LOW_PRIORITY_INVALID_SEARCH_ENDPOINT));
+        assertTrue("Low priority request does not have the required prefetch parameter!",
+                mFakeServer.getLoadedUrl() != null
+                        && mFakeServer.getLoadedUrl().contains(CONTEXTUAL_SEARCH_PREFETCH_PARAM));
+    }
+
+    /**
+     * Asserts that a normal priority URL has been loaded in the Overlay Panel.
+     */
     private void assertLoadedNormalPriorityUrl() {
         String message = "Expected a normal priority search request URL, but got "
                 + (mFakeServer.getLoadedUrl() != null ? mFakeServer.getLoadedUrl() : "null");
@@ -642,6 +697,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                         && !mFakeServer.getLoadedUrl().contains(CONTEXTUAL_SEARCH_PREFETCH_PARAM));
     }
 
+    /**
+     * Asserts that no URLs have been loaded in the Overlay Panel since the last {@link reset}.
+     */
     private void assertNoSearchesLoaded() {
         assertEquals(0, mFakeServer.getLoadedUrlCount());
         assertLoadedNoUrl();
@@ -1215,7 +1273,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertLoadedLowPriorityUrl();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // When the second request fails, we should not issue a new request.
+        // When the second request fails, we should not automatically issue a new request.
         fakeContentViewDidNavigate(true);
         assertLoadedLowPriorityUrl();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -1223,6 +1281,38 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Once the bar opens, we make a new request at normal priority.
         tapPeekingBarToExpandAndAssert();
         assertLoadedNormalPriorityUrl();
+        assertEquals(2, mFakeServer.getLoadedUrlCount());
+    }
+
+    /**
+     * Tests that a live request that fails (for an invalid URL) does a failover to a
+     * normal priority request once the user triggers the failover by opening the panel.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testLivePrefetchFailoverRequestMadeAfterOpen()
+            throws InterruptedException, TimeoutException {
+        mFakeServer.reset();
+        mFakeServer.setLowPriorityPathInvalid();
+        simulateTapSearch("search");
+        assertLoadedLowPriorityInvalidUrl();
+        assertTrue(mFakeServer.didAttemptLoadInvalidUrl());
+
+        // we should not automatically issue a new request.
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Fake a navigation error if offline.
+        // When connected to the Internet this error may already have happened due to actually
+        // trying to load the invalid URL.  But on test bots that are not online we need to
+        // fake that a navigation happened with an error. See crbug.com/682953 for details.
+        if (!mManager.isOnline()) {
+            boolean isFailure = true;
+            fakeContentViewDidNavigate(isFailure);
+        }
+
+        // Once the bar opens, we make a new request at normal priority.
+        tapPeekingBarToExpandAndAssert();
+        waitForNormalPriorityUrlLoaded();
         assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
 
@@ -1236,7 +1326,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         assertSearchTermRequested();
         fakeResponse(false, 200, "Intelligence", "display-text", "alternate-term", true);
-        assertContainsNoParameters();
+        assertLoadedNoUrl();
         waitForPanelToPeek();
         assertLoadedNoUrl();
     }

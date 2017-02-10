@@ -927,6 +927,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      * Implementation of OverlayContentDelegate. Made public for testing purposes.
      */
     public class SearchOverlayContentDelegate extends OverlayContentDelegate {
+        // Note: New navigation or changes to the WebContents are not advised in this class since
+        // the WebContents is being observed and navigation is already being performed.
 
         public SearchOverlayContentDelegate() {}
 
@@ -1093,6 +1095,11 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             mSearchRequest.setNormalPriority();
             // If the content view is showing, load at normal priority now.
             if (mSearchPanel.isContentShowing()) {
+                // NOTE: we must reuse the existing content view because we're called from within
+                // a WebContentsObserver.  If we don't reuse the content view then the WebContents
+                // being observed will be deleted.  We notify of the failure to trigger the reuse.
+                // See crbug.com/682953 for details.
+                mSearchPanel.onLoadUrlFailed();
                 loadSearchUrl();
             } else {
                 mDidStartLoadingResolvedSearchRequest = false;
