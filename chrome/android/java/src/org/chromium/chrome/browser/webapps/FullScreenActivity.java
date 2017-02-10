@@ -169,12 +169,16 @@ public abstract class FullScreenActivity extends ChromeActivity {
         ContentViewCore.fromWebContents(webContents).setFullscreenRequiredForOrientationLock(false);
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
-            public void didCommitProvisionalLoadForFrame(
-                    long frameId, boolean isMainFrame, String url, int transitionType) {
-                if (!isMainFrame) return;
-                // Notify the renderer to permanently hide the top controls since they do
-                // not apply to fullscreen content views.
-                mTab.updateBrowserControlsState(mTab.getBrowserControlsStateConstraints(), true);
+            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                    boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+                    Integer pageTransition, int errorCode, String errorDescription,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame) {
+                    // Notify the renderer to permanently hide the top controls since they do
+                    // not apply to fullscreen content views.
+                    mTab.updateBrowserControlsState(
+                            mTab.getBrowserControlsStateConstraints(), true);
+                }
             }
         };
     }

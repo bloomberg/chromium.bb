@@ -284,11 +284,13 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         }
 
         @Override
-        public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
+        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                int httpStatusCode) {
             assert tab == mTab;
 
-            if (!isNavigationToDifferentPage) return;
+            if (!hasCommitted || !isInMainFrame || isSamePage) return;
 
             String origin = mTab.getUrl();
             try {

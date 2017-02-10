@@ -34,33 +34,16 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void RenderProcessGone(base::TerminationStatus termination_status) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void DidFailProvisionalLoad(RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,
                    const base::string16& error_description,
                    bool was_ignored_by_handler) override;
-  void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                            const FrameNavigateParams& params) override;
-  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                           const LoadCommittedDetails& details,
-                           const FrameNavigateParams& params) override;
   void DocumentAvailableInMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void WasShown() override;
   void WasHidden() override;
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
-  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
-                                       const GURL& validated_url,
-                                       bool is_error_page) override;
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
@@ -74,17 +57,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void DidChangeThemeColor(SkColor color) override;
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      ReloadType reload_type) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);
-
-  void DidFailLoadInternal(bool is_provisional_load,
-                           bool is_main_frame,
-                           int error_code,
-                           const base::string16& description,
-                           const GURL& url,
-                           bool was_ignored_by_handler);
 
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;
   GURL base_url_of_last_started_data_url_;

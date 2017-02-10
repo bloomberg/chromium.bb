@@ -132,19 +132,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
 
         @Override
-        public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                String description, String failingUrl, boolean wasIgnoredByHandler) {
-            // Navigation that fails the provisional load will have the strong binding removed
-            // here. One for which the provisional load is commited will have the strong binding
-            // removed in navigationEntryCommitted() below.
-            if (isProvisionalLoad) determinedProcessVisibility();
-        }
+        public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+                Integer pageTransition, int errorCode, String errorDescription,
+                int httpStatusCode) {
+            determinedProcessVisibility();
 
-        @Override
-        public void didNavigateMainFrame(String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
-            if (!isNavigationToDifferentPage) return;
-            resetPopupsAndInput();
+            if (hasCommitted && isInMainFrame && !isSamePage) {
+                resetPopupsAndInput();
+            }
         }
 
         @Override
@@ -153,11 +149,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             ContentViewCore contentViewCore = mWeakContentViewCore.get();
             if (contentViewCore == null) return;
             contentViewCore.mImeAdapter.resetAndHideKeyboard();
-        }
-
-        @Override
-        public void navigationEntryCommitted() {
-            determinedProcessVisibility();
         }
 
         private void resetPopupsAndInput() {

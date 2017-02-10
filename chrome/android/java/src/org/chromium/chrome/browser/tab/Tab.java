@@ -1703,25 +1703,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Notify observers when provisional load starts.
-     * @param isMainFrame    Whether the load is happening for the main frame.
-     * @param validatedUrl   The validated URL that is being navigated to.
-     */
-    void handleDidStartProvisionalLoadForFrame(boolean isMainFrame, String validatedUrl) {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onDidStartProvisionalLoadForFrame(this, isMainFrame, validatedUrl);
-        }
-    }
-
-    /**
      * Update internal Tab state when provisional load gets committed.
      * @param url The URL that was loaded.
      * @param transitionType The transition type to the current URL.
      */
-    void handleDidCommitProvisonalLoadForFrame(String url, int transitionType) {
+    void handleDidFinishNavigation(String url, Integer transitionType) {
         mIsNativePageCommitPending = false;
-        boolean isReload = (transitionType == PageTransition.RELOAD);
+        boolean isReload = (transitionType != null
+                && (transitionType & PageTransition.CORE_MASK) == PageTransition.RELOAD);
         if (!maybeShowNativePage(url, isReload)) {
             showRenderedPage();
         }

@@ -299,22 +299,25 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-                            boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
-                        if (isMainFrame) {
-                            mContentDelegate.onMainFrameLoadStarted(validatedUrl,
-                                    !TextUtils.equals(validatedUrl, mLoadedUrl));
+                    public void didStartNavigation(String url, boolean isInMainFrame,
+                            boolean isSamePage, boolean isErrorPage) {
+                        if (isInMainFrame && !isSamePage) {
+                            mContentDelegate.onMainFrameLoadStarted(
+                                    url, !TextUtils.equals(url, mLoadedUrl));
                         }
                     }
 
                     @Override
-                    public void didNavigateMainFrame(String url, String baseUrl,
-                            boolean isNavigationToDifferentPage, boolean isNavigationInPage,
-                            int httpResultCode) {
-                        mIsProcessingPendingNavigation = false;
-                        mContentDelegate.onMainFrameNavigation(url,
-                                !TextUtils.equals(url, mLoadedUrl),
-                                isHttpFailureCode(httpResultCode));
+                    public void didFinishNavigation(String url, boolean isInMainFrame,
+                            boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                            boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                            String errorDescription, int httpStatusCode) {
+                        if (hasCommitted && isInMainFrame) {
+                            mIsProcessingPendingNavigation = false;
+                            mContentDelegate.onMainFrameNavigation(url,
+                                    !TextUtils.equals(url, mLoadedUrl),
+                                    isHttpFailureCode(httpStatusCode));
+                        }
                     }
                 };
 

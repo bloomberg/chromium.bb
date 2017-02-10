@@ -82,10 +82,12 @@ public class PostMessageHandler extends PostMessageServiceConnection {
             private boolean mNavigatedOnce;
 
             @Override
-            public void didNavigateMainFrame(String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                    int statusCode) {
-                if (mNavigatedOnce && isNavigationToDifferentPage && mChannel != null) {
+            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                    boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+                    Integer pageTransition, int errorCode, String errorDescription,
+                    int httpStatusCode) {
+                if (mNavigatedOnce && hasCommitted && isInMainFrame && !isSamePage
+                        && mChannel != null) {
                     webContents.removeObserver(this);
                     disconnectChannel();
                     unbindFromContext(ContextUtils.getApplicationContext());

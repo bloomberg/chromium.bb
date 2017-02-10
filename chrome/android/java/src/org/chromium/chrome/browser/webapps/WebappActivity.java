@@ -381,9 +381,17 @@ public class WebappActivity extends FullScreenActivity {
             }
 
             @Override
-            public void onDidStartProvisionalLoadForFrame(
-                    Tab tab, boolean isMainFrame, String validatedUrl) {
-                if (isMainFrame) updateUrlBar();
+            public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isSamePage, boolean isErrorPage) {
+                if (isInMainFrame && !isSamePage) updateUrlBar();
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame) updateUrlBar();
             }
 
             @Override
@@ -410,13 +418,6 @@ public class WebappActivity extends FullScreenActivity {
                     mLargestFavicon = icon;
                     updateTaskDescription();
                 }
-            }
-
-            @Override
-            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isNavigationInPage,
-                    int statusCode) {
-                updateUrlBar();
             }
 
             @Override

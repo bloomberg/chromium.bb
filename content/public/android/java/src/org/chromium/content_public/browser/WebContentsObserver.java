@@ -35,9 +35,12 @@ public abstract class WebContentsObserver {
      * Called when the browser process starts a navigation.
      * @param url The validated URL for the loading page.
      * @param isInMainFrame Whether the navigation is for the main frame.
+     * @param isSamePage Whether the main frame navigation did not cause changes to the
+     *                   document (for example scrolling to a named anchor or PopState).
      * @param isErrorPage Whether the navigation shows an error page.
      */
-    public void didStartNavigation(String url, boolean isInMainFrame, boolean isErrorPage) {}
+    public void didStartNavigation(
+            String url, boolean isInMainFrame, boolean isSamePage, boolean isErrorPage) {}
 
     /**
      * Called when the current navigation is finished. This happens when a navigation is committed,
@@ -48,15 +51,21 @@ public abstract class WebContentsObserver {
      * @param hasCommitted Whether the navigation has committed. This returns true for either
      *                     successful commits or error pages that replace the previous page
      *                     (distinguished by |isErrorPage|), and false for errors that leave the
-     *                     user on the previous page.
+     *                     user on the previous page. When false, |isSamePage|,
+     *                     |isFragmentNavigation|, |pageTransition| and |httpStatusCode| will have
+     *                     default values.
      * @param isSamePage Whether the main frame navigation did not cause changes to the
      *                   document (for example scrolling to a named anchor or PopState).
+     * @param isFragmentNavigation Whether the navigation was to a different fragment.
      * @param pageTransition The page transition type associated with this navigation.
      * @param errorCode The net error code if an error occurred prior to commit, otherwise net::OK.
+     * @param errorDescription The description for the net error code.
+     * @param httpStatusCode The HTTP status code of the navigation.
      */
     public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-            boolean hasCommitted, boolean isSamePage, @Nullable Integer pageTransition,
-            int errorCode) {}
+            boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+            @Nullable Integer pageTransition, int errorCode, String errorDescription,
+            int httpStatusCode) {}
 
     /**
      * Called when the a page starts loading.
@@ -77,20 +86,8 @@ public abstract class WebContentsObserver {
      * @param description The description for the error.
      * @param failingUrl The url that was loading when the error occurred.
      */
-    public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-            String description, String failingUrl, boolean wasIgnoredByHandler) {}
-
-    /**
-     * Called when the main frame of the page has committed.
-     * @param url The validated url for the page.
-     * @param baseUrl The validated base url for the page.
-     * @param isNavigationToDifferentPage Whether the main frame navigated to a different page.
-     * @param isFragmentNavigation Whether the main frame navigation did not cause changes to the
-     *                             document (for example scrolling to a named anchor or PopState).
-     * @param statusCode The HTTP status code of the navigation.
-     */
-    public void didNavigateMainFrame(String url, String baseUrl,
-            boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {}
+    public void didFailLoad(
+            boolean isMainFrame, int errorCode, String description, String failingUrl) {}
 
     /**
      * Called when the page had painted something non-empty.
@@ -114,42 +111,9 @@ public abstract class WebContentsObserver {
     public void titleWasSet(String title) {}
 
     /**
-     * Similar to didNavigateMainFrame but also called on subframe navigations.
-     * @param url The validated url for the page.
-     * @param baseUrl The validated base url for the page.
-     * @param isReload True if this navigation is a reload.
-     */
-    public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {}
-
-    /**
      * Called once the window.document object of the main frame was created.
      */
     public void documentAvailableInMainFrame() {}
-
-    /**
-     * Notifies that a load is started for a given frame.
-     * @param frameId A positive, non-zero integer identifying the navigating frame.
-     * @param parentFrameId The frame identifier of the frame containing the navigating frame,
-     *                      or -1 if the frame is not contained in another frame.
-     * @param isMainFrame Whether the load is happening for the main frame.
-     * @param validatedUrl The validated URL that is being navigated to.
-     * @param isErrorPage Whether this is navigating to an error page.
-     */
-    public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-            boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
-    }
-
-    /**
-     * Notifies that the provisional load was successfully committed. The RenderViewHost is now
-     * the current RenderViewHost of the WebContents.
-     * @param frameId A positive, non-zero integer identifying the navigating frame.
-     * @param isMainFrame Whether the load is happening for the main frame.
-     * @param url The committed URL being navigated to.
-     * @param transitionType The transition type as defined in
-     *                      {@link org.chromium.ui.base.PageTransition} for the load.
-     */
-    public void didCommitProvisionalLoadForFrame(
-            long frameId, boolean isMainFrame, String url, int transitionType) {}
 
     /**
      * Notifies that a load has finished for a given frame.
@@ -185,12 +149,6 @@ public abstract class WebContentsObserver {
      * @param color the new color in ARGB format
      */
     public void didChangeThemeColor(int color) {}
-
-    /**
-     * Called when we started navigation to the pending entry.
-     * @param url        The URL that we are navigating to.
-     */
-    public void didStartNavigationToPendingEntry(String url) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

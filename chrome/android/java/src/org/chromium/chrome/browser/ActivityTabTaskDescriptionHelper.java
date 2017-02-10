@@ -89,12 +89,14 @@ public class ActivityTabTaskDescriptionHelper {
             }
 
             @Override
-            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                    int statusCode) {
-                if (!isNavigationToDifferentPage) return;
-                mLargestFavicon = null;
-                updateTaskDescription();
+            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame && !isSamePage) {
+                    mLargestFavicon = null;
+                    updateTaskDescription();
+                }
             }
 
             @Override

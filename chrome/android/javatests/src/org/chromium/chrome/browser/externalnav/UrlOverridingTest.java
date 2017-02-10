@@ -82,6 +82,16 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         }
 
         @Override
+        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                int httpStatusCode) {
+            if (errorCode != 0) {
+                mLoadFailCallback.notifyCalled();
+            }
+        }
+
+        @Override
         public void onPageLoadFinished(Tab tab) {
             mFinishCallback.notifyCalled();
         }
@@ -92,8 +102,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         }
 
         @Override
-        public void onDidFailLoad(Tab tab, boolean isProvisionalLoad, boolean isMainFrame,
-                int errorCode, String description, String failingUrl) {
+        public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String description,
+                String failingUrl) {
             mLoadFailCallback.notifyCalled();
         }
 

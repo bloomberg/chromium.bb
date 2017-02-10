@@ -440,9 +440,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
         return new WebContentsObserver(webContents) {
             @Override
-            public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-                    boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
-                if (!isMainFrame) return;
+            public void didStartNavigation(
+                    String url, boolean isInMainFrame, boolean isSamePage, boolean isErrorPage) {
+                if (!isInMainFrame || isSamePage) return;
                 // If there is a navigation in the current tab, hide the bar. It will show again
                 // once the distillability test is successful.
                 if (readerTabId == mTabModelSelector.getCurrentTabId()) {
@@ -453,20 +453,21 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
 
-                tabInfo.setUrl(validatedUrl);
-                if (DomDistillerUrlUtils.isDistilledPage(validatedUrl)) {
+                tabInfo.setUrl(url);
+                if (DomDistillerUrlUtils.isDistilledPage(url)) {
                     tabInfo.setStatus(STARTED);
-                    mReaderModePageUrl = validatedUrl;
+                    mReaderModePageUrl = url;
                 }
             }
 
             @Override
-            public void didNavigateMainFrame(String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isNavigationInPage,
-                    int statusCode) {
+            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                    boolean hasCommitted, boolean isSamePage, boolean isFragmentNavigation,
+                    Integer pageTransition, int errorCode, String errorDescription,
+                    int httpStatusCode) {
                 // TODO(cjhopman): This should possibly ignore navigations that replace the entry
                 // (like those from history.replaceState()).
-                if (isNavigationInPage) return;
+                if (!hasCommitted || !isInMainFrame || isSamePage) return;
                 if (DomDistillerUrlUtils.isDistilledPage(url)) return;
 
                 // Make sure the tab was not destroyed.

@@ -104,108 +104,28 @@ void WebContentsObserverProxy::DidStopLoading() {
   Java_WebContentsObserverProxy_didStopLoading(env, obj, jstring_url);
 }
 
-void WebContentsObserverProxy::DidFailProvisionalLoad(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  DidFailLoadInternal(true, !render_frame_host->GetParent(), error_code,
-                      error_description, validated_url, was_ignored_by_handler);
-}
-
 void WebContentsObserverProxy::DidFailLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description,
     bool was_ignored_by_handler) {
-  DidFailLoadInternal(false, !render_frame_host->GetParent(), error_code,
-                      error_description, validated_url, was_ignored_by_handler);
-}
-
-void WebContentsObserverProxy::DidNavigateMainFrame(
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
+  ScopedJavaLocalRef<jstring> jstring_error_description(
+      ConvertUTF16ToJavaString(env, error_description));
   ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, params.url.spec()));
-  ScopedJavaLocalRef<jstring> jstring_base_url(
-      ConvertUTF8ToJavaString(env, params.base_url.spec()));
+      ConvertUTF8ToJavaString(env, validated_url.spec()));
 
-  // See http://crbug.com/251330 for why it's determined this way.
-  url::Replacements<char> replacements;
-  replacements.ClearRef();
-  bool urls_same_ignoring_fragment =
-      params.url.ReplaceComponents(replacements) ==
-      details.previous_url.ReplaceComponents(replacements);
-
-  // is_fragment_navigation is indicative of the intent of this variable.
-  // However, there isn't sufficient information here to determine whether this
-  // is actually a fragment navigation, or a history API navigation to a URL
-  // that would also be valid for a fragment navigation.
-  bool is_fragment_navigation =
-      urls_same_ignoring_fragment && details.is_in_page;
-
-  Java_WebContentsObserverProxy_didNavigateMainFrame(
-      env, obj, jstring_url, jstring_base_url,
-      details.is_navigation_to_different_page(), is_fragment_navigation,
-      details.http_status_code);
-}
-
-void WebContentsObserverProxy::DidNavigateAnyFrame(
-    RenderFrameHost* render_frame_host,
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, params.url.spec()));
-  ScopedJavaLocalRef<jstring> jstring_base_url(
-      ConvertUTF8ToJavaString(env, params.base_url.spec()));
-  jboolean jboolean_is_reload = ui::PageTransitionCoreTypeIs(
-      params.transition, ui::PAGE_TRANSITION_RELOAD);
-
-  Java_WebContentsObserverProxy_didNavigateAnyFrame(
-      env, obj, jstring_url, jstring_base_url, jboolean_is_reload);
+  Java_WebContentsObserverProxy_didFailLoad(
+      env, obj, !render_frame_host->GetParent(), error_code,
+      jstring_error_description, jstring_url);
 }
 
 void WebContentsObserverProxy::DocumentAvailableInMainFrame() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   Java_WebContentsObserverProxy_documentAvailableInMainFrame(env, obj);
-}
-
-void WebContentsObserverProxy::DidStartProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, validated_url.spec()));
-  // TODO(dcheng): Does Java really need the parent frame ID? It doesn't appear
-  // to be used at all, and it just adds complexity here.
-  Java_WebContentsObserverProxy_didStartProvisionalLoadForFrame(
-      env, obj, render_frame_host->GetRoutingID(),
-      render_frame_host->GetParent()
-          ? render_frame_host->GetParent()->GetRoutingID()
-          : -1,
-      !render_frame_host->GetParent(), jstring_url, is_error_page);
-}
-
-void WebContentsObserverProxy::DidCommitProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, url.spec()));
-  Java_WebContentsObserverProxy_didCommitProvisionalLoadForFrame(
-      env, obj, render_frame_host->GetRoutingID(),
-      !render_frame_host->GetParent(), jstring_url, transition_type);
 }
 
 void WebContentsObserverProxy::DidStartNavigation(
@@ -216,7 +136,7 @@ void WebContentsObserverProxy::DidStartNavigation(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
   Java_WebContentsObserverProxy_didStartNavigation(
       env, obj, jstring_url, navigation_handle->IsInMainFrame(),
-      navigation_handle->IsErrorPage());
+      navigation_handle->IsSamePage(), navigation_handle->IsErrorPage());
 }
 
 void WebContentsObserverProxy::DidFinishNavigation(
@@ -226,13 +146,33 @@ void WebContentsObserverProxy::DidFinishNavigation(
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
 
+  bool is_fragment_navigation = navigation_handle->IsSamePage();
+
+  if (navigation_handle->HasCommitted()) {
+    // See http://crbug.com/251330 for why it's determined this way.
+    url::Replacements<char> replacements;
+    replacements.ClearRef();
+    bool urls_same_ignoring_fragment =
+        navigation_handle->GetURL().ReplaceComponents(replacements) ==
+        navigation_handle->GetPreviousURL().ReplaceComponents(replacements);
+    is_fragment_navigation &= urls_same_ignoring_fragment;
+  }
+
+  // TODO(shaktisahu): Provide appropriate error description (crbug/690784).
+  ScopedJavaLocalRef<jstring> jerror_description;
+
   Java_WebContentsObserverProxy_didFinishNavigation(
       env, obj, jstring_url, navigation_handle->IsInMainFrame(),
       navigation_handle->IsErrorPage(), navigation_handle->HasCommitted(),
-      navigation_handle->IsSamePage(),
+      navigation_handle->IsSamePage(), is_fragment_navigation,
       navigation_handle->HasCommitted() ? navigation_handle->GetPageTransition()
                                         : -1,
-      navigation_handle->GetNetErrorCode());
+      navigation_handle->GetNetErrorCode(), jerror_description,
+      // TODO(shaktisahu): Change default status to -1 after fixing
+      // crbug/690041.
+      navigation_handle->GetResponseHeaders()
+          ? navigation_handle->GetResponseHeaders()->response_code()
+          : 200);
 }
 
 void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
@@ -284,25 +224,6 @@ void WebContentsObserverProxy::DidChangeThemeColor(SkColor color) {
   Java_WebContentsObserverProxy_didChangeThemeColor(env, obj, color);
 }
 
-void WebContentsObserverProxy::DidFailLoadInternal(
-    bool is_provisional_load,
-    bool is_main_frame,
-    int error_code,
-    const base::string16& description,
-    const GURL& url,
-    bool was_ignored_by_handler) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jstring> jstring_error_description(
-      ConvertUTF16ToJavaString(env, description));
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, url.spec()));
-
-  Java_WebContentsObserverProxy_didFailLoad(
-      env, obj, is_provisional_load, is_main_frame, error_code,
-      jstring_error_description, jstring_url, was_ignored_by_handler);
-}
-
 void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
@@ -329,18 +250,6 @@ void WebContentsObserverProxy::TitleWasSet(NavigationEntry* entry,
       env,
       base::UTF16ToUTF8(web_contents()->GetTitle()));
   Java_WebContentsObserverProxy_titleWasSet(env, obj, jstring_title);
-}
-
-void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    ReloadType reload_type) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, url.spec()));
-
-  Java_WebContentsObserverProxy_didStartNavigationToPendingEntry(env, obj,
-                                                                 jstring_url);
 }
 
 void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
