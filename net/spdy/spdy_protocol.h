@@ -80,10 +80,15 @@ enum SpdyFrameType : uint8_t {
   GOAWAY = 0x07,
   WINDOW_UPDATE = 0x08,
   CONTINUATION = 0x09,
-  // ALTSVC and BLOCKED are recognized extensions.
+  // ALTSVC is a public extension.
   ALTSVC = 0x0a,
+  // BLOCKED was never standardized, and should be deleted.
   BLOCKED = 0x0b,
-  MAX_FRAME_TYPE = BLOCKED
+  MAX_FRAME_TYPE = BLOCKED,
+  // The specific value of EXTENSION is meaningless; it is a placeholder used
+  // within SpdyFramer's state machine when handling unknown frames via an
+  // extension API.
+  EXTENSION = 0xff
 };
 
 // Flags on data packets.

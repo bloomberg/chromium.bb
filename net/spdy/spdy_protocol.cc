@@ -118,6 +118,8 @@ const char* FrameTypeToString(SpdyFrameType frame_type) {
       return "ALTSVC";
     case BLOCKED:
       return "BLOCKED";
+    case EXTENSION:
+      return "EXTENSION (unspecified)";
   }
   return "UNKNOWN_FRAME_TYPE";
 }
