@@ -16,7 +16,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
@@ -250,21 +249,8 @@ void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
   entry->delegate_.reset(new DirectoryListerDispatchDelegate(this, request_id));
   entry->lister_.reset(new net::DirectoryLister(
       path, net::DirectoryLister::NO_SORT_RECURSIVE, entry->delegate_.get()));
-  if (!entry->lister_->Start(
-          base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                  .MayBlock())
-              .get())) {
-    if (request_id == kFileSelectEnumerationId)
-      FileSelectionCanceled(NULL);
-    else
-      render_view_host->DirectoryEnumerationFinished(request_id,
-                                                     entry->results_);
-  } else {
-    directory_enumerations_[request_id] = entry.release();
-  }
+  entry->lister_->Start();
+  directory_enumerations_[request_id] = entry.release();
 }
 
 void FileSelectHelper::OnListFile(

@@ -777,7 +777,9 @@ class OCSPErrorTestDelegate : public TestDelegate {
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
 class URLRequestTest : public PlatformTest {
  public:
-  URLRequestTest() : default_context_(true) {
+  URLRequestTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()),
+        default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.set_net_log(&net_log_);
     job_factory_impl_ = new URLRequestJobFactoryImpl();
@@ -823,6 +825,9 @@ class URLRequestTest : public PlatformTest {
                                           base::WrapUnique(protocol_handler_));
     return protocol_handler_;
   }
+
+ private:
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
  protected:
   TestNetLog net_log_;
@@ -3450,8 +3455,7 @@ class TestSSLConfigService : public SSLConfigService {
 #if !defined(OS_IOS)
 class TokenBindingURLRequestTest : public URLRequestTestHTTP {
  public:
-  TokenBindingURLRequestTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()) {}
+  TokenBindingURLRequestTest() = default;
 
   void SetUp() override {
     default_context_.set_ssl_config_service(
@@ -3463,8 +3467,6 @@ class TokenBindingURLRequestTest : public URLRequestTestHTTP {
   }
 
  protected:
-  // Required by ChannelIDService.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
 };
 
