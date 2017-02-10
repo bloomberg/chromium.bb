@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -12,6 +11,10 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -21,9 +24,9 @@ class PrefBackedBooleanTest : public PlatformTest {
  public:
   void SetUp() override {
     pref_service_.registry()->RegisterBooleanPref(kTestSwitchPref, false);
-    observable_boolean_.reset([[PrefBackedBoolean alloc]
-        initWithPrefService:&pref_service_
-                   prefName:kTestSwitchPref]);
+    observable_boolean_ =
+        [[PrefBackedBoolean alloc] initWithPrefService:&pref_service_
+                                              prefName:kTestSwitchPref];
   }
 
  protected:
@@ -34,13 +37,11 @@ class PrefBackedBooleanTest : public PlatformTest {
     pref_service_.SetUserPref(kTestSwitchPref, booleanValue);
   }
 
-  PrefBackedBoolean* GetObservableBoolean() {
-    return observable_boolean_.get();
-  }
+  PrefBackedBoolean* GetObservableBoolean() { return observable_boolean_; }
 
   web::TestWebThreadBundle thread_bundle_;
   TestingPrefServiceSimple pref_service_;
-  base::scoped_nsobject<PrefBackedBoolean> observable_boolean_;
+  PrefBackedBoolean* observable_boolean_;
 };
 
 TEST_F(PrefBackedBooleanTest, ReadFromPrefs) {
@@ -61,17 +62,15 @@ TEST_F(PrefBackedBooleanTest, WriteToPrefs) {
 
 TEST_F(PrefBackedBooleanTest, ObserverUpdates) {
   SetPref(false);
-  base::scoped_nsobject<TestBooleanObserver> observer(
-      [[TestBooleanObserver alloc] init]);
+  TestBooleanObserver* observer = [[TestBooleanObserver alloc] init];
   GetObservableBoolean().observer = observer;
-  EXPECT_EQ(0, observer.get().updateCount);
+  EXPECT_EQ(0, observer.updateCount);
 
   SetPref(true);
-  EXPECT_EQ(1, observer.get().updateCount)
-      << "Changing value should update observer";
+  EXPECT_EQ(1, observer.updateCount) << "Changing value should update observer";
 
   SetPref(true);
-  EXPECT_EQ(1, observer.get().updateCount)
+  EXPECT_EQ(1, observer.updateCount)
       << "Setting the same value should not update observer";
 }
 

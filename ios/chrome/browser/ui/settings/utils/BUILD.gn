@@ -36,6 +36,7 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "content_setting_backed_boolean_unittest.mm",

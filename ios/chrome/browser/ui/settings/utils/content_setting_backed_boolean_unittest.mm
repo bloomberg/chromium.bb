@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -16,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const ContentSettingsType kTestContentSettingID = CONTENT_SETTINGS_TYPE_POPUPS;
@@ -25,10 +28,10 @@ class ContentSettingBackedBooleanTest : public PlatformTest {
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
-    observable_boolean_.reset([[ContentSettingBackedBoolean alloc]
+    observable_boolean_ = [[ContentSettingBackedBoolean alloc]
         initWithHostContentSettingsMap:SettingsMap()
                              settingID:kTestContentSettingID
-                              inverted:NO]);
+                              inverted:NO];
   }
 
  protected:
@@ -54,19 +57,19 @@ class ContentSettingBackedBooleanTest : public PlatformTest {
   }
 
   ContentSettingBackedBoolean* GetObservableBoolean() {
-    return observable_boolean_.get();
+    return observable_boolean_;
   }
 
   void SetUpInvertedContentSettingBackedBoolean() {
-    observable_boolean_.reset([[ContentSettingBackedBoolean alloc]
+    observable_boolean_ = [[ContentSettingBackedBoolean alloc]
         initWithHostContentSettingsMap:SettingsMap()
                              settingID:kTestContentSettingID
-                              inverted:YES]);
+                              inverted:YES];
   }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<ContentSettingBackedBoolean> observable_boolean_;
+  ContentSettingBackedBoolean* observable_boolean_;
 };
 
 TEST_F(ContentSettingBackedBooleanTest, ReadFromSettings) {
@@ -105,19 +108,17 @@ TEST_F(ContentSettingBackedBooleanTest, InvertedWriteToSettings) {
 
 TEST_F(ContentSettingBackedBooleanTest, ObserverUpdates) {
   SetSetting(false);
-  base::scoped_nsobject<TestBooleanObserver> observer(
-      [[TestBooleanObserver alloc] init]);
+  TestBooleanObserver* observer = [[TestBooleanObserver alloc] init];
   GetObservableBoolean().observer = observer;
-  EXPECT_EQ(0, observer.get().updateCount);
+  EXPECT_EQ(0, observer.updateCount);
 
   SetSetting(true);
-  EXPECT_EQ(1, observer.get().updateCount)
-      << "Changing value should update observer";
+  EXPECT_EQ(1, observer.updateCount) << "Changing value should update observer";
 
   SetSetting(true);
-  EXPECT_EQ(2, observer.get().updateCount) << "ContentSettingBackedBoolean "
-                                              "should update observer even "
-                                              "when resetting the same value";
+  EXPECT_EQ(2, observer.updateCount) << "ContentSettingBackedBoolean "
+                                        "should update observer even "
+                                        "when resetting the same value";
 }
 
 }  // namespace
