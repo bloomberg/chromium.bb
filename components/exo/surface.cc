@@ -20,6 +20,7 @@
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"

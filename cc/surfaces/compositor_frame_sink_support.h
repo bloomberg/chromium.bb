@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display.h"
-#include "cc/surfaces/display_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -23,20 +21,16 @@
 namespace cc {
 
 class CompositorFrameSinkSupportClient;
-class Display;
 class SurfaceManager;
 
 class CC_SURFACES_EXPORT CompositorFrameSinkSupport
-    : public NON_EXPORTED_BASE(DisplayClient),
-      public SurfaceFactoryClient,
+    : public SurfaceFactoryClient,
       public BeginFrameObserver {
  public:
-  CompositorFrameSinkSupport(
-      CompositorFrameSinkSupportClient* client,
-      SurfaceManager* surface_manager,
-      const FrameSinkId& frame_sink_id,
-      std::unique_ptr<Display> display,
-      std::unique_ptr<BeginFrameSource> display_begin_frame_source);
+  CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
+                             SurfaceManager* surface_manager,
+                             const FrameSinkId& frame_sink_id,
+                             bool submits_to_display_compositor);
 
   ~CompositorFrameSinkSupport() override;
 
@@ -60,8 +54,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
 
-  Display* display() { return display_.get(); }
-
  private:
   // Update surface references with SurfaceManager for current CompositorFrame
   // that has |local_surface_id|. UpdateReferences() must be called on
@@ -74,12 +66,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RemoveTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
-
-  // DisplayClient implementation.
-  void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override;
-  void DisplayDidDrawAndSwap() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;
@@ -99,12 +85,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   SurfaceManager* const surface_manager_;
 
   const FrameSinkId frame_sink_id_;
-
-  // GpuCompositorFrameSink holds a Display and its BeginFrameSource if it
-  // created with non-null gpu::SurfaceHandle. In the window server, the display
-  // root window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
-  std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
-  std::unique_ptr<Display> display_;
 
   SurfaceFactory surface_factory_;
   // Counts the number of CompositorFrames that have been submitted and have not
@@ -130,6 +110,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   // The set of BeginFrame children of this CompositorFrameSink.
   std::unordered_set<FrameSinkId, FrameSinkIdHash> child_frame_sinks_;
+
+  const bool submits_to_display_compositor_;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

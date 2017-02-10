@@ -22,29 +22,23 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     SurfaceManager* surface_manager,
     const FrameSinkId& frame_sink_id,
-    std::unique_ptr<Display> display,
-    std::unique_ptr<BeginFrameSource> display_begin_frame_source)
+    bool submits_to_display_compositor)
     : client_(client),
       surface_manager_(surface_manager),
       frame_sink_id_(frame_sink_id),
-      display_begin_frame_source_(std::move(display_begin_frame_source)),
-      display_(std::move(display)),
       surface_factory_(frame_sink_id_, surface_manager_, this),
       reference_tracker_(frame_sink_id),
+      submits_to_display_compositor_(submits_to_display_compositor),
       weak_factory_(this) {
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-
-  if (display_) {
-    display_->Initialize(this, surface_manager_);
-    display_->SetVisible(true);
-  }
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // For display root surfaces, the surface is no longer going to be visible
   // so make it unreachable from the top-level root.
-  if (surface_manager_->using_surface_references() && display_ &&
+  if (surface_manager_->using_surface_references() &&
+      submits_to_display_compositor_ &&
       reference_tracker_.current_surface_id().is_valid())
     RemoveTopLevelRootReference(reference_tracker_.current_surface_id());
 
@@ -74,7 +68,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   ++ack_pending_count_;
-  float device_scale_factor = frame.metadata.device_scale_factor;
 
   surface_factory_.SubmitCompositorFrame(
       local_surface_id, std::move(frame),
@@ -105,9 +98,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 
     UpdateSurfaceReferences(last_surface_id, local_surface_id);
   }
-
-  if (display_)
-    display_->SetLocalSurfaceId(local_surface_id, device_scale_factor);
 }
 
 void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
@@ -128,7 +118,7 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
 
   // If this is a display root surface and the SurfaceId is changing, make the
   // new SurfaceId reachable from the top-level root.
-  if (display_ && surface_id_changed)
+  if (submits_to_display_compositor_ && surface_id_changed)
     AddTopLevelRootReference(reference_tracker_.current_surface_id());
 
   // Add references based on CompositorFrame referenced surfaces. If the
@@ -141,7 +131,8 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
   // If this is a display root surface and the SurfaceId is changing, make the
   // old SurfaceId unreachable from the top-level root. This needs to happen
   // after adding all references for the new SurfaceId.
-  if (display_ && surface_id_changed && last_surface_id.is_valid())
+  if (submits_to_display_compositor_ && surface_id_changed &&
+      last_surface_id.is_valid())
     RemoveTopLevelRootReference(last_surface_id);
 
   // Remove references based on CompositorFrame referenced surfaces. If the
@@ -194,14 +185,6 @@ void CompositorFrameSinkSupport::RemoveChildFrameSink(
                                                  child_frame_sink_id);
   child_frame_sinks_.erase(it);
 }
-
-void CompositorFrameSinkSupport::DisplayOutputSurfaceLost() {}
-
-void CompositorFrameSinkSupport::DisplayWillDrawAndSwap(
-    bool will_draw_and_swap,
-    const RenderPassList& render_passes) {}
-
-void CompositorFrameSinkSupport::DisplayDidDrawAndSwap() {}
 
 void CompositorFrameSinkSupport::ReturnResources(
     const ReturnedResourceArray& resources) {

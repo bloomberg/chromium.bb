@@ -9,6 +9,7 @@
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -123,14 +124,14 @@ class CompositorFrameSinkSupportTest : public testing::Test,
                                      begin_frame_source_.get()));
     surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kParentFrameSink, nullptr /* display */,
-        nullptr /* display_begin_frame_source */));
+        this, &surface_manager_, kParentFrameSink,
+        false /* submits_to_display_compositor */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink1, nullptr /* display */,
-        nullptr /* display_begin_frame_source */));
+        this, &surface_manager_, kChildFrameSink1,
+        false /* submits_to_display_compositor */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink2, nullptr /* display */,
-        nullptr /* display_begin_frame_source */));
+        this, &surface_manager_, kChildFrameSink2,
+        false /* submits_to_display_compositor */));
   }
 
   void TearDown() override {

@@ -15,10 +15,11 @@ GpuOffscreenCompositorFrameSink::GpuOffscreenCompositorFrameSink(
         compositor_frame_sink_private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : GpuCompositorFrameSink(delegate,
-                             surface_manager,
-                             frame_sink_id,
-                             nullptr,
-                             nullptr,
+                             base::MakeUnique<cc::CompositorFrameSinkSupport>(
+                                 this,
+                                 surface_manager,
+                                 frame_sink_id,
+                                 false /* submits_to_display_compositor */),
                              std::move(compositor_frame_sink_private_request),
                              std::move(client)),
       binding_(this, std::move(request)) {

@@ -92,6 +92,8 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
       display_private_->ResizeDisplay(frame_size);
     }
 
+    display_private_->SetLocalSurfaceId(local_surface_id_,
+                                        device_scale_factor_);
     compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                   std::move(frame));
     compositor_frame_sink_->SetNeedsBeginFrame(false);

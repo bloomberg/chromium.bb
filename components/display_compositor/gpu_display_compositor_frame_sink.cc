@@ -18,40 +18,62 @@ GpuDisplayCompositorFrameSink::GpuDisplayCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
     : GpuCompositorFrameSink(delegate,
-                             surface_manager,
-                             frame_sink_id,
-                             std::move(display),
-                             std::move(begin_frame_source),
+                             base::MakeUnique<cc::CompositorFrameSinkSupport>(
+                                 this,
+                                 surface_manager,
+                                 frame_sink_id,
+                                 true /* submits_to_display_compositor */),
                              std::move(compositor_frame_sink_private_request),
                              std::move(client)),
       binding_(this, std::move(request)),
-      display_private_binding_(this, std::move(display_private_request)) {
+      display_private_binding_(this, std::move(display_private_request)),
+      display_begin_frame_source_(std::move(begin_frame_source)),
+      display_(std::move(display)) {
   binding_.set_connection_error_handler(
       base::Bind(&GpuDisplayCompositorFrameSink::OnClientConnectionLost,
                  base::Unretained(this)));
+  display_->Initialize(this, surface_manager);
+  display_->SetVisible(true);
 }
 
 GpuDisplayCompositorFrameSink::~GpuDisplayCompositorFrameSink() = default;
 
 void GpuDisplayCompositorFrameSink::SetDisplayVisible(bool visible) {
-  DCHECK(support_.display());
-  support_.display()->SetVisible(visible);
+  DCHECK(display_);
+  display_->SetVisible(visible);
 }
 
 void GpuDisplayCompositorFrameSink::ResizeDisplay(const gfx::Size& size) {
-  DCHECK(support_.display());
-  support_.display()->Resize(size);
+  DCHECK(display_);
+  display_->Resize(size);
 }
 
 void GpuDisplayCompositorFrameSink::SetDisplayColorSpace(
     const gfx::ColorSpace& color_space) {
-  DCHECK(support_.display());
-  support_.display()->SetColorSpace(color_space);
+  DCHECK(display_);
+  display_->SetColorSpace(color_space);
 }
 
 void GpuDisplayCompositorFrameSink::SetOutputIsSecure(bool secure) {
-  DCHECK(support_.display());
-  support_.display()->SetOutputIsSecure(secure);
+  DCHECK(display_);
+  display_->SetOutputIsSecure(secure);
 }
+
+void GpuDisplayCompositorFrameSink::SetLocalSurfaceId(
+    const cc::LocalSurfaceId& local_surface_id,
+    float scale_factor) {
+  display_->SetLocalSurfaceId(local_surface_id, scale_factor);
+}
+
+void GpuDisplayCompositorFrameSink::DisplayOutputSurfaceLost() {
+  // TODO(staraz): Implement this. Client should hear about context/output
+  // surface lost.
+}
+
+void GpuDisplayCompositorFrameSink::DisplayWillDrawAndSwap(
+    bool will_draw_and_swap,
+    const cc::RenderPassList& render_pass) {}
+
+void GpuDisplayCompositorFrameSink::DisplayDidDrawAndSwap() {}
 
 }  // namespace display_compositor

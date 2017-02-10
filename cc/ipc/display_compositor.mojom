@@ -5,6 +5,7 @@
 module cc.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
+import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
@@ -21,6 +22,8 @@ interface DisplayPrivate {
   ResizeDisplay(gfx.mojom.Size size_in_pixel);
   SetDisplayColorSpace(gfx.mojom.ColorSpace color_space);
   SetOutputIsSecure(bool secure);
+  SetLocalSurfaceId(cc.mojom.LocalSurfaceId local_surface_id,
+                    float scale_factor);
 };
 
 // The DisplayCompositor interface is a privileged interface that allows

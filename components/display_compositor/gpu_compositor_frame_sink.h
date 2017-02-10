@@ -18,10 +18,6 @@
 #include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace cc {
-class Display;
-}
-
 namespace display_compositor {
 
 // Server side representation of a WindowSurface.
@@ -32,10 +28,7 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
  public:
   GpuCompositorFrameSink(
       GpuCompositorFrameSinkDelegate* delegate,
-      cc::SurfaceManager* surface_manager,
-      const cc::FrameSinkId& frame_sink_id,
-      std::unique_ptr<cc::Display> display,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+      std::unique_ptr<cc::CompositorFrameSinkSupport>,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
@@ -60,8 +53,7 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void OnPrivateConnectionLost();
 
   GpuCompositorFrameSinkDelegate* const delegate_;
-  cc::CompositorFrameSinkSupport support_;
-  cc::SurfaceManager* const surface_manager_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
 
  private:
   // cc::CompositorFrameSinkSupportClient implementation:
@@ -69,7 +61,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface() override;
-
 
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;
