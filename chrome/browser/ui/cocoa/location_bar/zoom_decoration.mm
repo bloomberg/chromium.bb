@@ -39,6 +39,7 @@ bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
     return true;
   }
 
+  BOOL old_visibility = IsVisible();
   SetVisible(ShouldShowDecoration() && !zoom_controller->IsAtDefaultZoom());
 
   base::string16 zoom_percent =
@@ -50,8 +51,10 @@ bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
           ? @""
           : l10n_util::GetNSStringF(IDS_TOOLTIP_ZOOM, zoom_percent);
 
-  if ([tooltip_ isEqualToString:tooltip_string] && !default_zoom_changed)
+  if ([tooltip_ isEqualToString:tooltip_string] && !default_zoom_changed &&
+      old_visibility == IsVisible()) {
     return false;
+  }
 
   UpdateUI(zoom_controller, tooltip_string, location_bar_is_dark);
   return true;
