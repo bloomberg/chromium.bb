@@ -39,7 +39,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     AUTOFILL,
     POLICY,
     SPELL_CHECKER,
-    NTP_SNIPPETS,
+    NTP_SNIPPETS_OBSOLETE,
     SAFE_BROWSING,
     DATA_REDUCTION_PROXY,
     PRECACHE,
@@ -59,6 +59,8 @@ class DataUseUserData : public base::SupportsUserData::Data {
     CAPTIVE_PORTAL,
     WEB_RESOURCE_SERVICE,
     SIGNIN,
+    NTP_SNIPPETS_SUGGESTIONS,
+    NTP_SNIPPETS_THUMBNAILS,
   };
 
   // Data use broken by content type. This enum must remain synchronized

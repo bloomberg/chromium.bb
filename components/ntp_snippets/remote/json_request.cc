@@ -439,7 +439,8 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SAVE_COOKIES);
   data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher.get(), data_use_measurement::DataUseUserData::NTP_SNIPPETS);
+      url_fetcher.get(),
+      data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS);
 
   url_fetcher->SetExtraRequestHeaders(headers);
   url_fetcher->SetUploadData("application/json", body);

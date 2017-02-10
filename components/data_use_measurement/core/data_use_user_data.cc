@@ -78,8 +78,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "Policy";
     case SPELL_CHECKER:
       return "SpellChecker";
-    case NTP_SNIPPETS:
-      return "NTPSnippets";
+    case NTP_SNIPPETS_OBSOLETE:
+      return "NTPSnippetsObsolete";
     case SAFE_BROWSING:
       return "SafeBrowsing";
     case DATA_REDUCTION_PROXY:
@@ -118,6 +118,10 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "WebResourceService";
     case SIGNIN:
       return "Signin";
+    case NTP_SNIPPETS_SUGGESTIONS:
+      return "NTPSnippetsSuggestions";
+    case NTP_SNIPPETS_THUMBNAILS:
+      return "NTPSnippetsThumbnails";
   }
   return "INVALID";
 }

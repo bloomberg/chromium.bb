@@ -173,7 +173,7 @@ CachedImageFetcher::CachedImageFetcher(
   if (image_fetcher_) {
     image_fetcher_->SetImageFetcherDelegate(this);
     image_fetcher_->SetDataUseServiceName(
-        data_use_measurement::DataUseUserData::NTP_SNIPPETS);
+        data_use_measurement::DataUseUserData::NTP_SNIPPETS_THUMBNAILS);
   }
 }
 
