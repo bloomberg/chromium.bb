@@ -239,6 +239,10 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif  // BUILDFLAG(ENABLE_BACKGROUND)
 
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
+#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
@@ -528,6 +532,10 @@ void RegisterComponentsForUpdate() {
     RegisterOriginTrialsComponent(cus, path);
 
     RegisterFileTypePoliciesComponent(cus, path);
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+    RegisterSSLErrorAssistantComponent(cus, path);
+#endif
   }
 
 #if defined(OS_WIN)

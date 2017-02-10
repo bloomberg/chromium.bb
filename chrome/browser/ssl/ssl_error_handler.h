@@ -110,6 +110,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
 
+  // Sets the binary proto for SSL error assistant. The binary proto
+  // can be downloaded by the component updater, or set by tests.
+  static void SetErrorAssistantProto(
+      std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+          config_proto);
+
   // Testing methods.
   static void ResetConfigForTesting();
   static void SetInterstitialDelayForTesting(const base::TimeDelta& delay);
@@ -119,8 +125,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetClockForTesting(base::Clock* testing_clock);
   static void SetNetworkTimeTrackerForTesting(
       network_time::NetworkTimeTracker* tracker);
-  static void SetErrorAssistantProtoForTesting(
-      const chrome_browser_ssl::SSLErrorAssistantConfig& config_proto);
   static std::string GetHistogramNameForTesting();
   static void SetErrorAssistantConfig(
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>

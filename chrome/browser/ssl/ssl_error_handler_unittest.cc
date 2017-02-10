@@ -706,22 +706,23 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
 TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */, "" /* disabled */);
-
-  base::HistogramTester histograms;
+      "CaptivePortalCertificateList" /* enabled */,
+      std::string() /* disabled */);
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       ssl_info().public_key_hashes[0].ToString());
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
+  base::HistogramTester histograms;
   error_handler()->StartHandlingError();
 
   // Timer shouldn't start for a known captive portal certificate.
@@ -731,8 +732,8 @@ TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
   EXPECT_TRUE(delegate()->captive_portal_interstitial_shown());
   EXPECT_FALSE(delegate()->suggested_url_checked());
 
-  // A buggy SSL error handler might have incorrectly started the timer. Run to
-  // completion to ensure the timer is expired.
+  // A buggy SSL error handler might have incorrectly started the timer. Run
+  // to completion to ensure the timer is expired.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
@@ -758,25 +759,28 @@ TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
 TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Disabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "" /* enabled */, "CaptivePortalCertificateList" /* disabled */);
+      std::string() /* enabled */,
+      "CaptivePortalCertificateList" /* disabled */);
 
   base::HistogramTester histograms;
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       ssl_info().public_key_hashes[0].ToString());
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   error_handler()->StartHandlingError();
 
-  // Timer shouldn't start for a known captive portal certificate.
+  // Timer should start since captive portal certificate list feature is
+  // disabled.
   EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
   EXPECT_TRUE(delegate()->captive_portal_checked());
   EXPECT_FALSE(delegate()->ssl_interstitial_shown());
@@ -809,21 +813,23 @@ TEST_F(SSLErrorHandlerAuthorityInvalidTest,
        CaptivePortalCertificateList_ShouldShowGenericInterstitial) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */, "" /* disabled */);
+      "CaptivePortalCertificateList" /* enabled */,
+      std::string() /* disabled */);
 
   base::HistogramTester histograms;
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       ssl_info().public_key_hashes[0].ToString());
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   error_handler()->StartHandlingError();
 

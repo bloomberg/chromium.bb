@@ -3937,8 +3937,7 @@ using SSLUICaptivePortalListTest = SSLUITest;
 
 // Tests that the captive portal certificate list is not used when the feature
 // is disabled via Finch. The list is passed to SSLErrorHandler via a proto.
-IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
-                       CaptivePortalCertificateList_Disabled) {
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   // Use InitFromCommandLine instead of InitAndDisableFeature to avoid making
   // the feature public in SSLErrorHandler header.
@@ -3952,10 +3951,11 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
       GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   // Navigate to an unsafe page on the server. A normal SSL interstitial should
   // be displayed since CaptivePortalCertificateList feature is disabled.
@@ -3983,8 +3983,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
 
 // Tests that the captive portal certificate list is used when the feature
 // is enabled via Finch. The list is passed to SSLErrorHandler via a proto.
-IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
-                       CaptivePortalCertificateList_Enabled_FromProto) {
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Enabled_FromProto) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "CaptivePortalCertificateList" /* enabled */,
@@ -3996,10 +3995,11 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
       GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   // Navigate to an unsafe page on the server. The captive portal interstitial
   // should be displayed since CaptivePortalCertificateList feature is enabled.
@@ -4027,6 +4027,11 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest,
 
 namespace {
 
+// SPKI hash to captive-portal.badssl.com leaf certificate. This
+// doesn't match the actual cert (ok_cert.pem) but is good enough for testing.
+const char kCaptivePortalSPKI[] =
+    "sha256/fjZPHewEHTrMDX3I1ecEIeoy3WFxHyGplOLv28kIbtI=";
+
 // Test class that mimics a URL request with a certificate whose SPKI hash is in
 // ssl_error_assistant.asciipb resource. A better way of testing the SPKI hashes
 // inside the resource bundle would be to serve the actual certificate from the
@@ -4049,7 +4054,7 @@ class SSLUICaptivePortalListResourceBundleTest
   void SetUp() override {
     CertVerifierBrowserTest::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
-    SetUpCertVerifier(0, net::OK);
+    SetUpCertVerifier(0, net::OK, std::string());
   }
 
   void TearDown() override {
@@ -4058,7 +4063,9 @@ class SSLUICaptivePortalListResourceBundleTest
   }
 
  protected:
-  void SetUpCertVerifier(net::CertStatus cert_status, int net_result) {
+  void SetUpCertVerifier(net::CertStatus cert_status,
+                         int net_result,
+                         const std::string& spki_hash) {
     scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
     net::CertVerifyResult verify_result;
     verify_result.is_issued_by_known_root =
@@ -4066,13 +4073,12 @@ class SSLUICaptivePortalListResourceBundleTest
     verify_result.verified_cert = cert;
     verify_result.cert_status = cert_status;
 
-    // Set the SPKI hash to captive-portal.badssl.com leaf certificate. This
-    // doesn't match the actual cert (ok_cert.pem) but is good enough for
-    // testing.
-    net::HashValue hash;
-    ASSERT_TRUE(
-        hash.FromString("sha256/fjZPHewEHTrMDX3I1ecEIeoy3WFxHyGplOLv28kIbtI="));
-    verify_result.public_key_hashes.push_back(hash);
+    // Set the SPKI hash to captive-portal.badssl.com leaf certificate.
+    if (!spki_hash.empty()) {
+      net::HashValue hash;
+      ASSERT_TRUE(hash.FromString(spki_hash));
+      verify_result.public_key_hashes.push_back(hash);
+    }
     mock_cert_verifier()->AddResultForCert(cert, verify_result, net_result);
   }
 
@@ -4090,8 +4096,7 @@ class SSLUICaptivePortalListResourceBundleTest
 
 // Same as CaptivePortalCertificateList_Enabled_FromProto, but this time the
 // cert's SPKI hash is listed in ssl_error_assistant.asciipb.
-IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
-                       Enabled_FromResource) {
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "CaptivePortalCertificateList" /* enabled */,
@@ -4101,7 +4106,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 
   // Mark the server's cert as a captive portal cert.
   SetUpCertVerifier(net::CERT_STATUS_COMMON_NAME_INVALID,
-                    net::ERR_CERT_COMMON_NAME_INVALID);
+                    net::ERR_CERT_COMMON_NAME_INVALID, kCaptivePortalSPKI);
 
   // Navigate to an unsafe page on the server. The captive portal interstitial
   // should be displayed since CaptivePortalCertificateList feature is enabled.
@@ -4126,10 +4131,131 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                                SSLErrorHandler::CAPTIVE_PORTAL_CERT_FOUND, 1);
 }
 
+// Same as SSLUICaptivePortalListResourceBundleTest.Enabled, but this time the
+// proto is dynamically updated (e.g. by the component updater). The dynamic
+// update should always override the proto loaded from the resource bundle.
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
+                       Enabled_DynamicUpdate) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "CaptivePortalCertificateList" /* enabled */,
+      std::string() /* disabled */);
+  ASSERT_TRUE(https_server()->Start());
+
+  // Mark the server's cert as a captive portal cert.
+  SetUpCertVerifier(net::CERT_STATUS_COMMON_NAME_INVALID,
+                    net::ERR_CERT_COMMON_NAME_INVALID, kCaptivePortalSPKI);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // Dynamically update the SSL error assistant config, do not include the
+    // captive portal SPKI hash.
+    auto config_proto =
+        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
+    // Navigate to an unsafe page on the server. A generic SSL interstitial
+    // should be displayed because the dynamic update doesn't contain the hash
+    // of the captive portal certificate.
+    base::HistogramTester histograms;
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    content::WaitForInterstitialAttach(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    EXPECT_TRUE(interstitial_timer_observer.timer_started());
+
+    // Check that the histogram was recorded for an SSL interstitial.
+    histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                2);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::HANDLE_ALL, 1);
+    histograms.ExpectBucketCount(
+        SSLErrorHandler::GetHistogramNameForTesting(),
+        SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  }
+  {
+    // Dynamically update the error assistant config and add the captive portal
+    // SPKI hash.
+    auto config_proto =
+        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+    config_proto->set_version_id(1);
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        kCaptivePortalSPKI);
+    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
+    // Navigate to the unsafe page again. This time, a captive portal
+    // interstitial should be displayed.
+    base::HistogramTester histograms;
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    content::WaitForInterstitialAttach(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    EXPECT_FALSE(interstitial_timer_observer.timer_started());
+
+    // Check that the histogram was recorded for a captive portal interstitial.
+    histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                3);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::HANDLE_ALL, 1);
+    histograms.ExpectBucketCount(
+        SSLErrorHandler::GetHistogramNameForTesting(),
+        SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::CAPTIVE_PORTAL_CERT_FOUND, 1);
+  }
+  {
+    // Try dynamically updating the error assistant config with an empty config
+    // with the same version number. The update should be ignored, and a captive
+    // portal interstitial should still be displayed.
+    auto empty_config =
+        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+    empty_config->set_version_id(1);
+    SSLErrorHandler::SetErrorAssistantProto(std::move(empty_config));
+
+    // Navigate to the unsafe page again. This time, a captive portal
+    // interstitial should be displayed.
+    base::HistogramTester histograms;
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    content::WaitForInterstitialAttach(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    EXPECT_FALSE(interstitial_timer_observer.timer_started());
+
+    // Check that the histogram was recorded for a captive portal interstitial.
+    histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                3);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::HANDLE_ALL, 1);
+    histograms.ExpectBucketCount(
+        SSLErrorHandler::GetHistogramNameForTesting(),
+        SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::CAPTIVE_PORTAL_CERT_FOUND, 1);
+  }
+}
+
 // Same as SSLUICaptivePortalNameMismatchTest, but this time the error is
 // authority-invalid. Captive portal interstitial should not be shown.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
-                       Enabled_FromResource_AuthorityInvalid) {
+                       Enabled_AuthorityInvalid) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "CaptivePortalCertificateList" /* enabled */,
@@ -4137,12 +4263,10 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
   ASSERT_TRUE(https_server()->Start());
   base::HistogramTester histograms;
 
-  // Set interstitial delay to zero.
-  SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
   // Mark the server's cert as a captive portal cert, but with an
   // authority-invalid error.
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID,
-                    net::ERR_CERT_AUTHORITY_INVALID);
+                    net::ERR_CERT_AUTHORITY_INVALID, kCaptivePortalSPKI);
 
   // Navigate to an unsafe page on the server. CaptivePortalCertificateList
   // feature is enabled but the error is not a name mismatch, so a generic SSL
@@ -4184,10 +4308,11 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, PortalChecksDisabled) {
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
       GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
-  config_proto.add_captive_portal_cert()->set_sha256_hash(
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->add_captive_portal_cert()->set_sha256_hash(
       server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   // Navigate to an unsafe page on the server. The captive portal interstitial
   // should be displayed since CaptivePortalCertificateList feature is enabled.

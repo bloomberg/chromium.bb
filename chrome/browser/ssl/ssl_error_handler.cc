@@ -139,15 +139,16 @@ bool IsCaptivePortalInterstitialEnabled() {
 }
 
 // Reads the SSL error assistant configuration from the resource bundle.
-bool ReadErrorAssistantProtoFromResourceBundle(
-    chrome_browser_ssl::SSLErrorAssistantConfig* proto) {
+std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+ReadErrorAssistantProtoFromResourceBundle() {
+  auto proto = base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(proto);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   base::StringPiece data =
       bundle.GetRawDataResource(IDR_SSL_ERROR_ASSISTANT_PB);
   google::protobuf::io::ArrayInputStream stream(data.data(), data.size());
-  return proto->ParseFromZeroCopyStream(&stream);
+  return proto->ParseFromZeroCopyStream(&stream) ? std::move(proto) : nullptr;
 }
 
 std::unique_ptr<std::unordered_set<std::string>> LoadCaptivePortalCertHashes(
@@ -192,8 +193,9 @@ class ConfigSingleton : public base::NonThreadSafe {
       network_time::NetworkTimeTracker* tracker);
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  void SetErrorAssistantProtoForTesting(
-      const chrome_browser_ssl::SSLErrorAssistantConfig& error_assistant_proto);
+  void SetErrorAssistantProto(
+      std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+          error_assistant_proto);
 #endif
 
  private:
@@ -210,8 +212,12 @@ class ConfigSingleton : public base::NonThreadSafe {
   network_time::NetworkTimeTracker* network_time_tracker_ = nullptr;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Error assistant configuration.
+  std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+      error_assistant_proto_;
+
   // SPKI hashes belonging to certs treated as captive portals. Null until the
-  // first time IsKnownCaptivePortalCert() or SetErrorAssistantProtoForTesting()
+  // first time IsKnownCaptivePortalCert() or SetErrorAssistantProto()
   // is called.
   std::unique_ptr<std::unordered_set<std::string>> captive_portal_spki_hashes_;
 #endif
@@ -248,6 +254,7 @@ void ConfigSingleton::ResetForTesting() {
   network_time_tracker_ = nullptr;
   testing_clock_ = nullptr;
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  error_assistant_proto_.reset();
   captive_portal_spki_hashes_.reset();
 #endif
 }
@@ -273,20 +280,27 @@ void ConfigSingleton::SetNetworkTimeTrackerForTesting(
 }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-void ConfigSingleton::SetErrorAssistantProtoForTesting(
-    const chrome_browser_ssl::SSLErrorAssistantConfig& error_assistant_proto) {
+void ConfigSingleton::SetErrorAssistantProto(
+    std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> proto) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!captive_portal_spki_hashes_);
+  CHECK(proto);
+  // Ignore versions that are not new.
+  if (error_assistant_proto_ &&
+      proto->version_id() <= error_assistant_proto_->version_id()) {
+    return;
+  }
+  error_assistant_proto_ = std::move(proto);
   captive_portal_spki_hashes_ =
-      LoadCaptivePortalCertHashes(error_assistant_proto);
+      LoadCaptivePortalCertHashes(*error_assistant_proto_);
 }
 
 bool ConfigSingleton::IsKnownCaptivePortalCert(const net::SSLInfo& ssl_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!captive_portal_spki_hashes_) {
-    chrome_browser_ssl::SSLErrorAssistantConfig proto;
-    CHECK(ReadErrorAssistantProtoFromResourceBundle(&proto));
-    captive_portal_spki_hashes_ = LoadCaptivePortalCertHashes(proto);
+    error_assistant_proto_ = ReadErrorAssistantProtoFromResourceBundle();
+    CHECK(error_assistant_proto_);
+    captive_portal_spki_hashes_ =
+        LoadCaptivePortalCertHashes(*error_assistant_proto_);
   }
 
   for (const net::HashValue& hash_value : ssl_info.public_key_hashes) {
@@ -496,10 +510,10 @@ bool SSLErrorHandler::IsTimerRunningForTesting() const {
   return timer_.IsRunning();
 }
 
-void SSLErrorHandler::SetErrorAssistantProtoForTesting(
-    const chrome_browser_ssl::SSLErrorAssistantConfig& config_proto) {
+void SSLErrorHandler::SetErrorAssistantProto(
+    std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto) {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  g_config.Pointer()->SetErrorAssistantProtoForTesting(config_proto);
+  g_config.Pointer()->SetErrorAssistantProto(std::move(config_proto));
 #endif
 }
 
