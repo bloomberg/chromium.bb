@@ -107,6 +107,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kWebKitMinimumFontSize] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kWebKitEncryptedMediaEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kWebKitFixedFontFamily] =
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)[::prefs::kWebKitSansSerifFontFamily] =

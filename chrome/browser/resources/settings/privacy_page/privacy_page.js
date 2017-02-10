@@ -12,6 +12,7 @@ Polymer({
 
   behaviors: [
     settings.RouteObserverBehavior,
+    I18nBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -174,14 +175,15 @@ Polymer({
   },
 // </if>
 
-  /**
-   * Works like a ternary operator. E.g. (value ? trueLabel: falseLabel).
-   * @param {boolean} value
-   * @param {string} trueLabel True label (for example, 'Allow DRM').
-   * @param {string} falseLabel False label (for example, 'Blocked').
-   * @private
-   */
-  getStringTernary_: function(value, trueLabel, falseLabel) {
-    return value ? trueLabel : falseLabel;
+  /** @private */
+  getProtectedContentLabel_: function(value) {
+    return value ? this.i18n('siteSettingsProtectedContentEnable')
+                 : this.i18n('siteSettingsBlocked');
+  },
+
+  /** @private */
+  getProtectedContentIdentifiersLabel_: function(value) {
+    return value ? this.i18n('siteSettingsProtectedContentEnableIdentifiers')
+                 : this.i18n('siteSettingsBlocked');
   },
 });

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_vars_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -418,23 +419,32 @@
       </template>
       <template is="dom-if" route-path="/content/protectedContent" no-search>
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
-          <div class="settings-box first two-line">
-            $i18n{siteSettingsProtectedContentExplanation}
-          </div>
           <div class="settings-box first">
-            <!-- TODO(dschuyler): change i18n to i18nStr. -->
             <settings-toggle-button class="start"
-                pref="{{prefs.settings.privacy.drm_enabled}}"
-                label="[[getStringTernary_(
-                    prefs.settings.privacy.drm_enabled.value,
-                    '$i18n{siteSettingsProtectedContentEnable}',
-                    '$i18n{siteSettingsBlocked}')]]">
+                pref="{{prefs.webkit.webprefs.encrypted_media_enabled}}"
+                label="[[getProtectedContentLabel_(
+                    prefs.webkit.webprefs.encrypted_media_enabled.value)]]">
             </settings-toggle-button>
           </div>
+<if expr="chromeos or is_win">
+          <div class="settings-box first two-line">
+            $i18n{siteSettingsProtectedContentIdentifiersExplanation}
+          </div>
+          <div class="settings-box first">
+            <settings-toggle-button class="start"
+                pref="{{prefs.settings.privacy.drm_enabled}}"
+                label="[[getProtectedContentIdentifiersLabel_(
+                    prefs.settings.privacy.drm_enabled.value)]]">
+            </settings-toggle-button>
+          </div>
+</if>
 <if expr="chromeos">
-          <category-setting-exceptions
-              category="{{ContentSettingsTypes.PROTECTED_CONTENT}}">
-          </category-setting-exceptions>
+          <template is="dom-if"
+              if="[[prefs.settings.privacy.drm_enabled.value]]">
+            <category-setting-exceptions
+                category="{{ContentSettingsTypes.PROTECTED_CONTENT}}">
+            </category-setting-exceptions>
+          </template>
 </if>
         </settings-subpage>
       </template>
