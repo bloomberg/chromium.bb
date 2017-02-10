@@ -44,6 +44,7 @@ source_set("tools_menu") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tools_menu_view_item_unittest.mm",
