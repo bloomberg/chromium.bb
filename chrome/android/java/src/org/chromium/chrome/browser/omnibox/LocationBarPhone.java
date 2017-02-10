@@ -262,7 +262,7 @@ public class LocationBarPhone extends LocationBarLayout {
         setUrlFocusChangeInProgress(false);
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-        if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP()) {
+        if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP() && mBottomSheet == null) {
             mFadingView.showFadingOverlay();
         }
     }

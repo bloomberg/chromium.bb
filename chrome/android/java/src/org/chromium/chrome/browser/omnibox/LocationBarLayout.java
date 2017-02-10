@@ -102,10 +102,9 @@ import java.util.List;
  * This class represents the location bar where the user types in URLs and
  * search terms.
  */
-public class LocationBarLayout extends FrameLayout implements OnClickListener,
-        OnSuggestionsReceivedListener, LocationBar, FakeboxDelegate,
-        WindowAndroid.IntentCallback {
-
+public class LocationBarLayout extends FrameLayout
+        implements OnClickListener, OnSuggestionsReceivedListener, LocationBar, FakeboxDelegate,
+                   WindowAndroid.IntentCallback, FadingBackgroundView.FadingViewObserver {
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
@@ -147,7 +146,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected UrlBar mUrlBar;
 
     /** A handle to the bottom sheet for chrome home. */
-    private BottomSheet mBottomSheet;
+    protected BottomSheet mBottomSheet;
 
     private AutocompleteController mAutocomplete;
 
@@ -2235,18 +2234,20 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private void initFadingOverlayView() {
         mFadingView =
                 (FadingBackgroundView) getRootView().findViewById(R.id.fading_focus_target);
-        mFadingView.addObserver(new FadingBackgroundView.FadingViewObserver() {
-            @Override
-            public void onFadingViewClick() {
-                setUrlBarFocus(false);
-                updateFadingBackgroundView(false);
-            }
+        mFadingView.addObserver(this);
+    }
 
-            @Override
-            public void onFadingViewHidden() {
-                updateOmniboxResultsContainerVisibility(false);
-            }
-        });
+    @Override
+    public void onFadingViewClick() {
+        setUrlBarFocus(false);
+
+        // If the bottom sheet is used, it will control the fading view.
+        if (mBottomSheet == null) updateFadingBackgroundView(false);
+    }
+
+    @Override
+    public void onFadingViewHidden() {
+        updateOmniboxResultsContainerVisibility(false);
     }
 
     /**
@@ -2255,11 +2256,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @param visible Whether the background should be made visible.
      */
     private void updateFadingBackgroundView(boolean visible) {
-        // If Chrome Home is enabled (the bottom sheet is not null), it will be controlling the
-        // fading view, so block any initialization and updating here.
-        if (getToolbarDataProvider() == null || mBottomSheet != null) return;
-
         if (mFadingView == null) initFadingOverlayView();
+
+        // If Chrome Home is enabled (the bottom sheet is not null), it will be controlling the
+        // fading view, so block any updating here.
+        if (getToolbarDataProvider() == null || mBottomSheet != null) return;
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
