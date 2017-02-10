@@ -360,7 +360,10 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
+            android:hardwareAccelerated="false"
+            {% block supports_video_persistence %}
+            {% endblock %}
+            >
             <!--
               See the VRChromeTabbedActivity alias below for an explanation of this dummy intent
               filter. We need to add these filters here as well, or non-presenting webVR pages will

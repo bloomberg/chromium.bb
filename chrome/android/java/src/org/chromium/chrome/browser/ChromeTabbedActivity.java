@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityD
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -511,6 +512,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } else {
             SnippetsBridge.notifySchedulerAboutColdStart();
         }
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        VideoPersister.getInstance().attemptPersist(this);
+        super.onUserLeaveHint();
     }
 
     @Override

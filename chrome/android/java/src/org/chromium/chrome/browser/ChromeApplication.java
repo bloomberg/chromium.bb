@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -350,6 +351,13 @@ public class ChromeApplication extends ContentApplication {
      */
     public MultiWindowUtils createMultiWindowUtils() {
         return new MultiWindowUtils();
+    }
+
+    /**
+     * @return An instance of VideoPersister to be installed as a singleton.
+     */
+    public VideoPersister createVideoPersister() {
+        return new VideoPersister();
     }
 
     /**
