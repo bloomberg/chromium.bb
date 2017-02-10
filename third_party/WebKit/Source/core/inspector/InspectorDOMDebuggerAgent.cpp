@@ -32,6 +32,8 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/V8EventTarget.h"
+#include "bindings/core/v8/V8Node.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
@@ -175,16 +177,13 @@ static v8::MaybeLocal<v8::Function> createRemoveFunction(
   return removeFunction;
 }
 
-void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> value,
-    V8EventListenerInfoList& eventInformation) {
-  EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
-  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper
-  // exists on prototype chain.
-  if (!target)
-    target = toDOMWindow(isolate, value);
-  if (!target || !target->getExecutionContext())
+static void collectEventListeners(v8::Isolate* isolate,
+                                  EventTarget* target,
+                                  v8::Local<v8::Value> targetWrapper,
+                                  Node* targetNode,
+                                  bool reportForAllContexts,
+                                  V8EventListenerInfoList* eventInformation) {
+  if (!target->getExecutionContext())
     return;
 
   ExecutionContext* executionContext = target->getExecutionContext();
@@ -205,8 +204,8 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
           static_cast<V8AbstractEventListener*>(eventListener);
       v8::Local<v8::Context> context =
           toV8Context(executionContext, v8Listener->world());
-      // Hide listeners from other contexts.
-      if (context != isolate->GetCurrentContext())
+      // Optionally hide listeners from other contexts.
+      if (!reportForAllContexts && context != isolate->GetCurrentContext())
         continue;
       // getListenerObject() may cause JS in the event attribute to get
       // compiled, potentially unsuccessfully.  In that case, the function
@@ -216,11 +215,76 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
       if (handler.IsEmpty())
         continue;
       bool useCapture = listeners->at(k).capture();
-      eventInformation.push_back(V8EventListenerInfo(
+      int backendNodeId = 0;
+      if (targetNode) {
+        backendNodeId = DOMNodeIds::idForNode(targetNode);
+        targetWrapper = InspectorDOMAgent::nodeV8Value(
+            reportForAllContexts ? context : isolate->GetCurrentContext(),
+            targetNode);
+      }
+      v8::MaybeLocal<v8::Function> removeFunction =
+          !targetWrapper.IsEmpty()
+              ? createRemoveFunction(context, targetWrapper, handler, type,
+                                     useCapture)
+              : v8::MaybeLocal<v8::Function>();
+      eventInformation->push_back(V8EventListenerInfo(
           type, useCapture, listeners->at(k).passive(), listeners->at(k).once(),
-          handler,
-          createRemoveFunction(context, value, handler, type, useCapture)));
+          handler, removeFunction, backendNodeId));
     }
+  }
+}
+
+// static
+void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    V8EventListenerInfoList* eventInformation) {
+  InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
+      isolate, value, 1, false, eventInformation);
+}
+
+static bool filterNodesWithListeners(Node* node) {
+  Vector<AtomicString> eventTypes = node->eventTypes();
+  for (size_t j = 0; j < eventTypes.size(); ++j) {
+    EventListenerVector* listeners = node->getEventListeners(eventTypes[j]);
+    if (listeners && listeners->size())
+      return true;
+  }
+  return false;
+}
+
+// static
+void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    int depth,
+    bool pierce,
+    V8EventListenerInfoList* eventInformation) {
+  // Special-case nodes, respect depth and pierce parameters in case of nodes.
+  Node* node = V8Node::toImplWithTypeCheck(isolate, value);
+  if (node) {
+    if (depth < 0)
+      depth = INT_MAX;
+    HeapVector<Member<Node>> nodes;
+    InspectorDOMAgent::collectNodes(node, depth, pierce,
+                                    WTF::bind(&filterNodesWithListeners).get(),
+                                    &nodes);
+    for (Node* n : nodes) {
+      // We are only interested in listeners from the current context.
+      collectEventListeners(isolate, n, v8::Local<v8::Value>(), n, pierce,
+                            eventInformation);
+    }
+    return;
+  }
+
+  EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
+  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper
+  // exists on prototype chain.
+  if (!target)
+    target = toDOMWindow(isolate, value);
+  if (target) {
+    collectEventListeners(isolate, target, value, nullptr, false,
+                          eventInformation);
   }
 }
 
@@ -467,6 +531,8 @@ Response InspectorDOMDebuggerAgent::removeDOMBreakpoint(
 
 Response InspectorDOMDebuggerAgent::getEventListeners(
     const String& objectId,
+    Maybe<int> depth,
+    Maybe<bool> pierce,
     std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>*
         listenersArray) {
   v8::HandleScope handles(m_isolate);
@@ -483,7 +549,8 @@ Response InspectorDOMDebuggerAgent::getEventListeners(
       protocol::Array<protocol::DOMDebugger::EventListener>::create();
   V8EventListenerInfoList eventInformation;
   InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
-      context->GetIsolate(), object, eventInformation);
+      context->GetIsolate(), object, depth.fromMaybe(1),
+      pierce.fromMaybe(false), &eventInformation);
   for (const auto& info : eventInformation) {
     if (!info.useCapture)
       continue;
@@ -541,6 +608,8 @@ InspectorDOMDebuggerAgent::buildObjectForEventListener(
     if (info.removeFunction.ToLocal(&removeFunction))
       value->setRemoveFunction(
           m_v8Session->wrapObject(context, removeFunction, objectGroupId));
+    if (info.backendNodeId)
+      value->setBackendNodeId(info.backendNodeId);
   }
   return value;
 }

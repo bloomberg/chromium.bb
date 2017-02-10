@@ -1,0 +1,147 @@
+A
+B
+C
+
+Fetching listeners for depth = undefined and pierce = undefined
+{
+  "listeners": [
+    {
+      "type": "documentListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    }
+  ]
+}
+Fetching listeners for depth = 1 and pierce = undefined
+{
+  "listeners": [
+    {
+      "type": "documentListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    }
+  ]
+}
+Fetching listeners for depth = 4 and pierce = undefined
+{
+  "listeners": [
+    {
+      "type": "documentListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerA",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    }
+  ]
+}
+Fetching listeners for depth = -1 and pierce = undefined
+{
+  "listeners": [
+    {
+      "type": "documentListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerA",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerB",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerC",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    }
+  ]
+}
+Fetching listeners for depth = -1 and pierce = true
+{
+  "listeners": [
+    {
+      "type": "documentListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerA",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerB",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "listenerC",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    },
+    {
+      "type": "iframeListener",
+      "useCapture": false,
+      "passive": false,
+      "once": false,
+      "scriptId": "<string>",
+      "lineNumber": "<number>",
+      "columnNumber": "<number>"
+    }
+  ]
+}
+

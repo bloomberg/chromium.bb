@@ -394,7 +394,7 @@ void ThreadDebugger::getEventListenersCallback(
   if (groupId)
     debugger->muteMetrics(groupId);
   InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0],
-                                                         listenerInfo);
+                                                         &listenerInfo);
   if (groupId)
     debugger->unmuteMetrics(groupId);
 

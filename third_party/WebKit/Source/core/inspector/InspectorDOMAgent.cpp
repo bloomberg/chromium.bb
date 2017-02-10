@@ -126,16 +126,6 @@ bool parseQuad(std::unique_ptr<protocol::Array<double>> quadArray,
   return true;
 }
 
-v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node) {
-  v8::Isolate* isolate = context->GetIsolate();
-  if (!node ||
-      !BindingSecurity::shouldAllowAccessTo(
-          currentDOMWindow(isolate), node,
-          BindingSecurity::ErrorReportOption::DoNotReport))
-    return v8::Null(isolate);
-  return ToV8(node, context->Global(), isolate);
-}
-
 }  // namespace
 
 class InspectorRevalidateDOMTask final
@@ -1837,6 +1827,7 @@ InspectorDOMAgent::buildDistributedNodesForSlot(HTMLSlotElement* slotElement) {
   return distributedNodes;
 }
 
+// static
 Node* InspectorDOMAgent::innerFirstChild(Node* node) {
   node = node->firstChild();
   while (isWhitespace(node))
@@ -1844,6 +1835,7 @@ Node* InspectorDOMAgent::innerFirstChild(Node* node) {
   return node;
 }
 
+// static
 Node* InspectorDOMAgent::innerNextSibling(Node* node) {
   do {
     node = node->nextSibling();
@@ -1851,6 +1843,7 @@ Node* InspectorDOMAgent::innerNextSibling(Node* node) {
   return node;
 }
 
+// static
 Node* InspectorDOMAgent::innerPreviousSibling(Node* node) {
   do {
     node = node->previousSibling();
@@ -1858,6 +1851,7 @@ Node* InspectorDOMAgent::innerPreviousSibling(Node* node) {
   return node;
 }
 
+// static
 unsigned InspectorDOMAgent::innerChildNodeCount(Node* node) {
   unsigned count = 0;
   Node* child = innerFirstChild(node);
@@ -1868,6 +1862,7 @@ unsigned InspectorDOMAgent::innerChildNodeCount(Node* node) {
   return count;
 }
 
+// static
 Node* InspectorDOMAgent::innerParentNode(Node* node) {
   if (node->isDocumentNode()) {
     Document* document = toDocument(node);
@@ -1878,10 +1873,69 @@ Node* InspectorDOMAgent::innerParentNode(Node* node) {
   return node->parentOrShadowHostNode();
 }
 
+// static
 bool InspectorDOMAgent::isWhitespace(Node* node) {
   // TODO: pull ignoreWhitespace setting from the frontend and use here.
   return node && node->getNodeType() == Node::kTextNode &&
          node->nodeValue().stripWhiteSpace().length() == 0;
+}
+
+// static
+v8::Local<v8::Value> InspectorDOMAgent::nodeV8Value(
+    v8::Local<v8::Context> context,
+    Node* node) {
+  v8::Isolate* isolate = context->GetIsolate();
+  if (!node ||
+      !BindingSecurity::shouldAllowAccessTo(
+          currentDOMWindow(isolate), node,
+          BindingSecurity::ErrorReportOption::DoNotReport))
+    return v8::Null(isolate);
+  return ToV8(node, context->Global(), isolate);
+}
+
+// static
+void InspectorDOMAgent::collectNodes(Node* node,
+                                     int depth,
+                                     bool pierce,
+                                     Function<bool(Node*)>* filter,
+                                     HeapVector<Member<Node>>* result) {
+  if (filter && filter->operator()(node))
+    result->push_back(node);
+  if (--depth <= 0)
+    return;
+
+  if (pierce && node->isElementNode()) {
+    Element* element = toElement(node);
+    if (node->isFrameOwnerElement()) {
+      HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
+      if (frameOwner->contentFrame() &&
+          frameOwner->contentFrame()->isLocalFrame()) {
+        if (Document* doc = frameOwner->contentDocument())
+          collectNodes(doc, depth, pierce, filter, result);
+      }
+    }
+
+    ElementShadow* shadow = element->shadow();
+    if (pierce && shadow) {
+      for (ShadowRoot* root = &shadow->youngestShadowRoot(); root;
+           root = root->olderShadowRoot()) {
+        collectNodes(root, depth, pierce, filter, result);
+      }
+    }
+
+    if (isHTMLLinkElement(*element)) {
+      HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
+      if (linkElement.isImport() && linkElement.import() &&
+          innerParentNode(linkElement.import()) == linkElement) {
+        collectNodes(linkElement.import(), depth, pierce, filter, result);
+      }
+    }
+  }
+
+  for (Node* child = innerFirstChild(node); child;
+       child = innerNextSibling(child)) {
+    collectNodes(child, depth, pierce, filter, result);
+  }
 }
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame) {
@@ -2236,7 +2290,8 @@ class InspectableNode final
       : m_nodeId(DOMNodeIds::idForNode(node)) {}
 
   v8::Local<v8::Value> get(v8::Local<v8::Context> context) override {
-    return nodeV8Value(context, DOMNodeIds::nodeForId(m_nodeId));
+    return InspectorDOMAgent::nodeV8Value(context,
+                                          DOMNodeIds::nodeForId(m_nodeId));
   }
 
  private:

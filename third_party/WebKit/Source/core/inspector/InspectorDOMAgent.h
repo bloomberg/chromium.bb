@@ -264,6 +264,12 @@ class CORE_EXPORT InspectorDOMAgent final
   static unsigned innerChildNodeCount(Node*);
   static Node* innerParentNode(Node*);
   static bool isWhitespace(Node*);
+  static v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context>, Node*);
+  static void collectNodes(Node* root,
+                           int depth,
+                           bool pierce,
+                           Function<bool(Node*)>*,
+                           HeapVector<Member<Node>>* result);
 
   Response assertNode(int nodeId, Node*&);
   Response assertElement(int nodeId, Element*&);
