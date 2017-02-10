@@ -534,7 +534,7 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     assertEquals('force_next', bk.mode);
 
     // Verify force next -> classic compat switching.
-    localStorage['useNext'] = false;
+    localStorage['useClassic'] = true;
     fakeWebRoot.docUrl = 'chrome://foobar';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('classic_compat', bk.mode);
@@ -561,7 +561,7 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     assertEquals('next', bk.mode);
 
     // Next compat switching.
-    localStorage['useNext'] = true;
+    localStorage['useClassic'] = false;
     fakeWebRoot.docUrl = 'http://docs.google.com/document/#123123';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('next_compat', bk.mode);

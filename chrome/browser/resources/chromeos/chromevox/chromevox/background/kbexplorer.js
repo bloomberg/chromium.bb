@@ -51,7 +51,7 @@ cvox.KbExplorer.init = function() {
     chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
         cvox.KbExplorer.onAccessibilityGesture);
   };
-  if (localStorage['useNext'] == 'true') {
+  if (localStorage['useClassic'] != 'true') {
     cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
     cvox.ChromeVox.modKeyStr = 'Search';
   } else {

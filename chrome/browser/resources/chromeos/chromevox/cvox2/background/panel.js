@@ -104,7 +104,7 @@ Panel.init = function() {
    * @type {boolean}
    * @private
    */
-  this.menusEnabled_ = localStorage['useNext'] == 'true';
+  this.menusEnabled_ = localStorage['useClassic'] == 'false';
 
   /**
    * @type {Tutorial}

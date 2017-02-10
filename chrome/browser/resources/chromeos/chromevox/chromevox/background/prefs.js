@@ -81,7 +81,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'sticky': false,
   'typingEcho': 0,
   'useIBeamCursor': cvox.ChromeVox.isMac,
-  'useNext': true,
+  'useClassic': false,
   'useVerboseMode': true,
 };
 
