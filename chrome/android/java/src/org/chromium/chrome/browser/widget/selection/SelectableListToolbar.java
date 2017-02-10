@@ -327,8 +327,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
                 contentDescriptionId = R.string.accessibility_toolbar_btn_back;
                 break;
             case NAVIGATION_BUTTON_SELECTION_BACK:
-                // TODO(twellington): use btn_close and tint it.
-                iconResId = R.drawable.btn_close_white;
+                iconResId = R.drawable.ic_arrow_back_white_24dp;
                 contentDescriptionId = R.string.accessibility_cancel_selection;
                 break;
             default:

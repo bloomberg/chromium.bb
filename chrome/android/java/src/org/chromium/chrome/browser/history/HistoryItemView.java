@@ -80,7 +80,13 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
     @Override
     public void setItem(HistoryItem item) {
-        if (getItem() == item) return;
+        if (getItem() == item) {
+            // If the item is being set again, it means the HistoryAdapter contents have likely
+            // changed. This item may have changed group positions, so the background should be
+            // updated.
+            setBackgroundResourceForGroupPosition();
+            return;
+        }
 
         super.setItem(item);
 

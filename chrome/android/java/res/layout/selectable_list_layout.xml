@@ -26,15 +26,20 @@
         android:layout_height="@dimen/action_bar_shadow_height"
         android:layout_below="@id/action_bar" />
 
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawablePadding="3dp"
-        android:layout_centerInParent="true"
-        android:textColor="@color/google_grey_700"
-        android:textSize="16sp"
-        android:visibility="gone" />
+    <FrameLayout
+       android:layout_below="@id/action_bar"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent" >
+      <TextView
+          android:id="@+id/empty_view"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:drawablePadding="3dp"
+          android:textColor="@color/google_grey_700"
+          android:textSize="16sp"
+          android:visibility="gone" />
+    </FrameLayout>
 
     <org.chromium.chrome.browser.widget.LoadingView
         android:id="@+id/loading_view"

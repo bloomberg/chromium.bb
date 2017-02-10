@@ -211,6 +211,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
+            mHistoryAdapter.removeHeader();
+
             mRecyclerView.setItemAnimator(null);
             mToolbar.showSearchView();
             mToolbarShadow.setVisibility(View.VISIBLE);

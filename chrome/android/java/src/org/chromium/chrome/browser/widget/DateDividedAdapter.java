@@ -265,6 +265,9 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     private SortedSet<ItemGroup> mGroups = new TreeSet<>(new Comparator<ItemGroup>() {
         @Override
         public int compare(ItemGroup lhs, ItemGroup rhs) {
+            if (lhs == rhs) return 0;
+
+            // There should only be at most one list header and one list footer in the SortedSet.
             if (lhs.mIsListHeader || rhs.mIsListFooter) return -1;
             if (lhs.mIsListFooter || rhs.mIsListHeader) return 1;
 

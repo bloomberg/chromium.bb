@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.res.Resources;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -49,6 +50,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private final HistoryProvider mHistoryProvider;
     private final HistoryManager mHistoryManager;
     private final ArrayList<HistoryItemView> mItemViews;
+    private RecyclerView mRecyclerView;
 
     private TextView mSignedInNotSyncedTextView;
     private TextView mSignedInSyncedTextView;
@@ -85,6 +87,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     public void onDestroyed() {
         mHistoryProvider.destroy();
         mIsDestroyed = true;
+        mRecyclerView = null;
     }
 
     /**
@@ -96,6 +99,19 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mNextQueryEndTime = 0;
         mClearOnNextQueryComplete = true;
         mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        // This adapter should only ever be attached to one RecyclerView.
+        assert mRecyclerView == null;
+
+        mRecyclerView = recyclerView;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        mRecyclerView = null;
     }
 
     /**
@@ -218,6 +234,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         return R.layout.history_date_view;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
         // Return early if the results are returned after the activity/native page is
@@ -229,13 +246,30 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             mClearOnNextQueryComplete = false;
         }
 
+        boolean wasInitialized = mIsInitialized;
         if (!mIsInitialized) {
             if (items.size() > 0 && !mIsSearching) addHeader();
             mIsInitialized = true;
         }
 
         removeFooter();
+
+        HistoryItemView lastHistoryItemView = null;
+        if (mRecyclerView != null && wasInitialized) {
+            ViewHolder holder = mRecyclerView.findViewHolderForAdapterPosition(getItemCount() - 1);
+            if (holder instanceof SelectableItemViewHolder) {
+                lastHistoryItemView =
+                        (HistoryItemView) ((SelectableItemViewHolder<HistoryItem>) holder).itemView;
+            }
+        }
+
         loadItems(items);
+
+        if (lastHistoryItemView != null) {
+            // When loading more items, the last item's background needs to be reset since it may
+            // now be in the middle of an ItemGroup.
+            lastHistoryItemView.setBackgroundResourceForGroupPosition();
+        }
 
         mIsLoadingItems = false;
         mHasMorePotentialItems = hasMorePotentialMatches;
