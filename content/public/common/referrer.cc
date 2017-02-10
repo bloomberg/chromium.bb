@@ -27,6 +27,12 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
     }
   }
 
+  if (sanitized_referrer.policy < 0 ||
+      sanitized_referrer.policy > blink::WebReferrerPolicyLast) {
+    NOTREACHED();
+    sanitized_referrer.policy = blink::WebReferrerPolicyNever;
+  }
+
   if (!request.SchemeIsHTTPOrHTTPS() ||
       !sanitized_referrer.url.SchemeIsValidForReferrer()) {
     sanitized_referrer.url = GURL();
@@ -35,12 +41,6 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
 
   bool is_downgrade = sanitized_referrer.url.SchemeIsCryptographic() &&
                       !request.SchemeIsCryptographic();
-
-  if (sanitized_referrer.policy < 0 ||
-      sanitized_referrer.policy > blink::WebReferrerPolicyLast) {
-    NOTREACHED();
-    sanitized_referrer.policy = blink::WebReferrerPolicyNever;
-  }
 
   switch (sanitized_referrer.policy) {
     case blink::WebReferrerPolicyDefault:
