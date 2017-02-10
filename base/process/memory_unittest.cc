@@ -27,6 +27,8 @@
 #endif
 #if defined(OS_MACOSX)
 #include <malloc/malloc.h>
+#include "base/allocator/allocator_interception_mac.h"
+#include "base/allocator/allocator_shim.h"
 #include "base/process/memory_unittest_mac.h"
 #endif
 #if defined(OS_LINUX)
@@ -59,6 +61,9 @@ typedef BOOL (WINAPI* HeapQueryFn)  \
 // will fail.
 
 TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
+#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+  base::allocator::InitializeAllocatorShim();
+#endif
   // Assert that freeing an unallocated pointer will crash the process.
   char buf[9];
   asm("" : "=r" (buf));  // Prevent clang from being too smart.
@@ -79,6 +84,12 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 #endif  // defined(OS_MACOSX)
 
 TEST(MemoryTest, AllocatorShimWorking) {
+#if defined(OS_MACOSX)
+#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+  base::allocator::InitializeAllocatorShim();
+#endif
+  base::allocator::InterceptAllocationsMac();
+#endif
   ASSERT_TRUE(base::allocator::IsAllocatorInitialized());
 }
 
@@ -124,6 +135,10 @@ class OutOfMemoryTest : public testing::Test {
 class OutOfMemoryDeathTest : public OutOfMemoryTest {
  public:
   void SetUpInDeathAssert() {
+#if defined(OS_MACOSX) && BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+    base::allocator::InitializeAllocatorShim();
+#endif
+
     // Must call EnableTerminationOnOutOfMemory() because that is called from
     // chrome's main function and therefore hasn't been called yet.
     // Since this call may result in another thread being created and death

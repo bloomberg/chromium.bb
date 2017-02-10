@@ -15,6 +15,7 @@
 
 #include "base/allocator/allocator_check.h"
 #include "base/allocator/allocator_extension.h"
+#include "base/allocator/features.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -86,6 +87,7 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
+#include "base/allocator/allocator_shim.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/app/mac/mac_init.h"
@@ -515,6 +517,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     env_mode_ = params.env_mode;
 #endif
 
+#if defined(OS_MACOSX) && BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+    base::allocator::InitializeAllocatorShim();
+#endif
     base::EnableTerminationOnOutOfMemory();
 #if defined(OS_WIN)
     base::win::RegisterInvalidParamHandler();
