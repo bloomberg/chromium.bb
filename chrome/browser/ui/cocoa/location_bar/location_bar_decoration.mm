@@ -273,6 +273,10 @@ void LocationBarDecoration::OnMouseDown() {
 }
 
 void LocationBarDecoration::OnMouseUp() {
+  // Ignore the mouse up if it's not associated with a mouse down event.
+  if (state_ != DecorationMouseState::PRESSED)
+    return;
+
   DCHECK(tracking_area_owner_);
   state_ = [tracking_area_ mouseInsideTrackingAreaForView:tracking_area_owner_]
                ? DecorationMouseState::HOVER
