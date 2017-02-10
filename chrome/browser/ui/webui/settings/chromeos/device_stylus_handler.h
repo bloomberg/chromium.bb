@@ -48,6 +48,9 @@ class StylusHandler : public ::settings::SettingsPageUIHandler,
   // Enables or disables the stylus UI section.
   void SendHasStylus();
 
+  // Called by JS to show the Play Store Android app.
+  void ShowPlayStoreApps(const base::ListValue* args);
+
   // IDs of available note-taking apps.
   std::set<std::string> note_taking_app_ids_;
 

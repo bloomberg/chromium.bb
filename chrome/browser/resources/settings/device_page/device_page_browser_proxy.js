@@ -80,6 +80,12 @@ cr.define('settings', function() {
     setNoteTakingAppsUpdatedCallback: function(callback) {},
 
     /**
+     * Open up the play store with the given URL.
+     * @param {string} url
+     */
+    showPlayStore: function(url) {},
+
+    /**
      * Request current note-taking app info. Invokes any callback registered in
      * |onNoteTakingAppsUpdated|.
      */
@@ -142,6 +148,11 @@ cr.define('settings', function() {
     /** @override */
     setNoteTakingAppsUpdatedCallback: function(callback) {
       cr.addWebUIListener('onNoteTakingAppsUpdated', callback);
+    },
+
+    /** @override */
+    showPlayStore: function(url) {
+      chrome.send('showPlayStoreApps', [url]);
     },
 
     /** @override */

@@ -6,7 +6,9 @@
 
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "base/bind.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
@@ -44,6 +46,9 @@ void StylusHandler::RegisterMessages() {
       "setPreferredNoteTakingApp",
       base::Bind(&StylusHandler::SetPreferredNoteTakingApp,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showPlayStoreApps",
+      base::Bind(&StylusHandler::ShowPlayStoreApps, base::Unretained(this)));
 }
 
 void StylusHandler::OnAvailableNoteTakingAppsUpdated() {
@@ -114,6 +119,18 @@ void StylusHandler::SendHasStylus() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::StringValue("has-stylus-changed"),
       base::FundamentalValue(ash::palette_utils::HasStylusInput()));
+}
+
+void StylusHandler::ShowPlayStoreApps(const base::ListValue* args) {
+  std::string apps_url;
+  args->GetString(0, &apps_url);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!arc::IsArcAllowedForProfile(profile)) {
+    VLOG(1) << "ARC is not enabled for this profile";
+    return;
+  }
+
+  arc::LaunchPlayStoreWithUrl(apps_url);
 }
 
 }  // namespace settings

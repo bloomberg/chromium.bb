@@ -89,6 +89,6 @@ Polymer({
 
   /** @private */
   onFindAppsTap_: function() {
-    window.open(FIND_MORE_APPS_URL);
+    this.browserProxy_.showPlayStore(FIND_MORE_APPS_URL);
   },
 });
