@@ -702,6 +702,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                     stateObject:(NSString*)stateObject;
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL;
+// Sets WKWebView's title to the last committed navigation item.
+- (void)updateNavigationItemTitle;
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;
@@ -1365,6 +1367,29 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (newURL != _documentURL && newURL.is_valid()) {
     _documentURL = newURL;
     _interactionRegisteredSinceLastURLChange = NO;
+  }
+}
+
+- (void)updateNavigationItemTitle {
+  NSString* webViewTitle = [_webView title];
+  DCHECK(webViewTitle);
+  auto& navigationManager = _webStateImpl->GetNavigationManagerImpl();
+  web::NavigationItem* item = navigationManager.GetLastCommittedItem();
+  if (!item)
+    return;
+
+  base::string16 newTitle = base::SysNSStringToUTF16(webViewTitle);
+  if (item->GetTitle() == newTitle)
+    return;
+
+  item->SetTitle(newTitle);
+  // TODO(crbug.com/546218): See if this can be removed; it's not clear that
+  // other platforms send this (tab sync triggers need to be compared against
+  // upstream).
+  navigationManager.OnNavigationItemChanged();
+
+  if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
+    [_delegate webController:self titleDidChange:webViewTitle];
   }
 }
 
@@ -4729,9 +4754,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
 
-  // This is the point where the document's URL has actually changed, and
-  // pending navigation information should be applied to state information.
+  // This is the point where the document's URL and title have actually changed,
+  // and pending navigation information should be applied to state information.
   [self setDocumentURL:net::GURLWithNSURL([_webView URL])];
+  [self updateNavigationItemTitle];
 
   if (!_lastRegisteredRequestURL.is_valid() &&
       _documentURL != _lastRegisteredRequestURL) {
@@ -4969,10 +4995,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  if ([self.delegate
-          respondsToSelector:@selector(webController:titleDidChange:)]) {
-    DCHECK([_webView title]);
-    [self.delegate webController:self titleDidChange:[_webView title]];
+  bool hasPendingNavigation = web::WKNavigationState::COMMITTED <=
+                              [_navigationStates lastAddedNavigationState];
+  if (hasPendingNavigation) {
+    // Do not update the title if there is a navigation in progress because
+    // there is no way to tell if KVO change fired for new or previous page.
+    [self updateNavigationItemTitle];
   }
 }
 
