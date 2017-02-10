@@ -2,6 +2,34 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+.overlay {
+  padding: 0;
+}
+
+.overlay .page {
+  max-width: 480px;
+  width: 100%;
+}
+
+.overlay .page h1 {
+  border-bottom: 1px solid #c0c0c0;
+  font-size: 15px;
+}
+
+.overlay .page > .close-button {
+  padding: 8px 16px;
+}
+
+.overlay .page .button-strip button {
+  background-color: rgb(66, 133, 244);
+  background-image: none;
+  border: none;
+  color: white;
+  font-size: 14px;
+  padding: 8px 20px;
+  text-shadow: none;
+}
+
 .bluetooth-device-list {
   margin: 10px 0;
   padding: 5px 10px;
@@ -75,7 +103,7 @@
 #bluetooth-pairing-message-area {
   display: table;
   height: 160px;
-  padding: 6px 0 !important;
+  padding: 6px 16px !important;
   width: 420px;
 }
 
@@ -86,7 +114,11 @@
   vertical-align: middle;
 }
 
-#bluetooth-pairing-instructions,
+#bluetooth-pairing-instructions {
+  font-size: 13px;
+  text-align: left;
+}
+
 #bluetooth-pairing-passkey-display,
 #bluetooth-pairing-passkey-entry,
 #bluetooth-pairing-pincode-entry,
@@ -96,7 +128,7 @@
 }
 
 #bluetooth-pairing-instructions {
-  margin: 10px;
+  margin: 20px 0;
 }
 
 #bluetooth-pairing-passkey-display,
@@ -133,9 +165,7 @@
 
 .bluetooth-passkey-char {
   -webkit-margin-start: 45px;
-  color: #999;
-  font-size: 20px;
-  font-weight: 600; /* semibold */
+  font-size: 32px;
   padding-bottom: 5px;
 }
 

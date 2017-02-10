@@ -2,15 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.close-button {
-  display: none;
-}
-
 #bluetooth-pairing {
   border: 0;
   box-shadow: none;
-}
-
-.overlay .page h1 {
-  display: none;
 }

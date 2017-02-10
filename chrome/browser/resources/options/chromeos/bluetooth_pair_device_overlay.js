@@ -180,6 +180,8 @@ cr.define('options', function() {
           this.keyDownEventHandler_.bind(this));
       $('bluetooth-pincode').addEventListener('keydown',
           this.keyDownEventHandler_.bind(this));
+      $('bluetooth-pairing-close-button').addEventListener('click',
+          this.onClose_.bind(this));
     },
 
     /** @override */
@@ -333,6 +335,16 @@ cr.define('options', function() {
         if (!button.hidden)
           button.click();
       }
+    },
+
+    /**
+     * Handles the click event on the close button.
+     * @param {Event} event A click down event.
+     * @private
+     */
+    onClose_: function(event) {
+      event.preventDefault();
+      chrome.send('dialogClose');
     },
 
     /**

@@ -7,14 +7,22 @@
 #include <string>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/json/json_writer.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/controls/webview/web_dialog_view.h"
+#include "ui/views/widget/widget.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -49,10 +57,31 @@ void BluetoothPairingDialog::ShowInContainer(int container_id) {
   DCHECK(container_id == ash::kShellWindowId_SystemModalContainer ||
          container_id == ash::kShellWindowId_LockSystemModalContainer);
 
-  // Bluetooth settings are currently stored on the device, accessible for
-  // everyone who uses the machine. As such we can use the active user profile.
-  chrome::ShowWebDialogInContainer(
-      container_id, ProfileManager::GetActiveUserProfile(), this);
+  // This block of code is almost the same as chrome::ShowWebDialogInContainer()
+  // except we're creating a frameless window.
+  views::Widget* widget = new views::Widget;  // Owned by native widget
+  views::WebDialogView* view =
+      new views::WebDialogView(ProfileManager::GetActiveUserProfile(), this,
+                               new ChromeWebContentsHandler);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.delegate = view;
+  if (chrome::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kContainerId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             container_id);
+  }
+  widget->Init(params);
+
+  // Observer is needed for ChromeVox extension to send messages between content
+  // and background scripts.
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      view->web_contents());
+
+  widget->Show();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +130,7 @@ void BluetoothPairingDialog::OnCloseContents(WebContents* source,
 }
 
 bool BluetoothPairingDialog::ShouldShowDialogTitle() const {
-  return true;
+  return false;
 }
 
 bool BluetoothPairingDialog::HandleContextMenu(
