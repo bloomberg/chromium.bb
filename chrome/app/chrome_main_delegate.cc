@@ -893,6 +893,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
       base::android::InitJavaExceptionReporter();
     } else {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+      base::android::InitJavaExceptionReporterForChildProcess();
     }
 #else  // !defined(OS_ANDROID)
     breakpad::InitCrashReporter(process_type);

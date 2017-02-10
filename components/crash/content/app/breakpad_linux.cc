@@ -2014,6 +2014,8 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     } else {
       InitCrashKeys();
       EnableNonBrowserCrashDumping(process_type, minidump_fd);
+      // Note: not installing DumpWithoutCrash handler here because browser
+      // is not set up to receive multiple reports from child process.
     }
   }
 }
