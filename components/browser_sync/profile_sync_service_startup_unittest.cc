@@ -43,7 +43,7 @@ namespace {
 
 const char kGaiaId[] = "12345";
 const char kEmail[] = "test_user@gmail.com";
-const char kDummyPassword[] = "";
+const char kDummyPassword[] = "foobar";
 
 class SyncServiceObserverMock : public syncer::SyncServiceObserver {
  public:
@@ -196,6 +196,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Simulate successful signin as test_user.
   std::string account_id = SimulateTestUserSignin(sync_service_.get());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   // Create some tokens in the token service.
   IssueTestTokens(account_id);
 
@@ -319,6 +320,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   IssueTestTokens(account_id);
 
@@ -349,6 +351,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   IssueTestTokens(account_id);
   sync_service_->Initialize();
@@ -375,6 +378,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   IssueTestTokens(account_id);
   sync_service_->Initialize();
 
@@ -406,6 +410,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   IssueTestTokens(account_id);
   sync_service_->Initialize();
   EXPECT_TRUE(sync_service_->IsEngineInitialized());
@@ -450,6 +455,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   EXPECT_CALL(*data_type_manager, state())
       .WillOnce(Return(DataTypeManager::STOPPED));
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   IssueTestTokens(account_id);
   sync_service_->Initialize();
   EXPECT_TRUE(sync_service_->HasUnrecoverableError());
