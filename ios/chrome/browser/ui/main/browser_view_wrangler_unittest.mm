@@ -6,12 +6,15 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -27,10 +30,9 @@ class BrowserViewWranglerTest : public PlatformTest {
 };
 
 TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
-  base::scoped_nsobject<BrowserViewWrangler> wrangler(
-      [[BrowserViewWrangler alloc]
-          initWithBrowserState:chrome_browser_state_.get()
-              tabModelObserver:nil]);
+  BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
+      initWithBrowserState:chrome_browser_state_.get()
+          tabModelObserver:nil];
 
   // Test that BVC and tab model are created on demand.
   BrowserViewController* bvc = [wrangler mainBVC];

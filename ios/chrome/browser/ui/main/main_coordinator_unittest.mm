@@ -6,16 +6,19 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/main/main_view_controller.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 TEST(MainCoordinatorTest, SizeViewController) {
   CGRect rect = [UIScreen mainScreen].bounds;
   UIWindow* window = [UIApplication sharedApplication].keyWindow;
-  base::scoped_nsobject<MainCoordinator> coordinator(
-      [[MainCoordinator alloc] initWithWindow:window]);
+  MainCoordinator* coordinator =
+      [[MainCoordinator alloc] initWithWindow:window];
   [coordinator start];
   EXPECT_TRUE(
-      CGRectEqualToRect(rect, coordinator.get().mainViewController.view.frame));
+      CGRectEqualToRect(rect, coordinator.mainViewController.view.frame));
 }
