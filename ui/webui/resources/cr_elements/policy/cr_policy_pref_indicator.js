@@ -40,5 +40,12 @@ Polymer({
     var matches = pref && pref.value == pref.recommendedValue;
     return this.getPolicyIndicatorTooltip(
         type, pref.controlledByName || '', matches);
-  }
+  },
+
+  /**
+   * @return {boolean} Whether the policy indicator is on. Useful for testing.
+   */
+  isActive: function() {
+    return this.isIndicatorVisible(this.indicatorType);
+  },
 });

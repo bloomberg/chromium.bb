@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
@@ -17,6 +18,7 @@
         --md-select-width: 400px;
       }
 
+      paper-toggle-button,
       cr-policy-pref-indicator {
         -webkit-margin-start: var(--checkbox-spacing);
       }
@@ -29,8 +31,8 @@
     </div>
     <div class="settings-box continuation">
       <div class="start">$i18n{timeZoneGeolocation}</div>
-      <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]">
-        <cr-policy-pref-indicator pref="[[timeZonePolicyPref_]]">
+      <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
+        <cr-policy-pref-indicator pref="[[fakeTimeZonePolicyPref_]]">
         </cr-policy-pref-indicator>
       </template>
       <paper-toggle-button
