@@ -291,11 +291,11 @@ launcher_weston_launch_get_vt(struct weston_launcher *base)
 }
 
 const struct launcher_interface launcher_weston_launch_iface = {
-	launcher_weston_launch_connect,
-	launcher_weston_launch_destroy,
-	launcher_weston_launch_open,
-	launcher_weston_launch_close,
-	launcher_weston_launch_activate_vt,
-	launcher_weston_launch_restore,
-	launcher_weston_launch_get_vt,
+	.connect = launcher_weston_launch_connect,
+	.destroy = launcher_weston_launch_destroy,
+	.open = launcher_weston_launch_open,
+	.close = launcher_weston_launch_close,
+	.activate_vt = launcher_weston_launch_activate_vt,
+	.restore = launcher_weston_launch_restore,
+	.get_vt = launcher_weston_launch_get_vt,
 };

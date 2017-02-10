@@ -838,11 +838,11 @@ launcher_logind_get_vt(struct weston_launcher *launcher)
 }
 
 const struct launcher_interface launcher_logind_iface = {
-	launcher_logind_connect,
-	launcher_logind_destroy,
-	launcher_logind_open,
-	launcher_logind_close,
-	launcher_logind_activate_vt,
-	launcher_logind_restore,
-	launcher_logind_get_vt,
+	.connect = launcher_logind_connect,
+	.destroy = launcher_logind_destroy,
+	.open = launcher_logind_open,
+	.close = launcher_logind_close,
+	.activate_vt = launcher_logind_activate_vt,
+	.restore = launcher_logind_restore,
+	.get_vt = launcher_logind_get_vt,
 };
