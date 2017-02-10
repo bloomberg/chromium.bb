@@ -24,6 +24,14 @@ class Transform;
 
 namespace ui {
 
+// Return true if |attr| should be interpreted as the id of another node
+// in the same tree.
+AX_EXPORT bool IsNodeIdIntAttribute(AXIntAttribute attr);
+
+// Return true if |attr| should be interpreted as a list of ids of
+// nodes in the same tree.
+AX_EXPORT bool IsNodeIdIntListAttribute(AXIntListAttribute attr);
+
 // A compact representation of the accessibility information for a
 // single accessible object, in a form that can be serialized and sent from
 // one process to another.

@@ -1,0 +1,6 @@
+rootWebArea
+++div
+++++textField errormessageId=paragraph
+++paragraph
+++++staticText name='Error'
+++++++inlineTextBox name='Error'

@@ -58,6 +58,101 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 
 }  // namespace
 
+// Return true if |attr| is a node ID that would need to be mapped when
+// renumbering the ids in a combined tree.
+bool IsNodeIdIntAttribute(AXIntAttribute attr) {
+  switch (attr) {
+    case AX_ATTR_ACTIVEDESCENDANT_ID:
+    case AX_ATTR_ERRORMESSAGE_ID:
+    case AX_ATTR_MEMBER_OF_ID:
+    case AX_ATTR_NEXT_ON_LINE_ID:
+    case AX_ATTR_PREVIOUS_ON_LINE_ID:
+    case AX_ATTR_TABLE_HEADER_ID:
+    case AX_ATTR_TABLE_COLUMN_HEADER_ID:
+    case AX_ATTR_TABLE_ROW_HEADER_ID:
+      return true;
+
+    // Note: all of the attributes are included here explicitly,
+    // rather than using "default:", so that it's a compiler error to
+    // add a new attribute without explicitly considering whether it's
+    // a node id attribute or not.
+    case AX_INT_ATTRIBUTE_NONE:
+    case AX_ATTR_ACTION:
+    case AX_ATTR_SCROLL_X:
+    case AX_ATTR_SCROLL_X_MIN:
+    case AX_ATTR_SCROLL_X_MAX:
+    case AX_ATTR_SCROLL_Y:
+    case AX_ATTR_SCROLL_Y_MIN:
+    case AX_ATTR_SCROLL_Y_MAX:
+    case AX_ATTR_TEXT_SEL_START:
+    case AX_ATTR_TEXT_SEL_END:
+    case AX_ATTR_TABLE_ROW_COUNT:
+    case AX_ATTR_TABLE_COLUMN_COUNT:
+    case AX_ATTR_TABLE_ROW_INDEX:
+    case AX_ATTR_TABLE_COLUMN_INDEX:
+    case AX_ATTR_TABLE_CELL_COLUMN_INDEX:
+    case AX_ATTR_TABLE_CELL_COLUMN_SPAN:
+    case AX_ATTR_TABLE_CELL_ROW_INDEX:
+    case AX_ATTR_TABLE_CELL_ROW_SPAN:
+    case AX_ATTR_SORT_DIRECTION:
+    case AX_ATTR_HIERARCHICAL_LEVEL:
+    case AX_ATTR_NAME_FROM:
+    case AX_ATTR_DESCRIPTION_FROM:
+    case AX_ATTR_CHILD_TREE_ID:
+    case AX_ATTR_SET_SIZE:
+    case AX_ATTR_POS_IN_SET:
+    case AX_ATTR_COLOR_VALUE:
+    case AX_ATTR_ARIA_CURRENT_STATE:
+    case AX_ATTR_BACKGROUND_COLOR:
+    case AX_ATTR_COLOR:
+    case AX_ATTR_INVALID_STATE:
+    case AX_ATTR_TEXT_DIRECTION:
+    case AX_ATTR_TEXT_STYLE:
+    case AX_ATTR_ARIA_COL_COUNT:
+    case AX_ATTR_ARIA_COL_INDEX:
+    case AX_ATTR_ARIA_ROW_COUNT:
+    case AX_ATTR_ARIA_ROW_INDEX:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// Return true if |attr| contains a vector of node ids that would need
+// to be mapped when renumbering the ids in a combined tree.
+bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
+  switch (attr) {
+    case AX_ATTR_CELL_IDS:
+    case AX_ATTR_CONTROLS_IDS:
+    case AX_ATTR_DESCRIBEDBY_IDS:
+    case AX_ATTR_DETAILS_IDS:
+    case AX_ATTR_FLOWTO_IDS:
+    case AX_ATTR_INDIRECT_CHILD_IDS:
+    case AX_ATTR_LABELLEDBY_IDS:
+    case AX_ATTR_UNIQUE_CELL_IDS:
+      return true;
+
+    // Note: all of the attributes are included here explicitly,
+    // rather than using "default:", so that it's a compiler error to
+    // add a new attribute without explicitly considering whether it's
+    // a node id attribute or not.
+    case AX_INT_LIST_ATTRIBUTE_NONE:
+    case AX_ATTR_LINE_BREAKS:
+    case AX_ATTR_MARKER_TYPES:
+    case AX_ATTR_MARKER_STARTS:
+    case AX_ATTR_MARKER_ENDS:
+    case AX_ATTR_CHARACTER_OFFSETS:
+    case AX_ATTR_CACHED_LINE_STARTS:
+    case AX_ATTR_WORD_STARTS:
+    case AX_ATTR_WORD_ENDS:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 AXNodeData::AXNodeData()
     : id(-1),
       role(AX_ROLE_UNKNOWN),
@@ -502,6 +597,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
         break;
+      case AX_ATTR_ERRORMESSAGE_ID:
+        result += " errormessage=" + value;
+        break;
       case AX_ATTR_MEMBER_OF_ID:
         result += " member_of_id=" + value;
         break;
@@ -643,6 +741,9 @@ std::string AXNodeData::ToString() const {
         result += " image_data_url=(" +
             IntToString(static_cast<int>(value.size())) + " bytes)";
         break;
+      case AX_ATTR_KEY_SHORTCUTS:
+        result += " key_shortcuts=" + value;
+        break;
       case AX_ATTR_LANGUAGE:
         result += " language=" + value;
         break;
@@ -663,6 +764,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_ROLE:
         result += " role=" + value;
+        break;
+      case AX_ATTR_ROLE_DESCRIPTION:
+        result += " role_description=" + value;
         break;
       case AX_ATTR_SHORTCUT:
         result += " shortcut=" + value;
@@ -731,6 +835,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_CANVAS_HAS_FALLBACK:
         result += " has_fallback=" + value;
         break;
+      case AX_ATTR_MODAL:
+        result += " modal=" + value;
+        break;
       case AX_BOOL_ATTRIBUTE_NONE:
         break;
     }
@@ -747,6 +854,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_DESCRIBEDBY_IDS:
         result += " describedby_ids=" + IntVectorToString(values);
+        break;
+      case AX_ATTR_DETAILS_IDS:
+        result += " details_ids=" + IntVectorToString(values);
         break;
       case AX_ATTR_FLOWTO_IDS:
         result += " flowto_ids=" + IntVectorToString(values);

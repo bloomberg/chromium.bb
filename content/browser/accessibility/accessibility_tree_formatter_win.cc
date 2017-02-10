@@ -84,7 +84,8 @@ const char* const ALL_ATTRIBUTES[] = {
   "caret_offset",
   "n_selections",
   "selection_start",
-  "selection_end"
+  "selection_end",
+  "localized_extended_role",
 };
 
 namespace {
@@ -327,6 +328,12 @@ void AccessibilityTreeFormatterWin::AddProperties(
       }
     }
   }
+
+  if (SUCCEEDED(ax_object->get_localizedExtendedRole(temp_bstr.Receive()))) {
+    dict->SetString("localized_extended_role", base::string16(temp_bstr,
+        temp_bstr.Length()));
+  }
+  temp_bstr.Reset();
 }
 
 base::string16 AccessibilityTreeFormatterWin::ToString(

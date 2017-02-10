@@ -1,0 +1,6 @@
+rootWebArea
+++div
+++++textField detailsIds=paragraph
+++paragraph
+++++staticText name='Details'
+++++++inlineTextBox name='Details'

@@ -203,6 +203,10 @@ enum {
 #define WIN_ACCESSIBILITY_API_HISTOGRAM(enum_value) \
     UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
 
+const WCHAR *const IA2_RELATION_DETAILS = L"details";
+const WCHAR *const IA2_RELATION_DETAILS_FOR = L"detailsFor";
+const WCHAR *const IA2_RELATION_ERROR_MESSAGE = L"errorMessage";
+
 }  // namespace
 
 namespace content {
@@ -654,6 +658,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
   BrowserAccessibilityWin* target = GetTargetFromChildID(var_id);
   if (!target)
     return E_INVALIDARG;
+
+  if (target->HasStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS)) {
+    return target->GetStringAttributeAsBstr(
+        ui::AX_ATTR_KEY_SHORTCUTS, acc_key);
+  }
 
   return target->GetStringAttributeAsBstr(
       ui::AX_ATTR_SHORTCUT, acc_key);
@@ -1120,19 +1129,28 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   return S_OK;
 }
 
-//
-// IAccessibleEx methods not implemented.
-//
-
-STDMETHODIMP BrowserAccessibilityWin::get_extendedRole(BSTR* extended_role) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_ROLE);
-  AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
-  return E_NOTIMPL;
-}
 STDMETHODIMP
 BrowserAccessibilityWin::get_localizedExtendedRole(
     BSTR* localized_extended_role) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_ROLE);
+  AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
+
+  if (!instance_active())
+    return E_FAIL;
+
+  if (!localized_extended_role)
+    return E_INVALIDARG;
+
+  return GetStringAttributeAsBstr(
+      ui::AX_ATTR_ROLE_DESCRIPTION, localized_extended_role);
+}
+
+//
+// IAccessible2 methods not implemented.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::get_extendedRole(BSTR* extended_role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_ROLE);
   AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
   return E_NOTIMPL;
 }
@@ -3878,13 +3896,18 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 
   win_attributes_->ia2_attributes.clear();
 
-  // Expose autocomplete attribute for combobox and textbox.
-  StringAttributeToIA2(ui::AX_ATTR_AUTO_COMPLETE, "autocomplete");
-
-  // Expose the "display" and "tag" attributes.
+  // Expose some HTLM and ARIA attributes in the IAccessible2 attributes string.
+  // "display", "tag", and "xml-roles" have somewhat unusual names for
+  // historical reasons. Aside from that virtually every ARIA attribute
+  // is exposed in a really straightforward way, i.e. "aria-foo" is exposed
+  // as "foo".
   StringAttributeToIA2(ui::AX_ATTR_DISPLAY, "display");
   StringAttributeToIA2(ui::AX_ATTR_HTML_TAG, "tag");
   StringAttributeToIA2(ui::AX_ATTR_ROLE, "xml-roles");
+
+  StringAttributeToIA2(ui::AX_ATTR_AUTO_COMPLETE, "autocomplete");
+  StringAttributeToIA2(ui::AX_ATTR_ROLE_DESCRIPTION, "roledescription");
+  StringAttributeToIA2(ui::AX_ATTR_KEY_SHORTCUTS, "keyshortcuts");
 
   IntAttributeToIA2(ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
   IntAttributeToIA2(ui::AX_ATTR_SET_SIZE, "setsize");
@@ -4031,10 +4054,16 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
                             ui::AX_ATTR_FLOWTO_IDS);
   AddBidirectionalRelations(IA2_RELATION_LABELLED_BY, IA2_RELATION_LABEL_FOR,
                             ui::AX_ATTR_LABELLEDBY_IDS);
+  AddBidirectionalRelations(IA2_RELATION_DETAILS, IA2_RELATION_DETAILS_FOR,
+                            ui::AX_ATTR_DETAILS_IDS);
 
   int member_of_id;
   if (GetIntAttribute(ui::AX_ATTR_MEMBER_OF_ID, &member_of_id))
     AddRelation(IA2_RELATION_MEMBER_OF, member_of_id);
+
+  int error_message_id;
+  if (GetIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, &error_message_id))
+    AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
 
   // Expose slider value.
   if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
@@ -5210,6 +5239,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
 
   if (!GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
+
+  if (GetBoolAttribute(ui::AX_ATTR_MODAL))
+    ia2_state |= IA2_STATE_MODAL;
 
   base::string16 html_tag = GetString16Attribute(
       ui::AX_ATTR_HTML_TAG);

@@ -244,12 +244,13 @@ BrowserAccessibilityWin
                     LONG* similar_items_in_group,
                     LONG* position_in_group) override;
 
+  CONTENT_EXPORT STDMETHODIMP
+  get_localizedExtendedRole(BSTR* localized_extended_role) override;
+
   //
   // IAccessible2 methods not implemented.
   //
   CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
-  CONTENT_EXPORT STDMETHODIMP
-  get_localizedExtendedRole(BSTR* localized_extended_role) override;
   CONTENT_EXPORT STDMETHODIMP
   get_nExtendedStates(LONG* n_extended_states) override;
   CONTENT_EXPORT STDMETHODIMP

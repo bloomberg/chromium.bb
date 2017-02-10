@@ -335,6 +335,7 @@
     font_family,
     html_tag,
     image_data_url,
+    key_shortcuts,
     // Only present when different from parent.
     language,
     name,
@@ -342,6 +343,7 @@
     live_status,
     placeholder,
     role,
+    role_description,
     shortcut,
     url,
     value
@@ -400,6 +402,7 @@
 
     // Relationships between this element and other elements.
     activedescendant_id,
+    errormessage_id,
     member_of_id,
     next_on_line_id,
     previous_on_line_id,
@@ -457,6 +460,9 @@
     live_atomic,
     live_busy,
 
+    // If a dialog box is marked as explicitly modal
+    modal,
+
     // ARIA readonly flag.
     aria_readonly,
 
@@ -481,6 +487,7 @@
     // Relationships between this element and other elements.
     controls_ids,
     describedby_ids,
+    details_ids,
     flowto_ids,
     labelledby_ids,
 

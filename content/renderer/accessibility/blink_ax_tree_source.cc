@@ -85,11 +85,10 @@ class AXContentNodeDataSparseAttributeAdapter
                           const blink::WebString& value) override {
     switch (attribute) {
       case blink::WebAXStringAttribute::AriaKeyShortcuts:
-        // TODO(dmazzoni): implement aria-keyshortcuts. http://crbug.com/644766
+        dst_->AddStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS, value.utf8());
         break;
       case blink::WebAXStringAttribute::AriaRoleDescription:
-        // TODO(dmazzoni): implement aria-roledescription.
-        // http://crbug.com/644766
+        dst_->AddStringAttribute(ui::AX_ATTR_ROLE_DESCRIPTION, value.utf8());
         break;
       default:
         NOTREACHED();
@@ -103,8 +102,7 @@ class AXContentNodeDataSparseAttributeAdapter
         dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.axID());
         break;
       case blink::WebAXObjectAttribute::AriaErrorMessage:
-        // TODO(dmazzoni): implement aria-errormessage.
-        // http://crbug.com/644766
+        dst_->AddIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, value.axID());
         break;
       default:
         NOTREACHED();
@@ -120,7 +118,8 @@ class AXContentNodeDataSparseAttributeAdapter
                                           dst_);
         break;
       case blink::WebAXObjectVectorAttribute::AriaDetails:
-        // TODO(dmazzoni): implement aria-details. http://crbug.com/644766
+        AddIntListAttributeFromWebObjects(ui::AX_ATTR_DETAILS_IDS, value,
+                                          dst_);
         break;
       case blink::WebAXObjectVectorAttribute::AriaFlowTo:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, value, dst_);
@@ -645,6 +644,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                              src.maxValueForRange());
       dst->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
                              src.minValueForRange());
+    }
+
+    if (dst->role == ui::AX_ROLE_DIALOG ||
+        dst->role == ui::AX_ROLE_ALERT_DIALOG) {
+      dst->AddBoolAttribute(ui::AX_ATTR_MODAL, src.isModal());
     }
 
     if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)

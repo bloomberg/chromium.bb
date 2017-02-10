@@ -269,7 +269,7 @@
     attribute,
     contents,
     placeholder,
-    related_element,
+    relatedElement,
     value
   };
 

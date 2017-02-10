@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -79,8 +80,20 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= ui::AX_INT_ATTRIBUTE_LAST;
        ++attr_index) {
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
-    if (node.HasIntAttribute(attr))
-      dict->SetInteger(ui::ToString(attr), node.GetIntAttribute(attr));
+    if (node.HasIntAttribute(attr)) {
+      int value = node.GetIntAttribute(attr);
+      if (ui::IsNodeIdIntAttribute(attr)) {
+        BrowserAccessibility* target = node.manager()->GetFromID(value);
+        if (target) {
+          dict->SetString(ui::ToString(attr),
+                          ui::ToString(target->GetData().role));
+        } else {
+          dict->SetString(ui::ToString(attr), "null");
+        }
+      } else {
+        dict->SetInteger(ui::ToString(attr), value);
+      }
+    }
   }
 
   for (int attr_index = ui::AX_FLOAT_ATTRIBUTE_NONE;
@@ -107,8 +120,17 @@ void AccessibilityTreeFormatterBlink::AddProperties(
       std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
       base::ListValue* value_list = new base::ListValue;
-      for (size_t i = 0; i < values.size(); ++i)
-        value_list->AppendInteger(values[i]);
+      for (size_t i = 0; i < values.size(); ++i) {
+        if (ui::IsNodeIdIntListAttribute(attr)) {
+          BrowserAccessibility* target = node.manager()->GetFromID(values[i]);
+          if (target)
+            value_list->AppendString(ui::ToString(target->GetData().role));
+          else
+            value_list->AppendString("null");
+        } else {
+          value_list->AppendInteger(values[i]);
+        }
+      }
       dict->Set(ui::ToString(attr), value_list);
     }
   }
@@ -178,15 +200,27 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
        attr_index <= ui::AX_INT_ATTRIBUTE_LAST;
        ++attr_index) {
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
-    int int_value;
-    if (!dict.GetInteger(ui::ToString(attr), &int_value))
-      continue;
-    WriteAttribute(false,
-                   base::StringPrintf(
-                       "%s=%d",
-                       ui::ToString(attr).c_str(),
-                       int_value),
-                   &line);
+    if (ui::IsNodeIdIntAttribute(attr)) {
+      std::string string_value;
+      if (!dict.GetString(ui::ToString(attr), &string_value))
+        continue;
+      WriteAttribute(false,
+                     base::StringPrintf(
+                         "%s=%s",
+                         ui::ToString(attr).c_str(),
+                         string_value.c_str()),
+                     &line);
+    } else {
+      int int_value;
+      if (!dict.GetInteger(ui::ToString(attr), &int_value))
+        continue;
+      WriteAttribute(false,
+                     base::StringPrintf(
+                         "%s=%d",
+                         ui::ToString(attr).c_str(),
+                         int_value),
+                     &line);
+    }
   }
 
   for (int attr_index = ui::AX_BOOL_ATTRIBUTE_NONE;
@@ -213,11 +247,17 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
       continue;
     std::string attr_string = ui::ToString(attr) + "=";
     for (size_t i = 0; i < value->GetSize(); ++i) {
-      int int_value;
-      value->GetInteger(i, &int_value);
       if (i > 0)
         attr_string += ",";
-      attr_string += base::IntToString(int_value);
+      if (ui::IsNodeIdIntListAttribute(attr)) {
+        std::string string_value;
+        value->GetString(i, &string_value);
+        attr_string += string_value;
+      } else {
+        int int_value;
+        value->GetInteger(i, &int_value);
+        attr_string += base::IntToString(int_value);
+      }
     }
     WriteAttribute(false, attr_string, &line);
   }
