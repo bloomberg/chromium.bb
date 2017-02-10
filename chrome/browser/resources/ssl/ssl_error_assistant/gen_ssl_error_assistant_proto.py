@@ -7,6 +7,7 @@
  Convert the ASCII ssl_error_assistant.asciipb proto into a binary resource.
 """
 
+import base64
 import os
 import sys
 
@@ -29,6 +30,10 @@ class SSLErrorAssistantProtoGenerator(BinaryProtoGenerator):
   def ValidatePb(self, opts, pb):
     assert pb.version_id > 0
     assert len(pb.captive_portal_cert) > 0
+    for cert in pb.captive_portal_cert:
+      assert(cert.sha256_hash.startswith("sha256/"))
+      decoded_hash = base64.b64decode(cert.sha256_hash[len("sha256/"):])
+      assert(len(decoded_hash) == 32)
 
   def ProcessPb(self, opts, pb):
     binary_pb_str = pb.SerializeToString()
