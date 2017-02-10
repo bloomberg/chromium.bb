@@ -493,8 +493,7 @@ bool RecoveryComponentInstaller::Uninstall() {
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
                                PrefService* prefs) {
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   if (SimulatingElevatedRecovery()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -509,8 +508,7 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
       FROM_HERE,
       base::Bind(&RecoveryRegisterHelper, cus, prefs),
       base::TimeDelta::FromSeconds(6));
-#endif
-#endif
+#endif  // !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
 }
 
 void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
