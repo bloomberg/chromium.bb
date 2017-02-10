@@ -77,12 +77,15 @@ class TestImporter(object):
         if options.target == 'wpt' and not options.ignore_exportable_commits:
             commits = self.exportable_but_not_exported_commits(temp_repo_path)
             if commits:
-                _log.error('There were exportable but not-yet-exported commits:')
+                # If there are exportable commits, then there's no more work
+                # to do for now. This isn't really an error case; we expect
+                # to hit this case some of the time.
+                _log.info('There were exportable but not-yet-exported commits:')
                 for commit in commits:
-                    _log.error('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
-                _log.error('Aborting import to prevent clobbering these commits.')
+                    _log.info('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
+                _log.info('Aborting import to prevent clobbering these commits.')
                 self.clean_up_temp_repo(temp_repo_path)
-                return 1
+                return 0
 
         import_commit = self.update(dest_dir_name, temp_repo_path, options.revision)
 

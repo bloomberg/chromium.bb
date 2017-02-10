@@ -22,13 +22,13 @@ class TestImporterTest(LoggingTestCase):
             MockChromiumCommit(sha='deadbeef', position=123)]
         importer.checkout_is_okay = lambda _: True
         return_code = importer.main(['wpt'])
-        self.assertEqual(return_code, 1)
+        self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
             'INFO: Local path: /mock-checkout/third_party/WebKit/wpt\n',
-            'ERROR: There were exportable but not-yet-exported commits:\n',
-            'ERROR:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
-            'ERROR: Aborting import to prevent clobbering these commits.\n',
+            'INFO: There were exportable but not-yet-exported commits:\n',
+            'INFO:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
+            'INFO: Aborting import to prevent clobbering these commits.\n',
             'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/wpt.\n',
         ])
 
