@@ -4,20 +4,26 @@
 
 package org.chromium.chrome.browser.offlinepages.downloads;
 
+import org.chromium.components.offlinepages.downloads.DownloadState;
+
 /** Class representing offline page or save page request to downloads UI. */
 public class OfflinePageDownloadItem {
     private final String mUrl;
+    private final int mDownloadState;
+    private final long mDownloadProgressBytes;
     private final String mTitle;
     private final String mGuid;
     private final String mTargetPath;
     private final long mStartTimeMs;
     private final long mTotalBytes;
 
-    public OfflinePageDownloadItem(
-            String guid, String url, String title, String targetPath,
+    public OfflinePageDownloadItem(String guid, String url, int downloadState,
+            long downloadProgressBytes, String title, String targetPath,
             long startTimeMs, long totalBytes) {
         mGuid = guid;
         mUrl = url;
+        mDownloadState = downloadState;
+        mDownloadProgressBytes = downloadProgressBytes;
         mTitle = title;
         mTargetPath = targetPath;
         mStartTimeMs = startTimeMs;
@@ -32,6 +38,20 @@ public class OfflinePageDownloadItem {
     /** @return URL related to the item. */
     public String getUrl() {
         return mUrl;
+    }
+
+    /** @return DownloadState value. */
+    public int getDownloadState() {
+        return mDownloadState;
+    }
+
+    /**
+     *  @return current download progress while the item is downloaded.
+     *  Returns 0 if the item is not currently downloading.
+     */
+    public long getDownloadProgressBytes() {
+        if (mDownloadState != DownloadState.IN_PROGRESS) return 0;
+        return mDownloadProgressBytes;
     }
 
     /** @return Title of the page. */

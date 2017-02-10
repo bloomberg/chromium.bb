@@ -18,19 +18,29 @@ namespace offline_pages {
 struct OfflinePageItem;
 class SavePageRequest;
 
+// The abstract "download item" that may be a media file, a web page (together
+// with all the resources) or a PWA web package. This is a data bag that exposes
+// only bits potentially visible by the user, not the internal data.
 struct DownloadUIItem {
  public:
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages.downloads
+  enum DownloadState { PENDING = 0, IN_PROGRESS = 1, PAUSED = 2, COMPLETE = 3 };
+
   DownloadUIItem();
   explicit DownloadUIItem(const OfflinePageItem& page);
   explicit DownloadUIItem(const SavePageRequest& request);
   DownloadUIItem(const DownloadUIItem& other);
   ~DownloadUIItem();
 
-  // Unique id.
+  // Unique ID.
   std::string guid;
 
   // The URL of the captured page.
   GURL url;
+
+  DownloadState download_state;
+
+  int64_t download_progress_bytes;
 
   // The Title of the captured page, if any. It can be empty string either
   // because the page is not yet fully loaded, or because it doesn't have any.

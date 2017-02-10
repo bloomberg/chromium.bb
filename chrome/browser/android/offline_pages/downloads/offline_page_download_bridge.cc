@@ -42,10 +42,41 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
+namespace {
+const char kDownloadUIAdapterKey[] = "download-ui-adapter";
+}
+
 namespace offline_pages {
 namespace android {
 
 namespace {
+
+class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
+ public:
+  explicit DownloadUIAdapterDelegate(OfflinePageModel* model);
+
+  // DownloadUIAdapter::Delegate
+  bool IsVisibleInUI(const ClientId& client_id) override;
+  bool IsTemporarilyHiddenInUI(const ClientId& client_id) override;
+
+ private:
+  // Not owned, cached service pointer.
+  OfflinePageModel* model_;
+};
+
+DownloadUIAdapterDelegate::DownloadUIAdapterDelegate(OfflinePageModel* model)
+    : model_(model) {}
+
+bool DownloadUIAdapterDelegate::IsVisibleInUI(const ClientId& client_id) {
+  const std::string& name_space = client_id.name_space;
+  return model_->GetPolicyController()->IsSupportedByDownload(name_space) &&
+         base::IsValidGUID(client_id.id);
+}
+
+bool DownloadUIAdapterDelegate::IsTemporarilyHiddenInUI(
+    const ClientId& client_id) {
+  return false;
+}
 
 // TODO(dewittj): Move to Download UI Adapter.
 content::WebContents* GetWebContentsFromJavaTab(
@@ -185,7 +216,8 @@ void ToJavaOfflinePageDownloadItemList(
   for (const auto item : items) {
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
         env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid),
-        ConvertUTF8ToJavaString(env, item->url.spec()),
+        ConvertUTF8ToJavaString(env, item->url.spec()), item->download_state,
+        item->download_progress_bytes,
         ConvertUTF16ToJavaString(env, item->title),
         ConvertUTF8ToJavaString(env, item->target_path.value()),
         item->start_time.ToJavaTime(), item->total_bytes);
@@ -197,7 +229,8 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
     const DownloadUIItem& item) {
   return Java_OfflinePageDownloadBridge_createDownloadItem(
       env, ConvertUTF8ToJavaString(env, item.guid),
-      ConvertUTF8ToJavaString(env, item.url.spec()),
+      ConvertUTF8ToJavaString(env, item.url.spec()), item.download_state,
+      item.download_progress_bytes,
       ConvertUTF16ToJavaString(env, item.title),
       ConvertUTF8ToJavaString(env, item.target_path.value()),
       item.start_time.ToJavaTime(), item.total_bytes);
@@ -441,9 +474,20 @@ static jlong Init(JNIEnv* env,
 
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
+  DCHECK(offline_page_model);
 
-  DownloadUIAdapter* adapter =
-      DownloadUIAdapter::FromOfflinePageModel(offline_page_model);
+  DownloadUIAdapter* adapter = static_cast<DownloadUIAdapter*>(
+      offline_page_model->GetUserData(kDownloadUIAdapterKey));
+
+  if (!adapter) {
+    RequestCoordinator* request_coordinator =
+        RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+    DCHECK(request_coordinator);
+    adapter = new DownloadUIAdapter(
+        offline_page_model, request_coordinator,
+        base::MakeUnique<DownloadUIAdapterDelegate>(offline_page_model));
+    offline_page_model->SetUserData(kDownloadUIAdapterKey, adapter);
+  }
 
   return reinterpret_cast<jlong>(
       new OfflinePageDownloadBridge(env, obj, adapter, browser_context));

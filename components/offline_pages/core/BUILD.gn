@@ -122,6 +122,7 @@ if (is_android) {
       "background/request_notifier.h",
       "background/request_queue_results.h",
       "background/save_page_request.h",
+      "downloads/download_ui_item.h",
       "offline_page_types.h",
       "offline_store_types.h",
     ]

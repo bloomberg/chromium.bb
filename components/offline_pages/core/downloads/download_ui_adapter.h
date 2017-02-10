@@ -12,6 +12,7 @@
 
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/downloads/download_ui_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
@@ -22,11 +23,33 @@ namespace offline_pages {
 // share UI with Downloads).
 // An instance of this class is owned by OfflinePageModel and is shared between
 // UI components if needed. It manages the cache of DownloadUIItems, so after
-// initial load the UI components can synchronously pull the whoel list or any
+// initial load the UI components can synchronously pull the whole list or any
 // item by its guid.
+// The items are exposed to UI layer (consumer of this class) as an observable
+// collection of DownloadUIItems. The consumer is supposed to implement
+// the DownloadUIAdapter::Observer interface. The creator of the adapter
+// also passes in the Delegate that determines which items in the underlying
+// OfflinePage backend are to be included (visible) in the collection.
 class DownloadUIAdapter : public OfflinePageModel::Observer,
+                          public RequestCoordinator::Observer,
                           public base::SupportsUserData::Data {
  public:
+  // Delegate, used to customize behavior of this Adapter.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    // Returns true if the page or request with the specified Client Id should
+    // be visible in the collection of items exposed by this Adapter. This also
+    // indicates if Observers will be notified about changes for the given page.
+    virtual bool IsVisibleInUI(const ClientId& client_id) = 0;
+    // Sometimes the item should be in the collection but not visible in the UI,
+    // temporarily. This is a relatively special case, for example for Last_N
+    // snapshots that are only valid while their tab is alive. When the status
+    // of temporary visibility changes, the Delegate is supposed to call
+    // DownloadUIAdapter::TemporarilyHiddenStatusChanged().
+    virtual bool IsTemporarilyHiddenInUI(const ClientId& client_id) = 0;
+  };
+
   // Observer, normally implemented by UI or a Bridge.
   class Observer {
    public:
@@ -50,19 +73,14 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
     virtual ~Observer() = default;
   };
 
-  explicit DownloadUIAdapter(OfflinePageModel* model);
+  DownloadUIAdapter(OfflinePageModel* model,
+                    RequestCoordinator* coordinator,
+                    std::unique_ptr<Delegate> delegate);
   ~DownloadUIAdapter() override;
-
-  static DownloadUIAdapter* FromOfflinePageModel(
-      OfflinePageModel* offline_page_model);
-
-  // Checks a client ID for proper namespace and ID format to be shown in the
-  // Downloads Home UI.
-  bool IsVisibleInUI(const ClientId& page);
 
   // This adapter is potentially shared by UI elements, each of which adds
   // itself as an observer.
-  // When the last observer si removed, cached list of items is destroyed and
+  // When the last observer is removed, cached list of items is destroyed and
   // next time the initial loading will take longer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -85,16 +103,43 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void OfflinePageDeleted(int64_t offline_id,
                           const ClientId& client_id) override;
 
+  // RequestCoordinator::Observer
+  void OnAdded(const SavePageRequest& request) override;
+  void OnCompleted(const SavePageRequest& request,
+                   RequestNotifier::BackgroundSavePageResult status) override;
+  void OnChanged(const SavePageRequest& request) override;
+
+  // For the DownloadUIAdapter::Delegate, to report the temporary hidden status
+  // change.
+  void TemporaryHiddenStatusChanged(const ClientId& client_id);
+
  private:
-  enum class State { NOT_LOADED, LOADING, LOADED };
+  enum class State { NOT_LOADED, LOADING_PAGES, LOADING_REQUESTS, LOADED };
 
   struct ItemInfo {
     explicit ItemInfo(const OfflinePageItem& page);
+    explicit ItemInfo(const SavePageRequest& request);
     ~ItemInfo();
 
     std::unique_ptr<DownloadUIItem> ui_item;
+
     // Additional cached data, not exposed to UI through DownloadUIItem.
+    // Indicates if this item wraps the completed page or in-progress request.
+    bool is_request;
+
+    // These are shared between pages and requests.
     int64_t offline_id;
+
+    // ClientId is here to support the Delegate that can toggle temporary
+    // visibility of the items in the collection.
+    ClientId client_id;
+
+    // This item is present in the collection but temporarily hidden from UI.
+    // This is useful when unrelated reasons cause the UI item to be excluded
+    // (filtered out) from UI. When item becomes temporarily hidden the adapter
+    // issues ItemDeleted notification to observers, and ItemAdded when it
+    // becomes visible again.
+    bool temporarily_hidden;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ItemInfo);
@@ -107,11 +152,22 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
 
   // Task callbacks.
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
+  void OnRequestsLoaded(std::vector<std::unique_ptr<SavePageRequest>> requests);
+
   void NotifyItemsLoaded(Observer* observer);
   void OnDeletePagesDone(DeletePageResult result);
 
+  void AddItemHelper(std::unique_ptr<ItemInfo> item_info);
+  void DeleteItemHelper(const std::string& guid);
+
   // Always valid, this class is a member of the model.
   OfflinePageModel* model_;
+
+  // Always valid, a service.
+  RequestCoordinator* request_coordinator_;
+
+  // A delegate, supplied at construction.
+  std::unique_ptr<Delegate> delegate_;
 
   State state_;
 

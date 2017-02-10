@@ -315,18 +315,23 @@ public class StubbedProvider implements BackendProvider {
     public static OfflinePageDownloadItem createOfflineItem(int which, String date)
             throws Exception {
         long startTime = dateToEpoch(date);
+        int downloadState = org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE;
         if (which == 0) {
             return new OfflinePageDownloadItem("offline_guid_1", "https://url.com",
-                    "page 1", "/data/fake_path/Downloads/first_file", startTime, 1000);
+                    downloadState, 0, "page 1",
+                    "/data/fake_path/Downloads/first_file", startTime, 1000);
         } else if (which == 1) {
             return new OfflinePageDownloadItem("offline_guid_2", "http://stuff_and_things.com",
-                    "page 2", "/data/fake_path/Downloads/file_two", startTime, 10000);
+                    downloadState, 0, "page 2",
+                    "/data/fake_path/Downloads/file_two", startTime, 10000);
         } else if (which == 2) {
             return new OfflinePageDownloadItem("offline_guid_3", "https://url.com",
-                    "page 3", "/data/fake_path/Downloads/3_file", startTime, 100000);
+                    downloadState, 100, "page 3",
+                    "/data/fake_path/Downloads/3_file", startTime, 100000);
         } else if (which == 3) {
             return new OfflinePageDownloadItem("offline_guid_4", "https://thangs.com",
-                    "page 4", "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L);
+                    downloadState, 1024, "page 4",
+                    "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L);
         } else {
             return null;
         }

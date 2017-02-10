@@ -13,10 +13,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +21,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
+
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,18 +153,22 @@ public class OfflinePageDownloadBridgeTest {
         List<OfflinePageDownloadItem> list = new ArrayList<>();
         OfflinePageDownloadItem item1 = createDownloadItem1();
         OfflinePageDownloadBridge.createDownloadItemAndAddToList(list, item1.getGuid(),
-                item1.getUrl(), item1.getTitle(), item1.getTargetPath(), item1.getStartTimeMs(),
+                item1.getUrl(), item1.getDownloadState(), item1.getDownloadProgressBytes(),
+                item1.getTitle(), item1.getTargetPath(), item1.getStartTimeMs(),
                 item1.getTotalBytes());
         assertEquals(list.size(), 1);
 
         OfflinePageDownloadItem item2 = createDownloadItem2();
         OfflinePageDownloadBridge.createDownloadItemAndAddToList(list, item2.getGuid(),
-                item2.getUrl(), item2.getTitle(), item2.getTargetPath(), item2.getStartTimeMs(),
+                item2.getUrl(),  item2.getDownloadState(), item2.getDownloadProgressBytes(),
+                item2.getTitle(), item2.getTargetPath(), item2.getStartTimeMs(),
                 item2.getTotalBytes());
         assertEquals(list.size(), 2);
 
         assertEquals(list.get(0).getGuid(), item1.getGuid());
         assertEquals(list.get(0).getUrl(), item1.getUrl());
+        assertEquals(list.get(0).getDownloadState(), item1.getDownloadState());
+        assertEquals(list.get(0).getDownloadProgressBytes(), item1.getDownloadProgressBytes());
         assertEquals(list.get(0).getTitle(), item1.getTitle());
         assertEquals(list.get(0).getTargetPath(), item1.getTargetPath());
         assertEquals(list.get(0).getStartTimeMs(), item1.getStartTimeMs());
@@ -171,6 +176,8 @@ public class OfflinePageDownloadBridgeTest {
 
         assertEquals(list.get(1).getGuid(), item2.getGuid());
         assertEquals(list.get(1).getUrl(), item2.getUrl());
+        assertEquals(list.get(1).getDownloadState(), item2.getDownloadState());
+        assertEquals(list.get(1).getDownloadProgressBytes(), item2.getDownloadProgressBytes());
         assertEquals(list.get(1).getTitle(), item2.getTitle());
         assertEquals(list.get(1).getTargetPath(), item2.getTargetPath());
         assertEquals(list.get(1).getStartTimeMs(), item2.getStartTimeMs());
@@ -183,6 +190,7 @@ public class OfflinePageDownloadBridgeTest {
         OfflinePageDownloadItem item = createDownloadItem2();
         OfflinePageDownloadItem result =
                 OfflinePageDownloadBridge.createDownloadItem(item.getGuid(), item.getUrl(),
+                        item.getDownloadState(), item.getDownloadProgressBytes(),
                         item.getTitle(), item.getTargetPath(), item.getStartTimeMs(),
                         item.getTotalBytes());
         assertEquals(result.getGuid(), item.getGuid());
@@ -195,13 +203,13 @@ public class OfflinePageDownloadBridgeTest {
 
     private OfflinePageDownloadItem createDownloadItem1() {
         return new OfflinePageDownloadItem("9a4703bd-7123-4e05-ad81-f70df8934e73",
-                "https://www.google.com/", "test title 1",
+                "https://www.google.com/", 0, 153, "test title 1",
                 "/storage/offline_pages/www.google.com.mhtml", 1467314220000L, 123456);
     }
 
     private OfflinePageDownloadItem createDownloadItem2() {
         return new OfflinePageDownloadItem("28b7dbad-7920-4ca7-809e-10ad111ef3b5",
-                "https://play.google.com/", "test title 2",
+                "https://play.google.com/", 1, 371, "test title 2",
                 "/storage/offline_pages/play.google.com.mhtml", 1467408960000L, 765432);
     }
 
