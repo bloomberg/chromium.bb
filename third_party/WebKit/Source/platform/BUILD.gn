@@ -24,8 +24,6 @@ component("blink_common") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
   sources = [
-    "exported/FilePathConversion.cpp",
-    "exported/URLConversion.cpp",
     "exported/WebCString.cpp",
     "exported/WebString.cpp",
   ]
@@ -489,9 +487,11 @@ component("platform") {
     "credentialmanager/PlatformFederatedCredential.h",
     "credentialmanager/PlatformPasswordCredential.cpp",
     "credentialmanager/PlatformPasswordCredential.h",
+    "exported/FilePathConversion.cpp",
     "exported/InterfaceRegistry.cpp",
     "exported/Platform.cpp",
     "exported/ServiceRegistry.cpp",
+    "exported/URLConversion.cpp",
     "exported/WebActiveGestureAnimation.cpp",
     "exported/WebActiveGestureAnimation.h",
     "exported/WebAudioBus.cpp",
