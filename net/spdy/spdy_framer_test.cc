@@ -4041,8 +4041,8 @@ TEST_P(SpdyFramerTest, OnBlocked) {
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
 }
 
-TEST_P(SpdyFramerTest, OnAltSvc) {
-  const SpdyStreamId kStreamId = 1;
+TEST_P(SpdyFramerTest, OnAltSvcWithOrigin) {
+  const SpdyStreamId kStreamId = 0;  // Stream id must be zero if origin given.
 
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
@@ -4058,7 +4058,7 @@ TEST_P(SpdyFramerTest, OnAltSvc) {
   EXPECT_CALL(visitor,
               OnAltSvc(kStreamId, StringPiece("o_r|g!n"), altsvc_vector));
 
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.set_origin("o_r|g!n");
   altsvc_ir.add_altsvc(altsvc1);
   altsvc_ir.add_altsvc(altsvc2);
@@ -4086,7 +4086,7 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
   altsvc_vector.push_back(altsvc2);
   EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece(""), altsvc_vector));
 
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.add_altsvc(altsvc1);
   altsvc_ir.add_altsvc(altsvc2);
   SpdySerializedFrame frame(framer.SerializeFrame(altsvc_ir));
@@ -4098,13 +4098,15 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
 }
 
 TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
+  const SpdyStreamId kStreamId = 0;  // Stream id must be zero if origin given.
+
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
 
   EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
 
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.set_origin("o1");
   altsvc_ir.add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
       "pid1", "host", 443, 5, SpdyAltSvcWireFormat::VersionVector()));

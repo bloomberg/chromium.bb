@@ -162,13 +162,16 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     if (!latched_probable_http_response_) {
       latched_probable_http_response_ = header.IsProbableHttpResponse();
     }
+    const uint8_t raw_frame_type = static_cast<uint8_t>(header.type);
+    visitor()->OnCommonHeader(header.stream_id, header.payload_length,
+                              raw_frame_type, header.flags);
     if (!IsSupportedHttp2FrameType(header.type) &&
         header.type != kFrameTypeBlocked) {
       // In HTTP2 we ignore unknown frame types for extensibility, as long as
       // the rest of the control frame header is valid.
       // We rely on the visitor to check validity of stream_id.
-      bool valid_stream = visitor()->OnUnknownFrame(
-          header.stream_id, static_cast<uint8_t>(header.type));
+      bool valid_stream =
+          visitor()->OnUnknownFrame(header.stream_id, raw_frame_type);
       if (has_expected_frame_type_ && header.type != expected_frame_type_) {
         // Report an unexpected frame error and close the connection if we
         // expect a known frame type (probably CONTINUATION) and receive an
@@ -473,12 +476,18 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     DVLOG(1) << "OnAltSvcStart: " << header
              << "; origin_length: " << origin_length
              << "; value_length: " << value_length;
-    if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
-      frame_header_ = header;
-      has_frame_header_ = true;
-      alt_svc_origin_.clear();
-      alt_svc_value_.clear();
+    if (!IsOkToStartFrame(header)) {
+      return;
     }
+    // Per RFC7838, origin_length must be zero IFF the stream id is non-zero.
+    if ((origin_length == 0 && !HasRequiredStreamId(header)) ||
+        (origin_length != 0 && !HasRequiredStreamIdZero(header))) {
+      return;
+    }
+    frame_header_ = header;
+    has_frame_header_ = true;
+    alt_svc_origin_.clear();
+    alt_svc_value_.clear();
   }
 
   void OnAltSvcOriginData(const char* data, size_t len) override {
