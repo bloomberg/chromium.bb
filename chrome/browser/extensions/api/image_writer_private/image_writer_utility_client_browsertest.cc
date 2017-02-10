@@ -259,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteVerify) {
   EXPECT_TRUE(error().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteCancel) {
+// TODO(crbug.com/690717): test is flaky.
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, DISABLED_WriteCancel) {
   FillImageFileWithPattern('a');
   FillDeviceFileWithPattern(0);
 
@@ -305,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, Verify) {
   EXPECT_TRUE(error().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, VerifyCancel) {
+// TODO(crbug.com/690717): test is flaky.
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, DISABLED_VerifyCancel) {
   FillImageFileWithPattern('s');
   FillDeviceFileWithPattern('s');
 
