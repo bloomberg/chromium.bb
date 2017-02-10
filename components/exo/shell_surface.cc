@@ -10,7 +10,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_state_aura.h"
@@ -32,7 +31,6 @@
 #include "ui/base/class_property.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -143,42 +141,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   views::Widget* const widget_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
-};
-
-// Handles a user's fullscreen request (Shift+F4/F4).
-class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate,
-                                  public views::WidgetObserver {
- public:
-  explicit CustomWindowStateDelegate(views::Widget* widget) : widget_(widget) {
-    widget_->AddObserver(this);
-  }
-  ~CustomWindowStateDelegate() override {
-    if (widget_)
-      widget_->RemoveObserver(this);
-  }
-
-  // Overridden from ash::wm::WindowStateDelegate:
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
-    if (widget_) {
-      bool enter_fullscreen = !window_state->IsFullscreen();
-      widget_->SetFullscreen(enter_fullscreen);
-      ash::wm::WindowState* window_state =
-          ash::wm::GetWindowState(widget_->GetNativeWindow());
-      window_state->set_in_immersive_fullscreen(enter_fullscreen);
-    }
-    return true;
-  }
-
-  // Overridden from views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override {
-    widget_->RemoveObserver(this);
-    widget_ = nullptr;
-  }
-
- private:
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowStateDelegate);
 };
 
 class ShellSurfaceWidget : public views::Widget {
@@ -843,11 +805,8 @@ views::View* ShellSurface::GetContentsView() {
 views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
     views::Widget* widget) {
   aura::Window* window = widget_->GetNativeWindow();
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  // Set delegate for handling of fullscreening.
-  window_state->SetDelegate(std::unique_ptr<ash::wm::WindowStateDelegate>(
-      new CustomWindowStateDelegate(widget_)));
-
+  // ShellSurfaces always use immersive mode.
+  window->SetProperty(aura::client::kImmersiveFullscreenKey, true);
   if (frame_enabled_)
     return new ash::CustomFrameViewAsh(widget);
 
