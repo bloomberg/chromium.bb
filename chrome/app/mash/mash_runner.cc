@@ -159,6 +159,8 @@ int MashRunner::Run() {
 }
 
 int MashRunner::RunMain() {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   mojo::edk::Init();
@@ -185,9 +187,9 @@ int MashRunner::RunServiceManagerInMain() {
   service_manager::BackgroundServiceManager background_service_manager(
       &service_process_launcher_delegate, CreateChromeMashCatalog());
   service_manager::mojom::ServicePtr service;
-  context_.reset(new service_manager::ServiceContext(
+  service_manager::ServiceContext context(
       base::MakeUnique<mash::MashPackagedService>(),
-      service_manager::mojom::ServiceRequest(&service)));
+      service_manager::mojom::ServiceRequest(&service));
   background_service_manager.RegisterService(
       service_manager::Identity(
           kChromeMashServiceName, service_manager::mojom::kRootUserID),
@@ -202,13 +204,13 @@ int MashRunner::RunServiceManagerInMain() {
 
   // Ping services that we know we want to launch on startup (UI service,
   // window manager, quick launch app).
-  context_->connector()->Connect(ui::mojom::kServiceName);
-  context_->connector()->Connect(mash::common::GetWindowManagerServiceName());
-  context_->connector()->Connect(mash::quick_launch::mojom::kServiceName);
+  context.connector()->Connect(ui::mojom::kServiceName);
+  context.connector()->Connect(mash::common::GetWindowManagerServiceName());
+  context.connector()->Connect(mash::quick_launch::mojom::kServiceName);
 
   run_loop.Run();
 
-  context_.reset();
+  // |context| must be destroyed before the message loop.
   return exit_value;
 }
 
@@ -230,12 +232,13 @@ void MashRunner::StartChildApp(
   // for now.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
-  context_.reset(new service_manager::ServiceContext(
+  service_manager::ServiceContext context(
       base::MakeUnique<mash::MashPackagedService>(),
-      std::move(service_request)));
+      std::move(service_request));
   // Quit the child process if it loses its connection to service manager.
-  context_->SetConnectionLostClosure(run_loop.QuitClosure());
+  context.SetConnectionLostClosure(run_loop.QuitClosure());
   run_loop.Run();
+  // |context| must be destroyed before |message_loop|.
 }
 
 int MashMain() {
@@ -256,10 +259,6 @@ int MashMain() {
   // service processes is handled by the OS-level crash_reporter.
   base::debug::EnableInProcessStackDumping();
 #endif
-
-  std::unique_ptr<base::MessageLoop> message_loop;
-  if (!IsChild())
-    message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTraceToConsole)) {
