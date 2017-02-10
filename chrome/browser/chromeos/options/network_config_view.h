@@ -62,7 +62,6 @@ class NetworkConfigView : public views::DialogDelegateView,
   bool Accept() override;
   views::View* CreateExtraView() override;
   views::View* GetInitiallyFocusedView() override;
-  int GetDefaultDialogButton() const override;
 
   // views::WidgetDelegate methods.
   base::string16 GetWindowTitle() const override;

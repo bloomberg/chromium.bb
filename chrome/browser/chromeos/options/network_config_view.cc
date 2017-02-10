@@ -200,10 +200,6 @@ views::View* NetworkConfigView::GetInitiallyFocusedView() {
   return child_config_view_->GetInitiallyFocusedView();
 }
 
-int NetworkConfigView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 NetworkConfigView::GetWindowTitle() const {
   DCHECK(!child_config_view_->GetTitle().empty());
   return child_config_view_->GetTitle();
