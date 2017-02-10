@@ -48,6 +48,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeFeature,
     &kContextualSearchSingleActions,
     &kContextualSearchUrlActions,
+    &kCustomFeedbackUi,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNoCreditCardAbort,
@@ -96,6 +97,9 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
 
 const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
