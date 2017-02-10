@@ -35,6 +35,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingStyle.h"
+#include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
@@ -322,10 +323,12 @@ StyledMarkupTraverser<Strategy>::StyledMarkupTraverser(
     return;
   if (shouldAnnotate()) {
     m_wrappingStyle =
-        EditingStyle::wrappingStyleForAnnotatedSerialization(parent);
+        EditingStyleUtilities::createWrappingStyleForAnnotatedSerialization(
+            parent);
     return;
   }
-  m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(parent);
+  m_wrappingStyle =
+      EditingStyleUtilities::createWrappingStyleForSerialization(parent);
 }
 
 template <typename Strategy>

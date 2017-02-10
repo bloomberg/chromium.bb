@@ -37,6 +37,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TagCollection.h"
+#include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
@@ -291,7 +292,8 @@ static bool executeToggleStyleInList(LocalFrame& frame,
                                      CSSPropertyID propertyID,
                                      CSSValue* value) {
   EditingStyle* selectionStyle =
-      EditingStyle::styleAtSelectionStart(frame.selection().selection());
+      EditingStyleUtilities::createStyleAtSelectionStart(
+          frame.selection().selection());
   if (!selectionStyle || !selectionStyle->style())
     return false;
 
@@ -455,9 +457,10 @@ static TriState stateTextWritingDirection(LocalFrame& frame,
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   bool hasNestedOrMultipleEmbeddings;
-  WritingDirection selectionDirection = EditingStyle::textDirectionForSelection(
-      frame.selection().selection(), frame.editor().typingStyle(),
-      hasNestedOrMultipleEmbeddings);
+  WritingDirection selectionDirection =
+      EditingStyleUtilities::textDirectionForSelection(
+          frame.selection().selection(), frame.editor().typingStyle(),
+          hasNestedOrMultipleEmbeddings);
   // FXIME: We should be returning MixedTriState when selectionDirection ==
   // direction && hasNestedOrMultipleEmbeddings
   return (selectionDirection == direction && !hasNestedOrMultipleEmbeddings)

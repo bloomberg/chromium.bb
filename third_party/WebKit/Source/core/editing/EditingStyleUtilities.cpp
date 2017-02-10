@@ -47,7 +47,8 @@ bool EditingStyleUtilities::hasAncestorVerticalAlignStyle(Node& node,
   return false;
 }
 
-EditingStyle* EditingStyleUtilities::wrappingStyleForAnnotatedSerialization(
+EditingStyle*
+EditingStyleUtilities::createWrappingStyleForAnnotatedSerialization(
     ContainerNode* context) {
   EditingStyle* wrappingStyle =
       EditingStyle::create(context, EditingStyle::EditingPropertiesInEffect);
@@ -67,7 +68,7 @@ EditingStyle* EditingStyleUtilities::wrappingStyleForAnnotatedSerialization(
   return wrappingStyle;
 }
 
-EditingStyle* EditingStyleUtilities::wrappingStyleForSerialization(
+EditingStyle* EditingStyleUtilities::createWrappingStyleForSerialization(
     ContainerNode* context) {
   DCHECK(context);
   EditingStyle* wrappingStyle = EditingStyle::create();
@@ -87,7 +88,7 @@ EditingStyle* EditingStyleUtilities::wrappingStyleForSerialization(
   return wrappingStyle;
 }
 
-EditingStyle* EditingStyleUtilities::styleAtSelectionStart(
+EditingStyle* EditingStyleUtilities::createStyleAtSelectionStart(
     const VisibleSelection& selection,
     bool shouldUseBackgroundColorInEffect,
     MutableStylePropertySet* styleToCheck) {

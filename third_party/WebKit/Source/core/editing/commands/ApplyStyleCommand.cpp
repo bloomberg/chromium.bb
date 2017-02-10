@@ -37,6 +37,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
+#include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/VisibleUnits.h"
@@ -656,7 +657,7 @@ static HTMLElement* highestEmbeddingAncestor(Node* startNode,
                                              Node* enclosingNode) {
   for (Node* n = startNode; n && n != enclosingNode; n = n->parentNode()) {
     if (n->isHTMLElement() &&
-        EditingStyle::isEmbedOrIsolate(getIdentifierValue(
+        EditingStyleUtilities::isEmbedOrIsolate(getIdentifierValue(
             CSSComputedStyleDeclaration::create(n), CSSPropertyUnicodeBidi))) {
       return toHTMLElement(n);
     }

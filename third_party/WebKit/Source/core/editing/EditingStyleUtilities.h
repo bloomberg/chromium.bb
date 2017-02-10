@@ -49,10 +49,11 @@ class EditingStyleUtilities {
   STATIC_ONLY(EditingStyleUtilities);
 
  public:
-  static EditingStyle* wrappingStyleForAnnotatedSerialization(
+  static EditingStyle* createWrappingStyleForAnnotatedSerialization(
       ContainerNode* context);
-  static EditingStyle* wrappingStyleForSerialization(ContainerNode* context);
-  static EditingStyle* styleAtSelectionStart(
+  static EditingStyle* createWrappingStyleForSerialization(
+      ContainerNode* context);
+  static EditingStyle* createStyleAtSelectionStart(
       const VisibleSelection&,
       bool shouldUseBackgroundColorInEffect = false,
       MutableStylePropertySet* styleToCheck = nullptr);

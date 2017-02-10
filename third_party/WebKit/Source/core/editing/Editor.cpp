@@ -41,6 +41,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
@@ -795,9 +796,10 @@ void Editor::applyParagraphStyleToSelection(StylePropertySet* style,
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID,
                                     const String& value) const {
   EditingStyle* styleToCheck = EditingStyle::create(propertyID, value);
-  EditingStyle* styleAtStart = EditingStyle::styleAtSelectionStart(
-      frame().selection().selection(), propertyID == CSSPropertyBackgroundColor,
-      styleToCheck->style());
+  EditingStyle* styleAtStart =
+      EditingStyleUtilities::createStyleAtSelectionStart(
+          frame().selection().selection(),
+          propertyID == CSSPropertyBackgroundColor, styleToCheck->style());
   return styleToCheck->triStateOfStyle(styleAtStart);
 }
 
@@ -808,9 +810,10 @@ TriState Editor::selectionHasStyle(CSSPropertyID propertyID,
 }
 
 String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID) {
-  EditingStyle* selectionStyle = EditingStyle::styleAtSelectionStart(
-      frame().selection().selection(),
-      propertyID == CSSPropertyBackgroundColor);
+  EditingStyle* selectionStyle =
+      EditingStyleUtilities::createStyleAtSelectionStart(
+          frame().selection().selection(),
+          propertyID == CSSPropertyBackgroundColor);
   if (!selectionStyle || !selectionStyle->style())
     return String();
 

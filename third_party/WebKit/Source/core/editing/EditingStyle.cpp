@@ -48,6 +48,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
+#include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -433,7 +434,8 @@ static inline Color getBackgroundColor(StylePropertySet* style) {
 }
 
 static inline Color backgroundColorInEffect(Node* node) {
-  return cssValueToColor(backgroundColorValueInEffect(node));
+  return cssValueToColor(
+      EditingStyleUtilities::backgroundColorValueInEffect(node));
 }
 
 static int textAlignResolvingStartAndEnd(int textAlign, int direction) {
@@ -478,7 +480,8 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude) {
           : editingStyleFromComputedStyle(computedStyleAtPosition);
 
   if (propertiesToInclude == EditingPropertiesInEffect) {
-    if (const CSSValue* value = backgroundColorValueInEffect(node))
+    if (const CSSValue* value =
+            EditingStyleUtilities::backgroundColorValueInEffect(node))
       m_mutableStyle->setProperty(CSSPropertyBackgroundColor, value->cssText());
     if (const CSSValue* value = computedStyleAtPosition->getPropertyCSSValue(
             CSSPropertyWebkitTextDecorationsInEffect))
@@ -571,7 +574,7 @@ bool EditingStyle::textDirection(WritingDirection& writingDirection) const {
     return false;
 
   CSSValueID unicodeBidiValue = toCSSIdentifierValue(unicodeBidi)->getValueID();
-  if (isEmbedOrIsolate(unicodeBidiValue)) {
+  if (EditingStyleUtilities::isEmbedOrIsolate(unicodeBidiValue)) {
     const CSSValue* direction =
         m_mutableStyle->getPropertyCSSValue(CSSPropertyDirection);
     if (!direction || !direction->isIdentifierValue())
@@ -789,8 +792,10 @@ TriState EditingStyle::triStateOfStyle(
   if (selection.isNone())
     return FalseTriState;
 
-  if (selection.isCaret())
-    return triStateOfStyle(EditingStyle::styleAtSelectionStart(selection));
+  if (selection.isCaret()) {
+    return triStateOfStyle(
+        EditingStyleUtilities::createStyleAtSelectionStart(selection));
+  }
 
   TriState state = FalseTriState;
   bool nodeIsStart = true;
@@ -808,7 +813,8 @@ TriState EditingStyle::triStateOfStyle(
                 CSSValueBaseline) {
           const CSSIdentifierValue* verticalAlign = toCSSIdentifierValue(
               m_mutableStyle->getPropertyCSSValue(CSSPropertyVerticalAlign));
-          if (hasAncestorVerticalAlignStyle(node, verticalAlign->getValueID()))
+          if (EditingStyleUtilities::hasAncestorVerticalAlignStyle(
+                  node, verticalAlign->getValueID()))
             node.mutableComputedStyle()->setVerticalAlign(
                 verticalAlign->convertTo<EVerticalAlign>());
         }
@@ -1131,7 +1137,8 @@ void EditingStyle::prepareToApplyAt(
   if (getFontColor(m_mutableStyle.get()) == getFontColor(styleAtPosition))
     m_mutableStyle->removeProperty(CSSPropertyColor);
 
-  if (hasTransparentBackgroundColor(m_mutableStyle.get()) ||
+  if (EditingStyleUtilities::hasTransparentBackgroundColor(
+          m_mutableStyle.get()) ||
       cssValueToColor(
           m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor)) ==
           backgroundColorInEffect(position.computeContainerNode()))
