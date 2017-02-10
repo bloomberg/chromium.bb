@@ -2277,21 +2277,24 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
                   constants.HWTEST_MOBLAB_QUICK_SUITE,
                   num=1, timeout=120*60,
                   pool=constants.HWTEST_PALADIN_POOL)
-          ])
+          ],
+          hw_tests_override=None)
     if board in _paladin_cheets_hwtest_boards:
       customizations.update(
           hw_tests=[
               config_lib.HWTestConfig(
                   constants.HWTEST_ARC_COMMIT_SUITE,
                   pool=constants.HWTEST_PALADIN_POOL)
-          ])
+          ],
+          hw_tests_override=None)
     if board in _paladin_jetstream_hwtest_boards:
       customizations.update(
           hw_tests=[
               config_lib.HWTestConfig(
                   constants.HWTEST_JETSTREAM_COMMIT_SUITE,
                   pool=constants.HWTEST_PALADIN_POOL)
-          ])
+          ],
+          hw_tests_override=None)
     if board not in _paladin_important_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
