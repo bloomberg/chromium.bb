@@ -87,7 +87,7 @@ class GlobalErrorWithStandardBubble
   virtual base::string16 GetBubbleViewCancelButtonLabel() = 0;
   // Called when the bubble view is closed. |browser| is the Browser that the
   // bubble view was shown on.
-  void BubbleViewDidClose(Browser* browser);
+  virtual void BubbleViewDidClose(Browser* browser);
   // Notifies subclasses that the bubble view is closed. |browser| is the
   // Browser that the bubble view was shown on.
   virtual void OnBubbleViewDidClose(Browser* browser) = 0;
