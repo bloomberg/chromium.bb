@@ -34,7 +34,6 @@ component("keyboard") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//media",
     "//skia",
     "//ui/aura",
     "//ui/base",

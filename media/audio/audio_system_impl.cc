@@ -33,9 +33,12 @@ AudioParameters GetInputParametersOnDeviceThread(AudioManager* audio_manager,
 AudioSystemImpl::AudioSystemImpl(AudioManager* audio_manager)
     : audio_manager_(audio_manager) {
   DCHECK(audio_manager_);
+  AudioSystem::SetInstance(this);
 }
 
-AudioSystemImpl::~AudioSystemImpl() {}
+AudioSystemImpl::~AudioSystemImpl() {
+  AudioSystem::ClearInstance(this);
+}
 
 // static
 std::unique_ptr<AudioSystem> AudioSystemImpl::Create(
@@ -57,6 +60,20 @@ void AudioSystemImpl::GetInputStreamParameters(
       base::Bind(&GetInputParametersOnDeviceThread,
                  base::Unretained(audio_manager_), device_id),
       std::move(on_params_cb));
+}
+
+void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
+  if (GetTaskRunner()->BelongsToCurrentThread()) {
+    GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(on_has_devices_cb, audio_manager_->HasAudioInputDevices()));
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      GetTaskRunner(), FROM_HERE,
+      base::Bind(&AudioManager::HasAudioInputDevices,
+                 base::Unretained(audio_manager_)),
+      std::move(on_has_devices_cb));
 }
 
 AudioManager* AudioSystemImpl::GetAudioManager() const {

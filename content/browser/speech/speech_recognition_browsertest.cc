@@ -133,6 +133,10 @@ class SpeechRecognitionBrowserTest :
 
   void TearDownOnMainThread() override {
     SpeechRecognizerImpl::SetAudioSystemForTesting(nullptr);
+
+    // Deleting AudioManager on audio thread,
+    audio_system_.reset();
+    audio_manager_.reset();
   }
 
   void TearDownInProcessBrowserTestFixture() override {

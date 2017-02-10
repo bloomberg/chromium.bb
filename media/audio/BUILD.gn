@@ -93,6 +93,7 @@ source_set("audio") {
     "audio_power_monitor.cc",
     "audio_power_monitor.h",
     "audio_source_diverter.h",
+    "audio_system.cc",
     "audio_system.h",
     "audio_system_impl.cc",
     "audio_system_impl.h",

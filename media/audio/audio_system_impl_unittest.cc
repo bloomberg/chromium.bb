@@ -33,10 +33,13 @@ class AudioSystemImplTest : public testing::TestWithParam<bool> {
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    EXPECT_EQ(AudioSystem::Get(), audio_system_.get());
   }
 
   ~AudioSystemImplTest() override {
     // Deleting |audio_manager_| on its thread.
+    audio_system_.reset();
+    EXPECT_EQ(AudioSystem::Get(), nullptr);
     audio_manager_.reset();
     audio_thread_.Stop();
   }
@@ -65,6 +68,7 @@ class AudioSystemImplTest : public testing::TestWithParam<bool> {
   }
 
   MOCK_METHOD0(AudioParametersReceived, void(void));
+  MOCK_METHOD1(HasInputDevicesCallback, void(bool));
 
  protected:
   base::MessageLoop message_loop_;
@@ -91,6 +95,21 @@ TEST_P(AudioSystemImplTest, GetInputStreamParametersNoDevice) {
       media::AudioDeviceDescription::kDefaultDeviceId,
       base::Bind(&AudioSystemImplTest::OnAudioParams, base::Unretained(this),
                  media::AudioParameters()));
+  WaitForCallback();
+}
+
+TEST_P(AudioSystemImplTest, HasInputDevices) {
+  EXPECT_CALL(*this, HasInputDevicesCallback(true));
+  audio_system_->HasInputDevices(base::Bind(
+      &AudioSystemImplTest::HasInputDevicesCallback, base::Unretained(this)));
+  WaitForCallback();
+}
+
+TEST_P(AudioSystemImplTest, HasNoInputDevices) {
+  audio_manager_->SetHasInputDevices(false);
+  EXPECT_CALL(*this, HasInputDevicesCallback(false));
+  audio_system_->HasInputDevices(base::Bind(
+      &AudioSystemImplTest::HasInputDevicesCallback, base::Unretained(this)));
   WaitForCallback();
 }
 

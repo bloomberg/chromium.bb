@@ -24,6 +24,7 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
   void GetInputStreamParameters(
       const std::string& device_id,
       OnAudioParamsCallback on_params_cb) const override;
+  void HasInputDevices(OnBoolCallback on_has_devices_cb) const override;
   AudioManager* GetAudioManager() const override;
 
  protected:

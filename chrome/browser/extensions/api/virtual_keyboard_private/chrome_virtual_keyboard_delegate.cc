@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -20,6 +21,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
+#include "media/audio/audio_system.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -69,27 +71,19 @@ keyboard::KeyboardState getKeyboardStateEnum(
 
 namespace extensions {
 
-bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
-    base::DictionaryValue* results) {
+ChromeVirtualKeyboardDelegate::ChromeVirtualKeyboardDelegate()
+    : weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
+
+ChromeVirtualKeyboardDelegate::~ChromeVirtualKeyboardDelegate() {}
+
+void ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
+    OnKeyboardSettingsCallback on_settings_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  results->SetString("layout", keyboard::GetKeyboardLayout());
-  // TODO(bshe): Consolidate a11y, hotrod and normal mode into a mode enum. See
-  // crbug.com/529474.
-  results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
-  results->SetBoolean("hotrodmode", keyboard::GetHotrodKeyboardEnabled());
-  std::unique_ptr<base::ListValue> features(new base::ListValue());
-  features->AppendString(GenerateFeatureFlag(
-      "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
-  features->AppendString(
-      GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
-  features->AppendString(GenerateFeatureFlag(
-      "gestureediting", keyboard::IsGestureEditingEnabled()));
-  features->AppendString(
-      GenerateFeatureFlag("voiceinput", keyboard::IsVoiceInputEnabled()));
-  features->AppendString(GenerateFeatureFlag("experimental",
-      keyboard::IsExperimentalInputViewEnabled()));
-  results->Set("features", std::move(features));
-  return true;
+  media::AudioSystem::Get()->HasInputDevices(
+      base::Bind(&ChromeVirtualKeyboardDelegate::OnHasInputDevices, weak_this_,
+                 std::move(on_settings_callback)));
 }
 
 bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
@@ -196,6 +190,31 @@ bool ChromeVirtualKeyboardDelegate::IsLanguageSettingsEnabled() {
           !chromeos::UserAddingScreen::Get()->IsRunning() &&
           !(chromeos::ScreenLocker::default_screen_locker() &&
             chromeos::ScreenLocker::default_screen_locker()->locked()));
+}
+
+void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
+    OnKeyboardSettingsCallback on_settings_callback,
+    bool has_input_devices) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
+  results->SetString("layout", keyboard::GetKeyboardLayout());
+  // TODO(bshe): Consolidate a11y, hotrod and normal mode into a mode enum. See
+  // crbug.com/529474.
+  results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  results->SetBoolean("hotrodmode", keyboard::GetHotrodKeyboardEnabled());
+  std::unique_ptr<base::ListValue> features(new base::ListValue());
+  features->AppendString(GenerateFeatureFlag(
+      "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
+  features->AppendString(
+      GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "gestureediting", keyboard::IsGestureEditingEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "voiceinput", has_input_devices && keyboard::IsVoiceInputEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "experimental", keyboard::IsExperimentalInputViewEnabled()));
+  results->Set("features", std::move(features));
+  std::move(on_settings_callback).Run(std::move(results));
 }
 
 }  // namespace extensions

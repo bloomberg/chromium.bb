@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -16,10 +17,14 @@ class VirtualKeyboardDelegate {
  public:
   virtual ~VirtualKeyboardDelegate() {}
 
+  using OnKeyboardSettingsCallback =
+      base::Callback<void(std::unique_ptr<base::DictionaryValue> settings)>;
+
   // Fetch information about the preferred configuration of the keyboard. On
-  // exit, |settings| is populated with the keyboard configuration. Returns true
-  // if successful.
-  virtual bool GetKeyboardConfig(base::DictionaryValue* settings) = 0;
+  // exit, |settings| is populated with the keyboard configuration if execution
+  // is successful, otherwise it's set to nullptr.
+  virtual void GetKeyboardConfig(
+      OnKeyboardSettingsCallback on_settings_callback) = 0;
 
   // Dismiss the virtual keyboard without changing input focus. Returns true if
   // successful.

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -103,10 +104,15 @@ VirtualKeyboardPrivateKeyboardLoadedFunction::Run() {
 
 ExtensionFunction::ResponseAction
 VirtualKeyboardPrivateGetKeyboardConfigFunction::Run() {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  if (!delegate()->GetKeyboardConfig(results.get()))
-    return RespondNow(Error(kUnknownError));
-  return RespondNow(OneArgument(std::move(results)));
+  delegate()->GetKeyboardConfig(base::Bind(
+      &VirtualKeyboardPrivateGetKeyboardConfigFunction::OnKeyboardConfig,
+      this));
+  return RespondLater();
+}
+
+void VirtualKeyboardPrivateGetKeyboardConfigFunction::OnKeyboardConfig(
+    std::unique_ptr<base::DictionaryValue> results) {
+  Respond(results ? OneArgument(std::move(results)) : Error(kUnknownError));
 }
 
 ExtensionFunction::ResponseAction

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
-#include "media/audio/audio_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
@@ -198,8 +197,7 @@ bool IsSmartDeployEnabled() {
 }
 
 bool IsVoiceInputEnabled() {
-  return media::AudioManager::Get()->HasAudioInputDevices() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableVoiceInput);
 }
 

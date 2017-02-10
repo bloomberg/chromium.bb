@@ -124,7 +124,9 @@ KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 // Returns true if gesture editing option is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureEditingEnabled();
 
-// Returns true if voice input is enabled for the keyboard.
+// Returns true if voice input is not disabled for the keyboard by the command
+// line switch. It's up to the client to check if there is an input device
+// available.
 KEYBOARD_EXPORT bool IsVoiceInputEnabled();
 
 // Insert |text| into the active TextInputClient if there is one. Returns true

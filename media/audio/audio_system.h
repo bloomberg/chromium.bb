@@ -6,7 +6,6 @@
 #define MEDIA_AUDIO_AUDIO_SYSTEM_H_
 
 #include "base/callback.h"
-#include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -20,16 +19,28 @@ class MEDIA_EXPORT AudioSystem {
  public:
   // Replies are asynchronously sent to the thread the call is issued on.
   using OnAudioParamsCallback = base::Callback<void(const AudioParameters&)>;
+  using OnBoolCallback = base::Callback<void(bool)>;
 
-  virtual ~AudioSystem(){};
+  static AudioSystem* Get();
+
+  virtual ~AudioSystem();
 
   // Callback will receive invalid parameters if the device is not found.
   virtual void GetInputStreamParameters(
       const std::string& device_id,
       OnAudioParamsCallback on_params_cb) const = 0;
 
+  virtual void HasInputDevices(OnBoolCallback on_has_devices_cb) const = 0;
+
   // Must not be used for anything but stream creation.
   virtual AudioManager* GetAudioManager() const = 0;
+
+ protected:
+  // Sets the global AudioSystem pointer to the specified non-null value.
+  static void SetInstance(AudioSystem* audio_system);
+
+  // Sets the global AudioSystem pointer to null if it equals the specified one.
+  static void ClearInstance(const AudioSystem* audio_system);
 };
 
 }  // namespace media

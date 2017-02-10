@@ -9,6 +9,10 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -118,6 +122,9 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+ private:
+  void OnKeyboardConfig(std::unique_ptr<base::DictionaryValue> results);
 };
 
 class VirtualKeyboardPrivateOpenSettingsFunction
