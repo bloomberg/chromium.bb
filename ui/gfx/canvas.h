@@ -471,6 +471,8 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
+  SkBitmap ToBitmap();
+
   // TODO(enne): rename sk_canvas members and interface.
   cc::PaintCanvas* sk_canvas() { return canvas_; }
   float image_scale() const { return image_scale_; }

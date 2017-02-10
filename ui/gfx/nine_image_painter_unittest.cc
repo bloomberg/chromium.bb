@@ -85,10 +85,7 @@ TEST(NineImagePainterTest, PaintHighDPI) {
   gfx::Rect bounds(0, 0, 50, 50);
   painter.Paint(&canvas, bounds);
 
-  SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
-  result.allocN32Pixels(size.width(), size.height());
-  canvas.sk_canvas()->readPixels(&result, 0, 0);
+  SkBitmap result = canvas.ToBitmap();
 
   gfx::Vector2d paint_offset =
       gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset, image_scale));
@@ -119,10 +116,7 @@ TEST(NineImagePainterTest, PaintStaysInBounds) {
   gfx::Rect bounds(1, 1, 1, 1);
   painter.Paint(&canvas, bounds);
 
-  SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
-  result.allocN32Pixels(size.width(), size.height());
-  canvas.sk_canvas()->readPixels(&result, 0, 0);
+  SkBitmap result = canvas.ToBitmap();
 
   EXPECT_EQ(SK_ColorGREEN, result.getColor(1, 1));
 
@@ -152,10 +146,7 @@ TEST(NineImagePainterTest, PaintWithBoundOffset) {
   gfx::Rect bounds(1, 1, 10, 10);
   painter.Paint(&canvas, bounds);
 
-  SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
-  result.allocN32Pixels(size.width(), size.height());
-  canvas.sk_canvas()->readPixels(&result, 0, 0);
+  SkBitmap result = canvas.ToBitmap();
 
   SkIRect green_rect = SkIRect::MakeLTRB(2, 2, 10, 10);
   for (int y = 1; y < 10; y++) {
@@ -191,10 +182,7 @@ TEST(NineImagePainterTest, PaintWithScale) {
   gfx::Rect bounds(0, 0, 50, 50);
   painter.Paint(&canvas, bounds);
 
-  SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
-  result.allocN32Pixels(size.width(), size.height());
-  canvas.sk_canvas()->readPixels(&result, 0, 0);
+  SkBitmap result = canvas.ToBitmap();
 
   gfx::Vector2d paint_offset =
       gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset, image_scale));
@@ -223,10 +211,7 @@ TEST(NineImagePainterTest, PaintWithNegativeScale) {
   gfx::Rect bounds(0, 0, 50, 50);
   painter.Paint(&canvas, bounds);
 
-  SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
-  result.allocN32Pixels(size.width(), size.height());
-  canvas.sk_canvas()->readPixels(&result, 0, 0);
+  SkBitmap result = canvas.ToBitmap();
 
   // The painting space is 50x50 and the scale of -1,-1 means an offset of 50,50
   // would put the output in the top left corner. Since the offset is 70,60 it

@@ -545,6 +545,13 @@ void Canvas::Transform(const gfx::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
 
+SkBitmap Canvas::ToBitmap() {
+  SkBitmap bitmap;
+  bitmap.setInfo(canvas_->imageInfo());
+  canvas_->readPixels(&bitmap, 0, 0);
+  return bitmap;
+}
+
 bool Canvas::IntersectsClipRect(const SkRect& rect) {
   SkRect clip;
   return canvas_->getLocalClipBounds(&clip) && clip.intersects(rect);

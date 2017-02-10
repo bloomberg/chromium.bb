@@ -143,7 +143,10 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
   DCHECK_EQ(canvas->imageInfo().height(), resolution.height);
 
-  const SkBitmap bitmap = skia::ReadPixels(canvas);
+  SkBitmap bitmap;
+  bitmap.setInfo(canvas->imageInfo());
+  canvas->readPixels(&bitmap, 0, 0);
+
   DCHECK_NE(kUnknown_SkColorType, bitmap.colorType());
   DCHECK(!bitmap.drawsNothing());
   DCHECK(bitmap.getPixels());
