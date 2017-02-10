@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
-#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
 
 #include "components/payments/payment_app.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -55,4 +55,4 @@ struct TypeConverter<blink::WebPaymentDetailsModifier,
 
 }  // namespace
 
-#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_

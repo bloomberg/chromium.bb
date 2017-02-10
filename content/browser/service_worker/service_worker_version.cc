@@ -41,7 +41,6 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

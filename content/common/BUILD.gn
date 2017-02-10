@@ -300,8 +300,6 @@ source_set("common") {
     "service_worker/service_worker_messages.h",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_status_code.h",
-    "service_worker/service_worker_type_converters.cc",
-    "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.cc",
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.cc",

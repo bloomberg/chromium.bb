@@ -5,5 +5,8 @@ michaeln@chromium.org
 nhiroki@chromium.org
 shimazu@chromium.org
 
+per-file *_type_converter*.*=set noparent
+per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
+
 # TEAM: worker-dev@chromium.org
 # COMPONENT: Blink>ServiceWorker
