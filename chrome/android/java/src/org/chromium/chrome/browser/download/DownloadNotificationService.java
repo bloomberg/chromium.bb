@@ -642,15 +642,15 @@ public class DownloadNotificationService extends Service {
                 return;
             }
         } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
-            boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
-            if (!entry.canDownloadWhileMetered) {
-                // If user manually resumes a download, update the network type if it
-                // is not metered previously.
-                entry.canDownloadWhileMetered = metered;
-            }
-            entry.isAutoResumable = true;
+            // If user manually resumes a download, update the network type if it
+            // is not metered previously.
+            boolean canDownloadWhileMetered = entry.canDownloadWhileMetered
+                    || DownloadManagerService.isActiveNetworkMetered(mContext);
             // Update the SharedPreference entry.
-            mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(entry);
+            mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
+                    new DownloadSharedPreferenceEntry(entry.notificationId, entry.isOffTheRecord,
+                            canDownloadWhileMetered, entry.downloadGuid, entry.fileName,
+                            entry.itemType, true));
         } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())
                 && (mDownloadSharedPreferenceHelper.getEntries().isEmpty()
                         || DownloadManagerService.hasDownloadManagerService())) {
