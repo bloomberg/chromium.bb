@@ -962,7 +962,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
                    offload_failures_only=None, debug=True, subsystems=None,
-                   skip_duts_check=False):
+                   skip_duts_check=False, job_keyvals=None):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -992,6 +992,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     subsystems: A set of subsystems that the relevant changes affect, for
                 testing purposes.
     skip_duts_check: If True, skip minimum available DUTs check.
+    job_keyvals: A dict of job keyvals to be inject to suite control file.
 
   Returns:
     An instance of named tuple HWTestSuiteResult, the first element is the
@@ -1003,7 +1004,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
                             priority, timeout_mins, retry, max_retries,
                             minimum_duts, suite_min_duts, offload_failures_only,
-                            subsystems, skip_duts_check)
+                            subsystems, skip_duts_check, job_keyvals)
     swarming_args = _CreateSwarmingArgs(build, suite, board, priority,
                                         timeout_mins)
     running_json_dump_flag = False
@@ -1087,7 +1088,8 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
                      file_bugs=None, priority=None, timeout_mins=None,
                      retry=None, max_retries=None, minimum_duts=0,
                      suite_min_duts=0, offload_failures_only=None,
-                     subsystems=None, skip_duts_check=False):
+                     subsystems=None, skip_duts_check=False,
+                     job_keyvals=None):
   """Get a list of args for run_suite.
 
   Args:
@@ -1153,6 +1155,9 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
 
     if skip_duts_check:
       args += ['--skip_duts_check']
+
+    if job_keyvals:
+      args += ['--job_keyvals', repr(job_keyvals)]
   return args
 
 

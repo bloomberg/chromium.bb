@@ -384,7 +384,9 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check)
+        debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check,
+        job_keyvals={constants.DATASTORE_PARENT_KEY:
+                     ('Build', build_id, 'BuildStage', self._build_stage_id)})
     subsys_tuple = self.GenerateSubsysResult(cmd_result.json_dump_result,
                                              subsystems)
     if db:
