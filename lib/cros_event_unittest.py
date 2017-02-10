@@ -16,7 +16,7 @@ from chromite.lib import cros_test_lib
 class EventIdGeneratorTest(cros_test_lib.TestCase):
   """Test EventIdGenerator fuction"""
   def testEventIdGenerator(self):
-    expected_ids = {0, 1, 2, 3, 4}
+    expected_ids = {1, 2, 3, 4, 5}
     id_gen = ce.EventIdGenerator()
     for expected_id in expected_ids:
       self.assertEquals(expected_id, id_gen.next())

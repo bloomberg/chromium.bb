@@ -34,7 +34,7 @@ def EventIdGenerator():
   # NOTE: that is might be as issue if chromite libraries are imported.
   #       Update to chromite.lib.parallel.Manager().Value('i') if this
   #       becomes an issue
-  eid = multiprocessing.Value('i')
+  eid = multiprocessing.Value('i', 1)
 
   while True:
     with eid.get_lock():
