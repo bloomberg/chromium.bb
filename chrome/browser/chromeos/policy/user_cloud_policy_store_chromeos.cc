@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/policy/user_policy_disk_cache.h"
 #include "chrome/browser/chromeos/policy/user_policy_token_loader.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"

@@ -1146,8 +1146,6 @@ source_set("chromeos") {
     "policy/user_network_configuration_updater.h",
     "policy/user_network_configuration_updater_factory.cc",
     "policy/user_network_configuration_updater_factory.h",
-    "policy/user_policy_disk_cache.cc",
-    "policy/user_policy_disk_cache.h",
     "policy/user_policy_manager_factory_chromeos.cc",
     "policy/user_policy_manager_factory_chromeos.h",
     "policy/user_policy_token_loader.cc",
