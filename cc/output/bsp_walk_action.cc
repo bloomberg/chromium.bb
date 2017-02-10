@@ -15,11 +15,9 @@ namespace cc {
 
 BspWalkActionDrawPolygon::BspWalkActionDrawPolygon(
     DirectRenderer* renderer,
-    DirectRenderer::DrawingFrame* frame,
     const gfx::Rect& render_pass_scissor,
     bool using_scissor_as_optimization)
     : renderer_(renderer),
-      frame_(frame),
       render_pass_scissor_(render_pass_scissor),
       using_scissor_as_optimization_(using_scissor_as_optimization) {
 }
@@ -32,7 +30,7 @@ void BspWalkActionDrawPolygon::operator()(DrawPolygon* item) {
               &inverse_transform);
   DCHECK(invertible);
   item->TransformToLayerSpace(inverse_transform);
-  renderer_->DoDrawPolygon(*item, frame_, render_pass_scissor_,
+  renderer_->DoDrawPolygon(*item, render_pass_scissor_,
                            using_scissor_as_optimization_);
 }
 

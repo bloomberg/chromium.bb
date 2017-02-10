@@ -71,8 +71,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  void GetFramebufferPixelsAsync(const DrawingFrame* frame,
-                                 const gfx::Rect& rect,
+  void GetFramebufferPixelsAsync(const gfx::Rect& rect,
                                  std::unique_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
                              const gfx::Rect& device_rect);
@@ -86,24 +85,20 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   bool CanPartialSwap() override;
   ResourceFormat BackbufferFormat() const override;
-  void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
-  bool BindFramebufferToTexture(DrawingFrame* frame,
-                                const ScopedResource* resource) override;
+  void BindFramebufferToOutputSurface() override;
+  bool BindFramebufferToTexture(const ScopedResource* resource) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  void PrepareSurfaceForPass(DrawingFrame* frame,
-                             SurfaceInitializationMode initialization_mode,
+  void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-  void DoDrawQuad(DrawingFrame* frame,
-                  const class DrawQuad*,
+  void DoDrawQuad(const class DrawQuad*,
                   const gfx::QuadF* draw_region) override;
-  void BeginDrawingFrame(DrawingFrame* frame) override;
-  void FinishDrawingFrame(DrawingFrame* frame) override;
-  bool FlippedFramebuffer(const DrawingFrame* frame) const override;
+  void BeginDrawingFrame() override;
+  void FinishDrawingFrame() override;
+  bool FlippedFramebuffer() const override;
   bool FlippedRootFramebuffer() const;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
-      DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) override;
   void FinishDrawingQuadList() override;
 
@@ -148,11 +143,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
 
   void DiscardPixels();
-  void ClearFramebuffer(DrawingFrame* frame);
+  void ClearFramebuffer();
   void SetViewport();
 
-  void DrawDebugBorderQuad(const DrawingFrame* frame,
-                           const DebugBorderDrawQuad* quad);
+  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   static bool IsDefaultBlendMode(SkBlendMode blend_mode) {
     return blend_mode == SkBlendMode::kSrcOver;
   }
@@ -161,7 +155,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void RestoreBlendFuncToDefault(SkBlendMode blend_mode);
 
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
       const FilterOperations* filters,
@@ -170,7 +163,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       bool use_aa,
       gfx::Rect* unclipped_rect);
   std::unique_ptr<ScopedResource> GetBackdropTexture(
-      DrawingFrame* frame,
       const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(
@@ -185,50 +177,38 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
-  void DrawRenderPassQuad(DrawingFrame* frame,
-                          const RenderPassDrawQuad* quadi,
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quadi,
                           const gfx::QuadF* clip_region);
   void DrawRenderPassQuadInternal(DrawRenderPassDrawQuadParams* params);
-  void DrawSolidColorQuad(const DrawingFrame* frame,
-                          const SolidColorDrawQuad* quad,
+  void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                           const gfx::QuadF* clip_region);
-  void DrawStreamVideoQuad(const DrawingFrame* frame,
-                           const StreamVideoDrawQuad* quad,
+  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const gfx::QuadF* clip_region);
-  void DrawTextureQuad(const DrawingFrame* frame,
-                       const TextureDrawQuad* quad,
+  void DrawTextureQuad(const TextureDrawQuad* quad,
                        const gfx::QuadF* clip_region);
-  void EnqueueTextureQuad(const DrawingFrame* frame,
-                          const TextureDrawQuad* quad,
+  void EnqueueTextureQuad(const TextureDrawQuad* quad,
                           const gfx::QuadF* clip_region);
   void FlushTextureQuadCache(BoundGeometry flush_binding);
-  void DrawTileQuad(const DrawingFrame* frame,
-                    const TileDrawQuad* quad,
-                    const gfx::QuadF* clip_region);
-  void DrawContentQuad(const DrawingFrame* frame,
-                       const ContentDrawQuadBase* quad,
+  void DrawTileQuad(const TileDrawQuad* quad, const gfx::QuadF* clip_region);
+  void DrawContentQuad(const ContentDrawQuadBase* quad,
                        ResourceId resource_id,
                        const gfx::QuadF* clip_region);
-  void DrawContentQuadAA(const DrawingFrame* frame,
-                         const ContentDrawQuadBase* quad,
+  void DrawContentQuadAA(const ContentDrawQuadBase* quad,
                          ResourceId resource_id,
                          const gfx::Transform& device_transform,
                          const gfx::QuadF& aa_quad,
                          const gfx::QuadF* clip_region);
-  void DrawContentQuadNoAA(const DrawingFrame* frame,
-                           const ContentDrawQuadBase* quad,
+  void DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                            ResourceId resource_id,
                            const gfx::QuadF* clip_region);
-  void DrawYUVVideoQuad(const DrawingFrame* frame,
-                        const YUVVideoDrawQuad* quad,
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);
 
   void SetShaderOpacity(const DrawQuad* quad);
   void SetShaderQuadF(const gfx::QuadF& quad);
   void SetShaderMatrix(const gfx::Transform& transform);
   void SetShaderColor(SkColor color, float opacity);
-  void DrawQuadGeometryClippedByQuadF(const DrawingFrame* frame,
-                                      const gfx::Transform& draw_transform,
+  void DrawQuadGeometryClippedByQuadF(const gfx::Transform& draw_transform,
                                       const gfx::RectF& quad_rect,
                                       const gfx::QuadF& clipping_region_quad,
                                       const float uv[8]);
@@ -252,8 +232,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ReinitializeGLState();
   void RestoreGLState();
 
-  void ScheduleCALayers(DrawingFrame* frame);
-  void ScheduleOverlays(DrawingFrame* frame);
+  void ScheduleCALayers();
+  void ScheduleOverlays();
 
   // Copies the contents of the render pass draw quad, including filter effects,
   // to an overlay resource, returned in |resource|. The resource is allocated
@@ -263,18 +243,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void CopyRenderPassDrawQuadToOverlayResource(
       const CALayerOverlay* ca_layer_overlay,
       Resource** resource,
-      DrawingFrame* frame,
       gfx::RectF* new_bounds);
 
   // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
   // |rpdq| parameter.
-  void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay,
-                                  DrawingFrame* external_frame);
+  void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay);
 
   // Setup/flush all pending overdraw feedback to framebuffer.
   void SetupOverdrawFeedback();
-  void FlushOverdrawFeedback(const DrawingFrame* frame,
-                             const gfx::Rect& output_rect);
+  void FlushOverdrawFeedback(const gfx::Rect& output_rect);
   // Process overdraw feedback from query.
   using OverdrawFeedbackCallback = base::Callback<void(unsigned, int)>;
   void ProcessOverdrawFeedback(std::vector<int>* overdraw,

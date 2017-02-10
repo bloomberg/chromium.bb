@@ -25,13 +25,11 @@ class CC_EXPORT BspWalkActionDrawPolygon : public BspWalkAction {
   void operator()(DrawPolygon* item) override;
 
   BspWalkActionDrawPolygon(DirectRenderer* renderer,
-                           DirectRenderer::DrawingFrame* frame,
                            const gfx::Rect& render_pass_scissor,
                            bool using_scissor_as_optimization);
 
  private:
   DirectRenderer* renderer_;
-  DirectRenderer::DrawingFrame* frame_;
   const gfx::Rect& render_pass_scissor_;
   bool using_scissor_as_optimization_;
 };

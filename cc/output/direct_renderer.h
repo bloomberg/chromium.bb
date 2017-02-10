@@ -74,6 +74,7 @@ class CC_EXPORT DirectRenderer {
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
     ~DrawingFrame();
+    gfx::Rect ComputeScissorRectForRenderPass() const;
 
     const RenderPassList* render_passes_in_draw_order = nullptr;
     const RenderPass* root_render_pass = nullptr;
@@ -104,38 +105,33 @@ class CC_EXPORT DirectRenderer {
   static void QuadRectTransform(gfx::Transform* quad_rect_transform,
                                 const gfx::Transform& quad_transform,
                                 const gfx::RectF& quad_rect);
+  // This function takes DrawingFrame as an argument because RenderPass drawing
+  // code uses its computations for buffer sizing.
   void InitializeViewport(DrawingFrame* frame,
                           const gfx::Rect& draw_rect,
                           const gfx::Rect& viewport_rect,
                           const gfx::Size& surface_size);
-  gfx::Rect MoveFromDrawToWindowSpace(const DrawingFrame* frame,
-                                      const gfx::Rect& draw_rect) const;
+  gfx::Rect MoveFromDrawToWindowSpace(const gfx::Rect& draw_rect) const;
 
-  gfx::Rect DeviceViewportRectInDrawSpace(const DrawingFrame* frame) const;
-  gfx::Rect OutputSurfaceRectInDrawSpace(const DrawingFrame* frame) const;
-  static gfx::Rect ComputeScissorRectForRenderPass(const DrawingFrame* frame);
-  void SetScissorStateForQuad(const DrawingFrame* frame,
-                              const DrawQuad& quad,
+  gfx::Rect DeviceViewportRectInDrawSpace() const;
+  gfx::Rect OutputSurfaceRectInDrawSpace() const;
+  void SetScissorStateForQuad(const DrawQuad& quad,
                               const gfx::Rect& render_pass_scissor,
                               bool use_render_pass_scissor);
   bool ShouldSkipQuad(const DrawQuad& quad,
                       const gfx::Rect& render_pass_scissor);
-  void SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
-                                     const gfx::Rect& draw_space_rect);
+  void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 
   void FlushPolygons(std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
-                     DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
-  void DrawRenderPassAndExecuteCopyRequests(DrawingFrame* frame,
-                                            RenderPass* render_pass);
-  void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
-  bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
+  void DrawRenderPassAndExecuteCopyRequests(RenderPass* render_pass);
+  void DrawRenderPass(const RenderPass* render_pass);
+  bool UseRenderPass(const RenderPass* render_pass);
 
   void DoDrawPolygon(const DrawPolygon& poly,
-                     DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
 
@@ -145,33 +141,29 @@ class CC_EXPORT DirectRenderer {
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
   virtual ResourceFormat BackbufferFormat() const = 0;
-  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
-  virtual bool BindFramebufferToTexture(DrawingFrame* frame,
-                                        const ScopedResource* resource) = 0;
+  virtual void BindFramebufferToOutputSurface() = 0;
+  virtual bool BindFramebufferToTexture(const ScopedResource* resource) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
-      DrawingFrame* frame,
       SurfaceInitializationMode initialization_mode,
       const gfx::Rect& render_pass_scissor) = 0;
   // |clip_region| is a (possibly null) pointer to a quad in the same
   // space as the quad. When non-null only the area of the quad that overlaps
   // with clip_region will be drawn.
-  virtual void DoDrawQuad(DrawingFrame* frame,
-                          const DrawQuad* quad,
+  virtual void DoDrawQuad(const DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
-  virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
-  virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
+  virtual void BeginDrawingFrame() = 0;
+  virtual void FinishDrawingFrame() = 0;
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
   // return that quad, otherwise return null.
   virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
   virtual void FinishDrawingQuadList() {}
-  virtual bool FlippedFramebuffer(const DrawingFrame* frame) const = 0;
+  virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
   virtual void CopyCurrentRenderPassToBitmap(
-      DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
@@ -212,12 +204,29 @@ class CC_EXPORT DirectRenderer {
   gfx::Size current_surface_size_;
   gfx::Rect current_window_space_viewport_;
 
+  DrawingFrame* current_frame() {
+    DCHECK(current_frame_valid_);
+    return &current_frame_;
+  }
+  const DrawingFrame* current_frame() const {
+    DCHECK(current_frame_valid_);
+    return &current_frame_;
+  }
+
+  void SetCurrentFrameForTesting(const DrawingFrame& frame);
+
  private:
   bool initialized_ = false;
 #if DCHECK_IS_ON()
   bool overdraw_feedback_support_missing_logged_once_ = false;
 #endif
   gfx::Size enlarge_pass_texture_amount_;
+
+  // The current drawing frame is valid only during the duration of the
+  // DrawFrame function. Use the accessor current_frame() to ensure that use
+  // is valid;
+  DrawingFrame current_frame_;
+  bool current_frame_valid_ = false;
 
   // Cached values given to Reshape().
   gfx::Size reshape_surface_size_;
