@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.profiles;
+package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType.MostVisitedTileTypeEnum;
 import org.chromium.chrome.browser.ntp.NTPTileSource.NTPTileSourceEnum;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
  */
 public class MostVisitedSites {
-
     private long mNativeMostVisitedSitesBridge;
 
     /**
@@ -75,8 +75,8 @@ public class MostVisitedSites {
     public void setMostVisitedURLsObserver(final MostVisitedURLsObserver observer, int numSites) {
         MostVisitedURLsObserver wrappedObserver = new MostVisitedURLsObserver() {
             @Override
-            public void onMostVisitedURLsAvailable(String[] titles, String[] urls,
-                    String[] whitelistIconPaths, int[] sources) {
+            public void onMostVisitedURLsAvailable(
+                    String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources) {
                 // Don't notify observer if we've already been destroyed.
                 if (mNativeMostVisitedSitesBridge != 0) {
                     observer.onMostVisitedURLsAvailable(titles, urls, whitelistIconPaths, sources);
@@ -90,8 +90,7 @@ public class MostVisitedSites {
                 }
             }
         };
-        nativeSetMostVisitedURLsObserver(
-                mNativeMostVisitedSitesBridge, wrappedObserver, numSites);
+        nativeSetMostVisitedURLsObserver(mNativeMostVisitedSitesBridge, wrappedObserver, numSites);
     }
 
     /**
@@ -134,11 +133,10 @@ public class MostVisitedSites {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
-    private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSitesBridge,
-            MostVisitedURLsObserver observer, int numSites);
+    private native void nativeSetMostVisitedURLsObserver(
+            long nativeMostVisitedSitesBridge, MostVisitedURLsObserver observer, int numSites);
     private native void nativeAddOrRemoveBlacklistedUrl(
-            long nativeMostVisitedSitesBridge, String url,
-            boolean addUrl);
+            long nativeMostVisitedSitesBridge, String url, boolean addUrl);
     private native void nativeRecordPageImpression(
             long nativeMostVisitedSitesBridge, int[] tileTypes, int[] sources, String[] tileUrls);
     private native void nativeRecordOpenedMostVisitedItem(

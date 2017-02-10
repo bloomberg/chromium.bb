@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType;
-import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.suggestions.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
