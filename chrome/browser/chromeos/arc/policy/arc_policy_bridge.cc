@@ -45,8 +45,39 @@ constexpr char kNonComplianceDetails[] = "nonComplianceDetails";
 constexpr char kNonComplianceReason[] = "nonComplianceReason";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
 constexpr char kPolicyNonCompliantJson[] = "{ \"policyCompliant\": false }";
+
 // Value from CloudDPS NonComplianceDetail.NonComplianceReason enum.
-constexpr int kAppNotInstalled = 5;
+// Used to figure out whether to ignore non-compliance.
+enum NonComplianceReason : int {
+  UNKNOWN = 0,
+
+  // The API level of the device does not support the setting.
+  API_LEVEL = 1,
+
+  // The admin type (profile owner, device owner, etc.) does not support the
+  // setting.
+  ADMIN_TYPE = 2,
+
+  // The user has not taken required action to comply with the setting.
+  USER_ACTION = 3,
+
+  // The setting has an invalid value.
+  INVALID_VALUE = 4,
+
+  // A required application has not been (or cannot be) installed.
+  APP_NOT_INSTALLED = 5,
+
+  // The policy is not supported by the version of CloudDPC on the device.
+  UNSUPPORTED = 6,
+};
+
+// ChromeOS should ignore some non-critical CloudDPC non-compliance reasons
+// and proceed with starting ARC apps.
+bool IgnoreNonComplianceReason(int reason) {
+  return reason == NonComplianceReason::API_LEVEL ||
+         reason == NonComplianceReason::APP_NOT_INSTALLED ||
+         reason == NonComplianceReason::UNSUPPORTED;
+}
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -411,7 +442,7 @@ void ArcPolicyBridge::OnReportComplianceParseSuccess(
   }
 
   // ChromeOS is 'compliant' with the report if all "nonComplianceDetails"
-  // entries have APP_NOT_INSTALLED reason.
+  // entries have API_LEVEL, APP_NOT_INSTALLED or UNSUPPORTED reason.
   bool compliant = true;
   const base::ListValue* value = nullptr;
   dict->GetList(kNonComplianceDetails, &value);
@@ -419,9 +450,11 @@ void ArcPolicyBridge::OnReportComplianceParseSuccess(
     for (const auto& entry : *value) {
       const base::DictionaryValue* entry_dict;
       int reason = 0;
+      // Get NonComplianceDetails.NonComplianceReason int enum value and check
+      // whether it shouldn't be ignored.
       if (entry->GetAsDictionary(&entry_dict) &&
           entry_dict->GetInteger(kNonComplianceReason, &reason) &&
-          reason != kAppNotInstalled) {
+          !IgnoreNonComplianceReason(reason)) {
         compliant = false;
         break;
       }
