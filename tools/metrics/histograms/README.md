@@ -63,6 +63,10 @@ the values align between the enum definition and
 [histograms.xml](./histograms.xml).  If a "max" value is included it
 should not include an explicit value.
 
+If your enum histogram has a catch-all / miscellaneous bucket, put that bucket
+first (`= 0`).  This will make the bucket easy to find on the dashboard if
+later you add additional buckets to your histogram.
+
 ### Count Histograms
 
 [histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
