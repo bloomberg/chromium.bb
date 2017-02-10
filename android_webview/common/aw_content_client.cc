@@ -7,8 +7,10 @@
 #include "android_webview/common/aw_media_client_android.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_version_info_values.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/common/url_constants.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "gpu/config/gpu_info.h"
@@ -80,6 +82,15 @@ void AwContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
                      gpu_info.gl_renderer;
   std::replace_if(gpu_fingerprint_.begin(), gpu_fingerprint_.end(),
                   [](char c) { return !::isprint(c); }, '_');
+
+  base::debug::SetCrashKeyValue(crash_keys::kGPUDriverVersion,
+                                gpu_info.driver_version);
+  base::debug::SetCrashKeyValue(crash_keys::kGPUPixelShaderVersion,
+                                gpu_info.pixel_shader_version);
+  base::debug::SetCrashKeyValue(crash_keys::kGPUVertexShaderVersion,
+                                gpu_info.vertex_shader_version);
+  base::debug::SetCrashKeyValue(crash_keys::kGPUVendor, gpu_info.gl_vendor);
+  base::debug::SetCrashKeyValue(crash_keys::kGPURenderer, gpu_info.gl_renderer);
 }
 
 bool AwContentClient::UsingSynchronousCompositing() {

@@ -493,6 +493,8 @@ source_set("common") {
     "common/aw_switches.h",
     "common/crash_reporter/aw_microdump_crash_reporter.cc",
     "common/crash_reporter/aw_microdump_crash_reporter.h",
+    "common/crash_reporter/crash_keys.cc",
+    "common/crash_reporter/crash_keys.h",
     "common/devtools_instrumentation.h",
     "common/render_view_messages.cc",
     "common/render_view_messages.h",

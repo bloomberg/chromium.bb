@@ -7,6 +7,7 @@
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_version_info_values.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/build_info.h"
 #include "base/base_paths_android.h"
 #include "base/debug/dump_without_crashing.h"
@@ -34,6 +35,8 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   void set_crash_signal_fd(int fd) { crash_signal_fd_ = fd; }
 
   // crash_reporter::CrashReporterClient implementation.
+  size_t RegisterCrashKeys() override;
+
   bool IsRunningUnattended() override { return false; }
   bool GetCollectStatsConsent() override { return false; }
 
@@ -66,6 +69,10 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   int crash_signal_fd_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
+
+size_t AwCrashReporterClient::RegisterCrashKeys() {
+  return crash_keys::RegisterWebViewCrashKeys();
+}
 
 base::LazyInstance<AwCrashReporterClient>::Leaky g_crash_reporter_client =
     LAZY_INSTANCE_INITIALIZER;
