@@ -477,7 +477,8 @@ void DrawCallback(uint32_t* execute_count) {
 
 // Tests doing an EvictSurface before shutting down the factory.
 TEST_F(SurfaceFactoryTest, EvictSurface) {
-  LocalSurfaceId id(7, kArbitraryToken);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+  SurfaceId id(kArbitraryFrameSinkId, local_surface_id);
 
   TransferableResource resource;
   resource.id = 1;
@@ -485,11 +486,14 @@ TEST_F(SurfaceFactoryTest, EvictSurface) {
   CompositorFrame frame;
   frame.resource_list.push_back(resource);
   uint32_t execute_count = 0;
-  factory_->SubmitCompositorFrame(id, std::move(frame),
+  factory_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                   base::Bind(&DrawCallback, &execute_count));
-  EXPECT_EQ(last_created_surface_id().local_surface_id(), id);
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
   local_surface_id_ = LocalSurfaceId();
+
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
   factory_->EvictSurface();
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
   EXPECT_EQ(1u, execute_count);
 }
 
