@@ -856,7 +856,6 @@ TEST_F(DownloadSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
 
   *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
-  offline_pages_model()->set_is_loaded(true);
   EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
                                             UnorderedElementsAre(
                                                 HasUrl("http://dummy.com/1"),
@@ -964,7 +963,6 @@ TEST_F(DownloadSuggestionsProviderTest,
   IgnoreOnSuggestionInvalidated();
 
   *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
-  offline_pages_model()->set_is_loaded(true);
   EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
                                             UnorderedElementsAre(
                                                 HasUrl("http://dummy.com/1"),

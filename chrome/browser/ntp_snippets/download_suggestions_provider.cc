@@ -492,15 +492,8 @@ void DownloadSuggestionsProvider::AsynchronouslyFetchOfflinePagesDownloads(
     return;
   }
 
-  if (!offline_page_model_->is_loaded()) {
-    // Offline pages model is not ready yet and may return no offline pages.
-    if (notify) {
-      SubmitContentSuggestions();
-    }
-
-    return;
-  }
-
+  // If Offline Page model is not loaded yet, it will process our query once it
+  // has finished loading.
   offline_page_model_->GetPagesMatchingQuery(
       BuildOfflinePageDownloadsQuery(offline_page_model_),
       base::Bind(&DownloadSuggestionsProvider::UpdateOfflinePagesCache,
