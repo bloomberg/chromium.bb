@@ -770,6 +770,7 @@ body.album #album {
 
 #browser div.bounds-padder {
   display: flex;
+  flex-shrink: 0;
   height: 1px;  /* Required to make the element visible. */
   width: 50%;
 }
