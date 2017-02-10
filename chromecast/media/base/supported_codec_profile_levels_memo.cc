@@ -10,7 +10,8 @@
 namespace chromecast {
 namespace media {
 
-SupportedCodecProfileLevelsMemo::SupportedCodecProfileLevelsMemo() {}
+SupportedCodecProfileLevelsMemo::SupportedCodecProfileLevelsMemo()
+    : codec_profile_levels_(), thread_checker_() {}
 
 SupportedCodecProfileLevelsMemo::~SupportedCodecProfileLevelsMemo() {}
 
