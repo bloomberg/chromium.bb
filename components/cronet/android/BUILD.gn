@@ -1394,6 +1394,15 @@ copy("cronet_package_copy_test_files") {
   ]
 }
 
+copy("cronet_package_copy_resources") {
+  sources = [
+    "api/res/raw/keep_cronet_api.xml",
+  ]
+  outputs = [
+    "$_package_dir/res/raw/{{source_file_part}}",
+  ]
+}
+
 # Enforce that ARM Neon is not used when building for ARMv7
 if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
   action("enforce_no_neon") {
@@ -1473,6 +1482,7 @@ group("cronet_package") {
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
+      ":cronet_package_copy_resources",
       ":cronet_test_package",
       ":generate_javadoc",
       ":generate_licenses",
