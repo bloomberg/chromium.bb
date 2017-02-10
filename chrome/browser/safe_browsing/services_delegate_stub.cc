@@ -36,7 +36,7 @@ ServicesDelegateStub::v4_local_database_manager() const {
   return v4_local_database_manager_;
 }
 
-void ServicesDelegateStub::Initialize() {}
+void ServicesDelegateStub::Initialize(bool v4_enabled) {}
 
 void ServicesDelegateStub::ShutdownServices() {}
 

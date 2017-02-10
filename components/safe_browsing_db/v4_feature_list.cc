@@ -10,31 +10,35 @@ namespace safe_browsing {
 namespace V4FeatureList {
 
 namespace {
+
 const base::Feature kLocalDatabaseManagerEnabled{
     "SafeBrowsingV4LocalDatabaseManagerEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kV4HybridEnabled{"SafeBrowsingV4HybridEnabled",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kV4OnlyEnabled{"SafeBrowsingV4OnlyEnabled",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-}  // namespace
+bool IsV4OnlyEnabled() {
+  return base::FeatureList::IsEnabled(kV4OnlyEnabled);
+}
 
 bool IsLocalDatabaseManagerEnabled() {
   return base::FeatureList::IsEnabled(kLocalDatabaseManagerEnabled) ||
-         IsV4HybridEnabled() || IsV4OnlyEnabled();
+         IsV4OnlyEnabled();
 }
 
-bool IsV4HybridEnabled() {
-  return base::FeatureList::IsEnabled(kV4HybridEnabled);
-}
+}  // namespace
 
-bool IsV4OnlyEnabled() {
-  // TODO(vakh): Enable this only when all the lists can be synced from the
-  // server. See http://b/33182208
-  return base::FeatureList::IsEnabled(kV4OnlyEnabled);
+V4UsageStatus GetV4UsageStatus() {
+  V4UsageStatus v4_usage_status;
+  if (safe_browsing::V4FeatureList::IsV4OnlyEnabled()) {
+    v4_usage_status = V4UsageStatus::V4_ONLY;
+  } else if (safe_browsing::V4FeatureList::IsLocalDatabaseManagerEnabled()) {
+    v4_usage_status = V4UsageStatus::V4_INSTANTIATED;
+  } else {
+    v4_usage_status = V4UsageStatus::V4_DISABLED;
+  }
+  return v4_usage_status;
 }
 
 }  // namespace V4FeatureList

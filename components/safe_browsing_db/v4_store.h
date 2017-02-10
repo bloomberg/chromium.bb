@@ -391,6 +391,10 @@ class V4Store {
   // |checksum| is used to set the |checksum| field in the final proto.
   StoreWriteResult WriteToDisk(const Checksum& checksum);
 
+ protected:
+  HashPrefixMap hash_prefix_map_;
+
+ private:
   // The checksum value as read from the disk, until it is verified. Once
   // verified, it is cleared.
   std::string expected_checksum_;
@@ -406,7 +410,6 @@ class V4Store {
   // update response.
   std::string state_;
   const base::FilePath store_path_;
-  HashPrefixMap hash_prefix_map_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 

@@ -91,8 +91,8 @@ class V4DatabaseTest : public PlatformTest {
   }
 
   void RegisterFactory(bool hash_prefix_matches = true) {
-    factory_.reset(new FakeV4StoreFactory(hash_prefix_matches));
-    V4Database::RegisterStoreFactoryForTest(factory_.get());
+    V4Database::RegisterStoreFactoryForTest(
+        base::MakeUnique<FakeV4StoreFactory>(hash_prefix_matches));
   }
 
   void SetupInfoMapAndExpectedState() {
@@ -206,7 +206,6 @@ class V4DatabaseTest : public PlatformTest {
   ListInfos list_infos_;
   std::vector<ListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
-  std::unique_ptr<FakeV4StoreFactory> factory_;
   DatabaseUpdatedCallback callback_db_updated_;
   NewDatabaseReadyCallback callback_db_ready_;
   StoreStateMap expected_store_state_map_;

@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_feature_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -197,7 +198,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
-  SafeBrowsingService();
+  SafeBrowsingService(V4FeatureList::V4UsageStatus v4_usage_status =
+                          V4FeatureList::V4UsageStatus::V4_DISABLED);
 
   ~SafeBrowsingService() override;
 
@@ -298,7 +300,12 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // Whether SafeBrowsing needs to be enabled in V4Only mode. In this mode, all
   // SafeBrowsing decisions are made using the PVer4 implementation.
-  bool enabled_v4_only_;
+  bool use_v4_only_;
+
+  // Whether the PVer4 implementation needs to be instantiated. Note that even
+  // if the PVer4 implementation has been instantiated, it is used only if
+  // |use_v4_only_| is true.
+  bool v4_enabled_;
 
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe
