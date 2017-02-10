@@ -175,10 +175,9 @@ class PersistentBase {
   NO_SANITIZE_ADDRESS
   void assign(T* ptr) {
     if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
-      releaseStore(
-          reinterpret_cast<void* volatile*>(
-              const_cast<typename std::remove_const<T>::type**>(&m_raw)),
-          const_cast<typename std::remove_const<T>::type*>(ptr));
+      CrossThreadPersistentRegion::LockScope persistentLock(
+          ProcessHeap::crossThreadPersistentRegion());
+      m_raw = ptr;
     } else {
       m_raw = ptr;
     }
