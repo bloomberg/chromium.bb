@@ -22,32 +22,40 @@ class ArgumentSpecUnitTest : public gin::V8Test {
                      const std::string& script_source,
                      const std::string& expected_json_single_quotes) {
     RunTest(spec, script_source, true, TestResult::PASS,
-            ReplaceSingleQuotes(expected_json_single_quotes), std::string());
+            ReplaceSingleQuotes(expected_json_single_quotes), nullptr,
+            std::string());
+  }
+
+  void ExpectSuccess(const ArgumentSpec& spec,
+                     const std::string& script_source,
+                     const base::Value& expected_value) {
+    RunTest(spec, script_source, true, TestResult::PASS, std::string(),
+            &expected_value, std::string());
   }
 
   void ExpectSuccessWithNoConversion(const ArgumentSpec& spec,
                                      const std::string& script_source) {
-    RunTest(spec, script_source, false, TestResult::PASS,
-            std::string(), std::string());
+    RunTest(spec, script_source, false, TestResult::PASS, std::string(),
+            nullptr, std::string());
   }
 
   void ExpectFailure(const ArgumentSpec& spec,
                      const std::string& script_source) {
-    RunTest(spec, script_source, true, TestResult::FAIL, std::string(),
+    RunTest(spec, script_source, true, TestResult::FAIL, std::string(), nullptr,
             std::string());
   }
 
   void ExpectFailureWithNoConversion(const ArgumentSpec& spec,
                                      const std::string& script_source) {
     RunTest(spec, script_source, false, TestResult::FAIL, std::string(),
-            std::string());
+            nullptr, std::string());
   }
 
   void ExpectThrow(const ArgumentSpec& spec,
                    const std::string& script_source,
                    const std::string& expected_thrown_message) {
     RunTest(spec, script_source, true, TestResult::THROW, std::string(),
-            expected_thrown_message);
+            nullptr, expected_thrown_message);
   }
 
   void AddTypeRef(const std::string& id, std::unique_ptr<ArgumentSpec> spec) {
@@ -62,6 +70,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
                bool should_convert,
                TestResult expected_result,
                const std::string& expected_json,
+               const base::Value* expected_value,
                const std::string& expected_thrown_message);
 
   ArgumentSpec::RefMap type_refs_;
@@ -74,6 +83,7 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
                                    bool should_convert,
                                    TestResult expected_result,
                                    const std::string& expected_json,
+                                   const base::Value* expected_value,
                                    const std::string& expected_thrown_message) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(instance_->isolate());
@@ -96,7 +106,10 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
   ASSERT_EQ(should_throw, try_catch.HasCaught()) << script_source;
   if (should_succeed && should_convert) {
     ASSERT_TRUE(out_value);
-    EXPECT_EQ(expected_json, ValueToString(*out_value));
+    if (expected_value)
+      EXPECT_TRUE(expected_value->Equals(out_value.get())) << script_source;
+    else
+      EXPECT_EQ(expected_json, ValueToString(*out_value));
   } else if (should_throw) {
     EXPECT_EQ(expected_thrown_message,
               gin::V8ToString(try_catch.Message()->Get()));
@@ -241,6 +254,39 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectFailureWithNoConversion(spec, "({a: function() {}})");
     ExpectFailureWithNoConversion(spec, "([function() {}])");
     ExpectFailureWithNoConversion(spec, "1");
+  }
+
+  {
+    const char kBinarySpec[] = "{ 'type': 'binary' }";
+    ArgumentSpec spec(*ValueFromString(kBinarySpec));
+    // Simple case: empty ArrayBuffer -> empty BinaryValue.
+    ExpectSuccess(spec, "(new ArrayBuffer())", base::BinaryValue());
+    {
+      // A non-empty (but zero-filled) ArrayBufferView.
+      const char kBuffer[] = {0, 0, 0, 0};
+      std::unique_ptr<base::BinaryValue> expected_value =
+          base::BinaryValue::CreateWithCopiedBuffer(kBuffer,
+                                                    arraysize(kBuffer));
+      ASSERT_TRUE(expected_value);
+      ExpectSuccessWithNoConversion(spec, "(new Int32Array(2))");
+    }
+    {
+      // Actual data.
+      const char kBuffer[] = {'p', 'i', 'n', 'g'};
+      std::unique_ptr<base::BinaryValue> expected_value =
+          base::BinaryValue::CreateWithCopiedBuffer(kBuffer,
+                                                    arraysize(kBuffer));
+      ASSERT_TRUE(expected_value);
+      ExpectSuccess(spec,
+                    "var b = new ArrayBuffer(4);\n"
+                    "var v = new Uint8Array(b);\n"
+                    "var s = 'ping';\n"
+                    "for (var i = 0; i < s.length; ++i)\n"
+                    "  v[i] = s.charCodeAt(i);\n"
+                    "b;",
+                    *expected_value);
+    }
+    ExpectFailure(spec, "1");
   }
 }
 

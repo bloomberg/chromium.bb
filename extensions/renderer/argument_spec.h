@@ -29,6 +29,7 @@ enum class ArgumentType {
   STRING,
   OBJECT,
   LIST,
+  BINARY,
   FUNCTION,
   ANY,
   REF,

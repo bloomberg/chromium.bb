@@ -75,6 +75,8 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
     type_ = ArgumentType::BOOLEAN;
   else if (type_string == "string")
     type_ = ArgumentType::STRING;
+  else if (type_string == "binary")
+    type_ = ArgumentType::BINARY;
   else if (type_string == "any")
     type_ = ArgumentType::ANY;
   else if (type_string == "function")
@@ -171,6 +173,13 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
     }
     v8::Local<v8::Array> array = value.As<v8::Array>();
     return ParseArgumentToArray(context, array, refs, out_value, error);
+  }
+  if (type_ == ArgumentType::BINARY) {
+    if (!value->IsArrayBuffer() && !value->IsArrayBufferView()) {
+      *error = "Wrong type";
+      return false;
+    }
+    return ParseArgumentToAny(context, value, out_value, error);
   }
   if (type_ == ArgumentType::ANY)
     return ParseArgumentToAny(context, value, out_value, error);
@@ -317,7 +326,7 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
                                       v8::Local<v8::Value> value,
                                       std::unique_ptr<base::Value>* out_value,
                                       std::string* error) const {
-  DCHECK_EQ(ArgumentType::ANY, type_);
+  DCHECK(type_ == ArgumentType::ANY || type_ == ArgumentType::BINARY);
   if (out_value) {
     std::unique_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
@@ -327,6 +336,8 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
       *error = "Could not convert to 'any'.";
       return false;
     }
+    if (type_ == ArgumentType::BINARY)
+      DCHECK_EQ(base::Value::Type::BINARY, converted->GetType());
     *out_value = std::move(converted);
   }
   return true;
