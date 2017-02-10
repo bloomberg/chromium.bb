@@ -514,15 +514,6 @@ base::string16 MessageCenterView::GetButtonBarTitle() const {
 void MessageCenterView::Update(bool animate) {
   bool no_message_views = notification_views_.empty();
 
-  // When the child view is removed from the hierarchy, its focus is cleared.
-  // In this case we want to save which view has focus so that the user can
-  // continue to interact with notifications in the order they were expecting.
-  views::FocusManager* focus_manager = scroller_->GetFocusManager();
-  View* focused_view = NULL;
-  // |focus_manager| can be NULL in tests.
-  if (focus_manager)
-    focused_view = focus_manager->GetFocusedView();
-
   if (is_locked_)
     SetVisibilityMode(Mode::BUTTONS_ONLY, animate);
   else if (settings_visible_)
@@ -543,9 +534,6 @@ void MessageCenterView::Update(bool animate) {
   }
 
   UpdateButtonBarStatus();
-
-  if (focus_manager && focused_view)
-    focus_manager->SetFocusedView(focused_view);
 
   if (scroller_->visible())
     scroller_->InvalidateLayout();
