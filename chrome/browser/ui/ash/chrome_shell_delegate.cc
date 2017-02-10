@@ -479,9 +479,15 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
     ash::WmShelf* wm_shelf,
     const ash::ShelfItem* item) {
-  DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
+    return nullptr;
+
+  // No context menu before |shelf_delegate_| is created. This is possible
+  // now because CreateShelfDelegate is called by session state change
+  // via mojo asynchronously. Context menu could be triggered when the
+  // mojo message is still in-fly and crashes.
+  if (!shelf_delegate_)
     return nullptr;
 
   return LauncherContextMenu::Create(shelf_delegate_, item, wm_shelf);
