@@ -451,6 +451,30 @@ function keyboardScroll(direction) {
   });
 }
 
+function smoothDrag(targetSelector1, targetSelector2, pointerType) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector1, document);
+      var target1 = document.querySelector(targetSelector1);
+      var targetRect1 = target1.getBoundingClientRect();
+      var xPosition1 = targetRect1.left + boundaryOffset;
+      var yPosition1 = targetRect1.top + boundaryOffset;
+      var target2 = document.querySelector(targetSelector2);
+      var targetRect2 = target2.getBoundingClientRect();
+      var xPosition2 = targetRect2.left + boundaryOffset;
+      var yPosition2 = targetRect2.top + boundaryOffset;
+      var action = '[{"source": "' + pointerType + '", "actions": [{ "name": "pointerDown", "x":' + xPosition1 +', "y":' + yPosition1 +' },';
+      var maxStep = Math.max(1, Math.floor(Math.max(Math.abs(xPosition2 - xPosition1), Math.abs(yPosition2 - yPosition1))/15));
+      for (var step=1; step<=maxStep; step++)
+        action += '{ "name": "pointerMove", "x":' + (xPosition1 + Math.floor((step/maxStep)*(xPosition2 - xPosition1))) +', "y":' + (yPosition1 + Math.floor((step/maxStep)*(yPosition2 - yPosition1))) +' },';
+      action += '{ "name": "pointerUp" }]}]';
+      chrome.gpuBenchmarking.pointerActionSequence(JSON.parse(action), resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
 {
   var pointerevent_automation = async_test("PointerEvent Automation");
   // Defined in every test and should return a promise that gets resolved when input is finished.
@@ -458,4 +482,3 @@ function keyboardScroll(direction) {
     pointerevent_automation.done();
   });
 }
-

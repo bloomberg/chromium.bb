@@ -318,6 +318,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     webTouchEvent.touches[0].position.y = 10.4f;
     webTouchEvent.touches[0].radiusX = 10.6f;
     webTouchEvent.touches[0].radiusY = 10.4f;
+    webTouchEvent.touches[0].movementX = 20;
+    webTouchEvent.touches[0].movementY = 20;
 
     EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].screenPosition.x);
     EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].screenPosition.y);
@@ -325,6 +327,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].position.y);
     EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].radiusX);
     EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].radiusY);
+    EXPECT_EQ(20, webTouchEvent.touches[0].movementX);
+    EXPECT_EQ(20, webTouchEvent.touches[0].movementY);
 
     WebTouchEvent transformedEvent =
         TransformWebTouchEvent(view, webTouchEvent);
@@ -335,6 +339,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_FLOAT_EQ(5.2f, transformedPoint.position.y);
     EXPECT_FLOAT_EQ(5.3f, transformedPoint.radiusX);
     EXPECT_FLOAT_EQ(5.2f, transformedPoint.radiusY);
+    EXPECT_EQ(10, transformedPoint.movementX);
+    EXPECT_EQ(10, transformedPoint.movementY);
   }
 }
 

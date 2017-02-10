@@ -333,8 +333,11 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
   *event = event_to_coalesce;
   for (unsigned i = 0; i < event->touchesLength; ++i) {
     int i_old = GetIndexOfTouchID(old_event, event->touches[i].id);
-    if (old_event.touches[i_old].state == blink::WebTouchPoint::StateMoved)
+    if (old_event.touches[i_old].state == blink::WebTouchPoint::StateMoved) {
       event->touches[i].state = blink::WebTouchPoint::StateMoved;
+      event->touches[i].movementX += old_event.touches[i_old].movementX;
+      event->touches[i].movementY += old_event.touches[i_old].movementY;
+    }
   }
   event->movedBeyondSlopRegion |= old_event.movedBeyondSlopRegion;
   event->dispatchType = MergeDispatchTypes(old_event.dispatchType,

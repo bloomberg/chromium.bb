@@ -82,6 +82,9 @@ class WebPointerProperties {
 
   Button button;
   PointerType pointerType;
+
+  int movementX;
+  int movementY;
 };
 
 }  // namespace blink

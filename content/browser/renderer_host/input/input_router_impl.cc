@@ -186,8 +186,10 @@ void InputRouterImpl::SendGestureEvent(
 
 void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
-  input_stream_validator_.Validate(touch_event.event);
-  touch_event_queue_->QueueEvent(touch_event);
+  TouchEventWithLatencyInfo updatd_touch_event = touch_event;
+  SetMovementXYForTouchPoints(&updatd_touch_event.event);
+  input_stream_validator_.Validate(updatd_touch_event.event);
+  touch_event_queue_->QueueEvent(updatd_touch_event);
 }
 
 // Forwards MouseEvent without passing it through
@@ -636,6 +638,33 @@ void InputRouterImpl::SignalFlushedIfNecessary() {
 
 void InputRouterImpl::SetFrameTreeNodeId(int frameTreeNodeId) {
   frame_tree_node_id_ = frameTreeNodeId;
+}
+
+void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
+  for (size_t i = 0; i < event->touchesLength; ++i) {
+    blink::WebTouchPoint* touch_point = &event->touches[i];
+    if (touch_point->state == blink::WebTouchPoint::StateMoved) {
+      const gfx::Point& last_position = global_touch_position_[touch_point->id];
+      touch_point->movementX =
+          touch_point->screenPosition.x - last_position.x();
+      touch_point->movementY =
+          touch_point->screenPosition.y - last_position.y();
+      global_touch_position_[touch_point->id].SetPoint(
+          touch_point->screenPosition.x, touch_point->screenPosition.y);
+    } else {
+      touch_point->movementX = 0;
+      touch_point->movementY = 0;
+      if (touch_point->state == blink::WebTouchPoint::StateReleased ||
+          touch_point->state == blink::WebTouchPoint::StateCancelled) {
+        global_touch_position_.erase(touch_point->id);
+      } else if (touch_point->state == blink::WebTouchPoint::StatePressed) {
+        DCHECK(global_touch_position_.find(touch_point->id) ==
+               global_touch_position_.end());
+        global_touch_position_[touch_point->id] = gfx::Point(
+            touch_point->screenPosition.x, touch_point->screenPosition.y);
+      }
+    }
+  }
 }
 
 }  // namespace content

@@ -1397,6 +1397,7 @@ crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
+crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html [ Skip ]
@@ -1949,7 +1950,6 @@ crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
 
 # Manual tests that have not been automated.
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Timeout ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]

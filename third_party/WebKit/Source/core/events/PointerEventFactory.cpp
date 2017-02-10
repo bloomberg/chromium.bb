@@ -118,6 +118,11 @@ void updateTouchPointerEventInit(const WebTouchPoint& touchPoint,
     pointerEventInit->setClientX(clientPoint.x());
     pointerEventInit->setClientY(clientPoint.y());
 
+    if (touchPoint.state == WebTouchPoint::StateMoved) {
+      pointerEventInit->setMovementX(touchPoint.movementX);
+      pointerEventInit->setMovementY(touchPoint.movementY);
+    }
+
     FloatSize pointRadius =
         FloatSize(touchPoint.radiusX, touchPoint.radiusY).scaledBy(scaleFactor);
     pointerEventInit->setWidth(pointRadius.width());
@@ -164,6 +169,10 @@ void updateMousePointerEventInit(const WebMouseEvent& mouseEvent,
   pointerEventInit->setTiltY(mouseEvent.tiltY);
   pointerEventInit->setTangentialPressure(mouseEvent.tangentialPressure);
   pointerEventInit->setTwist(mouseEvent.twist);
+
+  IntPoint movement = flooredIntPoint(mouseEvent.movementInRootFrame());
+  pointerEventInit->setMovementX(movement.x());
+  pointerEventInit->setMovementY(movement.y());
 }
 
 }  // namespace

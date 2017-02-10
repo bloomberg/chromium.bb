@@ -96,6 +96,7 @@ PointerEventFactoryTest::WebMouseEventBuilder::WebMouseEventBuilder(
   pointerType = pointerTypeParam;
   id = idParam;
   m_modifiers = modifiersParam;
+  m_frameScale = 1;
 }
 
 PointerEvent* PointerEventFactoryTest::createAndCheckTouchCancel(

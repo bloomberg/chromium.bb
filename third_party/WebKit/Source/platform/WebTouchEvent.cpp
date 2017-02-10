@@ -26,6 +26,8 @@ WebTouchPoint WebTouchEvent::touchPointInRootFrame(unsigned point) const {
   WebTouchPoint transformedPoint = touches[point];
   transformedPoint.radiusX /= m_frameScale;
   transformedPoint.radiusY /= m_frameScale;
+  transformedPoint.movementX /= m_frameScale;
+  transformedPoint.movementY /= m_frameScale;
   transformedPoint.position.x =
       (transformedPoint.position.x / m_frameScale) + m_frameTranslate.x;
   transformedPoint.position.y =

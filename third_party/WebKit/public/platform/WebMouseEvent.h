@@ -32,8 +32,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   int globalX;
   int globalY;
 
-  int movementX;
-  int movementY;
   int clickCount;
 
   WebMouseEvent(Type typeParam,
