@@ -58,7 +58,8 @@ var DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 
 /**
- * Counter for DOM elements that we are waiting to finish loading.
+ * Counter for DOM elements that we are waiting to finish loading. Starts out
+ * at 1 because initially we're waiting for the "show" message from the parent.
  * @type {number}
  */
 var loadedCounter = 1;
@@ -118,6 +119,7 @@ var countLoad = function() {
     showTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
+    // TODO(treib): Why do we reset to 1 here?
     loadedCounter = 1;
   }
 };
@@ -305,7 +307,7 @@ var addTile = function(args) {
 
 /**
  * Called when the user decided to add a tile to the blacklist.
- * It sets of the animation for the blacklist and sends the blacklisted id
+ * It sets off the animation for the blacklist and sends the blacklisted id
  * to the host page.
  * @param {Element} tile DOM node of the tile we want to remove.
  */

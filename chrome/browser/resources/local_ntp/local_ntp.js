@@ -29,57 +29,27 @@ function $(id) {
 /**
  * Specifications for an NTP design (not comprehensive).
  *
- * fakeboxWingSize: Extra distance for fakebox to extend beyond beyond the list
- *   of tiles.
- * fontFamily: Font family to use for title and thumbnail iframes.
- * fontSize: Font size to use for the iframes, in px.
  * numTitleLines: Number of lines to display in titles.
- * showFavicon: Whether to show favicon.
- * thumbnailTextColor: The 4-component color that thumbnail iframe may use to
- *   display text message in place of missing thumbnail.
- * thumbnailFallback: (Optional) A value in THUMBNAIL_FALLBACK to specify the
- *   thumbnail fallback strategy. If unassigned, then the thumbnail.html
- *   iframe would handle the fallback.
  * tileWidth: The width of each suggestion tile, in px.
  * tileMargin: Spacing between successive tiles, in px.
  * titleColor: The 4-component color of title text.
  * titleColorAgainstDark: The 4-component color of title text against a dark
  *   theme.
- * titleTextAlign: (Optional) The alignment of title text. If unspecified, the
- *   default value is 'center'.
- * titleTextFade: (Optional) The number of pixels beyond which title
- *   text begins to fade. This overrides the default ellipsis style.
  *
  * @type {{
- *   fakeboxWingSize: number,
- *   fontFamily: string,
- *   fontSize: number,
  *   numTitleLines: number,
- *   showFavicon: boolean,
- *   thumbnailTextColor: string,
- *   thumbnailFallback: string|null|undefined,
  *   tileWidth: number,
  *   tileMargin: number,
  *   titleColor: string,
  *   titleColorAgainstDark: string,
- *   titleTextAlign: string|null|undefined,
- *   titleTextFade: number|null|undefined
  * }}
  */
 var NTP_DESIGN = {
-  fakeboxWingSize: 0,
-  fontFamily: 'arial, sans-serif',
-  fontSize: 12,
   numTitleLines: 1,
-  showFavicon: true,
-  thumbnailTextColor: [50, 50, 50, 255],
-  thumbnailFallback: 'dot',  // Draw single dot.
   tileWidth: 154,
   tileMargin: 16,
   titleColor: [50, 50, 50, 255],
   titleColorAgainstDark: [210, 210, 210, 255],
-  titleTextAlign: 'inherit',
-  titleTextFade: 122 - 36  // 112px wide title with 32 pixel fade at end.
 };
 
 
@@ -140,35 +110,6 @@ var KEYCODE = {
 
 
 /**
- * The notification displayed when a page is blacklisted.
- * @type {Element}
- */
-var notification;
-
-
-/**
- * The container for the theme attribution.
- * @type {Element}
- */
-var attribution;
-
-
-/**
- * The "fakebox" - an input field that looks like a regular searchbox.  When it
- * is focused, any text the user types goes directly into the omnibox.
- * @type {Element}
- */
-var fakebox;
-
-
-/**
- * The container for NTP elements.
- * @type {Element}
- */
-var ntpContents;
-
-
-/**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
@@ -189,13 +130,6 @@ var numColumnsShown = 0;
  * @type {Object}
  */
 var ntpApiHandle;
-
-
-/**
- * The browser embeddedSearch.searchBox object.
- * @type {Object}
- */
-var searchboxApiHandle;
 
 
 /** @type {number} @const */
@@ -247,7 +181,7 @@ function getIsThemeDark(info) {
 function renderTheme() {
   var info = ntpApiHandle.themeBackgroundInfo;
   var isThemeDark = getIsThemeDark(info);
-  ntpContents.classList.toggle(CLASSES.DARK, isThemeDark);
+  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, isThemeDark);
   if (!info) {
     return;
   }
@@ -284,7 +218,7 @@ function renderTheme() {
 
 
 /**
- * Updates the NTP based on the current theme, then rerenders all tiles.
+ * Callback for embeddedSearch.newTabPage.onthemechange.
  * @private
  */
 function onThemeChange() {
@@ -303,7 +237,7 @@ function setCustomThemeStyle(opt_themeInfo) {
   var customStyleElement = $(IDS.CUSTOM_THEME_STYLE);
   var head = document.head;
   if (opt_themeInfo && !opt_themeInfo.usingDefaultTheme) {
-    ntpContents.classList.remove(CLASSES.DEFAULT_THEME);
+    $(IDS.NTP_CONTENTS).classList.remove(CLASSES.DEFAULT_THEME);
     var themeStyle =
       '#attribution {' +
       '  color: ' + convertToRGBAColor(opt_themeInfo.textColorLightRgba) + ';' +
@@ -338,7 +272,7 @@ function setCustomThemeStyle(opt_themeInfo) {
     }
 
   } else {
-    ntpContents.classList.add(CLASSES.DEFAULT_THEME);
+    $(IDS.NTP_CONTENTS).classList.add(CLASSES.DEFAULT_THEME);
     if (customStyleElement)
       head.removeChild(customStyleElement);
   }
@@ -358,6 +292,7 @@ function updateThemeAttribution(url, themeBackgroundAlignment) {
     return;
   }
 
+  var attribution = $(IDS.ATTRIBUTION);
   var attributionImage = attribution.querySelector('img');
   if (!attributionImage) {
     attributionImage = new Image();
@@ -379,13 +314,11 @@ function updateThemeAttribution(url, themeBackgroundAlignment) {
  * @private
  */
 function setAttributionVisibility_(show) {
-  if (attribution) {
-    attribution.style.display = show ? '' : 'none';
-  }
+  $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
 
- /**
+/**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
  * @param {Array<number>} color Array of rgba color components.
  * @return {string} CSS color in RGBA format.
@@ -398,7 +331,8 @@ function convertToRGBAColor(color) {
 
 
 /**
- * Called when page data change.
+ * Callback for embeddedSearch.newTabPage.onmostvisitedchange. Called when the
+ * NTP tiles are updated.
  */
 function onMostVisitedChange() {
   reloadTiles();
@@ -424,6 +358,7 @@ function reloadTiles() {
  * Shows the blacklist notification and triggers a delay to hide it.
  */
 function showNotification() {
+  var notification = $(IDS.NOTIFICATION);
   notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
   notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
   notification.scrollTop;
@@ -435,6 +370,7 @@ function showNotification() {
  * Hides the blacklist notification.
  */
 function hideNotification() {
+  var notification = $(IDS.NOTIFICATION);
   notification.classList.add(CLASSES.HIDE_NOTIFICATION);
   notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
 }
@@ -475,12 +411,10 @@ function updateContentWidth() {
   var innerWidth = window.innerWidth || maxSnapSize;
   // Each tile has left and right margins that sum to NTP_DESIGN.tileMargin.
   var availableWidth = innerWidth + NTP_DESIGN.tileMargin -
-      NTP_DESIGN.fakeboxWingSize * 2 - MIN_TOTAL_HORIZONTAL_PADDING;
+      MIN_TOTAL_HORIZONTAL_PADDING;
   var newNumColumns = Math.floor(availableWidth / tileRequiredWidth);
-  if (newNumColumns < MIN_NUM_COLUMNS)
-    newNumColumns = MIN_NUM_COLUMNS;
-  else if (newNumColumns > MAX_NUM_COLUMNS)
-    newNumColumns = MAX_NUM_COLUMNS;
+  newNumColumns =
+      Math.max(MIN_NUM_COLUMNS, Math.min(newNumColumns, MAX_NUM_COLUMNS));
 
   if (numColumnsShown === newNumColumns)
     return false;
@@ -490,12 +424,9 @@ function updateContentWidth() {
   // make the width shorter than it should be.
   var tilesContainerWidth = Math.ceil(numColumnsShown * tileRequiredWidth) + 1;
   $(IDS.TILES).style.width = tilesContainerWidth + 'px';
-  if (fakebox) {
-    // -2 to account for border.
-    var fakeboxWidth = (tilesContainerWidth - NTP_DESIGN.tileMargin - 2);
-    fakeboxWidth += NTP_DESIGN.fakeboxWingSize * 2;
-    fakebox.style.width = fakeboxWidth + 'px';
-  }
+  // -2 to account for border.
+  var fakeboxWidth = (tilesContainerWidth - NTP_DESIGN.tileMargin - 2);
+  $(IDS.FAKEBOX).style.width = fakeboxWidth + 'px';
   return true;
 }
 
@@ -506,18 +437,20 @@ function updateContentWidth() {
  * new width of the page.
  */
 function onResize() {
-  updateContentWidth();
-  $(IDS.TILES_IFRAME).contentWindow.postMessage(
-    {cmd: 'tilesVisible', maxVisible: numColumnsShown * NUM_ROWS}, '*');
+  if (updateContentWidth()) {
+    // If the number of tile columns changes, inform the iframe.
+    $(IDS.TILES_IFRAME).contentWindow.postMessage(
+        {cmd: 'tilesVisible', maxVisible: numColumnsShown * NUM_ROWS}, '*');
+  }
 }
 
 
 /**
- * Handles new input by disposing the NTP, according to where the input was
- * entered.
+ * Callback for embeddedSearch.newTabPage.oninputstart. Handles new input by
+ * disposing the NTP, according to where the input was entered.
  */
 function onInputStart() {
-  if (fakebox && isFakeboxFocused()) {
+  if (isFakeboxFocused()) {
     setFakeboxFocus(false);
     setFakeboxDragFocus(false);
     setFakeboxAndLogoVisibility(false);
@@ -526,7 +459,8 @@ function onInputStart() {
 
 
 /**
- * Restores the NTP (re-enables the fakebox and unhides the logo.)
+ * Callback for embeddedSearch.newTabPage.oninputcancel. Restores the NTP
+ * (re-enables the fakebox and unhides the logo.)
  */
 function onInputCancel() {
   setFakeboxAndLogoVisibility(true);
@@ -541,7 +475,7 @@ function setFakeboxFocus(focus) {
 }
 
 /**
- * @param {boolean} focus True to show a dragging focus to the fakebox.
+ * @param {boolean} focus True to show a dragging focus on the fakebox.
  */
 function setFakeboxDragFocus(focus) {
   document.body.classList.toggle(CLASSES.FAKEBOX_DRAG_FOCUS, focus);
@@ -561,7 +495,7 @@ function isFakeboxFocused() {
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return fakebox.contains(event.target);
+  return $(IDS.FAKEBOX).contains(event.target);
 }
 
 
@@ -583,18 +517,6 @@ function registerKeyHandler(element, keycode, handler) {
     if (event.keyCode == keycode)
       handler(event);
   });
-}
-
-
-/**
- * @return {Object} the handle to the embeddedSearch API.
- */
-function getEmbeddedSearchApiHandle() {
-  if (window.cideb)
-    return window.cideb;
-  if (window.chrome && window.chrome.embeddedSearch)
-    return window.chrome.embeddedSearch;
-  return null;
 }
 
 
@@ -622,18 +544,8 @@ function handlePostMessage(event) {
  * section, and Google-specific elements for a Google-provided page.
  */
 function init() {
-  notification = $(IDS.NOTIFICATION);
-  attribution = $(IDS.ATTRIBUTION);
-  ntpContents = $(IDS.NTP_CONTENTS);
-
-  if (configData.isGooglePage) {
-    fakebox = $(IDS.FAKEBOX);
-  } else {
-    document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
-  }
-
   // Hide notifications after fade out, so we can't focus on links via keyboard.
-  notification.addEventListener('webkitTransitionEnd', hideNotification);
+  $(IDS.NOTIFICATION).addEventListener('webkitTransitionEnd', hideNotification);
 
   $(IDS.NOTIFICATION_MESSAGE).textContent =
       configData.translatedStrings.thumbnailRemovedNotification;
@@ -657,21 +569,23 @@ function init() {
   window.addEventListener('resize', onResize);
   updateContentWidth();
 
-  var topLevelHandle = getEmbeddedSearchApiHandle();
+  var embeddedSearchApiHandle = window.chrome.embeddedSearch;
 
-  ntpApiHandle = topLevelHandle.newTabPage;
+  ntpApiHandle = embeddedSearchApiHandle.newTabPage;
   ntpApiHandle.onthemechange = onThemeChange;
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
-  ntpApiHandle.oninputstart = onInputStart;
-  ntpApiHandle.oninputcancel = onInputCancel;
+  var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
-  if (ntpApiHandle.isInputInProgress)
-    onInputStart();
+  if (configData.isGooglePage) {
+    // Set up the fakebox (which only exists on the Google NTP).
+    ntpApiHandle.oninputstart = onInputStart;
+    ntpApiHandle.oninputcancel = onInputCancel;
 
-  searchboxApiHandle = topLevelHandle.searchBox;
+    if (ntpApiHandle.isInputInProgress) {
+      onInputStart();
+    }
 
-  if (fakebox) {
     $(IDS.FAKEBOX_TEXT).textContent =
         configData.translatedStrings.searchboxPlaceholder;
 
@@ -710,6 +624,8 @@ function init() {
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+  } else {
+    document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
 
   if (searchboxApiHandle.rtl) {
@@ -720,7 +636,7 @@ function init() {
     document.documentElement.classList.add(CLASSES.RTL);
   }
 
-  // Pass arguments to the most visited iframe.
+  // Collect arguments for the most visited iframe.
   var args = [];
 
   if (searchboxApiHandle.rtl)
@@ -755,9 +671,10 @@ function listen() {
 }
 
 return {
-  init: init,
+  init: init,  // Exposed for testing.
   listen: listen
 };
+
 }
 
 if (!window.localNTPUnitTest) {
