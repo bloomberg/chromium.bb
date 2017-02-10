@@ -2,6 +2,7 @@ include_rules = [
   "+components/nacl",
   "+content/public/app/sandbox_helper_win.h",
   "+content/public/common",
+  "+content/public/child",
   "+crypto",
   "+sandbox/linux/bpf_dsl",
   "+sandbox/linux/seccomp-bpf",

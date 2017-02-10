@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_communication_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
-#include "content/common/child_process_sandbox_support_impl_linux.h"
+#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/zygote_handle_linux.h"
 #include "content/public/common/content_client.h"

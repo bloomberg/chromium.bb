@@ -51,7 +51,7 @@ source_set("minimal") {
 source_set("minimal_content_dummy") {
   check_includes = false
   sources = [
-    "//content/public/common/child_process_sandbox_support_linux.h",
+    "//content/public/child/child_process_sandbox_support_linux.h",
     "//content/public/common/main_function_params.h",
     "//content/public/common/sandbox_init.h",
   ]
@@ -68,6 +68,7 @@ source_set("loader") {
   ]
   deps = [
     "//components/nacl/common",
+    "//content/public/child",
     "//content/public/common",
     "//ppapi/shared_impl",
     "//services/service_manager/public/cpp",

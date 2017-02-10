@@ -11,6 +11,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/posix/global_descriptors.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/sandbox_linux.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
@@ -28,6 +30,10 @@ class Thread;
 namespace sandbox { class SetuidSandboxClient; }
 
 namespace content {
+
+inline int GetSandboxFD() {
+  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
+}
 
 // A singleton class to represent and change our sandboxing state for the
 // three main Linux sandboxes.

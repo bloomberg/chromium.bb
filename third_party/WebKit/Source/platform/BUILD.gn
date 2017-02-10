@@ -28,12 +28,7 @@ component("blink_common") {
     "exported/URLConversion.cpp",
     "exported/WebCString.cpp",
     "exported/WebString.cpp",
-    "exported/linux/WebFontRenderStyle.cpp",
   ]
-  if (is_android) {
-    set_sources_assignment_filter([])
-    sources += [ "exported/linux/WebFontRenderStyle.cpp" ]
-  }
 
   defines = [
     "BLINK_COMMON_IMPLEMENTATION=1",
@@ -589,6 +584,7 @@ component("platform") {
     "exported/WebURLResponse.cpp",
     "exported/WrappedResourceRequest.h",
     "exported/WrappedResourceResponse.h",
+    "exported/linux/WebFontRenderStyle.cpp",
     "feature_policy/FeaturePolicy.cpp",
     "feature_policy/FeaturePolicy.h",
     "fonts/AcceptLanguagesResolver.cpp",
@@ -1404,6 +1400,11 @@ component("platform") {
     "weborigin/Suborigin.h",
     "weborigin/URLSecurityOriginMap.h",
   ]
+
+  if (is_android) {
+    set_sources_assignment_filter([])
+    sources += [ "exported/linux/WebFontRenderStyle.cpp" ]
+  }
 
   sources -= blink_platform_neon_files
   sources -= blink_platform_msa_files

@@ -15,9 +15,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/font_utils_linux.h"
-#include "content/public/common/child_process_sandbox_support_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 
 namespace content {
 

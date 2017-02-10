@@ -28,6 +28,7 @@ source_set("child_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "child_process_sandbox_support_linux.h",
     "child_thread.h",
     "fixed_received_data.cc",
     "fixed_received_data.h",
@@ -47,6 +48,7 @@ source_set("child_sources") {
     "//content/child",  # Must not be public_deps!
     "//content/public/common:common_sources",
     "//gin",
+    "//ppapi/c",
   ]
 
   allow_circular_includes_from = [

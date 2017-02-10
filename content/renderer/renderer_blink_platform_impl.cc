@@ -116,7 +116,7 @@
 #include <string>
 
 #include "base/synchronization/lock.h"
-#include "content/common/child_process_sandbox_support_impl_linux.h"
+#include "content/child/child_process_sandbox_support_impl_linux.h"
 #include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 #include "third_party/icu/source/common/unicode/utf16.h"

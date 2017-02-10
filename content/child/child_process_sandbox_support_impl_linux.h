@@ -1,15 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
-#define CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
+#ifndef CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
+#define CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 
 #include <stdint.h>
 
-#include "base/posix/global_descriptors.h"
-#include "content/public/common/child_process_sandbox_support_linux.h"
-#include "content/public/common/content_descriptors.h"
+#include "content/public/child/child_process_sandbox_support_linux.h"
 
 namespace blink {
 struct WebFallbackFont;
@@ -37,10 +35,6 @@ void GetRenderStyleForStrike(const char* family,
                              int size_and_style,
                              blink::WebFontRenderStyle* out);
 
-inline int GetSandboxFD() {
-  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
-}
-
 };  // namespace content
 
-#endif  // CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
+#endif  // CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
