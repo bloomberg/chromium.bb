@@ -249,7 +249,7 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/payments/payment_request_factory.h"
 #endif
 
@@ -1481,7 +1481,7 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   return true;
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !defined(OS_ANDROID)
 bool AreExperimentalWebPlatformFeaturesEnabled() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -3070,8 +3070,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
         base::Bind(&ForwardShareServiceRequest,
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
-  // TODO(crbug.com/679127): Enable for MacViews implementation.
+#else
   if (AreExperimentalWebPlatformFeaturesEnabled()) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
