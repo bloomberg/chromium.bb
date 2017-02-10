@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -100,6 +102,14 @@ class EditorDropdownField implements EditorFieldView {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+        mDropdown.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) requestFocusAndHideKeyboard();
+                return false;
+            }
+        });
     }
 
     /** @return The View containing everything. */
@@ -138,6 +148,10 @@ class EditorDropdownField implements EditorFieldView {
     @Override
     public void scrollToAndFocus() {
         updateDisplayedError(!isValid());
+        requestFocusAndHideKeyboard();
+    }
+
+    private void requestFocusAndHideKeyboard() {
         UiUtils.hideKeyboard(mDropdown);
         ViewGroup parent = (ViewGroup) mDropdown.getParent();
         if (parent != null) parent.requestChildFocus(mDropdown, mDropdown);
