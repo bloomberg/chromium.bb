@@ -45,6 +45,28 @@ CompositorFrame MakeCompositorFrame(
   return compositor_frame;
 }
 
+CompositorFrame MakeCompositorFrameWithResources(
+    std::vector<SurfaceId> referenced_surfaces,
+    TransferableResourceArray resource_list) {
+  CompositorFrame compositor_frame;
+  compositor_frame.metadata.referenced_surfaces =
+      std::move(referenced_surfaces);
+  compositor_frame.resource_list = std::move(resource_list);
+  return compositor_frame;
+}
+
+TransferableResource MakeResource(ResourceId id,
+                                  ResourceFormat format,
+                                  uint32_t filter,
+                                  const gfx::Size& size) {
+  TransferableResource resource;
+  resource.id = id;
+  resource.format = format;
+  resource.filter = filter;
+  resource.size = size;
+  return resource;
+}
+
 }  // namespace
 
 class CompositorFrameSinkSupportTest : public testing::Test,
@@ -87,6 +109,10 @@ class CompositorFrameSinkSupportTest : public testing::Test,
     return begin_frame_source_.get();
   }
 
+  ReturnedResourceArray& last_returned_resources() {
+    return last_returned_resources_;
+  }
+
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
@@ -120,13 +146,16 @@ class CompositorFrameSinkSupportTest : public testing::Test,
   // CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck() override {}
   void OnBeginFrame(const BeginFrameArgs& args) override {}
-  void ReclaimResources(const ReturnedResourceArray& resources) override {}
+  void ReclaimResources(const ReturnedResourceArray& resources) override {
+    last_returned_resources_ = resources;
+  }
   void WillDrawSurface() override {}
 
  private:
   SurfaceManager surface_manager_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
+  ReturnedResourceArray last_returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupportTest);
 };
@@ -441,6 +470,57 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_THAT(parent_reference_tracker().references_to_add(),
               UnorderedElementsAre(parent_arbitrary_reference));
   EXPECT_THAT(parent_reference_tracker().references_to_remove(), IsEmpty());
+}
+
+// This test verifies that we do not double count returned resources when a
+// CompositorFrame starts out as pending, then becomes active, and then is
+// replaced with another active CompositorFrame.
+TEST_F(CompositorFrameSinkSupportTest,
+       DisplayCompositorLockingResourcesOnlyReturnedOnce) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // The parent submits a CompositorFrame that depends on |child_id| before the
+  // child submits a CompositorFrame. The CompositorFrame also has resources in
+  // its resource list.
+  TransferableResource resource =
+      MakeResource(1337 /* id */, ALPHA_8 /* format */, 1234 /* filter */,
+                   gfx::Size(1234, 5678));
+  TransferableResourceArray resource_list = {resource};
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrameWithResources({child_id}, resource_list));
+
+  // Verify that the CompositorFrame is blocked on |child_id|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+              UnorderedElementsAre(child_id));
+
+  child_support1().SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+
+  // Verify that the child CompositorFrame activates immediately.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+
+  // Verify that the parent has activated.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+
+  // The parent submits a CompositorFrame without any dependencies. That frame
+  // should activate immediately, replacing the earlier frame. The resource from
+  // the earlier frame should be returned to the client.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(), MakeCompositorFrame({empty_surface_ids()}));
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  ReturnedResource returned_resource = resource.ToReturnedResource();
+  EXPECT_THAT(last_returned_resources(),
+              UnorderedElementsAre(returned_resource));
 }
 
 }  // namespace test

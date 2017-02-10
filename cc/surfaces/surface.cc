@@ -59,16 +59,16 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
 
   UpdateBlockingSurfaces(previous_pending_frame, frame);
 
+  // Receive and track the resources referenced from the CompositorFrame
+  // regardless of whether it's pending or active.
+  factory_->ReceiveFromChild(frame.resource_list);
+
   if (!blocking_surfaces_.empty()) {
     pending_frame_ = std::move(frame);
-    if (pending_frame_) {
-      factory_->ReceiveFromChild(pending_frame_->resource_list);
-      pending_referenced_surfaces_ =
-          pending_frame_->metadata.referenced_surfaces;
-      // Ask the surface manager to inform |this| when its dependencies are
-      // resolved.
-      factory_->manager()->RequestSurfaceResolution(this);
-    }
+    pending_referenced_surfaces_ = pending_frame_->metadata.referenced_surfaces;
+    // Ask the surface manager to inform |this| when its dependencies are
+    // resolved.
+    factory_->manager()->RequestSurfaceResolution(this);
   } else {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(std::move(frame));
@@ -152,8 +152,6 @@ void Surface::ActivatePendingFrame() {
   ActivateFrame(std::move(pending_frame_.value()));
   pending_frame_.reset();
   pending_referenced_surfaces_.clear();
-  // ActiveFrame resources are now double ref-ed. Unref.
-  UnrefFrameResources(*active_frame_);
 }
 
 // A frame is activated if all its Surface ID dependences are active or a
@@ -167,8 +165,6 @@ void Surface::ActivateFrame(CompositorFrame frame) {
 
   base::Optional<CompositorFrame> previous_frame = std::move(active_frame_);
   active_frame_ = std::move(frame);
-
-  factory_->ReceiveFromChild(active_frame_->resource_list);
 
   // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
   // increment frame index for them.
