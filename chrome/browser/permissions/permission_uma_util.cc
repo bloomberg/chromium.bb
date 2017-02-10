@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -355,6 +356,15 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
                            PermissionRequestGestureType::UNKNOWN,
                            revoked_origin, profile);
   }
+}
+
+void PermissionUmaUtil::RecordSafeBrowsingResponse(
+    base::TimeDelta response_time,
+    SafeBrowsingResponse response) {
+  UMA_HISTOGRAM_TIMES("Permissions.AutoBlocker.SafeBrowsingResponseTime",
+                      response_time);
+  UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.SafeBrowsingResponse",
+                            response, SafeBrowsingResponse::RESPONSE_NUM);
 }
 
 void PermissionUmaUtil::PermissionPromptShown(

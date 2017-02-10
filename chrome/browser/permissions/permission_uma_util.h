@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 
@@ -39,6 +40,16 @@ enum class PermissionPersistDecision {
   UNSPECIFIED = 0,
   PERSISTED = 1,
   NOT_PERSISTED = 2,
+};
+
+// Any new values should be inserted immediately prior to RESPONSE_NUM.
+enum SafeBrowsingResponse {
+  NOT_BLACKLISTED = 0,
+  TIMEOUT = 1,
+  BLACKLISTED = 2,
+
+  // Always keep this at the end.
+  RESPONSE_NUM,
 };
 
 // A bundle for the information sent in a PermissionReport.
@@ -114,7 +125,8 @@ class PermissionUmaUtil {
                                 PermissionSourceUI source_ui,
                                 const GURL& revoked_origin,
                                 Profile* profile);
-
+  static void RecordSafeBrowsingResponse(base::TimeDelta response_time,
+                                         SafeBrowsingResponse response);
   // UMA specifically for when permission prompts are shown. This should be
   // roughly equivalent to the metrics above, however it is
   // useful to have separate UMA to a few reasons:

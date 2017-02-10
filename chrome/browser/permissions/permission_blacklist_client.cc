@@ -9,7 +9,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -57,6 +60,7 @@ void PermissionBlacklistClient::StartCheck(const GURL& request_origin) {
   // empty response if Safe Browsing times out.
   safe_browsing::ThreatMetadata empty_metadata;
   timer_ = base::MakeUnique<base::OneShotTimer>();
+  elapsed_timer_.reset(new base::ElapsedTimer());
   timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
       base::Bind(&PermissionBlacklistClient::OnCheckApiBlacklistUrlResult, this,
@@ -71,17 +75,26 @@ void PermissionBlacklistClient::OnCheckApiBlacklistUrlResult(
     const GURL& url,
     const safe_browsing::ThreatMetadata& metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (timer_->IsRunning())
-    timer_->Stop();
-  else
-    db_manager_->CancelApiCheck(this);
-  timer_.reset(nullptr);
 
+  base::TimeDelta response_time = elapsed_timer_->Elapsed();
+  SafeBrowsingResponse response = SafeBrowsingResponse::NOT_BLACKLISTED;
+
+  if (timer_->IsRunning()) {
+    timer_->Stop();
+  } else {
+    db_manager_->CancelApiCheck(this);
+    response = SafeBrowsingResponse::TIMEOUT;
+  }
+
+  timer_.reset(nullptr);
   bool permission_blocked =
       metadata.api_permissions.find(
           PermissionUtil::ConvertPermissionTypeToSafeBrowsingName(
               permission_type_)) != metadata.api_permissions.end();
+  if (permission_blocked)
+    response = SafeBrowsingResponse::BLACKLISTED;
 
+  PermissionUmaUtil::RecordSafeBrowsingResponse(response_time, response);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&PermissionBlacklistClient::EvaluateBlacklistResultOnUiThread,
@@ -89,11 +102,11 @@ void PermissionBlacklistClient::OnCheckApiBlacklistUrlResult(
 }
 
 void PermissionBlacklistClient::EvaluateBlacklistResultOnUiThread(
-    bool permission_blocked) {
+    bool response) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_active_)
-    callback_.Run(permission_blocked);
+    callback_.Run(response);
   Release();
 }
 
