@@ -5,6 +5,7 @@
 #include "ui/gfx/win/direct_write.h"
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/metrics/field_trial.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
