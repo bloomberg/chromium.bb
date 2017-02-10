@@ -85,7 +85,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Overriden from base::MemoryCoordinatorClient.
-  void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   size_t GetTotalMemoryUsageForTesting() const {
     return total_memory_usage_bytes_;

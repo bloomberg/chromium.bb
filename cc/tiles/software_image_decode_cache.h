@@ -271,8 +271,13 @@ class CC_EXPORT SoftwareImageDecodeCache
                                const char* cache_name,
                                base::trace_event::ProcessMemoryDump* pmd) const;
 
+  // Removes unlocked decoded images until the number of decoded images is
+  // reduced within the given limit.
+  void ReduceCacheUsageUntilWithinLimit(size_t limit);
+
   // Overriden from base::MemoryCoordinatorClient.
   void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   // Helper method to get the different tasks. Note that this should be used as
   // if it was public (ie, all of the locks need to be properly acquired).

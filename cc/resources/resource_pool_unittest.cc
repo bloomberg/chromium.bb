@@ -353,7 +353,8 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
-  // Suspending should not impact an in-use resource.
+  // Purging and suspending should not impact an in-use resource.
+  resource_pool_->OnPurgeMemory();
   resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
@@ -364,7 +365,8 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 
-  // Suspending should now free the busy resource.
+  // Purging and suspending should now free the busy resource.
+  resource_pool_->OnPurgeMemory();
   resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
   EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());

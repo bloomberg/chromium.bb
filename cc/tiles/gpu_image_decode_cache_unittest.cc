@@ -1336,7 +1336,8 @@ TEST(GpuImageDecodeCacheTest, MemoryStateSuspended) {
   DCHECK_EQ(cache.GetBytesUsedForTesting(), 0u);
   DCHECK_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
 
-  // Set us to the SUSPENDED state.
+  // Set us to the SUSPENDED state with purging.
+  cache.OnPurgeMemory();
   cache.OnMemoryStateChange(base::MemoryState::SUSPENDED);
 
   // Nothing should be cached.

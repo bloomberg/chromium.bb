@@ -130,6 +130,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // base::MemoryCoordinatorClient overrides.
   void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   // Called by Decode / Upload tasks.
   void DecodeImage(const DrawImage& image);

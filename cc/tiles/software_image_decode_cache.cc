@@ -797,12 +797,10 @@ void SoftwareImageDecodeCache::UnrefAtRasterImage(const ImageKey& key) {
   }
 }
 
-void SoftwareImageDecodeCache::ReduceCacheUsage() {
+void SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit(size_t limit) {
   TRACE_EVENT0("cc", "SoftwareImageDecodeCache::ReduceCacheUsage");
-  base::AutoLock lock(lock_);
-  size_t num_to_remove = (decoded_images_.size() > max_items_in_cache_)
-                             ? (decoded_images_.size() - max_items_in_cache_)
-                             : 0;
+  size_t num_to_remove =
+      (decoded_images_.size() > limit) ? (decoded_images_.size() - limit) : 0;
   for (auto it = decoded_images_.rbegin();
        num_to_remove != 0 && it != decoded_images_.rend();) {
     if (it->second->is_locked()) {
@@ -813,6 +811,11 @@ void SoftwareImageDecodeCache::ReduceCacheUsage() {
     it = decoded_images_.Erase(it);
     --num_to_remove;
   }
+}
+
+void SoftwareImageDecodeCache::ReduceCacheUsage() {
+  base::AutoLock lock(lock_);
+  ReduceCacheUsageUntilWithinLimit(max_items_in_cache_);
 }
 
 void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
@@ -1173,7 +1176,11 @@ void SoftwareImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
         return;
     }
   }
-  ReduceCacheUsage();
+}
+
+void SoftwareImageDecodeCache::OnPurgeMemory() {
+  base::AutoLock lock(lock_);
+  ReduceCacheUsageUntilWithinLimit(0);
 }
 
 }  // namespace cc

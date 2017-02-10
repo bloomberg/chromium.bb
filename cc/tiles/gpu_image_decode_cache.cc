@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include "base/auto_reset.h"
 #include "base/debug/alias.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_coordinator_client_registry.h"
@@ -1268,24 +1269,15 @@ bool GpuImageDecodeCache::IsInInUseCacheForTesting(
 }
 
 void GpuImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      memory_state_ = state;
-      break;
-    case base::MemoryState::THROTTLED:
-    case base::MemoryState::SUSPENDED: {
-      memory_state_ = state;
+  memory_state_ = state;
+}
 
-      // We've just changed our memory state to a (potentially) more
-      // restrictive one. Re-enforce cache limits.
-      base::AutoLock lock(lock_);
-      EnsureCapacity(0);
-      break;
-    }
-    case base::MemoryState::UNKNOWN:
-      // NOT_REACHED.
-      break;
-  }
+void GpuImageDecodeCache::OnPurgeMemory() {
+  base::AutoLock lock(lock_);
+  // Temporary changes |memory_state_| to free up cache as much as possible.
+  base::AutoReset<base::MemoryState> reset(&memory_state_,
+                                           base::MemoryState::SUSPENDED);
+  EnsureCapacity(0);
 }
 
 }  // namespace cc

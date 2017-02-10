@@ -90,7 +90,7 @@ class CC_EXPORT StagingBufferPool
       base::trace_event::TracedValue* staging_state) const;
 
   // Overriden from base::MemoryCoordinatorClient.
-  void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ContextProvider* const worker_context_provider_;
