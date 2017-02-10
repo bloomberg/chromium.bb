@@ -688,14 +688,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             'ParseDepsFile(%s): allowed_hosts must be absent '
             'or a non-empty iterable' % self.name)
 
-    # Check that all recursedeps are valid.
-    if self.recursedeps is not None:
-      for name in self.recursedeps:
-        if name not in deps:
-          raise gclient_utils.Error(
-              'ParseDepsFile(%s): recursedeps contains entry, '
-              'that is not referenced in deps: %s' % name)
-
     # Convert the deps into real Dependency.
     deps_to_add = []
     for name, url in deps.iteritems():
