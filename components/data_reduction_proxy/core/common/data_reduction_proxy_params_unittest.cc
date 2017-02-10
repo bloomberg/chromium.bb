@@ -422,8 +422,9 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
        std::string()},
       {"Control", false, "true", false, true, true, std::string()},
       {"Disabled", false, "false", false, true, false, std::string()},
-      {"enabled", false, "false", false, true, false, std::string()},
+      {"enabled", true, "false", false, true, true, std::string()},
       {"Enabled", true, "true", true, true, true, "example.com/test.html"},
+      {std::string(), true, "true", false, false, false, std::string()},
   };
 
   for (const auto& test : tests) {

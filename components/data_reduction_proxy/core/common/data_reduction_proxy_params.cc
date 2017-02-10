@@ -142,8 +142,7 @@ bool IsIncludedInTamperDetectionExperiment() {
 bool FetchWarmupURLEnabled() {
   // Fetching of the warmup URL can be enabled only for Enabled* and Control*
   // groups.
-  if (!base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kEnabled,
-                        base::CompareCase::SENSITIVE) &&
+  if (!IsIncludedInQuicFieldTrial() &&
       !base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kControl,
                         base::CompareCase::SENSITIVE)) {
     return false;
@@ -215,7 +214,16 @@ bool WarnIfNoDataReductionProxy() {
 }
 
 bool IsIncludedInQuicFieldTrial() {
-  return IsIncludedInFieldTrial(kQuicFieldTrial);
+  if (base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kControl,
+                       base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  if (base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kDisabled,
+                       base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  // QUIC is enabled by default.
+  return true;
 }
 
 const char* GetQuicFieldTrialName() {
