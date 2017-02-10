@@ -170,6 +170,8 @@ struct drm_backend {
 	int sprites_are_broken;
 	int sprites_hidden;
 
+	void *repaint_data;
+
 	int cursors_are_broken;
 
 	bool universal_planes;
@@ -222,6 +224,16 @@ struct drm_edid {
 	char monitor_name[13];
 	char pnp_id[5];
 	char serial_number[13];
+};
+
+/**
+ * Pending state holds one or more drm_output_state structures, collected from
+ * performing repaint. This pending state is transient, and only lives between
+ * beginning a repaint group and flushing the results: after flush, each
+ * output state will complete and be retired separately.
+ */
+struct drm_pending_state {
+	struct drm_backend *backend;
 };
 
 /**
@@ -896,6 +908,45 @@ drm_view_transform_supported(struct weston_view *ev)
 		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
+/**
+ * Allocate a new drm_pending_state
+ *
+ * Allocate a new, empty, 'pending state' structure to be used across a
+ * repaint cycle or similar.
+ *
+ * @param backend DRM backend
+ * @returns Newly-allocated pending state structure
+ */
+static struct drm_pending_state *
+drm_pending_state_alloc(struct drm_backend *backend)
+{
+	struct drm_pending_state *ret;
+
+	ret = calloc(1, sizeof(*ret));
+	if (!ret)
+		return NULL;
+
+	ret->backend = backend;
+
+	return ret;
+}
+
+/**
+ * Free a drm_pending_state structure
+ *
+ * Frees a pending_state structure.
+ *
+ * @param pending_state Pending state structure to free
+ */
+static void
+drm_pending_state_free(struct drm_pending_state *pending_state)
+{
+	if (!pending_state)
+		return;
+
+	free(pending_state);
+}
+
 static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
@@ -1415,6 +1466,55 @@ page_flip_handler(int fd, unsigned int frame,
 		if (output->recorder)
 			weston_output_schedule_repaint(&output->base);
 	}
+}
+
+/**
+ * Begin a new repaint cycle
+ *
+ * Called by the core compositor at the beginning of a repaint cycle.
+ */
+static void *
+drm_repaint_begin(struct weston_compositor *compositor)
+{
+	struct drm_backend *b = to_drm_backend(compositor);
+	struct drm_pending_state *ret;
+
+	ret = drm_pending_state_alloc(b);
+	b->repaint_data = ret;
+
+	return ret;
+}
+
+/**
+ * Flush a repaint set
+ *
+ * Called by the core compositor when a repaint cycle has been completed
+ * and should be flushed.
+ */
+static void
+drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
+{
+	struct drm_backend *b = to_drm_backend(compositor);
+	struct drm_pending_state *pending_state = repaint_data;
+
+	drm_pending_state_free(pending_state);
+	b->repaint_data = NULL;
+}
+
+/**
+ * Cancel a repaint set
+ *
+ * Called by the core compositor when a repaint has finished, so the data
+ * held across the repaint cycle should be discarded.
+ */
+static void
+drm_repaint_cancel(struct weston_compositor *compositor, void *repaint_data)
+{
+	struct drm_backend *b = to_drm_backend(compositor);
+	struct drm_pending_state *pending_state = repaint_data;
+
+	drm_pending_state_free(pending_state);
+	b->repaint_data = NULL;
 }
 
 static uint32_t
@@ -3951,6 +4051,9 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	b->base.destroy = drm_destroy;
 	b->base.restore = drm_restore;
+	b->base.repaint_begin = drm_repaint_begin;
+	b->base.repaint_flush = drm_repaint_flush;
+	b->base.repaint_cancel = drm_repaint_cancel;
 
 	weston_setup_vt_switch_bindings(compositor);
 
