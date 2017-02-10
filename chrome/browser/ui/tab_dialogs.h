@@ -59,7 +59,7 @@ class TabDialogs : public base::SupportsUserData::Data {
       Browser* browser,
       Profile* profile,
       const std::string& username,
-      ui::ProfileSigninConfirmationDelegate* delegate) = 0;
+      std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) = 0;
 
   // Shows or hides the ManagePasswords bubble.
   // Pass true for |user_action| if this is a user initiated action.

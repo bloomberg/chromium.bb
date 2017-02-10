@@ -24,7 +24,7 @@ class TabDialogsViews : public TabDialogs {
       Browser* browser,
       Profile* profile,
       const std::string& username,
-      ui::ProfileSigninConfirmationDelegate* delegate) override;
+      std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) override;
   void ShowManagePasswordsBubble(bool user_action) override;
   void HideManagePasswordsBubble() override;
   base::WeakPtr<ValidationMessageBubble> ShowValidationMessage(

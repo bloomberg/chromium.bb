@@ -53,10 +53,10 @@ void TabDialogsViews::ShowProfileSigninConfirmation(
     Browser* browser,
     Profile* profile,
     const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) {
 #if !defined(OS_CHROMEOS)
-  ProfileSigninConfirmationDialogViews::ShowDialog(
-      browser, profile, username, delegate);
+  ProfileSigninConfirmationDialogViews::ShowDialog(browser, profile, username,
+                                                   std::move(delegate));
 #else
   NOTREACHED();
 #endif

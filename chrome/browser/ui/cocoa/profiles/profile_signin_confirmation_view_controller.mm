@@ -142,14 +142,16 @@ NSTextField* AddTextField(
 @implementation ProfileSigninConfirmationViewController
 
 - (id)initWithBrowser:(Browser*)browser
-             username:(const std::string&)username
-             delegate:(ui::ProfileSigninConfirmationDelegate*)delegate
-  closeDialogCallback:(const base::Closure&)closeDialogCallback
- offerProfileCreation:(bool)offer {
+                username:(const std::string&)username
+                delegate:
+                    (std::unique_ptr<ui::ProfileSigninConfirmationDelegate>)
+                        delegate
+     closeDialogCallback:(const base::Closure&)closeDialogCallback
+    offerProfileCreation:(bool)offer {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     browser_ = browser;
     username_ = username;
-    delegate_ = delegate;
+    delegate_ = std::move(delegate);
     closeDialogCallback_ = closeDialogCallback;
     offerProfileCreation_ = offer;
   }
@@ -376,7 +378,7 @@ NSTextField* AddTextField(
 - (IBAction)cancel:(id)sender {
   if (delegate_) {
     delegate_->OnCancelSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
     closeDialogCallback_.Run();
   }
 }
@@ -384,7 +386,7 @@ NSTextField* AddTextField(
 - (IBAction)ok:(id)sender {
   if (delegate_) {
     delegate_->OnContinueSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
     closeDialogCallback_.Run();
   }
 }
@@ -392,7 +394,7 @@ NSTextField* AddTextField(
 - (IBAction)close:(id)sender {
   if (delegate_) {
     delegate_->OnCancelSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
   closeDialogCallback_.Run();
 }
@@ -400,7 +402,7 @@ NSTextField* AddTextField(
 - (IBAction)createProfile:(id)sender {
   if (delegate_) {
     delegate_->OnSigninWithNewProfile();
-    delegate_ = NULL;
+    delegate_ = nullptr;
     closeDialogCallback_.Run();
   }
 }
@@ -437,22 +439,6 @@ NSTextField* AddTextField(
   [[self view] addSubview:button];
   if (shouldAutoSize)
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:button];
-}
-
-@end
-
-@implementation ProfileSigninConfirmationViewController (TestingAPI)
-
-- (ui::ProfileSigninConfirmationDelegate*)delegate {
-  return delegate_;
-}
-
-- (NSButton*)createProfileButton {
-  return createProfileButton_.get();
-}
-
-- (NSTextView*)explanationField {
-  return explanationField_.get();
 }
 
 @end
