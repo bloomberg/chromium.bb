@@ -106,35 +106,35 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
       return GetBgColor("GtkMenu#menu GtkMenuItem#menuitem:hover");
     case ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor:
-      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel#label");
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-      return GetFgColor(
-          "GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel#label");
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel");
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-      return GetFgColor(
-          "GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel#label");
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel");
     case ui::NativeTheme::kColorId_MenuItemSubtitleColor:
       return GetFgColor(
-          "GtkMenu#menu GtkMenuItem#menuitem GtkLabel#label.accelerator");
+          "GtkMenu#menu GtkMenuItem#menuitem GtkLabel.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
     // MenuButton borders are used as vertical menu separators in Chrome.
     case ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_HoverMenuButtonBorderColor:
-      if (GtkVersionCheck(3, 20))
-        return GetBgColor("GtkMenu#menu GtkSeparator#separator");
-      else
+      if (GtkVersionCheck(3, 20)) {
+        return GetSeparatorColor(
+            "GtkMenu#menu GtkSeparator#separator.horizontal");
+      } else {
         return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
+      }
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
-      return GetFgColor("GtkLabel#label");
+      return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_LabelDisabledColor:
-      return GetFgColor("GtkLabel#label:disabled");
+      return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
-      return GetFgColor("GtkLabel#label #selection:selected");
+      return GetSelectedTextColor("GtkLabel");
     case ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return GetBgColor("GtkLabel#label #selection:selected");
+      return GetSelectedBgColor("GtkLabel");
 
     // Link
     case ui::NativeTheme::kColorId_LinkDisabled:
@@ -142,13 +142,13 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
           SkColorFromColorId(ui::NativeTheme::kColorId_LinkEnabled), 0xBB);
     case ui::NativeTheme::kColorId_LinkPressed:
       if (GtkVersionCheck(3, 12))
-        return GetFgColor("GtkLabel#label.link:link:hover:active");
+        return GetFgColor("GtkLabel.link:link:hover:active");
     // fallthrough
     case ui::NativeTheme::kColorId_LinkEnabled: {
       if (GtkVersionCheck(3, 12)) {
-        return GetFgColor("GtkLabel#label.link:link");
+        return GetFgColor("GtkLabel.link:link");
       }
-      auto link_context = GetStyleContextFromCss("GtkLabel#label.view");
+      auto link_context = GetStyleContextFromCss("GtkLabel.view");
       GdkColor* color;
       gtk_style_context_get_style(link_context, "link-color", &color, nullptr);
       if (color) {
@@ -173,28 +173,28 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
-      return GetFgColor("GtkButton#button.text-button GtkLabel#label");
+      return GetFgColor("GtkButton#button.text-button GtkLabel");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:
-      return GetFgColor("GtkButton#button.text-button:disabled GtkLabel#label");
+      return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
     case ui::NativeTheme::kColorId_ButtonHoverColor:
-      return GetFgColor("GtkButton#button.text-button:hover GtkLabel#label");
+      return GetFgColor("GtkButton#button.text-button:hover GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 
     case ui::NativeTheme::kColorId_BlueButtonEnabledColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action GtkLabel#label");
+          "GtkButton#button.text-button.suggested-action GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonDisabledColor:
       return GetFgColor(
           "GtkButton#button.text-button.suggested-action:disabled "
-          "GtkLabel#label");
+          "GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonHoverColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action:hover GtkLabel#label");
+          "GtkButton#button.text-button.suggested-action:hover GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonPressedColor:
       return GetFgColor(
           "GtkButton#button.text-button.suggested-action:hover:active "
-          "GtkLabel#label");
+          "GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
 
@@ -202,7 +202,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetBgColor("GtkButton#button.text-button.destructive-action");
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
       return GetFgColor(
-          "GtkButton#button.text-button.destructive-action GtkLabel#label");
+          "GtkButton#button.text-button.destructive-action GtkLabel");
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
@@ -214,9 +214,9 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TextfieldReadOnlyBackground:
       return GetBgColor("GtkEntry#entry:disabled");
     case ui::NativeTheme::kColorId_TextfieldSelectionColor:
-      return GetFgColor("GtkEntry#entry #selection:selected");
+      return GetSelectedTextColor("GtkEntry#entry");
     case ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return GetBgColor("GtkEntry#entry #selection:selected");
+      return GetSelectedBgColor("GtkEntry#entry");
 
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:
@@ -233,13 +233,13 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TreeText:
     case ui::NativeTheme::kColorId_TreeArrow:
     case ui::NativeTheme::kColorId_TableGroupingIndicatorColor:
-      return GetFgColor("GtkTreeView#treeview.view .view.cell GtkLabel#label");
+      return GetFgColor("GtkTreeView#treeview.view .view.cell GtkLabel");
     case ui::NativeTheme::kColorId_TableSelectedText:
     case ui::NativeTheme::kColorId_TableSelectedTextUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectedText:
     case ui::NativeTheme::kColorId_TreeSelectedTextUnfocused:
       return GetFgColor(
-          "GtkTreeView#treeview.view .view.cell:selected:focus GtkLabel#label");
+          "GtkTreeView#treeview.view .view.cell:selected:focus GtkLabel");
     case ui::NativeTheme::kColorId_TableSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundFocused:
@@ -248,43 +248,39 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Table Header
     case ui::NativeTheme::kColorId_TableHeaderText:
-      return GetFgColor(
-          "GtkTreeView#treeview.view GtkButton#button GtkLabel#label");
+      return GetFgColor("GtkTreeView#treeview.view GtkButton#button GtkLabel");
     case ui::NativeTheme::kColorId_TableHeaderBackground:
       return GetBgColor("GtkTreeView#treeview.view GtkButton#button");
     case ui::NativeTheme::kColorId_TableHeaderSeparator:
       return GetBorderColor("GtkTreeView#treeview.view GtkButton#button");
 
     // Results Table
-    // TODO(thomasanderson): The GtkEntry selectors was how the gtk2 theme got
-    // these colors.  Update this code to use a different widget.
     case ui::NativeTheme::kColorId_ResultsTableNormalBackground:
       return GetBgColor("GtkEntry#entry");
     case ui::NativeTheme::kColorId_ResultsTableHoveredBackground:
-      return color_utils::AlphaBlend(
-          GetBgColor("GtkEntry#entry"),
-          GetBgColor("GtkEntry#entry #selection:selected"), 0x80);
+      return color_utils::AlphaBlend(GetBgColor("GtkEntry#entry"),
+                                     GetSelectedBgColor("GtkEntry#entry"),
+                                     0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedBackground:
-      return GetBgColor("GtkEntry#entry #selection:selected");
+      return GetSelectedBgColor("GtkEntry#entry");
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredText:
       return GetFgColor("GtkEntry#entry");
     case ui::NativeTheme::kColorId_ResultsTableSelectedText:
-      return GetFgColor("GtkEntry#entry #selection:selected");
+      return GetSelectedTextColor("GtkEntry#entry");
     case ui::NativeTheme::kColorId_ResultsTableNormalDimmedText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredDimmedText:
       return color_utils::AlphaBlend(GetFgColor("GtkEntry#entry"),
                                      GetBgColor("GtkEntry#entry"), 0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText:
-      return color_utils::AlphaBlend(
-          GetFgColor("GtkEntry#entry #selection:selected"),
-          GetBgColor("GtkEntry#entry"), 0x80);
+      return color_utils::AlphaBlend(GetSelectedTextColor("GtkEntry#entry"),
+                                     GetBgColor("GtkEntry#entry"), 0x80);
     case ui::NativeTheme::kColorId_ResultsTableNormalUrl:
     case ui::NativeTheme::kColorId_ResultsTableHoveredUrl:
       return NormalURLColor(GetFgColor("GtkEntry#entry"));
     case ui::NativeTheme::kColorId_ResultsTableSelectedUrl:
-      return SelectedURLColor(GetFgColor("GtkEntry#entry #selection:selected"),
-                              GetBgColor("GtkEntry#entry #selection:selected"));
+      return SelectedURLColor(GetSelectedTextColor("GtkEntry#entry"),
+                              GetSelectedBgColor("GtkEntry#entry"));
 
     case ui::NativeTheme::kColorId_ResultsTablePositiveText:
       return color_utils::GetReadableColor(kPositiveTextColor,
@@ -413,7 +409,7 @@ void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
   }
 
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
-  PaintArrow(canvas, rect, direction, SkColorFromStyleContext(context));
+  PaintArrow(canvas, rect, direction, GetFgColorFromStyleContext(context));
 }
 
 void NativeThemeGtk3::PaintScrollbarTrack(
@@ -483,28 +479,29 @@ void NativeThemeGtk3::PaintMenuSeparator(
       case ui::UPPER_SEPARATOR:
         return 0;
       default:
-        return rect.height() / 2;
+        return (rect.height() - separator_thickness) / 2;
     }
   };
   if (GtkVersionCheck(3, 20)) {
-    auto context =
-        GetStyleContextFromCss("GtkMenu#menu GtkSeparator#separator");
+    auto context = GetStyleContextFromCss(
+        "GtkMenu#menu GtkSeparator#separator.horizontal");
     GtkBorder margin, border, padding;
     GtkStateFlags state = gtk_style_context_get_state(context);
     gtk_style_context_get_margin(context, state, &margin);
     gtk_style_context_get_border(context, state, &border);
     gtk_style_context_get_padding(context, state, &padding);
-    int min_height = 0;
+    int min_height = 1;
     gtk_style_context_get(context, state, "min-height", &min_height, NULL);
     int w = rect.width() - margin.left - margin.right;
-    int h =
-        min_height + padding.top + padding.bottom + border.top + border.bottom;
+    int h = std::max(
+        min_height + padding.top + padding.bottom + border.top + border.bottom,
+        1);
     int x = margin.left;
     int y = separator_offset(h);
     PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NORMAL, true);
   } else {
-    auto context =
-        GetStyleContextFromCss("GtkMenu#menu GtkMenuItem#menuitem.separator");
+    auto context = GetStyleContextFromCss(
+        "GtkMenu#menu GtkMenuItem#menuitem.separator.horizontal");
     gboolean wide_separators = false;
     gint separator_height = 0;
     gtk_style_context_get_style(context, "wide-separators", &wide_separators,
@@ -522,7 +519,7 @@ void NativeThemeGtk3::PaintMenuSeparator(
       PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NONE, true);
     } else {
       SkPaint paint;
-      paint.setColor(SkColorFromStyleContext(context));
+      paint.setColor(GetFgColorFromStyleContext(context));
       canvas->drawLine(x, y, x + w, y, paint);
     }
   }
@@ -536,7 +533,7 @@ void NativeThemeGtk3::PaintFrameTopArea(
   auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");
-  RemoveBorders(context);
+  ApplyCssToContext(context, "* { border-radius: 0px; border-style: none; }");
   gtk_style_context_set_state(context, frame_top_area.is_active
                                            ? GTK_STATE_FLAG_NORMAL
                                            : GTK_STATE_FLAG_BACKDROP);

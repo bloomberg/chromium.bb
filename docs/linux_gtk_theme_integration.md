@@ -16,24 +16,18 @@ mostly a list of about 80 colors (see //src/ui/native_theme/native_theme.h)
 overridden by the theme. Chromium usually doesn't use GTK to render entire
 widgets, but instead tries to determine colors from them.
 
-There are three types of colors Chromium needs from widgets: 
-
-* Foreground color: determined by the CSS "color" property
-* Background color: determined by the CSS "background-color" and "background-image" properties
-* Border color: determined by the "border-color", "border-image",
-  "border-style", and "border-width" properties
-
-Backgrounds and borders are complicated because in general they might have
-multiple gradients or images. To get the color, Chromium uses GTK to render the
-background or border into a single pixel and uses the resulting color for
-theming. This mostly gives reasonable results, but in case theme authors do not
-like the resulting color, they have the option to theme Chromium widgets
-specially.
+Chromium needs foreground, background and border colors from widgets.  The
+foreground color is simply taken from the CSS "color" property.  Backgrounds and
+borders are complicated because in general they might have multiple gradients or
+images. To get the color, Chromium uses GTK to render the background or border
+into a 24x24 bitmap and uses the average color for theming. This mostly gives
+reasonable results, but in case theme authors do not like the resulting color,
+they have the option to theme Chromium widgets specially.
 
 ## Note to GTK theme authors: How to theme Chromium widgets
 
 Every widget Chromium uses will have a "chromium" style class added to it. For
-example, a texfield selector might look like:
+example, a textfield selector might look like:
 
 ```
 .window.background.chromium .entry.chromium
@@ -58,11 +52,6 @@ they might use:
 
 For GTK3.20 or later, themes will as usual have to replace ".entry" with
 "entry".
-
-Additional requirements for border colors to be picked up:
-
-* Must have a border-style that is not none.
-* Must have a border-width that is nonzero.
 
 The list of CSS selectors that Chromium uses to determine its colors is in
 //src/chrome/browser/ui/libgtkui/native_theme_gtk3.cc.

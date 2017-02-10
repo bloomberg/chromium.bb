@@ -98,10 +98,10 @@ class CairoSurface {
   // Get the drawing context for GTK to use.
   cairo_t* cairo() { return cairo_; }
 
-  // If |only_frame_pixels| is false, returns the average of all
-  // pixels in the surface, otherwise returns the average of only the
-  // edge pixels.
-  SkColor GetAveragePixelValue(bool only_frame_pixels);
+  // Returns the average of all pixels in the surface.  If |frame| is
+  // true, the resulting alpha will be the average alpha, otherwise it
+  // will be the max alpha across all pixels.
+  SkColor GetAveragePixelValue(bool frame);
 
  private:
   cairo_surface_t* surface_;
@@ -112,18 +112,18 @@ class CairoSurface {
 // |major|.|minor|.|micro|.
 bool GtkVersionCheck(int major, int minor = 0, int micro = 0);
 
+// Similar in spirit to a std::unique_ptr.
 template <typename T>
 class ScopedGObject {
  public:
   explicit ScopedGObject(T* obj) : obj_(obj) {
-    // Increase the reference count of |obj_|, removing the floating
-    // reference if it has one.
-    g_object_ref_sink(obj_);
+    // Remove the floating reference from |obj_| if it has one.
+    if (g_object_is_floating(obj_))
+      g_object_ref_sink(obj_);
+    DCHECK(G_OBJECT(obj_)->ref_count == 1);
   }
 
-  ScopedGObject(const ScopedGObject<T>& other) : obj_(other.obj_) {
-    g_object_ref(obj_);
-  }
+  ScopedGObject(const ScopedGObject<T>& other) = delete;
 
   ScopedGObject(ScopedGObject<T>&& other) : obj_(other.obj_) {
     other.obj_ = nullptr;
@@ -131,15 +131,10 @@ class ScopedGObject {
 
   ~ScopedGObject() {
     if (obj_)
-      g_object_unref(obj_);
+      Unref();
   }
 
-  ScopedGObject<T>& operator=(const ScopedGObject<T>& other) {
-    g_object_ref(other.obj_);
-    g_object_unref(obj_);
-    obj_ = other.obj_;
-    return *this;
-  }
+  ScopedGObject<T>& operator=(const ScopedGObject<T>& other) = delete;
 
   ScopedGObject<T>& operator=(ScopedGObject<T>&& other) {
     g_object_unref(obj_);
@@ -151,10 +146,35 @@ class ScopedGObject {
   operator T*() { return obj_; }
 
  private:
+  void Unref() { g_object_unref(obj_); }
+
   T* obj_;
 };
 
+template <>
+inline void ScopedGObject<GtkStyleContext>::Unref() {
+  // Versions of GTK earlier than 3.15.4 had a bug where a g_assert
+  // would be triggered when trying to free a GtkStyleContext that had
+  // a parent whose only reference was the child context in question.
+  // This is a hack to work around that case.  See GTK commit
+  // "gtkstylecontext: Don't try to emit a signal when finalizing".
+  GtkStyleContext* context = obj_;
+  while (context) {
+    GtkStyleContext* parent = gtk_style_context_get_parent(context);
+    if (parent && G_OBJECT(context)->ref_count == 1 &&
+        !GtkVersionCheck(3, 15, 4)) {
+      g_object_ref(parent);
+      gtk_style_context_set_parent(context, nullptr);
+    } else {
+      g_object_unref(context);
+      return;
+    }
+    context = parent;
+  }
+}
+
 typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
+typedef ScopedGObject<GtkCssProvider> ScopedCssProvider;
 
 // If |context| is NULL, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
@@ -170,10 +190,11 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
 // must g_object_unref() the returned context.
 ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
 
-SkColor SkColorFromStyleContext(GtkStyleContext* context);
+SkColor GetFgColorFromStyleContext(GtkStyleContext* context);
 
-// Removes all border-type properties on |context| and all of its parents.
-void RemoveBorders(GtkStyleContext* context);
+// Overrides properties on |context| and all its parents with those
+// provided by |css|.
+void ApplyCssToContext(GtkStyleContext* context, const char* css);
 
 // Get the 'color' property from the style context created by
 // GetStyleContextFromCss(|css_selector|).
@@ -186,14 +207,17 @@ void RenderBackground(const gfx::Size& size,
                       GtkStyleContext* context);
 
 // Renders a background from the style context created by
-// GetStyleContextFromCss(|css_selector|) into a single pixel and
-// returns the color.
+// GetStyleContextFromCss(|css_selector|) into a 24x24 bitmap and
+// returns the average color.
 SkColor GetBgColor(const char* css_selector);
 
-// If there is a border, renders the border from the style context
-// created by GetStyleContextFromCss(|css_selector|) into a single
-// pixel and returns the color.  Otherwise returns kInvalidColor.
+// Renders the border from the style context created by
+// GetStyleContextFromCss(|css_selector|) into a 24x24 bitmap and
+// returns the average color.
 SkColor GetBorderColor(const char* css_selector);
+
+SkColor GetSelectedTextColor(const char* css_selector);
+SkColor GetSelectedBgColor(const char* css_selector);
 
 // Get the color of the GtkSeparator specified by |css_selector|.
 SkColor GetSeparatorColor(const char* css_selector);

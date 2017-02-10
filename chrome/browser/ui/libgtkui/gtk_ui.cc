@@ -822,14 +822,15 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::BlendTowardOppositeLuma(toolbar_text_color, 50);
 
-  // Color drawn around the location bar.
-  colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] =
+  SkColor location_bar_border =
       GetBorderColor("GtkToolbar#toolbar GtkEntry#entry");
+  if (SkColorGetA(location_bar_border)) {
+    colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
+  }
 
-  inactive_selection_bg_color_ =
-      GetBgColor("GtkEntry#entry:backdrop #selection:selected");
+  inactive_selection_bg_color_ = GetSelectedBgColor("GtkEntry#entry:backdrop");
   inactive_selection_fg_color_ =
-      GetFgColor("GtkEntry#entry:backdrop #selection:selected");
+      GetSelectedTextColor("GtkEntry#entry:backdrop");
 
   SkColor toolbar_separator_horizontal =
       GetSeparatorColor("GtkToolbar#toolbar GtkSeparator#separator.horizontal");
@@ -865,10 +866,8 @@ void GtkUi::LoadGtkValues() {
         header_button_inactive_border;
   }
 
-  SkColor ntp_bg = GetBgColor("");
-  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = ntp_bg;
-  colors_[ThemeProperties::COLOR_NTP_TEXT] =
-      color_utils::GetReadableColor(GetFgColor("GtkLabel#label"), ntp_bg);
+  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = GetBgColor("GtkEntry#entry");
+  colors_[ThemeProperties::COLOR_NTP_TEXT] = GetFgColor("GtkEntry#entry");
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       GetBorderColor("GtkButton#button");
 #endif
@@ -876,13 +875,13 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
 
-  colors_[ThemeProperties::COLOR_NTP_LINK] =
-      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+  colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 
   // Generate the colors that we pass to WebKit.
   SetScrollbarColors();
-  focus_ring_color_ = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+  focus_ring_color_ =
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.

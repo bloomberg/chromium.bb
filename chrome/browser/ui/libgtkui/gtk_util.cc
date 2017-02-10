@@ -220,49 +220,42 @@ CairoSurface::CairoSurface(const gfx::Size& size)
     : surface_(cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                           size.width(),
                                           size.height())),
-      cairo_(cairo_create(surface_)) {}
+      cairo_(cairo_create(surface_)) {
+  DCHECK(cairo_surface_status(surface_) == CAIRO_STATUS_SUCCESS);
+  // Clear the surface.
+  cairo_save(cairo_);
+  cairo_set_source_rgba(cairo_, 0, 0, 0, 0);
+  cairo_set_operator(cairo_, CAIRO_OPERATOR_SOURCE);
+  cairo_paint(cairo_);
+  cairo_restore(cairo_);
+}
 
 CairoSurface::~CairoSurface() {
   cairo_destroy(cairo_);
   cairo_surface_destroy(surface_);
 }
 
-SkColor CairoSurface::GetAveragePixelValue(bool only_frame_pixels) {
+SkColor CairoSurface::GetAveragePixelValue(bool frame) {
   cairo_surface_flush(surface_);
-  int num_samples = 0;
-  long a = 0, r = 0, g = 0, b = 0;
   SkColor* data =
       reinterpret_cast<SkColor*>(cairo_image_surface_get_data(surface_));
   int width = cairo_image_surface_get_width(surface_);
   int height = cairo_image_surface_get_height(surface_);
   DCHECK(4 * width == cairo_image_surface_get_stride(surface_));
-  auto accumulate = [&](int x, int y) mutable {
-    SkColor color = data[y * width + x];
-    int alpha = SkColorGetA(color);
-    a += alpha;
-    r += alpha * SkColorGetR(color);
-    g += alpha * SkColorGetG(color);
-    b += alpha * SkColorGetB(color);
-    num_samples++;
-  };
-  if (width == 1 || height == 1 || !only_frame_pixels) {
-    // Count every pixel in the surface.
-    for (int x = 0; x < width; x++)
-      for (int y = 0; y < height; y++)
-        accumulate(x, y);
-  } else {
-    // Count the pixels in the top and bottom rows.
-    for (int x = 0; x < width; x++)
-      for (int y : {0, height - 1})
-        accumulate(x, y);
-    // Count the pixels in the left and right columns.
-    for (int x : {0, width - 1})
-      for (int y = 1; y < height - 1; y++)
-        accumulate(x, y);
+  long a = 0, r = 0, g = 0, b = 0;
+  unsigned int max_alpha = 0;
+  for (int i = 0; i < width * height; i++) {
+    SkColor color = data[i];
+    max_alpha = std::max(SkColorGetA(color), max_alpha);
+    a += SkColorGetA(color);
+    r += SkColorGetR(color);
+    g += SkColorGetG(color);
+    b += SkColorGetB(color);
   }
   if (a == 0)
     return SK_ColorTRANSPARENT;
-  return SkColorSetARGB(a / num_samples, r / a, g / a, b / a);
+  return SkColorSetARGB(frame ? max_alpha : a / (width * height), r * 255 / a,
+                        g * 255 / a, b * 255 / a);
 }
 
 bool GtkVersionCheck(int major, int minor, int micro) {
@@ -336,14 +329,12 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           NOTREACHED();
       }
     } else {
+      static auto* _gtk_widget_path_iter_set_object_name =
+          reinterpret_cast<void (*)(GtkWidgetPath*, gint, const char*)>(dlsym(
+              GetGtk3SharedLibrary(), "gtk_widget_path_iter_set_object_name"));
       switch (part_type) {
         case CSS_NAME: {
           if (GtkVersionCheck(3, 20)) {
-            static auto* _gtk_widget_path_iter_set_object_name =
-                reinterpret_cast<void (*)(GtkWidgetPath*, gint, const char*)>(
-                    dlsym(GetGtk3SharedLibrary(),
-                          "gtk_widget_path_iter_set_object_name"));
-            DCHECK(_gtk_widget_path_iter_set_object_name);
             _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
           } else {
             gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
@@ -354,6 +345,10 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           GType type = g_type_from_name(t.token().c_str());
           DCHECK(type);
           gtk_widget_path_append_type(path, type);
+          if (GtkVersionCheck(3, 20)) {
+            if (t.token() == "GtkLabel")
+              _gtk_widget_path_iter_set_object_name(path, -1, "label");
+          }
           break;
         }
         case CSS_CLASS: {
@@ -379,7 +374,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   // widgets specially if they want to.
   gtk_widget_path_iter_add_class(path, -1, "chromium");
 
-  auto child_context = ScopedStyleContext(gtk_style_context_new());
+  ScopedStyleContext child_context(gtk_style_context_new());
   gtk_style_context_set_path(child_context, path);
   gtk_style_context_set_state(child_context, state);
   gtk_style_context_set_parent(child_context, context);
@@ -388,9 +383,10 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
 }
 
 ScopedStyleContext GetStyleContextFromCss(const char* css_selector) {
-  // Prepend "GtkWindow.background" to the selector since all widgets must live
+  // Prepend a window node to the selector since all widgets must live
   // in a window, but we don't want to specify that every time.
-  auto context = AppendCssNodeToStyleContext(nullptr, "GtkWindow.background");
+  auto context =
+      AppendCssNodeToStyleContext(nullptr, "GtkWindow#window.background");
 
   for (const auto& widget_type :
        base::SplitString(css_selector, base::kWhitespaceASCII,
@@ -405,26 +401,46 @@ SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
                         color.blue * 255);
 }
 
-SkColor SkColorFromStyleContext(GtkStyleContext* context) {
+SkColor GetFgColorFromStyleContext(GtkStyleContext* context) {
   GdkRGBA color;
   gtk_style_context_get_color(context, gtk_style_context_get_state(context),
                               &color);
   return GdkRgbaToSkColor(color);
 }
 
-SkColor GetFgColor(const char* css_selector) {
-  return SkColorFromStyleContext(GetStyleContextFromCss(css_selector));
+SkColor GetBgColorFromStyleContext(GtkStyleContext* context) {
+  // Backgrounds are more general than solid colors (eg. gradients),
+  // but chromium requires us to boil this down to one color.  We
+  // cannot use the background-color here because some themes leave it
+  // set to a garbage color because a background-image will cover it
+  // anyway.  So we instead render the background into a 24x24 bitmap,
+  // removing any borders, and hope that we get a good color.
+  ApplyCssToContext(context,
+                    "* {"
+                    "border-radius: 0px;"
+                    "border-style: none;"
+                    "box-shadow: none;"
+                    "}");
+  gfx::Size size(24, 24);
+  CairoSurface surface(size);
+  RenderBackground(size, surface.cairo(), context);
+  return surface.GetAveragePixelValue(false);
 }
 
-GtkCssProvider* GetCssProvider(const char* css) {
+SkColor GetFgColor(const char* css_selector) {
+  return GetFgColorFromStyleContext(GetStyleContextFromCss(css_selector));
+}
+
+ScopedCssProvider GetCssProvider(const char* css) {
   GtkCssProvider* provider = gtk_css_provider_new();
   GError* error = nullptr;
   gtk_css_provider_load_from_data(provider, css, -1, &error);
   DCHECK(!error);
-  return provider;
+  return ScopedCssProvider(provider);
 }
 
-void ApplyCssToContext(GtkStyleContext* context, GtkCssProvider* provider) {
+void ApplyCssProviderToContext(GtkStyleContext* context,
+                               GtkCssProvider* provider) {
   while (context) {
     gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider),
                                    G_MAXUINT);
@@ -432,35 +448,9 @@ void ApplyCssToContext(GtkStyleContext* context, GtkCssProvider* provider) {
   }
 }
 
-void RemoveBorders(GtkStyleContext* context) {
-  static GtkCssProvider* provider = GetCssProvider(
-      "* {"
-      "border-style: none;"
-      "border-radius: 0px;"
-      "border-width: 0px;"
-      "border-image-width: 0px;"
-      "box-shadow: none;"
-      "padding: 0px;"
-      "margin: 0px;"
-      "outline: none;"
-      "outline-width: 0px;"
-      "}");
-  ApplyCssToContext(context, provider);
-}
-
-void AddBorders(GtkStyleContext* context) {
-  static GtkCssProvider* provider = GetCssProvider(
-      "* {"
-      "border-style: solid;"
-      "border-radius: 0px;"
-      "border-width: 1px;"
-      "box-shadow: none;"
-      "padding: 0px;"
-      "margin: 0px;"
-      "outline: none;"
-      "outline-width: 0px;"
-      "}");
-  ApplyCssToContext(context, provider);
+void ApplyCssToContext(GtkStyleContext* context, const char* css) {
+  auto provider = GetCssProvider(css);
+  ApplyCssProviderToContext(context, provider);
 }
 
 void RenderBackground(const gfx::Size& size,
@@ -472,66 +462,78 @@ void RenderBackground(const gfx::Size& size,
   gtk_render_background(context, cr, 0, 0, size.width(), size.height());
 }
 
-gfx::Size GetMinimumWidgetSize(GtkStyleContext* context) {
-  if (!GtkVersionCheck(3, 20))
-    return gfx::Size(1, 1);
-  int w = 1, h = 1;
-  gtk_style_context_get(context, gtk_style_context_get_state(context),
-                        "min-width", &w, "min-height", &h, NULL);
-  DCHECK(w >= 0 && h >= 0);
-  return gfx::Size(w ? w : 1, h ? h : 1);
-}
-
 SkColor GetBgColor(const char* css_selector) {
-  // Backgrounds are more general than solid colors (eg. gradients),
-  // but chromium requires us to boil this down to one color.  We
-  // cannot use the background-color here because some themes leave it
-  // set to a garbage color because a background-image will cover it
-  // anyway.  So we instead render the background into a single pixel,
-  // removing any borders, and hope that we get a good color.
-  auto context = GetStyleContextFromCss(css_selector);
-  RemoveBorders(context);
-  gfx::Size size = GetMinimumWidgetSize(context);
-  CairoSurface surface(size);
-  RenderBackground(size, surface.cairo(), context);
-  return surface.GetAveragePixelValue(false);
+  return GetBgColorFromStyleContext(GetStyleContextFromCss(css_selector));
 }
 
 SkColor GetBorderColor(const char* css_selector) {
   // Borders have the same issue as backgrounds, due to the
   // border-image property.
   auto context = GetStyleContextFromCss(css_selector);
-  GtkStateFlags state = gtk_style_context_get_state(context);
-  GtkBorderStyle border_style = GTK_BORDER_STYLE_NONE;
-  gtk_style_context_get(context, state, GTK_STYLE_PROPERTY_BORDER_STYLE,
-                        &border_style, nullptr);
-  GtkBorder border;
-  gtk_style_context_get_border(context, state, &border);
-  if ((border_style == GTK_BORDER_STYLE_NONE ||
-       border_style == GTK_BORDER_STYLE_HIDDEN) ||
-      (!border.left && !border.right && !border.top && !border.bottom)) {
-    return SK_ColorTRANSPARENT;
-  }
-
-  AddBorders(context);
-  gfx::Size size = GetMinimumWidgetSize(context);
+  gfx::Size size(24, 24);
   CairoSurface surface(size);
-  RenderBackground(size, surface.cairo(), context);
   gtk_render_frame(context, surface.cairo(), 0, 0, size.width(), size.height());
   return surface.GetAveragePixelValue(true);
+}
+
+ScopedStyleContext GetSelectedStyleContext(const char* css_selector) {
+  auto context = GetStyleContextFromCss(css_selector);
+  if (GtkVersionCheck(3, 20)) {
+    context = AppendCssNodeToStyleContext(context, "#selection");
+  } else {
+    GtkStateFlags state = gtk_style_context_get_state(context);
+    state = static_cast<GtkStateFlags>(state | GTK_STATE_FLAG_SELECTED);
+    gtk_style_context_set_state(context, state);
+  }
+  return context;
+}
+
+SkColor GetSelectedTextColor(const char* css_selector) {
+  return GetFgColorFromStyleContext(GetSelectedStyleContext(css_selector));
+}
+
+SkColor GetSelectedBgColor(const char* css_selector) {
+  auto context = GetSelectedStyleContext(css_selector);
+  if (GtkVersionCheck(3, 20))
+    return GetBgColorFromStyleContext(context);
+  // This is verbatim how Gtk gets the selection color on versions before 3.20.
+  GdkRGBA selection_color;
+  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+  gtk_style_context_get_background_color(
+      context, gtk_style_context_get_state(context), &selection_color);
+  G_GNUC_END_IGNORE_DEPRECATIONS;
+  return GdkRgbaToSkColor(selection_color);
 }
 
 SkColor GetSeparatorColor(const char* css_selector) {
   if (!GtkVersionCheck(3, 20))
     return GetFgColor(css_selector);
 
-  // Some themes use borders to render separators, others use a
-  // background color.  Only return the border color if there is one.
-  SkColor border = GetBorderColor(css_selector);
-  if (SkColorGetA(border))
-    return border;
+  auto context = GetStyleContextFromCss(css_selector);
+  int w = 1, h = 1;
+  gtk_style_context_get(context, gtk_style_context_get_state(context),
+                        "min-width", &w, "min-height", &h, nullptr);
+  GtkBorder border, padding;
+  GtkStateFlags state = gtk_style_context_get_state(context);
+  gtk_style_context_get_border(context, state, &border);
+  gtk_style_context_get_padding(context, state, &padding);
+  w += border.left + padding.left + padding.right + border.right;
+  h += border.top + padding.top + padding.bottom + border.bottom;
 
-  return GetBgColor(css_selector);
+  bool horizontal = gtk_style_context_has_class(context, "horizontal");
+  if (horizontal) {
+    w = 24;
+    h = std::max(h, 1);
+  } else {
+    DCHECK(gtk_style_context_has_class(context, "vertical"));
+    h = 24;
+    w = std::max(w, 1);
+  }
+
+  CairoSurface surface(gfx::Size(w, h));
+  gtk_render_background(context, surface.cairo(), 0, 0, w, h);
+  gtk_render_frame(context, surface.cairo(), 0, 0, w, h);
+  return surface.GetAveragePixelValue(false);
 }
 #endif
 
