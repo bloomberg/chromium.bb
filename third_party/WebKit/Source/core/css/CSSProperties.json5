@@ -1392,10 +1392,20 @@
     },
     {
       name: "overflow-x",
+      initial_keyword: "visible",
+      keyword_only: true,
+      keywords: [
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
+      ],
       type_name: "EOverflow",
     },
     {
       name: "overflow-y",
+      initial_keyword: "visible",
+      keyword_only: true,
+      keywords: [
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
+      ],
       type_name: "EOverflow",
     },
     {

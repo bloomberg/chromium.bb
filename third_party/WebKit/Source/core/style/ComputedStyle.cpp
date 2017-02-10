@@ -367,8 +367,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
       other.m_nonInheritedData.m_effectiveDisplay;
   m_nonInheritedData.m_originalDisplay =
       other.m_nonInheritedData.m_originalDisplay;
-  m_nonInheritedData.m_overflowX = other.m_nonInheritedData.m_overflowX;
-  m_nonInheritedData.m_overflowY = other.m_nonInheritedData.m_overflowY;
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
   m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
   m_nonInheritedData.m_hasViewportUnits =
@@ -811,8 +809,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       getWritingMode() != other.getWritingMode())
     return true;
 
-  if (m_nonInheritedData.m_overflowX != other.m_nonInheritedData.m_overflowX ||
-      m_nonInheritedData.m_overflowY != other.m_nonInheritedData.m_overflowY ||
+  if (overflowX() != other.overflowX() || overflowY() != other.overflowY() ||
       clear() != other.clear() || getUnicodeBidi() != other.getUnicodeBidi() ||
       floating() != other.floating() ||
       m_nonInheritedData.m_originalDisplay !=

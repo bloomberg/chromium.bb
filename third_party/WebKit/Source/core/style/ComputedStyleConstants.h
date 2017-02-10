@@ -145,16 +145,6 @@ enum class EBoxSizing : unsigned { kContentBox, kBorderBox };
 
 // Random visual rendering model attributes. Not inherited.
 
-enum class EOverflow : unsigned {
-  kVisible,
-  kHidden,
-  kScroll,
-  kAuto,
-  kOverlay,
-  kWebkitPagedX,
-  kWebkitPagedY
-};
-
 enum class EVerticalAlign : unsigned {
   kBaseline,
   kMiddle,

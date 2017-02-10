@@ -224,8 +224,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       // Generated properties are compared in ComputedStyleBase
       return m_effectiveDisplay == other.m_effectiveDisplay &&
              m_originalDisplay == other.m_originalDisplay &&
-             m_overflowX == other.m_overflowX &&
-             m_overflowY == other.m_overflowY &&
              m_verticalAlign == other.m_verticalAlign &&
              m_position == other.m_position &&
              // hasViewportUnits
@@ -251,8 +249,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_effectiveDisplay : 5;  // EDisplay
     unsigned m_originalDisplay : 5;   // EDisplay
-    unsigned m_overflowX : 3;         // EOverflow
-    unsigned m_overflowY : 3;         // EOverflow
     unsigned m_verticalAlign : 4;     // EVerticalAlign
     unsigned m_position : 3;          // EPosition
 
@@ -305,8 +301,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
             static_cast<unsigned>(initialDisplay());
-    m_nonInheritedData.m_overflowX = static_cast<unsigned>(initialOverflowX());
-    m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_position = initialPosition();
@@ -1459,24 +1453,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setOutlineOffset(int v) {
     SET_VAR(m_rareNonInheritedData, m_outline.m_offset, v);
-  }
-
-  // overflow-x
-  static EOverflow initialOverflowX() { return EOverflow::kVisible; }
-  EOverflow overflowX() const {
-    return static_cast<EOverflow>(m_nonInheritedData.m_overflowX);
-  }
-  void setOverflowX(EOverflow v) {
-    m_nonInheritedData.m_overflowX = static_cast<unsigned>(v);
-  }
-
-  // overflow-y
-  static EOverflow initialOverflowY() { return EOverflow::kVisible; }
-  EOverflow overflowY() const {
-    return static_cast<EOverflow>(m_nonInheritedData.m_overflowY);
-  }
-  void setOverflowY(EOverflow v) {
-    m_nonInheritedData.m_overflowY = static_cast<unsigned>(v);
   }
 
   // Padding properties.
