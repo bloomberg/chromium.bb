@@ -895,7 +895,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
 
       // Verifiy the initial and target position before the scroll offset
       // update from MT.
-      EXPECT_EQ(Animation::RunState::RUNNING, animation->run_state());
       EXPECT_EQ(gfx::ScrollOffset(10.f, 20.f),
                 curve->GetValue(base::TimeDelta()));
       EXPECT_EQ(gfx::ScrollOffset(650.f, 750.f), curve->target_value());
