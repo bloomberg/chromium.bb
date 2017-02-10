@@ -12,3 +12,5 @@ rtenneti@chromium.org
 
 per-file network_quality*=bengr@chromium.org
 per-file external_estimate*=bengr@chromium.org
+
+# COMPONENT: Internals>Network

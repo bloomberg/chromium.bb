@@ -11,3 +11,5 @@ rtenneti@chromium.org
 
 per-file NetworkQuality*=bengr@chromium.org
 per-file ExternalEstimate*=bengr@chromium.org
+
+# COMPONENT: Internals>Network>Connectivity
