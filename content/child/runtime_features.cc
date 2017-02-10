@@ -181,6 +181,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnablePreciseMemoryInfo))
     WebRuntimeFeatures::enablePreciseMemoryInfo(true);
 
+  if (command_line.HasSwitch(switches::kEnablePrintBrowser))
+    WebRuntimeFeatures::enablePrintBrowser(true);
+
   if (command_line.HasSwitch(switches::kEnableNetworkInformation) ||
       enableExperimentalWebPlatformFeatures) {
     WebRuntimeFeatures::enableNetworkInformation(true);

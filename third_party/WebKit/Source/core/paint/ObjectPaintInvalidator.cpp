@@ -281,7 +281,12 @@ static void invalidatePaintRectangleOnWindow(
   DCHECK(paintInvalidationContainer.isLayoutView() &&
          paintInvalidationContainer.layer()->compositingState() ==
              NotComposited);
-  if (!frameView || paintInvalidationContainer.document().printing())
+
+  if (!frameView)
+    return;
+
+  if (paintInvalidationContainer.document().printing() &&
+      !RuntimeEnabledFeatures::printBrowserEnabled())
     return;
 
   DCHECK(frameView->frame().ownerLayoutItem().isNull());
@@ -391,7 +396,8 @@ LayoutRect ObjectPaintInvalidator::invalidatePaintRectangle(
   if (dirtyRect.isEmpty())
     return LayoutRect();
 
-  if (m_object.view()->document().printing())
+  if (m_object.view()->document().printing() &&
+      !RuntimeEnabledFeatures::printBrowserEnabled())
     return LayoutRect();  // Don't invalidate paints if we're printing.
 
   const LayoutBoxModelObject& paintInvalidationContainer =

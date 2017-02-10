@@ -92,6 +92,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/PrintContext.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
@@ -146,6 +147,10 @@
   } while (false)
 
 namespace blink {
+
+// A4 Portrait dimensions in pixels
+const int kA4PortraitPageWidth = 595;
+const int kA4PortraitPageHeight = 842;
 
 using namespace HTMLNames;
 
@@ -236,6 +241,7 @@ DEFINE_TRACE(FrameView) {
   visitor->trace(m_scrollAnchor);
   visitor->trace(m_anchoringAdjustmentQueue);
   visitor->trace(m_scrollbarManager);
+  visitor->trace(m_printContext);
   Widget::trace(visitor);
   ScrollableArea::trace(visitor);
 }
@@ -2886,6 +2892,36 @@ void FrameView::notifyResizeObservers() {
   DCHECK(!layoutView()->needsLayout());
 }
 
+void FrameView::dispatchEventsForPrintingOnAllFrames() {
+  DCHECK(m_frame->isMainFrame());
+  for (Frame* currentFrame = m_frame; currentFrame;
+       currentFrame = currentFrame->tree().traverseNext(m_frame)) {
+    if (currentFrame->isLocalFrame())
+      toLocalFrame(currentFrame)->document()->dispatchEventsForPrinting();
+  }
+}
+
+void FrameView::setupPrintContext() {
+  if (m_frame->document()->printing())
+    return;
+  if (!m_printContext)
+    m_printContext = new PrintContext(m_frame);
+  if (m_frame->settings())
+    m_frame->settings()->setShouldPrintBackgrounds(true);
+  FloatRect pageRect(0, 0, kA4PortraitPageWidth, kA4PortraitPageHeight);
+  m_printContext->begin(pageRect.width(), pageRect.height());
+  float height;
+  m_printContext->computePageRects(pageRect, 0, 0, 1.0, height);
+  dispatchEventsForPrintingOnAllFrames();
+}
+
+void FrameView::clearPrintContext() {
+  if (!m_printContext)
+    return;
+  m_printContext->end();
+  m_printContext.clear();
+}
+
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // PluginViews.
 void FrameView::updateLifecyclePhasesInternal(
@@ -2917,6 +2953,11 @@ void FrameView::updateLifecyclePhasesInternal(
         std::min(targetState, DocumentLifecycle::CompositingClean));
     return;
   }
+
+  if (RuntimeEnabledFeatures::printBrowserEnabled())
+    setupPrintContext();
+  else
+    clearPrintContext();
 
   updateStyleAndLayoutIfNeededRecursive();
   DCHECK(lifecycle().state() >= DocumentLifecycle::LayoutClean);
@@ -2990,7 +3031,8 @@ void FrameView::updateLifecyclePhasesInternal(
       DocumentAnimations::updateAnimations(layoutView()->document());
 
     if (targetState == DocumentLifecycle::PaintClean) {
-      if (!m_frame->document()->printing())
+      if (!m_frame->document()->printing() ||
+          RuntimeEnabledFeatures::printBrowserEnabled())
         paintTree();
 
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
@@ -3083,6 +3125,8 @@ void FrameView::paintTree() {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     if (layoutView()->layer()->needsRepaint()) {
       GraphicsContext graphicsContext(*m_paintController);
+      if (RuntimeEnabledFeatures::printBrowserEnabled())
+        graphicsContext.setPrinting(true);
       paint(graphicsContext, CullRect(LayoutRect::infiniteIntRect()));
       m_paintController->commitNewDisplayItems(LayoutSize());
       notifyPaint(*m_paintController);

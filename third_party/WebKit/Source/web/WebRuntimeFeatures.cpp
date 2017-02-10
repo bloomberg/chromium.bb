@@ -290,6 +290,10 @@ void WebRuntimeFeatures::enablePreciseMemoryInfo(bool enable) {
   RuntimeEnabledFeatures::setPreciseMemoryInfoEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePrintBrowser(bool enable) {
+  RuntimeEnabledFeatures::setPrintBrowserEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable) {
   RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);
 }

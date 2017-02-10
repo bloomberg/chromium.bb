@@ -105,6 +105,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enablePermissionsAPI(bool);
   BLINK_EXPORT static void enablePointerEvent(bool);
   BLINK_EXPORT static void enablePreciseMemoryInfo(bool);
+  BLINK_EXPORT static void enablePrintBrowser(bool);
   BLINK_EXPORT static void enablePresentationAPI(bool);
   BLINK_EXPORT static void enablePushMessaging(bool);
   BLINK_EXPORT static void enableReducedReferrerGranularity(bool);

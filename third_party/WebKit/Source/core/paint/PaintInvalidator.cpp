@@ -392,7 +392,8 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 
   updatePaintingLayer(object, context);
 
-  if (object.document().printing())
+  if (object.document().printing() &&
+      !RuntimeEnabledFeatures::printBrowserEnabled())
     return;  // Don't invalidate paints if we're printing.
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),

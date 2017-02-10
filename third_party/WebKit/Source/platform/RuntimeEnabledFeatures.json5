@@ -701,6 +701,9 @@
       name: "PreciseMemoryInfo",
     },
     {
+      name: "PrintBrowser",
+    },
+    {
       name: "PreferredImageRasterBounds",
       settable_from_internals: true,
     },
@@ -805,6 +808,7 @@
     },
     {
       name: "SlimmingPaintV2",
+      implied_by: ["PrintBrowser"],
     },
     {
       name: "SlimmingPaintStrictCullRectClipping",

@@ -360,5 +360,10 @@
     "prefix": "mojo-localstorage",
     "base": "storage/domstorage/localstorage",
     "args": ["--mojo-local-storage"]
+  },
+  {
+    "prefix": "print_browser",
+    "base": "print_testharness",
+    "args": ["--enable-print-browser"]
   }
 ]

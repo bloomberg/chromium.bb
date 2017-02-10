@@ -89,6 +89,7 @@ class PaintArtifactCompositor;
 class PaintController;
 class PaintInvalidationState;
 class Page;
+class PrintContext;
 class ScrollingCoordinator;
 class TracedValue;
 class TransformState;
@@ -888,6 +889,11 @@ class CORE_EXPORT FrameView final
 
   void updateScrollbarEnabledState();
 
+  void dispatchEventsForPrintingOnAllFrames();
+
+  void setupPrintContext();
+  void clearPrintContext();
+
   void updateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState targetState);
 
@@ -1202,6 +1208,8 @@ class CORE_EXPORT FrameView final
   std::unique_ptr<CompositorAnimationHost> m_animationHost;
 
   std::unique_ptr<GeometryMapper> m_geometryMapper;
+
+  Member<PrintContext> m_printContext;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {
