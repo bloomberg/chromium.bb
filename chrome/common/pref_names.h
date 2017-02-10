@@ -449,7 +449,6 @@ extern const char kEasyUnlockProximityRequired[];
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];
 extern const char kToolbarIconSurfacingBubbleLastShowTime[];
-extern const char kToolbarMigratedComponentActionStatus[];
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)

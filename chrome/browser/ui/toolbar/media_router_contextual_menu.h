@@ -11,10 +11,6 @@
 
 class Browser;
 
-namespace extensions {
-class ComponentMigrationHelper;
-}  // namespace extensions
-
 // The class for the contextual menu for the Media Router action.
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
  public:
@@ -48,7 +44,6 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
 
   Browser* const browser_;
   ui::SimpleMenuModel menu_model_;
-  extensions::ComponentMigrationHelper* const component_migration_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };

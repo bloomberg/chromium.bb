@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,9 +23,6 @@ ComponentToolbarActionsFactory* testing_factory_ = nullptr;
 
 base::LazyInstance<ComponentToolbarActionsFactory> lazy_factory =
     LAZY_INSTANCE_INITIALIZER;
-
-const char kCastExtensionId[] = "boadgeojelhgndaghljhdicfkmllpafd";
-const char kCastBetaExtensionId[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
 
 }  // namespace
 
@@ -83,20 +79,3 @@ void ComponentToolbarActionsFactory::SetTestingFactory(
     ComponentToolbarActionsFactory* factory) {
   testing_factory_ = factory;
 }
-
-void ComponentToolbarActionsFactory::RegisterComponentMigrations(
-    extensions::ComponentMigrationHelper* helper) const {
-  helper->Register(kMediaRouterActionId, kCastExtensionId);
-  helper->Register(kMediaRouterActionId, kCastBetaExtensionId);
-}
-
-void ComponentToolbarActionsFactory::HandleComponentMigrations(
-    extensions::ComponentMigrationHelper* helper,
-    Profile* profile) const {
-  if (media_router::MediaRouterEnabled(profile)) {
-    helper->OnFeatureEnabled(kMediaRouterActionId);
-  } else {
-    helper->OnFeatureDisabled(kMediaRouterActionId);
-  }
-}
-

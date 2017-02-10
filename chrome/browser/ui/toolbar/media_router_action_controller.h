@@ -7,13 +7,12 @@
 
 #include <vector>
 
-#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_change_registrar.h"
 
-using extensions::ComponentMigrationHelper;
+class ComponentActionDelegate;
 
 // Controller for MediaRouterAction that determines when to show and hide the
 // action icon on the toolbar. There should be one instance of this class per
@@ -26,13 +25,16 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   MediaRouterActionController(
       Profile* profile,
       media_router::MediaRouter* router,
-      ComponentMigrationHelper::ComponentActionDelegate*
-          component_action_delegate,
-      ComponentMigrationHelper* component_migration_helper);
+      ComponentActionDelegate* component_action_delegate);
   ~MediaRouterActionController() override;
 
   // Whether the media router action is shown by an administrator policy.
   static bool IsActionShownByPolicy(Profile* profile);
+
+  // Gets and sets the preference for whether the media router action should be
+  // pinned to the toolbar/overflow menu.
+  static bool GetAlwaysShowActionPref(Profile* profile);
+  static void SetAlwaysShowActionPref(Profile* profile, bool always_show);
 
   // media_router::IssuesObserver:
   void OnIssue(const media_router::Issue& issue) override;
@@ -70,12 +72,7 @@ class MediaRouterActionController : public media_router::IssuesObserver,
 
   // The delegate that is responsible for showing and hiding the icon on the
   // toolbar. It outlives |this|.
-  ComponentMigrationHelper::ComponentActionDelegate* const
-      component_action_delegate_;
-
-  // Responsible for changing the pref to always show or hide component actions.
-  // It is owned by ToolbarActionsModel and outlives |this|.
-  ComponentMigrationHelper* const component_migration_helper_;
+  ComponentActionDelegate* const component_action_delegate_;
 
   bool has_issue_ = false;
   bool has_local_display_route_ = false;

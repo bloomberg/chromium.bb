@@ -14,8 +14,7 @@ const char MockComponentToolbarActionsFactory::kActionIdForTesting[] =
     "mock_action";
 
 MockComponentToolbarActionsFactory::MockComponentToolbarActionsFactory(
-    Browser* browser)
-    : migrated_feature_enabled_(false) {
+    Browser* browser) {
   ComponentToolbarActionsFactory::SetTestingFactory(this);
 }
 
@@ -26,12 +25,8 @@ MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
 std::set<std::string>
 MockComponentToolbarActionsFactory::GetInitialComponentIds(Profile* profile) {
   std::set<std::string> ids;
-  // kActionIdForTesting is installed by default if we are not testing
-  // a migration scenario.
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled() &&
-      migrated_extension_id_.empty()) {
+  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
     ids.insert(kActionIdForTesting);
-  }
   return ids;
 }
 
@@ -41,27 +36,6 @@ MockComponentToolbarActionsFactory::GetComponentToolbarActionForId(
     Browser* browser,
     ToolbarActionsBar* bar) {
   DCHECK_EQ(kActionIdForTesting, id);
-  return std::unique_ptr<ToolbarActionViewController>(
-      new TestToolbarActionViewController(
-          MockComponentToolbarActionsFactory::kActionIdForTesting));
-}
-
-void MockComponentToolbarActionsFactory::RegisterComponentMigrations(
-    extensions::ComponentMigrationHelper* helper) const {
-  if (!migrated_extension_id_.empty()) {
-    helper->Register(kActionIdForTesting, migrated_extension_id_);
-  }
-}
-
-void MockComponentToolbarActionsFactory::HandleComponentMigrations(
-    extensions::ComponentMigrationHelper* helper,
-    Profile* profile) const {
-  if (migrated_extension_id_.empty())
-    return;
-
-  if (migrated_feature_enabled_) {
-    helper->OnFeatureEnabled(kActionIdForTesting);
-  } else {
-    helper->OnFeatureDisabled(kActionIdForTesting);
-  }
+  return base::MakeUnique<TestToolbarActionViewController>(
+      MockComponentToolbarActionsFactory::kActionIdForTesting);
 }

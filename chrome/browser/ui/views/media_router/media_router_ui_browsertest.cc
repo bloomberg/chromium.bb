@@ -101,10 +101,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   void SetAlwaysShowActionPref(bool always_show) {
-    return ToolbarActionsModel::Get(browser()->profile())
-        ->component_migration_helper()
-        ->SetComponentActionPref(
-            ComponentToolbarActionsFactory::kMediaRouterActionId, always_show);
+    MediaRouterActionController::SetAlwaysShowActionPref(browser()->profile(),
+                                                         always_show);
   }
 
   AppMenuButton* GetAppMenuButton() {

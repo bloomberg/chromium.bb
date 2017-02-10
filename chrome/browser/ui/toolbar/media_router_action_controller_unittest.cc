@@ -6,19 +6,17 @@
 #include <string>
 
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/ui/toolbar/component_action_delegate.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using extensions::ComponentMigrationHelper;
-
-class FakeComponentActionDelegate
-    : public ComponentMigrationHelper::ComponentActionDelegate {
+class FakeComponentActionDelegate : public ComponentActionDelegate {
  public:
   FakeComponentActionDelegate() {}
-  ~FakeComponentActionDelegate() {}
+  ~FakeComponentActionDelegate() override {}
 
   void AddComponentAction(const std::string& action_id) override {
     EXPECT_EQ(action_id, ComponentToolbarActionsFactory::kMediaRouterActionId);
@@ -59,13 +57,11 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
   void SetUp() override {
     MediaRouterWebUITest::SetUp();
 
-    router_.reset(new media_router::MockMediaRouter());
-    component_action_delegate_.reset(new FakeComponentActionDelegate());
-    component_migration_helper_.reset(new ComponentMigrationHelper(
-        profile(), component_action_delegate_.get()));
-    controller_.reset(new MediaRouterActionController(
-        profile(), router_.get(), component_action_delegate_.get(),
-        component_migration_helper_.get()));
+    router_ = base::MakeUnique<media_router::MockMediaRouter>();
+    component_action_delegate_ =
+        base::MakeUnique<FakeComponentActionDelegate>();
+    controller_ = base::MakeUnique<MediaRouterActionController>(
+        profile(), router_.get(), component_action_delegate_.get());
 
     SetAlwaysShowActionPref(false);
 
@@ -82,7 +78,6 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
 
   void TearDown() override {
     controller_.reset();
-    component_migration_helper_.reset();
     component_action_delegate_.reset();
     router_.reset();
     MediaRouterWebUITest::TearDown();
@@ -94,8 +89,8 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
   }
 
   void SetAlwaysShowActionPref(bool always_show) {
-    component_migration_helper_->SetComponentActionPref(
-        ComponentToolbarActionsFactory::kMediaRouterActionId, always_show);
+    MediaRouterActionController::SetAlwaysShowActionPref(profile(),
+                                                         always_show);
   }
 
   MediaRouterActionController* controller() { return controller_.get(); }
@@ -117,7 +112,6 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
   std::unique_ptr<MediaRouterActionController> controller_;
   std::unique_ptr<media_router::MockMediaRouter> router_;
   std::unique_ptr<FakeComponentActionDelegate> component_action_delegate_;
-  std::unique_ptr<ComponentMigrationHelper> component_migration_helper_;
 
   const media_router::Issue issue_;
 

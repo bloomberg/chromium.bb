@@ -128,7 +128,6 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -260,44 +259,6 @@
 
 namespace {
 
-// The SessionStartupPref used this pref to store the list of URLs to restore
-// on startup, and then renamed it to "sessions.startup_urls" in M31. Migration
-// code was added and the timestamp of when the migration happened was tracked
-// by "session.startup_urls_migration_time". Both are obsolete now (12/2015) and
-// should be removed once a few releases have happened.
-const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
-const char kRestoreStartupURLsMigrationTime[] =
-  "session.startup_urls_migration_time";
-
-// Deprecated 12/2015.
-const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
-
-#if defined(USE_AURA)
-// Deprecated 1/2016.
-const char kMaxSeparationForGestureTouchesInPixels[] =
-    "gesture.max_separation_for_gesture_touches_in_pixels";
-const char kSemiLongPressTimeInMs[] = "gesture.semi_long_press_time_in_ms";
-const char kTabScrubActivationDelayInMs[] =
-    "gesture.tab_scrub_activation_delay_in_ms";
-const char kFlingMaxCancelToDownTimeInMs[] =
-    "gesture.fling_max_cancel_to_down_time_in_ms";
-const char kFlingMaxTapGapTimeInMs[] = "gesture.fling_max_tap_gap_time_in_ms";
-const char kOverscrollHorizontalThresholdComplete[] =
-    "overscroll.horizontal_threshold_complete";
-const char kOverscrollVerticalThresholdComplete[] =
-    "overscroll.vertical_threshold_complete";
-const char kOverscrollMinimumThresholdStart[] =
-    "overscroll.minimum_threshold_start";
-const char kOverscrollMinimumThresholdStartTouchpad[] =
-    "overscroll.minimum_threshold_start_touchpad";
-const char kOverscrollVerticalThresholdStart[] =
-    "overscroll.vertical_threshold_start";
-const char kOverscrollHorizontalResistThreshold[] =
-    "overscroll.horizontal_resist_threshold";
-const char kOverscrollVerticalResistThreshold[] =
-    "overscroll.vertical_resist_threshold";
-#endif  // defined(USE_AURA)
-
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
 // Deprecated 3/2016
 const char kGoogleGeolocationAccessEnabled[] =
@@ -324,6 +285,12 @@ const char kWebKitUsesUniversalDetector[] =
     "webkit.webprefs.uses_universal_detector";
 const char kWebKitAllowDisplayingInsecureContent[] =
     "webkit.webprefs.allow_displaying_insecure_content";
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Deprecated 2/2017.
+const char kToolbarMigratedComponentActionStatus[] =
+    "toolbar_migrated_component_action_status";
+#endif
 
 void DeleteWebRTCIdentityStoreDBOnFileThread(
     const base::FilePath& profile_path) {
@@ -532,7 +499,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterAnimationPolicyPrefs(registry);
   ToolbarActionsBar::RegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
-  extensions::ComponentMigrationHelper::RegisterPrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   extensions::launch_util::RegisterProfilePrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);
@@ -650,26 +616,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Preferences registered only for migration (clearing or moving to a new key)
   // go here.
 
-#if defined(USE_AURA)
-  registry->RegisterIntegerPref(kFlingMaxCancelToDownTimeInMs, 0);
-  registry->RegisterIntegerPref(kFlingMaxTapGapTimeInMs, 0);
-  registry->RegisterIntegerPref(kTabScrubActivationDelayInMs, 0);
-  registry->RegisterIntegerPref(kSemiLongPressTimeInMs, 0);
-  registry->RegisterDoublePref(kMaxSeparationForGestureTouchesInPixels, 0);
-
-  registry->RegisterDoublePref(kOverscrollHorizontalThresholdComplete, 0);
-  registry->RegisterDoublePref(kOverscrollVerticalThresholdComplete, 0);
-  registry->RegisterDoublePref(kOverscrollMinimumThresholdStart, 0);
-  registry->RegisterDoublePref(kOverscrollMinimumThresholdStartTouchpad, 0);
-  registry->RegisterDoublePref(kOverscrollVerticalThresholdStart, 0);
-  registry->RegisterDoublePref(kOverscrollHorizontalResistThreshold, 0);
-  registry->RegisterDoublePref(kOverscrollVerticalResistThreshold, 0);
-#endif  // defined(USE_AURA)
-
-  registry->RegisterListPref(kURLsToRestoreOnStartupOld);
-  registry->RegisterInt64Pref(kRestoreStartupURLsMigrationTime, 0);
-  registry->RegisterBooleanPref(kRestoreOnStartupMigrated, false);
-
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
   registry->RegisterBooleanPref(kGoogleGeolocationAccessEnabled, false);
 #endif
@@ -686,6 +632,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kWebKitUsesUniversalDetector, true);
 
   registry->RegisterBooleanPref(kWebKitAllowDisplayingInsecureContent, true);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -739,29 +689,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   }
 #endif
 
-  // Added 12/1015.
-  profile_prefs->ClearPref(kURLsToRestoreOnStartupOld);
-  profile_prefs->ClearPref(kRestoreStartupURLsMigrationTime);
-
-  // Added 12/2015.
-  profile_prefs->ClearPref(kRestoreOnStartupMigrated);
-
-#if defined(USE_AURA)
-  // Added 1/2016
-  profile_prefs->ClearPref(kFlingMaxCancelToDownTimeInMs);
-  profile_prefs->ClearPref(kFlingMaxTapGapTimeInMs);
-  profile_prefs->ClearPref(kTabScrubActivationDelayInMs);
-  profile_prefs->ClearPref(kMaxSeparationForGestureTouchesInPixels);
-  profile_prefs->ClearPref(kSemiLongPressTimeInMs);
-  profile_prefs->ClearPref(kOverscrollHorizontalThresholdComplete);
-  profile_prefs->ClearPref(kOverscrollVerticalThresholdComplete);
-  profile_prefs->ClearPref(kOverscrollMinimumThresholdStart);
-  profile_prefs->ClearPref(kOverscrollMinimumThresholdStartTouchpad);
-  profile_prefs->ClearPref(kOverscrollVerticalThresholdStart);
-  profile_prefs->ClearPref(kOverscrollHorizontalResistThreshold);
-  profile_prefs->ClearPref(kOverscrollVerticalResistThreshold);
-#endif  // defined(USE_AURA)
-
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
   // Added 3/2016.
   profile_prefs->ClearPref(kGoogleGeolocationAccessEnabled);
@@ -796,6 +723,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 9/2016.
   profile_prefs->ClearPref(kWebKitUsesUniversalDetector);
   profile_prefs->ClearPref(kWebKitAllowDisplayingInsecureContent);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Added 2/2017.
+  profile_prefs->ClearPref(kToolbarMigratedComponentActionStatus);
+#endif
 }
 
 }  // namespace chrome

@@ -526,8 +526,6 @@ static_library("extensions") {
     "component_extensions_whitelist/whitelist.h",
     "component_loader.cc",
     "component_loader.h",
-    "component_migration_helper.cc",
-    "component_migration_helper.h",
     "context_menu_matcher.cc",
     "context_menu_matcher.h",
     "convert_user_script.cc",

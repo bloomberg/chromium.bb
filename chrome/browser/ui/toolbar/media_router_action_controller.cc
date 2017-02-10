@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/component_action_delegate.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
@@ -14,10 +15,8 @@ MediaRouterActionController::MediaRouterActionController(Profile* profile)
     : MediaRouterActionController(
           profile,
           media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
-          ToolbarActionsModel::Get(profile),
-          ToolbarActionsModel::Get(profile)->component_migration_helper()) {
+          ToolbarActionsModel::Get(profile)) {
   DCHECK(component_action_delegate_);
-  DCHECK(component_migration_helper_);
 }
 
 MediaRouterActionController::~MediaRouterActionController() {
@@ -33,6 +32,19 @@ bool MediaRouterActionController::IsActionShownByPolicy(Profile* profile) {
   if (pref->IsManaged())
     pref->GetValue()->GetAsBoolean(&show);
   return show;
+}
+
+// static
+bool MediaRouterActionController::GetAlwaysShowActionPref(Profile* profile) {
+  CHECK(profile);
+  return profile->GetPrefs()->GetBoolean(prefs::kShowCastIconInToolbar);
+}
+
+// static
+void MediaRouterActionController::SetAlwaysShowActionPref(Profile* profile,
+                                                          bool always_show) {
+  CHECK(profile);
+  profile->GetPrefs()->SetBoolean(prefs::kShowCastIconInToolbar, always_show);
 }
 
 void MediaRouterActionController::OnIssue(const media_router::Issue& issue) {
@@ -72,21 +84,18 @@ void MediaRouterActionController::OnDialogHidden() {
 MediaRouterActionController::MediaRouterActionController(
     Profile* profile,
     media_router::MediaRouter* router,
-    extensions::ComponentMigrationHelper::ComponentActionDelegate*
-        component_action_delegate,
-    extensions::ComponentMigrationHelper* component_migration_helper)
+    ComponentActionDelegate* component_action_delegate)
     : media_router::IssuesObserver(router),
       media_router::MediaRoutesObserver(router),
       profile_(profile),
       component_action_delegate_(component_action_delegate),
-      component_migration_helper_(component_migration_helper),
       shown_by_policy_(
           MediaRouterActionController::IsActionShownByPolicy(profile)) {
   CHECK(profile_);
   media_router::IssuesObserver::Init();
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
-      prefs::kToolbarMigratedComponentActionStatus,
+      prefs::kShowCastIconInToolbar,
       base::Bind(&MediaRouterActionController::MaybeAddOrRemoveAction,
                  base::Unretained(this)));
 }
@@ -107,7 +116,5 @@ void MediaRouterActionController::MaybeAddOrRemoveAction() {
 
 bool MediaRouterActionController::ShouldEnableAction() const {
   return shown_by_policy_ || has_local_display_route_ || has_issue_ ||
-         dialog_count_ ||
-         component_migration_helper_->GetComponentActionPref(
-             ComponentToolbarActionsFactory::kMediaRouterActionId);
+         dialog_count_ || GetAlwaysShowActionPref(profile_);
 }

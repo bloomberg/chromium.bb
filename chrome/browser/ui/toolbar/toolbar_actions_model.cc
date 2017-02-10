@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -51,8 +50,6 @@ ToolbarActionsModel::ToolbarActionsModel(
       extension_registry_(extensions::ExtensionRegistry::Get(profile_)),
       extension_action_manager_(
           extensions::ExtensionActionManager::Get(profile_)),
-      component_migration_helper_(
-          new extensions::ComponentMigrationHelper(profile_, this)),
       actions_initialized_(false),
       use_redesign_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
@@ -61,8 +58,6 @@ ToolbarActionsModel::ToolbarActionsModel(
       extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
-  ComponentToolbarActionsFactory::GetInstance()->RegisterComponentMigrations(
-      component_migration_helper_.get());
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::Bind(&ToolbarActionsModel::OnReady,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -273,14 +268,6 @@ void ToolbarActionsModel::OnReady() {
   actions_initialized_ = true;
   for (Observer& observer : observers_)
     observer.OnToolbarModelInitialized();
-
-  if (use_redesign_) {
-    // Handle component action migrations.  We must make sure that observers are
-    // notified of initialization first, so that the associated widgets are
-    // created.
-    ComponentToolbarActionsFactory::GetInstance()->HandleComponentMigrations(
-        component_migration_helper_.get(), profile_);
-  }
 }
 
 size_t ToolbarActionsModel::FindNewPositionFromLastKnownGood(

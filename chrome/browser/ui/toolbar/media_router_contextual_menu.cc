@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,12 +36,7 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
 
 MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                                      bool shown_by_policy)
-    : browser_(browser),
-      menu_model_(this),
-      component_migration_helper_(ToolbarActionsModel::Get(browser->profile())
-                                      ->component_migration_helper()) {
-  DCHECK(component_migration_helper_);
-
+    : browser_(browser), menu_model_(this) {
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
                                   IDS_MEDIA_ROUTER_ABOUT);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -76,13 +70,13 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
 MediaRouterContextualMenu::~MediaRouterContextualMenu() {}
 
 bool MediaRouterContextualMenu::GetAlwaysShowActionPref() const {
-  return component_migration_helper_->GetComponentActionPref(
-      ComponentToolbarActionsFactory::kMediaRouterActionId);
+  return MediaRouterActionController::GetAlwaysShowActionPref(
+      browser_->profile());
 }
 
 void MediaRouterContextualMenu::SetAlwaysShowActionPref(bool always_show) {
-  component_migration_helper_->SetComponentActionPref(
-      ComponentToolbarActionsFactory::kMediaRouterActionId, always_show);
+  return MediaRouterActionController::SetAlwaysShowActionPref(
+      browser_->profile(), always_show);
 }
 
 bool MediaRouterContextualMenu::IsCommandIdChecked(int command_id) const {
