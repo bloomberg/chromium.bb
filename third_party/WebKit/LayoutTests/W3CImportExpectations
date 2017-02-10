@@ -684,6 +684,11 @@ external/wpt/domxpath/002.html [ Skip ]
 crbug.com/676491 external/wpt/domxpath/xml_xpath_runner.html [ Skip ]
 crbug.com/676491 external/wpt/domxpath/xml_xpath_tests.xml [ Skip ]
 
+# This test depends on a support file with non-LF new lines, which
+# causes a patch error in the bot_update step when importing this test.
+crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/001.html [ Skip ]
+crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/support/newlines.vtt [ Skip ]
+
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 external/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]
 external/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]
