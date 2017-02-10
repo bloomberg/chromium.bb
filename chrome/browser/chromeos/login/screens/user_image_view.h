@@ -7,7 +7,7 @@
 
 namespace chromeos {
 
-class UserImageModel;
+class UserImageScreen;
 
 // Interface for dependency injection between UserImageScreen and its actual
 // representation, either views based or WebUI.
@@ -15,7 +15,7 @@ class UserImageView {
  public:
   virtual ~UserImageView() {}
 
-  virtual void Bind(UserImageModel& model) = 0;
+  virtual void Bind(UserImageScreen* screen) = 0;
 
   virtual void Unbind() = 0;
 

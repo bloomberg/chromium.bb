@@ -17,13 +17,14 @@
 
 namespace chromeos {
 
-// WebUI implementation of UserImageScreenActor. It is used to interact
-// with JS page part allowing user to select avatar.
+// WebUI implementation of UserImageView. It is used to interact with the JS
+// page allowing user to select an avatar.
 class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
  public:
   UserImageScreenHandler();
   ~UserImageScreenHandler() override;
 
+ private:
   // BaseScreenHandler implementation:
   void Initialize() override;
   void DeclareLocalizedValues(
@@ -33,13 +34,12 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   void RegisterMessages() override;
 
   // UserImageView implementation:
-  void Bind(UserImageModel& model) override;
+  void Bind(UserImageScreen* screen) override;
   void Unbind() override;
   void Show() override;
   void Hide() override;
   void HideCurtain() override;
 
- private:
   // Sends image data to the page.
   void HandleGetImages();
 
@@ -66,13 +66,13 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   // Called when the user image screen has been loaded and shown.
   void HandleScreenShown();
 
-  UserImageModel* model_;
+  UserImageScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   // Keeps whether screen has loaded all default images and redy to be shown.
-  bool is_ready_;
+  bool is_ready_ = false;
 
   base::Time screen_show_time_;
 

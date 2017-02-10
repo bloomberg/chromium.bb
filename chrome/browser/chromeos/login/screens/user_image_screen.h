@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_image_model.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/user_manager/user.h"
@@ -33,46 +32,35 @@ class ScreenManager;
 class UserImageManager;
 class UserImageView;
 
-class UserImageScreen : public UserImageModel,
+class UserImageScreen : public BaseScreen,
+                        public CameraPresenceNotifier::Observer,
                         public ImageDecoder::ImageRequest,
                         public user_manager::UserManager::Observer,
-                        public UserImageSyncObserver::Observer,
-                        public CameraPresenceNotifier::Observer {
+                        public UserImageSyncObserver::Observer {
  public:
+  static UserImageScreen* Get(ScreenManager* manager);
+
   UserImageScreen(BaseScreenDelegate* base_screen_delegate,
                   UserImageView* view);
   ~UserImageScreen() override;
 
-  static UserImageScreen* Get(ScreenManager* manager);
+  // Called when the UI ready to be shown.
+  void OnScreenReady();
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+  // Called when the user accepts a photo as their login user image.
+  void OnPhotoTaken(const std::string& raw_data);
 
-  // UserImageScreenActor::Delegate implementation:
-  void OnScreenReady() override;
-  void OnPhotoTaken(const std::string& raw_data) override;
+  // Called when some image was selected. |is_user_selection| indicates if
+  // it was user selection or image was selected programmatically.
   void OnImageSelected(const std::string& image_url,
                        const std::string& image_type,
-                       bool is_user_selection) override;
-  void OnImageAccepted() override;
-  void OnViewDestroyed(UserImageView* view) override;
+                       bool is_user_selection);
 
-  // user_manager::UserManager::Observer implementation:
-  void OnUserImageChanged(const user_manager::User& user) override;
-  void OnUserProfileImageUpdateFailed(const user_manager::User& user) override;
-  void OnUserProfileImageUpdated(const user_manager::User& user,
-                                 const gfx::ImageSkia& profile_image) override;
+  // Called when user accepts currently selected image.
+  void OnImageAccepted();
 
-  // ImageDecoder::ImageRequest implementation:
-  void OnImageDecoded(const SkBitmap& decoded_image) override;
-  void OnDecodeImageFailed() override;
-
-  // CameraPresenceNotifier::Observer implementation:
-  void OnCameraPresenceCheckDone(bool is_camera_present) override;
-
-  // UserImageSyncObserver::Observer implementation:
-  void OnInitialSync(bool local_image_updated) override;
+  // Called when |view| is being destroyed.
+  void OnViewDestroyed(UserImageView* view);
 
   bool user_selected_image() const { return user_has_selected_image_; }
 
@@ -85,6 +73,26 @@ class UserImageScreen : public UserImageModel,
     // Keeps a number of different sync results. Should be the last in the list.
     COUNT
   };
+
+  // BaseScreen implementation:
+  void Show() override;
+  void Hide() override;
+
+  // CameraPresenceNotifier::Observer implementation:
+  void OnCameraPresenceCheckDone(bool is_camera_present) override;
+
+  // ImageDecoder::ImageRequest implementation:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
+
+  // user_manager::UserManager::Observer implementation:
+  void OnUserImageChanged(const user_manager::User& user) override;
+  void OnUserProfileImageUpdateFailed(const user_manager::User& user) override;
+  void OnUserProfileImageUpdated(const user_manager::User& user,
+                                 const gfx::ImageSkia& profile_image) override;
+
+  // UserImageSyncObserver::Observer implementation:
+  void OnInitialSync(bool local_image_updated) override;
 
   // Called when whaiting for sync timed out.
   void OnSyncTimeout();
@@ -117,7 +125,7 @@ class UserImageScreen : public UserImageModel,
 
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
-  UserImageView* view_;
+  UserImageView* view_ = nullptr;
 
   // Last user photo, if taken.
   gfx::ImageSkia user_photo_;
@@ -125,19 +133,19 @@ class UserImageScreen : public UserImageModel,
   // If |true|, decoded photo should be immediately accepted (i.e., both
   // HandleTakePhoto and HandleImageAccepted have already been called but we're
   // still waiting for  photo image decoding to finish.
-  bool accept_photo_after_decoding_;
+  bool accept_photo_after_decoding_ = false;
 
   // Index of the selected user image.
-  int selected_image_;
+  int selected_image_ = user_manager::User::USER_IMAGE_INVALID;
+
+  // If screen ready to be shown.
+  bool is_screen_ready_ = false;
+
+  // True if user has explicitly selected some image.
+  bool user_has_selected_image_ = false;
 
   // Timer used for waiting for user image sync.
   std::unique_ptr<base::Timer> sync_timer_;
-
-  // If screen ready to be shown.
-  bool is_screen_ready_;
-
-  // True if user has explicitly selected some image.
-  bool user_has_selected_image_;
 
   // The time when we started wait for user image sync.
   base::Time sync_waiting_start_time_;

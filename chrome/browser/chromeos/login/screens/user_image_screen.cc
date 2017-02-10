@@ -48,6 +48,12 @@ namespace chromeos {
 
 namespace {
 
+constexpr const char kContextKeyIsCameraPresent[] = "isCameraPresent";
+constexpr const char kContextKeyProfilePictureDataURL[] =
+    "profilePictureDataURL";
+constexpr const char kContextKeySelectedImageURL[] = "selectedImageURL";
+constexpr const char kContextKeyHasGaiaAccount[] = "hasGaiaAccount";
+
 // Time histogram suffix for profile image download.
 const char kProfileDownloadReason[] = "OOBE";
 
@@ -65,14 +71,10 @@ UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
 
 UserImageScreen::UserImageScreen(BaseScreenDelegate* base_screen_delegate,
                                  UserImageView* view)
-    : UserImageModel(base_screen_delegate),
-      view_(view),
-      accept_photo_after_decoding_(false),
-      selected_image_(user_manager::User::USER_IMAGE_INVALID),
-      is_screen_ready_(false),
-      user_has_selected_image_(false) {
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_USER_IMAGE_PICKER),
+      view_(view) {
   if (view_)
-    view_->Bind(*this);
+    view_->Bind(this);
   user_manager::UserManager::Get()->AddObserver(this);
   GetContextEditor().SetString(kContextKeyProfilePictureDataURL, std::string());
 }
@@ -95,64 +97,6 @@ void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
   user_photo_ = gfx::ImageSkia();
   ImageDecoder::Cancel(this);
   ImageDecoder::Start(this, raw_data);
-}
-
-void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
-  GetContextEditor().SetBoolean(kContextKeyIsCameraPresent, is_camera_present);
-}
-
-void UserImageScreen::HideCurtain() {
-  // Skip user image selection for ephemeral users.
-  if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          GetUser()->GetAccountId())) {
-    ExitScreen();
-  }
-  if (view_)
-    view_->HideCurtain();
-}
-
-void UserImageScreen::OnImageDecoded(const SkBitmap& decoded_image) {
-  user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
-  if (accept_photo_after_decoding_)
-    OnImageAccepted();
-}
-
-void UserImageScreen::OnDecodeImageFailed() {
-  NOTREACHED() << "Failed to decode PNG image from WebUI";
-}
-
-void UserImageScreen::OnInitialSync(bool local_image_updated) {
-  DCHECK(sync_timer_);
-  ReportSyncResult(SyncResult::SUCCEEDED);
-  if (!local_image_updated) {
-    sync_timer_.reset();
-    GetSyncObserver()->RemoveObserver(this);
-    if (is_screen_ready_)
-      HideCurtain();
-    return;
-  }
-  ExitScreen();
-}
-
-void UserImageScreen::OnSyncTimeout() {
-  ReportSyncResult(SyncResult::TIMED_OUT);
-  sync_timer_.reset();
-  GetSyncObserver()->RemoveObserver(this);
-  if (is_screen_ready_)
-    HideCurtain();
-}
-
-bool UserImageScreen::IsWaitingForSync() const {
-  return sync_timer_.get() && sync_timer_->IsRunning();
-}
-
-void UserImageScreen::OnUserImagePolicyChanged(const base::Value* previous,
-                                               const base::Value* current) {
-  if (current) {
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-        FROM_HERE, policy_registrar_.release());
-    ExitScreen();
-  }
 }
 
 void UserImageScreen::OnImageSelected(const std::string& image_type,
@@ -209,17 +153,9 @@ void UserImageScreen::OnImageAccepted() {
   ExitScreen();
 }
 
-const user_manager::User* UserImageScreen::GetUser() {
-  return user_manager::UserManager::Get()->GetActiveUser();
-}
-
-UserImageManager* UserImageScreen::GetUserImageManager() {
-  return ChromeUserManager::Get()->GetUserImageManager(
-      GetUser()->GetAccountId());
-}
-
-UserImageSyncObserver* UserImageScreen::GetSyncObserver() {
-  return GetUserImageManager()->GetSyncObserver();
+void UserImageScreen::OnViewDestroyed(UserImageView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 void UserImageScreen::Show() {
@@ -301,9 +237,18 @@ void UserImageScreen::Hide() {
     view_->Hide();
 }
 
-void UserImageScreen::OnViewDestroyed(UserImageView* view) {
-  if (view_ == view)
-    view_ = nullptr;
+void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
+  GetContextEditor().SetBoolean(kContextKeyIsCameraPresent, is_camera_present);
+}
+
+void UserImageScreen::OnImageDecoded(const SkBitmap& decoded_image) {
+  user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
+  if (accept_photo_after_decoding_)
+    OnImageAccepted();
+}
+
+void UserImageScreen::OnDecodeImageFailed() {
+  NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
 void UserImageScreen::OnUserImageChanged(const user_manager::User& user) {
@@ -325,6 +270,63 @@ void UserImageScreen::OnUserProfileImageUpdated(
   GetContextEditor().SetString(
       kContextKeyProfilePictureDataURL,
       webui::GetBitmapDataUrl(*profile_image.bitmap()));
+}
+
+void UserImageScreen::OnInitialSync(bool local_image_updated) {
+  DCHECK(sync_timer_);
+  ReportSyncResult(SyncResult::SUCCEEDED);
+  if (!local_image_updated) {
+    sync_timer_.reset();
+    GetSyncObserver()->RemoveObserver(this);
+    if (is_screen_ready_)
+      HideCurtain();
+    return;
+  }
+  ExitScreen();
+}
+
+void UserImageScreen::OnSyncTimeout() {
+  ReportSyncResult(SyncResult::TIMED_OUT);
+  sync_timer_.reset();
+  GetSyncObserver()->RemoveObserver(this);
+  if (is_screen_ready_)
+    HideCurtain();
+}
+
+bool UserImageScreen::IsWaitingForSync() const {
+  return sync_timer_.get() && sync_timer_->IsRunning();
+}
+
+void UserImageScreen::OnUserImagePolicyChanged(const base::Value* previous,
+                                               const base::Value* current) {
+  if (current) {
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, policy_registrar_.release());
+    ExitScreen();
+  }
+}
+
+const user_manager::User* UserImageScreen::GetUser() {
+  return user_manager::UserManager::Get()->GetActiveUser();
+}
+
+UserImageManager* UserImageScreen::GetUserImageManager() {
+  return ChromeUserManager::Get()->GetUserImageManager(
+      GetUser()->GetAccountId());
+}
+
+UserImageSyncObserver* UserImageScreen::GetSyncObserver() {
+  return GetUserImageManager()->GetSyncObserver();
+}
+
+void UserImageScreen::HideCurtain() {
+  // Skip user image selection for ephemeral users.
+  if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+          GetUser()->GetAccountId())) {
+    ExitScreen();
+  }
+  if (view_)
+    view_->HideCurtain();
 }
 
 void UserImageScreen::ExitScreen() {

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_image_model.h"
+#include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,10 +39,7 @@ const char kJsScreenPath[] = "login.UserImageScreen";
 namespace chromeos {
 
 UserImageScreenHandler::UserImageScreenHandler()
-    : BaseScreenHandler(kJsScreenPath),
-      model_(nullptr),
-      show_on_init_(false),
-      is_ready_(false) {
+    : BaseScreenHandler(kJsScreenPath) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,
@@ -52,8 +49,8 @@ UserImageScreenHandler::UserImageScreenHandler()
 }
 
 UserImageScreenHandler::~UserImageScreenHandler() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 void UserImageScreenHandler::Initialize() {
@@ -63,13 +60,13 @@ void UserImageScreenHandler::Initialize() {
   }
 }
 
-void UserImageScreenHandler::Bind(UserImageModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void UserImageScreenHandler::Bind(UserImageScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
 }
 
 void UserImageScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
@@ -82,8 +79,8 @@ void UserImageScreenHandler::Show() {
   ShowScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER);
 
   // When shown, query camera presence.
-  if (model_ && is_ready_)
-    model_->OnScreenReady();
+  if (screen_ && is_ready_)
+    screen_->OnScreenReady();
 }
 
 void UserImageScreenHandler::Hide() {
@@ -150,8 +147,8 @@ void UserImageScreenHandler::HandleGetImages() {
 
 void UserImageScreenHandler::HandleScreenReady() {
   is_ready_ = true;
-  if (model_)
-    model_->OnScreenReady();
+  if (screen_)
+    screen_->OnScreenReady();
 }
 
 void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
@@ -160,8 +157,8 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
     NOTREACHED();
   DCHECK_EQ("image/png", mime_type);
 
-  if (model_)
-    model_->OnPhotoTaken(raw_data);
+  if (screen_)
+    screen_->OnPhotoTaken(raw_data);
 }
 
 void UserImageScreenHandler::HandleTakePhoto() {
@@ -177,13 +174,13 @@ void UserImageScreenHandler::HandleDiscardPhoto() {
 void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,
                                                const std::string& image_type,
                                                bool is_user_selection) {
-  if (model_)
-    model_->OnImageSelected(image_type, image_url, is_user_selection);
+  if (screen_)
+    screen_->OnImageSelected(image_type, image_url, is_user_selection);
 }
 
 void UserImageScreenHandler::HandleImageAccepted() {
-  if (model_)
-    model_->OnImageAccepted();
+  if (screen_)
+    screen_->OnImageAccepted();
 }
 
 void UserImageScreenHandler::HandleScreenShown() {
