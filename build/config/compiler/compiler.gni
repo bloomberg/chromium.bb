@@ -117,7 +117,7 @@ if (symbol_level == -1) {
 assert(ignore_elf32_limitations || !is_android ||
            (android_64bit_target_cpu && !build_apk_secondary_abi) ||
            is_component_build || symbol_level < 2,
-       "Android 32-bit non-component, non-clang builds cannot have " +
-           "symbol_level=2 due to 4GiB file size limit, see " +
-           "https://crbug.com/648948. If you really want to try this out, " +
+       "Android 32-bit non-component builds cannot have symbol_level=2 " +
+           "due to 4GiB file size limit, see https://crbug.com/648948. " +
+           "If you really want to try this out, " +
            "set ignore_elf32_limitations=true.")
