@@ -119,7 +119,7 @@ interface Document : Node {
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // user interaction
-    [ImplementedAs=domWindow] readonly attribute Window? defaultView;
+    readonly attribute Window? defaultView;
     boolean hasFocus();
     [CEReactions, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
     [CEReactions, CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");

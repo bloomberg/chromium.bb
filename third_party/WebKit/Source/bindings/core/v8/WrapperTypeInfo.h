@@ -135,11 +135,11 @@ struct WrapperTypeInfo {
     return domTemplateFunction(isolate, world);
   }
 
-  void wrapperCreated() const {
+  static void wrapperCreated() {
     ThreadState::current()->heap().heapStats().increaseWrapperCount(1);
   }
 
-  void wrapperDestroyed() const {
+  static void wrapperDestroyed() {
     ThreadHeapStats& heapStats = ThreadState::current()->heap().heapStats();
     heapStats.decreaseWrapperCount(1);
     heapStats.increaseCollectedWrapperCount(1);
@@ -206,6 +206,8 @@ inline T* getInternalField(v8::Local<v8::Object> wrapper) {
       wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
+// The return value can be null if |wrapper| is a global proxy object, which
+// points to nothing while a navigation.
 inline ScriptWrappable* toScriptWrappable(
     const v8::PersistentBase<v8::Object>& wrapper) {
   return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
