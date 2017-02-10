@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 #define CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 
+#include <deque>
 #include <memory>
 #include <string>
 
@@ -19,6 +20,10 @@ class DevToolsEventListener;
 class ListValue;
 struct Session;
 class Status;
+
+namespace internal {
+static const size_t kMaxReturnedEntries = 100000;
+}  // namespace internal
 
 // Accumulates WebDriver Logging API entries of a given type and minimum level.
 // See https://code.google.com/p/selenium/wiki/Logging.
@@ -58,7 +63,11 @@ class WebDriverLog : public Log {
  private:
   const std::string type_;  // WebDriver log type.
   Level min_level_;  // Minimum level of entries to store.
-  std::unique_ptr<base::ListValue> entries_;  // Accumulated entries.
+
+  // A queue of batches of entries. Each batch can have no more than
+  // |kMaxReturnedEntries| values in it. This is to avoid HTTP response buffer
+  // overflow (crbug.com/681892).
+  std::deque<std::unique_ptr<base::ListValue>> batches_of_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverLog);
 };

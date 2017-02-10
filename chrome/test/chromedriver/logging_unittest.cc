@@ -4,7 +4,9 @@
 
 #include <stddef.h>
 
+#include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -167,4 +169,16 @@ TEST(Logging, GetFirstErrorMessage) {
 
   entry = log.GetFirstErrorMessage();
   ASSERT_EQ("first error message", entry);
+}
+
+TEST(Logging, OverflowLogs) {
+  WebDriverLog log(WebDriverLog::kBrowserType, Log::kAll);
+  for (size_t i = 0; i < internal::kMaxReturnedEntries; i++)
+    log.AddEntry(Log::kInfo, base::StringPrintf("%" PRIuS, i));
+  log.AddEntry(Log::kError, "the 1st error is in the 2nd batch");
+  ASSERT_EQ("the 1st error is in the 2nd batch", log.GetFirstErrorMessage());
+  std::unique_ptr<base::ListValue> entries = log.GetAndClearEntries();
+  ASSERT_EQ(internal::kMaxReturnedEntries, entries->GetSize());
+  entries = log.GetAndClearEntries();
+  ASSERT_EQ(1u, entries->GetSize());
 }

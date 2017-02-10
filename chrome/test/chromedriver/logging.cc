@@ -142,38 +142,52 @@ bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
 }
 
 WebDriverLog::WebDriverLog(const std::string& type, Log::Level min_level)
-    : type_(type), min_level_(min_level), entries_(new base::ListValue()) {
+    : type_(type), min_level_(min_level) {
 }
 
 WebDriverLog::~WebDriverLog() {
-  VLOG(1) << "Log type '" << type_ << "' lost "
-          << entries_->GetSize() << " entries on destruction";
+  size_t sum = 0;
+  for (const std::unique_ptr<base::ListValue>& batch : batches_of_entries_)
+    sum += batch->GetSize();
+  VLOG(1) << "Log type '" << type_ << "' lost " << sum
+          << " entries on destruction";
 }
 
 std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
-  std::unique_ptr<base::ListValue> ret(entries_.release());
-  entries_.reset(new base::ListValue());
+  std::unique_ptr<base::ListValue> ret;
+  if (batches_of_entries_.empty()) {
+    ret.reset(new base::ListValue());
+  } else {
+    ret = std::move(batches_of_entries_.front());
+    batches_of_entries_.pop_front();
+  }
   return ret;
 }
 
-std::string WebDriverLog::GetFirstErrorMessage() const {
-  for (base::ListValue::iterator it = entries_->begin();
-       it != entries_->end();
+bool GetFirstErrorMessageFromList(const base::ListValue* list,
+                                  std::string* message) {
+  for (base::ListValue::const_iterator it = list->begin();
+       it != list->end();
        ++it) {
     base::DictionaryValue* log_entry = NULL;
     (*it)->GetAsDictionary(&log_entry);
     if (log_entry != NULL) {
       std::string level;
-      if (log_entry->GetString("level", &level)) {
-        if (level == kLevelToName[Log::kError]) {
-          std::string message;
-          if (log_entry->GetString("message", &message))
-            return message;
-        }
-      }
+      if (log_entry->GetString("level", &level))
+        if (level == kLevelToName[Log::kError])
+          if (log_entry->GetString("message", message))
+            return true;
     }
   }
-  return std::string();
+  return false;
+}
+
+std::string WebDriverLog::GetFirstErrorMessage() const {
+  std::string message;
+  for (const std::unique_ptr<base::ListValue>& list : batches_of_entries_)
+    if (GetFirstErrorMessageFromList(list.get(), &message))
+      break;
+  return message;
 }
 
 void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
@@ -191,7 +205,14 @@ void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
   if (!source.empty())
     log_entry_dict->SetString("source", source);
   log_entry_dict->SetString("message", message);
-  entries_->Append(std::move(log_entry_dict));
+  if (batches_of_entries_.empty() ||
+      batches_of_entries_.back()->GetSize() >= internal::kMaxReturnedEntries) {
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    list->Append(std::move(log_entry_dict));
+    batches_of_entries_.push_back(std::move(list));
+  } else {
+    batches_of_entries_.back()->Append(std::move(log_entry_dict));
+  }
 }
 
 const std::string& WebDriverLog::type() const {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
@@ -221,8 +222,14 @@ Status PerformanceLogger::StartTrace() {
     LOG(WARNING) << "tried to start tracing, but a trace was already started";
     return Status(kOk);
   }
+  std::unique_ptr<base::ListValue> categories(new base::ListValue());
+  categories->AppendStrings(base::SplitString(prefs_.trace_categories,
+                                              ",",
+                                              base::TRIM_WHITESPACE,
+                                              base::SPLIT_WANT_NONEMPTY));
   base::DictionaryValue params;
-  params.SetString("categories", prefs_.trace_categories);
+  params.Set("traceConfig.includedCategories", std::move(categories));
+  params.SetString("traceConfig.recordingMode", "recordAsMuchAsPossible");
   // Ask DevTools to report buffer usage.
   params.SetInteger("bufferUsageReportingInterval",
                     prefs_.buffer_usage_reporting_interval);
