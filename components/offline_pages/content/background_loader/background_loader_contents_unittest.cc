@@ -99,7 +99,7 @@ TEST_F(BackgroundLoaderContentsTest, ShouldNotCreateWebContents) {
       nullptr /* contents */, nullptr /* source_site_instance */,
       0 /* route_id */, 0 /* main_frame_route_id */,
       0 /* main_frame_widget_route_id */,
-      WINDOW_CONTAINER_TYPE_NORMAL /* window_container_type */,
+      content::mojom::WindowContainerType::NORMAL /* window_container_type */,
       GURL() /* opener_url */, "foo" /* frame_name */,
       GURL::EmptyGURL() /* target_url */, "bar" /* partition_id */,
       nullptr /* session_storage_namespace */));

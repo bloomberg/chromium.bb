@@ -534,7 +534,7 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
 const char kWindowFeatureBackground[] = "background";
 const char kWindowFeaturePersistent[] = "persistent";
 
-WindowContainerType WindowFeaturesToContainerType(
+content::mojom::WindowContainerType WindowFeaturesToContainerType(
     const blink::WebWindowFeatures& window_features) {
   bool background = false;
   bool persistent = false;
@@ -554,11 +554,11 @@ WindowContainerType WindowFeaturesToContainerType(
 
   if (background) {
     if (persistent)
-      return WINDOW_CONTAINER_TYPE_PERSISTENT;
+      return content::mojom::WindowContainerType::PERSISTENT;
     else
-      return WINDOW_CONTAINER_TYPE_BACKGROUND;
+      return content::mojom::WindowContainerType::BACKGROUND;
   } else {
-    return WINDOW_CONTAINER_TYPE_NORMAL;
+    return content::mojom::WindowContainerType::NORMAL;
   }
 }
 

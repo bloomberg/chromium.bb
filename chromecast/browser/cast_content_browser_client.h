@@ -154,7 +154,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
                        const GURL& source_origin,
-                       WindowContainerType container_type,
+                       content::mojom::WindowContainerType container_type,
                        const GURL& target_url,
                        const content::Referrer& referrer,
                        const std::string& frame_name,

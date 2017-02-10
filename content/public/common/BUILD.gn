@@ -231,8 +231,6 @@ source_set("common_sources") {
     "web_preferences.h",
     "webplugininfo.cc",
     "webplugininfo.h",
-    "window_container_type.cc",
-    "window_container_type.h",
     "zygote_fork_delegate_linux.h",
     "zygote_handle.h",
   ]

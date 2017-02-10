@@ -167,7 +167,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
-      WindowContainerType window_container_type,
+      content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
@@ -280,13 +280,13 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
-    WindowContainerType window_container_type,
+    content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  if (window_container_type == WINDOW_CONTAINER_TYPE_NORMAL)
+  if (window_container_type == content::mojom::WindowContainerType::NORMAL)
     return true;
 
   // Check that the target URL is for the Drive app.

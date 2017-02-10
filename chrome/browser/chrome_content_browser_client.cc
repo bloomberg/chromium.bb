@@ -2310,7 +2310,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
     const GURL& source_origin,
-    WindowContainerType container_type,
+    content::mojom::WindowContainerType container_type,
     const GURL& target_url,
     const content::Referrer& referrer,
     const std::string& frame_name,
@@ -2326,7 +2326,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
-  if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+  if (container_type == content::mojom::WindowContainerType::BACKGROUND) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     InfoMap* map = io_data->GetExtensionInfoMap();
@@ -3434,7 +3434,7 @@ bool ChromeContentBrowserClient::
              "BrowserScheduler", "RedirectNonUINonIOBrowserThreads") == "true";
 }
 
-//static
+// static
 void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
     const storage::QuotaSettings* settings) {
   g_default_quota_settings = settings;

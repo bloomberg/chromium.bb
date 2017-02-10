@@ -24,7 +24,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_info.h"
 #include "content/public/common/socket_permission_request.h"
-#include "content/public/common/window_container_type.h"
+#include "content/public/common/window_container_type.mojom.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
@@ -501,21 +501,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
   // This is called on the IO thread.
-  virtual bool CanCreateWindow(int opener_render_process_id,
-                               int opener_render_frame_id,
-                               const GURL& opener_url,
-                               const GURL& opener_top_level_frame_url,
-                               const GURL& source_origin,
-                               WindowContainerType container_type,
-                               const GURL& target_url,
-                               const Referrer& referrer,
-                               const std::string& frame_name,
-                               WindowOpenDisposition disposition,
-                               const blink::WebWindowFeatures& features,
-                               bool user_gesture,
-                               bool opener_suppressed,
-                               ResourceContext* context,
-                               bool* no_javascript_access);
+  virtual bool CanCreateWindow(
+      int opener_render_process_id,
+      int opener_render_frame_id,
+      const GURL& opener_url,
+      const GURL& opener_top_level_frame_url,
+      const GURL& source_origin,
+      content::mojom::WindowContainerType container_type,
+      const GURL& target_url,
+      const Referrer& referrer,
+      const std::string& frame_name,
+      WindowOpenDisposition disposition,
+      const blink::WebWindowFeatures& features,
+      bool user_gesture,
+      bool opener_suppressed,
+      ResourceContext* context,
+      bool* no_javascript_access);
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.
   // This is when it can optionally add a delegate.
