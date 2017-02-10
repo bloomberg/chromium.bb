@@ -43,7 +43,6 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
 
   virtual void newCuesAvailable(TextTrackLoader*) = 0;
   virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
-  virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
 class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
@@ -65,7 +64,6 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
   State loadState() { return m_state; }
 
   void getNewCues(HeapVector<Member<TextTrackCue>>& outputCues);
-  void getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions);
 
   DECLARE_TRACE();
 
@@ -80,7 +78,6 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
 
   // VTTParserClient
   void newCuesParsed() override;
-  void newRegionsParsed() override;
   void fileFailedToParse() override;
 
   TextTrackLoader(TextTrackLoaderClient&, Document&);

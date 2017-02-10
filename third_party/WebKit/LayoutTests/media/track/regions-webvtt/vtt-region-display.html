@@ -39,8 +39,6 @@ async_test(function() {
         video.oncanplaythrough = this.step_func(function() {
             track = video.textTracks[0];
 
-            assert_equals(track.regions.length, 1);
-
             region = textTrackRegionElement(video);
             var container = textTrackRegionContainerElement(video);
 
@@ -52,7 +50,7 @@ async_test(function() {
                     totalVisibleLines += countVisibleLines(cue);
                 }
 
-                assert_less_than_equal(totalVisibleLines, track.regions[0].lines);
+                assert_less_than_equal(totalVisibleLines, 2);
 
                 if (seekTimeIndex == seekTimes.length)
                     this.done();

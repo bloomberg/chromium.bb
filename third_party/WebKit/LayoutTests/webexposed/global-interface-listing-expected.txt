@@ -6581,7 +6581,6 @@ interface TextTrack : EventTarget
     getter language
     getter mode
     getter oncuechange
-    getter regions
     method addCue
     method constructor
     method removeCue
@@ -6959,13 +6958,6 @@ interface VTTRegion
     setter viewportAnchorX
     setter viewportAnchorY
     setter width
-interface VTTRegionList
-    attribute @@toStringTag
-    getter length
-    method @@iterator
-    method constructor
-    method getRegionById
-    method item
 interface ValidityState
     attribute @@toStringTag
     getter badInput

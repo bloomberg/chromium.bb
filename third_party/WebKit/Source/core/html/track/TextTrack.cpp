@@ -37,9 +37,6 @@
 #include "core/html/track/CueTimeline.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/html/track/vtt/VTTRegion.h"
-#include "core/html/track/vtt/VTTRegionList.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -93,7 +90,6 @@ TextTrack::TextTrack(const AtomicString& kind,
     : TrackBase(WebMediaPlayer::TextTrack, kind, label, language, id),
       m_cues(this, nullptr),
       m_activeCues(nullptr),
-      m_regions(nullptr),
       m_trackList(nullptr),
       m_mode(disabledKeyword()),
       m_trackType(type),
@@ -281,26 +277,6 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState) {
     cueTimeline()->removeCue(this, cue);
 }
 
-VTTRegionList* TextTrack::ensureVTTRegionList() {
-  if (!m_regions)
-    m_regions = VTTRegionList::create();
-
-  return m_regions.get();
-}
-
-VTTRegionList* TextTrack::regions() {
-  // If the text track mode of the text track that the TextTrack object
-  // represents is not the text track disabled mode, then the regions
-  // attribute must return a live VTTRegionList object that represents
-  // the text track list of regions of the text track. Otherwise, it must
-  // return null. When an object is returned, the same object must be returned
-  // each time.
-  if (RuntimeEnabledFeatures::webVTTRegionsEnabled() &&
-      m_mode != disabledKeyword())
-    return ensureVTTRegionList();
-  return nullptr;
-}
-
 void TextTrack::cueWillChange(TextTrackCue* cue) {
   // The cue may need to be repositioned in the media element's interval tree,
   // may need to be re-rendered, etc, so remove it before the modification...
@@ -397,7 +373,6 @@ Node* TextTrack::owner() const {
 DEFINE_TRACE(TextTrack) {
   visitor->trace(m_cues);
   visitor->trace(m_activeCues);
-  visitor->trace(m_regions);
   visitor->trace(m_trackList);
   TrackBase::trace(visitor);
   EventTargetWithInlineData::trace(visitor);

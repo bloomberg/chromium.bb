@@ -34,6 +34,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/html/track/vtt/VTTElement.h"
+#include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTScanner.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/SegmentedString.h"
@@ -94,11 +95,6 @@ void VTTParser::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues) {
   outputCues.swap(m_cueList);
 }
 
-void VTTParser::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions) {
-  DCHECK(outputRegions.isEmpty());
-  outputRegions.swap(m_regionList);
-}
-
 void VTTParser::parseBytes(const char* data, size_t length) {
   String textData = m_decoder->decode(data, length);
   m_lineReader.append(textData);
@@ -137,9 +133,6 @@ void VTTParser::parse() {
         collectMetadataHeader(line);
 
         if (line.isEmpty()) {
-          if (m_client && m_regionList.size())
-            m_client->newRegionsParsed();
-
           m_state = Id;
           break;
         }
@@ -221,7 +214,6 @@ bool VTTParser::hasRequiredFileIdentifier(const String& line) {
 
 void VTTParser::collectMetadataHeader(const String& line) {
   // WebVTT header parsing (WebVTT parser algorithm step 12)
-  DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region"));
 
   // The only currently supported header is the "Region" header.
   if (!RuntimeEnabledFeatures::webVTTRegionsEnabled())
@@ -237,7 +229,7 @@ void VTTParser::collectMetadataHeader(const String& line) {
   String headerName = line.substring(0, colonPosition);
 
   // Steps 12.5 If metadata's name equals "Region":
-  if (headerName == regionHeaderName) {
+  if (headerName == "Region") {
     String headerValue = line.substring(colonPosition + 1);
     // Steps 12.5.1 - 12.5.11 Region creation: Let region be a new text track
     // region [...]
@@ -399,18 +391,6 @@ void VTTParser::createNewRegion(const String& headerValue) {
   // Steps 12.5.1 - 12.5.9 - Construct and initialize a WebVTT Region object.
   VTTRegion* region = VTTRegion::create();
   region->setRegionSettings(headerValue);
-
-  // Step 12.5.10 If the text track list of regions regions contains a region
-  // with the same region identifier value as region, remove that region.
-  for (size_t i = 0; i < m_regionList.size(); ++i) {
-    if (m_regionList[i]->id() == region->id()) {
-      m_regionList.remove(i);
-      break;
-    }
-  }
-
-  // Step 12.5.11
-  m_regionList.push_back(region);
 
   if (region->id().isEmpty())
     return;
@@ -583,7 +563,6 @@ DEFINE_TRACE(VTTParser) {
   visitor->trace(m_client);
   visitor->trace(m_cueList);
   visitor->trace(m_regionMap);
-  visitor->trace(m_regionList);
 }
 
 }  // namespace blink

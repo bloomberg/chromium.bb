@@ -43,7 +43,6 @@ class TextTrack;
 class TextTrackCue;
 class TextTrackCueList;
 class TextTrackList;
-class VTTRegionList;
 
 class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
                               public TrackBase {
@@ -100,8 +99,6 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   void addCue(TextTrackCue*);
   void removeCue(TextTrackCue*, ExceptionState&);
 
-  VTTRegionList* regions();
-
   void cueWillChange(TextTrackCue*);
   void cueDidChange(TextTrackCue*);
 
@@ -147,9 +144,6 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   TextTrackCueList* ensureTextTrackCueList();
   TraceWrapperMember<TextTrackCueList> m_cues;
   Member<TextTrackCueList> m_activeCues;
-
-  VTTRegionList* ensureVTTRegionList();
-  Member<VTTRegionList> m_regions;
 
   Member<TextTrackList> m_trackList;
   AtomicString m_mode;

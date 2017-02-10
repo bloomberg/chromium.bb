@@ -151,10 +151,6 @@ void TextTrackLoader::newCuesParsed() {
   m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void TextTrackLoader::newRegionsParsed() {
-  m_client->newRegionsAvailable(this);
-}
-
 void TextTrackLoader::fileFailedToParse() {
   m_state = Failed;
 
@@ -168,13 +164,6 @@ void TextTrackLoader::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues) {
   DCHECK(m_cueParser);
   if (m_cueParser)
     m_cueParser->getNewCues(outputCues);
-}
-
-void TextTrackLoader::getNewRegions(
-    HeapVector<Member<VTTRegion>>& outputRegions) {
-  DCHECK(m_cueParser);
-  if (m_cueParser)
-    m_cueParser->getNewRegions(outputRegions);
 }
 
 DEFINE_TRACE(TextTrackLoader) {

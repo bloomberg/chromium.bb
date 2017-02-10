@@ -287,16 +287,6 @@ void HTMLTrackElement::newCuesAvailable(TextTrackLoader* loader) {
   m_track->addListOfCues(newCues);
 }
 
-void HTMLTrackElement::newRegionsAvailable(TextTrackLoader* loader) {
-  DCHECK_EQ(m_loader, loader);
-  DCHECK(m_track);
-
-  HeapVector<Member<VTTRegion>> newRegions;
-  m_loader->getNewRegions(newRegions);
-
-  m_track->addRegions(newRegions);
-}
-
 void HTMLTrackElement::cueLoadingCompleted(TextTrackLoader* loader,
                                            bool loadingFailed) {
   DCHECK_EQ(m_loader, loader);

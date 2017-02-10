@@ -285,7 +285,6 @@ core_idl_files = get_path_info([
                                  "html/track/VideoTrackList.idl",
                                  "html/track/vtt/VTTCue.idl",
                                  "html/track/vtt/VTTRegion.idl",
-                                 "html/track/vtt/VTTRegionList.idl",
                                  "input/InputDeviceCapabilities.idl",
                                  "inspector/InspectorOverlayHost.idl",
                                  "loader/appcache/ApplicationCache.idl",

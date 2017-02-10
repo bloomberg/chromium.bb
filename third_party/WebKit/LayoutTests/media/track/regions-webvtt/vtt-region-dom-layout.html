@@ -11,8 +11,6 @@ async_test(function() {
     var testTrack = document.createElement('track');
     testTrack.onload = this.step_func(function() {
         video.oncanplaythrough = this.step_func_done(function() {
-            assert_equals(testTrack.track.regions.length, 1);
-
             var region = textTrackRegionElement(video);
             var container = textTrackRegionContainerElement(video);
 

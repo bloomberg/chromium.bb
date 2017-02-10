@@ -33,7 +33,6 @@
 namespace blink {
 
 class HTMLTrackElement;
-class VTTRegion;
 
 class LoadableTextTrack final : public TextTrack {
  public:
@@ -45,7 +44,6 @@ class LoadableTextTrack final : public TextTrack {
   // TextTrack method.
   void setMode(const AtomicString&) override;
 
-  void addRegions(const HeapVector<Member<VTTRegion>>&);
   using TextTrack::addListOfCues;
 
   size_t trackElementIndex() const;

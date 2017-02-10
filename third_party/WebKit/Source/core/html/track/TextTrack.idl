@@ -47,8 +47,4 @@ enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "m
     [RaisesException] void removeCue(TextTrackCue cue);
 
     attribute EventHandler oncuechange;
-
-    // TODO(foolip): These WebVTT extensions have been removed from the spec:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24380
-    [RuntimeEnabled=WebVTTRegions] readonly attribute VTTRegionList regions;
 };

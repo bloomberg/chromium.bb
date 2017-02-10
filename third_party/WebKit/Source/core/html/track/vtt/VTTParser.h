@@ -36,7 +36,6 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/track/vtt/BufferedLineReader.h"
 #include "core/html/track/vtt/VTTCue.h"
-#include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTTokenizer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/StringBuilder.h"
@@ -52,7 +51,6 @@ class VTTParserClient : public GarbageCollectedMixin {
   virtual ~VTTParserClient() {}
 
   virtual void newCuesParsed() = 0;
-  virtual void newRegionsParsed() = 0;
   virtual void fileFailedToParse() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -103,7 +101,6 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
 
   // Transfers ownership of last parsed cues to caller.
   void getNewCues(HeapVector<Member<TextTrackCue>>&);
-  void getNewRegions(HeapVector<Member<VTTRegion>>&);
 
   DECLARE_TRACE();
 
@@ -143,7 +140,6 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   HeapVector<Member<TextTrackCue>> m_cueList;
 
   VTTRegionMap m_regionMap;
-  HeapVector<Member<VTTRegion>> m_regionList;
 };
 
 }  // namespace blink

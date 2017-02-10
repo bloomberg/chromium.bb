@@ -502,8 +502,6 @@ blink_core_sources("html") {
     "track/vtt/VTTParser.h",
     "track/vtt/VTTRegion.cpp",
     "track/vtt/VTTRegion.h",
-    "track/vtt/VTTRegionList.cpp",
-    "track/vtt/VTTRegionList.h",
     "track/vtt/VTTScanner.cpp",
     "track/vtt/VTTScanner.h",
     "track/vtt/VTTToken.h",

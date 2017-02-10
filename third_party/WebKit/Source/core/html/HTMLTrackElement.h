@@ -69,7 +69,6 @@ class HTMLTrackElement final : public HTMLElement,
   // TextTrackLoaderClient
   void newCuesAvailable(TextTrackLoader*) override;
   void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
-  void newRegionsAvailable(TextTrackLoader*) override;
 
   void setReadyState(ReadyState);
 
