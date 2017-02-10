@@ -470,8 +470,6 @@ split_static_library("browser") {
     "icon_manager.h",
     "image_decoder.cc",
     "image_decoder.h",
-    "image_holder.cc",
-    "image_holder.h",
     "infobars/infobar_responder.cc",
     "infobars/infobar_responder.h",
     "infobars/infobar_service.cc",
