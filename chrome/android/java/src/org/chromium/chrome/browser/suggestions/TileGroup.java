@@ -220,6 +220,10 @@ public class TileGroup implements MostVisitedURLsObserver {
                         && tile.isOfflineAvailable() == oldTileView.getTile().isOfflineAvailable()
                         && TextUtils.equals(tile.getWhitelistIconPath(),
                                    oldTileView.getTile().getWhitelistIconPath())) {
+                    // Prevent further reuse. https://crbug.com/690926
+                    assert oldTileView.getParent() == null;
+                    oldTileViews.remove(tile.getUrl());
+
                     tileGridLayout.addView(oldTileView);
 
                     // Re-render the icon because it may not have been painted when re-added.
