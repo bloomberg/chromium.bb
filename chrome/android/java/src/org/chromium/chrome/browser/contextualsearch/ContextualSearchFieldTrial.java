@@ -112,6 +112,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsAmpAsSeparateTabEnabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
     private static Boolean sCanSendHomeCountry;
+    private static Boolean sContextualSearchUrlActionsEnabled;
 
     /**
      * Don't instantiate.
@@ -426,6 +427,18 @@ public class ContextualSearchFieldTrial {
         }
 
         return sContextualSearchSingleActionsEnabled;
+    }
+
+    /**
+     * @return Whether or not URL actions based on Contextual Cards is enabled.
+     */
+    static boolean isContextualSearchUrlActionsEnabled() {
+        if (sContextualSearchUrlActionsEnabled == null) {
+            sContextualSearchUrlActionsEnabled =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_URL_ACTIONS);
+        }
+
+        return sContextualSearchUrlActionsEnabled;
     }
 
     // --------------------------------------------------------------------------------------------

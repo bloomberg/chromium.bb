@@ -5376,6 +5376,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS_DESCRIPTION" desc="Description for the flag to enable Contextual Search single actions using Contextual Cards data in the bar." translateable="false">
           Whether or not single actions using Contextual Cards data in the Contextual Search Bar is enabled.
         </message>
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_URL_ACTIONS" desc="Title for the flag to enable Contextual Search url actions using Contextual Cards data in the bar." translateable="false">
+          Contextual Search - URL Actions
+        </message>
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_URL_ACTIONS_DESCRIPTION" desc="Description for the flag to enable Contextual Search URL actions using Contextual Cards data in the bar." translateable="false">
+          Whether or not URL actions using Contextual Cards data in the Contextual Search Bar is enabled.
+        </message>
       </if>
       <message name="IDS_FLAGS_SMOOTH_SCROLLING_NAME" desc="Name of the smooth scrolling flag">
         Smooth Scrolling

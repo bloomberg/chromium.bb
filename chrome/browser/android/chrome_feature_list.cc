@@ -47,6 +47,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTPostMessageAPI,
     &kChromeHomeFeature,
     &kContextualSearchSingleActions,
+    &kContextualSearchUrlActions,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNoCreditCardAbort,
@@ -98,6 +99,9 @@ const base::Feature kContextualSearchSingleActions{
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchUrlActions{
+    "ContextualSearchUrlActions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
