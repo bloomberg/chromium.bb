@@ -28,21 +28,18 @@
 namespace WTF {
 
 template <>
-struct IntHash<blink::IntSize> {
-  STATIC_ONLY(IntHash);
-  static unsigned hash(const blink::IntSize& key) {
-    return hashInts(key.width(), key.height());
-  }
-  static bool equal(const blink::IntSize& a, const blink::IntSize& b) {
-    return a == b;
-  }
-  static const bool safeToCompareToEmptyOrDeleted = true;
-};
-
-template <>
 struct DefaultHash<blink::IntSize> {
   STATIC_ONLY(DefaultHash);
-  typedef IntHash<blink::IntSize> Hash;
+  struct Hash {
+    STATIC_ONLY(Hash);
+    static unsigned hash(const blink::IntSize& key) {
+      return hashInts(key.width(), key.height());
+    }
+    static bool equal(const blink::IntSize& a, const blink::IntSize& b) {
+      return a == b;
+    }
+    static const bool safeToCompareToEmptyOrDeleted = true;
+  };
 };
 
 template <>
