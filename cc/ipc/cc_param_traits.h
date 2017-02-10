@@ -121,28 +121,6 @@ struct CC_IPC_EXPORT ParamTraits<cc::DrawQuad::Resources> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::StreamVideoDrawQuad::OverlayResources> {
-  typedef cc::StreamVideoDrawQuad::OverlayResources param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CC_IPC_EXPORT ParamTraits<cc::TextureDrawQuad::OverlayResources> {
-  typedef cc::TextureDrawQuad::OverlayResources param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct CC_IPC_EXPORT ParamTraits<cc::YUVVideoDrawQuad> {
   typedef cc::YUVVideoDrawQuad param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);

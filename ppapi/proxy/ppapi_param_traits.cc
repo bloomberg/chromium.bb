@@ -698,38 +698,4 @@ void ParamTraits<ppapi::SocketOptionData>::Log(const param_type& p,
                                                std::string* l) {
 }
 
-// ppapi::CompositorLayerData --------------------------------------------------
-
-// static
-void ParamTraits<ppapi::CompositorLayerData::Transform>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
-  for (size_t i = 0; i < arraysize(p.matrix); i++)
-    GetParamSize(s, p.matrix[i]);
-}
-
-// static
-void ParamTraits<ppapi::CompositorLayerData::Transform>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  for (size_t i = 0; i < arraysize(p.matrix); i++)
-    WriteParam(m, p.matrix[i]);
-}
-
-// static
-bool ParamTraits<ppapi::CompositorLayerData::Transform>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  for (size_t i = 0; i < arraysize(r->matrix);i++) {
-    if (!ReadParam(m, iter, &r->matrix[i]))
-      return false;
-  }
-  return true;
-}
-
-void ParamTraits<ppapi::CompositorLayerData::Transform>::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
 }  // namespace IPC

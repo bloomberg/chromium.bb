@@ -504,6 +504,10 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPB_AudioEncodeParameters)
   IPC_STRUCT_TRAITS_MEMBER(acceleration)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(ppapi::CompositorLayerData::Transform)
+  IPC_STRUCT_TRAITS_MEMBER(matrix)
+IPC_STRUCT_TRAITS_END()
+
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
