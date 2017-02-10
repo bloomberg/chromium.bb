@@ -30,7 +30,7 @@ class ServicesDelegateImpl : public ServicesDelegate {
   // ServicesDelegate:
   const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const override;
-  void Initialize(bool v4_enabled) override;
+  void Initialize() override;
   void InitializeCsdService(
       net::URLRequestContextGetter* context_getter) override;
   void ShutdownServices() override;

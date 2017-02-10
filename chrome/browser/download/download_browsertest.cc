@@ -1083,9 +1083,7 @@ class FakeSafeBrowsingService
     : public safe_browsing::TestSafeBrowsingService,
       public safe_browsing::ServicesDelegate::ServicesCreator {
  public:
-  FakeSafeBrowsingService()
-      : TestSafeBrowsingService(
-            safe_browsing::V4FeatureList::V4UsageStatus::V4_DISABLED) {
+  FakeSafeBrowsingService() {
     services_delegate_ =
         safe_browsing::ServicesDelegate::CreateForTest(this, this);
   }

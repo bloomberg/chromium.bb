@@ -10,15 +10,12 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/test_database_manager.h"
-#include "components/safe_browsing_db/v4_feature_list.h"
 
 namespace safe_browsing {
 
 // TestSafeBrowsingService functions:
-TestSafeBrowsingService::TestSafeBrowsingService(
-    V4FeatureList::V4UsageStatus v4_usage_status)
-    : SafeBrowsingService(v4_usage_status),
-      protocol_manager_delegate_disabled_(false),
+TestSafeBrowsingService::TestSafeBrowsingService()
+    : protocol_manager_delegate_disabled_(false),
       serialized_download_report_(base::EmptyString()) {}
 
 TestSafeBrowsingService::~TestSafeBrowsingService() {}
@@ -93,18 +90,15 @@ void TestSafeBrowsingService::SetV4ProtocolConfig(
 }
 
 // TestSafeBrowsingServiceFactory functions:
-TestSafeBrowsingServiceFactory::TestSafeBrowsingServiceFactory(
-    V4FeatureList::V4UsageStatus v4_usage_status)
-    : test_safe_browsing_service_(nullptr),
-      test_protocol_config_(nullptr),
-      v4_usage_status_(v4_usage_status) {}
+TestSafeBrowsingServiceFactory::TestSafeBrowsingServiceFactory()
+    : test_safe_browsing_service_(nullptr), test_protocol_config_(nullptr) {}
 
 TestSafeBrowsingServiceFactory::~TestSafeBrowsingServiceFactory() {}
 
 SafeBrowsingService*
 TestSafeBrowsingServiceFactory::CreateSafeBrowsingService() {
   // Instantiate TestSafeBrowsingService.
-  test_safe_browsing_service_ = new TestSafeBrowsingService(v4_usage_status_);
+  test_safe_browsing_service_ = new TestSafeBrowsingService();
   // Plug-in test member clases accordingly.
   if (test_ui_manager_)
     test_safe_browsing_service_->SetUIManager(test_ui_manager_.get());

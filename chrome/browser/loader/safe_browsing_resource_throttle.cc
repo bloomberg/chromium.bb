@@ -57,10 +57,13 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     safe_browsing::SafeBrowsingService* sb_service)
-    : safe_browsing::BaseResourceThrottle(request,
-                                          resource_type,
-                                          sb_service->database_manager(),
-                                          sb_service->ui_manager()) {}
+    : safe_browsing::BaseResourceThrottle(
+          request,
+          resource_type,
+          safe_browsing::V4FeatureList::IsV4HybridEnabled()
+              ? sb_service->v4_local_database_manager()
+              : sb_service->database_manager(),
+          sb_service->ui_manager()) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {}
 

@@ -64,15 +64,13 @@ ServicesDelegateImpl::v4_local_database_manager() const {
   return v4_local_database_manager_;
 }
 
-void ServicesDelegateImpl::Initialize(bool v4_enabled) {
+void ServicesDelegateImpl::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (v4_enabled) {
-    v4_local_database_manager_ = V4LocalDatabaseManager::Create(
-        SafeBrowsingService::GetBaseFilename(),
-        base::Bind(&ServicesDelegateImpl::GetEstimatedExtendedReportingLevel,
-                   base::Unretained(this)));
-  }
+  v4_local_database_manager_ = V4LocalDatabaseManager::Create(
+      SafeBrowsingService::GetBaseFilename(),
+      base::Bind(&ServicesDelegateImpl::GetEstimatedExtendedReportingLevel,
+                 base::Unretained(this)));
 
   download_service_.reset(
       (services_creator_ &&
