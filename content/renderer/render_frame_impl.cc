@@ -841,7 +841,8 @@ bool UseMediaPlayerRenderer(const GURL& url) {
   // can't decode in software and platform decoders are not available.
   if (!media::HasPlatformDecoderSupport()) {
     // Assume that "mp4" means H264. Without platform decoder support we cannot
-    // play it with Spitzer, thus fall back to AVDA. http://crbug.com/642988.
+    // play it with the default renderer so use MediaPlayerRenderer.
+    // http://crbug.com/642988.
     if (base::ToLowerASCII(url.spec()).find("mp4") != std::string::npos)
       return true;
   }
