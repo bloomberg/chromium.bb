@@ -164,24 +164,22 @@ enum SBStatsType {
 
 }  // namespace
 
-// Parent SafeBrowsing::Client class used to lookup the bad binary
-// URL and digest list.
-class DownloadSBClient
+// SafeBrowsing::Client class used to lookup the bad binary URL list.
+
+class DownloadUrlSBClient
     : public SafeBrowsingDatabaseManager::Client,
       public content::DownloadItem::Observer,
       public base::RefCountedThreadSafe<
-          DownloadSBClient,
+          DownloadUrlSBClient,
           BrowserThread::DeleteOnUIThread> {
  public:
-  DownloadSBClient(
+  DownloadUrlSBClient(
       content::DownloadItem* item,
       DownloadProtectionService* service,
       const DownloadProtectionService::CheckDownloadCallback& callback,
       const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
-      SBStatsType total_type,
-      SBStatsType dangerous_type)
-      : observer_(this),
-        item_(item),
+      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
+      : item_(item),
         sha256_hash_(item->GetHash()),
         url_chain_(item->GetUrlChain()),
         referrer_url_(item->GetReferrerUrl()),
@@ -189,12 +187,14 @@ class DownloadSBClient
         callback_(callback),
         ui_manager_(ui_manager),
         start_time_(base::TimeTicks::Now()),
-        total_type_(total_type),
-        dangerous_type_(dangerous_type) {
+        total_type_(DOWNLOAD_URL_CHECKS_TOTAL),
+        dangerous_type_(DOWNLOAD_URL_CHECKS_MALWARE),
+        database_manager_(database_manager),
+        download_item_observer_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_);
     DCHECK(service_);
-    observer_.Add(item_);
+    download_item_observer_.Add(item_);
     Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
     extended_reporting_level_ =
         profile ? GetExtendedReportingLevel(*profile->GetPrefs())
@@ -204,19 +204,43 @@ class DownloadSBClient
             SafeBrowsingNavigationObserverManager::kDownloadAttribution);
   }
 
-  virtual void StartCheck() = 0;
-  virtual bool IsDangerous(SBThreatType threat_type) const = 0;
-
   // Implements DownloadItem::Observer.
   void OnDownloadDestroyed(content::DownloadItem* download) override {
+   download_item_observer_.Remove(item_);
     item_ = nullptr;
   }
 
- protected:
-  friend class base::RefCountedThreadSafe<DownloadSBClient>;
+  void StartCheck() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (!database_manager_.get() ||
+        database_manager_->CheckDownloadUrl(url_chain_, this)) {
+      CheckDone(SB_THREAT_TYPE_SAFE);
+    } else {
+      // Add a reference to this object to prevent it from being destroyed
+      // before url checking result is returned.
+      AddRef();
+    }
+  }
+
+  bool IsDangerous(SBThreatType threat_type) const {
+    return threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL;
+  }
+
+  // Implements SafeBrowsingDatabaseManager::Client.
+  void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                SBThreatType threat_type) override {
+    CheckDone(threat_type);
+    UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
+                        base::TimeTicks::Now() - start_time_);
+    Release();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<DownloadUrlSBClient>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class base::DeleteHelper<DownloadSBClient>;
-  ~DownloadSBClient() override {
+  friend class base::DeleteHelper<DownloadUrlSBClient>;
+
+  ~DownloadUrlSBClient() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
@@ -231,7 +255,7 @@ class DownloadSBClient
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(&DownloadSBClient::ReportMalware,
+          base::Bind(&DownloadUrlSBClient::ReportMalware,
                      this, threat_type));
     } else if (download_attribution_enabled_) {
         // Identify download referrer chain, which will be used in
@@ -239,7 +263,7 @@ class DownloadSBClient
         BrowserThread::PostTask(
             BrowserThread::UI,
             FROM_HERE,
-            base::Bind(&DownloadSBClient::IdentifyReferrerChain,
+            base::Bind(&DownloadUrlSBClient::IdentifyReferrerChain,
                        this));
     }
     BrowserThread::PostTask(BrowserThread::UI,
@@ -291,8 +315,6 @@ class DownloadSBClient
                               DOWNLOAD_CHECKS_MAX);
   }
 
-  ScopedObserver<content::DownloadItem,
-                 content::DownloadItem::Observer> observer_;
   // The DownloadItem we are checking. Must be accessed only on UI thread.
   content::DownloadItem* item_;
   // Copies of data from |item_| for access on other threads.
@@ -304,56 +326,12 @@ class DownloadSBClient
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   base::TimeTicks start_time_;
   bool download_attribution_enabled_;
-
- private:
   const SBStatsType total_type_;
   const SBStatsType dangerous_type_;
   ExtendedReportingLevel extended_reporting_level_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);
-};
-
-class DownloadUrlSBClient : public DownloadSBClient {
- public:
-  DownloadUrlSBClient(
-      content::DownloadItem* item,
-      DownloadProtectionService* service,
-      const DownloadProtectionService::CheckDownloadCallback& callback,
-      const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
-      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
-      : DownloadSBClient(item, service, callback, ui_manager,
-                         DOWNLOAD_URL_CHECKS_TOTAL,
-                         DOWNLOAD_URL_CHECKS_MALWARE),
-        database_manager_(database_manager) { }
-
-  void StartCheck() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (!database_manager_.get() ||
-        database_manager_->CheckDownloadUrl(url_chain_, this)) {
-      CheckDone(SB_THREAT_TYPE_SAFE);
-    } else {
-      AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
-    }
-  }
-
-  bool IsDangerous(SBThreatType threat_type) const override {
-    return threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL;
-  }
-
-  void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
-                                SBThreatType threat_type) override {
-    CheckDone(threat_type);
-    UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
-                        base::TimeTicks::Now() - start_time_);
-    Release();
-  }
-
- private:
-  ~DownloadUrlSBClient() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  }
-
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  ScopedObserver<content::DownloadItem,
+                 content::DownloadItem::Observer> download_item_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlSBClient);
 };
