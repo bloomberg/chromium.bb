@@ -941,11 +941,6 @@ void ProfileSyncService::OnEngineInitialized(
     engine_->EnableDirectoryTypeDebugInfoForwarding();
   }
 
-  // If we have a cached passphrase use it to decrypt/encrypt data now that the
-  // backend is initialized. We want to call this before notifying observers in
-  // case this operation affects the "passphrase required" status.
-  crypto_->ConsumeCachedPassphraseIfPossible();
-
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  LastSyncedTime will only be null in
   // this case, because the pref wasn't restored on StartUp.
@@ -960,6 +955,11 @@ void ProfileSyncService::OnEngineInitialized(
 
   crypto_->SetSyncEngine(engine_.get());
   crypto_->SetDataTypeManager(data_type_manager_.get());
+
+  // If we have a cached passphrase use it to decrypt/encrypt data now that the
+  // backend is initialized. We want to call this before notifying observers in
+  // case this operation affects the "passphrase required" status.
+  crypto_->ConsumeCachedPassphraseIfPossible();
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
