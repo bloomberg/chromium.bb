@@ -408,6 +408,10 @@ class GPU_EXPORT GpuControlList {
     void SetDirectRenderingInfo(bool value);
     void SetInProcessGPUInfo(bool value);
 
+    bool SetPixelShaderVersionInfo(const std::string& version_op,
+                                   const std::string& version_string,
+                                   const std::string& version_string2);
+
     bool SetFeatures(const std::vector<std::string>& features,
                      const std::vector<std::string>& exceptions,
                      const FeatureMap& feature_map,
@@ -466,6 +470,7 @@ class GPU_EXPORT GpuControlList {
     std::unique_ptr<IntInfo> gpu_count_info_;
     std::unique_ptr<BoolInfo> direct_rendering_info_;
     std::unique_ptr<BoolInfo> in_process_gpu_info_;
+    std::unique_ptr<VersionInfo> pixel_shader_version_info_;
     std::set<int> features_;
     std::vector<ScopedGpuControlListEntry> exceptions_;
   };

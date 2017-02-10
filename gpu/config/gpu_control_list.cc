@@ -745,6 +745,26 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const base::DictionaryValue* pixel_shader_version_value = NULL;
+  if (value->GetDictionary("pixel_shader_version",
+                           &pixel_shader_version_value)) {
+    std::string pixel_shader_version_op = "any";
+    std::string pixel_shader_version_string;
+    std::string pixel_shader_version_string2;
+    pixel_shader_version_value->GetString(kOp, &pixel_shader_version_op);
+    pixel_shader_version_value->GetString("value",
+                                          &pixel_shader_version_string);
+    pixel_shader_version_value->GetString("value2",
+                                          &pixel_shader_version_string2);
+    if (!entry->SetPixelShaderVersionInfo(pixel_shader_version_op,
+                                          pixel_shader_version_string,
+                                          pixel_shader_version_string2)) {
+      LOG(WARNING) << "Malformed pixel shader version entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   if (top_level) {
     const base::ListValue* feature_value = NULL;
     if (value->GetList("features", &feature_value)) {
@@ -1066,6 +1086,15 @@ bool GpuControlList::GpuControlListEntry::SetFeatures(
   return true;
 }
 
+bool GpuControlList::GpuControlListEntry::SetPixelShaderVersionInfo(
+    const std::string& version_op,
+    const std::string& version_string,
+    const std::string& version_string2) {
+  pixel_shader_version_info_.reset(new VersionInfo(
+      version_op, std::string(), version_string, version_string2));
+  return pixel_shader_version_info_->IsValid();
+}
+
 void GpuControlList::GpuControlListEntry::AddException(
     ScopedGpuControlListEntry exception) {
   exceptions_.push_back(exception);
@@ -1316,6 +1345,10 @@ bool GpuControlList::GpuControlListEntry::Contains(
     if (StringMismatch(cpu_info.cpu_brand(), cpu_brand_))
       return false;
   }
+  if (pixel_shader_version_info_.get() != NULL) {
+    if (!pixel_shader_version_info_->Contains(gpu_info.pixel_shader_version))
+      return false;
+  }
 
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, gpu_info) &&
@@ -1343,6 +1376,9 @@ bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
   if (!gl_vendor_info_.empty() && gpu_info.gl_vendor.empty())
     return true;
   if (!gl_renderer_info_.empty() && gpu_info.gl_renderer.empty())
+    return true;
+  if (pixel_shader_version_info_.get() != NULL &&
+      gpu_info.pixel_shader_version.empty())
     return true;
 
   if (consider_exceptions) {

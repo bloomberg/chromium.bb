@@ -63,6 +63,7 @@
 //     the GL contexts are direct or indirect based on the value.
 // 26. "disabled_extensions" is a list of strings which contain the GL_EXTENSION
 //     strings which are disabled by the workaround.
+// 27. "pixel_shader_version" is a VERSION structure (defined below).
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

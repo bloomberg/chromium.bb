@@ -1359,5 +1359,19 @@ TEST_F(GpuControlListEntryTest, LinuxKernelVersion) {
                                gpu_info));
 }
 
+TEST_F(GpuControlListEntryTest, PixelShaderVersion) {
+  const std::string json = LONG_STRING_CONST(
+      {"id" : 1, "pixel_shader_version" : {"op" : "<", "value" : "4.1"}});
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
+
+  GPUInfo gpu_info;
+  gpu_info.pixel_shader_version = "3.2";
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+  gpu_info.pixel_shader_version = "4.9";
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+}
+
 }  // namespace gpu
 
