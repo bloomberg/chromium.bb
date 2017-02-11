@@ -16,6 +16,7 @@ error::Error GenHelper(GLsizei n,
                        const volatile ClientType* client_ids,
                        ClientServiceMap<ClientType, ServiceType>* id_map,
                        GenFunction gen_function) {
+  DCHECK(n >= 0);
   std::vector<ClientType> client_ids_copy(client_ids, client_ids + n);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (id_map->GetServiceID(client_ids_copy[ii], nullptr)) {
@@ -52,6 +53,7 @@ error::Error DeleteHelper(GLsizei n,
                           const volatile ClientType* client_ids,
                           ClientServiceMap<ClientType, ServiceType>* id_map,
                           DeleteFunction delete_function) {
+  DCHECK(n >= 0);
   std::vector<ServiceType> service_ids(n, 0);
   for (GLsizei ii = 0; ii < n; ++ii) {
     ClientType client_id = client_ids[ii];
@@ -575,6 +577,12 @@ error::Error GLES2DecoderPassthroughImpl::DoCullFace(GLenum mode) {
 error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
     GLsizei n,
     const volatile GLuint* buffers) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
   return DeleteHelper(
       n, buffers, &resources_->buffer_id_map,
       [](GLsizei n, GLuint* buffers) { glDeleteBuffersARB(n, buffers); });
@@ -583,6 +591,12 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
 error::Error GLES2DecoderPassthroughImpl::DoDeleteFramebuffers(
     GLsizei n,
     const volatile GLuint* framebuffers) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
   return DeleteHelper(n, framebuffers, &framebuffer_id_map_,
                       [](GLsizei n, GLuint* framebuffers) {
                         glDeleteFramebuffersEXT(n, framebuffers);
@@ -597,6 +611,12 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteProgram(GLuint program) {
 error::Error GLES2DecoderPassthroughImpl::DoDeleteRenderbuffers(
     GLsizei n,
     const volatile GLuint* renderbuffers) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
   return DeleteHelper(n, renderbuffers, &resources_->renderbuffer_id_map,
                       [](GLsizei n, GLuint* renderbuffers) {
                         glDeleteRenderbuffersEXT(n, renderbuffers);
@@ -606,6 +626,12 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteRenderbuffers(
 error::Error GLES2DecoderPassthroughImpl::DoDeleteSamplers(
     GLsizei n,
     const volatile GLuint* samplers) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
   return DeleteHelper(
       n, samplers, &resources_->sampler_id_map,
       [](GLsizei n, GLuint* samplers) { glDeleteSamplers(n, samplers); });
@@ -625,6 +651,13 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteShader(GLuint shader) {
 error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
     GLsizei n,
     const volatile GLuint* textures) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
+
   // Textures that are currently associated with a mailbox are stored in the
   // texture_object_map_ and are deleted automatically when they are
   // unreferenced.  Only delete textures that are not in this map.
@@ -650,6 +683,12 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
 error::Error GLES2DecoderPassthroughImpl::DoDeleteTransformFeedbacks(
     GLsizei n,
     const volatile GLuint* ids) {
+  // DeleteHelper requires that n is non-negative because it allocates a copy of
+  // the IDs
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "n cannot be negative.");
+    return error::kNoError;
+  }
   return DeleteHelper(n, ids, &transform_feedback_id_map_,
                       [](GLsizei n, GLuint* transform_feedbacks) {
                         glDeleteTransformFeedbacks(n, transform_feedbacks);
@@ -1378,6 +1417,11 @@ error::Error GLES2DecoderPassthroughImpl::DoInvalidateFramebuffer(
     GLenum target,
     GLsizei count,
     const volatile GLenum* attachments) {
+  // Validate that count is non-negative before allocating a vector
+  if (count < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
   std::vector<GLenum> attachments_copy(attachments, attachments + count);
   glInvalidateFramebuffer(target, count, attachments_copy.data());
   return error::kNoError;
@@ -1391,6 +1435,11 @@ error::Error GLES2DecoderPassthroughImpl::DoInvalidateSubFramebuffer(
     GLint y,
     GLsizei width,
     GLsizei height) {
+  // Validate that count is non-negative before allocating a vector
+  if (count < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
   std::vector<GLenum> attachments_copy(attachments, attachments + count);
   glInvalidateSubFramebuffer(target, count, attachments_copy.data(), x, y,
                              width, height);
@@ -2249,6 +2298,12 @@ error::Error GLES2DecoderPassthroughImpl::DoGenQueriesEXT(
 error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
     GLsizei n,
     const volatile GLuint* queries) {
+  // Validate n is non-negative before allcoating a vector of size n
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
+
   std::vector<GLuint> queries_copy(queries, queries + n);
   // If any of these queries are pending or active, remove them from the lists
   for (GLuint query_client_id : queries_copy) {
@@ -2670,6 +2725,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
     GLsizei count,
     const volatile GLint* rects) {
+  if (count < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
+
   std::vector<gfx::Rect> bounds(count);
   for (GLsizei i = 0; i < count; ++i) {
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
@@ -2953,6 +3013,11 @@ error::Error GLES2DecoderPassthroughImpl::DoDiscardFramebufferEXT(
     GLenum target,
     GLsizei count,
     const volatile GLenum* attachments) {
+  // Validate that count is non-negative before allocating a vector
+  if (count < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
   std::vector<GLenum> attachments_copy(attachments, attachments + count);
   glDiscardFramebufferEXT(target, count, attachments_copy.data());
   return error::kNoError;
@@ -2992,6 +3057,11 @@ error::Error GLES2DecoderPassthroughImpl::DoWaitSyncTokenCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(
     GLsizei count,
     const volatile GLenum* bufs) {
+  // Validate that count is non-negative before allocating a vector
+  if (count < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
   std::vector<GLenum> bufs_copy(bufs, bufs + count);
   glDrawBuffersARB(count, bufs_copy.data());
   return error::kNoError;
