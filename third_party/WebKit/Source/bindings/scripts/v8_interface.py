@@ -379,6 +379,7 @@ def interface_context(interface, interfaces):
                           interface.name != 'Window')
     context.update({
         'has_array_iterator': has_array_iterator,
+        'iterable': interface.iterable,
     })
 
     # Conditionally enabled members
@@ -545,19 +546,24 @@ def methods_context(interface):
             non_overridable_methods = []
             overridable_methods = []
 
-            non_overridable_methods.extend([
-                generated_iterator_method('keys'),
-                generated_iterator_method('values'),
-                generated_iterator_method('entries'),
+            is_value_iterator = interface.iterable and interface.iterable.key_type is None
 
-                # void forEach(Function callback, [Default=Undefined] optional any thisArg)
-                generated_method(IdlType('void'), 'forEach',
-                                 arguments=[generated_argument(IdlType('Function'), 'callback'),
-                                            generated_argument(IdlType('any'), 'thisArg',
-                                                               is_optional=True,
-                                                               extended_attributes={'Default': 'Undefined'})],
-                                 extended_attributes=forEach_extended_attributes),
-            ])
+            # For value iterators, the |entries|, |forEach|, |keys| and |values| are originally set
+            # to corresponding properties in %ArrayPrototype%.
+            if not is_value_iterator:
+                non_overridable_methods.extend([
+                    generated_iterator_method('keys'),
+                    generated_iterator_method('values'),
+                    generated_iterator_method('entries'),
+
+                    # void forEach(Function callback, [Default=Undefined] optional any thisArg)
+                    generated_method(IdlType('void'), 'forEach',
+                                     arguments=[generated_argument(IdlType('Function'), 'callback'),
+                                                generated_argument(IdlType('any'), 'thisArg',
+                                                                   is_optional=True,
+                                                                   extended_attributes={'Default': 'Undefined'})],
+                                     extended_attributes=forEach_extended_attributes),
+                ])
 
             if interface.maplike:
                 key_argument = generated_argument(interface.maplike.key_type, 'key')

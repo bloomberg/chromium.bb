@@ -36,6 +36,10 @@
 [
     WebModuleAPI,
 ] interface TestInterface3 {
+    // iterable<V> needs a "length" property accompanying the indexed property
+    // getter below.
+    readonly attribute unsigned long length;
+
     [Custom] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom] deleter boolean (unsigned long index);

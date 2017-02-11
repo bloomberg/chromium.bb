@@ -331,6 +331,8 @@
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
 
+    readonly attribute unsigned long length;
+    getter long (unsigned long index);
     iterable<long>;
 
     [Unscopable] readonly attribute DOMString unscopableAttribute;

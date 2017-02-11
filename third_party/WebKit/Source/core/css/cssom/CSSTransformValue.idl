@@ -8,6 +8,11 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSTransformValue : CSSStyleValue {
+    // https://github.com/w3c/css-houdini-drafts/issues/358
+    readonly attribute unsigned long length;
+    [ImplementedAs=componentAtIndex] getter CSSTransformComponent (unsigned long index);
+
     iterable<CSSTransformComponent>;
+
     boolean is2D();
 };

@@ -31,34 +31,6 @@
 
 namespace blink {
 
-namespace {
-
-class DOMTokenListIterationSource final
-    : public ValueIterable<String>::IterationSource {
- public:
-  explicit DOMTokenListIterationSource(DOMTokenList* domTokenList)
-      : m_domTokenList(domTokenList) {}
-
-  bool next(ScriptState* scriptState,
-            String& value,
-            ExceptionState& exceptionState) override {
-    if (m_index >= m_domTokenList->length())
-      return false;
-    value = m_domTokenList->item(m_index);
-    return true;
-  }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_domTokenList);
-    ValueIterable<String>::IterationSource::trace(visitor);
-  }
-
- private:
-  const Member<DOMTokenList> m_domTokenList;
-};
-
-}  // namespace
-
 bool DOMTokenList::validateToken(const String& token,
                                  ExceptionState& exceptionState) const {
   if (token.isEmpty()) {
@@ -300,12 +272,6 @@ void DOMTokenList::setValue(const AtomicString& value) {
 
 bool DOMTokenList::containsInternal(const AtomicString& token) const {
   return m_tokens.contains(token);
-}
-
-ValueIterable<String>::IterationSource* DOMTokenList::startIteration(
-    ScriptState*,
-    ExceptionState&) {
-  return new DOMTokenListIterationSource(this);
 }
 
 const AtomicString DOMTokenList::item(unsigned index) const {

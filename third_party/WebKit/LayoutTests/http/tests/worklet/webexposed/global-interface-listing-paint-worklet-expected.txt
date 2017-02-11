@@ -105,6 +105,7 @@ CONSOLE MESSAGE: line 138:     method asMatrix
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method is2D
 CONSOLE MESSAGE: line 138: interface CSSTransformValue : CSSStyleValue
+CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method entries
 CONSOLE MESSAGE: line 138:     method forEach
@@ -120,6 +121,7 @@ CONSOLE MESSAGE: line 138: interface CSSURLImageValue : CSSImageValue
 CONSOLE MESSAGE: line 138:     getter url
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138: interface CSSUnparsedValue : CSSStyleValue
+CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method entries
 CONSOLE MESSAGE: line 138:     method forEach

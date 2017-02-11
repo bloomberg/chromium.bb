@@ -157,23 +157,6 @@
 
 namespace blink {
 
-namespace {
-
-class InternalsIterationSource final
-    : public ValueIterable<int>::IterationSource {
- public:
-  bool next(ScriptState* scriptState,
-            int& value,
-            ExceptionState& exceptionState) override {
-    if (m_index >= 5)
-      return false;
-    value = m_index * m_index;
-    return true;
-  }
-};
-
-}  // namespace
-
 static WTF::Optional<DocumentMarker::MarkerType> markerTypeFrom(
     const String& markerType) {
   if (equalIgnoringCase(markerType, "Spelling"))
@@ -2989,12 +2972,6 @@ float Internals::visualViewportScrollY() {
     return 0;
 
   return frame()->view()->getScrollableArea()->getScrollOffset().height();
-}
-
-ValueIterable<int>::IterationSource* Internals::startIteration(
-    ScriptState*,
-    ExceptionState&) {
-  return new InternalsIterationSource();
 }
 
 bool Internals::isUseCounted(Document* document, uint32_t feature) {

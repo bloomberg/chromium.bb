@@ -23,6 +23,7 @@ namespace api {
 // TODO(dglazkov): Implement constructor generation
 
 // TODO(dglazkov): Implement attribute getter/setter generation
+// unsigned long length
 // DOMString readonlyStringifierAttribute
 
 // TODO(dglazkov): Implement method generation

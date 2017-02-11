@@ -9,35 +9,6 @@
 
 namespace blink {
 
-namespace {
-
-class TransformValueIterationSource final
-    : public ValueIterable<CSSTransformComponent*>::IterationSource {
- public:
-  explicit TransformValueIterationSource(CSSTransformValue* transformValue)
-      : m_transformValue(transformValue) {}
-
-  bool next(ScriptState*,
-            CSSTransformComponent*& value,
-            ExceptionState&) override {
-    if (m_index >= m_transformValue->size()) {
-      return false;
-    }
-    value = m_transformValue->componentAtIndex(m_index);
-    return true;
-  }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_transformValue);
-    ValueIterable<CSSTransformComponent*>::IterationSource::trace(visitor);
-  }
-
- private:
-  const Member<CSSTransformValue> m_transformValue;
-};
-
-}  // namespace
-
 CSSTransformValue* CSSTransformValue::fromCSSValue(const CSSValue& cssValue) {
   if (!cssValue.isValueList()) {
     // TODO(meade): Also need to check the separator here if we care.
@@ -52,11 +23,6 @@ CSSTransformValue* CSSTransformValue::fromCSSValue(const CSSValue& cssValue) {
     components.push_back(component);
   }
   return CSSTransformValue::create(components);
-}
-
-ValueIterable<CSSTransformComponent*>::IterationSource*
-CSSTransformValue::startIteration(ScriptState*, ExceptionState&) {
-  return new TransformValueIterationSource(this);
 }
 
 bool CSSTransformValue::is2D() const {

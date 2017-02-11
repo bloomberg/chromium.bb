@@ -681,6 +681,7 @@ interface CSSTransformComponent
     method is2D
 interface CSSTransformValue : CSSStyleValue
     attribute @@toStringTag
+    getter length
     method @@iterator
     method constructor
     method entries
@@ -700,6 +701,7 @@ interface CSSURLImageValue : CSSImageValue
     method constructor
 interface CSSUnparsedValue : CSSStyleValue
     attribute @@toStringTag
+    getter length
     method @@iterator
     method constructor
     method entries

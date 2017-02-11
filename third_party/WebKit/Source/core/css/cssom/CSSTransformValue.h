@@ -5,7 +5,6 @@
 #ifndef CSSTransformValue_h
 #define CSSTransformValue_h
 
-#include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -14,9 +13,7 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSTransformValue final
-    : public CSSStyleValue,
-      public ValueIterable<CSSTransformComponent *> {
+class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSTransformValue);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -36,11 +33,11 @@ class CORE_EXPORT CSSTransformValue final
 
   StyleValueType type() const override { return TransformType; }
 
-  CSSTransformComponent* componentAtIndex(int index) {
+  CSSTransformComponent* componentAtIndex(uint32_t index) {
     return m_transformComponents.at(index);
   }
 
-  size_t size() { return m_transformComponents.size(); }
+  size_t length() const { return m_transformComponents.size(); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_transformComponents);
@@ -54,8 +51,6 @@ class CORE_EXPORT CSSTransformValue final
       : CSSStyleValue(), m_transformComponents(transformComponents) {}
 
   HeapVector<Member<CSSTransformComponent>> m_transformComponents;
-
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
 }  // namespace blink

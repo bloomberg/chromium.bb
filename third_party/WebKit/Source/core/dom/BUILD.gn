@@ -208,7 +208,6 @@ blink_core_sources("dom") {
     "NodeIterator.h",
     "NodeIteratorBase.cpp",
     "NodeIteratorBase.h",
-    "NodeList.cpp",
     "NodeListsNodeData.cpp",
     "NodeListsNodeData.h",
     "NodeRareData.cpp",

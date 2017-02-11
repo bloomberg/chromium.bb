@@ -355,6 +355,10 @@ class IdlInterface(object):
 
         if has_integer_typed_length and has_indexed_property_getter:
             self.has_indexed_elements = True
+        else:
+            if self.iterable is not None and self.iterable.key_type is None:
+                raise ValueError('Value iterators (iterable<V>) must be accompanied by an indexed '
+                                 'property getter and an integer-typed length attribute.')
 
     def accept(self, visitor):
         visitor.visit_interface(self)

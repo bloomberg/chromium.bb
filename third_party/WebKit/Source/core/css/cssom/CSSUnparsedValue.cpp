@@ -12,31 +12,6 @@ namespace blink {
 
 namespace {
 
-class UnparsedValueIterationSource final
-    : public ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource {
- public:
-  explicit UnparsedValueIterationSource(CSSUnparsedValue* unparsedValue)
-      : m_unparsedValue(unparsedValue) {}
-
-  bool next(ScriptState*,
-            StringOrCSSVariableReferenceValue& value,
-            ExceptionState&) override {
-    if (m_index >= m_unparsedValue->size())
-      return false;
-    value = m_unparsedValue->fragmentAtIndex(m_index);
-    return true;
-  }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_unparsedValue);
-    ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource::trace(
-        visitor);
-  }
-
- private:
-  const Member<CSSUnparsedValue> m_unparsedValue;
-};
-
 StringView findVariableName(CSSParserTokenRange& range) {
   range.consumeWhitespace();
   return range.consume().value();
@@ -88,11 +63,6 @@ HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(
 }
 
 }  // namespace
-
-ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource*
-CSSUnparsedValue::startIteration(ScriptState*, ExceptionState&) {
-  return new UnparsedValueIterationSource(this);
-}
 
 CSSUnparsedValue* CSSUnparsedValue::fromCSSValue(
     const CSSVariableReferenceValue& cssVariableReferenceValue) {

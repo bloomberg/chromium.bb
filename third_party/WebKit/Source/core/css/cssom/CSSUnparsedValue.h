@@ -5,7 +5,6 @@
 #ifndef CSSUnparsedValue_h
 #define CSSUnparsedValue_h
 
-#include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/StringOrCSSVariableReferenceValue.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -13,9 +12,7 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSUnparsedValue final
-    : public CSSStyleValue,
-      public ValueIterable<StringOrCSSVariableReferenceValue> {
+class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSUnparsedValue);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -31,11 +28,11 @@ class CORE_EXPORT CSSUnparsedValue final
 
   StyleValueType type() const override { return UnparsedType; }
 
-  StringOrCSSVariableReferenceValue fragmentAtIndex(int index) const {
+  StringOrCSSVariableReferenceValue fragmentAtIndex(uint32_t index) const {
     return m_fragments.at(index);
   }
 
-  size_t size() const { return m_fragments.size(); }
+  size_t length() const { return m_fragments.size(); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_fragments);
@@ -53,8 +50,6 @@ class CORE_EXPORT CSSUnparsedValue final
     fragments.push_back(StringOrCSSVariableReferenceValue::fromString(string));
     return create(fragments);
   }
-
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
   FRIEND_TEST_ALL_PREFIXES(CSSUnparsedValueTest, ListOfStrings);
   FRIEND_TEST_ALL_PREFIXES(CSSUnparsedValueTest,

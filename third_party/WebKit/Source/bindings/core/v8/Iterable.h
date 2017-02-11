@@ -11,7 +11,9 @@
 
 namespace blink {
 
-// Typically, use one of ValueIterable<> and PairIterable<> (below) instead!
+// Typically, you should use PairIterable<> (below) instead.
+// Also, note that value iterators are set up automatically by the bindings
+// code and the operations below come directly from V8.
 template <typename KeyType, typename ValueType>
 class Iterable {
  public:
@@ -161,45 +163,6 @@ class Iterable {
 
    private:
     Member<IterationSource> m_source;
-  };
-};
-
-// Utiltity mixin base-class for classes implementing IDL interfaces with
-// "iterable<T>".
-template <typename ValueType>
-class ValueIterable : public Iterable<unsigned, ValueType> {
- public:
-  Iterator* iterator(ScriptState* scriptState, ExceptionState& exceptionState) {
-    return this->valuesForBinding(scriptState, exceptionState);
-  }
-
-  class IterationSource
-      : public Iterable<unsigned, ValueType>::IterationSource {
-   public:
-    IterationSource() : m_index(0) {}
-
-    ~IterationSource() override {}
-
-    // If end of iteration has been reached or an exception thrown: return
-    // false.
-    // Otherwise: set |value| and return true.
-    // Note: |this->m_index| is the index being accessed.
-    virtual bool next(ScriptState*, ValueType&, ExceptionState&) = 0;
-
-   protected:
-    unsigned m_index;
-
-   private:
-    bool next(ScriptState* scriptState,
-              unsigned& key,
-              ValueType& value,
-              ExceptionState& exceptionState) final {
-      if (!next(scriptState, value, exceptionState))
-        return false;
-      key = m_index;
-      ++m_index;
-      return true;
-    }
   };
 };
 
