@@ -45,9 +45,6 @@ enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
 // speakers are different in these two definitions.
 static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
   switch (config) {
-    case KSAUDIO_SPEAKER_DIRECTOUT:
-      DVLOG(2) << "KSAUDIO_SPEAKER_DIRECTOUT=>CHANNEL_LAYOUT_NONE";
-      return CHANNEL_LAYOUT_NONE;
     case KSAUDIO_SPEAKER_MONO:
       DVLOG(2) << "KSAUDIO_SPEAKER_MONO=>CHANNEL_LAYOUT_MONO";
       return CHANNEL_LAYOUT_MONO;
@@ -81,12 +78,6 @@ static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
 // TODO(henrika): add mapping for all types in the ChannelLayout enumerator.
 static ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
   switch (layout) {
-    case CHANNEL_LAYOUT_NONE:
-      DVLOG(2) << "CHANNEL_LAYOUT_NONE=>KSAUDIO_SPEAKER_UNSUPPORTED";
-      return KSAUDIO_SPEAKER_UNSUPPORTED;
-    case CHANNEL_LAYOUT_UNSUPPORTED:
-      DVLOG(2) << "CHANNEL_LAYOUT_UNSUPPORTED=>KSAUDIO_SPEAKER_UNSUPPORTED";
-      return KSAUDIO_SPEAKER_UNSUPPORTED;
     case CHANNEL_LAYOUT_MONO:
       DVLOG(2) << "CHANNEL_LAYOUT_MONO=>KSAUDIO_SPEAKER_MONO";
       return KSAUDIO_SPEAKER_MONO;
