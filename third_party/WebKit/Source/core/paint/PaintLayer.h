@@ -427,6 +427,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // filter that could have moved the children's pixels around.
   bool overlapBoundsIncludeChildren() const;
 
+  // Static position is set in parent's coordinate space.
   LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
   LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
 
