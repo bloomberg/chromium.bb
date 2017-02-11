@@ -108,9 +108,6 @@ python create_components_summary.py > components_summary.txt
 echo 'Creating GYP files for interfaces and externs...'
 ./generate_gyp.sh
 
-echo 'Vulcanizing dependent UIs...'
-python ../../../chrome/browser/resources/vulcanize.py
-
 popd > /dev/null
 
 echo 'Searching for unused elements...'

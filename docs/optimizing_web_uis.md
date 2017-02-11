@@ -10,19 +10,6 @@ use_vulcanize = true
 is_debug = false
 ```
 
-If you make local changes, you likely need to re-run:
-
-```
-$ chrome/browser/resources/vulcanize.py
-```
-
-And rebuild Chrome to see effects. vulcanize.py will result in local changes to
-*crisper* and *vulcanized* files that you must currently check in.
-
-*NOTE: Vuclanize is being integrated directly into
-[GN/Ninja](https://crbug.com/673825), so this workflow is likely to change
-soon.*
-
 ## How is the code optimized?
 
 ### Resource combination
