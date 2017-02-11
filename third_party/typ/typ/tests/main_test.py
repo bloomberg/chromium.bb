@@ -622,7 +622,7 @@ class TestCli(test_case.MainTestCase):
 
         try:
             self.check(['--test-results-server',
-                        '%s:%d' % server.server_address,
+                        'http://%s:%d' % server.server_address,
                         '--master-name', 'fake_master',
                         '--builder-name', 'fake_builder',
                         '--test-type', 'typ_tests',
@@ -636,7 +636,7 @@ class TestCli(test_case.MainTestCase):
 
         self.assertEqual(len(posts), 1)
         payload = posts[0][2].decode('utf8')
-        self.assertIn('"test_pass": {"actual": "PASS", "expected": "PASS"}',
+        self.assertIn('"test_pass": {"actual": "PASS"',
                       payload)
         self.assertTrue(payload.endswith('--\r\n'))
         self.assertNotEqual(server.log.getvalue(), '')
@@ -647,7 +647,7 @@ class TestCli(test_case.MainTestCase):
 
         try:
             self.check(['--test-results-server',
-                        '%s:%d' % server.server_address,
+                        'http://%s:%d' % server.server_address,
                         '--master-name', 'fake_master',
                         '--builder-name', 'fake_builder',
                         '--test-type', 'typ_tests',
@@ -662,7 +662,7 @@ class TestCli(test_case.MainTestCase):
             _ = server.stop()
 
     def test_test_results_server_not_running(self):
-        self.check(['--test-results-server', 'localhost:99999',
+        self.check(['--test-results-server', 'http://localhost:99999',
                     '--master-name', 'fake_master',
                     '--builder-name', 'fake_builder',
                     '--test-type', 'typ_tests',
@@ -706,6 +706,14 @@ class TestCli(test_case.MainTestCase):
         results = json.loads(files['results.json'])
         self.assertEqual(results['interrupted'], False)
         self.assertEqual(results['path_delimiter'], '.')
+
+        # The time it takes to run the test varies, so we test that
+        # we got a single entry greater than zero, but then delete it from
+        # the result so we can do an exact match on the rest of the trie.
+        result = results['tests']['pass_test']['PassingTest']['test_pass']
+        self.assertEqual(len(result['times']), 1)
+        self.assertGreater(result['times'][0], 0)
+        result.pop('times')
         self.assertEqual(results['tests'],
                          {u'pass_test': {
                              u'PassingTest': {

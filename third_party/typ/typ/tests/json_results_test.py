@@ -70,14 +70,14 @@ class TestMakeFullResults(unittest.TestCase):
         result_set = json_results.ResultSet()
         result_set.add(
             json_results.Result('foo_test.FooTest.test_fail',
-                                json_results.ResultType.Failure, 0, 0, 0,
+                                json_results.ResultType.Failure, 0, 0.1, 0,
                                 unexpected=True))
         result_set.add(json_results.Result('foo_test.FooTest.test_pass',
                                            json_results.ResultType.Pass,
-                                           0, 0, 0))
+                                           0, 0.2, 0))
         result_set.add(json_results.Result('foo_test.FooTest.test_skip',
                                            json_results.ResultType.Skip,
-                                           0, 0, 0, unexpected=False))
+                                           0, 0.3, 0, unexpected=False))
 
         full_results = json_results.make_full_results(
             ['foo=bar'], 0, test_names, result_set)
@@ -96,12 +96,18 @@ class TestMakeFullResults(unittest.TestCase):
                         'test_fail': {
                             'expected': 'PASS',
                             'actual': 'FAIL',
-                            'is_unexpected': True},
+                            'times': [0.1],
+                            'is_unexpected': True,
+                        },
                         'test_pass': {
                             'expected': 'PASS',
-                            'actual': 'PASS'},
+                            'actual': 'PASS',
+                            'times': [0.2],
+                        },
                         'test_skip': {
                             'expected': 'SKIP',
-                            'actual': 'SKIP'}}}},
+                            'actual': 'SKIP',
+                            'times': [0.3],
+                        }}}},
             'version': 3}
         self.assertEqual(full_results, expected_full_results)
