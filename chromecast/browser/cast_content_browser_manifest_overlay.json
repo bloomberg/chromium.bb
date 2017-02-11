@@ -8,18 +8,6 @@
           "chromecast::media::mojom::MediaCaps"
         ]
       }
-    },
-    // TODO(alokp): Move these to cast-service manifest when ready.
-    // crbug.com/663067
-    "navigation:frame": {
-      "provides": {
-        "renderer": [
-          "chromecast::receiver::mojom::ApplicationChannelFactory",
-          "chromecast::receiver::mojom::ApplicationMetricsRecorder",
-          "chromecast::shell::mojom::CastCrypto",
-          "chromecast::shell::mojom::Hdmi"
-        ]
-      }
     }
   }
 }
