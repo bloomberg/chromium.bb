@@ -14,12 +14,12 @@ Layout tests should be used to accomplish one of the following goals:
 
 1. The entire surface of Blink that is exposed to the Web should be covered by
    tests that we contribute to the
-   [Web Platform Tests Project](https://github.com/w3c/web-platform-tests)
-   (WPT). This helps us avoid regressions, and helps us identify Web Platform
-   areas where the major browsers don't have interoperable implementations.
-   Furthermore, by contributing to projects such as WPT, we share the burden of
-   writing tests with the other browser vendors, and we help all the browsers
-   get better. This is very much in line with our goal to move the Web forward.
+   [Web Platform Tests Project](./web_platform_tests.md) (WPT). This helps us
+   avoid regressions, and helps us identify Web Platform areas where the major
+   browsers don't have interoperable implementations. Furthermore, by
+   contributing to projects such as WPT, we share the burden of writing tests
+   with the other browser vendors, and we help all the browsers get better. This
+   is very much in line with our goal to move the Web forward.
 2. When a Blink feature cannot be tested using the tools provided by WPT, and
    cannot be easily covered by
    [C++ unit tests](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/web/tests/?q=webframetest&sq=package:chromium&type=cs),

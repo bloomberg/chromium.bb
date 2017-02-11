@@ -464,11 +464,10 @@ test is being re-baselined. If this is a special case (i.e., something we've
 decided to be different with upstream), please put a README file next to the new
 expected output explaining the difference.
 
-## W3C Tests
+## Web Platform Tests
 
-In addition to layout tests developed and run just by the Blink team, there are
-also W3C conformance tests. For more info, see
-[Importing the W3C Tests](https://www.chromium.org/blink/importing-the-w3c-tests).
+In addition to layout tests developed and run just by the Blink team, there is
+also a shared test suite, see [Web Platform Tests](./web_platform_tests.md).
 
 ## Known Issues
 
