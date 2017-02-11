@@ -369,7 +369,6 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hev1.1.6.L93.B0,opus\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.B0,opus\"'"));
 
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"flac\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"mp3\"'"));
 
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"mp4a.66\"'"));
@@ -662,50 +661,55 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
   EXPECT_EQ(kOggVideoMaybe, CanPlay("'video/ogg'"));
   EXPECT_EQ(kOggVideoProbably, CanPlay("'video/ogg; codecs=\"theora\"'"));
+  EXPECT_EQ(kOggVideoProbably, CanPlay("'video/ogg; codecs=\"theora, flac\"'"));
+  EXPECT_EQ(kOggVideoProbably, CanPlay("'video/ogg; codecs=\"theora, opus\"'"));
   EXPECT_EQ(kOggVideoProbably,
             CanPlay("'video/ogg; codecs=\"theora, vorbis\"'"));
   EXPECT_EQ(kOggVideoProbably,
-            CanPlay("'video/ogg; codecs=\"theora, opus\"'"));
-  EXPECT_EQ(kOggVideoProbably,
-            CanPlay("'video/ogg; codecs=\"opus, vorbis\"'"));
+            CanPlay("'video/ogg; codecs=\"flac, opus, vorbis\"'"));
 
   TestOGGUnacceptableCombinations("video/ogg");
 
   EXPECT_EQ(kMaybe, CanPlay("'audio/ogg'"));
-  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"flac\"'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"opus\"'"));
-  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"flac, vorbis, opus\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora, flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora, opus\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora, vorbis\"'"));
 
   TestOGGUnacceptableCombinations("audio/ogg");
 
   EXPECT_EQ(kMaybe, CanPlay("'application/ogg'"));
-  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kTheoraProbably, CanPlay("'application/ogg; codecs=\"theora\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"flac\"'"));
   EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kProbably,
+            CanPlay("'application/ogg; codecs=\"flac, opus, vorbis\"'"));
+  EXPECT_EQ(kTheoraProbably, CanPlay("'application/ogg; codecs=\"theora\"'"));
   EXPECT_EQ(kTheoraProbably,
-            CanPlay("'application/ogg; codecs=\"theora, vorbis\"'"));
+            CanPlay("'application/ogg; codecs=\"theora, flac\"'"));
   EXPECT_EQ(kTheoraProbably,
             CanPlay("'application/ogg; codecs=\"theora, opus\"'"));
-  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"opus, vorbis\"'"));
+  EXPECT_EQ(kTheoraProbably,
+            CanPlay("'application/ogg; codecs=\"theora, vorbis\"'"));
 
   TestOGGUnacceptableCombinations("application/ogg");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_flac) {
   EXPECT_EQ(kProbably, CanPlay("'audio/flac'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"flac\"'"));
 
-  // Only audio/flac is supported.
   EXPECT_EQ(kNot, CanPlay("'video/flac'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'application/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'audio/flac; codecs=\"flac\"'"));
 
-  // Currently only flac in a flac container is supported.
   EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"flac\"'"));

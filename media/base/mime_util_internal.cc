@@ -77,6 +77,7 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
 #endif
     {"vorbis", MimeUtil::VORBIS},
     {"opus", MimeUtil::OPUS},
+    {"flac", MimeUtil::FLAC},
     {"vp8", MimeUtil::VP8},
     {"vp8.0", MimeUtil::VP8},
     {"theora", MimeUtil::THEORA}};
@@ -223,6 +224,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   wav_codecs.insert(PCM);
 
   CodecSet ogg_audio_codecs;
+  ogg_audio_codecs.insert(FLAC);
   ogg_audio_codecs.insert(OPUS);
   ogg_audio_codecs.insert(VORBIS);
   CodecSet ogg_video_codecs;

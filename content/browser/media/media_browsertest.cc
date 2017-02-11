@@ -234,6 +234,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {
   PlayAudio("bear.flac", GetParam());
 }
 
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlacOgg) {
+  PlayVideo("bear-flac.ogg", GetParam());
+}
+
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());
 }
