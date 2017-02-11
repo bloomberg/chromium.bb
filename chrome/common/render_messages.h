@@ -124,12 +124,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)
 
-// Sent to allow or forbid the running of insecure mixed-content.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
-                    bool /* allowed */)
-
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_ReloadFrame)
-
 // Tells the renderer whether or not a file system access has been allowed.
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
                     int  /* request_id */,

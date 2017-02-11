@@ -14,6 +14,7 @@
           "autofill::mojom::AutofillAgent",
           "autofill::mojom::PasswordAutofillAgent",
           "autofill::mojom::PasswordGenerationAgent",
+          "chrome::mojom::InsecureContentRenderer",
           "contextual_search::mojom::OverlayPageNotifierService",
           "dom_distiller::mojom::DistillerPageNotifierService"
         ]

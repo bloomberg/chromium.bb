@@ -12,11 +12,13 @@
 #include <utility>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/common/insecure_content_renderer.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/features/features.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 #include "url/gurl.h"
 
@@ -35,7 +37,8 @@ class Extension;
 class ContentSettingsObserver
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<ContentSettingsObserver>,
-      public blink::WebContentSettingsClient {
+      public blink::WebContentSettingsClient,
+      public chrome::mojom::InsecureContentRenderer {
  public:
   // Set |should_whitelist| to true if |render_frame()| contains content that
   // should be whitelisted for content settings.
@@ -98,11 +101,15 @@ class ContentSettingsObserver
                                 bool is_same_page_navigation) override;
   void OnDestruct() override;
 
+  // chrome::mojom::InsecureContentRenderer:
+  void SetAllowRunningInsecureContent() override;
+
+  void OnInsecureContentRendererRequest(
+      chrome::mojom::InsecureContentRendererRequest request);
+
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetAsInterstitial();
-  void OnSetAllowRunningInsecureContent(bool allow);
-  void OnReloadFrame();
   void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);
 
   // Resets the |content_blocked_| array.
@@ -160,6 +167,9 @@ class ContentSettingsObserver
 
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;
+
+  mojo::BindingSet<chrome::mojom::InsecureContentRenderer>
+      insecure_content_renderer_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

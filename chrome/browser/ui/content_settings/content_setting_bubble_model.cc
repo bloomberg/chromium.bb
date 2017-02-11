@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/insecure_content_renderer.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -52,6 +53,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -1014,6 +1016,16 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
 
 // ContentSettingMixedScriptBubbleModel ----------------------------------------
 
+namespace {
+
+void SetAllowRunningInsecureContent(content::RenderFrameHost* frame) {
+  chrome::mojom::InsecureContentRendererPtr renderer;
+  frame->GetRemoteInterfaces()->GetInterface(&renderer);
+  renderer->SetAllowRunningInsecureContent();
+}
+
+}  // namespace
+
 class ContentSettingMixedScriptBubbleModel
     : public ContentSettingSimpleBubbleModel {
  public:
@@ -1048,10 +1060,7 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   if (!web_contents())
     return;
 
-  web_contents()->SendToAllFrames(
-      new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));
-  web_contents()->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
-      web_contents()->GetMainFrame()->GetRoutingID()));
+  web_contents()->ForEachFrame(base::Bind(&::SetAllowRunningInsecureContent));
 
   content_settings::RecordMixedScriptAction(
       content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
