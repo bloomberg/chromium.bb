@@ -47,6 +47,11 @@ typedef struct {
   AppMemoryList::const_iterator end;
 } MinidumpCallbackContext;
 
+// This define is new to Windows 10.
+#ifndef DBG_PRINTEXCEPTION_WIDE_C
+#define DBG_PRINTEXCEPTION_WIDE_C ((DWORD)0x4001000A)
+#endif
+
 vector<ExceptionHandler*>* ExceptionHandler::handler_stack_ = NULL;
 LONG ExceptionHandler::handler_stack_index_ = 0;
 CRITICAL_SECTION ExceptionHandler::handler_stack_critical_section_;
