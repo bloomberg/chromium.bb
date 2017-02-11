@@ -6175,6 +6175,17 @@
             "chrome_internal"
         ]
     },
+    "chromite-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [],
+        "builder_class_name": "test_builders.ChromiteTestsBuilder",
+        "description": "Run the chromite network unittests.",
+        "hw_tests_override": [],
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "vm_tests": []
+    },
     "chromiumos-sdk": {
         "active_waterfall": "chromiumos",
         "archive_build_debug": true,

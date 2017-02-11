@@ -2002,6 +2002,17 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       description='Run the signer unittests.',
   )
 
+  site_config.Add(
+      'chromite-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='test_builders.ChromiteTestsBuilder',
+      description='Run the chromite network unittests.',
+  )
+
 
 def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the Android PFQ.

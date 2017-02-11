@@ -112,3 +112,11 @@ class SignerTestsBuilder(generic_builders.Builder):
   def RunStages(self):
     """Run something after sync/reexec."""
     self._RunStage(test_stages.CrosSigningTestStage)
+
+
+class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
+  """Builder that runs chromite unit tests, including network."""
+
+  def RunTestStages(self):
+    """Run something after sync/reexec."""
+    self._RunStage(test_stages.ChromiteTestStage)

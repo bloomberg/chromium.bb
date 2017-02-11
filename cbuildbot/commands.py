@@ -455,6 +455,25 @@ def RunCrosSigningTests(buildroot, network=False):
   cros_build_lib.RunCommand(cmd, enter_chroot=True)
 
 
+def RunChromiteTests(buildroot, network=False):
+  """Run the chromite unittests.
+
+  Normal builds run these via an ebuild. This runs them directly.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    network: Do we run the network tests? (bool)
+  """
+  cmd = [os.path.join(buildroot, 'chromite', 'cbuildbot', 'run_tests')]
+  if network:
+    cmd.append('--network')
+
+  # Since Chromite tests include testing our ability to enter the chroot, they
+  # must run outside the chroot. Also note, this command will create the chroot
+  # if it doesn't already exist.
+  cros_build_lib.RunCommand(cmd)
+
+
 def UpdateBinhostJson(buildroot):
   """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
 

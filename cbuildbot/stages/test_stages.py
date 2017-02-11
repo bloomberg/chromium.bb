@@ -532,15 +532,19 @@ class BranchUtilTestStage(generic_stages.BuilderStage):
 
 
 class CrosSigningTestStage(generic_stages.BuilderStage):
-  """Stage that verifies Chrome prebuilts.
+  """Stage that runs the signer unittests.
 
-  This requires an internal source code checkouts.
+  This requires an internal source code checkout.
   """
-
-  def __init__(self, builder_run, network, **kwargs):
-    super(CrosSigningTestStage, self).__init__(builder_run, **kwargs)
-    self.network = network
 
   def PerformStage(self):
     """Run the cros-signing unittests."""
-    commands.RunCrosSigningTests(self._build_root, self.network)
+    commands.RunCrosSigningTests(self._build_root)
+
+
+class ChromiteStage(generic_stages.BuilderStage):
+  """Stage that runs Chromite tests, including network tests."""
+
+  def PerformStage(self):
+    """Run the cros-signing unittests."""
+    commands.RunChromiteTests(self._build_root, network=True)
