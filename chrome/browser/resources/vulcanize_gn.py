@@ -42,8 +42,6 @@ _POLYMER_PATH = os.path.join(
 
 
 _VULCANIZE_BASE_ARGS = [
-  '--exclude', 'crisper.js',
-
   # These files are already combined and minified.
   '--exclude', 'chrome://resources/html/polymer.html',
   '--exclude', 'web-animations-next-lite.min.js',
@@ -73,9 +71,6 @@ _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
     lambda m: ['--redirect', '"%s|%s"' % (m[0], m[1])], _URL_MAPPINGS)))
 
 
-_REQUEST_LIST_FILE = 'request_list.txt'
-
-
 _PAK_UNPACK_FOLDER = 'flattened'
 
 
@@ -99,6 +94,8 @@ def _undo_mapping(mappings, url):
   # TODO(dbeam): can we make this stricter?
   return url
 
+def _request_list_path(out_path, html_out_file):
+  return os.path.join(out_path, html_out_file + '_requestlist.txt')
 
 # Get a list of all files that were bundled with Vulcanize and update the
 # depfile accordingly such that Ninja knows when to trigger re-vulcanization.
@@ -107,7 +104,7 @@ def _update_dep_file(in_folder, args):
   out_path = os.path.join(_CWD, args.out_folder)
 
   # Prior call to vulcanize already generated the deps list, grab it from there.
-  request_list_path = os.path.join(out_path, _REQUEST_LIST_FILE)
+  request_list_path = _request_list_path(out_path, args.html_out_file)
   request_list = open(request_list_path, 'r').read().splitlines()
 
   if platform.system() == 'Windows':
@@ -152,10 +149,15 @@ def _vulcanize(in_folder, args):
   html_out_path = os.path.join(out_path, args.html_out_file)
   js_out_path = os.path.join(out_path, args.js_out_file)
 
+  exclude_args = []
+  for f in args.exclude or []:
+    exclude_args.append('--exclude')
+    exclude_args.append(f)
+
   output = _run_node(
       [node_modules.PathToVulcanize()] +
-      _VULCANIZE_BASE_ARGS + _VULCANIZE_REDIRECT_ARGS +
-      ['--out-request-list', os.path.join(out_path, _REQUEST_LIST_FILE),
+      _VULCANIZE_BASE_ARGS + _VULCANIZE_REDIRECT_ARGS + exclude_args +
+      ['--out-request-list', _request_list_path(out_path, args.html_out_file),
        '--redirect', '"/|%s"' % in_path,
        '--redirect', '"chrome://%s/|%s"' % (args.host, in_path),
        # TODO(dpapad): Figure out why vulcanize treats the input path
@@ -183,8 +185,6 @@ def _vulcanize(in_folder, args):
              '--html', html_out_path,
              '--js', js_out_path])
 
-    # TODO(tsergeant): Remove when JS resources are minified by default:
-    # crbug.com/619091.
     _run_node([node_modules.PathToUglifyJs(), js_out_path,
               '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
               '--output', js_out_path])
@@ -202,6 +202,7 @@ def _css_build(out_folder, files):
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--depfile', required=True)
+  parser.add_argument('--exclude', nargs='*')
   parser.add_argument('--host', required=True)
   parser.add_argument('--html_in_file', required=True)
   parser.add_argument('--html_out_file', required=True)
@@ -224,7 +225,6 @@ def main(argv):
   # vulcanize.
   if args.input.endswith('.pak'):
     import unpack_pak
-    input_folder = os.path.join(_CWD, args.input)
     output_folder = os.path.join(args.out_folder, _PAK_UNPACK_FOLDER)
     unpack_pak.unpack(args.input, output_folder)
     vulcanize_input_folder = output_folder
