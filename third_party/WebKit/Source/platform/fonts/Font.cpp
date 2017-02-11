@@ -125,7 +125,7 @@ bool Font::drawText(PaintCanvas* canvas,
                     const TextRunPaintInfo& runInfo,
                     const FloatPoint& point,
                     float deviceScaleFactor,
-                    const PaintFlags& paint) const {
+                    const PaintFlags& flags) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading.
   if (shouldSkipDrawing())
@@ -134,14 +134,14 @@ bool Font::drawText(PaintCanvas* canvas,
   if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
     // we have a pre-cached blob -- happy joy!
     canvas->drawTextBlob(runInfo.cachedTextBlob->get(), point.x(), point.y(),
-                         paint);
+                         flags);
     return true;
   }
 
   GlyphBuffer glyphBuffer;
   buildGlyphBuffer(runInfo, glyphBuffer);
 
-  drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point,
+  drawGlyphBuffer(canvas, flags, runInfo, glyphBuffer, point,
                   deviceScaleFactor);
   return true;
 }
@@ -151,7 +151,7 @@ bool Font::drawBidiText(PaintCanvas* canvas,
                         const FloatPoint& point,
                         CustomFontNotReadyAction customFontNotReadyAction,
                         float deviceScaleFactor,
-                        const PaintFlags& paint) const {
+                        const PaintFlags& flags) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading, except if the 'force' argument is set to true (in which case it
   // will use a fallback font).
@@ -190,7 +190,7 @@ bool Font::drawBidiText(PaintCanvas* canvas,
     //       all subruns could be part of the same blob).
     GlyphBuffer glyphBuffer;
     float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
-    drawGlyphBuffer(canvas, paint, subrunInfo, glyphBuffer, currPoint,
+    drawGlyphBuffer(canvas, flags, subrunInfo, glyphBuffer, currPoint,
                     deviceScaleFactor);
 
     bidiRun = bidiRun->next();
@@ -206,7 +206,7 @@ void Font::drawEmphasisMarks(PaintCanvas* canvas,
                              const AtomicString& mark,
                              const FloatPoint& point,
                              float deviceScaleFactor,
-                             const PaintFlags& paint) const {
+                             const PaintFlags& flags) const {
   if (shouldSkipDrawing())
     return;
 
@@ -226,7 +226,7 @@ void Font::drawEmphasisMarks(PaintCanvas* canvas,
   if (glyphBuffer.isEmpty())
     return;
 
-  drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point,
+  drawGlyphBuffer(canvas, flags, runInfo, glyphBuffer, point,
                   deviceScaleFactor);
 }
 
@@ -316,13 +316,13 @@ class GlyphBufferBloberizer {
   void appendRun(unsigned start,
                  unsigned count,
                  const SimpleFontData* fontData) {
-    PaintFlags paint;
-    fontData->platformData().setupPaint(&paint, m_deviceScaleFactor, m_font);
-    paint.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
+    PaintFlags flags;
+    fontData->platformData().setupPaint(&flags, m_deviceScaleFactor, m_font);
+    flags.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
 
     const SkTextBlobBuilder::RunBuffer& buffer =
-        m_hasVerticalOffsets ? m_builder.allocRunPos(paint, count)
-                             : m_builder.allocRunPosH(paint, count, 0);
+        m_hasVerticalOffsets ? m_builder.allocRunPos(flags, count)
+                             : m_builder.allocRunPosH(flags, count, 0);
 
     const uint16_t* glyphs = m_buffer.glyphs(start);
     const float* offsets = m_buffer.offsets(start);
@@ -362,7 +362,7 @@ class GlyphBufferBloberizer {
 }  // anonymous namespace
 
 void Font::drawGlyphBuffer(PaintCanvas* canvas,
-                           const PaintFlags& paint,
+                           const PaintFlags& flags,
                            const TextRunPaintInfo& runInfo,
                            const GlyphBuffer& glyphBuffer,
                            const FloatPoint& point,
@@ -383,7 +383,7 @@ void Font::drawGlyphBuffer(PaintCanvas* canvas,
       canvas->concat(m);
     }
 
-    canvas->drawTextBlob(blob.first, point.x(), point.y(), paint);
+    canvas->drawTextBlob(blob.first, point.x(), point.y(), flags);
   }
 
   // Cache results when
@@ -400,7 +400,7 @@ void Font::drawGlyphBuffer(PaintCanvas* canvas,
 
 static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
                                        const Font* font,
-                                       const PaintFlags& paint,
+                                       const PaintFlags& flags,
                                        float deviceScaleFactor,
                                        const std::tuple<float, float>& bounds,
                                        SkScalar* interceptsBuffer) {
@@ -423,7 +423,7 @@ static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
     SkScalar* offsetInterceptsBuffer = nullptr;
     if (interceptsBuffer)
       offsetInterceptsBuffer = &interceptsBuffer[numIntervals];
-    numIntervals += paint.getTextBlobIntercepts(blob.first.get(), boundsArray,
+    numIntervals += flags.getTextBlobIntercepts(blob.first.get(), boundsArray,
                                                 offsetInterceptsBuffer);
   }
   return numIntervals;
@@ -431,7 +431,7 @@ static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
 
 void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
                              float deviceScaleFactor,
-                             const PaintFlags& paint,
+                             const PaintFlags& flags,
                              const std::tuple<float, float>& bounds,
                              Vector<TextIntercept>& intercepts) const {
   if (shouldSkipDrawing())
@@ -450,13 +450,13 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
   // specifying nullptr for the buffer, following the Skia allocation model for
   // retrieving text intercepts.
   int numIntervals = getInterceptsFromBloberizer(
-      glyphBuffer, this, paint, deviceScaleFactor, bounds, nullptr);
+      glyphBuffer, this, flags, deviceScaleFactor, bounds, nullptr);
   if (!numIntervals)
     return;
   DCHECK_EQ(numIntervals % 2, 0);
   intercepts.resize(numIntervals / 2);
 
-  getInterceptsFromBloberizer(glyphBuffer, this, paint, deviceScaleFactor,
+  getInterceptsFromBloberizer(glyphBuffer, this, flags, deviceScaleFactor,
                               bounds,
                               reinterpret_cast<SkScalar*>(intercepts.data()));
 }

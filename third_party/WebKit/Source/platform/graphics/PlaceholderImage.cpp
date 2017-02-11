@@ -9,7 +9,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -34,7 +34,7 @@ sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame(
 
   const FloatRect destRect(0.0f, 0.0f, static_cast<float>(m_size.width()),
                            static_cast<float>(m_size.height()));
-  SkPictureBuilder builder(destRect);
+  PaintRecordBuilder builder(destRect);
   GraphicsContext& context = builder.context();
   context.beginRecording(destRect);
 
@@ -49,7 +49,7 @@ sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame(
 }
 
 void PlaceholderImage::draw(PaintCanvas* canvas,
-                            const PaintFlags& basePaint,
+                            const PaintFlags& baseFlags,
                             const FloatRect& destRect,
                             const FloatRect& srcRect,
                             RespectImageOrientationEnum,
@@ -63,10 +63,10 @@ void PlaceholderImage::draw(PaintCanvas* canvas,
     return;
   }
 
-  PaintFlags paint(basePaint);
-  paint.setStyle(PaintFlags::kFill_Style);
-  paint.setColor(kFillColor);
-  canvas->drawRect(destRect, paint);
+  PaintFlags flags(baseFlags);
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(kFillColor);
+  canvas->drawRect(destRect, flags);
 }
 
 void PlaceholderImage::destroyDecodedData() {

@@ -30,6 +30,8 @@
 
 #include "core/frame/LocalFrame.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "core/InstrumentingAgents.h"
 #include "core/dom/ChildFrameDisconnector.h"
@@ -85,7 +87,7 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -99,7 +101,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -124,7 +125,7 @@ class DragImageBuilder {
     float pageScaleFactor = m_localFrame->host()->visualViewport().scale();
     m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
     m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
-    m_pictureBuilder = WTF::wrapUnique(new SkPictureBuilder(
+    m_builder = WTF::wrapUnique(new PaintRecordBuilder(
         SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
 
     AffineTransform transform;
@@ -132,20 +133,19 @@ class DragImageBuilder {
                     deviceScaleFactor * pageScaleFactor);
     transform.translate(-m_bounds.x(), -m_bounds.y());
     context().getPaintController().createAndAppend<BeginTransformDisplayItem>(
-        *m_pictureBuilder, transform);
+        *m_builder, transform);
   }
 
-  GraphicsContext& context() { return m_pictureBuilder->context(); }
+  GraphicsContext& context() { return m_builder->context(); }
 
   std::unique_ptr<DragImage> createImage(
       float opacity,
       RespectImageOrientationEnum imageOrientation =
           DoNotRespectImageOrientation) {
-    context().getPaintController().endItem<EndTransformDisplayItem>(
-        *m_pictureBuilder);
+    context().getPaintController().endItem<EndTransformDisplayItem>(*m_builder);
     // TODO(fmalita): endRecording() should return a non-const SKP.
     sk_sp<PaintRecord> recording(
-        const_cast<PaintRecord*>(m_pictureBuilder->endRecording().release()));
+        const_cast<PaintRecord*>(m_builder->endRecording().release()));
 
     // Rasterize upfront, since DragImage::create() is going to do it anyway
     // (SkImage::asLegacyBitmap).
@@ -170,7 +170,7 @@ class DragImageBuilder {
  private:
   const Member<const LocalFrame> m_localFrame;
   FloatRect m_bounds;
-  std::unique_ptr<SkPictureBuilder> m_pictureBuilder;
+  std::unique_ptr<PaintRecordBuilder> m_builder;
 };
 
 class DraggedNodeImageBuilder {

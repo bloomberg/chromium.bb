@@ -14,10 +14,10 @@ namespace blink {
 SimDisplayItemList::SimDisplayItemList() {}
 
 void SimDisplayItemList::appendDrawingItem(const WebRect&,
-                                           sk_sp<const PaintRecord> picture) {
-  SkIRect bounds = picture->cullRect().roundOut();
+                                           sk_sp<const PaintRecord> record) {
+  SkIRect bounds = record->cullRect().roundOut();
   SimCanvas canvas(bounds.width(), bounds.height());
-  picture->playback(&canvas);
+  record->playback(&canvas);
   m_commands.append(canvas.commands().data(), canvas.commands().size());
 }
 

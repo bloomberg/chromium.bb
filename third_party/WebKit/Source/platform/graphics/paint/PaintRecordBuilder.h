@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SkPictureBuilder_h
-#define SkPictureBuilder_h
+#ifndef PaintRecordBuilder_h
+#define PaintRecordBuilder_h
+
+#include <memory>
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
@@ -11,7 +13,6 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 class SkMetaData;
 
@@ -23,8 +24,8 @@ class PaintController;
 // TODO(enne): rename this class to not be named SkPicture
 // When slimming paint ships we can remove this PaintRecord abstraction and
 // rely on PaintController here.
-class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
-  WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
+class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
+  WTF_MAKE_NONCOPYABLE(PaintRecordBuilder);
 
  public:
   // Constructs a new builder with the given bounds for the resulting recorded
@@ -36,11 +37,11 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   // painting the picture (and hence we can use its cache). Otherwise, a new
   // PaintController is used for the duration of the picture building, which
   // therefore has no caching.
-  SkPictureBuilder(const FloatRect& bounds,
-                   SkMetaData* = nullptr,
-                   GraphicsContext* containingContext = nullptr,
-                   PaintController* = nullptr);
-  ~SkPictureBuilder();
+  PaintRecordBuilder(const FloatRect& bounds,
+                     SkMetaData* = nullptr,
+                     GraphicsContext* containingContext = nullptr,
+                     PaintController* = nullptr);
+  ~PaintRecordBuilder();
 
   GraphicsContext& context() { return *m_context; }
 
@@ -49,7 +50,7 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   sk_sp<PaintRecord> endRecording();
 
   // DisplayItemClient methods
-  String debugName() const final { return "SkPictureBuilder"; }
+  String debugName() const final { return "PaintRecordBuilder"; }
   LayoutRect visualRect() const final { return LayoutRect(); }
 
  private:
@@ -61,4 +62,4 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
 
 }  // namespace blink
 
-#endif  // SkPictureBuilder_h
+#endif  // PaintRecordBuilder_h

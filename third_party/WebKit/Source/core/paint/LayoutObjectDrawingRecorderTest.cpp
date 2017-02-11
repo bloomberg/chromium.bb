@@ -57,7 +57,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing) {
                                         PaintPhaseForeground)));
   EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(
                    rootPaintController().getDisplayItemList()[0])
-                   .picture());
+                   .GetPaintRecord());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect) {
@@ -117,7 +117,7 @@ FloatRect drawAndGetCullRect(PaintController& controller,
   controller.commitNewDisplayItems();
   const auto& drawing = static_cast<const DrawingDisplayItem&>(
       controller.getDisplayItemList()[0]);
-  return drawing.picture()->cullRect();
+  return drawing.GetPaintRecord()->cullRect();
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip) {

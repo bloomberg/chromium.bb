@@ -52,7 +52,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   }
 
   bool asPath(const AffineTransform&, const FloatRect& referenceBox, Path&);
-  sk_sp<const PaintRecord> createContentPicture();
+  sk_sp<const PaintRecord> createPaintRecord();
 
   bool hasCycle() { return m_inClipExpansion; }
   void beginClipExpansion() {
@@ -73,8 +73,9 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   // Cache of the clip path when using path clipping.
   Path m_clipContentPath;
 
-  // Cache of the clip path picture when falling back to masking for clipping.
-  sk_sp<const PaintRecord> m_clipContentPicture;
+  // Cache of the clip path paint record when falling back to masking for
+  // clipping.
+  sk_sp<const PaintRecord> m_cachedPaintRecord;
 
   FloatRect m_localClipBounds;
 

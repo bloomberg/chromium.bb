@@ -299,11 +299,11 @@ void GraphicsLayer::paint(const IntRect* interestRect,
     getPaintController().commitNewDisplayItems(
         offsetFromLayoutObjectWithSubpixelAccumulation());
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-      sk_sp<PaintRecord> newPicture = capturePicture();
-      checkPaintUnderInvalidations(*newPicture);
+      sk_sp<PaintRecord> record = captureRecord();
+      checkPaintUnderInvalidations(*record);
       RasterInvalidationTracking& tracking =
           rasterInvalidationTrackingMap().add(this);
-      tracking.lastPaintedPicture = std::move(newPicture);
+      tracking.lastPaintedRecord = std::move(record);
       tracking.lastInterestRect = m_previousInterestRect;
       tracking.rasterInvalidationRegionSinceLastPaint = Region();
     }
@@ -1202,7 +1202,7 @@ void GraphicsLayer::setCompositorMutableProperties(uint32_t properties) {
     layer->setCompositorMutableProperties(properties);
 }
 
-sk_sp<PaintRecord> GraphicsLayer::capturePicture() {
+sk_sp<PaintRecord> GraphicsLayer::captureRecord() {
   if (!drawsContent())
     return nullptr;
 
@@ -1230,8 +1230,7 @@ static bool pixelsDiffer(SkColor p1, SkColor p2) {
          pixelComponentsDiffer(SkColorGetB(p1), SkColorGetB(p2));
 }
 
-void GraphicsLayer::checkPaintUnderInvalidations(
-    const PaintRecord& newPicture) {
+void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
   if (!drawsContent())
     return;
 
@@ -1240,7 +1239,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(
   if (!tracking)
     return;
 
-  if (!tracking->lastPaintedPicture)
+  if (!tracking->lastPaintedRecord)
     return;
 
   IntRect rect = intersection(tracking->lastInterestRect, interestRect());
@@ -1255,7 +1254,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(
     PaintCanvasPassThrough canvas(&bitmapCanvas);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
-    canvas.drawPicture(tracking->lastPaintedPicture.get());
+    canvas.drawPicture(tracking->lastPaintedRecord.get());
   }
 
   SkBitmap newBitmap;
@@ -1266,7 +1265,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(
     PaintCanvasPassThrough canvas(&bitmapCanvas);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
-    canvas.drawPicture(&newPicture);
+    canvas.drawPicture(&newRecord);
   }
 
   oldBitmap.lockPixels();
@@ -1310,9 +1309,9 @@ void GraphicsLayer::checkPaintUnderInvalidations(
   PaintRecorder recorder;
   recorder.beginRecording(rect);
   recorder.getRecordingCanvas()->drawBitmap(newBitmap, rect.x(), rect.y());
-  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   getPaintController().appendDebugDrawingAfterCommit(
-      *this, picture, offsetFromLayoutObjectWithSubpixelAccumulation());
+      *this, record, offsetFromLayoutObjectWithSubpixelAccumulation());
 }
 
 }  // namespace blink

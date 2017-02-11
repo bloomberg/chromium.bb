@@ -54,7 +54,7 @@ class CanvasStyle final : public GarbageCollected<CanvasStyle> {
   CanvasGradient* getCanvasGradient() const { return m_gradient.get(); }
   CanvasPattern* getCanvasPattern() const { return m_pattern; }
 
-  void applyToPaint(PaintFlags&) const;
+  void applyToFlags(PaintFlags&) const;
   RGBA32 paintColor() const;
 
   bool isEquivalentRGBA(RGBA32 rgba) const {

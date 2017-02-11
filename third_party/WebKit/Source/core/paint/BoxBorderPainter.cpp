@@ -309,11 +309,11 @@ void drawBleedAdjustedDRRect(GraphicsContext& context,
       path.addRRect(inner);
       path.setFillType(SkPath::kInverseWinding_FillType);
 
-      PaintFlags paint;
-      paint.setColor(color.rgb());
-      paint.setStyle(PaintFlags::kFill_Style);
-      paint.setAntiAlias(true);
-      context.drawPath(path, paint);
+      PaintFlags flags;
+      flags.setColor(color.rgb());
+      flags.setStyle(PaintFlags::kFill_Style);
+      flags.setAntiAlias(true);
+      context.drawPath(path, flags);
 
       break;
     }

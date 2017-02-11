@@ -19,7 +19,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -75,13 +75,13 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
       for (int i = 0; i < 3; i++) {
         switch (svgStyle.paintOrderType(i)) {
           case PT_FILL: {
-            PaintFlags fillPaint;
+            PaintFlags fillFlags;
             if (!SVGPaintContext::paintForLayoutObject(
                     paintContext.paintInfo(), m_layoutSVGShape.styleRef(),
-                    m_layoutSVGShape, ApplyToFillMode, fillPaint))
+                    m_layoutSVGShape, ApplyToFillMode, fillFlags))
               break;
-            fillPaint.setAntiAlias(shouldAntiAlias);
-            fillShape(paintContext.paintInfo().context, fillPaint,
+            fillFlags.setAntiAlias(shouldAntiAlias);
+            fillShape(paintContext.paintInfo().context, fillFlags,
                       fillRuleFromStyle(paintContext.paintInfo(), svgStyle));
             break;
           }
@@ -104,21 +104,21 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
                 additionalPaintServerTransform = &nonScalingTransform;
               }
 
-              PaintFlags strokePaint;
+              PaintFlags strokeFlags;
               if (!SVGPaintContext::paintForLayoutObject(
                       paintContext.paintInfo(), m_layoutSVGShape.styleRef(),
-                      m_layoutSVGShape, ApplyToStrokeMode, strokePaint,
+                      m_layoutSVGShape, ApplyToStrokeMode, strokeFlags,
                       additionalPaintServerTransform))
                 break;
-              strokePaint.setAntiAlias(shouldAntiAlias);
+              strokeFlags.setAntiAlias(shouldAntiAlias);
 
               StrokeData strokeData;
               SVGLayoutSupport::applyStrokeStyleToStrokeData(
                   strokeData, m_layoutSVGShape.styleRef(), m_layoutSVGShape,
                   m_layoutSVGShape.dashScaleFactor());
-              strokeData.setupPaint(&strokePaint);
+              strokeData.setupPaint(&strokeFlags);
 
-              strokeShape(paintContext.paintInfo().context, strokePaint);
+              strokeShape(paintContext.paintInfo().context, strokeFlags);
             }
             break;
           case PT_MARKERS:
@@ -157,34 +157,34 @@ class PathWithTemporaryWindingRule {
 };
 
 void SVGShapePainter::fillShape(GraphicsContext& context,
-                                const PaintFlags& paint,
+                                const PaintFlags& flags,
                                 SkPath::FillType fillType) {
   switch (m_layoutSVGShape.geometryCodePath()) {
     case RectGeometryFastPath:
-      context.drawRect(m_layoutSVGShape.objectBoundingBox(), paint);
+      context.drawRect(m_layoutSVGShape.objectBoundingBox(), flags);
       break;
     case EllipseGeometryFastPath:
-      context.drawOval(m_layoutSVGShape.objectBoundingBox(), paint);
+      context.drawOval(m_layoutSVGShape.objectBoundingBox(), flags);
       break;
     default: {
       PathWithTemporaryWindingRule pathWithWinding(m_layoutSVGShape.path(),
                                                    fillType);
-      context.drawPath(pathWithWinding.getSkPath(), paint);
+      context.drawPath(pathWithWinding.getSkPath(), flags);
     }
   }
 }
 
 void SVGShapePainter::strokeShape(GraphicsContext& context,
-                                  const PaintFlags& paint) {
+                                  const PaintFlags& flags) {
   if (!m_layoutSVGShape.style()->svgStyle().hasVisibleStroke())
     return;
 
   switch (m_layoutSVGShape.geometryCodePath()) {
     case RectGeometryFastPath:
-      context.drawRect(m_layoutSVGShape.objectBoundingBox(), paint);
+      context.drawRect(m_layoutSVGShape.objectBoundingBox(), flags);
       break;
     case EllipseGeometryFastPath:
-      context.drawOval(m_layoutSVGShape.objectBoundingBox(), paint);
+      context.drawOval(m_layoutSVGShape.objectBoundingBox(), flags);
       break;
     default:
       DCHECK(m_layoutSVGShape.hasPath());
@@ -192,7 +192,7 @@ void SVGShapePainter::strokeShape(GraphicsContext& context,
       if (m_layoutSVGShape.hasNonScalingStroke())
         usePath = m_layoutSVGShape.nonScalingStrokePath(
             usePath, m_layoutSVGShape.nonScalingStrokeTransform());
-      context.drawPath(usePath->getSkPath(), paint);
+      context.drawPath(usePath->getSkPath(), flags);
   }
 }
 
@@ -219,8 +219,8 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo,
   for (const MarkerPosition& markerPosition : *markerPositions) {
     if (const LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType(
             markerPosition.type, markerStart, markerMid, markerEnd)) {
-      SkPictureBuilder pictureBuilder(boundingBox, nullptr, &paintInfo.context);
-      PaintInfo markerPaintInfo(pictureBuilder.context(), paintInfo);
+      PaintRecordBuilder builder(boundingBox, nullptr, &paintInfo.context);
+      PaintInfo markerPaintInfo(builder.context(), paintInfo);
 
       // It's expensive to track the transformed paint cull rect for each
       // marker so just disable culling. The shape paint call will already
@@ -228,7 +228,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo,
       markerPaintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
 
       paintMarker(markerPaintInfo, *marker, markerPosition, strokeWidth);
-      pictureBuilder.endRecording()->playback(paintInfo.context.canvas());
+      builder.endRecording()->playback(paintInfo.context.canvas());
     }
   }
 }

@@ -57,7 +57,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(
     const FloatRect& targetBoundingBox,
     const FloatRect& targetVisualRect) {
   AffineTransform contentTransformation;
-  sk_sp<const PaintRecord> maskContentPicture = m_mask.createContentPicture(
+  sk_sp<const PaintRecord> record = m_mask.createPaintRecord(
       contentTransformation, targetBoundingBox, context);
 
   if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
@@ -68,7 +68,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(
       context, layoutObject, DisplayItem::kSVGMask, targetVisualRect);
   context.save();
   context.concatCTM(contentTransformation);
-  context.drawPicture(maskContentPicture.get());
+  context.drawRecord(record.get());
   context.restore();
 }
 

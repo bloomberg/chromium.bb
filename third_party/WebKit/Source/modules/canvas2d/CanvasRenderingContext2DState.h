@@ -121,28 +121,28 @@ class CanvasRenderingContext2DState final
   TextBaseline getTextBaseline() const { return m_textBaseline; }
 
   void setLineWidth(double lineWidth) {
-    m_strokePaint.setStrokeWidth(lineWidth);
+    m_strokeFlags.setStrokeWidth(lineWidth);
   }
-  double lineWidth() const { return m_strokePaint.getStrokeWidth(); }
+  double lineWidth() const { return m_strokeFlags.getStrokeWidth(); }
 
   void setLineCap(LineCap lineCap) {
-    m_strokePaint.setStrokeCap(static_cast<PaintFlags::Cap>(lineCap));
+    m_strokeFlags.setStrokeCap(static_cast<PaintFlags::Cap>(lineCap));
   }
   LineCap getLineCap() const {
-    return static_cast<LineCap>(m_strokePaint.getStrokeCap());
+    return static_cast<LineCap>(m_strokeFlags.getStrokeCap());
   }
 
   void setLineJoin(LineJoin lineJoin) {
-    m_strokePaint.setStrokeJoin(static_cast<PaintFlags::Join>(lineJoin));
+    m_strokeFlags.setStrokeJoin(static_cast<PaintFlags::Join>(lineJoin));
   }
   LineJoin getLineJoin() const {
-    return static_cast<LineJoin>(m_strokePaint.getStrokeJoin());
+    return static_cast<LineJoin>(m_strokeFlags.getStrokeJoin());
   }
 
   void setMiterLimit(double miterLimit) {
-    m_strokePaint.setStrokeMiter(miterLimit);
+    m_strokeFlags.setStrokeMiter(miterLimit);
   }
-  double miterLimit() const { return m_strokePaint.getStrokeMiter(); }
+  double miterLimit() const { return m_strokeFlags.getStrokeMiter(); }
 
   void setShadowOffsetX(double);
   void setShadowOffsetY(double);
@@ -181,7 +181,7 @@ class CanvasRenderingContext2DState final
 
   // If paint will not be used for painting a bitmap, set bitmapOpacity to
   // Opaque.
-  const PaintFlags* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
+  const PaintFlags* getFlags(PaintType, ShadowMode, ImageType = NoImage) const;
 
  private:
   CanvasRenderingContext2DState();
@@ -207,9 +207,9 @@ class CanvasRenderingContext2DState final
   Member<CanvasStyle> m_strokeStyle;
   Member<CanvasStyle> m_fillStyle;
 
-  mutable PaintFlags m_strokePaint;
-  mutable PaintFlags m_fillPaint;
-  mutable PaintFlags m_imagePaint;
+  mutable PaintFlags m_strokeFlags;
+  mutable PaintFlags m_fillFlags;
+  mutable PaintFlags m_imageFlags;
 
   FloatSize m_shadowOffset;
   double m_shadowBlur;

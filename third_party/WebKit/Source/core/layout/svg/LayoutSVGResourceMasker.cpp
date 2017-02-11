@@ -24,7 +24,7 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
@@ -36,7 +36,7 @@ LayoutSVGResourceMasker::~LayoutSVGResourceMasker() {}
 
 void LayoutSVGResourceMasker::removeAllClientsFromCache(
     bool markForInvalidation) {
-  m_maskContentPicture.reset();
+  m_cachedPaintRecord.reset();
   m_maskContentBoundaries = FloatRect();
   markAllClientsForInvalidation(markForInvalidation
                                     ? LayoutAndBoundariesInvalidation
@@ -51,7 +51,7 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client,
                                         : ParentOnlyInvalidation);
 }
 
-sk_sp<const PaintRecord> LayoutSVGResourceMasker::createContentPicture(
+sk_sp<const PaintRecord> LayoutSVGResourceMasker::createPaintRecord(
     AffineTransform& contentTransformation,
     const FloatRect& targetBoundingBox,
     GraphicsContext& context) {
@@ -66,8 +66,8 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::createContentPicture(
                                           targetBoundingBox.height());
   }
 
-  if (m_maskContentPicture)
-    return m_maskContentPicture;
+  if (m_cachedPaintRecord)
+    return m_cachedPaintRecord;
 
   SubtreeContentTransformScope contentTransformScope(contentTransformation);
 
@@ -77,24 +77,24 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::createContentPicture(
   // http://crbug.com/294900
   FloatRect bounds = strokeBoundingBox();
 
-  SkPictureBuilder pictureBuilder(bounds, nullptr, &context);
+  PaintRecordBuilder builder(bounds, nullptr, &context);
 
   ColorFilter maskContentFilter =
       style()->svgStyle().colorInterpolation() == CI_LINEARRGB
           ? ColorFilterSRGBToLinearRGB
           : ColorFilterNone;
-  pictureBuilder.context().setColorFilter(maskContentFilter);
+  builder.context().setColorFilter(maskContentFilter);
 
   for (const SVGElement& childElement :
        Traversal<SVGElement>::childrenOf(*element())) {
     const LayoutObject* layoutObject = childElement.layoutObject();
     if (!layoutObject || layoutObject->styleRef().display() == EDisplay::None)
       continue;
-    SVGPaintContext::paintSubtree(pictureBuilder.context(), layoutObject);
+    SVGPaintContext::paintSubtree(builder.context(), layoutObject);
   }
 
-  m_maskContentPicture = pictureBuilder.endRecording();
-  return m_maskContentPicture;
+  m_cachedPaintRecord = builder.endRecording();
+  return m_cachedPaintRecord;
 }
 
 void LayoutSVGResourceMasker::calculateMaskContentVisualRect() {

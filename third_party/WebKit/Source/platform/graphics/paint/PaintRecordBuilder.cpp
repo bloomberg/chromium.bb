@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -11,10 +11,10 @@
 
 namespace blink {
 
-SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
-                                   SkMetaData* metaData,
-                                   GraphicsContext* containingContext,
-                                   PaintController* paintController)
+PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
+                                       SkMetaData* metaData,
+                                       GraphicsContext* containingContext,
+                                       PaintController* paintController)
     : m_paintController(nullptr), m_bounds(bounds) {
   GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
   if (containingContext && containingContext->contextDisabled())
@@ -37,7 +37,7 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
     }
   }
 #if DCHECK_IS_ON()
-  m_paintController->setUsage(PaintController::ForSkPictureBuilder);
+  m_paintController->setUsage(PaintController::ForPaintRecordBuilder);
 #endif
 
   m_context = WTF::wrapUnique(
@@ -49,13 +49,13 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
   }
 }
 
-SkPictureBuilder::~SkPictureBuilder() {
+PaintRecordBuilder::~PaintRecordBuilder() {
 #if DCHECK_IS_ON()
   m_paintController->setUsage(PaintController::ForNormalUsage);
 #endif
 }
 
-sk_sp<PaintRecord> SkPictureBuilder::endRecording() {
+sk_sp<PaintRecord> PaintRecordBuilder::endRecording() {
   m_context->beginRecording(m_bounds);
   m_paintController->commitNewDisplayItems();
   m_paintController->paintArtifact().replay(*m_context);

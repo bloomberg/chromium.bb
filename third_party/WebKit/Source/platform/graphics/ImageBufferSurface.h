@@ -74,7 +74,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual void setFilterQuality(SkFilterQuality) {}
   virtual void setIsHidden(bool) {}
   virtual void setImageBuffer(ImageBuffer*) {}
-  virtual sk_sp<PaintRecord> getPicture();
+  virtual sk_sp<PaintRecord> getRecord();
   virtual void finalizeFrame(const FloatRect& dirtyRect) {}
   virtual void draw(GraphicsContext&,
                     const FloatRect& destRect,

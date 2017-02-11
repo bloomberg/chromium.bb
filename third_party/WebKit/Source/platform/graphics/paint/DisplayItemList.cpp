@@ -90,10 +90,11 @@ std::unique_ptr<JSONArray> DisplayItemList::subsequenceAsJSON(
                            displayItem.client().debugName().ascii().data()));
       }
 #ifndef NDEBUG
-      if ((options & ShowPictures) && displayItem.isDrawing()) {
-        if (const SkPicture* picture =
-                static_cast<const DrawingDisplayItem&>(displayItem).picture()) {
-          json->setString("picture", pictureAsDebugString(picture));
+      if ((options & ShowPaintRecords) && displayItem.isDrawing()) {
+        if (const PaintRecord* record =
+                static_cast<const DrawingDisplayItem&>(displayItem)
+                    .GetPaintRecord()) {
+          json->setString("record", recordAsDebugString(record));
         }
       }
 #endif

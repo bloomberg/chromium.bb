@@ -11,7 +11,7 @@
 namespace blink {
 
 void PaintGeneratedImage::draw(PaintCanvas* canvas,
-                               const PaintFlags& paint,
+                               const PaintFlags& flags,
                                const FloatRect& destRect,
                                const FloatRect& srcRect,
                                RespectImageOrientationEnum,
@@ -26,14 +26,14 @@ void PaintGeneratedImage::draw(PaintCanvas* canvas,
     canvas->scale(destRect.width() / srcRect.width(),
                   destRect.height() / srcRect.height());
   canvas->translate(-srcRect.x(), -srcRect.y());
-  canvas->drawPicture(m_picture.get(), nullptr, &paint);
+  canvas->drawPicture(m_record.get(), nullptr, &flags);
 }
 
 void PaintGeneratedImage::drawTile(GraphicsContext& context,
                                    const FloatRect& srcRect) {
   // TODO(ccameron): This function should not ignore |context|'s color behavior.
   // https://crbug.com/672306
-  context.drawPicture(m_picture.get());
+  context.drawRecord(m_record.get());
 }
 
 }  // namespace blink

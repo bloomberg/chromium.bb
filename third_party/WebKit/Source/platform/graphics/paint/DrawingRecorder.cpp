@@ -92,7 +92,7 @@ DrawingRecorder::~DrawingRecorder() {
 
 #if DCHECK_IS_ON()
   if (!RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() &&
-      !m_context.getPaintController().isForSkPictureBuilder() &&
+      !m_context.getPaintController().isForPaintRecordBuilder() &&
       m_displayItemClient.paintedOutputOfObjectHasNoEffectRegardlessOfSize()) {
     DCHECK_EQ(0, picture->approximateOpCount())
         << m_displayItemClient.debugName();

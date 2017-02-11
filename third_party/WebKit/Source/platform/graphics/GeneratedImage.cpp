@@ -52,21 +52,21 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   GraphicsContext context(*paintController);
   context.beginRecording(tileRect);
   drawTile(context, srcRect);
-  sk_sp<PaintRecord> tilePicture = context.endRecording();
+  sk_sp<PaintRecord> record = context.endRecording();
 
   SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
   patternMatrix.preScale(scale.width(), scale.height());
   patternMatrix.preTranslate(tileRect.x(), tileRect.y());
 
-  RefPtr<Pattern> picturePattern =
-      Pattern::createPicturePattern(std::move(tilePicture));
+  RefPtr<Pattern> pattern =
+      Pattern::createPaintRecordPattern(std::move(record));
 
-  PaintFlags fillPaint = destContext.fillPaint();
-  picturePattern->applyToPaint(fillPaint, patternMatrix);
-  fillPaint.setColor(SK_ColorBLACK);
-  fillPaint.setBlendMode(compositeOp);
+  PaintFlags fillFlags = destContext.fillFlags();
+  pattern->applyToFlags(fillFlags, patternMatrix);
+  fillFlags.setColor(SK_ColorBLACK);
+  fillFlags.setBlendMode(compositeOp);
 
-  destContext.drawRect(destRect, fillPaint);
+  destContext.drawRect(destRect, fillFlags);
 }
 
 sk_sp<SkImage> GeneratedImage::imageForCurrentFrame(

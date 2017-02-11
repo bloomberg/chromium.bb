@@ -34,7 +34,6 @@
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -62,15 +61,15 @@ class PLATFORM_EXPORT GraphicsContextState final {
 
   // PaintFlags objects that reflect the current state. If the length of the
   // path to be stroked is known, pass it in for correct dash or dot placement.
-  const PaintFlags& strokePaint(int strokedPathLength = 0) const;
-  const PaintFlags& fillPaint() const { return m_fillPaint; }
+  const PaintFlags& strokeFlags(int strokedPathLength = 0) const;
+  const PaintFlags& fillFlags() const { return m_fillFlags; }
 
   uint16_t saveCount() const { return m_saveCount; }
   void incrementSaveCount() { ++m_saveCount; }
   void decrementSaveCount() { --m_saveCount; }
 
   // Stroke data
-  Color strokeColor() const { return m_strokePaint.getColor(); }
+  Color strokeColor() const { return m_strokeFlags.getColor(); }
   void setStrokeColor(const Color&);
 
   const StrokeData& getStrokeData() const { return m_strokeData; }
@@ -82,13 +81,13 @@ class PLATFORM_EXPORT GraphicsContextState final {
   void setLineDash(const DashArray&, float);
 
   // Fill data
-  Color fillColor() const { return m_fillPaint.getColor(); }
+  Color fillColor() const { return m_fillFlags.getColor(); }
   void setFillColor(const Color&);
 
   // Shadow. (This will need tweaking if we use draw loopers for other things.)
   SkDrawLooper* drawLooper() const {
-    DCHECK_EQ(m_fillPaint.getLooper(), m_strokePaint.getLooper());
-    return m_fillPaint.getLooper();
+    DCHECK_EQ(m_fillFlags.getLooper(), m_strokeFlags.getLooper());
+    return m_fillFlags.getLooper();
   }
   void setDrawLooper(sk_sp<SkDrawLooper>);
 
@@ -99,8 +98,8 @@ class PLATFORM_EXPORT GraphicsContextState final {
   }
 
   SkColorFilter* getColorFilter() const {
-    DCHECK_EQ(m_fillPaint.getColorFilter(), m_strokePaint.getColorFilter());
-    return m_fillPaint.getColorFilter();
+    DCHECK_EQ(m_fillFlags.getColorFilter(), m_strokeFlags.getColorFilter());
+    return m_fillFlags.getColorFilter();
   }
   void setColorFilter(sk_sp<SkColorFilter>);
 
@@ -120,8 +119,8 @@ class PLATFORM_EXPORT GraphicsContextState final {
 
   // This is mutable to enable dash path effect updates when the paint is
   // fetched for use.
-  mutable PaintFlags m_strokePaint;
-  PaintFlags m_fillPaint;
+  mutable PaintFlags m_strokeFlags;
+  PaintFlags m_fillFlags;
 
   StrokeData m_strokeData;
 

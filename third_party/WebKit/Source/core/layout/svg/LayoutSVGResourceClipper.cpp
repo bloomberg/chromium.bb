@@ -29,7 +29,7 @@
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {
@@ -107,7 +107,7 @@ LayoutSVGResourceClipper::~LayoutSVGResourceClipper() {}
 void LayoutSVGResourceClipper::removeAllClientsFromCache(
     bool markForInvalidation) {
   m_clipContentPath.clear();
-  m_clipContentPicture.reset();
+  m_cachedPaintRecord.reset();
   m_localClipBounds = FloatRect();
   markAllClientsForInvalidation(markForInvalidation
                                     ? LayoutAndBoundariesInvalidation
@@ -204,10 +204,10 @@ bool LayoutSVGResourceClipper::asPath(
   return true;
 }
 
-sk_sp<const PaintRecord> LayoutSVGResourceClipper::createContentPicture() {
+sk_sp<const PaintRecord> LayoutSVGResourceClipper::createPaintRecord() {
   ASSERT(frame());
-  if (m_clipContentPicture)
-    return m_clipContentPicture;
+  if (m_cachedPaintRecord)
+    return m_cachedPaintRecord;
 
   // Using strokeBoundingBox (instead of visualRectInLocalSVGCoordinates) to
   // avoid the intersection with local clips/mask, which may yield incorrect
@@ -215,14 +215,14 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::createContentPicture() {
   // (http://crbug.com/294900).
   FloatRect bounds = strokeBoundingBox();
 
-  SkPictureBuilder pictureBuilder(bounds, nullptr, nullptr);
+  PaintRecordBuilder builder(bounds, nullptr, nullptr);
   // Switch to a paint behavior where all children of this <clipPath> will be
   // laid out using special constraints:
   // - fill-opacity/stroke-opacity/opacity set to 1
   // - masker/filter not applied when laying out the children
   // - fill is set to the initial fill paint server (solid, black)
   // - stroke is set to the initial stroke paint server (none)
-  PaintInfo info(pictureBuilder.context(), LayoutRect::infiniteIntRect(),
+  PaintInfo info(builder.context(), LayoutRect::infiniteIntRect(),
                  PaintPhaseForeground, GlobalPaintNormalPhase,
                  PaintLayerPaintingRenderingClipPathAsMask |
                      PaintLayerPaintingRenderingResourceSubtree);
@@ -237,8 +237,8 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::createContentPicture() {
     layoutObject->paint(info, IntPoint());
   }
 
-  m_clipContentPicture = pictureBuilder.endRecording();
-  return m_clipContentPicture;
+  m_cachedPaintRecord = builder.endRecording();
+  return m_cachedPaintRecord;
 }
 
 void LayoutSVGResourceClipper::calculateLocalClipBounds() {

@@ -31,9 +31,9 @@ class SVGImageTest : public ::testing::Test {
     Image* image = m_image.get();
     std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
     PaintCanvasPassThrough canvas(nullCanvas.get());
-    PaintFlags paint;
+    PaintFlags flags;
     FloatRect dummyRect(0, 0, 100, 100);
-    image->draw(&canvas, paint, dummyRect, dummyRect,
+    image->draw(&canvas, flags, dummyRect, dummyRect,
                 DoNotRespectImageOrientation,
                 Image::DoNotClampImageToSourceRect,
                 ColorBehavior::transformToGlobalTarget());

@@ -31,6 +31,7 @@
 #include "public/web/WebView.h"
 
 #include <memory>
+
 #include "bindings/core/v8/V8Document.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -63,7 +64,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -464,7 +465,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 
   PaintCanvasPassThrough canvas(&bitmapCanvas);
 
-  SkPictureBuilder pictureBuilder(FloatRect(0, 0, kWidth, kHeight));
+  PaintRecordBuilder builder(FloatRect(0, 0, kWidth, kHeight));
 
   // Paint the root of the main frame in the way that CompositedLayerMapping
   // would.
@@ -474,9 +475,9 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   PaintLayerPaintingInfo paintingInfo(rootLayer, paintRect,
                                       GlobalPaintNormalPhase, LayoutSize());
   PaintLayerPainter(*rootLayer)
-      .paintLayerContents(pictureBuilder.context(), paintingInfo,
+      .paintLayerContents(builder.context(), paintingInfo,
                           PaintLayerPaintingCompositingAllPhases);
-  pictureBuilder.endRecording()->playback(&canvas);
+  builder.endRecording()->playback(&canvas);
 
   // The result should be a blend of red and green.
   SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);

@@ -914,18 +914,18 @@ std::unique_ptr<JSONArray> LoggingCanvas::log() {
 }
 
 #ifndef NDEBUG
-String pictureAsDebugString(const SkPicture* picture) {
-  const SkIRect bounds = picture->cullRect().roundOut();
+String recordAsDebugString(const PaintRecord* record) {
+  const SkIRect bounds = record->cullRect().roundOut();
   LoggingCanvas canvas(bounds.width(), bounds.height());
-  picture->playback(&canvas);
-  std::unique_ptr<JSONObject> pictureAsJSON = JSONObject::create();
-  pictureAsJSON->setObject("cullRect", objectForSkRect(picture->cullRect()));
-  pictureAsJSON->setArray("operations", canvas.log());
-  return pictureAsJSON->toPrettyJSONString();
+  record->playback(&canvas);
+  std::unique_ptr<JSONObject> recordAsJSON = JSONObject::create();
+  recordAsJSON->setObject("cullRect", objectForSkRect(record->cullRect()));
+  recordAsJSON->setArray("operations", canvas.log());
+  return recordAsJSON->toPrettyJSONString();
 }
 
-void showSkPicture(const SkPicture* picture) {
-  WTFLogAlways("%s\n", pictureAsDebugString(picture).utf8().data());
+void showPaintRecord(const PaintRecord* record) {
+  WTFLogAlways("%s\n", recordAsDebugString(record).utf8().data());
 }
 #endif
 

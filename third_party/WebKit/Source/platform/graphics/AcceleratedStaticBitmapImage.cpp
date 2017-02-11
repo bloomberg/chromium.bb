@@ -101,7 +101,7 @@ sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame(
 }
 
 void AcceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
-                                        const PaintFlags& paint,
+                                        const PaintFlags& flags,
                                         const FloatRect& dstRect,
                                         const FloatRect& srcRect,
                                         RespectImageOrientationEnum,
@@ -114,7 +114,7 @@ void AcceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
     return;
   createImageFromMailboxIfNeeded();
   sk_sp<SkImage> image = m_textureHolder->skImage();
-  StaticBitmapImage::drawHelper(canvas, paint, dstRect, srcRect,
+  StaticBitmapImage::drawHelper(canvas, flags, dstRect, srcRect,
                                 imageClampingMode, image);
 }
 

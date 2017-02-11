@@ -116,7 +116,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
   }
 
   return PaintGeneratedImage::create(
-      renderingContext->imageBuffer()->getPicture(), specifiedSize);
+      renderingContext->imageBuffer()->getRecord(), specifiedSize);
 }
 
 void CSSPaintDefinition::maybeCreatePaintInstance() {

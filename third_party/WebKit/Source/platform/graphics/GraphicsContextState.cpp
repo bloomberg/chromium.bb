@@ -11,7 +11,7 @@ namespace blink {
 static inline SkFilterQuality filterQualityForPaint(
     InterpolationQuality quality) {
   // The filter quality "selected" here will primarily be used when painting a
-  // primitive using one of the SkPaints below. For the most part this will
+  // primitive using one of the PaintFlags below. For the most part this will
   // not affect things that are part of the Image class hierarchy (which use
   // the unmodified m_interpolationQuality.)
   return quality != InterpolationNone ? kLow_SkFilterQuality
@@ -23,20 +23,20 @@ GraphicsContextState::GraphicsContextState()
       m_interpolationQuality(InterpolationDefault),
       m_saveCount(0),
       m_shouldAntialias(true) {
-  m_strokePaint.setStyle(PaintFlags::kStroke_Style);
-  m_strokePaint.setStrokeWidth(SkFloatToScalar(m_strokeData.thickness()));
-  m_strokePaint.setStrokeCap(PaintFlags::kDefault_Cap);
-  m_strokePaint.setStrokeJoin(PaintFlags::kDefault_Join);
-  m_strokePaint.setStrokeMiter(SkFloatToScalar(m_strokeData.miterLimit()));
-  m_strokePaint.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
-  m_strokePaint.setAntiAlias(m_shouldAntialias);
-  m_fillPaint.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
-  m_fillPaint.setAntiAlias(m_shouldAntialias);
+  m_strokeFlags.setStyle(PaintFlags::kStroke_Style);
+  m_strokeFlags.setStrokeWidth(SkFloatToScalar(m_strokeData.thickness()));
+  m_strokeFlags.setStrokeCap(PaintFlags::kDefault_Cap);
+  m_strokeFlags.setStrokeJoin(PaintFlags::kDefault_Join);
+  m_strokeFlags.setStrokeMiter(SkFloatToScalar(m_strokeData.miterLimit()));
+  m_strokeFlags.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
+  m_strokeFlags.setAntiAlias(m_shouldAntialias);
+  m_fillFlags.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
+  m_fillFlags.setAntiAlias(m_shouldAntialias);
 }
 
 GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
-    : m_strokePaint(other.m_strokePaint),
-      m_fillPaint(other.m_fillPaint),
+    : m_strokeFlags(other.m_strokeFlags),
+      m_fillFlags(other.m_fillFlags),
       m_strokeData(other.m_strokeData),
       m_textDrawingMode(other.m_textDrawingMode),
       m_interpolationQuality(other.m_interpolationQuality),
@@ -48,10 +48,10 @@ void GraphicsContextState::copy(const GraphicsContextState& source) {
   new (this) GraphicsContextState(source);
 }
 
-const PaintFlags& GraphicsContextState::strokePaint(
+const PaintFlags& GraphicsContextState::strokeFlags(
     int strokedPathLength) const {
-  m_strokeData.setupPaintDashPathEffect(&m_strokePaint, strokedPathLength);
-  return m_strokePaint;
+  m_strokeData.setupPaintDashPathEffect(&m_strokeFlags, strokedPathLength);
+  return m_strokeFlags;
 }
 
 void GraphicsContextState::setStrokeStyle(StrokeStyle style) {
@@ -60,40 +60,40 @@ void GraphicsContextState::setStrokeStyle(StrokeStyle style) {
 
 void GraphicsContextState::setStrokeThickness(float thickness) {
   m_strokeData.setThickness(thickness);
-  m_strokePaint.setStrokeWidth(SkFloatToScalar(thickness));
+  m_strokeFlags.setStrokeWidth(SkFloatToScalar(thickness));
 }
 
 void GraphicsContextState::setStrokeColor(const Color& color) {
-  m_strokePaint.setColor(color.rgb());
-  m_strokePaint.setShader(0);
+  m_strokeFlags.setColor(color.rgb());
+  m_strokeFlags.setShader(0);
 }
 
 void GraphicsContextState::setLineCap(LineCap cap) {
   m_strokeData.setLineCap(cap);
-  m_strokePaint.setStrokeCap((PaintFlags::Cap)cap);
+  m_strokeFlags.setStrokeCap((PaintFlags::Cap)cap);
 }
 
 void GraphicsContextState::setLineJoin(LineJoin join) {
   m_strokeData.setLineJoin(join);
-  m_strokePaint.setStrokeJoin((PaintFlags::Join)join);
+  m_strokeFlags.setStrokeJoin((PaintFlags::Join)join);
 }
 
 void GraphicsContextState::setMiterLimit(float miterLimit) {
   m_strokeData.setMiterLimit(miterLimit);
-  m_strokePaint.setStrokeMiter(SkFloatToScalar(miterLimit));
+  m_strokeFlags.setStrokeMiter(SkFloatToScalar(miterLimit));
 }
 
 void GraphicsContextState::setFillColor(const Color& color) {
-  m_fillPaint.setColor(color.rgb());
-  m_fillPaint.setShader(0);
+  m_fillFlags.setColor(color.rgb());
+  m_fillFlags.setShader(0);
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
 void GraphicsContextState::setDrawLooper(sk_sp<SkDrawLooper> drawLooper) {
   // Grab a new ref for stroke.
-  m_strokePaint.setLooper(drawLooper);
+  m_strokeFlags.setLooper(drawLooper);
   // Pass the existing ref to fill (to minimize refcount churn).
-  m_fillPaint.setLooper(std::move(drawLooper));
+  m_fillFlags.setLooper(std::move(drawLooper));
 }
 
 void GraphicsContextState::setLineDash(const DashArray& dashes,
@@ -103,22 +103,22 @@ void GraphicsContextState::setLineDash(const DashArray& dashes,
 
 void GraphicsContextState::setColorFilter(sk_sp<SkColorFilter> colorFilter) {
   // Grab a new ref for stroke.
-  m_strokePaint.setColorFilter(colorFilter);
+  m_strokeFlags.setColorFilter(colorFilter);
   // Pass the existing ref to fill (to minimize refcount churn).
-  m_fillPaint.setColorFilter(std::move(colorFilter));
+  m_fillFlags.setColorFilter(std::move(colorFilter));
 }
 
 void GraphicsContextState::setInterpolationQuality(
     InterpolationQuality quality) {
   m_interpolationQuality = quality;
-  m_strokePaint.setFilterQuality(filterQualityForPaint(quality));
-  m_fillPaint.setFilterQuality(filterQualityForPaint(quality));
+  m_strokeFlags.setFilterQuality(filterQualityForPaint(quality));
+  m_fillFlags.setFilterQuality(filterQualityForPaint(quality));
 }
 
 void GraphicsContextState::setShouldAntialias(bool shouldAntialias) {
   m_shouldAntialias = shouldAntialias;
-  m_strokePaint.setAntiAlias(shouldAntialias);
-  m_fillPaint.setAntiAlias(shouldAntialias);
+  m_strokeFlags.setAntiAlias(shouldAntialias);
+  m_fillFlags.setAntiAlias(shouldAntialias);
 }
 
 }  // namespace blink

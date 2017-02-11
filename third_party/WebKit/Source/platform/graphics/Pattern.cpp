@@ -27,14 +27,15 @@
 
 #include "platform/graphics/Pattern.h"
 
+#include <v8.h>
+
 #include "platform/graphics/ImagePattern.h"
-#include "platform/graphics/PicturePattern.h"
+#include "platform/graphics/PaintRecordPattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -43,9 +44,9 @@ PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage,
   return ImagePattern::create(std::move(tileImage), repeatMode);
 }
 
-PassRefPtr<Pattern> Pattern::createPicturePattern(sk_sp<PaintRecord> picture,
-                                                  RepeatMode repeatMode) {
-  return PicturePattern::create(std::move(picture), repeatMode);
+PassRefPtr<Pattern> Pattern::createPaintRecordPattern(sk_sp<PaintRecord> record,
+                                                      RepeatMode repeatMode) {
+  return PaintRecordPattern::create(std::move(record), repeatMode);
 }
 
 Pattern::Pattern(RepeatMode repeatMode, int64_t externalMemoryAllocated)
@@ -57,11 +58,11 @@ Pattern::~Pattern() {
   adjustExternalMemoryAllocated(-m_externalMemoryAllocated);
 }
 
-void Pattern::applyToPaint(PaintFlags& paint, const SkMatrix& localMatrix) {
+void Pattern::applyToFlags(PaintFlags& flags, const SkMatrix& localMatrix) {
   if (!m_cachedShader || isLocalMatrixChanged(localMatrix))
     m_cachedShader = createShader(localMatrix);
 
-  paint.setShader(m_cachedShader);
+  flags.setShader(m_cachedShader);
 }
 
 bool Pattern::isLocalMatrixChanged(const SkMatrix& localMatrix) const {

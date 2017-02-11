@@ -280,11 +280,11 @@ void LinkHighlightImpl::paintContents(
   PaintCanvas* canvas =
       recorder.beginRecording(visualRect.width(), visualRect.height());
 
-  PaintFlags paint;
-  paint.setStyle(PaintFlags::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
-  canvas->drawPath(m_path.getSkPath(), paint);
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+  flags.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
+  canvas->drawPath(m_path.getSkPath(), flags);
 
   webDisplayItemList->appendDrawingItem(
       WebRect(visualRect.x(), visualRect.y(), visualRect.width(),

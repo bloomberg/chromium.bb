@@ -193,19 +193,19 @@ void HTMLVideoElement::updateDisplayState() {
 
 void HTMLVideoElement::paintCurrentFrame(PaintCanvas* canvas,
                                          const IntRect& destRect,
-                                         const PaintFlags* paint) const {
+                                         const PaintFlags* flags) const {
   if (!webMediaPlayer())
     return;
 
-  PaintFlags mediaPaint;
-  if (paint) {
-    mediaPaint = *paint;
+  PaintFlags mediaFlags;
+  if (flags) {
+    mediaFlags = *flags;
   } else {
-    mediaPaint.setAlpha(0xFF);
-    mediaPaint.setFilterQuality(kLow_SkFilterQuality);
+    mediaFlags.setAlpha(0xFF);
+    mediaFlags.setFilterQuality(kLow_SkFilterQuality);
   }
 
-  webMediaPlayer()->paint(canvas, destRect, mediaPaint);
+  webMediaPlayer()->paint(canvas, destRect, mediaFlags);
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(

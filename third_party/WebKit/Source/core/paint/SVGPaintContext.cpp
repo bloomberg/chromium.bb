@@ -234,13 +234,13 @@ bool SVGPaintContext::paintForLayoutObject(
     const ComputedStyle& style,
     const LayoutObject& layoutObject,
     LayoutSVGResourceMode resourceMode,
-    PaintFlags& paint,
+    PaintFlags& flags,
     const AffineTransform* additionalPaintServerTransform) {
   if (paintInfo.isRenderingClipPathAsMaskImage()) {
     if (resourceMode == ApplyToStrokeMode)
       return false;
-    paint.setColor(SVGComputedStyle::initialFillPaintColor().rgb());
-    paint.setShader(nullptr);
+    flags.setColor(SVGComputedStyle::initialFillPaintColor().rgb());
+    flags.setShader(nullptr);
     return true;
   }
 
@@ -253,14 +253,14 @@ bool SVGPaintContext::paintForLayoutObject(
     paintServer.prependTransform(*additionalPaintServerTransform);
 
   const SVGComputedStyle& svgStyle = style.svgStyle();
-  float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity()
-                                                     : svgStyle.strokeOpacity();
-  paintServer.applyToSkPaint(paint, paintAlpha);
+  float alpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity()
+                                                : svgStyle.strokeOpacity();
+  paintServer.applyToPaintFlags(flags, alpha);
 
   // We always set filter quality to 'low' here. This value will only have an
   // effect for patterns, which are SkPictures, so using high-order filter
   // should have little effect on the overall quality.
-  paint.setFilterQuality(kLow_SkFilterQuality);
+  flags.setFilterQuality(kLow_SkFilterQuality);
 
   // TODO(fs): The color filter can set when generating a picture for a mask -
   // due to color-interpolation. We could also just apply the
@@ -269,10 +269,10 @@ bool SVGPaintContext::paintForLayoutObject(
   // with the spec for color-interpolation. For now, just steal it from the GC
   // though.
   // Additionally, it's not really safe/guaranteed to be correct, as
-  // something down the paint pipe may want to farther tweak the color
+  // something down the flags pipe may want to farther tweak the color
   // filter, which could yield incorrect results. (Consider just using
   // saveLayer() w/ this color filter explicitly instead.)
-  paint.setColorFilter(sk_ref_sp(paintInfo.context.getColorFilter()));
+  flags.setColorFilter(sk_ref_sp(paintInfo.context.getColorFilter()));
   return true;
 }
 

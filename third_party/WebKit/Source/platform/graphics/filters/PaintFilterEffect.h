@@ -25,7 +25,7 @@ class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
  private:
   PaintFilterEffect(Filter*, const PaintFlags&);
 
-  PaintFlags m_paint;
+  PaintFlags m_flags;
 };
 
 }  // namespace blink

@@ -25,6 +25,8 @@
 
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
+#include <memory>
+
 #include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/frame/FrameHost.h"
@@ -72,12 +74,11 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -3244,14 +3245,14 @@ void CompositedLayerMapping::paintScrollableArea(
     return;
 
   FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
-  SkPictureBuilder pictureBuilder(layerBounds, nullptr, &context);
+  PaintRecordBuilder builder(layerBounds, nullptr, &context);
   PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea();
   if (graphicsLayer == layerForHorizontalScrollbar()) {
-    paintScrollbar(scrollableArea->horizontalScrollbar(),
-                   pictureBuilder.context(), interestRect);
+    paintScrollbar(scrollableArea->horizontalScrollbar(), builder.context(),
+                   interestRect);
   } else if (graphicsLayer == layerForVerticalScrollbar()) {
-    paintScrollbar(scrollableArea->verticalScrollbar(),
-                   pictureBuilder.context(), interestRect);
+    paintScrollbar(scrollableArea->verticalScrollbar(), builder.context(),
+                   interestRect);
   } else if (graphicsLayer == layerForScrollCorner()) {
     // Note that scroll corners always paint into local space, whereas
     // scrollbars paint in the space of their containing frame.
@@ -3259,10 +3260,10 @@ void CompositedLayerMapping::paintScrollableArea(
         scrollableArea->scrollCornerAndResizerRect().location();
     CullRect cullRect(enclosingIntRect(interestRect));
     ScrollableAreaPainter(*scrollableArea)
-        .paintScrollCorner(pictureBuilder.context(),
-                           -scrollCornerAndResizerLocation, cullRect);
+        .paintScrollCorner(builder.context(), -scrollCornerAndResizerLocation,
+                           cullRect);
     ScrollableAreaPainter(*scrollableArea)
-        .paintResizer(pictureBuilder.context(), -scrollCornerAndResizerLocation,
+        .paintResizer(builder.context(), -scrollCornerAndResizerLocation,
                       cullRect);
   }
   // Replay the painted scrollbar content with the GraphicsLayer backing as the
@@ -3271,7 +3272,7 @@ void CompositedLayerMapping::paintScrollableArea(
   DrawingRecorder drawingRecorder(context, *graphicsLayer,
                                   DisplayItem::kScrollbarCompositedScrollbar,
                                   layerBounds);
-  pictureBuilder.endRecording()->playback(context.canvas());
+  builder.endRecording()->playback(context.canvas());
 }
 
 bool CompositedLayerMapping::isScrollableAreaLayer(

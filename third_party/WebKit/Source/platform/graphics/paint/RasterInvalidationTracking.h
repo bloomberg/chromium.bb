@@ -45,7 +45,7 @@ struct UnderPaintInvalidation {
 struct PLATFORM_EXPORT RasterInvalidationTracking {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   Vector<RasterInvalidationInfo> trackedRasterInvalidations;
-  sk_sp<PaintRecord> lastPaintedPicture;
+  sk_sp<PaintRecord> lastPaintedRecord;
   IntRect lastInterestRect;
   Region rasterInvalidationRegionSinceLastPaint;
   Vector<UnderPaintInvalidation> underPaintInvalidations;

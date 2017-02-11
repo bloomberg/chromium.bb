@@ -175,15 +175,17 @@ class PLATFORM_EXPORT PaintController {
 
   void showDebugData() const { showDebugDataInternal(false); }
 #ifndef NDEBUG
-  void showDebugDataWithPictures() const { showDebugDataInternal(true); }
+  void showDebugDataWithRecords() const { showDebugDataInternal(true); }
 #endif
 
 #if DCHECK_IS_ON()
   void assertDisplayItemClientsAreLive();
 
-  enum Usage { ForNormalUsage, ForSkPictureBuilder };
+  enum Usage { ForNormalUsage, ForPaintRecordBuilder };
   void setUsage(Usage usage) { m_usage = usage; }
-  bool isForSkPictureBuilder() const { return m_usage == ForSkPictureBuilder; }
+  bool isForPaintRecordBuilder() const {
+    return m_usage == ForPaintRecordBuilder;
+  }
 #endif
 
   void setTracksRasterInvalidations(bool value);
@@ -234,9 +236,9 @@ class PLATFORM_EXPORT PaintController {
   void processNewItem(DisplayItem&);
   DisplayItem& moveItemFromCurrentListToNewList(size_t);
 
-  void showDebugDataInternal(bool showPictures) const;
+  void showDebugDataInternal(bool showPaintRecords) const;
   String displayItemListAsDebugString(const DisplayItemList&,
-                                      bool showPictures) const;
+                                      bool showPaintRecords) const;
 
   // Maps clients to indices of display items or chunks of each client.
   using IndicesByClientMap = HashMap<const DisplayItemClient*, Vector<size_t>>;

@@ -57,11 +57,12 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 
   static PassRefPtr<Pattern> createImagePattern(PassRefPtr<Image>,
                                                 RepeatMode = RepeatModeXY);
-  static PassRefPtr<Pattern> createPicturePattern(sk_sp<PaintRecord>,
-                                                  RepeatMode = RepeatModeXY);
+  static PassRefPtr<Pattern> createPaintRecordPattern(
+      sk_sp<PaintRecord>,
+      RepeatMode = RepeatModeXY);
   virtual ~Pattern();
 
-  void applyToPaint(PaintFlags&, const SkMatrix&);
+  void applyToFlags(PaintFlags&, const SkMatrix&);
 
   bool isRepeatX() const { return m_repeatMode & RepeatModeX; }
   bool isRepeatY() const { return m_repeatMode & RepeatModeY; }

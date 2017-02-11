@@ -181,11 +181,11 @@ class PLATFORM_EXPORT GraphicsContext {
 
   void strokeRect(const FloatRect&, float lineWidth);
 
-  void drawPicture(const PaintRecord*);
-  void compositePicture(sk_sp<PaintRecord>,
-                        const FloatRect& dest,
-                        const FloatRect& src,
-                        SkBlendMode);
+  void drawRecord(const PaintRecord*);
+  void compositeRecord(sk_sp<PaintRecord>,
+                       const FloatRect& dest,
+                       const FloatRect& src,
+                       SkBlendMode);
 
   void drawImage(Image*,
                  const FloatRect& destRect,
@@ -287,8 +287,8 @@ class PLATFORM_EXPORT GraphicsContext {
   // later time. Pass in the bounding rectangle for the content in the list.
   void beginRecording(const FloatRect&);
 
-  // Returns a picture with any recorded draw commands since the prerequisite
-  // call to beginRecording().  The picture is guaranteed to be non-null (but
+  // Returns a record with any recorded draw commands since the prerequisite
+  // call to beginRecording().  The record is guaranteed to be non-null (but
   // not necessarily non-empty), even when the context is disabled.
   sk_sp<PaintRecord> endRecording();
 
@@ -324,9 +324,9 @@ class PLATFORM_EXPORT GraphicsContext {
                        float shadowSpread,
                        Edges clippedEdges = NoEdge);
 
-  const PaintFlags& fillPaint() const { return immutableState()->fillPaint(); }
-  const PaintFlags& strokePaint() const {
-    return immutableState()->strokePaint();
+  const PaintFlags& fillFlags() const { return immutableState()->fillFlags(); }
+  const PaintFlags& strokeFlags() const {
+    return immutableState()->strokeFlags();
   }
 
   // ---------- Transformation methods -----------------
@@ -432,7 +432,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // Raw pointer to the current state.
   GraphicsContextState* m_paintState;
 
-  PaintRecorder m_pictureRecorder;
+  PaintRecorder m_paintRecorder;
 
   SkMetaData m_metaData;
 

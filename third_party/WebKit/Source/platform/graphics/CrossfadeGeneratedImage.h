@@ -69,7 +69,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
 
  private:
   void drawCrossfade(PaintCanvas*,
-                     const SkPaint&,
+                     const PaintFlags&,
                      ImageClampingMode,
                      const ColorBehavior&);
 

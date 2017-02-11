@@ -52,7 +52,7 @@ ImageBufferSurface::ImageBufferSurface(const IntSize& size,
 
 ImageBufferSurface::~ImageBufferSurface() {}
 
-sk_sp<PaintRecord> ImageBufferSurface::getPicture() {
+sk_sp<PaintRecord> ImageBufferSurface::getRecord() {
   return nullptr;
 }
 

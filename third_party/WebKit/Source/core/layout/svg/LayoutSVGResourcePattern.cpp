@@ -21,6 +21,8 @@
 
 #include "core/layout/svg/LayoutSVGResourcePattern.h"
 
+#include <memory>
+
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -31,9 +33,8 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -117,8 +118,8 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(
   }
 
   std::unique_ptr<PatternData> patternData = WTF::wrapUnique(new PatternData);
-  patternData->pattern =
-      Pattern::createPicturePattern(asPicture(tileBounds, tileTransform));
+  patternData->pattern = Pattern::createPaintRecordPattern(
+      asPaintRecord(tileBounds, tileTransform));
 
   // Compute pattern space transformation.
   patternData->transform.translate(tileBounds.x(), tileBounds.y());
@@ -187,7 +188,7 @@ LayoutSVGResourcePattern::resolveContentElement() const {
   return this;
 }
 
-sk_sp<PaintRecord> LayoutSVGResourcePattern::asPicture(
+sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
     const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const {
   ASSERT(!m_shouldCollectPatternAttributes);
@@ -198,7 +199,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPicture(
     contentTransform = tileTransform;
 
   FloatRect bounds(FloatPoint(), tileBounds.size());
-  SkPictureBuilder pictureBuilder(bounds);
+  PaintRecordBuilder builder(bounds);
 
   const LayoutSVGResourceContainer* patternLayoutObject =
       resolveContentElement();
@@ -207,14 +208,14 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPicture(
   SubtreeContentTransformScope contentTransformScope(contentTransform);
 
   {
-    TransformRecorder transformRecorder(pictureBuilder.context(),
-                                        *patternLayoutObject, tileTransform);
+    TransformRecorder transformRecorder(builder.context(), *patternLayoutObject,
+                                        tileTransform);
     for (LayoutObject* child = patternLayoutObject->firstChild(); child;
          child = child->nextSibling())
-      SVGPaintContext::paintSubtree(pictureBuilder.context(), child);
+      SVGPaintContext::paintSubtree(builder.context(), child);
   }
 
-  return pictureBuilder.endRecording();
+  return builder.endRecording();
 }
 
 }  // namespace blink

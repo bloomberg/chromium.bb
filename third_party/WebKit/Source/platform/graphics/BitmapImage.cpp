@@ -262,7 +262,7 @@ String BitmapImage::filenameExtension() const {
 
 void BitmapImage::draw(
     PaintCanvas* canvas,
-    const PaintFlags& paint,
+    const PaintFlags& flags,
     const FloatRect& dstRect,
     const FloatRect& srcRect,
     RespectImageOrientationEnum shouldRespectImageOrientation,
@@ -306,7 +306,7 @@ void BitmapImage::draw(
     }
   }
 
-  canvas->drawImageRect(image.get(), adjustedSrcRect, adjustedDstRect, &paint,
+  canvas->drawImageRect(image.get(), adjustedSrcRect, adjustedDstRect, &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 
   if (image->isLazyGenerated())

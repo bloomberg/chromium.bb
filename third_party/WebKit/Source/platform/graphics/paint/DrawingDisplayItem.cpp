@@ -15,69 +15,70 @@
 namespace blink {
 
 void DrawingDisplayItem::replay(GraphicsContext& context) const {
-  if (m_picture)
-    context.drawPicture(m_picture.get());
+  if (m_record)
+    context.drawRecord(m_record.get());
 }
 
 void DrawingDisplayItem::appendToWebDisplayItemList(
     const IntRect& visualRect,
     WebDisplayItemList* list) const {
-  if (m_picture)
-    list->appendDrawingItem(visualRect, m_picture);
+  if (m_record)
+    list->appendDrawingItem(visualRect, m_record);
 }
 
 bool DrawingDisplayItem::drawsContent() const {
-  return m_picture.get();
+  return m_record.get();
 }
 
 void DrawingDisplayItem::analyzeForGpuRasterization(
     SkPictureGpuAnalyzer& analyzer) const {
-  analyzer.analyzePicture(m_picture.get());
+  analyzer.analyzePicture(m_record.get());
 }
 
 #ifndef NDEBUG
 void DrawingDisplayItem::dumpPropertiesAsDebugString(
     StringBuilder& stringBuilder) const {
   DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  if (m_picture) {
+  if (m_record) {
     stringBuilder.append(
-        String::format(", rect: [%f,%f %fx%f]", m_picture->cullRect().x(),
-                       m_picture->cullRect().y(), m_picture->cullRect().width(),
-                       m_picture->cullRect().height()));
+        String::format(", rect: [%f,%f %fx%f]", m_record->cullRect().x(),
+                       m_record->cullRect().y(), m_record->cullRect().width(),
+                       m_record->cullRect().height()));
   }
 }
 #endif
 
-static bool picturesEqual(const PaintRecord* picture1,
-                          const PaintRecord* picture2) {
-  if (picture1->approximateOpCount() != picture2->approximateOpCount())
+static bool recordsEqual(const PaintRecord* record1,
+                         const PaintRecord* record2) {
+  if (record1->approximateOpCount() != record2->approximateOpCount())
     return false;
 
-  sk_sp<SkData> data1 = ToSkPicture(picture1)->serialize();
-  sk_sp<SkData> data2 = ToSkPicture(picture2)->serialize();
+  // TODO(enne): PaintRecord should have an operator==
+  sk_sp<SkData> data1 = ToSkPicture(record1)->serialize();
+  sk_sp<SkData> data2 = ToSkPicture(record2)->serialize();
   return data1->equals(data2.get());
 }
 
-static SkBitmap pictureToBitmap(const PaintRecord* picture) {
+static SkBitmap recordToBitmap(const PaintRecord* record) {
   SkBitmap bitmap;
-  SkRect rect = picture->cullRect();
+  SkRect rect = record->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   SkCanvas bitmapCanvas(bitmap);
   PaintCanvasPassThrough canvas(&bitmapCanvas);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-rect.x(), -rect.y());
-  canvas.drawPicture(picture);
+  canvas.drawPicture(ToSkPicture(record));
   return bitmap;
 }
 
-static bool bitmapsEqual(const PaintRecord* picture1,
-                         const PaintRecord* picture2) {
-  SkRect rect = picture1->cullRect();
-  if (rect != picture2->cullRect())
+static bool bitmapsEqual(const PaintRecord* record1,
+                         const PaintRecord* record2) {
+  SkRect rect = record1->cullRect();
+  if (rect != record2->cullRect())
     return false;
 
-  SkBitmap bitmap1 = pictureToBitmap(picture1);
-  SkBitmap bitmap2 = pictureToBitmap(picture2);
+  SkBitmap bitmap1 = recordToBitmap(record1);
+  SkBitmap bitmap2 = recordToBitmap(record2);
   bitmap1.lockPixels();
   bitmap2.lockPixels();
   int mismatchCount = 0;
@@ -102,21 +103,21 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (!DisplayItem::equals(other))
     return false;
 
-  const PaintRecord* picture = this->picture();
-  const PaintRecord* otherPicture =
-      static_cast<const DrawingDisplayItem&>(other).picture();
+  const PaintRecord* record = this->GetPaintRecord();
+  const PaintRecord* otherRecord =
+      static_cast<const DrawingDisplayItem&>(other).GetPaintRecord();
 
-  if (!picture && !otherPicture)
+  if (!record && !otherRecord)
     return true;
-  if (!picture || !otherPicture)
+  if (!record || !otherRecord)
     return false;
 
-  if (picturesEqual(picture, otherPicture))
+  if (recordsEqual(record, otherRecord))
     return true;
 
-  // Sometimes the client may produce different pictures for the same visual
+  // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  return bitmapsEqual(picture, otherPicture);
+  return bitmapsEqual(record, otherRecord);
 }
 
 }  // namespace blink

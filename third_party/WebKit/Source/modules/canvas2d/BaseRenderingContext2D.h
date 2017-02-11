@@ -406,19 +406,19 @@ bool BaseRenderingContext2D::draw(
     didDraw(clipBounds);
   } else if (state().globalComposite() == SkBlendMode::kSrc) {
     clearCanvas();  // takes care of checkOverdraw()
-    const PaintFlags* paint =
-        state().getPaint(paintType, DrawForegroundOnly, imageType);
-    drawFunc(drawingCanvas(), paint);
+    const PaintFlags* flags =
+        state().getFlags(paintType, DrawForegroundOnly, imageType);
+    drawFunc(drawingCanvas(), flags);
     didDraw(clipBounds);
   } else {
     SkIRect dirtyRect;
     if (computeDirtyRect(bounds, clipBounds, &dirtyRect)) {
-      const PaintFlags* paint =
-          state().getPaint(paintType, DrawShadowAndForeground, imageType);
+      const PaintFlags* flags =
+          state().getFlags(paintType, DrawShadowAndForeground, imageType);
       if (paintType != CanvasRenderingContext2DState::StrokePaintType &&
           drawCoversClipBounds(clipBounds))
-        checkOverdraw(bounds, paint, imageType, ClipFill);
-      drawFunc(drawingCanvas(), paint);
+        checkOverdraw(bounds, flags, imageType, ClipFill);
+      drawFunc(drawingCanvas(), flags);
       didDraw(dirtyRect);
     }
   }
@@ -435,39 +435,39 @@ void BaseRenderingContext2D::compositedDraw(
   ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
   SkMatrix ctm = c->getTotalMatrix();
   c->resetMatrix();
-  PaintFlags compositePaint;
-  compositePaint.setBlendMode((SkBlendMode)state().globalComposite());
+  PaintFlags compositeFlags;
+  compositeFlags.setBlendMode((SkBlendMode)state().globalComposite());
   if (state().shouldDrawShadows()) {
     // unroll into two independently composited passes if drawing shadows
-    PaintFlags shadowPaint =
-        *state().getPaint(paintType, DrawShadowOnly, imageType);
+    PaintFlags shadowFlags =
+        *state().getFlags(paintType, DrawShadowOnly, imageType);
     int saveCount = c->getSaveCount();
     if (filter) {
-      PaintFlags foregroundPaint =
-          *state().getPaint(paintType, DrawForegroundOnly, imageType);
-      foregroundPaint.setImageFilter(SkComposeImageFilter::Make(
-          SkComposeImageFilter::Make(foregroundPaint.refImageFilter(),
-                                     shadowPaint.refImageFilter()),
+      PaintFlags foregroundFlags =
+          *state().getFlags(paintType, DrawForegroundOnly, imageType);
+      foregroundFlags.setImageFilter(SkComposeImageFilter::Make(
+          SkComposeImageFilter::Make(foregroundFlags.refImageFilter(),
+                                     shadowFlags.refImageFilter()),
           filter));
       c->setMatrix(ctm);
-      drawFunc(c, &foregroundPaint);
+      drawFunc(c, &foregroundFlags);
     } else {
       ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
-      c->saveLayer(nullptr, &compositePaint);
-      shadowPaint.setBlendMode(SkBlendMode::kSrcOver);
+      c->saveLayer(nullptr, &compositeFlags);
+      shadowFlags.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);
-      drawFunc(c, &shadowPaint);
+      drawFunc(c, &shadowFlags);
     }
     c->restoreToCount(saveCount);
   }
 
-  compositePaint.setImageFilter(std::move(filter));
-  c->saveLayer(nullptr, &compositePaint);
-  PaintFlags foregroundPaint =
-      *state().getPaint(paintType, DrawForegroundOnly, imageType);
-  foregroundPaint.setBlendMode(SkBlendMode::kSrcOver);
+  compositeFlags.setImageFilter(std::move(filter));
+  c->saveLayer(nullptr, &compositeFlags);
+  PaintFlags foregroundFlags =
+      *state().getFlags(paintType, DrawForegroundOnly, imageType);
+  foregroundFlags.setBlendMode(SkBlendMode::kSrcOver);
   c->setMatrix(ctm);
-  drawFunc(c, &foregroundPaint);
+  drawFunc(c, &foregroundFlags);
   c->restore();
   c->setMatrix(ctm);
 }

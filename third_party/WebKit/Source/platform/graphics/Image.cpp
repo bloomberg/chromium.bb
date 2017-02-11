@@ -303,24 +303,24 @@ void Image::drawPattern(GraphicsContext& context,
   const auto tmy = computeTileMode(destRect.y(), destRect.maxY(), adjustedY,
                                    adjustedY + tileSize.height());
 
-  PaintFlags paint = context.fillPaint();
-  paint.setColor(SK_ColorBLACK);
-  paint.setBlendMode(compositeOp);
-  paint.setFilterQuality(
+  PaintFlags flags = context.fillFlags();
+  flags.setColor(SK_ColorBLACK);
+  flags.setBlendMode(compositeOp);
+  flags.setFilterQuality(
       context.computeFilterQuality(this, destRect, normSrcRect));
-  paint.setAntiAlias(context.shouldAntialias());
-  paint.setShader(
-      createPatternShader(image.get(), localMatrix, paint,
+  flags.setAntiAlias(context.shouldAntialias());
+  flags.setShader(
+      createPatternShader(image.get(), localMatrix, flags,
                           FloatSize(repeatSpacing.width() / scale.width(),
                                     repeatSpacing.height() / scale.height()),
                           tmx, tmy));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  if (!paint.getShader())
-    paint.setColor(SK_ColorTRANSPARENT);
+  if (!flags.getShader())
+    flags.setColor(SK_ColorTRANSPARENT);
 
-  context.drawRect(destRect, paint);
+  context.drawRect(destRect, flags);
 
   if (currentFrameIsLazyDecoded())
     PlatformInstrumentation::didDrawLazyPixelRef(imageID);
@@ -332,7 +332,7 @@ PassRefPtr<Image> Image::imageForDefaultFrame() {
   return image.release();
 }
 
-bool Image::applyShader(SkPaint& paint,
+bool Image::applyShader(PaintFlags& flags,
                         const SkMatrix& localMatrix,
                         const ColorBehavior& colorBehavior) {
   // Default shader impl: attempt to build a shader based on the current frame
@@ -341,9 +341,9 @@ bool Image::applyShader(SkPaint& paint,
   if (!image)
     return false;
 
-  paint.setShader(image->makeShader(SkShader::kRepeat_TileMode,
+  flags.setShader(image->makeShader(SkShader::kRepeat_TileMode,
                                     SkShader::kRepeat_TileMode, &localMatrix));
-  if (!paint.getShader())
+  if (!flags.getShader())
     return false;
 
   // Animation is normally refreshed in draw() impls, which we don't call when

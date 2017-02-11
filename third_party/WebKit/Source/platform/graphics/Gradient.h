@@ -114,7 +114,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
     m_r1 = r;
   }
 
-  void applyToPaint(PaintFlags&, const SkMatrix& localMatrix);
+  void applyToFlags(PaintFlags&, const SkMatrix& localMatrix);
 
   void setDrawsInPMColorSpace(bool drawInPMColorSpace);
 

@@ -65,7 +65,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
@@ -928,14 +928,14 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
     return;
 
   FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
-  SkPictureBuilder pictureBuilder(layerBounds, nullptr, &context);
+  PaintRecordBuilder builder(layerBounds, nullptr, &context);
 
-  if (scrollbar)
-    paintScrollbar(graphicsLayer, scrollbar, pictureBuilder.context(),
-                   interestRect);
-  else
+  if (scrollbar) {
+    paintScrollbar(graphicsLayer, scrollbar, builder.context(), interestRect);
+  } else {
     FramePainter(*m_layoutView.frameView())
-        .paintScrollCorner(pictureBuilder.context(), interestRect);
+        .paintScrollCorner(builder.context(), interestRect);
+  }
 
   // Replay the painted scrollbar content with the GraphicsLayer backing as the
   // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
@@ -943,7 +943,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
   DrawingRecorder drawingRecorder(context, *graphicsLayer,
                                   DisplayItem::kScrollbarCompositedScrollbar,
                                   layerBounds);
-  pictureBuilder.endRecording()->playback(context.canvas());
+  builder.endRecording()->playback(context.canvas());
 }
 
 Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(

@@ -329,7 +329,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<JSONObject> layerAsJSONInternal(LayerTreeFlags,
                                                   RenderingContextMap&) const;
 
-  sk_sp<PaintRecord> capturePicture();
+  sk_sp<PaintRecord> captureRecord();
   void checkPaintUnderInvalidations(const PaintRecord&);
 
   GraphicsLayerClient* m_client;

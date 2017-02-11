@@ -240,11 +240,11 @@ std::unique_ptr<Shape> Shape::createRasterShape(Image* image,
     // that loads SVG Images during paint invalidations to mark layoutObjects
     // for layout, which is not allowed. See https://crbug.com/429346
     ImageObserverDisabler disabler(image);
-    PaintFlags paint;
+    PaintFlags flags;
     IntRect imageSourceRect(IntPoint(), image->size());
     IntRect imageDestRect(IntPoint(), imageRect.size());
     // TODO(ccameron): No color conversion is required here.
-    image->draw(imageBuffer->canvas(), paint, imageDestRect, imageSourceRect,
+    image->draw(imageBuffer->canvas(), flags, imageDestRect, imageSourceRect,
                 DoNotRespectImageOrientation,
                 Image::DoNotClampImageToSourceRect,
                 ColorBehavior::transformToGlobalTarget());

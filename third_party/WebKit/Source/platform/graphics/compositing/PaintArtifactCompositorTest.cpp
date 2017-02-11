@@ -4,6 +4,8 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
+#include <memory>
+
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
@@ -26,7 +28,6 @@
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

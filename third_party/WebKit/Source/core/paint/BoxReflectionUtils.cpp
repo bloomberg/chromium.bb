@@ -13,7 +13,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 
 namespace blink {
 
@@ -55,20 +55,20 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
     maskBoundingRect.expand(style.imageOutsets(maskNinePiece));
     FloatRect maskBoundingFloatRect(maskBoundingRect);
 
-    // TODO(jbroman): SkPictureBuilder + DrawingRecorder seems excessive.
+    // TODO(jbroman): PaintRecordBuilder + DrawingRecorder seems excessive.
     // If NinePieceImagePainter operated on SkCanvas, we'd only need a
     // PictureRecorder here.
-    SkPictureBuilder recorder(maskBoundingFloatRect);
+    PaintRecordBuilder builder(maskBoundingFloatRect);
     {
-      GraphicsContext& context = recorder.context();
+      GraphicsContext& context = builder.context();
       DrawingRecorder drawingRecorder(context, *layer.layoutObject(),
                                       DisplayItem::kReflectionMask,
                                       maskBoundingFloatRect);
       NinePieceImagePainter(*layer.layoutObject())
-          .paint(recorder.context(), maskRect, style, maskNinePiece,
+          .paint(builder.context(), maskRect, style, maskNinePiece,
                  SkBlendMode::kSrcOver);
     }
-    mask = recorder.endRecording();
+    mask = builder.endRecording();
   }
 
   return BoxReflection(direction, offset, std::move(mask));

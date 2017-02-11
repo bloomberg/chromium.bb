@@ -55,7 +55,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/PassRefPtr.h"
 
@@ -228,7 +228,7 @@ FloatSize SVGImage::concreteObjectSize(
 }
 
 void SVGImage::drawForContainer(PaintCanvas* canvas,
-                                const PaintFlags& paint,
+                                const PaintFlags& flags,
                                 const FloatSize containerSize,
                                 float zoom,
                                 const FloatRect& dstRect,
@@ -258,7 +258,7 @@ void SVGImage::drawForContainer(PaintCanvas* canvas,
                         roundedContainerSize.height() / containerSize.height());
   scaledSrc.setSize(adjustedSrcSize);
 
-  drawInternal(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation,
+  drawInternal(canvas, flags, dstRect, scaledSrc, DoNotRespectImageOrientation,
                ClampImageToSourceRect, url);
 }
 
@@ -287,11 +287,11 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   FloatRect spacedTile(tile);
   spacedTile.expand(FloatSize(repeatSpacing));
 
-  SkPictureBuilder patternPicture(spacedTile, nullptr, &context);
+  PaintRecordBuilder builder(spacedTile, nullptr, &context);
   // SVG images paint into their own property tree set that is distinct
   // from the embedding frame tree.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    PaintChunk::Id id(patternPicture, DisplayItem::kSVGImage);
+    PaintChunk::Id id(builder, DisplayItem::kSVGImage);
     PropertyTreeState state(TransformPaintPropertyNode::root(),
                             ClipPaintPropertyNode::root(),
                             EffectPaintPropertyNode::root());
@@ -299,36 +299,35 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   }
 
   {
-    DrawingRecorder patternPictureRecorder(
-        patternPicture.context(), patternPicture, DisplayItem::Type::kSVGImage,
-        spacedTile);
+    DrawingRecorder recorder(builder.context(), builder,
+                             DisplayItem::Type::kSVGImage, spacedTile);
     // When generating an expanded tile, make sure we don't draw into the
     // spacing area.
     if (tile != spacedTile)
-      patternPicture.context().clip(tile);
-    PaintFlags paint;
-    drawForContainer(patternPicture.context().canvas(), paint, containerSize,
-                     zoom, tile, srcRect, url);
+      builder.context().clip(tile);
+    PaintFlags flags;
+    drawForContainer(builder.context().canvas(), flags, containerSize, zoom,
+                     tile, srcRect, url);
   }
-  sk_sp<PaintRecord> tilePicture = patternPicture.endRecording();
+  sk_sp<PaintRecord> record = builder.endRecording();
 
   SkMatrix patternTransform;
   patternTransform.setTranslate(phase.x() + spacedTile.x(),
                                 phase.y() + spacedTile.y());
 
-  PaintFlags paint;
-  paint.setShader(MakePaintShaderRecord(tilePicture, SkShader::kRepeat_TileMode,
+  PaintFlags flags;
+  flags.setShader(MakePaintShaderRecord(record, SkShader::kRepeat_TileMode,
                                         SkShader::kRepeat_TileMode,
                                         &patternTransform, nullptr));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  if (!paint.getShader())
-    paint.setColor(SK_ColorTRANSPARENT);
+  if (!flags.getShader())
+    flags.setColor(SK_ColorTRANSPARENT);
 
-  paint.setBlendMode(compositeOp);
-  paint.setColorFilter(sk_ref_sp(context.getColorFilter()));
-  context.drawRect(dstRect, paint);
+  flags.setBlendMode(compositeOp);
+  flags.setColorFilter(sk_ref_sp(context.getColorFilter()));
+  context.drawRect(dstRect, flags);
 }
 
 sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(
@@ -350,14 +349,14 @@ sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(
       nullptr);
 }
 
-static bool drawNeedsLayer(const PaintFlags& paint) {
-  if (SkColorGetA(paint.getColor()) < 255)
+static bool drawNeedsLayer(const PaintFlags& flags) {
+  if (SkColorGetA(flags.getColor()) < 255)
     return true;
-  return !paint.isSrcOver();
+  return !flags.isSrcOver();
 }
 
 void SVGImage::draw(PaintCanvas* canvas,
-                    const PaintFlags& paint,
+                    const PaintFlags& flags,
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum shouldRespectImageOrientation,
@@ -368,12 +367,12 @@ void SVGImage::draw(PaintCanvas* canvas,
   if (!m_page)
     return;
 
-  drawInternal(canvas, paint, dstRect, srcRect, shouldRespectImageOrientation,
+  drawInternal(canvas, flags, dstRect, srcRect, shouldRespectImageOrientation,
                clampMode, KURL());
 }
 
 void SVGImage::drawInternal(PaintCanvas* canvas,
-                            const PaintFlags& paint,
+                            const PaintFlags& flags,
                             const FloatRect& dstRect,
                             const FloatRect& srcRect,
                             RespectImageOrientationEnum,
@@ -393,12 +392,12 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
   // time=0.) The reason we do this here and not in resetAnimation() is to
   // avoid setting timers from the latter.
   flushPendingTimelineRewind();
-  SkPictureBuilder imagePicture(dstRect, nullptr, nullptr,
-                                m_paintController.get());
+  PaintRecordBuilder builder(dstRect, nullptr, nullptr,
+                             m_paintController.get());
   // SVG images paint into their own property tree set that is distinct
   // from the embedding frame tree.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    PaintChunk::Id id(imagePicture, DisplayItem::kSVGImage);
+    PaintChunk::Id id(builder, DisplayItem::kSVGImage);
     PropertyTreeState state(TransformPaintPropertyNode::root(),
                             ClipPaintPropertyNode::root(),
                             EffectPaintPropertyNode::root());
@@ -406,7 +405,7 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
   }
 
   {
-    ClipRecorder clipRecorder(imagePicture.context(), imagePicture,
+    ClipRecorder clipRecorder(builder.context(), builder,
                               DisplayItem::kClipNodeImage,
                               enclosingIntRect(dstRect));
 
@@ -421,21 +420,20 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
     AffineTransform transform =
         AffineTransform::translation(destOffset.x(), destOffset.y());
     transform.scale(scale.width(), scale.height());
-    TransformRecorder transformRecorder(imagePicture.context(), imagePicture,
-                                        transform);
+    TransformRecorder transformRecorder(builder.context(), builder, transform);
 
     view->updateAllLifecyclePhasesExceptPaint();
-    view->paint(imagePicture.context(), CullRect(enclosingIntRect(srcRect)));
+    view->paint(builder.context(), CullRect(enclosingIntRect(srcRect)));
     ASSERT(!view->needsLayout());
   }
 
   {
     PaintCanvasAutoRestore ar(canvas, false);
-    if (drawNeedsLayer(paint)) {
+    if (drawNeedsLayer(flags)) {
       SkRect layerRect = dstRect;
-      canvas->saveLayer(&layerRect, &paint);
+      canvas->saveLayer(&layerRect, &flags);
     }
-    sk_sp<PaintRecord> recording = imagePicture.endRecording();
+    sk_sp<PaintRecord> recording = builder.endRecording();
     canvas->drawPicture(recording.get());
   }
 

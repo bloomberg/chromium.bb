@@ -27,19 +27,19 @@ class TestPaintArtifact::DummyRectClient : public DisplayItemClient {
       : m_rect(rect), m_color(color) {}
   String debugName() const final { return "<dummy>"; }
   LayoutRect visualRect() const final { return enclosingLayoutRect(m_rect); }
-  sk_sp<PaintRecord> makePicture() const;
+  sk_sp<PaintRecord> makeRecord() const;
 
  private:
   FloatRect m_rect;
   Color m_color;
 };
 
-sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::makePicture() const {
+sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::makeRecord() const {
   PaintRecorder recorder;
   PaintCanvas* canvas = recorder.beginRecording(m_rect);
-  PaintFlags paint;
-  paint.setColor(m_color.rgb());
-  canvas->drawRect(m_rect, paint);
+  PaintFlags flags;
+  flags.setColor(m_color.rgb());
+  canvas->drawRect(m_rect, flags);
   return recorder.finishRecordingAsPicture();
 }
 
@@ -73,7 +73,7 @@ TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds,
   std::unique_ptr<DummyRectClient> client =
       WTF::makeUnique<DummyRectClient>(bounds, color);
   m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
-      *client, DisplayItem::kDrawingFirst, client->makePicture());
+      *client, DisplayItem::kDrawingFirst, client->makeRecord());
   m_dummyClients.push_back(std::move(client));
   return *this;
 }

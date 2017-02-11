@@ -30,7 +30,7 @@ bool UnacceleratedStaticBitmapImage::currentFrameKnownToBeOpaque(MetadataMode) {
 }
 
 void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
-                                          const PaintFlags& paint,
+                                          const PaintFlags& flags,
                                           const FloatRect& dstRect,
                                           const FloatRect& srcRect,
                                           RespectImageOrientationEnum,
@@ -38,7 +38,7 @@ void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
                                           const ColorBehavior& colorBehavior) {
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/672306
-  StaticBitmapImage::drawHelper(canvas, paint, dstRect, srcRect, clampMode,
+  StaticBitmapImage::drawHelper(canvas, flags, dstRect, srcRect, clampMode,
                                 m_image);
 }
 

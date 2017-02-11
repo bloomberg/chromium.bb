@@ -604,14 +604,13 @@ size_t PaintController::approximateUnsharedMemoryUsage() const {
 
 void PaintController::appendDebugDrawingAfterCommit(
     const DisplayItemClient& displayItemClient,
-    sk_sp<PaintRecord> picture,
+    sk_sp<PaintRecord> record,
     const LayoutSize& offsetFromLayoutObject) {
   DCHECK(m_newDisplayItemList.isEmpty());
   DrawingDisplayItem& displayItem =
       m_currentPaintArtifact.getDisplayItemList()
-          .allocateAndConstruct<DrawingDisplayItem>(displayItemClient,
-                                                    DisplayItem::kDebugDrawing,
-                                                    std::move(picture));
+          .allocateAndConstruct<DrawingDisplayItem>(
+              displayItemClient, DisplayItem::kDebugDrawing, std::move(record));
   displayItem.setSkippedCache();
   // TODO(wkorman): Only compute and append visual rect for drawings.
   m_currentPaintArtifact.getDisplayItemList().appendVisualRect(
@@ -767,18 +766,18 @@ void PaintController::showUnderInvalidationError(
   LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
-  const PaintRecord* newPicture =
+  const PaintRecord* newRecord =
       newItem.isDrawing()
-          ? static_cast<const DrawingDisplayItem&>(newItem).picture()
+          ? static_cast<const DrawingDisplayItem&>(newItem).GetPaintRecord()
           : nullptr;
-  const PaintRecord* oldPicture =
+  const PaintRecord* oldRecord =
       oldItem && oldItem->isDrawing()
-          ? static_cast<const DrawingDisplayItem*>(oldItem)->picture()
+          ? static_cast<const DrawingDisplayItem*>(oldItem)->GetPaintRecord()
           : nullptr;
-  LOG(INFO) << "new picture:\n"
-            << (newPicture ? pictureAsDebugString(newPicture) : "None");
-  LOG(INFO) << "old picture:\n"
-            << (oldPicture ? pictureAsDebugString(oldPicture) : "None");
+  LOG(INFO) << "new record:\n"
+            << (newRecord ? recordAsDebugString(newRecord) : "None");
+  LOG(INFO) << "old record:\n"
+            << (oldRecord ? recordAsDebugString(oldRecord) : "None");
 
   showDebugData();
 #endif  // NDEBUG
@@ -841,30 +840,31 @@ void PaintController::checkUnderInvalidation() {
   ++m_underInvalidationCheckingBegin;
 }
 
-void PaintController::showDebugDataInternal(bool showPictures) const {
-  WTFLogAlways("current display item list: [%s]\n",
-               m_currentPaintArtifact.getDisplayItemList()
-                   .subsequenceAsJSON(
-                       0, m_currentPaintArtifact.getDisplayItemList().size(),
-                       showPictures ? DisplayItemList::JsonOptions::ShowPictures
-                                    : DisplayItemList::JsonOptions::Default)
-                   ->toPrettyJSONString()
-                   .utf8()
-                   .data());
-  // debugName() and clientCacheIsValid() can only be called on a live
-  // client, so only output it for m_newDisplayItemList, in which we are
-  // sure the clients are all alive.
+void PaintController::showDebugDataInternal(bool showPaintRecords) const {
   WTFLogAlways(
-      "new display item list: [%s]\n",
-      m_newDisplayItemList
+      "current display item list: [%s]\n",
+      m_currentPaintArtifact.getDisplayItemList()
           .subsequenceAsJSON(
-              0, m_newDisplayItemList.size(),
-              showPictures ? (DisplayItemList::JsonOptions::ShowPictures |
-                              DisplayItemList::JsonOptions::ShowClientDebugName)
-                           : DisplayItemList::JsonOptions::ShowClientDebugName)
+              0, m_currentPaintArtifact.getDisplayItemList().size(),
+              showPaintRecords ? DisplayItemList::JsonOptions::ShowPaintRecords
+                               : DisplayItemList::JsonOptions::Default)
           ->toPrettyJSONString()
           .utf8()
           .data());
+  // debugName() and clientCacheIsValid() can only be called on a live
+  // client, so only output it for m_newDisplayItemList, in which we are
+  // sure the clients are all alive.
+  WTFLogAlways("new display item list: [%s]\n",
+               m_newDisplayItemList
+                   .subsequenceAsJSON(
+                       0, m_newDisplayItemList.size(),
+                       showPaintRecords
+                           ? (DisplayItemList::JsonOptions::ShowPaintRecords |
+                              DisplayItemList::JsonOptions::ShowClientDebugName)
+                           : DisplayItemList::JsonOptions::ShowClientDebugName)
+                   ->toPrettyJSONString()
+                   .utf8()
+                   .data());
 }
 
 }  // namespace blink

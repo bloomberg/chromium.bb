@@ -25,14 +25,14 @@ void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems,
       if (!item.isDrawing())
         continue;
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
-      if (const PaintRecord* picture = drawing.picture()) {
+      if (const PaintRecord* record = drawing.GetPaintRecord()) {
         if (drawing.knownToBeOpaque()) {
           // TODO(pdr): It may be too conservative to round in to the
           // enclosedIntRect.
-          SkIRect conservativelyRoundedPictureRect;
-          const SkRect& pictureRect = picture->cullRect();
-          pictureRect.roundIn(&conservativelyRoundedPictureRect);
-          knownToBeOpaqueRegion.op(conservativelyRoundedPictureRect,
+          SkIRect conservativeRoundedRect;
+          const SkRect& cullRect = record->cullRect();
+          cullRect.roundIn(&conservativeRoundedRect);
+          knownToBeOpaqueRegion.op(conservativeRoundedRect,
                                    SkRegion::kUnion_Op);
         }
       }

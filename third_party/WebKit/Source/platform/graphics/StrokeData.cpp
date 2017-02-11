@@ -57,27 +57,27 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset) {
   m_dash = SkDashPathEffect::Make(intervals.get(), count, dashOffset);
 }
 
-void StrokeData::setupPaint(PaintFlags* paint, int length) const {
-  paint->setStyle(PaintFlags::kStroke_Style);
-  paint->setStrokeWidth(SkFloatToScalar(m_thickness));
-  paint->setStrokeCap(m_lineCap);
-  paint->setStrokeJoin(m_lineJoin);
-  paint->setStrokeMiter(SkFloatToScalar(m_miterLimit));
+void StrokeData::setupPaint(PaintFlags* flags, int length) const {
+  flags->setStyle(PaintFlags::kStroke_Style);
+  flags->setStrokeWidth(SkFloatToScalar(m_thickness));
+  flags->setStrokeCap(m_lineCap);
+  flags->setStrokeJoin(m_lineJoin);
+  flags->setStrokeMiter(SkFloatToScalar(m_miterLimit));
 
-  setupPaintDashPathEffect(paint, length);
+  setupPaintDashPathEffect(flags, length);
 }
 
-void StrokeData::setupPaintDashPathEffect(PaintFlags* paint, int length) const {
+void StrokeData::setupPaintDashPathEffect(PaintFlags* flags, int length) const {
   float width = m_thickness;
   if (m_dash) {
-    paint->setPathEffect(m_dash);
+    flags->setPathEffect(m_dash);
   } else {
     switch (m_style) {
       case NoStroke:
       case SolidStroke:
       case DoubleStroke:
       case WavyStroke:  // FIXME: https://crbug.com/229574
-        paint->setPathEffect(0);
+        flags->setPathEffect(0);
         return;
       case DashedStroke:
         width = dashRatio * width;
@@ -103,7 +103,7 @@ void StrokeData::setupPaintDashPathEffect(PaintFlags* paint, int length) const {
         }
         SkScalar dashLengthSk = SkIntToScalar(dashLength);
         SkScalar intervals[2] = {dashLengthSk, dashLengthSk};
-        paint->setPathEffect(
+        flags->setPathEffect(
             SkDashPathEffect::Make(intervals, 2, SkIntToScalar(phase)));
     }
   }

@@ -71,7 +71,7 @@ class PLATFORM_EXPORT DisplayItemList
 
   enum JsonOptions {
     Default = 0,
-    ShowPictures = 1,
+    ShowPaintRecords = 1,
     SkipNonDrawings = 1 << 1,
     ShowClientDebugName = 1 << 2,
     ShownOnlyDisplayItemTypes = 1 << 3

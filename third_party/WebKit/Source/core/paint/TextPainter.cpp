@@ -265,7 +265,7 @@ void TextPainter::clipDecorationsStripe(float upper,
   Vector<Font::TextIntercept> textIntercepts;
   m_font.getTextIntercepts(
       textRunPaintInfo, m_graphicsContext.deviceScaleFactor(),
-      m_graphicsContext.fillPaint(),
+      m_graphicsContext.fillFlags(),
       std::make_tuple(upper, upper + stripeWidth), textIntercepts);
 
   for (auto intercept : textIntercepts) {

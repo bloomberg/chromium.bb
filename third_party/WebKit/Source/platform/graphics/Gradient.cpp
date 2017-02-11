@@ -250,14 +250,14 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
   return WrapSkShader(shader);
 }
 
-void Gradient::applyToPaint(PaintFlags& paint, const SkMatrix& localMatrix) {
+void Gradient::applyToFlags(PaintFlags& flags, const SkMatrix& localMatrix) {
   if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
     m_cachedShader = createShader(localMatrix);
 
-  paint.setShader(m_cachedShader);
+  flags.setShader(m_cachedShader);
 
   // Legacy behavior: gradients are always dithered.
-  paint.setDither(true);
+  flags.setDither(true);
 }
 
 }  // namespace blink

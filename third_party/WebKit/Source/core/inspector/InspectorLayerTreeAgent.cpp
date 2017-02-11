@@ -49,7 +49,6 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
@@ -373,7 +372,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layerId,
   context.beginRecording(interestRect);
   layer->getPaintController().paintArtifact().replay(context);
   RefPtr<PictureSnapshot> snapshot =
-      adoptRef(new PictureSnapshot(ToSkPicture(context.endRecording())));
+      adoptRef(new PictureSnapshot(context.endRecording()));
 
   *snapshotId = String::number(++s_lastSnapshotId);
   bool newEntry = m_snapshotById.insert(*snapshotId, snapshot).isNewEntry;

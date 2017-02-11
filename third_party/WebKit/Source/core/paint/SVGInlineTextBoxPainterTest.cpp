@@ -96,7 +96,7 @@ const static int kPixelDelta = 4;
 
 static IntRect cullRectFromDrawing(
     const DrawingDisplayItem& drawingDisplayItem) {
-  return IntRect(drawingDisplayItem.picture()->cullRect());
+  return IntRect(drawingDisplayItem.GetPaintRecord()->cullRect());
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_DefaultWritingMode) {

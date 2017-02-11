@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PicturePattern_h
-#define PicturePattern_h
+#ifndef PaintRecordPattern_h
+#define PaintRecordPattern_h
 
 #include "platform/graphics/Pattern.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT PicturePattern final : public Pattern {
+// TODO(enne): rename this
+class PLATFORM_EXPORT PaintRecordPattern final : public Pattern {
  public:
-  static PassRefPtr<PicturePattern> create(sk_sp<PaintRecord>, RepeatMode);
+  static PassRefPtr<PaintRecordPattern> create(sk_sp<PaintRecord>, RepeatMode);
 
-  ~PicturePattern() override;
+  ~PaintRecordPattern() override;
 
  protected:
   sk_sp<PaintShader> createShader(const SkMatrix&) override;
 
  private:
-  PicturePattern(sk_sp<PaintRecord>, RepeatMode);
+  PaintRecordPattern(sk_sp<PaintRecord>, RepeatMode);
 
-  sk_sp<PaintRecord> m_tilePicture;
+  sk_sp<PaintRecord> m_tileRecord;
 };
 
 }  // namespace blink

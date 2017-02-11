@@ -18,7 +18,7 @@
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 
 namespace blink {
 
@@ -132,8 +132,8 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context,
           context, layoutObject, DisplayItem::kSVGClip))
     return true;
 
-  SkPictureBuilder maskPictureBuilder(targetVisualRect, nullptr, &context);
-  GraphicsContext& maskContext = maskPictureBuilder.context();
+  PaintRecordBuilder maskBuilder(targetVisualRect, nullptr, &context);
+  GraphicsContext& maskContext = maskBuilder.context();
   {
     TransformRecorder recorder(maskContext, layoutObject, localTransform);
 
@@ -157,14 +157,14 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context,
       TransformRecorder contentTransformRecorder(maskContext, layoutObject,
                                                  contentTransform);
       maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(
-          layoutObject, DisplayItem::kSVGClip, m_clip.createContentPicture());
+          layoutObject, DisplayItem::kSVGClip, m_clip.createPaintRecord());
     }
   }
 
   LayoutObjectDrawingRecorder drawingRecorder(
       context, layoutObject, DisplayItem::kSVGClip, targetVisualRect);
-  sk_sp<PaintRecord> maskPicture = maskPictureBuilder.endRecording();
-  context.drawPicture(maskPicture.get());
+  sk_sp<PaintRecord> maskPaintRecord = maskBuilder.endRecording();
+  context.drawRecord(maskPaintRecord.get());
   return true;
 }
 

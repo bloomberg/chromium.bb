@@ -34,7 +34,7 @@ IntSize SVGImageForContainer::size() const {
 }
 
 void SVGImageForContainer::draw(PaintCanvas* canvas,
-                                const PaintFlags& paint,
+                                const PaintFlags& flags,
                                 const FloatRect& dstRect,
                                 const FloatRect& srcRect,
                                 RespectImageOrientationEnum,
@@ -42,7 +42,7 @@ void SVGImageForContainer::draw(PaintCanvas* canvas,
                                 const ColorBehavior& colorBehavior) {
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/667431
-  m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect,
+  m_image->drawForContainer(canvas, flags, m_containerSize, m_zoom, dstRect,
                             srcRect, m_url);
 }
 

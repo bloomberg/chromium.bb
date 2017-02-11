@@ -4600,10 +4600,10 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
 
   IntRect srcRect(IntPoint(), image->size());
   IntRect destRect(0, 0, size.width(), size.height());
-  PaintFlags paint;
+  PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
-  image->draw(buf->canvas(), paint, destRect, srcRect,
+  image->draw(buf->canvas(), flags, destRect, srcRect,
               DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect,
               ColorBehavior::transformToGlobalTarget());
   return buf->newImageSnapshot(PreferNoAcceleration,

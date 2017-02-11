@@ -60,14 +60,14 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
   LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-  sk_sp<const PaintRecord> createContentPicture(AffineTransform&,
-                                                const FloatRect&,
-                                                GraphicsContext&);
+  sk_sp<const PaintRecord> createPaintRecord(AffineTransform&,
+                                             const FloatRect&,
+                                             GraphicsContext&);
 
  private:
   void calculateMaskContentVisualRect();
 
-  sk_sp<const PaintRecord> m_maskContentPicture;
+  sk_sp<const PaintRecord> m_cachedPaintRecord;
   FloatRect m_maskContentBoundaries;
 };
 

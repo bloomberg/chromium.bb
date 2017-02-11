@@ -316,23 +316,23 @@ void drawFocusRingPrimitive(const PrimitiveType&,
 template <>
 void drawFocusRingPrimitive<SkRect>(const SkRect& rect,
                                     PaintCanvas* canvas,
-                                    const PaintFlags& paint,
+                                    const PaintFlags& flags,
                                     float cornerRadius) {
   SkRRect rrect;
   rrect.setRectXY(rect, SkFloatToScalar(cornerRadius),
                   SkFloatToScalar(cornerRadius));
-  canvas->drawRRect(rrect, paint);
+  canvas->drawRRect(rrect, flags);
 }
 
 template <>
 void drawFocusRingPrimitive<SkPath>(const SkPath& path,
                                     PaintCanvas* canvas,
-                                    const PaintFlags& paint,
+                                    const PaintFlags& flags,
                                     float cornerRadius) {
-  PaintFlags pathPaint = paint;
-  pathPaint.setPathEffect(
+  PaintFlags pathFlags = flags;
+  pathFlags.setPathEffect(
       SkCornerPathEffect::Make(SkFloatToScalar(cornerRadius)));
-  canvas->drawPath(path, pathPaint);
+  canvas->drawPath(path, pathFlags);
 }
 
 template <typename PrimitiveType>
@@ -340,26 +340,26 @@ void drawPlatformFocusRing(const PrimitiveType& primitive,
                            PaintCanvas* canvas,
                            SkColor color,
                            float width) {
-  PaintFlags paint;
-  paint.setAntiAlias(true);
-  paint.setStyle(PaintFlags::kStroke_Style);
-  paint.setColor(color);
-  paint.setStrokeWidth(width);
+  PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(PaintFlags::kStroke_Style);
+  flags.setColor(color);
+  flags.setStrokeWidth(width);
 
 #if OS(MACOSX)
-  paint.setAlpha(64);
+  flags.setAlpha(64);
   const float cornerRadius = (width - 1) * 0.5f;
 #else
   const float cornerRadius = width;
 #endif
 
-  drawFocusRingPrimitive(primitive, canvas, paint, cornerRadius);
+  drawFocusRingPrimitive(primitive, canvas, flags, cornerRadius);
 
 #if OS(MACOSX)
   // Inner part
-  paint.setAlpha(128);
-  paint.setStrokeWidth(paint.getStrokeWidth() * 0.5f);
-  drawFocusRingPrimitive(primitive, canvas, paint, cornerRadius);
+  flags.setAlpha(128);
+  flags.setStrokeWidth(flags.getStrokeWidth() * 0.5f);
+  drawFocusRingPrimitive(primitive, canvas, flags, cornerRadius);
 #endif
 }
 

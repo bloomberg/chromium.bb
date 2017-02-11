@@ -41,7 +41,7 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/WebInputEvent.h"
 #include "web/WebInputEventConversion.h"
@@ -68,9 +68,9 @@ static void paintInternal(Page& page,
     return;
 
   IntRect intRect(rect);
-  SkPictureBuilder pictureBuilder(intRect);
+  PaintRecordBuilder builder(intRect);
   {
-    GraphicsContext& paintContext = pictureBuilder.context();
+    GraphicsContext& paintContext = builder.context();
 
     // FIXME: device scale factor settings are layering violations and should
     // not be used within Blink paint code.
@@ -79,23 +79,23 @@ static void paintInternal(Page& page,
 
     AffineTransform scale;
     scale.scale(scaleFactor);
-    TransformRecorder scaleRecorder(paintContext, pictureBuilder, scale);
+    TransformRecorder scaleRecorder(paintContext, builder, scale);
 
     IntRect dirtyRect(rect);
     FrameView* view = root.view();
     if (view) {
-      ClipRecorder clipRecorder(paintContext, pictureBuilder,
+      ClipRecorder clipRecorder(paintContext, builder,
                                 DisplayItem::kPageWidgetDelegateClip,
                                 dirtyRect);
       view->paint(paintContext, globalPaintFlags, CullRect(dirtyRect));
     } else {
       DrawingRecorder drawingRecorder(
-          paintContext, pictureBuilder,
+          paintContext, builder,
           DisplayItem::kPageWidgetDelegateBackgroundFallback, dirtyRect);
       paintContext.fillRect(dirtyRect, Color::white);
     }
   }
-  pictureBuilder.endRecording()->playback(canvas);
+  builder.endRecording()->playback(canvas);
 }
 
 void PageWidgetDelegate::paint(Page& page,

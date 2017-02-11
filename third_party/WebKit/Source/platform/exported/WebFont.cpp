@@ -9,7 +9,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/text/TextRun.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -88,12 +88,12 @@ void WebFont::drawText(WebCanvas* canvas,
   runInfo.bounds = textClipRect;
 
   IntRect intRect(clip);
-  SkPictureBuilder pictureBuilder(intRect);
-  GraphicsContext& context = pictureBuilder.context();
+  PaintRecordBuilder builder(intRect);
+  GraphicsContext& context = builder.context();
 
   {
-    DrawingRecorder drawingRecorder(context, pictureBuilder,
-                                    DisplayItem::kWebFont, intRect);
+    DrawingRecorder drawingRecorder(context, builder, DisplayItem::kWebFont,
+                                    intRect);
     context.save();
     context.setFillColor(color);
     context.clip(textClipRect);
@@ -101,7 +101,7 @@ void WebFont::drawText(WebCanvas* canvas,
     context.restore();
   }
 
-  pictureBuilder.endRecording()->playback(canvas);
+  builder.endRecording()->playback(canvas);
 }
 
 int WebFont::calculateWidth(const WebTextRun& run) const {

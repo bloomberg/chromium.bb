@@ -214,20 +214,20 @@ class Canvas2DLayerBridgeTest : public Test {
         Canvas2DLayerBridge::ForceAccelerationForTesting,
         gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
     EXPECT_TRUE(bridge->checkSurfaceValid());
-    PaintFlags paint;
+    PaintFlags flags;
     uint32_t genID = bridge->getOrCreateSurface()->generationID();
-    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
     gl.setIsContextLost(true);
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
-    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
     // This results in the internal surface being torn down in response to the
     // context loss.
     EXPECT_FALSE(bridge->checkSurfaceValid());
     EXPECT_EQ(nullptr, bridge->getOrCreateSurface());
     // The following passes by not crashing
-    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+    bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     bridge->flush();
   }
 
@@ -342,8 +342,8 @@ class Canvas2DLayerBridgeTest : public Test {
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
           Canvas2DLayerBridge::EnableAcceleration,
           gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
-      PaintFlags paint;
-      bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+      PaintFlags flags;
+      bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
       sk_sp<SkImage> image =
           bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
       EXPECT_TRUE(bridge->checkSurfaceValid());
@@ -358,8 +358,8 @@ class Canvas2DLayerBridgeTest : public Test {
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
           Canvas2DLayerBridge::EnableAcceleration,
           gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
-      PaintFlags paint;
-      bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+      PaintFlags flags;
+      bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
       sk_sp<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration,
                                                       SnapshotReasonUnitTests);
       EXPECT_TRUE(bridge->checkSurfaceValid());

@@ -82,11 +82,6 @@ const unsigned char animatedGIF[] = {
     0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x4c, 0x01, 0x00, 0x3b,
 };
 
-struct Rasterizer {
-  SkCanvas* canvas;
-  PaintRecord* picture;
-};
-
 }  // namespace
 
 class DeferredImageDecoderTest : public ::testing::Test,
@@ -144,7 +139,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
   IntSize m_decodedSize;
 };
 
-TEST_F(DeferredImageDecoderTest, drawIntoSkPicture) {
+TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
   m_lazyDecoder->setData(m_data, true);
   sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
@@ -154,10 +149,10 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture) {
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
-  m_surface->getCanvas()->drawPicture(picture);
+  m_surface->getCanvas()->drawPicture(record);
   EXPECT_EQ(0, m_decodeRequestCount);
 
   SkBitmap canvasBitmap;
@@ -167,7 +162,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive) {
+TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   RefPtr<SharedBuffer> partialData =
       SharedBuffer::create(m_data->data(), m_data->size() - 10);
 
@@ -195,8 +190,8 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-static void rasterizeMain(PaintCanvas* canvas, PaintRecord* picture) {
-  canvas->drawPicture(picture);
+static void rasterizeMain(PaintCanvas* canvas, PaintRecord* record) {
+  canvas->drawPicture(record);
 }
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
@@ -209,7 +204,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
   // Create a thread to rasterize PaintRecord.
@@ -219,7 +214,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
       BLINK_FROM_HERE,
       crossThreadBind(&rasterizeMain,
                       crossThreadUnretained(m_surface->getCanvas()),
-                      crossThreadUnretained(picture.get())));
+                      crossThreadUnretained(record.get())));
   thread.reset();
   EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -309,9 +304,9 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
-  m_surface->getCanvas()->drawPicture(picture);
+  m_surface->getCanvas()->drawPicture(record);
   EXPECT_EQ(1, m_decodeRequestCount);
 }
 

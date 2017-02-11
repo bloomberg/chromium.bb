@@ -113,10 +113,10 @@ class RecordingImageBufferSurfaceTest : public Test {
   }
 
  public:
-  void testEmptyPicture() {
+  void testEmptyRecord() {
     m_testSurface->initializeCurrentFrame();
-    sk_sp<PaintRecord> picture = m_testSurface->getPicture();
-    EXPECT_TRUE((bool)picture.get());
+    sk_sp<PaintRecord> record = m_testSurface->getRecord();
+    EXPECT_TRUE((bool)record.get());
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
   }
@@ -124,18 +124,18 @@ class RecordingImageBufferSurfaceTest : public Test {
   void testNoFallbackWithClear() {
     m_testSurface->initializeCurrentFrame();
     m_testSurface->willOverwriteCanvas();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
   }
 
   void testNonAnimatedCanvasUpdate() {
     m_testSurface->initializeCurrentFrame();
-    // Acquire picture twice to simulate a static canvas: nothing drawn between
+    // Acquire record twice to simulate a static canvas: nothing drawn between
     // updates.
     m_fakeImageBufferClient->fakeDraw();
-    m_testSurface->getPicture();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
+    m_testSurface->getRecord();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
   }
@@ -143,12 +143,12 @@ class RecordingImageBufferSurfaceTest : public Test {
   void testAnimatedWithoutClear() {
     m_testSurface->initializeCurrentFrame();
     m_fakeImageBufferClient->fakeDraw();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     EXPECT_EQ(0, m_surfaceFactory->createSurfaceCount());
     expectDisplayListEnabled(true);  // first frame has an implicit clear
     m_fakeImageBufferClient->fakeDraw();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(false);
   }
@@ -156,13 +156,13 @@ class RecordingImageBufferSurfaceTest : public Test {
   void testFrameFinalizedByTaskObserver1() {
     m_testSurface->initializeCurrentFrame();
     expectDisplayListEnabled(true);
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
     m_fakeImageBufferClient->fakeDraw();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
     m_fakeImageBufferClient->fakeDraw();
@@ -173,7 +173,7 @@ class RecordingImageBufferSurfaceTest : public Test {
   void testFrameFinalizedByTaskObserver2() {
     EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(false);
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(false);
     m_fakeImageBufferClient->fakeDraw();
@@ -183,25 +183,25 @@ class RecordingImageBufferSurfaceTest : public Test {
 
   void testAnimatedWithClear() {
     m_testSurface->initializeCurrentFrame();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     m_testSurface->willOverwriteCanvas();
     m_fakeImageBufferClient->fakeDraw();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
     // clear after use
     m_fakeImageBufferClient->fakeDraw();
     m_testSurface->willOverwriteCanvas();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
   }
 
   void testClearRect() {
     m_testSurface->initializeCurrentFrame();
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     PaintFlags clearPaint;
     clearPaint.setBlendMode(SkBlendMode::kClear);
     m_imageBuffer->canvas()->drawRect(
@@ -210,7 +210,7 @@ class RecordingImageBufferSurfaceTest : public Test {
         clearPaint);
     m_fakeImageBufferClient->fakeDraw();
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
-    m_testSurface->getPicture();
+    m_testSurface->getRecord();
     EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
   }
@@ -242,8 +242,8 @@ class RecordingImageBufferSurfaceTest : public Test {
     platform->runUntilIdle();                                             \
   }
 
-TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture) {
-  testEmptyPicture();
+TEST_F(RecordingImageBufferSurfaceTest, testEmptyRecord) {
+  testEmptyRecord();
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testNoFallbackWithClear) {

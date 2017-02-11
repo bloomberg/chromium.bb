@@ -169,7 +169,7 @@ class PLATFORM_EXPORT ImageBuffer {
       AccelerationHint = PreferNoAcceleration,
       SnapshotReason = SnapshotReasonUnknown) const;
 
-  sk_sp<PaintRecord> getPicture() { return m_surface->getPicture(); }
+  sk_sp<PaintRecord> getRecord() { return m_surface->getRecord(); }
 
   void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkBlendMode);
 

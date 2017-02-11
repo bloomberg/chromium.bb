@@ -39,7 +39,6 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"

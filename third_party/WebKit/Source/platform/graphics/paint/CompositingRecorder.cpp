@@ -55,7 +55,7 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
       secondToLastDisplayItem && lastDisplayItem->drawsContent() &&
       secondToLastDisplayItem->getType() == DisplayItem::kBeginCompositing) {
     FloatRect cullRect(
-        ((DrawingDisplayItem*)lastDisplayItem)->picture()->cullRect());
+        ((DrawingDisplayItem*)lastDisplayItem)->GetPaintRecord()->cullRect());
     const DisplayItemClient& displayItemClient = lastDisplayItem->client();
     DisplayItem::Type displayItemType = lastDisplayItem->getType();
 

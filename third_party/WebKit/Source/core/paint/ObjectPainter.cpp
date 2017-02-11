@@ -208,11 +208,11 @@ void fillQuad(GraphicsContext& context,
   path.lineTo(quad[1]);
   path.lineTo(quad[2]);
   path.lineTo(quad[3]);
-  PaintFlags paint(context.fillPaint());
-  paint.setAntiAlias(antialias);
-  paint.setColor(color.rgb());
+  PaintFlags flags(context.fillFlags());
+  flags.setAntiAlias(antialias);
+  flags.setColor(color.rgb());
 
-  context.drawPath(path, paint);
+  context.drawPath(path, flags);
 }
 
 }  // namespace

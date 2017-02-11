@@ -53,8 +53,7 @@ class SVGPaintServer {
                                     const ComputedStyle&,
                                     LayoutSVGResourceMode);
 
-  // TODO(enne): rename this
-  void applyToSkPaint(PaintFlags&, float paintAlpha);
+  void applyToPaintFlags(PaintFlags&, float alpha);
 
   static SVGPaintServer invalid() {
     return SVGPaintServer(Color(Color::transparent));

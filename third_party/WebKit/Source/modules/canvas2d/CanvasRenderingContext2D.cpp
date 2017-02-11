@@ -913,11 +913,11 @@ void CanvasRenderingContext2D::drawTextInternal(
 
   draw(
       [&font, &textRunPaintInfo, &location](
-          PaintCanvas* c, const PaintFlags* paint)  // draw lambda
+          PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
         font.drawBidiText(c, textRunPaintInfo, location,
                           Font::UseFallbackIfFontNotReady, cDeviceScaleFactor,
-                          *paint);
+                          *flags);
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
