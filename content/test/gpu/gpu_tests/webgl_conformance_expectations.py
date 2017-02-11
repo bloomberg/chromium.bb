@@ -116,8 +116,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['win', 'nvidia'], bug=672380)
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['win', 'nvidia', 'no_passthrough'], bug=679696)
 

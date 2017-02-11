@@ -62,8 +62,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['win', 'nvidia'], bug=672380)
     self.Fail('conformance2/rendering/' +
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia'], bug=679639)
