@@ -177,7 +177,7 @@ class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
     }
   }
 
-  const GURL& GetURL() override { return request_url_; }
+  const GURL& GetURL() const override { return request_url_; }
 
  private:
   base::WeakPtr<QuicChromiumClientSession> session_;
@@ -1466,7 +1466,8 @@ bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
     GURL pushed_url = GetUrlFromHeaderBlock(headers);
     if (push_delegate_) {
       push_delegate_->OnPush(base::MakeUnique<QuicServerPushHelper>(
-          weak_factory_.GetWeakPtr(), pushed_url));
+                                 weak_factory_.GetWeakPtr(), pushed_url),
+                             net_log_);
     }
   }
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUSH_PROMISE_RECEIVED,

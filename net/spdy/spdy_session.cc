@@ -381,7 +381,7 @@ class SpdyServerPushHelper : public ServerPushDelegate::ServerPushHelper {
       session_->CancelPush(request_url_);
   }
 
-  const GURL& GetURL() override { return request_url_; }
+  const GURL& GetURL() const override { return request_url_; }
 
  private:
   base::WeakPtr<SpdySession> session_;
@@ -1691,7 +1691,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Notify the push_delegate that a push promise has been received.
   if (push_delegate_) {
     push_delegate_->OnPush(base::MakeUnique<SpdyServerPushHelper>(
-        weak_factory_.GetWeakPtr(), gurl));
+                               weak_factory_.GetWeakPtr(), gurl),
+                           net_log_);
   }
 
   active_it->second->OnPushPromiseHeadersReceived(std::move(headers));
