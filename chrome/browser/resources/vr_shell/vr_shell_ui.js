@@ -836,6 +836,7 @@ var vrShellUi = (function() {
           URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(
           mode == api.Mode.WEB_VR && !menuMode);
+      this.background.setEnabled(mode == api.Mode.STANDARD || menuMode);
       this.background.setFullscreen(this.fullscreen);
       this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
