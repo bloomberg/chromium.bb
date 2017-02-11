@@ -677,7 +677,7 @@ cr.define('login', function() {
       // instead of showing the tooltip bubble here (crbug.com/409427).
       /** @const */ var BUBBLE_PADDING = 8 + (this.iconId_ ? 0 : 23);
       $('bubble').showContentForElement(this,
-                                        cr.ui.Bubble.Attachment.RIGHT,
+                                        cr.ui.Bubble.Attachment.LEFT,
                                         bubbleContent,
                                         BUBBLE_OFFSET,
                                         BUBBLE_PADDING);
