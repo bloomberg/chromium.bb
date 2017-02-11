@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <vector>
 
-#include "ios/web/public/navigation_item_list.h"
+#import "ios/web/navigation/navigation_item_impl_list.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -46,8 +46,9 @@ struct Referrer;
 @property(nonatomic, readonly, copy) NSString* openerId;
 @property(nonatomic, readonly, assign) NSInteger openerNavigationIndex;
 
-// The list of CRWSessionEntries in |_entries|'s NavigationItemImpls.
-@property(nonatomic, readonly) web::NavigationItemList items;
+// The ScopedNavigationItemImplList used to store the NavigationItemImpls for
+// this session.
+@property(nonatomic, readonly) const web::ScopedNavigationItemImplList& items;
 // The current NavigationItem.  During a pending navigation, returns the
 // NavigationItem for that navigation.  If a transient NavigationItem exists,
 // this NavigationItem will be returned.
@@ -136,8 +137,7 @@ struct Referrer;
 - (void)discardNonCommittedItems;
 
 // Inserts history state from |otherController| to the front of |items|.  This
-// function transfers ownership of |otherController|'s NavigationItems to the
-// receiver.
+// function will create copies of |otherController|'s NavigationItems.
 - (void)insertStateFromSessionController:(CRWSessionController*)otherController;
 
 // Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.

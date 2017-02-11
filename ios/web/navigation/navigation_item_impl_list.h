@@ -24,6 +24,10 @@ typedef std::vector<std::unique_ptr<NavigationItemImpl>>
 ScopedNavigationItemImplList CreateScopedNavigationItemImplList(
     ScopedNavigationItemList scoped_item_list);
 
+// Creates a NavigationItemList from |scoped_item_list|.
+NavigationItemList CreateNavigationItemList(
+    ScopedNavigationItemImplList& scoped_item_list);
+
 }  // namespace web
 
 #endif  // IOS_WEB_NAVIGATION_NAVIGATION_ITEM_IMPL_LIST_H_

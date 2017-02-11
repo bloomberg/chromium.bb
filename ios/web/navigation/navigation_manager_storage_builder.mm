@@ -54,8 +54,7 @@ CRWNavigationManagerStorage* NavigationManagerStorageBuilder::BuildStorage(
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
   for (size_t index = 0; index < session_controller.items.size(); ++index) {
-    web::NavigationItemImpl* item =
-        static_cast<web::NavigationItemImpl*>(session_controller.items[index]);
+    web::NavigationItemImpl* item = session_controller.items[index].get();
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
   serialized_navigation_manager.itemStorages = item_storages;

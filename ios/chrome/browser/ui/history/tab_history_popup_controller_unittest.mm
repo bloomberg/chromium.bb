@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation_item_list.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -31,37 +32,38 @@ static const CGFloat kTabHistoryMaxWidthLandscapePhone = 350.0;
 
 class TabHistoryPopupControllerTest : public PlatformTest {
  protected:
-  void SetUp() override {
+  TabHistoryPopupControllerTest() : PlatformTest() {
     parent_.reset([[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds]);
+    // Create test items and populate |items_|.
+    web::Referrer referrer(GURL("http://www.example.com"),
+                           web::ReferrerPolicyDefault);
+    items_.push_back(web::NavigationItem::Create());
+    items_.back()->SetURL(GURL("http://www.example.com/0"));
+    items_.back()->SetReferrer(referrer);
+    items_.push_back(web::NavigationItem::Create());
+    items_.back()->SetURL(GURL("http://www.example.com/1"));
+    items_.back()->SetReferrer(referrer);
+    items_.push_back(web::NavigationItem::Create());
+    items_.back()->SetURL(GURL("http://www.example.com/2"));
+    items_.back()->SetReferrer(referrer);
+    // Create the popup controller using CRWSessionEntries created from the
+    // NavigationItems in |items_|.
     popup_.reset([[TabHistoryPopupController alloc]
         initWithOrigin:CGPointZero
             parentView:parent_
-               entries:testEntriesArray()]);
+               entries:EntriesListForItems(items_)]);
   }
-  void TearDown() override {
-    parent_.reset();
-    popup_.reset();
+
+  NSArray* EntriesListForItems(const web::ScopedNavigationItemList& items) {
+    NSMutableArray* entries = [NSMutableArray array];
+    for (size_t index = 0; index < items.size(); ++index) {
+      base::scoped_nsobject<CRWSessionEntry> entry(
+          [[CRWSessionEntry alloc] initWithNavigationItem:items[index].get()]);
+      [entries addObject:entry];
+    }
+    return entries;
   }
-  NSArray* testEntriesArray() {
-    web::Referrer referrer(GURL("http://www.example.com"),
-                           web::ReferrerPolicyDefault);
-    std::unique_ptr<web::NavigationItem> item0 = web::NavigationItem::Create();
-    item0->SetURL(GURL("http://www.example.com/0"));
-    item0->SetReferrer(referrer);
-    CRWSessionEntry* entry0 =
-        [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item0)];
-    std::unique_ptr<web::NavigationItem> item1 = web::NavigationItem::Create();
-    item1->SetURL(GURL("http://www.example.com/1"));
-    item1->SetReferrer(referrer);
-    CRWSessionEntry* entry1 =
-        [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item1)];
-    std::unique_ptr<web::NavigationItem> item2 = web::NavigationItem::Create();
-    item2->SetURL(GURL("http://www.example.com/2"));
-    item2->SetReferrer(referrer);
-    CRWSessionEntry* entry2 =
-        [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item2)];
-    return [NSArray arrayWithObjects:entry0, entry1, entry2, nil];
-  }
+  web::ScopedNavigationItemList items_;
   base::scoped_nsobject<UIView> parent_;
   base::scoped_nsobject<TabHistoryPopupController> popup_;
 };
@@ -81,30 +83,6 @@ TEST_F(TabHistoryPopupControllerTest, TestTableSize) {
 }
 
 TEST_F(TabHistoryPopupControllerTest, TestCalculatePopupWidth) {
-  web::Referrer referrer(GURL("http://www.example.com"),
-                         web::ReferrerPolicyDefault);
-  std::unique_ptr<web::NavigationItem> itemShort =
-      web::NavigationItem::Create();
-  itemShort->SetURL(GURL("http://foo.com/"));
-  itemShort->SetReferrer(referrer);
-  CRWSessionEntry* entryShort =
-      [[CRWSessionEntry alloc] initWithNavigationItem:std::move(itemShort)];
-  std::unique_ptr<web::NavigationItem> itemMedium =
-      web::NavigationItem::Create();
-  itemMedium->SetURL(GURL("http://www.example.com/mediumurl"));
-  itemMedium->SetReferrer(referrer);
-  CRWSessionEntry* entryMedium =
-      [[CRWSessionEntry alloc] initWithNavigationItem:std::move(itemMedium)];
-  std::string longURL =
-      "http://www.example.com/this/is/areally/long/url/that/"
-      "is/larger/than/the/maximum/table/width/so/its/text/will/get/cut/off/and/"
-      "the/max/width/is/used/";
-  std::unique_ptr<web::NavigationItem> itemLong = web::NavigationItem::Create();
-  itemLong->SetURL(GURL(longURL));
-  itemLong->SetReferrer(referrer);
-  CRWSessionEntry* entryLong =
-      [[CRWSessionEntry alloc] initWithNavigationItem:std::move(itemLong)];
-
   CGFloat minWidth = kTabHistoryMinWidth;
   CGFloat maxWidth = kTabHistoryMinWidth;
   if (!IsIPadIdiom()) {
@@ -116,20 +94,28 @@ TEST_F(TabHistoryPopupControllerTest, TestCalculatePopupWidth) {
     maxWidth = ui::AlignValueToUpperPixel(
         [UIApplication sharedApplication].keyWindow.frame.size.width * .85);
   }
-
-  CGFloat width =
-      [popup_ calculatePopupWidth:[NSArray arrayWithObjects:entryShort, nil]];
+  web::Referrer referrer(GURL("http://www.example.com"),
+                         web::ReferrerPolicyDefault);
+  web::ScopedNavigationItemList items;
+  items.push_back(web::NavigationItem::Create());
+  items.back()->SetURL(GURL("http://foo.com/"));
+  items.back()->SetReferrer(referrer);
+  CGFloat width = [popup_ calculatePopupWidth:EntriesListForItems(items)];
   EXPECT_EQ(minWidth, width);
-
-  width =
-      [popup_ calculatePopupWidth:[NSArray arrayWithObjects:entryShort,
-                                                            entryMedium, nil]];
+  items.push_back(web::NavigationItem::Create());
+  items.back()->SetURL(GURL("http://www.example.com/mediumurl"));
+  items.back()->SetReferrer(referrer);
+  width = [popup_ calculatePopupWidth:EntriesListForItems(items)];
   EXPECT_GE(width, minWidth);
   EXPECT_LE(width, maxWidth);
-
-  width = [popup_
-      calculatePopupWidth:[NSArray arrayWithObjects:entryShort, entryLong,
-                                                    entryMedium, nil]];
+  std::string long_url =
+      "http://www.example.com/this/is/areally/long/url/that/"
+      "is/larger/than/the/maximum/table/width/so/its/text/will/get/cut/off/and/"
+      "the/max/width/is/used/";
+  items.push_back(web::NavigationItem::Create());
+  items.back()->SetURL(GURL(long_url));
+  items.back()->SetReferrer(referrer);
+  width = [popup_ calculatePopupWidth:EntriesListForItems(items)];
   EXPECT_EQ(maxWidth, width);
 }
 

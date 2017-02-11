@@ -21,32 +21,21 @@
 #endif
 
 @interface CRWSessionEntry () {
-  // The NavigationItemImpl corresponding to this CRWSessionEntry.
-  // TODO(stuartmorgan): Move ownership to NavigationManagerImpl.
-  std::unique_ptr<web::NavigationItemImpl> _navigationItem;
+  // The NavigationItem passed on initialization.
+  web::NavigationItemImpl* _item;
 }
 
 @end
 
 @implementation CRWSessionEntry
 
-- (instancetype)initWithNavigationItem:
-    (std::unique_ptr<web::NavigationItem>)item {
+- (instancetype)initWithNavigationItem:(web::NavigationItem*)item {
   self = [super init];
   if (self) {
-    _navigationItem.reset(
-        static_cast<web::NavigationItemImpl*>(item.release()));
+    DCHECK(item);
+    _item = static_cast<web::NavigationItemImpl*>(item);
   }
   return self;
-}
-
-// TODO(ios): Shall we overwrite EqualTo:?
-
-- (instancetype)copyWithZone:(NSZone*)zone {
-  CRWSessionEntry* copy = [[[self class] alloc] init];
-  copy->_navigationItem.reset(
-      new web::NavigationItemImpl(*_navigationItem.get()));
-  return copy;
 }
 
 - (NSString*)description {
@@ -54,21 +43,20 @@
       stringWithFormat:
           @"url:%@ originalurl:%@ title:%@ transition:%d displayState:%@ "
           @"desktopUA:%d",
-          base::SysUTF8ToNSString(_navigationItem->GetURL().spec()),
-          base::SysUTF8ToNSString(
-              _navigationItem->GetOriginalRequestURL().spec()),
-          base::SysUTF16ToNSString(_navigationItem->GetTitle()),
-          _navigationItem->GetTransitionType(),
-          _navigationItem->GetPageDisplayState().GetDescription(),
-          _navigationItem->IsOverridingUserAgent()];
+          base::SysUTF8ToNSString(_item->GetURL().spec()),
+          base::SysUTF8ToNSString(_item->GetOriginalRequestURL().spec()),
+          base::SysUTF16ToNSString(_item->GetTitle()),
+          _item->GetTransitionType(),
+          _item->GetPageDisplayState().GetDescription(),
+          _item->IsOverridingUserAgent()];
 }
 
 - (web::NavigationItem*)navigationItem {
-  return _navigationItem.get();
+  return _item;
 }
 
 - (web::NavigationItemImpl*)navigationItemImpl {
-  return _navigationItem.get();
+  return _item;
 }
 
 @end

@@ -19,11 +19,6 @@ typedef std::vector<NavigationItem*> NavigationItemList;
 // Convenience typedef for a list of scoped NavigationItem pointers.
 typedef std::vector<std::unique_ptr<NavigationItem>> ScopedNavigationItemList;
 
-// Returns a NavigationItemList populated with raw pointer values from
-// |scoped_list|.
-NavigationItemList CreateRawNavigationItemList(
-    const ScopedNavigationItemList& scoped_list);
-
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_NAVIGATION_ITEM_LIST_H_

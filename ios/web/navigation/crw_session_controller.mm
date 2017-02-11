@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
-#include <vector>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -49,21 +49,6 @@
   // Identifies the index of the previous navigation in the CRWSessionEntry
   // array.
   NSInteger _previousNavigationIndex;
-  // Ordered array of |CRWSessionEntry| objects, one for each site in session
-  // history. End of the list is the most recent load.
-  NSMutableArray* _entries;
-
-  // An entry we haven't gotten a response for yet. This will be discarded
-  // when we navigate again. It's used only so we know what the currently
-  // displayed tab is.  It backs the property of the same name and should only
-  // be set through its setter.
-  base::scoped_nsobject<CRWSessionEntry> _pendingEntry;
-
-  // The transient entry, if any. A transient entry is discarded on any
-  // navigation, and is used for representing interstitials that need to be
-  // represented in the session.  It backs the property of the same name and
-  // should only be set through its setter.
-  base::scoped_nsobject<CRWSessionEntry> _transientEntry;
 
   // The window name associated with the session.
   NSString* _windowName;
@@ -76,15 +61,24 @@
   NSTimeInterval _lastVisitedTimestamp;
 
   // If |YES|, override |currentEntry.useDesktopUserAgent| and create the
-  // pending entry using the desktop user agent.
+  // pending item using the desktop user agent.
   BOOL _useDesktopUserAgentForNextPendingItem;
 
   // The browser state associated with this CRWSessionController;
   web::BrowserState* _browserState;  // weak
 
-  // Time smoother for navigation entry timestamps; see comment in
+  // Time smoother for navigation item timestamps; see comment in
   // navigation_controller_impl.h
   web::TimeSmoother _timeSmoother;
+
+  // Backing objects for properties of the same name.
+  web::ScopedNavigationItemImplList _items;
+  // |_pendingItem| only contains a NavigationItem for non-history navigations.
+  // For back/forward navigations within session history, _pendingItemIndex will
+  // be equal to -1, and self.pendingItem will return an item contained within
+  // |_items|.
+  std::unique_ptr<web::NavigationItemImpl> _pendingItem;
+  std::unique_ptr<web::NavigationItemImpl> _transientItem;
 }
 
 // Redefine as readwrite.
@@ -93,7 +87,6 @@
 // TODO(rohitrao): These properties must be redefined readwrite to work around a
 // clang bug. crbug.com/228650
 @property(nonatomic, readwrite, copy) NSString* tabId;
-@property(nonatomic, readwrite, strong) NSArray* entries;
 @property(nonatomic, readwrite, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
@@ -106,21 +99,26 @@
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 
 - (NSString*)uniqueID;
-// Removes all entries after currentNavigationIndex_.
+// Removes all items after currentNavigationIndex_.
 - (void)clearForwardItems;
-// Discards the transient entry, if any.
+// Discards the transient item, if any.
 - (void)discardTransientItem;
-// Create a new autoreleased session entry.
-- (CRWSessionEntry*)sessionEntryWithURL:(const GURL&)url
-                               referrer:(const web::Referrer&)referrer
-                             transition:(ui::PageTransition)transition
-                    useDesktopUserAgent:(BOOL)useDesktopUserAgent
-                      rendererInitiated:(BOOL)rendererInitiated;
+// Creates a NavigationItemImpl with the specified properties.
+- (std::unique_ptr<web::NavigationItemImpl>)
+        itemWithURL:(const GURL&)url
+           referrer:(const web::Referrer&)referrer
+         transition:(ui::PageTransition)transition
+useDesktopUserAgent:(BOOL)useDesktopUserAgent
+  rendererInitiated:(BOOL)rendererInitiated;
 // Returns YES if the PageTransition for the underlying navigationItem at
-// |index| in |entries_| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
-- (BOOL)isRedirectTransitionForItemAtIndex:(NSInteger)index;
-// Returns a NavigationItemList containing the NavigationItems from |entries|.
-- (web::NavigationItemList)itemListForEntryList:(NSArray*)entries;
+// |index| in |items| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
+- (BOOL)isRedirectTransitionForItemAtIndex:(size_t)index;
+// Returns the CRWSessionEntry corresponding with |item|.
+- (CRWSessionEntry*)entryForItem:(web::NavigationItemImpl*)item;
+// Returns an autoreleased NSArray containing CRWSessionEntries corresponding
+// with the NavigationItems in |itemList|.
+- (NSArray*)entryListForItemList:(const web::NavigationItemList&)itemList;
+
 @end
 
 @implementation CRWSessionController
@@ -129,7 +127,6 @@
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
-@synthesize entries = _entries;
 @synthesize windowName = _windowName;
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
 @synthesize openerId = _openerId;
@@ -150,7 +147,6 @@
     _openedByDOM = openedByDOM;
     _openerNavigationIndex = openerIndex;
     _browserState = browserState;
-    _entries = [NSMutableArray array];
     _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
     _currentNavigationIndex = -1;
     _previousNavigationIndex = -1;
@@ -161,8 +157,7 @@
   return self;
 }
 
-- (id)initWithNavigationItems:
-          (std::vector<std::unique_ptr<web::NavigationItem>>)items
+- (id)initWithNavigationItems:(web::ScopedNavigationItemList)items
                  currentIndex:(NSUInteger)currentIndex
                  browserState:(web::BrowserState*)browserState {
   self = [super init];
@@ -170,22 +165,12 @@
     _tabId = [[self uniqueID] copy];
     _openerId = nil;
     _browserState = browserState;
-
-    // Create entries array from list of navigations.
-    _entries = [[NSMutableArray alloc] initWithCapacity:items.size()];
-
-    for (auto& item : items) {
-      base::scoped_nsobject<CRWSessionEntry> entry(
-          [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
-      [_entries addObject:entry];
-    }
+    _items = web::CreateScopedNavigationItemImplList(std::move(items));
     self.currentNavigationIndex = currentIndex;
-    // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
-    if (![_entries count])
+    if (_items.empty())
       self.currentNavigationIndex = -1;
-    if (_currentNavigationIndex >= static_cast<NSInteger>(items.size())) {
-      self.currentNavigationIndex = static_cast<NSInteger>(items.size()) - 1;
-    }
+    _currentNavigationIndex = std::min(
+        _currentNavigationIndex, static_cast<NSInteger>(_items.size() - 1));
     _previousNavigationIndex = -1;
     _pendingItemIndex = -1;
     _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
@@ -194,6 +179,168 @@
   }
   return self;
 }
+
+#pragma mark - Accessors
+
+- (void)setCurrentNavigationIndex:(NSInteger)currentNavigationIndex {
+  if (_currentNavigationIndex != currentNavigationIndex) {
+    _currentNavigationIndex = currentNavigationIndex;
+    if (_navigationManager)
+      _navigationManager->RemoveTransientURLRewriters();
+  }
+}
+
+- (void)setPendingItemIndex:(NSInteger)pendingItemIndex {
+  DCHECK_GE(pendingItemIndex, -1);
+  DCHECK_LT(pendingItemIndex, static_cast<NSInteger>(self.items.size()));
+  _pendingItemIndex = pendingItemIndex;
+  DCHECK(_pendingItemIndex == -1 || self.pendingItem);
+}
+
+- (const web::ScopedNavigationItemImplList&)items {
+  return _items;
+}
+
+- (web::NavigationItemImpl*)currentItem {
+  if (self.transientItem)
+    return self.transientItem;
+  if (self.pendingItem)
+    return self.pendingItem;
+  return self.lastCommittedItem;
+}
+
+- (web::NavigationItemImpl*)visibleItem {
+  if (self.transientItem)
+    return self.transientItem;
+  // Only return the |pendingItem| for new (non-history), browser-initiated
+  // navigations in order to prevent URL spoof attacks.
+  web::NavigationItemImpl* pendingItem = self.pendingItem;
+  bool safeToShowPending = pendingItem &&
+                           !pendingItem->is_renderer_initiated() &&
+                           _pendingItemIndex == -1;
+  if (safeToShowPending)
+    return pendingItem;
+  return self.lastCommittedItem;
+}
+
+- (web::NavigationItemImpl*)pendingItem {
+  if (self.pendingItemIndex == -1)
+    return _pendingItem.get();
+  return self.items[self.pendingItemIndex].get();
+}
+
+- (web::NavigationItemImpl*)transientItem {
+  return _transientItem.get();
+}
+
+- (web::NavigationItemImpl*)lastCommittedItem {
+  NSInteger index = self.currentNavigationIndex;
+  return index == -1 ? nullptr : self.items[index].get();
+}
+
+- (web::NavigationItemImpl*)previousItem {
+  NSInteger index = self.previousNavigationIndex;
+  return index == -1 || self.items.empty() ? nullptr : self.items[index].get();
+}
+
+- (web::NavigationItemImpl*)lastUserItem {
+  if (self.items.empty())
+    return nil;
+
+  NSInteger index = self.currentNavigationIndex;
+  // This will return the first NavigationItem if all other items are
+  // redirects, regardless of the transition state of the first item.
+  while (index > 0 && [self isRedirectTransitionForItemAtIndex:index])
+    --index;
+
+  return self.items[index].get();
+}
+
+- (web::NavigationItemList)backwardItems {
+  web::NavigationItemList items;
+  for (size_t index = _currentNavigationIndex; index > 0; --index) {
+    if (![self isRedirectTransitionForItemAtIndex:index])
+      items.push_back(self.items[index - 1].get());
+  }
+  return items;
+}
+
+- (web::NavigationItemList)forwardItems {
+  web::NavigationItemList items;
+  NSUInteger lastNonRedirectedIndex = _currentNavigationIndex + 1;
+  while (lastNonRedirectedIndex < self.items.size()) {
+    web::NavigationItem* item = self.items[lastNonRedirectedIndex].get();
+    if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
+      items.push_back(item);
+    ++lastNonRedirectedIndex;
+  }
+  return items;
+}
+
+// DEPRECATED
+- (NSArray*)entries {
+  return [self entryListForItemList:web::CreateNavigationItemList(_items)];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)currentEntry {
+  return [self entryForItem:self.currentItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)visibleEntry {
+  return [self entryForItem:self.visibleItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)pendingEntry {
+  return [self entryForItem:self.pendingItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)transientEntry {
+  return [self entryForItem:self.transientItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)lastCommittedEntry {
+  return [self entryForItem:self.lastCommittedItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)previousEntry {
+  return [self entryForItem:self.previousItem];
+}
+
+// DEPRECATED
+- (CRWSessionEntry*)lastUserEntry {
+  return [self entryForItem:self.lastUserItem];
+}
+
+// DEPRECATED
+- (NSArray*)backwardEntries {
+  return [self entryListForItemList:self.backwardItems];
+}
+
+// DEPRECATED
+- (NSArray*)forwardEntries {
+  return [self entryListForItemList:self.forwardItems];
+}
+
+#pragma mark - NSObject
+
+- (NSString*)description {
+  return [NSString
+      stringWithFormat:
+          @"id: %@\nname: %@\nlast visit: %f\ncurrent index: %" PRIdNS
+          @"\nprevious index: %" PRIdNS @"\npending index: %" PRIdNS
+                                        @"\n%@\npending: %@\ntransient: %@\n",
+          _tabId, self.windowName, _lastVisitedTimestamp,
+          _currentNavigationIndex, _previousNavigationIndex, _pendingItemIndex,
+          self.entries, self.pendingEntry, self.transientEntry];
+}
+
+#pragma mark - NSCopying
 
 - (id)copyWithZone:(NSZone*)zone {
   CRWSessionController* copy = [[[self class] alloc] init];
@@ -206,29 +353,17 @@
   copy->_previousNavigationIndex = _previousNavigationIndex;
   copy->_pendingItemIndex = _pendingItemIndex;
   copy->_lastVisitedTimestamp = _lastVisitedTimestamp;
-  copy->_entries =
-      [[NSMutableArray alloc] initWithArray:_entries copyItems:YES];
   copy->_sessionCertificatePolicyManager =
       [_sessionCertificatePolicyManager copy];
+  for (size_t index = 0; index < self.items.size(); ++index) {
+    std::unique_ptr<web::NavigationItemImpl> itemCopy(
+        new web::NavigationItemImpl(*self.items[index].get()));
+    copy->_items.push_back(std::move(itemCopy));
+  }
   return copy;
 }
 
-- (void)setCurrentNavigationIndex:(NSInteger)currentNavigationIndex {
-  if (_currentNavigationIndex != currentNavigationIndex) {
-    _currentNavigationIndex = currentNavigationIndex;
-    if (_navigationManager)
-      _navigationManager->RemoveTransientURLRewriters();
-  }
-}
-
-- (void)setPendingItemIndex:(NSInteger)index {
-  DCHECK_GE(index, -1);
-  DCHECK_LT(index, static_cast<NSInteger>(_entries.count));
-  _pendingItemIndex = index;
-  CRWSessionEntry* entry = index != -1 ? _entries[index] : nil;
-  _pendingEntry.reset(entry);
-  DCHECK(_pendingItemIndex == -1 || _pendingEntry);
-}
+#pragma mark - Public
 
 - (void)setNavigationManager:(web::NavigationManagerImpl*)navigationManager {
   _navigationManager = navigationManager;
@@ -249,113 +384,14 @@
          _navigationManager->GetBrowserState() == _browserState);
 }
 
-- (NSString*)description {
-  return [NSString
-      stringWithFormat:
-          @"id: %@\nname: %@\nlast visit: %f\ncurrent index: %" PRIdNS
-          @"\nprevious index: %" PRIdNS @"\npending index: %" PRIdNS
-                                        @"\n%@\npending: %@\ntransient: %@\n",
-          _tabId, self.windowName, _lastVisitedTimestamp,
-          _currentNavigationIndex, _previousNavigationIndex, _pendingItemIndex,
-          _entries, _pendingEntry.get(), _transientEntry.get()];
-}
-
-- (web::NavigationItemList)items {
-  return [self itemListForEntryList:self.entries];
-}
-
-- (web::NavigationItemImpl*)currentItem {
-  return self.currentEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)visibleItem {
-  return self.visibleEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)pendingItem {
-  return self.pendingEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)transientItem {
-  return self.transientEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)lastCommittedItem {
-  return self.lastCommittedEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)previousItem {
-  return self.previousEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemImpl*)lastUserItem {
-  return self.lastUserEntry.navigationItemImpl;
-}
-
-- (web::NavigationItemList)backwardItems {
-  return [self itemListForEntryList:self.backwardEntries];
-}
-
-- (web::NavigationItemList)forwardItems {
-  return [self itemListForEntryList:self.forwardEntries];
-}
-
-// Returns the current entry in the session list, or the pending entry if there
-// is a navigation in progress.
-- (CRWSessionEntry*)currentEntry {
-  if (_transientEntry)
-    return _transientEntry.get();
-  if (_pendingEntry)
-    return _pendingEntry.get();
-  return [self lastCommittedEntry];
-}
-
-// See NavigationController::GetVisibleEntry for the motivation for this
-// distinction.
-- (CRWSessionEntry*)visibleEntry {
-  if (_transientEntry)
-    return _transientEntry.get();
-  // Only return the pending_entry for new (non-history), browser-initiated
-  // navigations in order to prevent URL spoof attacks.
-  web::NavigationItemImpl* pendingItem = [_pendingEntry navigationItemImpl];
-  bool safeToShowPending = pendingItem &&
-                           !pendingItem->is_renderer_initiated() &&
-                           _pendingItemIndex == -1;
-  if (safeToShowPending) {
-    return _pendingEntry.get();
-  }
-  return [self lastCommittedEntry];
-}
-
-- (CRWSessionEntry*)pendingEntry {
-  return _pendingEntry.get();
-}
-
-- (CRWSessionEntry*)transientEntry {
-  return _transientEntry.get();
-}
-
-- (CRWSessionEntry*)lastCommittedEntry {
-  if (_currentNavigationIndex == -1)
-    return nil;
-  return [_entries objectAtIndex:_currentNavigationIndex];
-}
-
-// Returns the previous entry in the session list, or nil if there isn't any.
-- (CRWSessionEntry*)previousEntry {
-  if ((_previousNavigationIndex < 0) || (![_entries count]))
-    return nil;
-  return [_entries objectAtIndex:_previousNavigationIndex];
-}
-
 - (void)addPendingItem:(const GURL&)url
               referrer:(const web::Referrer&)ref
             transition:(ui::PageTransition)trans
      rendererInitiated:(BOOL)rendererInitiated {
   [self discardTransientItem];
-  _pendingItemIndex = -1;
+  self.pendingItemIndex = -1;
 
-  // Don't create a new entry if it's already the same as the current entry,
+  // Don't create a new item if it's already the same as the current item,
   // allowing this routine to be called multiple times in a row without issue.
   // Note: CRWSessionController currently has the responsibility to distinguish
   // between new navigations and history stack navigation, hence the inclusion
@@ -364,51 +400,45 @@
   // TODO(crbug.com/676129): Fix the way changes are detected/reported elsewhere
   // in the web layer so that this hack can be removed.
   // Remove the workaround code from -presentSafeBrowsingWarningForResource:.
-  CRWSessionEntry* currentEntry = self.currentEntry;
-  if (currentEntry) {
-    web::NavigationItem* item = [currentEntry navigationItem];
-    if (item->GetURL() == url &&
-        (!PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT) ||
-         PageTransitionCoreTypeIs(item->GetTransitionType(),
-                                  ui::PAGE_TRANSITION_FORM_SUBMIT))) {
-      // Send the notification anyway, to preserve old behavior. It's unknown
-      // whether anything currently relies on this, but since both this whole
-      // hack and the content facade will both be going away, it's not worth
-      // trying to unwind.
-      if (_navigationManager && _navigationManager->GetFacadeDelegate()) {
-        _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
-      }
-      return;
-    }
+  web::NavigationItemImpl* currentItem = self.currentItem;
+  if (currentItem && currentItem->GetURL() == url &&
+      (!PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT) ||
+       PageTransitionCoreTypeIs(currentItem->GetTransitionType(),
+                                ui::PAGE_TRANSITION_FORM_SUBMIT))) {
+    // Send the notification anyway, to preserve old behavior. It's unknown
+    // whether anything currently relies on this, but since both this whole
+    // hack and the content facade will both be going away, it's not worth
+    // trying to unwind.
+    if (_navigationManager && _navigationManager->GetFacadeDelegate())
+      _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
+    return;
   }
 
   BOOL useDesktopUserAgent =
       _useDesktopUserAgentForNextPendingItem ||
-      (self.currentEntry.navigationItem &&
-       self.currentEntry.navigationItem->IsOverridingUserAgent());
+      (currentItem && currentItem->IsOverridingUserAgent());
   _useDesktopUserAgentForNextPendingItem = NO;
-  _pendingEntry.reset([self sessionEntryWithURL:url
-                                       referrer:ref
-                                     transition:trans
-                            useDesktopUserAgent:useDesktopUserAgent
-                              rendererInitiated:rendererInitiated]);
+  _pendingItem = [self itemWithURL:url
+                          referrer:ref
+                        transition:trans
+               useDesktopUserAgent:useDesktopUserAgent
+                 rendererInitiated:rendererInitiated];
 
-  if (_navigationManager && _navigationManager->GetFacadeDelegate()) {
+  if (_navigationManager && _navigationManager->GetFacadeDelegate())
     _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
-  }
 }
 
 - (void)updatePendingItem:(const GURL&)url {
-  // If there is no pending entry, navigation is probably happening within the
-  // session history. Don't modify the entry list.
-  if (!_pendingEntry)
+  // If there is no pending item, navigation is probably happening within the
+  // session history. Don't modify the item list.
+  web::NavigationItemImpl* item = self.pendingItem;
+  if (!item)
     return;
 
-  web::NavigationItemImpl* item = [_pendingEntry navigationItemImpl];
   if (url != item->GetURL()) {
-    // Assume a redirection, and discard any transient entry.
+    // Assume a redirection, and discard any transient item.
     // TODO(stuartmorgan): Once the current safe browsing code is gone,
-    // consider making this a DCHECK that there's no transient entry.
+    // consider making this a DCHECK that there's no transient item.
     [self discardTransientItem];
 
     item->SetURL(url);
@@ -421,106 +451,95 @@
 
   // This should probably not be sent if the URLs matched, but that's what was
   // done before, so preserve behavior in case something relies on it.
-  if (_navigationManager && _navigationManager->GetFacadeDelegate()) {
+  if (_navigationManager && _navigationManager->GetFacadeDelegate())
     _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
-  }
 }
 
 - (void)clearForwardItems {
-  DCHECK_EQ(_pendingItemIndex, -1);
+  DCHECK_EQ(self.pendingItemIndex, -1);
   [self discardTransientItem];
 
   NSInteger forwardItemStartIndex = _currentNavigationIndex + 1;
   DCHECK(forwardItemStartIndex >= 0);
 
-  if (forwardItemStartIndex >= static_cast<NSInteger>([_entries count]))
+  size_t itemCount = self.items.size();
+  if (forwardItemStartIndex >= static_cast<NSInteger>(itemCount))
     return;
 
-  NSRange remove = NSMakeRange(forwardItemStartIndex,
-                               [_entries count] - forwardItemStartIndex);
-  // Store removed items in temporary NSArray so they can be deallocated after
-  // their facades.
-  base::scoped_nsobject<NSArray> removedItems(
-      [_entries subarrayWithRange:remove]);
-  [_entries removeObjectsInRange:remove];
   if (_previousNavigationIndex >= forwardItemStartIndex)
     _previousNavigationIndex = -1;
-  if (_navigationManager) {
-    _navigationManager->OnNavigationItemsPruned(remove.length);
-  }
+  if (_navigationManager)
+    _navigationManager->OnNavigationItemsPruned(self.items.size() -
+                                                forwardItemStartIndex);
+
+  // Remove the NavigationItems.
+  _items.erase(_items.begin() + forwardItemStartIndex, _items.end());
 }
 
 - (void)commitPendingItem {
-  if (_pendingEntry) {
-    NSInteger newNavigationIndex = _pendingItemIndex;
-    if (_pendingItemIndex == -1) {
+  if (self.pendingItem) {
+    // Once an item is committed it's not renderer-initiated any more. (Matches
+    // the implementation in NavigationController.)
+    self.pendingItem->ResetForCommit();
+
+    NSInteger newNavigationIndex = self.pendingItemIndex;
+    if (newNavigationIndex == -1) {
       [self clearForwardItems];
-      // Add the new entry at the end.
-      [_entries addObject:_pendingEntry];
-      newNavigationIndex = [_entries count] - 1;
+      // Add the new item at the end.
+      _items.push_back(std::move(_pendingItem));
+      newNavigationIndex = self.items.size() - 1;
     }
     _previousNavigationIndex = _currentNavigationIndex;
     self.currentNavigationIndex = newNavigationIndex;
-    // Once an entry is committed it's not renderer-initiated any more. (Matches
-    // the implementation in NavigationController.)
-    [_pendingEntry navigationItemImpl]->ResetForCommit();
-    _pendingEntry.reset();
-    _pendingItemIndex = -1;
+    self.pendingItemIndex = -1;
   }
 
-  CRWSessionEntry* currentEntry = self.currentEntry;
-  web::NavigationItem* item = currentEntry.navigationItem;
+  web::NavigationItem* item = self.currentItem;
   // Update the navigation timestamp now that it's actually happened.
   if (item)
     item->SetTimestamp(_timeSmoother.GetSmoothedTime(base::Time::Now()));
 
   if (_navigationManager && item)
     _navigationManager->OnNavigationItemCommitted();
-  DCHECK_EQ(_pendingItemIndex, -1);
+  DCHECK_EQ(self.pendingItemIndex, -1);
 }
 
 - (void)addTransientItemWithURL:(const GURL&)URL {
-  _transientEntry.reset([self
-      sessionEntryWithURL:URL
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      useDesktopUserAgent:NO
-        rendererInitiated:NO]);
-
-  web::NavigationItem* navigationItem = [_transientEntry navigationItem];
-  DCHECK(navigationItem);
-  navigationItem->SetTimestamp(
+  _transientItem = [self itemWithURL:URL
+                            referrer:web::Referrer()
+                          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+                 useDesktopUserAgent:NO
+                   rendererInitiated:NO];
+  _transientItem->SetTimestamp(
       _timeSmoother.GetSmoothedTime(base::Time::Now()));
 }
 
 - (void)pushNewItemWithURL:(const GURL&)URL
                stateObject:(NSString*)stateObject
                 transition:(ui::PageTransition)transition {
-  DCHECK(![self pendingEntry]);
-  DCHECK([self currentEntry]);
-  web::NavigationItem* item = [self currentEntry].navigationItem;
+  DCHECK(!self.pendingItem);
+  web::NavigationItem* item = self.currentItem;
+  DCHECK(item);
   CHECK(
       web::history_state_util::IsHistoryStateChangeValid(item->GetURL(), URL));
   web::Referrer referrer(item->GetURL(), web::ReferrerPolicyDefault);
-  bool overrideUserAgent =
-      self.currentEntry.navigationItem->IsOverridingUserAgent();
-  base::scoped_nsobject<CRWSessionEntry> pushedEntry([self
-      sessionEntryWithURL:URL
-                 referrer:referrer
-               transition:transition
-      useDesktopUserAgent:overrideUserAgent
-        rendererInitiated:NO]);
-  web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
+  bool overrideUserAgent = self.currentItem->IsOverridingUserAgent();
+  std::unique_ptr<web::NavigationItemImpl> pushedItem =
+      [self itemWithURL:URL
+                     referrer:referrer
+                   transition:transition
+          useDesktopUserAgent:overrideUserAgent
+            rendererInitiated:NO];
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
-  web::SSLStatus& sslStatus = [self currentEntry].navigationItem->GetSSL();
-  pushedEntry.get().navigationItem->GetSSL() = sslStatus;
+  web::SSLStatus& sslStatus = self.currentItem->GetSSL();
+  pushedItem->GetSSL() = sslStatus;
 
   [self clearForwardItems];
-  // Add the new entry at the end.
-  [_entries addObject:pushedEntry];
+  // Add the new item at the end.
+  _items.push_back(std::move(pushedItem));
   _previousNavigationIndex = _currentNavigationIndex;
-  self.currentNavigationIndex = [_entries count] - 1;
+  self.currentNavigationIndex = self.items.size() - 1;
 
   if (_navigationManager)
     _navigationManager->OnNavigationItemCommitted();
@@ -528,64 +547,61 @@
 
 - (void)updateCurrentItemWithURL:(const GURL&)url
                      stateObject:(NSString*)stateObject {
-  DCHECK(!_transientEntry);
-  CRWSessionEntry* currentEntry = self.currentEntry;
-  web::NavigationItemImpl* currentItem = self.currentEntry.navigationItemImpl;
+  DCHECK(!self.transientItem);
+  web::NavigationItemImpl* currentItem = self.currentItem;
   currentItem->SetURL(url);
   currentItem->SetSerializedStateObject(stateObject);
   currentItem->SetHasStateBeenReplaced(true);
   currentItem->SetPostData(nil);
-  currentEntry.navigationItem->SetURL(url);
-  // If the change is to a committed entry, notify interested parties.
-  if (currentEntry != self.pendingEntry && _navigationManager)
+  // If the change is to a committed item, notify interested parties.
+  if (currentItem != self.pendingItem && _navigationManager)
     _navigationManager->OnNavigationItemChanged();
 }
 
 - (void)discardNonCommittedItems {
   [self discardTransientItem];
-  _pendingEntry.reset();
-  _pendingItemIndex = -1;
+  _pendingItem.reset();
+  self.pendingItemIndex = -1;
 }
 
 - (void)discardTransientItem {
-  // Keep the entry alive temporarily. There are flows that get the current
-  // entry, do some navigation operation, and then try to use that old current
-  // entry; since navigations clear the transient entry, these flows might
-  // crash. (This should be removable once more session management is handled
-  // within this class and/or NavigationManager).
-  _transientEntry.reset();
+  _transientItem.reset();
 }
 
 - (void)insertStateFromSessionController:(CRWSessionController*)sourceSession {
   DCHECK(sourceSession);
   self.windowName = sourceSession.windowName;
 
-  // The other session may not have any entries, in which case there is nothing
-  // to insert.  The other session's currentNavigationEntry will be bogus
+  // The other session may not have any items, in which case there is nothing
+  // to insert.  The other session's currentItem will be bogus
   // in such cases, so ignore it and return early.
-  NSArray* sourceEntries = sourceSession.entries;
-  if (!sourceEntries.count)
+  web::ScopedNavigationItemImplList& sourceItems = sourceSession->_items;
+  if (sourceItems.empty())
     return;
 
-  // Cycle through the entries from the other session and insert them before any
-  // entries from this session.  Do not copy anything that comes after the other
-  // session's current entry.
+  // Cycle through the items from the other session and insert them before any
+  // items from this session.  Do not copy anything that comes after the other
+  // session's current item.
   NSInteger lastIndexToCopy = sourceSession.currentNavigationIndex;
   for (NSInteger i = 0; i <= lastIndexToCopy; ++i) {
-    [_entries insertObject:sourceEntries[i] atIndex:i];
+    std::unique_ptr<web::NavigationItemImpl> sourceItemCopy(
+        new web::NavigationItemImpl(*sourceItems[i].get()));
+    _items.insert(_items.begin() + i, std::move(sourceItemCopy));
   }
 
+  // Update state to reflect inserted NavigationItems.
   _previousNavigationIndex = -1;
   _currentNavigationIndex += lastIndexToCopy + 1;
-  if (_pendingItemIndex != -1)
-    _pendingItemIndex += lastIndexToCopy + 1;
+  if (self.pendingItemIndex != -1)
+    self.pendingItemIndex += lastIndexToCopy + 1;
 
-  DCHECK_LT(static_cast<NSUInteger>(_currentNavigationIndex), _entries.count);
-  DCHECK(_pendingItemIndex == -1 || _pendingEntry);
+  DCHECK_LT(static_cast<NSUInteger>(_currentNavigationIndex),
+            self.items.size());
+  DCHECK(self.pendingItemIndex == -1 || self.pendingItem);
 }
 
 - (void)goToItemAtIndex:(NSInteger)index {
-  if (index < 0 || static_cast<NSUInteger>(index) >= _entries.count)
+  if (index < 0 || static_cast<NSUInteger>(index) >= self.items.size())
     return;
 
   if (index < _currentNavigationIndex) {
@@ -604,40 +620,17 @@
 }
 
 - (void)removeItemAtIndex:(NSInteger)index {
-  DCHECK(index < static_cast<NSInteger>([_entries count]));
+  DCHECK(index < static_cast<NSInteger>(self.items.size()));
   DCHECK(index != _currentNavigationIndex);
   DCHECK(index >= 0);
 
   [self discardNonCommittedItems];
 
-  [_entries removeObjectAtIndex:index];
+  _items.erase(_items.begin() + index);
   if (_currentNavigationIndex > index)
     _currentNavigationIndex--;
   if (_previousNavigationIndex >= index)
     _previousNavigationIndex--;
-}
-
-- (NSArray*)backwardEntries {
-  NSMutableArray* entries = [NSMutableArray array];
-  for (NSInteger index = _currentNavigationIndex; index > 0; --index) {
-    if (![self isRedirectTransitionForItemAtIndex:index])
-      [entries addObject:_entries[index - 1]];
-  }
-  return entries;
-}
-
-- (NSArray*)forwardEntries {
-  NSMutableArray* entries = [NSMutableArray array];
-  NSUInteger lastNonRedirectedIndex = _currentNavigationIndex + 1;
-  while (lastNonRedirectedIndex < [_entries count]) {
-    CRWSessionEntry* entry = [_entries objectAtIndex:lastNonRedirectedIndex];
-    if (!ui::PageTransitionIsRedirect(
-            entry.navigationItem->GetTransitionType())) {
-      [entries addObject:entry];
-    }
-    ++lastNonRedirectedIndex;
-  }
-  return entries;
 }
 
 - (BOOL)isSameDocumentNavigationBetweenItem:(web::NavigationItem*)firstItem
@@ -652,12 +645,12 @@
   NSUInteger endIndex = firstIndex < secondIndex ? secondIndex : firstIndex;
 
   for (NSUInteger i = startIndex + 1; i <= endIndex; i++) {
-    web::NavigationItemImpl* item = [_entries[i] navigationItemImpl];
-    // Every entry in the sequence has to be created from a hash change or
+    web::NavigationItemImpl* item = self.items[i].get();
+    // Every item in the sequence has to be created from a hash change or
     // pushState() call.
     if (!item->IsCreatedFromPushState() && !item->IsCreatedFromHashChange())
       return NO;
-    // Every entry in the sequence has to have a URL that could have been
+    // Every item in the sequence has to have a URL that could have been
     // created from a pushState() call.
     if (!web::history_state_util::IsHistoryStateChangeValid(firstItem->GetURL(),
                                                             item->GetURL()))
@@ -666,31 +659,18 @@
   return YES;
 }
 
-- (CRWSessionEntry*)lastUserEntry {
-  if (![_entries count])
-    return nil;
-
-  NSInteger index = _currentNavigationIndex;
-  // This will return the first session entry if all other entries are
-  // redirects, regardless of the transition state of the first entry.
-  while (index > 0 && [self isRedirectTransitionForItemAtIndex:index]) {
-    --index;
-  }
-  return [_entries objectAtIndex:index];
-}
-
 - (void)useDesktopUserAgentForNextPendingItem {
-  if (_pendingEntry)
-    [_pendingEntry navigationItem]->SetIsOverridingUserAgent(true);
+  if (self.pendingItem)
+    self.pendingItem->SetIsOverridingUserAgent(true);
   else
     _useDesktopUserAgentForNextPendingItem = YES;
 }
 
 - (NSInteger)indexOfItem:(web::NavigationItem*)item {
-  web::NavigationItemList items = self.items;
-  for (NSInteger i = 0; i < static_cast<NSInteger>(items.size()); ++i) {
-    if (items[i] == item)
-      return i;
+  DCHECK(item);
+  for (size_t index = 0; index < self.items.size(); ++index) {
+    if (self.items[index].get() == item)
+      return index;
   }
   return NSNotFound;
 }
@@ -709,11 +689,12 @@
   return uuid;
 }
 
-- (CRWSessionEntry*)sessionEntryWithURL:(const GURL&)url
-                               referrer:(const web::Referrer&)referrer
-                             transition:(ui::PageTransition)transition
-                    useDesktopUserAgent:(BOOL)useDesktopUserAgent
-                      rendererInitiated:(BOOL)rendererInitiated {
+- (std::unique_ptr<web::NavigationItemImpl>)
+        itemWithURL:(const GURL&)url
+           referrer:(const web::Referrer&)referrer
+         transition:(ui::PageTransition)transition
+useDesktopUserAgent:(BOOL)useDesktopUserAgent
+  rendererInitiated:(BOOL)rendererInitiated {
   GURL loaded_url(url);
   BOOL urlWasRewritten = NO;
   if (_navigationManager) {
@@ -735,20 +716,34 @@
   item->SetTransitionType(transition);
   item->SetIsOverridingUserAgent(useDesktopUserAgent);
   item->set_is_renderer_initiated(rendererInitiated);
-  return [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)];
+  return item;
 }
 
-- (BOOL)isRedirectTransitionForItemAtIndex:(NSInteger)index {
-  ui::PageTransition transition =
-      [_entries[index] navigationItem]->GetTransitionType();
+- (BOOL)isRedirectTransitionForItemAtIndex:(size_t)index {
+  DCHECK_LT(index, self.items.size());
+  ui::PageTransition transition = self.items[index]->GetTransitionType();
   return (transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) ? YES : NO;
 }
 
-- (web::NavigationItemList)itemListForEntryList:(NSArray*)entries {
-  web::NavigationItemList list(entries.count);
-  for (size_t index = 0; index < entries.count; ++index)
-    list[index] = [entries[index] navigationItem];
-  return list;
+- (CRWSessionEntry*)entryForItem:(web::NavigationItemImpl*)item {
+  if (!item)
+    return nil;
+  // CRWSessionEntries vended by a CRWSessionController should always correspond
+  // with a NavigationItem that is owned by that CRWSessionController.
+  DCHECK([self indexOfItem:item] != NSNotFound || item == _pendingItem.get() ||
+         item == _transientItem.get());
+  return [[CRWSessionEntry alloc] initWithNavigationItem:item];
+}
+
+- (NSArray*)entryListForItemList:(const web::NavigationItemList&)itemList {
+  NSMutableArray* entryList =
+      [[NSMutableArray alloc] initWithCapacity:itemList.size()];
+  for (web::NavigationItem* item : itemList) {
+    CRWSessionEntry* entry =
+        [self entryForItem:static_cast<web::NavigationItemImpl*>(item)];
+    [entryList addObject:entry];
+  }
+  return entryList;
 }
 
 @end

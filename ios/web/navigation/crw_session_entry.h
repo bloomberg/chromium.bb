@@ -8,8 +8,6 @@
 #import <Foundation/Foundation.h>
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/page_transition_types.h"
@@ -27,7 +25,7 @@ class NavigationItemImpl;
 // DEPRECATED, do not use this class and do not add any methods to it.
 // Use web::NavigationItem instead.
 // TODO(crbug.com/454984): Remove this class.
-@interface CRWSessionEntry : NSObject<NSCopying>
+@interface CRWSessionEntry : NSObject
 
 // Pointer to the NavigationItem associated with this CRWSessionEntry.
 // Eventually, this will replace CRWSessionEntry entirely.
@@ -37,8 +35,7 @@ class NavigationItemImpl;
 @property(nonatomic, readonly) web::NavigationItemImpl* navigationItemImpl;
 
 // Initialize the session entry with the given NavigationItem.
-- (instancetype)initWithNavigationItem:
-    (std::unique_ptr<web::NavigationItem>)item;
+- (instancetype)initWithNavigationItem:(web::NavigationItem*)item;
 
 @end
 

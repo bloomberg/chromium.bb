@@ -33,18 +33,18 @@ class CRWSessionEntryTest : public PlatformTest {
     GURL url("http://init.test");
     ui::PageTransition transition =
         ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    std::unique_ptr<web::NavigationItemImpl> item(
-        new web::NavigationItemImpl());
-    item->SetOriginalRequestURL(url);
-    item->SetURL(url);
-    item->SetTransitionType(transition);
-    item->SetTimestamp(base::Time::Now());
-    item->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
+    item_.reset(new web::NavigationItemImpl());
+    item_->SetOriginalRequestURL(url);
+    item_->SetURL(url);
+    item_->SetTransitionType(transition);
+    item_->SetTimestamp(base::Time::Now());
+    item_->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
     session_entry_.reset(
-        [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
+        [[CRWSessionEntry alloc] initWithNavigationItem:item_.get()]);
   }
 
  protected:
+  std::unique_ptr<web::NavigationItemImpl> item_;
   base::scoped_nsobject<CRWSessionEntry> session_entry_;
 };
 
