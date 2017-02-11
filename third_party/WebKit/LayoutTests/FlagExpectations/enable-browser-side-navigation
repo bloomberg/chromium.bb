@@ -55,9 +55,6 @@ crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-pa
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
 crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
 
-# https://crbug.com/673742 Calling document.open should cancel a load
-crbug.com/673742 fast/dom/Document/open-with-pending-load.html [ Failure ]
-
 # Issue with ServiceWorker timing.
 Bug(none) external/wpt/service-workers/service-worker/navigate-window.https.html [ Failure ]
 
