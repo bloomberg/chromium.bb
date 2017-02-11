@@ -32,8 +32,7 @@
 #include <string>
 #include <utility>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include "breakpad_googletest_includes.h"
 
 namespace tools {
 namespace windows {
