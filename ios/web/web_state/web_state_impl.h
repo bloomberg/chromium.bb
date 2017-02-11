@@ -25,7 +25,7 @@
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "url/gurl.h"
 
-@class CRWNavigationManagerStorage;
+@class CRWSessionStorage;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
 @class NSURLRequest;
@@ -66,8 +66,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Constructor for WebStateImpls created for new sessions.
   WebStateImpl(BrowserState* browser_state);
   // Constructor for WebStatesImpls created for deserialized sessions
-  WebStateImpl(BrowserState* browser_state,
-               CRWNavigationManagerStorage* session_storage);
+  WebStateImpl(BrowserState* browser_state, CRWSessionStorage* session_storage);
   ~WebStateImpl() override;
 
   // Gets/Sets the CRWWebController that backs this object.
@@ -204,7 +203,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void Stop() override;
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
-  CRWNavigationManagerStorage* BuildSerializedNavigationManager() override;
+  CRWSessionStorage* BuildSessionStorage() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
@@ -282,6 +281,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
 
  private:
+  // The SessionStorageBuilder functions require access to private variables of
+  // WebStateImpl.
+  friend SessionStorageBuilder;
+
   // Creates a WebUIIOS object for |url| that is owned by the caller. Returns
   // nullptr if |url| does not correspond to a WebUI page.
   std::unique_ptr<web::WebUIIOS> CreateWebUIIOS(const GURL& url);

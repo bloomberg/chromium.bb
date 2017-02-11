@@ -91,7 +91,7 @@
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
 // Expose setters for serialization properties.  These are exposed in a category
-// in NavigationManagerStorageBuilder, and will be removed as ownership of
+// in SessionStorageBuilder, and will be removed as ownership of
 // their backing ivars moves to NavigationManagerImpl.
 @property(nonatomic, readwrite, copy) NSString* openerId;
 @property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;

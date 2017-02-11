@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_CRW_NAVIGATION_MANAGER_STORAGE_H_
-#define IOS_WEB_PUBLIC_CRW_NAVIGATION_MANAGER_STORAGE_H_
+#ifndef IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_
+#define IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_
 
 #import <Foundation/Foundation.h>
+#include <memory>
 
 @class CRWSessionCertificatePolicyManager;
 
-// NSCoding-compliant class used to serialize NavigationManager's persisted
-// properties.
+namespace web {
+class SerializableUserData;
+}
+
+// NSCoding-compliant class used to serialize session state.
 // TODO(crbug.com/685388): Investigate using code from the sessions component.
-@interface CRWNavigationManagerStorage : NSObject<NSCoding>
+@interface CRWSessionStorage : NSObject<NSCoding>
 
 @property(nonatomic, copy) NSString* tabID;
 @property(nonatomic, copy) NSString* openerID;
@@ -25,7 +29,12 @@
 @property(nonatomic, copy) NSArray* itemStorages;
 @property(nonatomic, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
+@property(nonatomic, readonly) web::SerializableUserData* userData;
+
+// Setter for |userData|.  The receiver takes ownership of |userData|.
+- (void)setSerializableUserData:
+    (std::unique_ptr<web::SerializableUserData>)userData;
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_CRW_NAVIGATION_MANAGER_STORAGE_H_
+#endif  // IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_

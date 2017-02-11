@@ -68,7 +68,7 @@ NavigationManager* TestWebState::GetNavigationManager() {
   return navigation_manager_.get();
 }
 
-CRWNavigationManagerStorage* TestWebState::BuildSerializedNavigationManager() {
+CRWSessionStorage* TestWebState::BuildSessionStorage() {
   return nil;
 }
 

@@ -15,9 +15,9 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
-#import "ios/web/navigation/navigation_manager_storage_builder.h"
+#import "ios/web/navigation/session_storage_builder.h"
 #include "ios/web/public/browser_state.h"
-#import "ios/web/public/crw_navigation_manager_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/image_fetcher/image_data_fetcher.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
@@ -66,9 +66,8 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
 }
 
 /* static */
-std::unique_ptr<WebState> WebState::Create(
-    const CreateParams& params,
-    CRWNavigationManagerStorage* session_storage) {
+std::unique_ptr<WebState> WebState::Create(const CreateParams& params,
+                                           CRWSessionStorage* session_storage) {
   std::unique_ptr<WebStateImpl> web_state(
       new WebStateImpl(params.browser_state, session_storage));
 
@@ -82,7 +81,7 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
     : WebStateImpl(browser_state, nullptr) {}
 
 WebStateImpl::WebStateImpl(BrowserState* browser_state,
-                           CRWNavigationManagerStorage* session_storage)
+                           CRWSessionStorage* session_storage)
     : delegate_(nullptr),
       is_loading_(false),
       is_being_destroyed_(false),
@@ -92,9 +91,8 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state,
       weak_factory_(this) {
   // Create or deserialize the NavigationManager.
   if (session_storage) {
-    NavigationManagerStorageBuilder session_storage_builder;
-    navigation_manager_ =
-        session_storage_builder.BuildNavigationManagerImpl(session_storage);
+    SessionStorageBuilder session_storage_builder;
+    session_storage_builder.ExtractSessionState(this, session_storage);
   } else {
     navigation_manager_.reset(new NavigationManagerImpl());
   }
@@ -656,9 +654,9 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
 }
 
-CRWNavigationManagerStorage* WebStateImpl::BuildSerializedNavigationManager() {
-  NavigationManagerStorageBuilder session_storage_builder;
-  return session_storage_builder.BuildStorage(navigation_manager_.get());
+CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
+  SessionStorageBuilder session_storage_builder;
+  return session_storage_builder.BuildStorage(this);
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {

@@ -24,7 +24,7 @@ class GURL;
 class SkBitmap;
 
 @class CRWJSInjectionReceiver;
-@class CRWNavigationManagerStorage;
+@class CRWSessionStorage;
 @protocol CRWScrollableContent;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
@@ -100,9 +100,8 @@ class WebState : public base::SupportsUserData {
   // Creates a new WebState.
   static std::unique_ptr<WebState> Create(const CreateParams& params);
   // Creates a new WebState from a serialized NavigationManager.
-  static std::unique_ptr<WebState> Create(
-      const CreateParams& params,
-      CRWNavigationManagerStorage* session_storage);
+  static std::unique_ptr<WebState> Create(const CreateParams& params,
+                                          CRWSessionStorage* session_storage);
 
   ~WebState() override {}
 
@@ -140,9 +139,9 @@ class WebState : public base::SupportsUserData {
   virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
 
-  // Creates a serialized version of the NavigationManager. The returned value
+  // Creates a serializable representation of the session. The returned value
   // is autoreleased.
-  virtual CRWNavigationManagerStorage* BuildSerializedNavigationManager() = 0;
+  virtual CRWSessionStorage* BuildSessionStorage() = 0;
 
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;

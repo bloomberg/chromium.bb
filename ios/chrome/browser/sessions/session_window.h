@@ -11,7 +11,7 @@
 
 #import "ios/web/web_state/web_state_impl.h"
 
-@class CRWNavigationManagerStorage;
+@class CRWSessionStorage;
 
 // Encapsulates everything required to save a session "window". For iOS, there
 // will only be one window at a time.
@@ -21,10 +21,10 @@
 // initialized "empty" (without any sessions) and sessions are added one at a
 // time.  For example:
 //  SessionWindowIOS* window = [[SessionWindow alloc] init];
-//  [window addSerializedSession:session_storage];
+//  [window addSerializedSessionStorage:session_storage];
 //  ...
 //  [window setSelectedIndex:mySelectedIndex];
-- (void)addSerializedSession:(CRWNavigationManagerStorage*)session;
+- (void)addSerializedSessionStorage:(CRWSessionStorage*)session;
 
 // Clears all added sessions.
 - (void)clearSessions;

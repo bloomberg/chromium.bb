@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/crw_navigation_manager_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,7 +25,14 @@ NSString* const kTabIDKey = @"tabId";
 NSString* const kWindowNameKey = @"windowName";
 }
 
-@implementation CRWNavigationManagerStorage
+@interface CRWSessionStorage () {
+  // Backing object for property of same name.
+  std::unique_ptr<web::SerializableUserData> _userData;
+}
+
+@end
+
+@implementation CRWSessionStorage
 
 @synthesize tabID = _tabID;
 @synthesize openerID = _openerID;
@@ -36,6 +44,19 @@ NSString* const kWindowNameKey = @"windowName";
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
 @synthesize itemStorages = _itemStorages;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
+
+#pragma mark - Accessors
+
+- (web::SerializableUserData*)userData {
+  return _userData.get();
+}
+
+- (void)setSerializableUserData:
+    (std::unique_ptr<web::SerializableUserData>)userData {
+  _userData = std::move(userData);
+}
+
+#pragma mark - NSCoding
 
 - (instancetype)initWithCoder:(nonnull NSCoder*)decoder {
   self = [super init];
@@ -63,6 +84,8 @@ NSString* const kWindowNameKey = @"windowName";
       _sessionCertificatePolicyManager =
           [[CRWSessionCertificatePolicyManager alloc] init];
     }
+    _userData = web::SerializableUserData::Create();
+    _userData->Decode(decoder);
   }
   return self;
 }
@@ -82,6 +105,8 @@ NSString* const kWindowNameKey = @"windowName";
   [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.sessionCertificatePolicyManager
                forKey:kCertificatePolicyManagerKey];
+  if (_userData)
+    _userData->Encode(coder);
   // rendererInitiated is deliberately not preserved, as upstream.
 }
 

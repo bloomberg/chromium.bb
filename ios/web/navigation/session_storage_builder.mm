@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/navigation/navigation_manager_storage_builder.h"
+#import "ios/web/navigation/session_storage_builder.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -12,7 +12,9 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/crw_navigation_manager_storage.h"
+#import "ios/web/public/crw_session_storage.h"
+#import "ios/web/public/serializable_user_data_manager.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 // CRWSessionController's readonly properties redefined as readwrite.  These
 // will be removed and NavigationManagerImpl's ivars will be written directly
@@ -30,11 +32,14 @@
 
 namespace web {
 
-CRWNavigationManagerStorage* NavigationManagerStorageBuilder::BuildStorage(
-    NavigationManagerImpl* navigation_manager) const {
+CRWSessionStorage* SessionStorageBuilder::BuildStorage(
+    WebStateImpl* web_state) const {
+  DCHECK(web_state);
+  web::NavigationManagerImpl* navigation_manager =
+      web_state->navigation_manager_.get();
   DCHECK(navigation_manager);
-  CRWNavigationManagerStorage* serialized_navigation_manager =
-      [[CRWNavigationManagerStorage alloc] init];
+  CRWSessionStorage* serialized_navigation_manager =
+      [[CRWSessionStorage alloc] init];
   CRWSessionController* session_controller =
       navigation_manager->GetSessionController();
   serialized_navigation_manager.tabID = session_controller.tabId;
@@ -58,14 +63,19 @@ CRWNavigationManagerStorage* NavigationManagerStorageBuilder::BuildStorage(
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
   serialized_navigation_manager.itemStorages = item_storages;
+  web::SerializableUserDataManager* user_data_manager =
+      web::SerializableUserDataManager::FromWebState(web_state);
+  [serialized_navigation_manager
+      setSerializableUserData:user_data_manager->CreateSerializableUserData()];
   return serialized_navigation_manager;
 }
 
-std::unique_ptr<NavigationManagerImpl>
-NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
-    CRWNavigationManagerStorage* navigation_manager_serialization) const {
-  DCHECK(navigation_manager_serialization);
-  NSArray* item_storages = navigation_manager_serialization.itemStorages;
+void SessionStorageBuilder::ExtractSessionState(
+    WebStateImpl* web_state,
+    CRWSessionStorage* storage) const {
+  DCHECK(web_state);
+  DCHECK(storage);
+  NSArray* item_storages = storage.itemStorages;
   web::ScopedNavigationItemList items(item_storages.count);
   NavigationItemStorageBuilder item_storage_builder;
   for (size_t index = 0; index < item_storages.count; ++index) {
@@ -73,32 +83,26 @@ NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
         item_storage_builder.BuildNavigationItemImpl(item_storages[index]);
     items[index] = std::move(item_impl);
   }
-  NSUInteger current_index =
-      navigation_manager_serialization.currentNavigationIndex;
+  NSUInteger current_index = storage.currentNavigationIndex;
   base::scoped_nsobject<CRWSessionController> session_controller(
       [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:current_index
                                                browserState:nullptr]);
-  [session_controller setTabId:navigation_manager_serialization.tabID];
-  [session_controller setOpenerId:navigation_manager_serialization.openerID];
+  [session_controller setTabId:storage.tabID];
+  [session_controller setOpenerId:storage.openerID];
+  [session_controller setOpenedByDOM:storage.openedByDOM];
+  [session_controller setOpenerNavigationIndex:storage.openerNavigationIndex];
+  [session_controller setWindowName:storage.windowName];
   [session_controller
-      setOpenedByDOM:navigation_manager_serialization.openedByDOM];
-  [session_controller setOpenerNavigationIndex:navigation_manager_serialization
-                                                   .openerNavigationIndex];
+      setPreviousNavigationIndex:storage.previousNavigationIndex];
+  [session_controller setLastVisitedTimestamp:storage.lastVisitedTimestamp];
   [session_controller
-      setWindowName:navigation_manager_serialization.windowName];
-  [session_controller
-      setPreviousNavigationIndex:navigation_manager_serialization
-                                     .previousNavigationIndex];
-  [session_controller setLastVisitedTimestamp:navigation_manager_serialization
-                                                  .lastVisitedTimestamp];
-  [session_controller
-      setSessionCertificatePolicyManager:navigation_manager_serialization
+      setSessionCertificatePolicyManager:storage
                                              .sessionCertificatePolicyManager];
-  std::unique_ptr<NavigationManagerImpl> navigation_manager(
-      new NavigationManagerImpl());
-  navigation_manager->SetSessionController(session_controller);
-  return navigation_manager;
+  web_state->navigation_manager_.reset(new NavigationManagerImpl());
+  web_state->navigation_manager_->SetSessionController(session_controller);
+  web::SerializableUserDataManager::FromWebState(web_state)
+      ->AddSerializableUserData(storage.userData);
 }
 
 }  // namespace web

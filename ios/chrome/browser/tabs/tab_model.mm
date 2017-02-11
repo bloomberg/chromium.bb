@@ -809,7 +809,7 @@ void CleanCertificatePolicyCache(
   for (Tab* tab in self) {
     web::WebState* webState = tab.webState;
     DCHECK(webState);
-    [window addSerializedSession:webState->BuildSerializedNavigationManager()];
+    [window addSerializedSessionStorage:webState->BuildSessionStorage()];
   }
   window.selectedIndex = [self indexOfTab:_currentTab];
   return window;
@@ -963,7 +963,7 @@ void CleanCertificatePolicyCache(
   scoped_refptr<web::CertificatePolicyCache> policyCache =
       web::BrowserState::GetCertificatePolicyCache(_browserState);
 
-  for (CRWNavigationManagerStorage* session in sessions) {
+  for (CRWSessionStorage* session in sessions) {
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(params, session);
     DCHECK_EQ(webState->GetBrowserState(), _browserState);

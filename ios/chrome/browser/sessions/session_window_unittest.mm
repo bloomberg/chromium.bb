@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/session_service.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/public/crw_navigation_manager_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,10 +66,8 @@ TEST_F(SessionWindowIOSTest, InitAddingSessions) {
   std::unique_ptr<WebStateImpl> webState2(CreateWebState(@"window2", nil, NO));
   base::scoped_nsobject<SessionWindowIOS> sessionWindow(
       [[SessionWindowIOS alloc] init]);
-  [sessionWindow
-      addSerializedSession:webState1->BuildSerializedNavigationManager()];
-  [sessionWindow
-      addSerializedSession:webState2->BuildSerializedNavigationManager()];
+  [sessionWindow addSerializedSessionStorage:webState1->BuildSessionStorage()];
+  [sessionWindow addSerializedSessionStorage:webState2->BuildSessionStorage()];
   [sessionWindow setSelectedIndex:1];
 
   EXPECT_TRUE(sessionWindow.get() != nil);
@@ -91,10 +89,8 @@ TEST_F(SessionWindowIOSTest, CodingEncoding) {
   std::unique_ptr<WebStateImpl> webState2(CreateWebState(windowName2, nil, NO));
   NSString* openerId2 =
       webState2->GetNavigationManagerImpl().GetSessionController().openerId;
-  [sessionWindow
-      addSerializedSession:webState1->BuildSerializedNavigationManager()];
-  [sessionWindow
-      addSerializedSession:webState2->BuildSerializedNavigationManager()];
+  [sessionWindow addSerializedSessionStorage:webState1->BuildSessionStorage()];
+  [sessionWindow addSerializedSessionStorage:webState2->BuildSessionStorage()];
 
   [sessionWindow setSelectedIndex:1];
 
@@ -109,12 +105,12 @@ TEST_F(SessionWindowIOSTest, CodingEncoding) {
   EXPECT_EQ(unarchivedObj.selectedIndex, sessionWindow.get().selectedIndex);
   NSArray* sessions = unarchivedObj.sessions;
   ASSERT_EQ(2U, sessions.count);
-  CRWNavigationManagerStorage* unarchivedSession1 = sessions[0];
+  CRWSessionStorage* unarchivedSession1 = sessions[0];
   EXPECT_NSEQ(windowName1, unarchivedSession1.windowName);
   EXPECT_NSEQ(openerId1, unarchivedSession1.openerID);
   EXPECT_TRUE(unarchivedSession1.openedByDOM);
 
-  CRWNavigationManagerStorage* unarchivedSession2 = sessions[1];
+  CRWSessionStorage* unarchivedSession2 = sessions[1];
   EXPECT_NSEQ(windowName2, unarchivedSession2.windowName);
   EXPECT_NSEQ(openerId2, unarchivedSession2.openerID);
   EXPECT_FALSE(unarchivedSession2.openedByDOM);

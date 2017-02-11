@@ -296,7 +296,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   tabRestoreService->LoadTabsFromLastSession();
 
   web::WebState::CreateParams params(_browserState);
-  for (CRWNavigationManagerStorage* session in sessions) {
+  for (CRWSessionStorage* session in sessions) {
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(params, session);
     // Add all tabs at the 0 position as the position is relative to an old

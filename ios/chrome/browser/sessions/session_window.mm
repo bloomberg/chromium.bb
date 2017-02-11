@@ -61,7 +61,7 @@ NSString* const kSelectedIndexKey = @"selectedIndex";
 
 #pragma mark - Public
 
-- (void)addSerializedSession:(CRWNavigationManagerStorage*)session {
+- (void)addSerializedSessionStorage:(CRWSessionStorage*)session {
   [_sessions addObject:session];
   // Set the selected index to 0 (this session) if this is the first session
   // added.

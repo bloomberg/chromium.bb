@@ -24,7 +24,7 @@ class NavigationItem;
 struct Referrer;
 class NavigationManagerDelegate;
 class NavigationManagerFacadeDelegate;
-class NavigationManagerStorageBuilder;
+class SessionStorageBuilder;
 
 // Implementation of NavigationManager.
 // Generally mirrors upstream's NavigationController.
@@ -142,9 +142,9 @@ class NavigationManagerImpl : public NavigationManager {
   int GetIndexForOffset(int offset) const;
 
  private:
-  // The NavigationManagerStorageBuilder functions require access to
-  // private variables of NavigationManagerImpl.
-  friend NavigationManagerStorageBuilder;
+  // The SessionStorageBuilder functions require access to private variables of
+  // NavigationManagerImpl.
+  friend SessionStorageBuilder;
 
   // Returns true if the PageTransition for the underlying navigation item at
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
