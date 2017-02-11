@@ -18,6 +18,8 @@ struct NGPhysicalOffset;
 struct NGPhysicalSize;
 struct NGBoxStrut;
 
+#define NGSizeIndefinite LayoutUnit(-1)
+
 struct CORE_EXPORT MinAndMaxContentSizes {
   LayoutUnit min_content;
   LayoutUnit max_content;

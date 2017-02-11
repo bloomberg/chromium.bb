@@ -22,6 +22,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       NGLogicalSize percentage_resolution_size);
 
+  NGConstraintSpaceBuilder& SetInitialContainingBlockSize(NGPhysicalSize);
+
   NGConstraintSpaceBuilder& SetFragmentainerSpaceAvailable(LayoutUnit space) {
     fragmentainer_space_available_ = space;
     return *this;
@@ -62,8 +64,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   DEFINE_INLINE_TRACE() {}
 
  private:
+  // Relative to parent_writing_mode_.
   NGLogicalSize available_size_;
+  // Relative to parent_writing_mode_.
   NGLogicalSize percentage_resolution_size_;
+  NGPhysicalSize initial_containing_block_size_;
   LayoutUnit fragmentainer_space_available_;
 
   unsigned writing_mode_ : 2;

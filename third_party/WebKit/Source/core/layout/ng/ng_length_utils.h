@@ -26,8 +26,6 @@ enum class LengthResolveType {
   kMarginBorderPaddingSize
 };
 
-#define NGSizeIndefinite LayoutUnit(-1)
-
 // Whether the caller needs to compute min-content and max-content sizes to
 // pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
 // If this function returns false, it is safe to pass an empty

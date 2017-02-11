@@ -12,6 +12,8 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     const NGConstraintSpace* parent_space)
     : available_size_(parent_space->AvailableSize()),
       percentage_resolution_size_(parent_space->PercentageResolutionSize()),
+      initial_containing_block_size_(
+          parent_space->InitialContainingBlockSize()),
       fragmentainer_space_available_(NGSizeIndefinite),
       writing_mode_(parent_space->WritingMode()),
       parent_writing_mode_(parent_space->WritingMode()),
@@ -27,7 +29,8 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       exclusions_(parent_space->Exclusions()) {}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
-    : fragmentainer_space_available_(NGSizeIndefinite),
+    : initial_containing_block_size_{NGSizeIndefinite, NGSizeIndefinite},
+      fragmentainer_space_available_(NGSizeIndefinite),
       writing_mode_(writing_mode),
       parent_writing_mode_(writing_mode_),
       is_fixed_size_inline_(false),
@@ -49,6 +52,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
     NGLogicalSize percentage_resolution_size) {
   percentage_resolution_size_ = percentage_resolution_size;
+  return *this;
+}
+
+NGConstraintSpaceBuilder&
+NGConstraintSpaceBuilder::SetInitialContainingBlockSize(NGPhysicalSize size) {
+  initial_containing_block_size_ = size;
   return *this;
 }
 
@@ -117,25 +126,52 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetWritingMode(
 }
 
 NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
-  // Exclusions do not pass the formatting context boundary.
-  std::shared_ptr<NGExclusions> exclusions(
-      is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
 
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = (parent_writing_mode_ == kHorizontalTopBottom) ==
                              (writing_mode_ == kHorizontalTopBottom);
 
+  NGLogicalSize available_size = available_size_;
+  NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
+  if (!is_in_parallel_flow) {
+    std::swap(available_size.inline_size, available_size.block_size);
+    std::swap(percentage_resolution_size.inline_size,
+              percentage_resolution_size.block_size);
+  }
+
+  // If inline size is indefinite, use size of initial containing block.
+  // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
+  if (available_size.inline_size == NGSizeIndefinite) {
+    DCHECK(!is_in_parallel_flow);
+    if (writing_mode_ == kHorizontalTopBottom) {
+      available_size.inline_size = initial_containing_block_size_.width;
+    } else {
+      available_size.inline_size = initial_containing_block_size_.height;
+    }
+  }
+  if (percentage_resolution_size.inline_size == NGSizeIndefinite) {
+    DCHECK(!is_in_parallel_flow);
+    if (writing_mode_ == kHorizontalTopBottom) {
+      percentage_resolution_size.inline_size =
+          initial_containing_block_size_.width;
+    } else {
+      percentage_resolution_size.inline_size =
+          initial_containing_block_size_.height;
+    }
+  }
+
+  // Exclusions do not pass the formatting context boundary.
+  std::shared_ptr<NGExclusions> exclusions(
+      is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
 
   if (is_in_parallel_flow) {
     return new NGConstraintSpace(
         static_cast<NGWritingMode>(writing_mode_),
-        static_cast<TextDirection>(text_direction_),
-        {available_size_.inline_size, available_size_.block_size},
-        {percentage_resolution_size_.inline_size,
-         percentage_resolution_size_.block_size},
+        static_cast<TextDirection>(text_direction_), available_size,
+        percentage_resolution_size, initial_containing_block_size_,
         fragmentainer_space_available_, is_fixed_size_inline_,
         is_fixed_size_block_, is_shrink_to_fit_,
         is_inline_direction_triggers_scrollbar_,
@@ -143,13 +179,10 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
         margin_strut, bfc_offset, exclusions);
   }
-
   return new NGConstraintSpace(
       static_cast<NGWritingMode>(writing_mode_),
-      static_cast<TextDirection>(text_direction_),
-      {available_size_.block_size, available_size_.inline_size},
-      {percentage_resolution_size_.block_size,
-       percentage_resolution_size_.inline_size},
+      static_cast<TextDirection>(text_direction_), available_size,
+      percentage_resolution_size, initial_containing_block_size_,
       fragmentainer_space_available_, is_fixed_size_block_,
       is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,

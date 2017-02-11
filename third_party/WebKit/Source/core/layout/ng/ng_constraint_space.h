@@ -123,6 +123,7 @@ class CORE_EXPORT NGConstraintSpace final
                     TextDirection,
                     NGLogicalSize available_size,
                     NGLogicalSize percentage_resolution_size,
+                    NGPhysicalSize initial_containing_block_size,
                     LayoutUnit fragmentainer_space_available,
                     bool is_fixed_size_inline,
                     bool is_fixed_size_block,
@@ -135,8 +136,13 @@ class CORE_EXPORT NGConstraintSpace final
                     const NGLogicalOffset& bfc_offset,
                     const std::shared_ptr<NGExclusions>& exclusions);
 
+  NGPhysicalSize InitialContainingBlockSize() const {
+    return initial_containing_block_size_;
+  }
+
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+  NGPhysicalSize initial_containing_block_size_;
 
   LayoutUnit fragmentainer_space_available_;
 

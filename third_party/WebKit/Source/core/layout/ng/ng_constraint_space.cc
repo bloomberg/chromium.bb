@@ -16,6 +16,7 @@ NGConstraintSpace::NGConstraintSpace(
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
+    NGPhysicalSize initial_containing_block_size,
     LayoutUnit fragmentainer_space_available,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
@@ -29,6 +30,7 @@ NGConstraintSpace::NGConstraintSpace(
     const std::shared_ptr<NGExclusions>& exclusions)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
+      initial_containing_block_size_(initial_containing_block_size),
       fragmentainer_space_available_(fragmentainer_space_available),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
@@ -79,9 +81,15 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
       box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext();
 
   auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
+
+  FloatSize icb_float_size = box.view()->viewportSizeForViewportUnits();
+  NGPhysicalSize initial_containing_block_size{
+      LayoutUnit(icb_float_size.width()), LayoutUnit(icb_float_size.height())};
+
   return NGConstraintSpaceBuilder(writing_mode)
       .SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size)
+      .SetInitialContainingBlockSize(initial_containing_block_size)
       .SetIsInlineDirectionTriggersScrollbar(
           box.styleRef().overflowInlineDirection() == EOverflow::kAuto)
       .SetIsBlockDirectionTriggersScrollbar(
