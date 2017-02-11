@@ -492,13 +492,126 @@ TEST_F(SurfaceFactoryTest, EvictSurface) {
   local_surface_id_ = LocalSurfaceId();
 
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
+  EXPECT_TRUE(client_.returned_resources().empty());
   factory_->EvictSurface();
   EXPECT_FALSE(manager_.GetSurfaceForId(id));
+  EXPECT_FALSE(client_.returned_resources().empty());
   EXPECT_EQ(1u, execute_count);
 }
 
-// Tests that SurfaceFactory doesn't return resources after Reset().
+// Tests doing an EvictSurface which has unregistered dependency.
+TEST_F(SurfaceFactoryTest, EvictSurfaceDependencyUnRegistered) {
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame;
+  frame.resource_list.push_back(resource);
+  uint32_t execute_count = 0;
+  factory_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  base::Bind(&DrawCallback, &execute_count));
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
+  local_surface_id_ = LocalSurfaceId();
+
+  SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
+  factory_->EvictSurface();
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_FALSE(client_.returned_resources().empty());
+  EXPECT_EQ(1u, execute_count);
+}
+
+// Tests doing an EvictSurface which has registered dependency.
+TEST_F(SurfaceFactoryTest, EvictSurfaceDependencyRegistered) {
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame;
+  frame.resource_list.push_back(resource);
+  uint32_t execute_count = 0;
+  factory_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  base::Bind(&DrawCallback, &execute_count));
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
+  local_surface_id_ = LocalSurfaceId();
+
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+
+  SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
+  factory_->EvictSurface();
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
+  EXPECT_EQ(0u, execute_count);
+
+  manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_FALSE(client_.returned_resources().empty());
+}
+
+// Tests that SurfaceFactory returns resources after Reset().
 TEST_F(SurfaceFactoryTest, Reset) {
+  LocalSurfaceId id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame;
+  frame.resource_list.push_back(resource);
+  factory_->SubmitCompositorFrame(id, std::move(frame),
+                                  SurfaceFactory::DrawCallback());
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), id);
+
+  SurfaceId surface_id(kArbitraryFrameSinkId, id);
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
+  factory_->Reset();
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_FALSE(client_.returned_resources().empty());
+  local_surface_id_ = LocalSurfaceId();
+}
+
+// Tests that SurfaceFactory returns resources after Reset() if dependency
+// unregistered.
+TEST_F(SurfaceFactoryTest, ResetDependenceUnRegistered) {
+  LocalSurfaceId id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame;
+  frame.resource_list.push_back(resource);
+  factory_->SubmitCompositorFrame(id, std::move(frame),
+                                  SurfaceFactory::DrawCallback());
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), id);
+
+  SurfaceId surface_id(kArbitraryFrameSinkId, id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
+  factory_->Reset();
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_FALSE(client_.returned_resources().empty());
+  local_surface_id_ = LocalSurfaceId();
+}
+
+// Tests that SurfaceFactory doesn't return resources after Reset() if
+// dependency registered.
+TEST_F(SurfaceFactoryTest, ResetDependencyRegistered) {
   LocalSurfaceId id(7, kArbitraryToken);
 
   TransferableResource resource;
@@ -516,10 +629,14 @@ TEST_F(SurfaceFactoryTest, Reset) {
   Surface* surface = manager_.GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(client_.returned_resources().empty());
   factory_->Reset();
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
   EXPECT_TRUE(client_.returned_resources().empty());
 
   manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
   EXPECT_TRUE(client_.returned_resources().empty());
   local_surface_id_ = LocalSurfaceId();
 }
