@@ -1450,6 +1450,7 @@ config("no_optimize") {
     cflags = [
       "/Od",  # Disable optimization.
       "/Ob0",  # Disable all inlining (on by default).
+      "/GF",  # Enable string pooling (off by default).
     ]
   } else if (is_android && !android_full_debug) {
     # On Android we kind of optimize some things that don't affect debugging
