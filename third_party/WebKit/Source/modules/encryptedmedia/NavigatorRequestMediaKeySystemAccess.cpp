@@ -263,12 +263,21 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   Document* document = toDocument(executionContext);
 
-  // If encrypted media is disabled, return a rejected promise.
-  if (!document->settings() ||
-      !document->settings()->getEncryptedMediaEnabled()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(NotSupportedError,
-                                          "Encrypted media is disabled."));
+  // From https://w3c.github.io/encrypted-media/#common-key-systems
+  // All user agents MUST support the common key systems described in this
+  // section.
+  // 9.1 Clear Key: The "org.w3.clearkey" Key System uses plain-text clear
+  //                (unencrypted) key(s) to decrypt the source.
+  //
+  // Do not check settings for Clear Key.
+  if (keySystem != "org.w3.clearkey") {
+    // For other key systems, check settings.
+    if (!document->settings() ||
+        !document->settings()->getEncryptedMediaEnabled()) {
+      return ScriptPromise::rejectWithDOMException(
+          scriptState,
+          DOMException::create(NotSupportedError, "Unsupported keySystem"));
+    }
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
