@@ -228,6 +228,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformBlockiv(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error = DoGetActiveUniformBlockiv(
@@ -445,6 +448,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInternalformativ(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error = DoGetInternalformativ(target, internalformat, pname,
@@ -651,6 +657,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformfv(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, &buffer_size);
   GLfloat* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error =
@@ -677,6 +686,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformiv(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error =
@@ -703,6 +715,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformuiv(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, &buffer_size);
   GLuint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error =
@@ -801,6 +816,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribPointerv(
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.pointer_shm_id, c.pointer_shm_offset, &buffer_size);
   GLuint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
   GLsizei length = 0;
   error::Error error =
