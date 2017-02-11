@@ -76,7 +76,7 @@ Current patches:
     mov_seek_stream in mov.c.
 
   Other changes to libavformat/mov.c:
-    Avoid heap allocation wraps and OOB in mov_read_{senc,saiz,udta_string}().
+    Avoid OOB in mov_read_udta_string().
     TODO: push upstream.
 
   Changes to libavformat/matroskadec.c
