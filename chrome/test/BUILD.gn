@@ -3425,6 +3425,8 @@ test("unit_tests") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
+  data_deps = []
+
   data = [
     "data/",
     "//base/test/data/",
@@ -3454,9 +3456,7 @@ test("unit_tests") {
     data += [ "$root_out_dir/chrome_200_percent.pak" ]
   }
   if (is_win) {
-    data_deps = [
-      "//chrome",
-    ]
+    data_deps += [ "//chrome" ]
     data += [ "$root_out_dir/chrome.exe" ]
   }
 
@@ -3513,7 +3513,6 @@ test("unit_tests") {
     "//ui/gfx:test_support",
     "//ui/resources",
   ]
-  data_deps = []
 
   if (!is_ios) {
     deps += [
