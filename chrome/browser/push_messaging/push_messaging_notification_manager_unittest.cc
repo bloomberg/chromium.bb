@@ -6,8 +6,8 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -25,10 +25,10 @@ TEST_F(PushMessagingNotificationManagerTest, IsTabVisible) {
                                     GURL("https://chrome.com/")));
   EXPECT_TRUE(manager.IsTabVisible(profile(), web_contents(), origin));
 
-  web_contents()->GetRenderWidgetHostView()->Hide();
+  content::RenderViewHostTester::For(rvh())->SimulateWasHidden();
   EXPECT_FALSE(manager.IsTabVisible(profile(), web_contents(), origin));
 
-  web_contents()->GetRenderWidgetHostView()->Show();
+  content::RenderViewHostTester::For(rvh())->SimulateWasShown();
   EXPECT_TRUE(manager.IsTabVisible(profile(), web_contents(), origin));
 }
 
@@ -43,6 +43,6 @@ TEST_F(PushMessagingNotificationManagerTest, IsTabVisibleViewSource) {
   ASSERT_EQ(view_source_page, web_contents()->GetVisibleURL());
   EXPECT_TRUE(manager.IsTabVisible(profile(), web_contents(), origin));
 
-  web_contents()->GetRenderWidgetHostView()->Hide();
+  content::RenderViewHostTester::For(rvh())->SimulateWasHidden();
   EXPECT_FALSE(manager.IsTabVisible(profile(), web_contents(), origin));
 }

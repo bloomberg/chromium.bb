@@ -54,7 +54,8 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 // TestRenderWidgetHostView ----------------------------------------------------
 
-// Subclass the RenderViewHost's view.
+// Subclass the RenderViewHost's view so that we can call Show(), etc.,
+// without having side-effects.
 class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
  public:
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
@@ -118,6 +119,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void UnlockMouse() override;
   cc::FrameSinkId GetFrameSinkId() override;
 
+  bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
   bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
 
@@ -126,6 +128,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   cc::FrameSinkId frame_sink_id_;
 
  private:
+  bool is_showing_;
   bool is_occluded_;
   bool did_swap_compositor_frame_;
   ui::DummyTextInputClient text_input_client_;
@@ -186,6 +189,8 @@ class TestRenderViewHost
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
+  void SimulateWasHidden() override;
+  void SimulateWasShown() override;
   WebPreferences TestComputeWebkitPrefs() override;
 
   void TestOnUpdateStateWithFile(const base::FilePath& file_path);

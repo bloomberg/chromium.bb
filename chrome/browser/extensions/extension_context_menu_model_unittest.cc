@@ -43,7 +43,6 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/display/test/test_screen.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
@@ -141,7 +140,6 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   void TearDown() override;
 
  private:
-  display::test::TestScreen test_screen_;
   std::unique_ptr<TestBrowserWindow> test_window_;
   std::unique_ptr<Browser> browser_;
 
@@ -194,7 +192,6 @@ Browser* ExtensionContextMenuModelTest::GetBrowser() {
 }
 
 void ExtensionContextMenuModelTest::SetUp() {
-  display::Screen::SetScreenInstance(&test_screen_);
   ExtensionServiceTestBase::SetUp();
   if (content::IsBrowserSideNavigationEnabled())
     content::BrowserSideNavigationSetUp();
@@ -204,7 +201,6 @@ void ExtensionContextMenuModelTest::TearDown() {
   if (content::IsBrowserSideNavigationEnabled())
     content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
-  display::Screen::SetScreenInstance(nullptr);
 }
 
 // Tests that applicable menu items are disabled when a ManagementPolicy
