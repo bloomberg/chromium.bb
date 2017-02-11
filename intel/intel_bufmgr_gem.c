@@ -270,15 +270,6 @@ struct _drm_intel_bo_gem {
 	bool is_userptr;
 
 	/**
-	 * Boolean of whether this buffer can be placed in the full 48-bit
-	 * address range on gen8+.
-	 *
-	 * By default, buffers will be keep in a 32-bit range, unless this
-	 * flag is explicitly set.
-	 */
-	bool use_48b_address_range;
-
-	/**
 	 * Size in bytes of this buffer and its relocation descendents.
 	 *
 	 * Used to avoid costly tree walking in
@@ -541,8 +532,6 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	flags = 0;
 	if (need_fence)
 		flags |= EXEC_OBJECT_NEEDS_FENCE;
-	if (bo_gem->use_48b_address_range)
-		flags |= EXEC_OBJECT_SUPPORTS_48B_ADDRESS;
 
 	if (bo_gem->validate_index != -1) {
 		bufmgr_gem->exec2_objects[bo_gem->validate_index].flags |= flags;
@@ -851,7 +840,6 @@ retry:
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = true;
-	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, alignment);
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1010,7 +998,6 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
-	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1158,7 +1145,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->bo.handle = open_arg.handle;
 	bo_gem->global_name = handle;
 	bo_gem->reusable = false;
-	bo_gem->use_48b_address_range = false;
 
 	HASH_ADD(handle_hh, bufmgr_gem->handle_table,
 		 gem_handle, sizeof(bo_gem->gem_handle), bo_gem);
@@ -2046,7 +2032,11 @@ static void
 drm_intel_gem_bo_use_48b_address_range(drm_intel_bo *bo, uint32_t enable)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	bo_gem->use_48b_address_range = enable;
+
+	if (enable)
+		bo_gem->kflags |= EXEC_OBJECT_SUPPORTS_48B_ADDRESS;
+	else
+		bo_gem->kflags &= ~EXEC_OBJECT_SUPPORTS_48B_ADDRESS;
 }
 
 static int
@@ -2702,7 +2692,6 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
-	bo_gem->use_48b_address_range = false;
 
 	memclear(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
