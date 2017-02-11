@@ -11,15 +11,17 @@
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
+#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
+#include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -188,10 +190,32 @@ void NGLayoutInlineItem::SetEndOffset(unsigned end_offset) {
 }
 
 LayoutUnit NGLayoutInlineItem::InlineSize() const {
-  LayoutUnit inline_size;
+  return InlineSize(start_offset_, end_offset_);
+}
+
+LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
+  DCHECK(start >= StartOffset() && start <= end && end <= EndOffset());
+
+  if (start == end)
+    return LayoutUnit();
+
+  if (!style_) {
+    // Bidi controls do not have widths.
+    // TODO(kojii): Atomic inline not supported yet.
+    return LayoutUnit();
+  }
+
+  float total_width = 0;
   for (const auto& result : shape_results_)
-    inline_size += result->width();
-  return inline_size;
+    total_width += result->width();
+
+  if (start == start_offset_ && end == end_offset_)
+    return LayoutUnit(total_width);
+
+  return LayoutUnit(ShapeResultBuffer::getCharacterRange(
+                        shape_results_, Direction(), total_width,
+                        start - StartOffset(), end - StartOffset())
+                        .width());
 }
 
 void NGInlineNode::ShapeText() {
@@ -207,11 +231,12 @@ void NGInlineNode::ShapeText() {
     ShapeCache* shape_cache = item_font.shapeCache();
 
     TextRun item_run(item_text);
+    item_run.setDirection(item.Direction());
     CachingWordShapeIterator iterator(shape_cache, item_run, &item_font);
     RefPtr<const ShapeResult> word_result;
     while (iterator.next(&word_result)) {
-      item.shape_results_.push_back(word_result.get());
-    };
+      item.shape_results_.push_back(std::move(word_result));
+    }
   }
 }
 
@@ -223,6 +248,9 @@ RefPtr<NGPhysicalFragment> NGInlineNode::Layout(NGConstraintSpace*) {
 void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
                                 NGLineBuilder* line_builder) {
   PrepareLayout();
+
+  if (text_content_.isEmpty())
+    return;
 
   NGTextLayoutAlgorithm(this, constraint_space).LayoutInline(line_builder);
 }

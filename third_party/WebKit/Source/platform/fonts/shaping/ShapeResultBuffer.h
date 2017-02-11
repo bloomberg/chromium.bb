@@ -5,6 +5,7 @@
 #ifndef ShapeResultBuffer_h
 #define ShapeResultBuffer_h
 
+#include "platform/PlatformExport.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
@@ -17,7 +18,7 @@ class GlyphBuffer;
 struct GlyphData;
 class TextRun;
 
-class ShapeResultBuffer {
+class PLATFORM_EXPORT ShapeResultBuffer {
   WTF_MAKE_NONCOPYABLE(ShapeResultBuffer);
   STACK_ALLOCATED();
 
@@ -49,6 +50,13 @@ class ShapeResultBuffer {
                                    unsigned to) const;
   Vector<CharacterRange> individualCharacterRanges(TextDirection,
                                                    float totalWidth) const;
+
+  static CharacterRange getCharacterRange(
+      const Vector<RefPtr<const ShapeResult>, 64>&,
+      TextDirection,
+      float totalWidth,
+      unsigned from,
+      unsigned to);
 
  private:
   float fillFastHorizontalGlyphBuffer(GlyphBuffer*, const TextRun&) const;

@@ -179,8 +179,9 @@ RefPtr<NGPhysicalBoxFragment> NGFragmentBuilder::ToBoxFragment() {
 
 RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
     NGInlineNode* node,
-    unsigned start_index,
-    unsigned end_index) {
+    unsigned index,
+    unsigned start_offset,
+    unsigned end_offset) {
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentText);
   DCHECK(children_.isEmpty());
   DCHECK(offsets_.isEmpty());
@@ -189,7 +190,7 @@ RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
   Vector<Persistent<NGFloatingObject>> empty_positioned_floats;
 
   return adoptRef(new NGPhysicalTextFragment(
-      layout_object_, node, start_index, end_index,
+      layout_object_, node, index, start_offset, end_offset,
       size_.ConvertToPhysical(writing_mode_),
       overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
       out_of_flow_positions_, empty_unpositioned_floats,

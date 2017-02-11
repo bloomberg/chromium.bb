@@ -178,22 +178,24 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
 }
 
-#define TEST_TEXT_FRAGMENT(fragment, node, start_index, end_index, dir) \
-  EXPECT_EQ(node, fragment->Node());                                    \
-  EXPECT_EQ(start_index, fragment->StartIndex());                       \
-  EXPECT_EQ(end_index, fragment->EndIndex());                           \
-  EXPECT_EQ(dir, node->Items()[fragment->StartIndex()].Direction())
+#define TEST_TEXT_FRAGMENT(fragment, node, index, start_offset, end_offset, \
+                           dir)                                             \
+  EXPECT_EQ(node, fragment->Node());                                        \
+  EXPECT_EQ(index, fragment->ItemIndex());                                  \
+  EXPECT_EQ(start_offset, fragment->StartOffset());                         \
+  EXPECT_EQ(end_offset, fragment->EndOffset());                             \
+  EXPECT_EQ(dir, node->Items()[fragment->ItemIndex()].Direction())
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 1u, TextDirection::kLtr);
-  TEST_TEXT_FRAGMENT(fragments[1], node, 6u, 7u, TextDirection::kRtl);
-  TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 5u, TextDirection::kLtr);
-  TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 3u, TextDirection::kRtl);
-  TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 9u, TextDirection::kLtr);
+  TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 0u, 6u, TextDirection::kLtr);
+  TEST_TEXT_FRAGMENT(fragments[1], node, 6u, 16u, 21u, TextDirection::kRtl);
+  TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 14u, 15u, TextDirection::kLtr);
+  TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 7u, 13u, TextDirection::kRtl);
+  TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 22u, 28u, TextDirection::kLtr);
 }
 
 }  // namespace blink

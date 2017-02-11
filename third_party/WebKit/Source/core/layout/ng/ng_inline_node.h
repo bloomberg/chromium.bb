@@ -12,6 +12,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
+
 #include <unicode/ubidi.h>
 #include <unicode/uscript.h>
 
@@ -43,6 +44,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // calling the Layout method.
   void PrepareLayout();
 
+  const String& Text() const { return text_content_; }
   String Text(unsigned start_offset, unsigned end_offset) const {
     return text_content_.substring(start_offset, end_offset);
   }
@@ -54,6 +56,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void GetLayoutTextOffsets(Vector<unsigned, 32>*);
 
   bool IsBidiEnabled() const { return is_bidi_enabled_; }
+
+  void AssertOffset(unsigned index, unsigned offset) const;
+  void AssertEndOffset(unsigned index, unsigned offset) const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -117,6 +122,7 @@ class NGLayoutInlineItem {
   void SetEndOffset(unsigned);
 
   LayoutUnit InlineSize() const;
+  LayoutUnit InlineSize(unsigned start, unsigned end) const;
 
   static void Split(Vector<NGLayoutInlineItem>&,
                     unsigned index,
@@ -126,6 +132,9 @@ class NGLayoutInlineItem {
                                unsigned end_offset,
                                UBiDiLevel);
 
+  void AssertOffset(unsigned offset) const;
+  void AssertEndOffset(unsigned offset) const;
+
  private:
   unsigned start_offset_;
   unsigned end_offset_;
@@ -134,11 +143,28 @@ class NGLayoutInlineItem {
   FontFallbackPriority fallback_priority_;
   bool rotate_sideways_;
   const ComputedStyle* style_;
-  Vector<RefPtr<const ShapeResult>> shape_results_;
+  Vector<RefPtr<const ShapeResult>, 64> shape_results_;
   LayoutObject* layout_object_;
 
   friend class NGInlineNode;
 };
+
+inline void NGLayoutInlineItem::AssertOffset(unsigned offset) const {
+  DCHECK(offset >= start_offset_ && offset < end_offset_);
+}
+
+inline void NGLayoutInlineItem::AssertEndOffset(unsigned offset) const {
+  DCHECK(offset >= start_offset_ && offset <= end_offset_);
+}
+
+inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {
+  items_[index].AssertOffset(offset);
+}
+
+inline void NGInlineNode::AssertEndOffset(unsigned index,
+                                          unsigned offset) const {
+  items_[index].AssertEndOffset(offset);
+}
 
 DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,

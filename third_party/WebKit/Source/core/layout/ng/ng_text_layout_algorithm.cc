@@ -12,6 +12,7 @@
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 
@@ -30,41 +31,83 @@ RefPtr<NGPhysicalFragment> NGTextLayoutAlgorithm::Layout() {
   return nullptr;
 }
 
+static bool IsHangable(UChar ch) {
+  return ch == ' ';
+}
+
 void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
   // TODO(kojii): Make this tickable. Each line is easy. Needs more thoughts
   // for each fragment in a line. Bidi reordering is probably atomic.
   // TODO(kojii): oof is not well-thought yet. The bottom static position may be
   // in the next line, https://github.com/w3c/csswg-drafts/issues/609
-  const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
-  for (unsigned start_index = 0; start_index < items.size();) {
-    const NGLayoutInlineItem& start_item = items[start_index];
-    // Make a bidi control a chunk by itself.
-    // TODO(kojii): atomic inline is not well-thought yet.
-    if (!start_item.Style()) {
-      line_builder->Add(start_index, start_index + 1, LayoutUnit());
-      start_index++;
+  const String& text_content = inline_box_->Text();
+  DCHECK(!text_content.isEmpty());
+  // TODO(kojii): Give the locale to LazyLineBreakIterator.
+  LazyLineBreakIterator line_break_iterator(text_content);
+  unsigned current_offset = 0;
+  line_builder->SetStart(0, current_offset);
+  const unsigned end_offset = text_content.length();
+  while (current_offset < end_offset) {
+    // Find the next break opportunity.
+    int tmp_next_breakable_offset = -1;
+    line_break_iterator.isBreakable(current_offset + 1,
+                                    tmp_next_breakable_offset);
+    current_offset =
+        tmp_next_breakable_offset >= 0 ? tmp_next_breakable_offset : end_offset;
+    DCHECK_LE(current_offset, end_offset);
+
+    // Advance the break opportunity to the end of hangable characters; e.g.,
+    // spaces.
+    // Unlike the ICU line breaker, LazyLineBreakIterator breaks before
+    // breakable spaces, and expect the line breaker to handle spaces
+    // differently. This logic computes in the ICU way; break after spaces, and
+    // handle spaces as hangable characters.
+    unsigned start_of_hangables = current_offset;
+    while (current_offset < end_offset &&
+           IsHangable(text_content[current_offset]))
+      current_offset++;
+
+    // Set the end to the next break opportunity.
+    line_builder->SetEnd(current_offset);
+
+    // If there are more available spaces, mark the break opportunity and fetch
+    // more text.
+    if (line_builder->CanFitOnLine()) {
+      line_builder->SetBreakOpportunity();
       continue;
     }
 
-    // TODO(kojii): Implement the line breaker.
-
-    LayoutUnit inline_size = start_item.InlineSize();
-    unsigned i = start_index + 1;
-    for (; i < items.size(); i++) {
-      const NGLayoutInlineItem& item = items[i];
-      // Split chunks before bidi controls, or at bidi level boundaries.
-      // Also split at LayoutObject boundaries to generate InlineBox in
-      // |CopyFragmentDataToLayoutBlockFlow()|.
-      if (item.GetLayoutObject() != start_item.GetLayoutObject() ||
-          !item.Style() || item.BidiLevel() != start_item.BidiLevel()) {
-        break;
-      }
-      inline_size += item.InlineSize();
+    // Compute hangable characters if exists.
+    if (current_offset != start_of_hangables) {
+      line_builder->SetStartOfHangables(start_of_hangables);
+      // If text before hangables can fit, include it in the current line.
+      if (line_builder->CanFitOnLine())
+        line_builder->SetBreakOpportunity();
     }
-    line_builder->Add(start_index, i, inline_size);
-    start_index = i;
+
+    if (!line_builder->HasBreakOpportunity()) {
+      // The first word (break opportunity) did not fit on the line.
+      // Create a line including items that don't fit, allowing them to
+      // overflow.
+      line_builder->CreateLine();
+    } else {
+      line_builder->CreateLineUpToLastBreakOpportunity();
+
+      // Items after the last break opportunity were sent to the next line.
+      // Set the break opportunity, or create a line if the word doesn't fit.
+      if (line_builder->HasItems()) {
+        if (!line_builder->CanFitOnLine())
+          line_builder->CreateLine();
+        else
+          line_builder->SetBreakOpportunity();
+      }
+    }
   }
-  line_builder->CreateLine();
+
+  // If inline children ended with items left in the line builder, create a line
+  // for them.
+  if (line_builder->HasItems())
+    line_builder->CreateLine();
 }
 
 }  // namespace blink

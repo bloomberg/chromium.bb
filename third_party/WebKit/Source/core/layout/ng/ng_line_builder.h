@@ -18,18 +18,61 @@ class NGFragmentBuilder;
 class NGInlineNode;
 
 // NGLineBuilder creates the fragment tree for a line.
+// NGLineBuilder manages the current line as a range, |start| and |end|.
+// |end| can be extended multiple times before creating a line, usually until
+// |!CanFitOnLine()|.
+// |SetBreakOpportunity| can mark the last confirmed offset that can fit.
 class CORE_EXPORT NGLineBuilder final
     : public GarbageCollectedFinalized<NGLineBuilder> {
  public:
   NGLineBuilder(NGInlineNode*, const NGConstraintSpace*);
 
-  // Add a range of NGLayoutInlineItem to the line in the logical order.
-  void Add(unsigned start_index, unsigned end_index, LayoutUnit inline_size);
+  const NGConstraintSpace& ConstraintSpace() const {
+    return *constraint_space_;
+  }
 
-  // Create a line from items added by |Add()|.
+  // Returns if the current items fit on a line.
+  bool CanFitOnLine() const;
+
+  // Returns if there were any items.
+  bool HasItems() const;
+
+  // Set the start offset.
+  // Set the end as well, and therefore empties the current line.
+  void SetStart(unsigned index, unsigned offset);
+
+  // Set the end offset.
+  void SetEnd(unsigned end_offset);
+
+  // Set the end offset, if caller knows the index and inline size since the
+  // current end offset.
+  void SetEnd(unsigned last_index,
+              unsigned end_offset,
+              LayoutUnit inline_size_since_current_end);
+
+  // Create a line up to the end offset.
+  // Then set the start to the end offset, and thus empty the current line.
   void CreateLine();
 
-  // Create fragments for lines created by |CreateLine()|.
+  // Returns if a break opportunity was set on the current line.
+  bool HasBreakOpportunity() const;
+
+  // Returns if there were items after the last break opportunity.
+  bool HasItemsAfterLastBreakOpportunity() const;
+
+  // Set the break opportunity at the current end offset.
+  void SetBreakOpportunity();
+
+  // Create a line up to the last break opportunity.
+  // Items after that are sent to the next line.
+  void CreateLineUpToLastBreakOpportunity();
+
+  // Set the start offset of hangables; e.g., spaces or hanging punctuations.
+  // Hangable characters can go beyond the right margin, and are ignored for
+  // center/right alignment.
+  void SetStartOfHangables(unsigned offset);
+
+  // Create fragments for all lines created so far.
   void CreateFragments(NGFragmentBuilder*);
 
   // Copy fragment data of all lines created by this NGLineBuilder to
@@ -41,13 +84,14 @@ class CORE_EXPORT NGLineBuilder final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void BidiReorder();
-
   struct LineItemChunk {
-    unsigned start_index;
-    unsigned end_index;
+    unsigned index;
+    unsigned start_offset;
+    unsigned end_offset;
     LayoutUnit inline_size;
   };
+
+  void BidiReorder(Vector<LineItemChunk, 32>*);
 
   // LineBoxData is a set of data for a line box that are computed in early
   // phases, such as in |CreateLine()|, and will be used in later phases.
@@ -63,8 +107,15 @@ class CORE_EXPORT NGLineBuilder final
   Member<const NGConstraintSpace> constraint_space_;
   Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
-  Vector<LineItemChunk, 32> line_item_chunks_;
   Vector<LineBoxData, 32> line_box_data_list_;
+  unsigned start_index_ = 0;
+  unsigned start_offset_ = 0;
+  unsigned last_index_ = 0;
+  unsigned end_offset_ = 0;
+  unsigned last_break_opportunity_index_ = 0;
+  unsigned last_break_opportunity_offset_ = 0;
+  LayoutUnit end_position_;
+  LayoutUnit last_break_opportunity_position_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
 

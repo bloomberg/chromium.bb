@@ -92,8 +92,9 @@ class CORE_EXPORT NGFragmentBuilder final {
   // Creates the fragment. Can only be called once.
   RefPtr<NGPhysicalBoxFragment> ToBoxFragment();
   RefPtr<NGPhysicalTextFragment> ToTextFragment(NGInlineNode*,
-                                                unsigned start_index,
-                                                unsigned end_index);
+                                                unsigned index,
+                                                unsigned start_offset,
+                                                unsigned end_offset);
 
   // Mutable list of floats that need to be positioned.
   Vector<Persistent<NGFloatingObject>>& MutableUnpositionedFloats() {

@@ -12,6 +12,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
@@ -30,32 +31,118 @@ NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
 {
 }
 
-void NGLineBuilder::Add(unsigned start_index,
-                        unsigned end_index,
-                        LayoutUnit inline_size) {
-  DCHECK_LT(start_index, end_index);
-  line_item_chunks_.push_back(
-      LineItemChunk{start_index, end_index, inline_size});
+bool NGLineBuilder::CanFitOnLine() const {
+  LayoutUnit available_size = constraint_space_->AvailableSize().inline_size;
+  if (available_size == NGSizeIndefinite)
+    return true;
+  return end_position_ <= available_size;
+}
+
+bool NGLineBuilder::HasItems() const {
+  return start_offset_ != end_offset_;
+}
+
+bool NGLineBuilder::HasBreakOpportunity() const {
+  return start_offset_ != last_break_opportunity_offset_;
+}
+
+bool NGLineBuilder::HasItemsAfterLastBreakOpportunity() const {
+  return last_break_opportunity_offset_ != end_offset_;
+}
+
+void NGLineBuilder::SetStart(unsigned index, unsigned offset) {
+  inline_box_->AssertOffset(index, offset);
+
+  start_index_ = last_index_ = last_break_opportunity_index_ = index;
+  start_offset_ = end_offset_ = last_break_opportunity_offset_ = offset;
+  end_position_ = last_break_opportunity_position_ = LayoutUnit();
+}
+
+void NGLineBuilder::SetEnd(unsigned end_offset) {
+  const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
+  DCHECK(end_offset > end_offset_ && end_offset <= items.back().EndOffset());
+
+  // Find the item index for |end_offset|, while accumulating inline-size.
+  unsigned last_index = last_index_;
+  const NGLayoutInlineItem* item = &items[last_index];
+  LayoutUnit inline_size_since_current_end;
+  if (end_offset <= item->EndOffset()) {
+    inline_size_since_current_end = item->InlineSize(end_offset_, end_offset);
+  } else {
+    inline_size_since_current_end =
+        item->InlineSize(end_offset_, item->EndOffset());
+    item = &items[++last_index];
+    for (; end_offset > item->EndOffset(); item = &items[++last_index])
+      inline_size_since_current_end += item->InlineSize();
+    inline_size_since_current_end +=
+        item->InlineSize(item->StartOffset(), end_offset);
+  }
+
+  SetEnd(last_index, end_offset, inline_size_since_current_end);
+}
+
+void NGLineBuilder::SetEnd(unsigned last_index,
+                           unsigned end_offset,
+                           LayoutUnit inline_size_since_current_end) {
+  inline_box_->AssertEndOffset(last_index, end_offset);
+  DCHECK_GE(last_index, last_index_);
+  DCHECK_GT(end_offset, end_offset_);
+
+  end_position_ += inline_size_since_current_end;
+  last_index_ = last_index;
+  end_offset_ = end_offset;
+}
+
+void NGLineBuilder::SetBreakOpportunity() {
+  last_break_opportunity_index_ = last_index_;
+  last_break_opportunity_offset_ = end_offset_;
+  last_break_opportunity_position_ = end_position_;
+}
+
+void NGLineBuilder::SetStartOfHangables(unsigned offset) {
+  // TODO(kojii): Implement.
 }
 
 void NGLineBuilder::CreateLine() {
+  if (HasItemsAfterLastBreakOpportunity())
+    SetBreakOpportunity();
+  CreateLineUpToLastBreakOpportunity();
+}
+
+void NGLineBuilder::CreateLineUpToLastBreakOpportunity() {
+  const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
+
+  // Create a list of LineItemChunk from |start| and |last_break_opportunity|.
+  // TODO(kojii): Consider refactoring LineItemChunk once NGLineBuilder's public
+  // API is more finalized. It does not fit well with the current API.
+  Vector<LineItemChunk, 32> line_item_chunks;
+  unsigned start_offset = start_offset_;
+  for (unsigned i = start_index_; i <= last_break_opportunity_index_; i++) {
+    const NGLayoutInlineItem& item = items[i];
+    unsigned end_offset =
+        std::min(item.EndOffset(), last_break_opportunity_offset_);
+    line_item_chunks.push_back(
+        LineItemChunk{i, start_offset, end_offset,
+                      item.InlineSize(start_offset, end_offset)});
+    start_offset = end_offset;
+  }
+
   if (inline_box_->IsBidiEnabled())
-    BidiReorder();
+    BidiReorder(&line_item_chunks);
 
   NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText,
                                  inline_box_->GetLayoutObject());
   text_builder.SetWritingMode(constraint_space_->WritingMode());
   LayoutUnit inline_offset;
-  const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
-  for (const auto& line_item_chunk : line_item_chunks_) {
-    const NGLayoutInlineItem& start_item = items[line_item_chunk.start_index];
+  for (const auto& line_item_chunk : line_item_chunks) {
+    const NGLayoutInlineItem& item = items[line_item_chunk.index];
     // Skip bidi controls.
-    if (!start_item.GetLayoutObject())
+    if (!item.GetLayoutObject())
       continue;
-    const ComputedStyle* style = start_item.Style();
+    const ComputedStyle* style = item.Style();
     // TODO(kojii): Handling atomic inline needs more thoughts.
     if (!style)
-      style = start_item.GetLayoutObject()->style();
+      style = item.GetLayoutObject()->style();
 
     // TODO(kojii): The block size for a text fragment isn't clear, revisit when
     // we implement line box layout.
@@ -67,7 +154,8 @@ void NGLineBuilder::CreateLine() {
     TextDirection css_direction = style->direction();
     text_builder.SetDirection(css_direction);
     RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
-        inline_box_, line_item_chunk.start_index, line_item_chunk.end_index);
+        inline_box_, line_item_chunk.index, line_item_chunk.start_offset,
+        line_item_chunk.end_offset);
 
     fragments_.push_back(std::move(text_fragment));
     offsets_.push_back(NGLogicalOffset(inline_offset, content_size_));
@@ -83,16 +171,23 @@ void NGLineBuilder::CreateLine() {
 
     max_inline_size_ = std::max(max_inline_size_, inline_offset);
     // TODO(kojii): Implement block size when we support baseline alignment.
-    content_size_ += LayoutUnit(100);
+    content_size_ += LayoutUnit(20);
   }
 
-  line_item_chunks_.clear();
+  // Prepare for the next line.
+  // Move |start| to |last_break_opportunity|, keeping items after
+  // |last_break_opportunity|.
+  start_index_ = last_break_opportunity_index_;
+  start_offset_ = last_break_opportunity_offset_;
+  DCHECK_GE(end_position_, last_break_opportunity_position_);
+  end_position_ -= last_break_opportunity_position_;
+  last_break_opportunity_position_ = LayoutUnit();
 #if DCHECK_IS_ON()
   is_bidi_reordered_ = false;
 #endif
 }
 
-void NGLineBuilder::BidiReorder() {
+void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
 #if DCHECK_IS_ON()
   DCHECK(!is_bidi_reordered_);
   is_bidi_reordered_ = true;
@@ -108,26 +203,26 @@ void NGLineBuilder::BidiReorder() {
   // handle the direction of each run, we use |ubidi_reorderVisual()| to reorder
   // runs instead of characters.
   Vector<UBiDiLevel, 32> levels;
-  levels.reserveInitialCapacity(line_item_chunks_.size());
-  for (const auto& chunk : line_item_chunks_)
-    levels.push_back(inline_box_->Items()[chunk.start_index].BidiLevel());
-  Vector<int32_t, 32> indicies_in_visual_order(line_item_chunks_.size());
+  levels.reserveInitialCapacity(line_item_chunks->size());
+  for (const auto& chunk : *line_item_chunks)
+    levels.push_back(inline_box_->Items()[chunk.index].BidiLevel());
+  Vector<int32_t, 32> indicies_in_visual_order(line_item_chunks->size());
   NGBidiParagraph::IndiciesInVisualOrder(levels, &indicies_in_visual_order);
 
-  // Reorder |line_item_chunks_| in visual order.
+  // Reorder |line_item_chunks| in visual order.
   Vector<LineItemChunk, 32> line_item_chunks_in_visual_order(
-      line_item_chunks_.size());
+      line_item_chunks->size());
   for (unsigned visual_index = 0;
        visual_index < indicies_in_visual_order.size(); visual_index++) {
     unsigned logical_index = indicies_in_visual_order[visual_index];
     line_item_chunks_in_visual_order[visual_index] =
-        line_item_chunks_[logical_index];
+        (*line_item_chunks)[logical_index];
   }
-  line_item_chunks_.swap(line_item_chunks_in_visual_order);
+  line_item_chunks->swap(line_item_chunks_in_visual_order);
 }
 
 void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
-  DCHECK(line_item_chunks_.isEmpty()) << "Must call CreateLine().";
+  DCHECK(!HasItems()) << "Must call CreateLine()";
   DCHECK_EQ(fragments_.size(), offsets_.size());
 
   for (unsigned i = 0; i < fragments_.size(); i++) {
@@ -162,19 +257,16 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
     for (; fragment_index < line_box_data.fragment_end; fragment_index++) {
       NGPhysicalTextFragment* text_fragment =
           toNGPhysicalTextFragment(fragments_[fragment_index].get());
-      // TODO(kojii): needs to reverse for RTL?
-      for (unsigned item_index = text_fragment->StartIndex();
-           item_index < text_fragment->EndIndex(); item_index++) {
-        const NGLayoutInlineItem& item = items[item_index];
-        LayoutObject* layout_object = item.GetLayoutObject();
-        if (!layout_object)  // Skip bidi controls.
-          continue;
-        BidiRun* run;
-        if (layout_object->isText()) {
-          unsigned text_offset = text_offsets[item_index];
-          run = new BidiRun(item.StartOffset() - text_offset,
-                            item.EndOffset() - text_offset, item.BidiLevel(),
-                            LineLayoutItem(layout_object));
+      const NGLayoutInlineItem& item = items[text_fragment->ItemIndex()];
+      LayoutObject* layout_object = item.GetLayoutObject();
+      if (!layout_object)  // Skip bidi controls.
+        continue;
+      BidiRun* run;
+      if (layout_object->isText()) {
+        unsigned text_offset = text_offsets[text_fragment->ItemIndex()];
+        run = new BidiRun(text_fragment->StartOffset() - text_offset,
+                          text_fragment->EndOffset() - text_offset,
+                          item.BidiLevel(), LineLayoutItem(layout_object));
         } else {
           DCHECK(layout_object->isAtomicInlineLevel());
           run = new BidiRun(0, 1, item.BidiLevel(),
@@ -182,7 +274,6 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
         }
         bidi_runs.addRun(run);
         fragments_for_bidi_runs.push_back(text_fragment);
-      }
     }
     // TODO(kojii): bidi needs to find the logical last run.
     bidi_runs.setLogicallyLastRun(bidi_runs.lastRun());
