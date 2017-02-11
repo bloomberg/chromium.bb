@@ -12,7 +12,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -66,6 +65,7 @@ class ByteCounter {
 };
 
 namespace {
+
 struct GlobalCounter {
   base::TimeTicks last_printout;
   ByteCounter in_pipe_input_counter;
@@ -73,10 +73,13 @@ struct GlobalCounter {
   ByteCounter out_pipe_input_counter;
   ByteCounter out_pipe_output_counter;
 };
-}  // namespace
 
-base::LazyInstance<GlobalCounter>::Leaky g_counter =
-    LAZY_INSTANCE_INITIALIZER;
+GlobalCounter* GetGlobalCounter() {
+  static GlobalCounter* counter = new GlobalCounter();
+  return counter;
+}
+
+}  // namespace
 
 class ByteCounterPipe : public media::cast::test::PacketPipe {
  public:
@@ -101,24 +104,26 @@ void SetupByteCounters(std::unique_ptr<media::cast::test::PacketPipe>* pipe,
 }
 
 void CheckByteCounters() {
-  base::TimeTicks now = base::TimeTicks::Now();
-  g_counter.Get().in_pipe_input_counter.push(now);
-  g_counter.Get().in_pipe_output_counter.push(now);
-  g_counter.Get().out_pipe_input_counter.push(now);
-  g_counter.Get().out_pipe_output_counter.push(now);
-  if ((now - g_counter.Get().last_printout).InSeconds() >= 5) {
-    fprintf(stderr, "Sending  : %5.2f / %5.2f mbps %6.2f / %6.2f packets / s\n",
-            g_counter.Get().in_pipe_output_counter.megabits_per_second(),
-            g_counter.Get().in_pipe_input_counter.megabits_per_second(),
-            g_counter.Get().in_pipe_output_counter.packets_per_second(),
-            g_counter.Get().in_pipe_input_counter.packets_per_second());
-    fprintf(stderr, "Receiving: %5.2f / %5.2f mbps %6.2f / %6.2f packets / s\n",
-            g_counter.Get().out_pipe_output_counter.megabits_per_second(),
-            g_counter.Get().out_pipe_input_counter.megabits_per_second(),
-            g_counter.Get().out_pipe_output_counter.packets_per_second(),
-            g_counter.Get().out_pipe_input_counter.packets_per_second());
+  GlobalCounter* counter = GetGlobalCounter();
 
-    g_counter.Get().last_printout = now;
+  base::TimeTicks now = base::TimeTicks::Now();
+  counter->in_pipe_input_counter.push(now);
+  counter->in_pipe_output_counter.push(now);
+  counter->out_pipe_input_counter.push(now);
+  counter->out_pipe_output_counter.push(now);
+  if ((now - counter->last_printout).InSeconds() >= 5) {
+    fprintf(stderr, "Sending  : %5.2f / %5.2f mbps %6.2f / %6.2f packets / s\n",
+            counter->in_pipe_output_counter.megabits_per_second(),
+            counter->in_pipe_input_counter.megabits_per_second(),
+            counter->in_pipe_output_counter.packets_per_second(),
+            counter->in_pipe_input_counter.packets_per_second());
+    fprintf(stderr, "Receiving: %5.2f / %5.2f mbps %6.2f / %6.2f packets / s\n",
+            counter->out_pipe_output_counter.megabits_per_second(),
+            counter->out_pipe_input_counter.megabits_per_second(),
+            counter->out_pipe_output_counter.packets_per_second(),
+            counter->out_pipe_input_counter.packets_per_second());
+
+    counter->last_printout = now;
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -188,11 +193,12 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  SetupByteCounters(&in_pipe, &(g_counter.Get().in_pipe_input_counter),
-                    &(g_counter.Get().in_pipe_output_counter));
-  SetupByteCounters(
-      &out_pipe, &(g_counter.Get().out_pipe_input_counter),
-      &(g_counter.Get().out_pipe_output_counter));
+  GlobalCounter* counter = GetGlobalCounter();
+
+  SetupByteCounters(&in_pipe, &(counter->in_pipe_input_counter),
+                    &(counter->in_pipe_output_counter));
+  SetupByteCounters(&out_pipe, &(counter->out_pipe_input_counter),
+                    &(counter->out_pipe_output_counter));
 
   printf("Press Ctrl-C when done.\n");
   std::unique_ptr<media::cast::test::UDPProxy> proxy(
@@ -200,7 +206,7 @@ int main(int argc, char** argv) {
                                           std::move(in_pipe),
                                           std::move(out_pipe), NULL));
   base::MessageLoop message_loop;
-  g_counter.Get().last_printout = base::TimeTicks::Now();
+  counter->last_printout = base::TimeTicks::Now();
   CheckByteCounters();
   base::RunLoop().Run();
   return 1;

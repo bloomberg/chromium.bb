@@ -14,9 +14,6 @@ namespace media {
 
 namespace {
 
-static base::LazyInstance<MediaServiceThrottler>::Leaky
-    g_media_service_throttler = LAZY_INSTANCE_INITIALIZER;
-
 // Period of inactivity after which we stop listening for MediaServer crashes.
 // NOTE: Server crashes don't count as acticity. Only calls to
 // GetDelayForClientCreation() do.
@@ -84,7 +81,8 @@ const base::TimeDelta kMinDelayWindow =
 
 // static
 MediaServiceThrottler* MediaServiceThrottler::GetInstance() {
-  return g_media_service_throttler.Pointer();
+  static MediaServiceThrottler* instance = new MediaServiceThrottler();
+  return instance;
 }
 
 MediaServiceThrottler::~MediaServiceThrottler() {}

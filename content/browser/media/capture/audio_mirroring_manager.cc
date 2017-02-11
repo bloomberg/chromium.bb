@@ -8,20 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
 
 namespace content {
 
-namespace {
-
-base::LazyInstance<AudioMirroringManager>::Leaky g_audio_mirroring_manager =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // static
 AudioMirroringManager* AudioMirroringManager::GetInstance() {
-  return g_audio_mirroring_manager.Pointer();
+  static AudioMirroringManager* manager = new AudioMirroringManager();
+  return manager;
 }
 
 AudioMirroringManager::AudioMirroringManager() {

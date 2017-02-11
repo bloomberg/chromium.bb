@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
@@ -26,7 +25,7 @@ namespace media {
 namespace {
 
 // Manages all CDMs created by MojoCdmService. Can only have one instance per
-// process so use a LazyInstance to ensure this.
+// process, so we use a thread-safe static to achieve this.
 class CdmManager {
  public:
   CdmManager() {}
@@ -62,7 +61,10 @@ class CdmManager {
   DISALLOW_COPY_AND_ASSIGN(CdmManager);
 };
 
-base::LazyInstance<CdmManager>::Leaky g_cdm_manager = LAZY_INSTANCE_INITIALIZER;
+CdmManager* GetManager() {
+  static CdmManager* manager = new CdmManager();
+  return manager;
+}
 
 }  // namespace
 
@@ -75,7 +77,7 @@ int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
 scoped_refptr<ContentDecryptionModule> MojoCdmService::LegacyGetCdm(
     int cdm_id) {
   DVLOG(1) << __func__ << ": " << cdm_id;
-  return g_cdm_manager.Get().GetCdm(cdm_id);
+  return GetManager()->GetCdm(cdm_id);
 }
 
 MojoCdmService::MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
@@ -92,7 +94,7 @@ MojoCdmService::~MojoCdmService() {
   if (cdm_id_ == CdmContext::kInvalidCdmId)
     return;
 
-  g_cdm_manager.Get().UnregisterCdm(cdm_id_);
+  GetManager()->UnregisterCdm(cdm_id_);
 
   if (context_)
     context_->UnregisterCdm(cdm_id_);
@@ -194,7 +196,7 @@ void MojoCdmService::OnCdmCreated(
   cdm_id_ = next_cdm_id_++;
 
   context_->RegisterCdm(cdm_id_, this);
-  g_cdm_manager.Get().RegisterCdm(cdm_id_, cdm);
+  GetManager()->RegisterCdm(cdm_id_, cdm);
 
   // If |cdm| has a decryptor, create the MojoDecryptorService
   // and pass the connection back to the client.

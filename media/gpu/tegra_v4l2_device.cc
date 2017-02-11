@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <linux/videodev2.h>
 
-#include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/tegra_v4l2_device.h"
@@ -51,44 +50,6 @@ TEGRAV4L2_SYM(Munmap);
 TEGRAV4L2_SYM(UseEglImage);
 
 #undef TEGRAV4L2_SYM
-
-class TegraFunctionSymbolFinder {
- public:
-  TegraFunctionSymbolFinder() : initialized_(false) {
-    if (!dlopen("/usr/lib/libtegrav4l2.so",
-                RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE))
-      return;
-#define TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(name)          \
-  do {                                                    \
-    TegraV4L2_##name = reinterpret_cast<TegraV4L2##name>( \
-        dlsym(RTLD_DEFAULT, "TegraV4L2_" #name));         \
-    if (TegraV4L2_##name == NULL) {                       \
-      LOG(ERROR) << "Failed to dlsym TegraV4L2_" #name;   \
-      return;                                             \
-    }                                                     \
-  } while (0)
-
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Open);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Close);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Ioctl);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Poll);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(SetDevicePollInterrupt);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(ClearDevicePollInterrupt);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Mmap);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Munmap);
-    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(UseEglImage);
-#undef TEGRAV4L2_DLSYM
-    initialized_ = true;
-  }
-
-  bool initialized() { return initialized_; }
-
- private:
-  bool initialized_;
-};
-
-base::LazyInstance<TegraFunctionSymbolFinder> g_tegra_function_symbol_finder_ =
-    LAZY_INSTANCE_INITIALIZER;
 
 TegraV4L2Device::TegraV4L2Device() {}
 
@@ -138,7 +99,35 @@ bool TegraV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool TegraV4L2Device::Initialize() {
-  return g_tegra_function_symbol_finder_.Get().initialized();
+  static bool initialized = []() {
+    if (!dlopen("/usr/lib/libtegrav4l2.so",
+                RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
+      return false;
+    }
+#define TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(name)          \
+  do {                                                    \
+    TegraV4L2_##name = reinterpret_cast<TegraV4L2##name>( \
+        dlsym(RTLD_DEFAULT, "TegraV4L2_" #name));         \
+    if (TegraV4L2_##name == NULL) {                       \
+      LOG(ERROR) << "Failed to dlsym TegraV4L2_" #name;   \
+      return false;                                       \
+    }                                                     \
+  } while (0)
+
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Open);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Close);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Ioctl);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Poll);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(SetDevicePollInterrupt);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(ClearDevicePollInterrupt);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Mmap);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(Munmap);
+    TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(UseEglImage);
+#undef TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR
+    return true;
+  }();
+
+  return initialized;
 }
 
 bool TegraV4L2Device::Open(Type type, uint32_t /* v4l2_pixfmt */) {

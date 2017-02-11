@@ -13,7 +13,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -96,7 +95,6 @@ class CONTENT_EXPORT MediaInternals
 
   friend class AudioLogImpl;
   friend class MediaInternalsTest;
-  friend struct base::DefaultLazyInstanceTraits<MediaInternals>;
 
   MediaInternals();
 

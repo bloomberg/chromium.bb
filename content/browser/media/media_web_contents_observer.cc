@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
 #include "content/browser/media/audio_stream_monitor.h"
@@ -21,8 +20,10 @@ namespace content {
 
 namespace {
 
-static base::LazyInstance<AudibleMetrics>::Leaky g_audible_metrics =
-    LAZY_INSTANCE_INITIALIZER;
+AudibleMetrics* GetAudibleMetrics() {
+  static AudibleMetrics* metrics = new AudibleMetrics();
+  return metrics;
+}
 
 }  // anonymous namespace
 
@@ -33,7 +34,7 @@ MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
 MediaWebContentsObserver::~MediaWebContentsObserver() {}
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
-  g_audible_metrics.Get().UpdateAudibleWebContentsState(web_contents(), false);
+  GetAudibleMetrics()->UpdateAudibleWebContentsState(web_contents(), false);
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
@@ -53,7 +54,7 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
     audio_power_save_blocker_.reset();
   }
 
-  g_audible_metrics.Get().UpdateAudibleWebContentsState(
+  GetAudibleMetrics()->UpdateAudibleWebContentsState(
       web_contents(), audio_stream_monitor->IsCurrentlyAudible());
 }
 

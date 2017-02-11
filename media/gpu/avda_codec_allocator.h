@@ -11,7 +11,6 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
@@ -171,7 +170,6 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   base::Thread& GetThreadForTesting(TaskType task_type);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<AVDACodecAllocator>;
   friend class AVDACodecAllocatorTest;
 
   struct OwnerRecord {

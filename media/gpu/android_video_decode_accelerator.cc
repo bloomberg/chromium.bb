@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -130,6 +129,8 @@ bool ShouldDeferSurfaceCreation(int surface_id, VideoCodec codec) {
 //    surfaces are released.
 class AVDAManager {
  public:
+  AVDAManager() {}
+
   // Request periodic callback of |avda|->DoIOTask(). Does nothing if the
   // instance is already registered and the timer started. The first request
   // will start the repeating timer on an interval of DecodePollDelay.
@@ -166,10 +167,7 @@ class AVDAManager {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<AVDAManager>;
-
-  AVDAManager() {}
-  ~AVDAManager() { NOTREACHED(); }
+  ~AVDAManager() = delete;
 
   void RunTimer() {
     {
@@ -206,8 +204,10 @@ class AVDAManager {
   DISALLOW_COPY_AND_ASSIGN(AVDAManager);
 };
 
-static base::LazyInstance<AVDAManager>::Leaky g_avda_manager =
-    LAZY_INSTANCE_INITIALIZER;
+static AVDAManager* GetManager() {
+  static AVDAManager* manager = new AVDAManager();
+  return manager;
+}
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
     const BitstreamBuffer& bitstream_buffer)
@@ -243,7 +243,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  g_avda_manager.Get().StopTimer(this);
+  GetManager()->StopTimer(this);
   AVDACodecAllocator::Instance()->StopThread(this);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
@@ -1124,7 +1124,7 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
     picture_buffer_manager_.CodecChanged(media_codec_.get());
   } else {
     DVLOG(3) << __func__ << " Deleting the MediaCodec and creating a new one.";
-    g_avda_manager.Get().StopTimer(this);
+    GetManager()->StopTimer(this);
     ConfigureMediaCodecAsynchronously();
   }
 }
@@ -1198,7 +1198,7 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   // case, the codec will be deleted when it completes once we invalidate all
   // our weak refs.
   weak_this_factory_.InvalidateWeakPtrs();
-  g_avda_manager.Get().StopTimer(this);
+  GetManager()->StopTimer(this);
   ReleaseCodec();
 
   // We no longer care about |surface_id|, in case we did before.  It's okay
@@ -1421,9 +1421,9 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
   }
 
   if (should_be_running)
-    g_avda_manager.Get().StartTimer(this);
+    GetManager()->StartTimer(this);
   else
-    g_avda_manager.Get().StopTimer(this);
+    GetManager()->StopTimer(this);
 }
 
 // static

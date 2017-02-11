@@ -12,7 +12,6 @@
 #include <cmath>
 
 #include "base/files/file.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/audio/sounds/wav_audio_handler.h"
@@ -94,8 +93,11 @@ class BeepContext {
   bool automatic_beep_;
 };
 
-static base::LazyInstance<BeepContext>::Leaky g_beep_context =
-    LAZY_INSTANCE_INITIALIZER;
+BeepContext* GetBeepContext() {
+  static BeepContext* context = new BeepContext();
+  return context;
+}
+
 }  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -270,7 +272,7 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
 
   memset(buffer_.get(), 0, buffer_size_);
   bool should_beep = false;
-  BeepContext* beep_context = g_beep_context.Pointer();
+  BeepContext* beep_context = GetBeepContext();
   if (beep_context->automatic_beep()) {
     base::TimeDelta delta = interval_from_last_beep_ -
         base::TimeDelta::FromMilliseconds(kAutomaticBeepIntervalInMs);
@@ -317,7 +319,7 @@ void BeepingSource::OnError(AudioOutputStream* stream) {
 }
 
 void BeepingSource::BeepOnce() {
-  g_beep_context.Pointer()->SetBeepOnce(true);
+  GetBeepContext()->SetBeepOnce(true);
 }
 
 }  // namespace media

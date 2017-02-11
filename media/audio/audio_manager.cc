@@ -12,7 +12,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -260,8 +259,10 @@ class AudioManagerHelper : public base::PowerObserver {
   DISALLOW_COPY_AND_ASSIGN(AudioManagerHelper);
 };
 
-base::LazyInstance<AudioManagerHelper>::Leaky g_helper =
-    LAZY_INSTANCE_INITIALIZER;
+AudioManagerHelper* GetHelper() {
+  static AudioManagerHelper* helper = new AudioManagerHelper();
+  return helper;
+}
 
 }  // namespace
 
@@ -344,40 +345,39 @@ ScopedAudioManagerPtr AudioManager::Create(
 ScopedAudioManagerPtr AudioManager::CreateForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_WIN)
-  g_helper.Pointer()->InitializeCOMForTesting();
+  GetHelper()->InitializeCOMForTesting();
 #endif
-  return Create(task_runner, task_runner,
-                g_helper.Pointer()->fake_log_factory());
+  return Create(task_runner, task_runner, GetHelper()->fake_log_factory());
 }
 
 // static
 void AudioManager::StartHangMonitorIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (g_helper.Pointer()->monitor_task_runner())
+  if (GetHelper()->monitor_task_runner())
     return;
 
   DCHECK(AudioManager::Get());
   DCHECK(task_runner);
   DCHECK_NE(task_runner, AudioManager::Get()->GetTaskRunner());
 
-  g_helper.Pointer()->StartHangTimer(std::move(task_runner));
+  GetHelper()->StartHangTimer(std::move(task_runner));
 }
 
 // static
 void AudioManager::EnableCrashKeyLoggingForAudioThreadHangs() {
   CHECK(!g_last_created);
-  g_helper.Pointer()->enable_crash_key_logging();
+  GetHelper()->enable_crash_key_logging();
 }
 
 #if defined(OS_LINUX)
 // static
 void AudioManager::SetGlobalAppName(const std::string& app_name) {
-  g_helper.Pointer()->set_app_name(app_name);
+  GetHelper()->set_app_name(app_name);
 }
 
 // static
 const std::string& AudioManager::GetGlobalAppName() {
-  return g_helper.Pointer()->app_name();
+  return GetHelper()->app_name();
 }
 #endif
 

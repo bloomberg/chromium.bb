@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -111,8 +110,10 @@ class VpxOffloadThread {
   DISALLOW_COPY_AND_ASSIGN(VpxOffloadThread);
 };
 
-static base::LazyInstance<VpxOffloadThread>::Leaky g_vpx_offload_thread =
-    LAZY_INSTANCE_INITIALIZER;
+static VpxOffloadThread* GetOffloadThread() {
+  static VpxOffloadThread* thread = new VpxOffloadThread();
+  return thread;
+}
 
 // Always try to use three threads for video decoding.  There is little reason
 // not to since current day CPUs tend to be multi-core and we measured
@@ -442,7 +443,7 @@ void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 void VpxVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (offload_task_runner_)
-    g_vpx_offload_thread.Pointer()->WaitForOutstandingTasks();
+    GetOffloadThread()->WaitForOutstandingTasks();
 
   state_ = kNormal;
   // PostTask() to avoid calling |closure| inmediately.
@@ -484,8 +485,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     // Move high resolution vp9 decodes off of the main media thread (otherwise
     // decode may block audio decoding, demuxing, and other control activities).
     if (config.coded_size().width() >= 1024) {
-      offload_task_runner_ =
-          g_vpx_offload_thread.Pointer()->RequestOffloadThread();
+      offload_task_runner_ = GetOffloadThread()->RequestOffloadThread();
     }
 
     DCHECK(!memory_pool_);
@@ -513,8 +513,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 
 void VpxVideoDecoder::CloseDecoder() {
   if (offload_task_runner_) {
-    g_vpx_offload_thread.Pointer()
-        ->WaitForOutstandingTasksAndReleaseOffloadThread();
+    GetOffloadThread()->WaitForOutstandingTasksAndReleaseOffloadThread();
     offload_task_runner_ = nullptr;
   }
 

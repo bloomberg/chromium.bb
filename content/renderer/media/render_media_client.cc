@@ -4,7 +4,6 @@
 
 #include "content/renderer/media/render_media_client.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "content/public/common/content_client.h"
@@ -12,11 +11,8 @@
 
 namespace content {
 
-static base::LazyInstance<RenderMediaClient>::Leaky g_render_media_client =
-    LAZY_INSTANCE_INITIALIZER;
-
 void RenderMediaClient::Initialize() {
-  g_render_media_client.Get();
+  GetInstance();
 }
 
 RenderMediaClient::RenderMediaClient()
@@ -120,13 +116,10 @@ void RenderMediaClient::SetTickClockForTesting(
   tick_clock_.swap(tick_clock);
 }
 
-// This functions is for testing purpose only. The declaration in the
-// header file is guarded by "#if defined(UNIT_TEST)" so that it can be used
-// by tests but not non-test code. However, this .cc file is compiled as part of
-// "content" where "UNIT_TEST" is not defined. So we need to specify
-// "CONTENT_EXPORT" here again so that it is visible to tests.
-CONTENT_EXPORT RenderMediaClient* GetRenderMediaClientInstanceForTesting() {
-  return g_render_media_client.Pointer();
+// static
+RenderMediaClient* RenderMediaClient::GetInstance() {
+  static RenderMediaClient* client = new RenderMediaClient();
+  return client;
 }
 
 }  // namespace content

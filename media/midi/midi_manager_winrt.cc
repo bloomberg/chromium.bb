@@ -21,7 +21,6 @@
 #include <unordered_set>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,8 +60,7 @@ std::ostream& operator<<(std::ostream& os, const PrintHr& phr) {
 
 // Provides access to functions in combase.dll which may not be available on
 // Windows 7. Loads functions dynamically at runtime to prevent library
-// dependencies. Use this class through the global LazyInstance
-// |g_combase_functions|.
+// dependencies.
 class CombaseFunctions {
  public:
   CombaseFunctions() = default;
@@ -135,8 +133,10 @@ class CombaseFunctions {
   decltype(&::WindowsGetStringRawBuffer) get_string_raw_buffer_func_ = nullptr;
 };
 
-base::LazyInstance<CombaseFunctions> g_combase_functions =
-    LAZY_INSTANCE_INITIALIZER;
+CombaseFunctions* GetCombaseFunctions() {
+  static CombaseFunctions* functions = new CombaseFunctions();
+  return functions;
+}
 
 // Scoped HSTRING class to maintain lifetime of HSTRINGs allocated with
 // WindowsCreateString().
@@ -145,7 +145,7 @@ class ScopedHStringTraits {
   static HSTRING InvalidValue() { return nullptr; }
 
   static void Free(HSTRING hstr) {
-    g_combase_functions.Get().WindowsDeleteString(hstr);
+    GetCombaseFunctions()->WindowsDeleteString(hstr);
   }
 };
 
@@ -153,7 +153,7 @@ class ScopedHString : public base::ScopedGeneric<HSTRING, ScopedHStringTraits> {
  public:
   explicit ScopedHString(const base::char16* str) : ScopedGeneric(nullptr) {
     HSTRING hstr;
-    HRESULT hr = g_combase_functions.Get().WindowsCreateString(
+    HRESULT hr = GetCombaseFunctions()->WindowsCreateString(
         str, static_cast<uint32_t>(wcslen(str)), &hstr);
     if (FAILED(hr))
       VLOG(1) << "WindowsCreateString failed: " << PrintHr(hr);
@@ -174,7 +174,7 @@ ScopedComPtr<InterfaceType> WrlStaticsFactory() {
     return com_ptr;
   }
 
-  HRESULT hr = g_combase_functions.Get().RoGetActivationFactory(
+  HRESULT hr = GetCombaseFunctions()->RoGetActivationFactory(
       class_id_hstring.get(), __uuidof(InterfaceType), com_ptr.ReceiveVoid());
   if (FAILED(hr)) {
     VLOG(1) << "RoGetActivationFactory failed: " << PrintHr(hr);
@@ -188,7 +188,7 @@ std::string HStringToString(HSTRING hstr) {
   // Note: empty HSTRINGs are represent as nullptr, and instantiating
   // std::string with nullptr (in base::WideToUTF8) is undefined behavior.
   const base::char16* buffer =
-      g_combase_functions.Get().WindowsGetStringRawBuffer(hstr, nullptr);
+      GetCombaseFunctions()->WindowsGetStringRawBuffer(hstr, nullptr);
   if (buffer)
     return base::WideToUTF8(buffer);
   return std::string();
@@ -955,7 +955,7 @@ void MidiManagerWinrt::InitializeOnComThread() {
 
   com_thread_checker_.reset(new base::ThreadChecker);
 
-  if (!g_combase_functions.Get().LoadFunctions()) {
+  if (!GetCombaseFunctions()->LoadFunctions()) {
     VLOG(1) << "Failed loading functions from combase.dll: "
             << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
     CompleteInitialization(Result::INITIALIZATION_ERROR);

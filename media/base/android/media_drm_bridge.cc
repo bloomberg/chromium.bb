@@ -15,7 +15,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/hash_tables.h"
 #include "base/feature_list.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -168,8 +167,10 @@ std::vector<std::string> KeySystemManager::GetPlatformKeySystemNames() {
   return key_systems;
 }
 
-base::LazyInstance<KeySystemManager>::Leaky g_key_system_manager =
-    LAZY_INSTANCE_INITIALIZER;
+KeySystemManager* GetKeySystemManager() {
+  static KeySystemManager* ksm = new KeySystemManager();
+  return ksm;
+}
 
 // Checks whether |key_system| is supported with |container_mime_type|. Only
 // checks |key_system| support if |container_mime_type| is empty.
@@ -185,7 +186,7 @@ bool IsKeySystemSupportedWithTypeImpl(const std::string& key_system,
     return false;
   }
 
-  UUID scheme_uuid = g_key_system_manager.Get().GetUUID(key_system);
+  UUID scheme_uuid = GetKeySystemManager()->GetUUID(key_system);
   if (scheme_uuid.empty())
     return false;
 
@@ -291,7 +292,7 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
   if (!MediaDrmBridge::IsAvailable())
     return std::vector<std::string>();
 
-  return g_key_system_manager.Get().GetPlatformKeySystemNames();
+  return GetKeySystemManager()->GetPlatformKeySystemNames();
 }
 
 // static
@@ -306,7 +307,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
   // All paths requires the MediaDrmApis.
   DCHECK(AreMediaDrmApisAvailable());
 
-  UUID scheme_uuid = g_key_system_manager.Get().GetUUID(key_system);
+  UUID scheme_uuid = GetKeySystemManager()->GetUUID(key_system);
   if (scheme_uuid.empty())
     return nullptr;
 

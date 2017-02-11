@@ -9,7 +9,6 @@
 #include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"

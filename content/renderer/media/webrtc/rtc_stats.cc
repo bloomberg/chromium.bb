@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
@@ -48,11 +47,13 @@ class RTCStatsWhitelist {
   std::set<std::string> whitelisted_stats_types_;
 };
 
-base::LazyInstance<RTCStatsWhitelist>::Leaky
-    g_whitelisted_stats = LAZY_INSTANCE_INITIALIZER;
+RTCStatsWhitelist* GetStatsWhitelist() {
+  static RTCStatsWhitelist* whitelist = new RTCStatsWhitelist();
+  return whitelist;
+}
 
 bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
-  return g_whitelisted_stats.Get().IsWhitelisted(stats);
+  return GetStatsWhitelist()->IsWhitelisted(stats);
 }
 
 }  // namespace
@@ -276,7 +277,7 @@ blink::WebVector<blink::WebString> RTCStatsMember::valueSequenceString() const {
 }
 
 void WhitelistStatsForTesting(const char* type) {
-  g_whitelisted_stats.Get().WhitelistStatsForTesting(type);
+  GetStatsWhitelist()->WhitelistStatsForTesting(type);
 }
 
 }  // namespace content

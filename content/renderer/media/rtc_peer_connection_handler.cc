@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -913,8 +912,11 @@ void ConvertConstraintsToWebrtcOfferOptions(
                               &output->ice_restart);
 }
 
-base::LazyInstance<std::set<RTCPeerConnectionHandler*> >::Leaky
-    g_peer_connection_handlers = LAZY_INSTANCE_INITIALIZER;
+std::set<RTCPeerConnectionHandler*>* GetPeerConnectionHandlers() {
+  static std::set<RTCPeerConnectionHandler*>* handlers =
+      new std::set<RTCPeerConnectionHandler*>();
+  return handlers;
+}
 
 }  // namespace
 
@@ -1095,8 +1097,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       is_closed_(false),
       dependency_factory_(dependency_factory),
       weak_factory_(this) {
-  CHECK(client_),
-  g_peer_connection_handlers.Get().insert(this);
+  CHECK(client_);
+  GetPeerConnectionHandlers()->insert(this);
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
@@ -1104,7 +1106,7 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 
   stop();
 
-  g_peer_connection_handlers.Get().erase(this);
+  GetPeerConnectionHandlers()->erase(this);
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
 
@@ -1117,8 +1119,7 @@ void RTCPeerConnectionHandler::DestructAllHandlers() {
   // Copy g_peer_connection_handlers since releasePeerConnectionHandler will
   // remove an item.
   std::set<RTCPeerConnectionHandler*> handlers(
-      g_peer_connection_handlers.Get().begin(),
-      g_peer_connection_handlers.Get().end());
+      GetPeerConnectionHandlers()->begin(), GetPeerConnectionHandlers()->end());
   for (auto* handler : handlers)
     handler->client_->releasePeerConnectionHandler();
 }

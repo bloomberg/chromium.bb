@@ -22,7 +22,6 @@
 #include <algorithm>
 
 #include "base/cpu.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
@@ -116,20 +115,9 @@ static ConvertYUVAToARGBProc g_convert_yuva_to_argb_proc_ = NULL;
 
 static const int kYUVToRGBTableSize = 256 * 4 * 4 * sizeof(int16_t);
 
-// base::AlignedMemory has a private operator new(), so wrap it in a struct so
-// that we can put it in a LazyInstance::Leaky.
-struct YUVToRGBTableWrapper {
-  base::AlignedMemory<kYUVToRGBTableSize, 16> table;
-};
-
-typedef base::LazyInstance<YUVToRGBTableWrapper>::Leaky
-    YUVToRGBTable;
-static YUVToRGBTable g_table_rec601 = LAZY_INSTANCE_INITIALIZER;
-static YUVToRGBTable g_table_jpeg = LAZY_INSTANCE_INITIALIZER;
-static YUVToRGBTable g_table_rec709 = LAZY_INSTANCE_INITIALIZER;
-static const int16_t* g_table_rec601_ptr = NULL;
-static const int16_t* g_table_jpeg_ptr = NULL;
-static const int16_t* g_table_rec709_ptr = NULL;
+static int16_t* g_table_rec601 = NULL;
+static int16_t* g_table_jpeg = NULL;
+static int16_t* g_table_rec709 = NULL;
 
 // Empty SIMD registers state after using them.
 void EmptyRegisterStateStub() {}
@@ -157,11 +145,11 @@ const int16_t* GetLookupTable(YUVType type) {
   switch (type) {
     case YV12:
     case YV16:
-      return g_table_rec601_ptr;
+      return g_table_rec601;
     case YV12J:
-      return g_table_jpeg_ptr;
+      return g_table_jpeg;
     case YV12HD:
-      return g_table_rec709_ptr;
+      return g_table_rec709;
   }
   NOTREACHED();
   return NULL;
@@ -301,15 +289,17 @@ void InitializeCPUSpecificYUVConversions() {
       {1.164, 1.164, 1.164}, {0.0, -0.213, 2.112}, {1.793, -0.533, 0.0},
   };
 
-  PopulateYUVToRGBTable(kRec601ConvertMatrix, false,
-                        g_table_rec601.Get().table.data_as<int16_t>());
-  PopulateYUVToRGBTable(kJPEGConvertMatrix, true,
-                        g_table_jpeg.Get().table.data_as<int16_t>());
-  PopulateYUVToRGBTable(kRec709ConvertMatrix, false,
-                        g_table_rec709.Get().table.data_as<int16_t>());
-  g_table_rec601_ptr = g_table_rec601.Get().table.data_as<int16_t>();
-  g_table_rec709_ptr = g_table_rec709.Get().table.data_as<int16_t>();
-  g_table_jpeg_ptr = g_table_jpeg.Get().table.data_as<int16_t>();
+  g_table_rec601 =
+      static_cast<int16_t*>(base::AlignedAlloc(kYUVToRGBTableSize, 16));
+  PopulateYUVToRGBTable(kRec601ConvertMatrix, false, g_table_rec601);
+
+  g_table_rec709 =
+      static_cast<int16_t*>(base::AlignedAlloc(kYUVToRGBTableSize, 16));
+  PopulateYUVToRGBTable(kRec709ConvertMatrix, false, g_table_rec709);
+
+  g_table_jpeg =
+      static_cast<int16_t*>(base::AlignedAlloc(kYUVToRGBTableSize, 16));
+  PopulateYUVToRGBTable(kJPEGConvertMatrix, true, g_table_jpeg);
 }
 
 // Empty SIMD registers state after using them.

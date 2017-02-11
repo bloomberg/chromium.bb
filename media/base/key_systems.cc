@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/containers/hash_tables.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -230,8 +229,6 @@ class KeySystemsImpl : public KeySystems {
   bool IsValidMimeTypeCodecsCombination(const std::string& mime_type,
                                         SupportedCodecs codecs_mask) const;
 
-  friend struct base::DefaultLazyInstanceTraits<KeySystemsImpl>;
-
   typedef base::hash_map<std::string, std::unique_ptr<KeySystemProperties>>
       KeySystemPropertiesMap;
   typedef base::hash_map<std::string, SupportedCodecs> MimeTypeCodecsMap;
@@ -263,20 +260,17 @@ class KeySystemsImpl : public KeySystems {
   DISALLOW_COPY_AND_ASSIGN(KeySystemsImpl);
 };
 
-static base::LazyInstance<KeySystemsImpl>::Leaky g_key_systems =
-    LAZY_INSTANCE_INITIALIZER;
-
 KeySystemsImpl* KeySystemsImpl::GetInstance() {
-  KeySystemsImpl* key_systems = g_key_systems.Pointer();
+  static KeySystemsImpl* key_systems = new KeySystemsImpl();
   key_systems->UpdateIfNeeded();
   return key_systems;
 }
 
-// Because we use a LazyInstance, the key systems info must be populated when
-// the instance is lazily initiated.
-KeySystemsImpl::KeySystemsImpl() :
-    audio_codec_mask_(EME_CODEC_AUDIO_ALL),
-    video_codec_mask_(EME_CODEC_VIDEO_ALL) {
+// Because we use a thread-safe static, the key systems info must be populated
+// when the instance is constructed.
+KeySystemsImpl::KeySystemsImpl()
+    : audio_codec_mask_(EME_CODEC_AUDIO_ALL),
+      video_codec_mask_(EME_CODEC_VIDEO_ALL) {
   for (size_t i = 0; i < arraysize(kCodecStrings); ++i) {
     const std::string& name = kCodecStrings[i].name;
     DCHECK(!codec_string_map_.count(name));

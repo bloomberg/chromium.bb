@@ -26,9 +26,6 @@ namespace media {
 
 namespace {
 
-base::LazyInstance<AVDACodecAllocator>::Leaky g_avda_codec_allocator =
-    LAZY_INSTANCE_INITIALIZER;
-
 // Give tasks 800ms before considering them hung. MediaCodec.configure() calls
 // typically take 100-200ms on a N5, so 800ms is expected to very rarely result
 // in false positives. Also, false positives have low impact because we resume
@@ -75,7 +72,8 @@ bool AVDACodecAllocator::HangDetector::IsThreadLikelyHung() {
 
 // static
 AVDACodecAllocator* AVDACodecAllocator::Instance() {
-  return g_avda_codec_allocator.Pointer();
+  static AVDACodecAllocator* allocator = new AVDACodecAllocator();
+  return allocator;
 }
 
 bool AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {

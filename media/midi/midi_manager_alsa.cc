@@ -15,7 +15,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -100,12 +99,20 @@ const unsigned int kCreatePortType =
 const int kInvalidInstanceId = -1;
 int g_active_instance_id = kInvalidInstanceId;
 int g_next_instance_id = 0;
-base::LazyInstance<base::Lock> g_instance_id_lock = LAZY_INSTANCE_INITIALIZER;
 
-// Prevent current instance from quiting Finalize() while tasks run on external
-// TaskRunners.
-base::LazyInstance<base::Lock> g_event_task_lock = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock> g_send_task_lock = LAZY_INSTANCE_INITIALIZER;
+struct MidiManagerLockHelper {
+  base::Lock instance_id_lock;
+
+  // Prevent current instance from quiting Finalize() while tasks run on
+  // external TaskRunners.
+  base::Lock event_task_lock;
+  base::Lock send_task_lock;
+};
+
+MidiManagerLockHelper* GetLockHelper() {
+  static MidiManagerLockHelper* lock_helper = new MidiManagerLockHelper();
+  return lock_helper;
+}
 
 int AddrToInt(int client, int port) {
   return (client << 8) | port;
@@ -185,13 +192,13 @@ MidiManagerAlsa::~MidiManagerAlsa() {
   CHECK(!udev_);
   CHECK(!udev_monitor_);
 
-  base::AutoLock instance_id_lock(g_instance_id_lock.Get());
+  base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
   CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
 }
 
 void MidiManagerAlsa::StartInitialization() {
   {
-    base::AutoLock lock(g_instance_id_lock.Get());
+    base::AutoLock lock(GetLockHelper()->instance_id_lock);
     CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
     instance_id_ = g_next_instance_id++;
     g_active_instance_id = instance_id_;
@@ -327,20 +334,20 @@ void MidiManagerAlsa::Finalize() {
   // gives us assurance a task running on kEventTaskRunner will stop in case the
   // SND_SEQ_EVENT_CLIENT_EXIT message is lost.
   {
-    base::AutoLock lock(g_instance_id_lock.Get());
+    base::AutoLock lock(GetLockHelper()->instance_id_lock);
     CHECK_EQ(instance_id_, g_active_instance_id);
     g_active_instance_id = kInvalidInstanceId;
   }
 
   // Ensure that no tasks run on kSendTaskRunner.
-  base::AutoLock send_runner_lock(g_send_task_lock.Get());
+  base::AutoLock send_runner_lock(GetLockHelper()->send_task_lock);
 
   // Close the out client. This will trigger the event thread to stop,
   // because of SND_SEQ_EVENT_CLIENT_EXIT.
   out_client_.reset();
 
   // Ensure that no tasks run on kEventTaskRunner.
-  base::AutoLock event_runner_lock(g_event_task_lock.Get());
+  base::AutoLock event_runner_lock(GetLockHelper()->event_task_lock);
 
   // Destruct the other stuff we initialized in StartInitialization().
   udev_monitor_.reset();
@@ -893,11 +900,11 @@ void MidiManagerAlsa::SendMidiData(int instance_id,
 
   // Obtain the lock so that the instance could not be destructed while this
   // method is running on the kSendTaskRunner.
-  base::AutoLock lock(g_send_task_lock.Get());
+  base::AutoLock lock(GetLockHelper()->send_task_lock);
   {
     // Check if Finalize() already runs. After this check, we can access |this|
     // safely on the kEventTaskRunner.
-    base::AutoLock instance_id_lock(g_instance_id_lock.Get());
+    base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
     if (instance_id != g_active_instance_id)
       return;
   }
@@ -928,11 +935,11 @@ void MidiManagerAlsa::SendMidiData(int instance_id,
 void MidiManagerAlsa::EventLoop(int instance_id) {
   // Obtain the lock so that the instance could not be destructed while this
   // method is running on the kEventTaskRunner.
-  base::AutoLock lock(g_event_task_lock.Get());
+  base::AutoLock lock(GetLockHelper()->event_task_lock);
   {
     // Check if Finalize() already runs. After this check, we can access |this|
     // safely on the kEventTaskRunner.
-    base::AutoLock instance_id_lock(g_instance_id_lock.Get());
+    base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
     if (instance_id != g_active_instance_id)
       return;
   }

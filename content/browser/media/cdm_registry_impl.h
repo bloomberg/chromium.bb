@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/lazy_instance.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cdm_registry.h"
@@ -27,7 +27,6 @@ class CONTENT_EXPORT CdmRegistryImpl : NON_EXPORTED_BASE(public CdmRegistry) {
   const std::vector<CdmInfo>& GetAllRegisteredCdms() override;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CdmRegistryImpl>;
   friend class CdmRegistryImplTest;
 
   CdmRegistryImpl();

@@ -6,36 +6,13 @@
 
 #include <mfapi.h>
 
-#include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/logging.h"
 
 namespace media {
 
-namespace {
-
-// LazyInstance to initialize the Media Foundation Library.
-class MFInitializer {
- public:
-  MFInitializer()
-      : mf_started_(MFStartup(MF_VERSION, MFSTARTUP_LITE) == S_OK) {}
-
-  ~MFInitializer() {
-    if (mf_started_)
-      MFShutdown();
-  }
-
- private:
-  const bool mf_started_;
-
-  DISALLOW_COPY_AND_ASSIGN(MFInitializer);
-};
-
-base::LazyInstance<MFInitializer> g_mf_initializer = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 void InitializeMediaFoundation() {
-  g_mf_initializer.Get();
+  static HRESULT result = MFStartup(MF_VERSION, MFSTARTUP_LITE);
+  DCHECK_EQ(result, S_OK);
 }
 
 }  // namespace media

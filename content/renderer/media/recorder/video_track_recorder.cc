@@ -101,8 +101,10 @@ class CodecEnumerator {
   DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
 };
 
-static base::LazyInstance<CodecEnumerator>::Leaky g_codec_enumerator =
-    LAZY_INSTANCE_INITIALIZER;
+CodecEnumerator* GetCodecEnumerator() {
+  static CodecEnumerator* enumerator = new CodecEnumerator();
+  return enumerator;
+}
 
 CodecEnumerator::CodecEnumerator() {
 #if defined(OS_CHROMEOS)
@@ -1118,7 +1120,7 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
 
 // static
 VideoTrackRecorder::CodecId VideoTrackRecorder::GetPreferredCodecId() {
-  return g_codec_enumerator.Get().GetPreferredCodecId();
+  return GetCodecEnumerator()->GetPreferredCodecId();
 }
 
 VideoTrackRecorder::VideoTrackRecorder(
@@ -1190,7 +1192,7 @@ void VideoTrackRecorder::InitializeEncoder(
 
   const gfx::Size& input_size = frame->visible_rect().size();
   const auto& vea_supported_profile =
-      g_codec_enumerator.Get().CodecIdToVEAProfile(codec);
+      GetCodecEnumerator()->CodecIdToVEAProfile(codec);
   if (vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
       input_size.width() >= kVEAEncoderMinResolutionWidth &&
       input_size.height() >= kVEAEncoderMinResolutionHeight) {

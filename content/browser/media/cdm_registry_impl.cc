@@ -11,9 +11,6 @@
 
 namespace content {
 
-static base::LazyInstance<CdmRegistryImpl>::Leaky g_cdm_registry =
-    LAZY_INSTANCE_INITIALIZER;
-
 // static
 CdmRegistry* CdmRegistry::GetInstance() {
   return CdmRegistryImpl::GetInstance();
@@ -21,7 +18,8 @@ CdmRegistry* CdmRegistry::GetInstance() {
 
 // static
 CdmRegistryImpl* CdmRegistryImpl::GetInstance() {
-  return g_cdm_registry.Pointer();
+  static CdmRegistryImpl* registry = new CdmRegistryImpl();
+  return registry;
 }
 
 CdmRegistryImpl::CdmRegistryImpl() {}

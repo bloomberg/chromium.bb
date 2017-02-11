@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
@@ -58,7 +57,6 @@ class MEDIA_EXPORT MediaServiceThrottler {
       scoped_refptr<base::SingleThreadTaskRunner> crash_listener_task_runner);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MediaServiceThrottler>;
   friend class MediaServiceThrottlerTest;
 
   MediaServiceThrottler();

@@ -9,8 +9,7 @@
 
 namespace media {
 
-// Makes sure MFStartup() is called exactly once, and that this call is paired
-// by a call to MFShutdown().
+// Makes sure MFStartup() is called exactly once.
 MF_INITIALIZER_EXPORT void InitializeMediaFoundation();
 
 }  // namespace media

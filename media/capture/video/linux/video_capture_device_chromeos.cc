@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -18,12 +17,10 @@
 
 namespace media {
 
-namespace {
-
-base::LazyInstance<CameraConfigChromeOS>::Leaky g_camera_config_ =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
+static CameraConfigChromeOS* GetCameraConfig() {
+  static CameraConfigChromeOS* config = new CameraConfigChromeOS();
+  return config;
+}
 
 // This is a delegate class used to transfer Display change events from the UI
 // thread to the media thread.
@@ -109,11 +106,11 @@ VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
       screen_observer_delegate_(
           new ScreenObserverDelegate(this, ui_task_runner)),
       lens_facing_(
-          g_camera_config_.Get().GetCameraFacing(device_descriptor.device_id,
-                                                 device_descriptor.model_id)),
+          GetCameraConfig()->GetCameraFacing(device_descriptor.device_id,
+                                             device_descriptor.model_id)),
       camera_orientation_(
-          g_camera_config_.Get().GetOrientation(device_descriptor.device_id,
-                                                device_descriptor.model_id)) {}
+          GetCameraConfig()->GetOrientation(device_descriptor.device_id,
+                                            device_descriptor.model_id)) {}
 
 VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
   screen_observer_delegate_->RemoveObserver();
