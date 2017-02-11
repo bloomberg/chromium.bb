@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/preferences_manager.h"
+#include "chrome/browser/prefs/preferences_service.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -12,8 +12,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 
-PreferencesManager::PreferencesManager(
-    prefs::mojom::PreferencesObserverPtr client,
+PreferencesService::PreferencesService(
+    prefs::mojom::PreferencesServiceClientPtr client,
     Profile* profile)
     : preferences_change_registrar_(new PrefChangeRegistrar),
       client_(std::move(client)),
@@ -24,9 +24,9 @@ PreferencesManager::PreferencesManager(
   preferences_change_registrar_->Init(service_);
 }
 
-PreferencesManager::~PreferencesManager() {}
+PreferencesService::~PreferencesService() {}
 
-void PreferencesManager::PreferenceChanged(const std::string& preference_name) {
+void PreferencesService::PreferenceChanged(const std::string& preference_name) {
   if (setting_preferences_)
     return;
   const PrefService::Preference* pref =
@@ -37,7 +37,7 @@ void PreferencesManager::PreferenceChanged(const std::string& preference_name) {
   client_->OnPreferencesChanged(std::move(dictionary));
 }
 
-void PreferencesManager::SetPreferences(
+void PreferencesService::SetPreferences(
     std::unique_ptr<base::DictionaryValue> preferences) {
   DCHECK(!setting_preferences_);
   // We ignore preference changes caused by us.
@@ -57,7 +57,7 @@ void PreferencesManager::SetPreferences(
   }
 }
 
-void PreferencesManager::Subscribe(
+void PreferencesService::Subscribe(
     const std::vector<std::string>& preferences) {
   std::unique_ptr<base::DictionaryValue> dictionary =
       base::MakeUnique<base::DictionaryValue>();
@@ -71,7 +71,7 @@ void PreferencesManager::Subscribe(
     // by PreferenceConnectionManager. It will outlive
     // |preferences_change_registrar_| which it owns.
     preferences_change_registrar_->Add(
-        it, base::Bind(&PreferencesManager::PreferenceChanged,
+        it, base::Bind(&PreferencesService::PreferenceChanged,
                        base::Unretained(this)));
     dictionary->Set(it, pref->GetValue()->CreateDeepCopy());
   }

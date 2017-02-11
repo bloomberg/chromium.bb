@@ -8,22 +8,22 @@ import "mojo/common/values.mojom";
 
 const string kServiceName = "preferences";
 
-// Used for the creation of a PreferencesManager and to ensure that the
-// PreferencesObserver is bound at creation time.
-interface PreferencesFactory {
-  // Creates a PreferencesManager bound to the provided |observer|.
-  Create(PreferencesObserver observer, PreferencesManager& manager);
+// Used for the creation of a PreferencesService and to ensure that the
+// PreferencesServiceClient is bound at creation time.
+interface PreferencesServiceFactory {
+  // Creates a PreferencesService bound to the provided |observer|.
+  Create(PreferencesServiceClient observer, PreferencesService& service);
 };
 
 // Used to subscribe to preference changes within PreferenceManager. After
 // requesting to observe, the current values for all requested keys are sent.
-interface PreferencesObserver {
+interface PreferencesServiceClient {
   OnPreferencesChanged(mojo.common.mojom.DictionaryValue preferences);
 };
 
 // Manages actual read/write of preference data. Accepts observers who subscribe
 // to preferences, notifying them of changes.
-interface PreferencesManager {
+interface PreferencesService {
   SetPreferences(mojo.common.mojom.DictionaryValue preferences);
   Subscribe(array<string> preferences);
 };

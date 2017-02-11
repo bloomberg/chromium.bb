@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/pref_observer_store.h"
+#include "services/preferences/public/cpp/pref_client_store.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -17,19 +17,19 @@ namespace {
 
 // Test implmentation of prefs::mojom::PreferenceManager which simply tracks
 // calls. Allows for testing to be done in process, without mojo IPC.
-class TestPreferenceManager : public prefs::mojom::PreferencesManager {
+class TestPreferenceService : public prefs::mojom::PreferencesService {
  public:
-  TestPreferenceManager(
-      mojo::InterfaceRequest<prefs::mojom::PreferencesManager> request)
+  TestPreferenceService(
+      mojo::InterfaceRequest<prefs::mojom::PreferencesService> request)
       : set_preferences_called_(false), binding_(this, std::move(request)) {}
-  ~TestPreferenceManager() override {}
+  ~TestPreferenceService() override {}
 
   const std::set<std::string>& last_preference_set() {
     return last_preference_set_;
   }
   bool set_preferences_called() { return set_preferences_called_; }
 
-  // prefs::mojom::TestPreferenceManager:
+  // prefs::mojom::TestPreferenceService:
   void SetPreferences(
       std::unique_ptr<base::DictionaryValue> preferences) override;
   void Subscribe(const std::vector<std::string>& preferences) override;
@@ -37,61 +37,61 @@ class TestPreferenceManager : public prefs::mojom::PreferencesManager {
  private:
   std::set<std::string> last_preference_set_;
   bool set_preferences_called_;
-  mojo::Binding<prefs::mojom::PreferencesManager> binding_;
+  mojo::Binding<prefs::mojom::PreferencesService> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPreferenceManager);
+  DISALLOW_COPY_AND_ASSIGN(TestPreferenceService);
 };
 
-void TestPreferenceManager::SetPreferences(
+void TestPreferenceService::SetPreferences(
     std::unique_ptr<base::DictionaryValue> preferences) {
   set_preferences_called_ = true;
 }
 
-void TestPreferenceManager::Subscribe(
+void TestPreferenceService::Subscribe(
     const std::vector<std::string>& preferences) {
   last_preference_set_.clear();
   last_preference_set_.insert(preferences.begin(), preferences.end());
 }
 
-// Test implementation of prefs::mojom::PreferencesFactory which simply creates
-// the TestPreferenceManager used for testing.
-class TestPreferenceFactory : public prefs::mojom::PreferencesFactory {
+// Test implementation of prefs::mojom::PreferencesServiceFactory which simply
+// creates the TestPreferenceService used for testing.
+class TestPreferenceFactory : public prefs::mojom::PreferencesServiceFactory {
  public:
   TestPreferenceFactory(
-      mojo::InterfaceRequest<prefs::mojom::PreferencesFactory> request)
+      mojo::InterfaceRequest<prefs::mojom::PreferencesServiceFactory> request)
       : binding_(this, std::move(request)) {}
   ~TestPreferenceFactory() override {}
 
-  TestPreferenceManager* manager() { return manager_.get(); }
+  TestPreferenceService* service() { return service_.get(); }
 
-  void Create(prefs::mojom::PreferencesObserverPtr observer,
-              prefs::mojom::PreferencesManagerRequest manager) override;
+  void Create(prefs::mojom::PreferencesServiceClientPtr observer,
+              prefs::mojom::PreferencesServiceRequest service) override;
 
  private:
-  mojo::Binding<prefs::mojom::PreferencesFactory> binding_;
-  std::unique_ptr<TestPreferenceManager> manager_;
+  mojo::Binding<prefs::mojom::PreferencesServiceFactory> binding_;
+  std::unique_ptr<TestPreferenceService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPreferenceFactory);
 };
 
 void TestPreferenceFactory::Create(
-    prefs::mojom::PreferencesObserverPtr observer,
-    prefs::mojom::PreferencesManagerRequest manager) {
-  manager_.reset(new TestPreferenceManager(std::move(manager)));
+    prefs::mojom::PreferencesServiceClientPtr observer,
+    prefs::mojom::PreferencesServiceRequest service) {
+  service_.reset(new TestPreferenceService(std::move(service)));
 }
 
 }  // namespace
 
 namespace preferences {
 
-class PrefObserverStoreTest : public testing::Test {
+class PrefClientStoreTest : public testing::Test {
  public:
-  PrefObserverStoreTest() {}
-  ~PrefObserverStoreTest() override {}
+  PrefClientStoreTest() {}
+  ~PrefClientStoreTest() override {}
 
-  TestPreferenceManager* manager() { return factory_->manager(); }
+  TestPreferenceService* service() { return factory_->service(); }
   PrefStoreObserverMock* observer() { return &observer_; }
-  PrefObserverStore* store() { return store_.get(); }
+  PrefClientStore* store() { return store_.get(); }
 
   bool Initialized() { return store_->initialized_; }
   void OnPreferencesChanged(const base::DictionaryValue& preferences) {
@@ -103,30 +103,30 @@ class PrefObserverStoreTest : public testing::Test {
   void TearDown() override;
 
  private:
-  scoped_refptr<PrefObserverStore> store_;
-  prefs::mojom::PreferencesFactoryPtr factory_proxy_;
+  scoped_refptr<PrefClientStore> store_;
+  prefs::mojom::PreferencesServiceFactoryPtr factory_proxy_;
   std::unique_ptr<TestPreferenceFactory> factory_;
   PrefStoreObserverMock observer_;
-  // Required by mojo binding code within PrefObserverStore.
+  // Required by mojo binding code within PrefClientStore.
   base::MessageLoop message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefObserverStoreTest);
+  DISALLOW_COPY_AND_ASSIGN(PrefClientStoreTest);
 };
 
-void PrefObserverStoreTest::SetUp() {
+void PrefClientStoreTest::SetUp() {
   factory_.reset(new TestPreferenceFactory(mojo::MakeRequest(&factory_proxy_)));
-  store_ = new PrefObserverStore(std::move(factory_proxy_));
+  store_ = new PrefClientStore(std::move(factory_proxy_));
   base::RunLoop().RunUntilIdle();
   store_->AddObserver(&observer_);
 }
 
-void PrefObserverStoreTest::TearDown() {
+void PrefClientStoreTest::TearDown() {
   store_->RemoveObserver(&observer_);
 }
 
 // Tests that observers are notified upon the completion of initialization, and
 // that values become available.
-TEST_F(PrefObserverStoreTest, Initialization) {
+TEST_F(PrefClientStoreTest, Initialization) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
@@ -154,12 +154,12 @@ TEST_F(PrefObserverStoreTest, Initialization) {
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->GetAsInteger(&actual_value));
   EXPECT_EQ(kValue, actual_value);
-  EXPECT_FALSE(manager()->set_preferences_called());
+  EXPECT_FALSE(service()->set_preferences_called());
 }
 
-// Tests that values set silently are also set on the preference manager, but
+// Tests that values set silently are also set on the preference service, but
 // that no observers are notified.
-TEST_F(PrefObserverStoreTest, SetValueSilently) {
+TEST_F(PrefClientStoreTest, SetValueSilently) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
@@ -169,13 +169,13 @@ TEST_F(PrefObserverStoreTest, SetValueSilently) {
   base::FundamentalValue pref(kValue);
   store()->SetValueSilently(key, pref.CreateDeepCopy(), 0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(manager()->set_preferences_called());
+  EXPECT_TRUE(service()->set_preferences_called());
   EXPECT_TRUE(observer()->changed_keys.empty());
 }
 
 // Test that reporting values changed notifies observers, and the preference
-// manager.
-TEST_F(PrefObserverStoreTest, ReportValueChanged) {
+// service.
+TEST_F(PrefClientStoreTest, ReportValueChanged) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
@@ -190,13 +190,13 @@ TEST_F(PrefObserverStoreTest, ReportValueChanged) {
 
   store()->ReportValueChanged(key, 0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(manager()->set_preferences_called());
+  EXPECT_TRUE(service()->set_preferences_called());
   observer()->VerifyAndResetChangedKey(key);
 }
 
 // Test that when initialized with multiple keys, that observers receive a
 // notification for each key.
-TEST_F(PrefObserverStoreTest, MultipleKeyInitialization) {
+TEST_F(PrefClientStoreTest, MultipleKeyInitialization) {
   std::set<std::string> keys;
   const std::string key1("hey");
   const std::string key2("listen");
@@ -231,7 +231,7 @@ TEST_F(PrefObserverStoreTest, MultipleKeyInitialization) {
 
 // Tests that if OnPreferencesChanged is received with invalid keys, that they
 // are ignored.
-TEST_F(PrefObserverStoreTest, InvalidInitialization) {
+TEST_F(PrefClientStoreTest, InvalidInitialization) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
@@ -249,7 +249,7 @@ TEST_F(PrefObserverStoreTest, InvalidInitialization) {
 
 // Tests that when tracking preferences which nest other DictionaryValues, that
 // modifications to the nested values properly notify the observer.
-TEST_F(PrefObserverStoreTest, WriteToNestedPrefs) {
+TEST_F(PrefClientStoreTest, WriteToNestedPrefs) {
   std::set<std::string> keys;
   const std::string key1("hey");
   const std::string key2("listen");
@@ -309,8 +309,8 @@ TEST_F(PrefObserverStoreTest, WriteToNestedPrefs) {
 }
 
 // Tests that when tracking preferences that nest other DictionaryValues, that
-// changes to the tracked keys properly notify the manager and observer.
-TEST_F(PrefObserverStoreTest, UpdateOuterNestedPrefs) {
+// changes to the tracked keys properly notify the service and observer.
+TEST_F(PrefClientStoreTest, UpdateOuterNestedPrefs) {
   std::set<std::string> keys;
   const std::string key1("hey");
   const std::string key2("listen");
@@ -355,32 +355,32 @@ TEST_F(PrefObserverStoreTest, UpdateOuterNestedPrefs) {
   store()->SetValue(key1, pref3.CreateDeepCopy(), 0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, observer()->changed_keys.size());
-  EXPECT_TRUE(manager()->set_preferences_called());
+  EXPECT_TRUE(service()->set_preferences_called());
 }
 
-// Tests that a PrefObserverStore can subscribe multiple times to different
+// Tests that a PrefClientStore can subscribe multiple times to different
 // keys.
-TEST_F(PrefObserverStoreTest, MultipleSubscriptions) {
+TEST_F(PrefClientStoreTest, MultipleSubscriptions) {
   std::set<std::string> keys1;
   const std::string key1("hey");
   keys1.insert(key1);
   store()->Subscribe(keys1);
   base::RunLoop().RunUntilIdle();
-  EXPECT_NE(manager()->last_preference_set().end(),
-            manager()->last_preference_set().find(key1));
+  EXPECT_NE(service()->last_preference_set().end(),
+            service()->last_preference_set().find(key1));
 
   std::set<std::string> keys2;
   const std::string key2("listen");
   keys2.insert(key2);
   store()->Subscribe(keys2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_NE(manager()->last_preference_set().end(),
-            manager()->last_preference_set().find(key2));
+  EXPECT_NE(service()->last_preference_set().end(),
+            service()->last_preference_set().find(key2));
 }
 
-// Tests that multiple PrefStore::Observers can be added to a PrefObserverStore
+// Tests that multiple PrefStore::Observers can be added to a PrefClientStore
 // and that they are each notified of changes.
-TEST_F(PrefObserverStoreTest, MultipleObservers) {
+TEST_F(PrefClientStoreTest, MultipleObservers) {
   PrefStoreObserverMock observer2;
   store()->AddObserver(&observer2);
 

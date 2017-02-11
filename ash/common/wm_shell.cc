@@ -54,7 +54,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "services/preferences/public/cpp/pref_observer_store.h"
+#include "services/preferences/public/cpp/pref_client_store.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -293,13 +293,13 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
           base::MakeUnique<WindowSelectorController>()) {
   session_controller_->AddSessionStateObserver(this);
 
-  prefs::mojom::PreferencesFactoryPtr pref_factory_ptr;
+  prefs::mojom::PreferencesServiceFactoryPtr pref_factory_ptr;
   // Can be null in tests.
   if (!delegate_->GetShellConnector())
     return;
   delegate_->GetShellConnector()->BindInterface(prefs::mojom::kServiceName,
                                                 &pref_factory_ptr);
-  pref_store_ = new preferences::PrefObserverStore(std::move(pref_factory_ptr));
+  pref_store_ = new preferences::PrefClientStore(std::move(pref_factory_ptr));
 }
 
 RootWindowController* WmShell::GetPrimaryRootWindowController() {

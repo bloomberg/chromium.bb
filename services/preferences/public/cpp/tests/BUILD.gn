@@ -14,7 +14,7 @@ group("tests") {
 
 test("preferences_unittests") {
   sources = [
-    "pref_observer_store_unittest.cc",
+    "pref_client_store_unittest.cc",
   ]
   deps = [
     "//base",

@@ -17,16 +17,16 @@
 #include "services/service_manager/public/cpp/service.h"
 
 // Handles all incoming prefs::mojom::PreferenceManagerRequest, providing a
-// separate PreferencesManager per connection request.
+// separate PreferencesService per connection request.
 //
 // Additionally monitors system shutdown to clean up connections to PrefService.
 //
 // TODO(jonross): Observe profile switching and update PreferenceManager
 // connections.
 class PreferencesConnectionManager
-    : public NON_EXPORTED_BASE(prefs::mojom::PreferencesFactory),
-      public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<prefs::mojom::PreferencesFactory>),
+    : public NON_EXPORTED_BASE(prefs::mojom::PreferencesServiceFactory),
+      public NON_EXPORTED_BASE(service_manager::InterfaceFactory<
+                               prefs::mojom::PreferencesServiceFactory>),
       public NON_EXPORTED_BASE(service_manager::Service) {
  public:
   PreferencesConnectionManager();
@@ -35,29 +35,29 @@ class PreferencesConnectionManager
  private:
   // mojo::StrongBinding callback:
   void OnConnectionError(
-      mojo::StrongBindingPtr<prefs::mojom::PreferencesManager> binding);
+      mojo::StrongBindingPtr<prefs::mojom::PreferencesService> binding);
 
   // KeyedServiceShutdownNotifier::Subscription callback. Used to cleanup when
   // the active PrefService is being destroyed.
   void OnProfileDestroyed();
 
-  // prefs::mojom::PreferencesFactory:
-  void Create(prefs::mojom::PreferencesObserverPtr observer,
-              prefs::mojom::PreferencesManagerRequest manager) override;
+  // prefs::mojom::PreferencesServiceFactory:
+  void Create(prefs::mojom::PreferencesServiceClientPtr client,
+              prefs::mojom::PreferencesServiceRequest service) override;
 
-  // service_manager::InterfaceFactory<PreferencesFactory>:
+  // service_manager::InterfaceFactory<PreferencesServiceFactory>:
   void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PreferencesFactoryRequest request) override;
+              prefs::mojom::PreferencesServiceFactoryRequest request) override;
 
   // service_manager::Service:
   void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
-  mojo::BindingSet<prefs::mojom::PreferencesFactory> factory_bindings_;
+  mojo::BindingSet<prefs::mojom::PreferencesServiceFactory> factory_bindings_;
 
   // Bindings that automatically cleanup during connection errors.
-  std::vector<mojo::StrongBindingPtr<prefs::mojom::PreferencesManager>>
+  std::vector<mojo::StrongBindingPtr<prefs::mojom::PreferencesService>>
       manager_bindings_;
 
   // Observes shutdown, when PrefService is being destroyed.

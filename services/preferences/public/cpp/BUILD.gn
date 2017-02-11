@@ -4,8 +4,8 @@
 
 source_set("cpp") {
   sources = [
-    "pref_observer_store.cc",
-    "pref_observer_store.h",
+    "pref_client_store.cc",
+    "pref_client_store.h",
   ]
 
   public_deps = [

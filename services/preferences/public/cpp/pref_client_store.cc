@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/pref_observer_store.h"
+#include "services/preferences/public/cpp/pref_client_store.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -10,34 +10,34 @@
 
 namespace preferences {
 
-PrefObserverStore::PrefObserverStore(
-    prefs::mojom::PreferencesFactoryPtr pref_factory_ptr)
+PrefClientStore::PrefClientStore(
+    prefs::mojom::PreferencesServiceFactoryPtr pref_factory_ptr)
     : prefs_binding_(this),
       pref_factory_ptr_(std::move(pref_factory_ptr)),
       initialized_(false) {
   pref_factory_ptr_->Create(prefs_binding_.CreateInterfacePtrAndBind(),
-                            mojo::MakeRequest(&prefs_manager_ptr_));
+                            mojo::MakeRequest(&prefs_service_ptr_));
 }
 
-void PrefObserverStore::Subscribe(const std::set<std::string>& keys) {
+void PrefClientStore::Subscribe(const std::set<std::string>& keys) {
   keys_.insert(keys.begin(), keys.end());
 
   std::vector<std::string> pref_array;
   std::copy(keys_.begin(), keys_.end(), std::back_inserter(pref_array));
-  prefs_manager_ptr_->Subscribe(pref_array);
+  prefs_service_ptr_->Subscribe(pref_array);
 }
 
-bool PrefObserverStore::GetValue(const std::string& key,
-                                 const base::Value** value) const {
+bool PrefClientStore::GetValue(const std::string& key,
+                               const base::Value** value) const {
   DCHECK(initialized_);
   DCHECK(keys_.find(key) != keys_.end());
 
   return ValueMapPrefStore::GetValue(key, value);
 }
 
-void PrefObserverStore::SetValue(const std::string& key,
-                                 std::unique_ptr<base::Value> value,
-                                 uint32_t flags) {
+void PrefClientStore::SetValue(const std::string& key,
+                               std::unique_ptr<base::Value> value,
+                               uint32_t flags) {
   DCHECK(keys_.find(key) != keys_.end());
 
   // TODO(jonross): only notify the server if the value changed.
@@ -45,21 +45,21 @@ void PrefObserverStore::SetValue(const std::string& key,
   ValueMapPrefStore::SetValue(key, std::move(value), flags);
 }
 
-void PrefObserverStore::RemoveValue(const std::string& key, uint32_t flags) {
+void PrefClientStore::RemoveValue(const std::string& key, uint32_t flags) {
   // TODO(jonross): add preference removal to preferences.mojom
   NOTIMPLEMENTED();
 }
 
-bool PrefObserverStore::GetMutableValue(const std::string& key,
-                                        base::Value** value) {
+bool PrefClientStore::GetMutableValue(const std::string& key,
+                                      base::Value** value) {
   DCHECK(initialized_);
   DCHECK(keys_.find(key) != keys_.end());
 
   return ValueMapPrefStore::GetMutableValue(key, value);
 }
 
-void PrefObserverStore::ReportValueChanged(const std::string& key,
-                                           uint32_t flags) {
+void PrefClientStore::ReportValueChanged(const std::string& key,
+                                         uint32_t flags) {
   DCHECK(keys_.find(key) != keys_.end());
   const base::Value* value = nullptr;
   ValueMapPrefStore::GetValue(key, &value);
@@ -67,26 +67,26 @@ void PrefObserverStore::ReportValueChanged(const std::string& key,
   ValueMapPrefStore::ReportValueChanged(key, flags);
 }
 
-void PrefObserverStore::SetValueSilently(const std::string& key,
-                                         std::unique_ptr<base::Value> value,
-                                         uint32_t flags) {
+void PrefClientStore::SetValueSilently(const std::string& key,
+                                       std::unique_ptr<base::Value> value,
+                                       uint32_t flags) {
   SetValueOnPreferenceManager(key, *value);
   ValueMapPrefStore::SetValueSilently(key, std::move(value), flags);
 }
 
-PrefObserverStore::~PrefObserverStore() {}
+PrefClientStore::~PrefClientStore() {}
 
-void PrefObserverStore::SetValueOnPreferenceManager(const std::string& key,
-                                                    const base::Value& value) {
+void PrefClientStore::SetValueOnPreferenceManager(const std::string& key,
+                                                  const base::Value& value) {
   if (keys_.find(key) == keys_.end())
     return;
 
   auto prefs = base::MakeUnique<base::DictionaryValue>();
   prefs->Set(key, value.CreateDeepCopy());
-  prefs_manager_ptr_->SetPreferences(std::move(prefs));
+  prefs_service_ptr_->SetPreferences(std::move(prefs));
 }
 
-void PrefObserverStore::OnPreferencesChanged(
+void PrefClientStore::OnPreferencesChanged(
     std::unique_ptr<base::DictionaryValue> preferences) {
   if (!initialized_) {
     initialized_ = true;
