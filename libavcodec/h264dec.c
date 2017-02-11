@@ -535,8 +535,7 @@ static int get_last_needed_nal(H264Context *h)
 {
     int nals_needed = 0;
     int first_slice = 0;
-    int i;
-    int ret;
+    int i, ret;
 
     for (i = 0; i < h->pkt.nb_nals; i++) {
         H2645NAL *nal = &h->pkt.nals[i];
@@ -554,9 +553,14 @@ static int get_last_needed_nal(H264Context *h)
         case H264_NAL_DPA:
         case H264_NAL_IDR_SLICE:
         case H264_NAL_SLICE:
-            ret = init_get_bits8(&gb, nal->data + 1, (nal->size - 1));
-            if (ret < 0)
-                return ret;
+            ret = init_get_bits8(&gb, nal->data + 1, nal->size - 1);
+            if (ret < 0) {
+                av_log(h->avctx, AV_LOG_ERROR, "Invalid zero-sized VCL NAL unit\n");
+                if (h->avctx->err_recognition & AV_EF_EXPLODE)
+                    return ret;
+
+                break;
+            }
             if (!get_ue_golomb_long(&gb) ||  // first_mb_in_slice
                 !first_slice ||
                 first_slice != nal->type)
@@ -668,8 +672,11 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size)
         case H264_NAL_SLICE:
             h->has_slice = 1;
 
-            if ((err = ff_h264_queue_decode_slice(h, nal)))
+            if ((err = ff_h264_queue_decode_slice(h, nal))) {
+                H264SliceContext *sl = h->slice_ctx + h->nb_slice_ctx_queued;
+                sl->ref_count[0] = sl->ref_count[1] = 0;
                 break;
+            }
 
             if (h->current_slice == 1) {
                 if (avctx->active_thread_type & FF_THREAD_FRAME && !h->avctx->hwaccel &&
