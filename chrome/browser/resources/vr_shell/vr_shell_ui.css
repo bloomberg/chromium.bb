@@ -122,6 +122,45 @@ html {
   background-color: pink;
 }
 
+.tab {
+  background-color: #eee;
+  border-radius: 6px;
+  color: black;
+  display: inline-block;
+  font-size: 20px;
+  height: 30px;
+  line-height: 30px;
+  margin: 0 15px 0 15px;
+  overflow: hidden;
+  padding: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 300px;
+}
+
+.tab-incognito {
+  background-color: #525252;
+  color: white;
+}
+
+/* The tab container element behaves like a scroll view (in conjunction with the
+ * clip view). */
+#tab-container {
+  height: 54px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  white-space: nowrap;
+  width: 1500px;
+}
+
+/* The tab clip element's width will be programmatically set to the total width
+ * of all it's children (the tabs). By doing so, the tabs can be scrolled
+ * horizontally in the tab container element. */
+#tab-clip {
+  margin: 0 auto;
+  overflow: hidden;
+}
+
 #url-indicator-container {
   --tranX: 0;
   --tranY: -0.65;

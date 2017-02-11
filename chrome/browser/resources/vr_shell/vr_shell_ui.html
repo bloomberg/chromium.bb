@@ -72,6 +72,16 @@ found in the LICENSE file.
       <div class="caption">$i18n{forward}</div>
     </div>
     <div id="reload-ui-button" class="ui-element">Reload UI</div>
+    <div id="tab-template" class="tab"></div>
+    <!--The tab container element behaves like a scroll view (in conjunction
+        with the clip view). -->
+    <div id="tab-container" class="ui-element">
+      <!--The tab clip element's width will be programmatically set to the total
+          width of all it's children (the tabs). By doing so, the tabs can be
+          scrolled horizontally in the tab container element.-->
+      <div id="tab-clip">
+      </div>
+    </div>
   </div>
 </body>
 

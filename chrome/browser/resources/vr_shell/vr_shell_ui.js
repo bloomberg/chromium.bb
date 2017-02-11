@@ -671,6 +671,118 @@ var vrShellUi = (function() {
     }
   };
 
+  // Shows the open tabs.
+  //
+  // The tab container is made of three <div> nesting levels. The first is the
+  // tab container element, which acts like a scroll view. It has a fixed size
+  // and corresponds to a UI element in the scene. The second level is the clip
+  // element, which is programmatically set to the total width of all it's
+  // children (the third nesting level). The clip element is needed to enable
+  // horizontal scrolling and prevent the children from breaking to a new line.
+  // The third nesting level comprises the actual tabs.
+  //
+  // TODO(crbug/641487): currently, tabs cannot be scrolled because the
+  // scrolling event is not sent to UI elements.
+  class TabContainer {
+    constructor(contentQuadId) {
+      /** @const */ var DOM_TAB_TEMPLATE_SELECTOR = '#tab-template';
+      /** @const */ var DOM_TAB_CONTAINER_SELECTOR = '#tab-container';
+      /** @const */ var DOM_TAB_CLIP_SELECTOR = '#tab-clip';
+      /** @const */ var TAB_CONTAINER_Y_OFFSET = 0.4;
+      /** @const */ var TAB_CONTAINER_Z_OFFSET = -1;
+
+      this.tabs = {};
+      this.domTabs = {};
+      this.contentQuadId = contentQuadId;
+      this.domTabTemplate = document.querySelector(DOM_TAB_TEMPLATE_SELECTOR);
+      this.domTabContainer = document.querySelector(DOM_TAB_CONTAINER_SELECTOR);
+      this.domTabClip = document.querySelector(DOM_TAB_CLIP_SELECTOR);
+
+      // Add tab container to native scene.
+      this.tabContainerElement = new DomUiElement(DOM_TAB_CONTAINER_SELECTOR);
+      let positionUpdate = new api.UiElementUpdate();
+      positionUpdate.setTranslation(
+          0, TAB_CONTAINER_Y_OFFSET, TAB_CONTAINER_Z_OFFSET);
+      positionUpdate.setVisible(false);
+      ui.updateElement(this.tabContainerElement.uiElementId, positionUpdate);
+
+      // Calculate the width of one tab so that we can properly set the clip
+      // element's width.
+      this.domTabWidth = this.domTabTemplate.offsetWidth;
+      var domTabStyle = window.getComputedStyle(this.domTabTemplate);
+      this.domTabWidth += parseInt(domTabStyle.marginLeft, 10) +
+          parseInt(domTabStyle.marginRight, 10);
+    }
+
+    getQualifiedTabId(tab) {
+      return (tab.incognito ? 'i' : 'n') + tab.id;
+    }
+
+    makeDomTab(tab) {
+      // Make a copy of the template tab and add this copy to the tab container
+      // view.
+      let domTab = this.domTabTemplate.cloneNode(true);
+      domTab.removeAttribute('id');
+      this.domTabClip.appendChild(domTab);
+      this.domTabs[this.getQualifiedTabId(tab)] = domTab;
+      return domTab;
+    }
+
+    resizeClipElement() {
+      // Resize clip element so that scrolling works.
+      this.domTabClip.style.width =
+          (Object.keys(this.tabs).length * this.domTabWidth) + 'px';
+    }
+
+    setTabs(tabs) {
+      // Remove all current tabs.
+      while (this.domTabClip.firstChild) {
+        this.domTabClip.removeChild(this.domTabClip.firstChild);
+      }
+      this.tabs = {};
+
+      // Add new tabs.
+      for (let i = 0; i < tabs.length; i++) {
+        this.addTab(tabs[i]);
+      }
+    }
+
+    hasTab(tab) {
+      return this.getQualifiedTabId(tab) in this.tabs;
+    }
+
+    addTab(tab) {
+      this.tabs[this.getQualifiedTabId(tab)] = tab;
+      this.makeDomTab(tab);
+      this.updateTab(tab);
+      this.resizeClipElement();
+    }
+
+    updateTab(tab) {
+      let domTab = this.domTabs[this.getQualifiedTabId(tab)];
+      domTab.textContent = tab.title;
+      domTab.classList.remove('tab-incognito');
+      if (tab.incognito) {
+        domTab.classList.add('tab-incognito');
+      }
+    }
+
+    removeTab(tab) {
+      let qualifiedTabId = this.getQualifiedTabId(tab);
+      let domTab = this.domTabs[qualifiedTabId];
+      delete this.domTabs[qualifiedTabId];
+      this.domTabClip.removeChild(domTab);
+      delete this.tabs[qualifiedTabId];
+      this.resizeClipElement();
+    }
+
+    setEnabled(enabled) {
+      let visibilityUpdate = new api.UiElementUpdate();
+      visibilityUpdate.setVisible(enabled);
+      ui.updateElement(this.tabContainerElement.uiElementId, visibilityUpdate);
+    }
+  };
+
   class UiManager {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
@@ -686,6 +798,7 @@ var vrShellUi = (function() {
       this.urlIndicator = new UrlIndicator();
       this.omnibox = new Omnibox();
       this.reloadUiButton = new ReloadUiButton();
+      this.tabContainer = new TabContainer(contentId);
     }
 
     setMode(mode) {
@@ -724,6 +837,7 @@ var vrShellUi = (function() {
       this.secureOriginWarnings.setEnabled(
           mode == api.Mode.WEB_VR && !menuMode);
       this.background.setFullscreen(this.fullscreen);
+      this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
 
@@ -803,6 +917,25 @@ var vrShellUi = (function() {
     /** @override */
     onSetOmniboxSuggestions(suggestions) {
       this.manager.omnibox.setSuggestions(suggestions);
+    }
+
+    /** @override */
+    onSetTabs(tabs) {
+      uiManager.tabContainer.setTabs(tabs)
+    }
+
+    /** @override */
+    onUpdateTab(tab) {
+      if (uiManager.tabContainer.hasTab(tab)) {
+        uiManager.tabContainer.updateTab(tab);
+      } else {
+        uiManager.tabContainer.addTab(tab);
+      }
+    }
+
+    /** @override */
+    onRemoveTab(tab) {
+      uiManager.tabContainer.removeTab(tab);
     }
 
     /** @override */
