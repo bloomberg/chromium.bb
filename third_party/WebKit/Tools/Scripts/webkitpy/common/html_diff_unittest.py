@@ -14,7 +14,11 @@ class TestHtmlDiff(unittest.TestCase):
             html_diff('one\ntoo\nthree\n', 'one\ntwo\nthree\n'),
             ('<html>\n'
              '<head>\n'
-             '<style>.del { background: #faa; } .add { background: #afa; }</style>\n'
+             '<style>\n'
+             'pre { white-space: pre-wrap; }\n'
+             '.del { background: #faa; }\n'
+             '.add { background: #afa; }\n'
+             '</style>\n'
              '</head>\n'
              '<body>\n'
              '<pre>one\n'

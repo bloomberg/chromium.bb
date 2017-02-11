@@ -16,7 +16,11 @@ import difflib
 
 _TEMPLATE = """<html>
 <head>
-<style>.del { background: #faa; } .add { background: #afa; }</style>
+<style>
+pre { white-space: pre-wrap; }
+.del { background: #faa; }
+.add { background: #afa; }
+</style>
 </head>
 <body>
 <pre>%s</pre>
