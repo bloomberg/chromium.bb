@@ -22,8 +22,8 @@ class SingleThreadTaskRunner;
 
 namespace ui {
 
-class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
-    public base::RefCounted<DisplayLinkMac> {
+class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
+    : public base::RefCountedThreadSafe<DisplayLinkMac> {
  public:
   static scoped_refptr<DisplayLinkMac> GetForDisplay(
       CGDirectDisplayID display_id);
@@ -41,7 +41,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
   void NotifyCurrentTime(const base::TimeTicks& now);
 
  private:
-  friend class base::RefCounted<DisplayLinkMac>;
+  friend class base::RefCountedThreadSafe<DisplayLinkMac>;
 
   DisplayLinkMac(
       CGDirectDisplayID display_id,
