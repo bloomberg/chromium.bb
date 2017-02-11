@@ -36,10 +36,14 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 #endif
                                    int xs, int ys) {
 #if CONFIG_DUAL_FILTER
+  InterpFilter filter_x = av1_get_plane_interp_filter(
+      interp_filter[1 + 2 * conv_params->ref], conv_params->plane);
+  InterpFilter filter_y = av1_get_plane_interp_filter(
+      interp_filter[0 + 2 * conv_params->ref], conv_params->plane);
   InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(interp_filter[1 + 2 * conv_params->ref]);
+      av1_get_interp_filter_params(filter_x);
   InterpFilterParams interp_filter_params_y =
-      av1_get_interp_filter_params(interp_filter[0 + 2 * conv_params->ref]);
+      av1_get_interp_filter_params(filter_y);
 #else
   InterpFilterParams interp_filter_params =
       av1_get_interp_filter_params(interp_filter);

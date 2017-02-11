@@ -63,6 +63,19 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 };
 
 DECLARE_ALIGNED(256, static const InterpKernel,
+                sub_pel_filters_regular_uv[SUBPEL_SHIFTS]) = {
+  // intfilt 0.575
+  { 0, 0, 0, 128, 0, 0, 0, 0 },        { 0, 1, -5, 126, 8, -3, 1, 0 },
+  { -1, 3, -10, 123, 18, -6, 2, -1 },  { -1, 4, -14, 118, 27, -9, 3, 0 },
+  { -1, 5, -16, 112, 37, -12, 4, -1 }, { -1, 5, -18, 105, 48, -14, 4, -1 },
+  { -1, 6, -19, 97, 58, -17, 5, -1 },  { -1, 6, -20, 88, 68, -18, 6, -1 },
+  { -1, 6, -19, 78, 78, -19, 6, -1 },  { -1, 6, -18, 68, 88, -20, 6, -1 },
+  { -1, 5, -17, 58, 97, -19, 6, -1 },  { -1, 4, -14, 48, 105, -18, 5, -1 },
+  { -1, 4, -12, 37, 112, -16, 5, -1 }, { 0, 3, -9, 27, 118, -14, 4, -1 },
+  { -1, 2, -6, 18, 123, -10, 3, -1 },  { 0, 1, -3, 8, 126, -5, 1, 0 },
+};
+
+DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8sharp[SUBPEL_SHIFTS]) = {
   // intfilt 0.8
   { 0, 0, 0, 128, 0, 0, 0, 0 },         { -1, 2, -6, 127, 9, -4, 2, -1 },
@@ -96,6 +109,27 @@ DECLARE_ALIGNED(256, static const int16_t,
   { 0, 0, -1, 2, -4, 8, 127, -7, 3, -1, 1, 0 },
 };
 
+DECLARE_ALIGNED(256, static const int16_t,
+                sub_pel_filters_sharp_uv[SUBPEL_SHIFTS][12]) = {
+  // intfilt 0.8
+  { 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0 },
+  { 0, 1, -1, 3, -7, 127, 8, -4, 2, -1, 0, 0 },
+  { 0, 1, -3, 5, -12, 124, 18, -8, 4, -2, 1, 0 },
+  { -1, 2, -4, 8, -17, 120, 28, -11, 6, -3, 1, -1 },
+  { -1, 2, -4, 10, -21, 114, 38, -15, 8, -4, 2, -1 },
+  { -1, 3, -5, 11, -23, 107, 49, -18, 9, -5, 2, -1 },
+  { -1, 3, -6, 12, -25, 99, 60, -21, 11, -6, 3, -1 },
+  { -1, 3, -6, 12, -25, 90, 70, -23, 12, -6, 3, -1 },
+  { -1, 3, -6, 12, -24, 80, 80, -24, 12, -6, 3, -1 },
+  { -1, 3, -6, 12, -23, 70, 90, -25, 12, -6, 3, -1 },
+  { -1, 3, -6, 11, -21, 60, 99, -25, 12, -6, 3, -1 },
+  { -1, 2, -5, 9, -18, 49, 107, -23, 11, -5, 3, -1 },
+  { -1, 2, -4, 8, -15, 38, 114, -21, 10, -4, 2, -1 },
+  { -1, 1, -3, 6, -11, 28, 120, -17, 8, -4, 2, -1 },
+  { 0, 1, -2, 4, -8, 18, 124, -12, 5, -3, 1, 0 },
+  { 0, 0, -1, 2, -4, 8, 127, -7, 3, -1, 1, 0 },
+};
+
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8smooth2[SUBPEL_SHIFTS]) = {
   // freqmultiplier = 0.2
@@ -110,7 +144,33 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 };
 
 DECLARE_ALIGNED(256, static const InterpKernel,
+                sub_pel_filters_smooth2_uv[SUBPEL_SHIFTS]) = {
+  // freqmultiplier = 0.2
+  { 0, 0, 0, 128, 0, 0, 0, 0 },   { 0, 9, 30, 44, 32, 11, 2, 0 },
+  { 0, 8, 28, 44, 34, 12, 2, 0 }, { 0, 7, 27, 44, 35, 13, 2, 0 },
+  { 0, 6, 26, 43, 37, 14, 2, 0 }, { 0, 5, 24, 43, 38, 16, 2, 0 },
+  { 0, 5, 23, 42, 38, 17, 3, 0 }, { 0, 4, 21, 41, 40, 19, 3, 0 },
+  { 0, 4, 20, 40, 40, 20, 4, 0 }, { 0, 3, 19, 40, 41, 21, 4, 0 },
+  { 0, 3, 17, 38, 42, 23, 5, 0 }, { 0, 2, 16, 38, 43, 24, 5, 0 },
+  { 0, 2, 14, 37, 43, 26, 6, 0 }, { 0, 2, 13, 35, 44, 27, 7, 0 },
+  { 0, 2, 12, 34, 44, 28, 8, 0 }, { 0, 2, 11, 32, 44, 30, 9, 0 },
+};
+
+DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8smooth[SUBPEL_SHIFTS]) = {
+  // freqmultiplier = 0.8
+  { 0, 0, 0, 128, 0, 0, 0, 0 },    { 0, -5, 13, 102, 24, -7, 1, 0 },
+  { 0, -4, 8, 100, 31, -8, 1, 0 }, { 0, -3, 4, 97, 37, -8, 1, 0 },
+  { 0, -2, 0, 94, 44, -9, 1, 0 },  { 0, -2, -3, 90, 51, -9, 1, 0 },
+  { 0, -1, -5, 84, 59, -9, 0, 0 }, { 0, 0, -7, 79, 65, -9, 0, 0 },
+  { 0, 0, -8, 72, 72, -8, 0, 0 },  { 0, 0, -9, 65, 79, -7, 0, 0 },
+  { 0, 0, -9, 59, 84, -5, -1, 0 }, { 0, 1, -9, 51, 90, -3, -2, 0 },
+  { 0, 1, -9, 44, 94, 0, -2, 0 },  { 0, 1, -8, 37, 97, 4, -3, 0 },
+  { 0, 1, -8, 31, 100, 8, -4, 0 }, { 0, 1, -7, 24, 102, 13, -5, 0 },
+};
+
+DECLARE_ALIGNED(256, static const InterpKernel,
+                sub_pel_filters_smooth_uv[SUBPEL_SHIFTS]) = {
   // freqmultiplier = 0.8
   { 0, 0, 0, 128, 0, 0, 0, 0 },    { 0, -5, 13, 102, 24, -7, 1, 0 },
   { 0, -4, 8, 100, 31, -8, 1, 0 }, { 0, -3, 4, 97, 37, -8, 1, 0 },
@@ -219,6 +279,14 @@ static const InterpFilterParams
         BILINEAR },
       { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS,
         EIGHTTAP_SHARP },
+      { (const int16_t *)sub_pel_filters_regular_uv, SUBPEL_TAPS, SUBPEL_SHIFTS,
+        FILTER_REGULAR_UV },
+      { (const int16_t *)sub_pel_filters_smooth_uv, SUBPEL_TAPS, SUBPEL_SHIFTS,
+        FILTER_SMOOTH_UV },
+      { (const int16_t *)sub_pel_filters_sharp_uv, 12, SUBPEL_SHIFTS,
+        FILTER_SHARP_UV },
+      { (const int16_t *)sub_pel_filters_smooth2_uv, SUBPEL_TAPS, SUBPEL_SHIFTS,
+        FILTER_SMOOTH2_UV },
     };
 #else
 static const InterpFilterParams
@@ -258,3 +326,26 @@ const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter) {
   return (const int16_t *)av1_interp_filter_params_list[interp_filter]
       .filter_ptr;
 }
+
+#if CONFIG_DUAL_FILTER
+InterpFilter av1_get_plane_interp_filter(InterpFilter interp_filter,
+                                         int plane) {
+#if USE_TEMPORALFILTER_12TAP
+  assert(interp_filter <= EIGHTTAP_SHARP ||
+         interp_filter == TEMPORALFILTER_12TAP);
+#else
+  assert(interp_filter <= EIGHTTAP_SHARP);
+#endif
+  if (plane == 0) {
+    return interp_filter;
+  } else {
+    switch (interp_filter) {
+      case EIGHTTAP_REGULAR: return FILTER_REGULAR_UV;
+      case EIGHTTAP_SMOOTH: return FILTER_SMOOTH_UV;
+      case MULTITAP_SHARP: return FILTER_SHARP_UV;
+      case EIGHTTAP_SMOOTH2: return FILTER_SMOOTH2_UV;
+      default: return interp_filter;
+    }
+  }
+}
+#endif

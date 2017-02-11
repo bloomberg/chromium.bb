@@ -35,7 +35,11 @@ extern "C" {
   3 /* (1 << LOG_SWITCHABLE_FILTERS) > SWITCHABLE_FILTERS */
 
 #define EIGHTTAP_SHARP (SWITCHABLE_FILTERS + 1)
-#define EXTRA_FILTERS 2
+#define FILTER_REGULAR_UV (SWITCHABLE_FILTERS + 2)
+#define FILTER_SMOOTH_UV (SWITCHABLE_FILTERS + 3)
+#define FILTER_SHARP_UV (SWITCHABLE_FILTERS + 4)
+#define FILTER_SMOOTH2_UV (SWITCHABLE_FILTERS + 5)
+#define EXTRA_FILTERS 6
 #define SWITCHABLE_FILTER_CONTEXTS ((SWITCHABLE_FILTERS + 1) * 4)
 #define INTER_FILTER_COMP_OFFSET (SWITCHABLE_FILTERS + 1)
 #define INTER_FILTER_DIR_OFFSET ((SWITCHABLE_FILTERS + 1) * 2)
@@ -52,7 +56,7 @@ extern "C" {
 
 #define USE_TEMPORALFILTER_12TAP 1
 #if USE_TEMPORALFILTER_12TAP
-#define TEMPORALFILTER_12TAP (SWITCHABLE_FILTERS + 2)
+#define TEMPORALFILTER_12TAP (SWITCHABLE_FILTERS + EXTRA_FILTERS)
 #endif
 
 #define BILINEAR (SWITCHABLE_FILTERS)
@@ -96,6 +100,10 @@ static INLINE int av1_is_interpolating_filter(
   const InterpFilterParams ip = av1_get_interp_filter_params(interp_filter);
   return (ip.filter_ptr[ip.taps / 2 - 1] == 128);
 }
+
+#if CONFIG_DUAL_FILTER
+InterpFilter av1_get_plane_interp_filter(InterpFilter interp_filter, int plane);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"
