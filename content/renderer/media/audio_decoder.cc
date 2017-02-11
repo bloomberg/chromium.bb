@@ -33,7 +33,7 @@ bool DecodeAudioFileData(
     return false;
 
 #if defined(MEDIA_DISABLE_FFMPEG)
-  return false
+  return false;
 #else
   // Uses the FFmpeg library for audio file reading.
   InMemoryUrlProtocol url_protocol(reinterpret_cast<const uint8_t*>(data),
