@@ -1128,7 +1128,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoLog(
   std::vector<char> buffer(info_log_len, 0);
   glGetProgramInfoLog(GetProgramServiceID(program, resources_), info_log_len,
                       nullptr, buffer.data());
-  *infolog = std::string(buffer.data());
+  *infolog = info_log_len > 0 ? std::string(buffer.data()) : std::string();
   return error::kNoError;
 }
 
@@ -1182,7 +1182,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetShaderInfoLog(
   glGetShaderiv(service_id, GL_INFO_LOG_LENGTH, &info_log_len);
   std::vector<char> buffer(info_log_len, 0);
   glGetShaderInfoLog(service_id, info_log_len, nullptr, buffer.data());
-  *infolog = std::string(buffer.data());
+  *infolog = info_log_len > 0 ? std::string(buffer.data()) : std::string();
   return error::kNoError;
 }
 
