@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/common/switches.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace extensions {
 
@@ -32,6 +33,7 @@ class NativeBindingsApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleEndToEndTest) {
+  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("native_bindings/extension")) << message_;

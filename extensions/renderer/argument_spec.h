@@ -21,6 +21,7 @@ class Value;
 }
 
 namespace extensions {
+class APITypeReferenceMap;
 
 enum class ArgumentType {
   INTEGER,
@@ -39,10 +40,6 @@ enum class ArgumentType {
 // A description of a given Argument to an Extension.
 class ArgumentSpec {
  public:
-  // A map from name -> definition for type definitions. This is used when an
-  // argument is declared to be a reference to a type defined elsewhere.
-  using RefMap = std::map<std::string, std::unique_ptr<ArgumentSpec>>;
-
   // Reads the description from |value| and sets associated fields.
   // TODO(devlin): We should strongly think about generating these instead of
   // populating them at runtime.
@@ -54,7 +51,7 @@ class ArgumentSpec {
   // |out_value|. Otherwise, no conversion is performed.
   bool ParseArgument(v8::Local<v8::Context> context,
                      v8::Local<v8::Value> value,
-                     const RefMap& refs,
+                     const APITypeReferenceMap& refs,
                      std::unique_ptr<base::Value>* out_value,
                      std::string* error) const;
 
@@ -78,12 +75,12 @@ class ArgumentSpec {
                                   std::string* error) const;
   bool ParseArgumentToObject(v8::Local<v8::Context> context,
                              v8::Local<v8::Object> object,
-                             const RefMap& refs,
+                             const APITypeReferenceMap& refs,
                              std::unique_ptr<base::Value>* out_value,
                              std::string* error) const;
   bool ParseArgumentToArray(v8::Local<v8::Context> context,
                             v8::Local<v8::Array> value,
-                            const RefMap& refs,
+                            const APITypeReferenceMap& refs,
                             std::unique_ptr<base::Value>* out_value,
                             std::string* error) const;
   bool ParseArgumentToAny(v8::Local<v8::Context> context,

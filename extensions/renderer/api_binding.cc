@@ -17,6 +17,7 @@
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
+#include "extensions/renderer/api_type_reference_map.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
 #include "gin/per_context_data.h"
@@ -99,7 +100,7 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* event_definitions,
                        const SendRequestMethod& callback,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
-                       ArgumentSpec::RefMap* type_refs,
+                       APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler)
     : api_name_(api_name),
       method_callback_(callback),
@@ -129,9 +130,6 @@ APIBinding::APIBinding(const std::string& api_name,
       CHECK(type->GetAsDictionary(&type_dict));
       std::string id;
       CHECK(type_dict->GetString("id", &id));
-      DCHECK(type_refs->find(id) == type_refs->end());
-      // TODO(devlin): refs are sometimes preceeded by the API namespace; we
-      // might need to take that into account.
       auto argument_spec = base::MakeUnique<ArgumentSpec>(*type_dict);
       const std::set<std::string>& enum_values = argument_spec->enum_values();
       if (!enum_values.empty()) {
@@ -147,7 +145,7 @@ APIBinding::APIBinding(const std::string& api_name,
               std::make_pair(enum_value, GetJSEnumEntryName(enum_value)));
         }
       }
-      (*type_refs)[id] = std::move(argument_spec);
+      type_refs->AddSpec(id, std::move(argument_spec));
     }
   }
 

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/api_type_reference_map.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 
@@ -126,7 +127,7 @@ ArgumentSpec::~ArgumentSpec() {}
 
 bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
                                  v8::Local<v8::Value> value,
-                                 const RefMap& refs,
+                                 const APITypeReferenceMap& refs,
                                  std::unique_ptr<base::Value>* out_value,
                                  std::string* error) const {
   if (type_ == ArgumentType::FUNCTION) {
@@ -137,9 +138,9 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
 
   if (type_ == ArgumentType::REF) {
     DCHECK(ref_);
-    auto iter = refs.find(ref_.value());
-    DCHECK(iter != refs.end()) << ref_.value();
-    return iter->second->ParseArgument(context, value, refs, out_value, error);
+    const ArgumentSpec* reference = refs.GetSpec(ref_.value());
+    DCHECK(reference) << ref_.value();
+    return reference->ParseArgument(context, value, refs, out_value, error);
   }
 
   if (type_ == ArgumentType::CHOICES) {
@@ -244,7 +245,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
 bool ArgumentSpec::ParseArgumentToObject(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object,
-    const RefMap& refs,
+    const APITypeReferenceMap& refs,
     std::unique_ptr<base::Value>* out_value,
     std::string* error) const {
   DCHECK_EQ(ArgumentType::OBJECT, type_);
@@ -288,7 +289,7 @@ bool ArgumentSpec::ParseArgumentToObject(
 
 bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
                                         v8::Local<v8::Array> value,
-                                        const RefMap& refs,
+                                        const APITypeReferenceMap& refs,
                                         std::unique_ptr<base::Value>* out_value,
                                         std::string* error) const {
   DCHECK_EQ(ArgumentType::LIST, type_);

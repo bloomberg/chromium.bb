@@ -29,7 +29,7 @@ const char kAlphaAPIName[] = "alpha";
 const char kAlphaAPISpec[] =
     "{"
     "  'types': [{"
-    "    'id': 'objRef',"
+    "    'id': 'alpha.objRef',"
     "    'type': 'object',"
     "    'properties': {"
     "      'prop1': {'type': 'string'},"
@@ -49,7 +49,7 @@ const char kAlphaAPISpec[] =
     "    'name': 'functionWithRefAndCallback',"
     "    'parameters': [{"
     "      'name': 'ref',"
-    "      '$ref': 'objRef'"
+    "      '$ref': 'alpha.objRef'"
     "    }, {"
     "      'name': 'callback',"
     "      'type': 'function'"
@@ -67,6 +67,15 @@ const char kBetaAPISpec[] =
     "  'functions': [{"
     "    'name': 'simpleFunc',"
     "    'parameters': [{'name': 'int', 'type': 'integer'}]"
+    "  }]"
+    "}";
+
+const char kGammaAPIName[] = "gamma";
+const char kGammaAPISpec[] =
+    "{"
+    "  'functions': [{"
+    "    'name': 'functionWithExternalRef',"
+    "    'parameters': [{ 'name': 'someRef', '$ref': 'alpha.objRef' }]"
     "  }]"
     "}";
 
@@ -197,7 +206,9 @@ void APIBindingsSystemTest::SetUp() {
       const char* name;
       const char* spec;
     } api_data[] = {
-        {kAlphaAPIName, kAlphaAPISpec}, {kBetaAPIName, kBetaAPISpec},
+        {kAlphaAPIName, kAlphaAPISpec},
+        {kBetaAPIName, kBetaAPISpec},
+        {kGammaAPIName, kGammaAPISpec},
     };
     for (const auto& api : api_data) {
       std::unique_ptr<base::DictionaryValue> api_schema =
@@ -301,10 +312,10 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   v8::Local<v8::Context> context = ContextLocal();
 
   bool did_call = false;
-  auto hook = [](bool* did_call,
-                 const APISignature* signature, v8::Local<v8::Context> context,
+  auto hook = [](bool* did_call, const APISignature* signature,
+                 v8::Local<v8::Context> context,
                  std::vector<v8::Local<v8::Value>>* arguments,
-                 const ArgumentSpec::RefMap& type_refs) {
+                 const APITypeReferenceMap& type_refs) {
     *did_call = true;
     APIBindingHooks::RequestResult result(
         APIBindingHooks::RequestResult::HANDLED);
@@ -402,6 +413,27 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
     EXPECT_EQ("[\"beta\"]",
               GetStringPropertyFromObject(context->Global(), context,
                                           "callbackArguments"));
+  }
+}
+
+// Test that references to other API's types works.
+TEST_F(APIBindingsSystemTest, CrossAPIReferences) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  // Instantiate gamma API. Note: It's important that we haven't instantiated
+  // alpha API yet, since this tests that we can lazily populate the type
+  // information.
+  v8::Local<v8::Object> gamma_api = bindings_system()->CreateAPIInstance(
+      kGammaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+  ASSERT_FALSE(gamma_api.IsEmpty());
+
+  {
+    // Test a simple call -> response.
+    const char kTestCall[] = "obj.functionWithExternalRef({prop1: 'foo'});";
+    CallFunctionOnObject(context, gamma_api, kTestCall);
+    ValidateLastRequest("gamma.functionWithExternalRef", "[{'prop1':'foo'}]");
+    reset_last_request();
   }
 }
 

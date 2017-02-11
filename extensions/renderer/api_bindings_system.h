@@ -15,7 +15,7 @@
 #include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
-#include "extensions/renderer/argument_spec.h"
+#include "extensions/renderer/api_type_reference_map.h"
 
 namespace base {
 class DictionaryValue;
@@ -72,8 +72,12 @@ class APIBindingsSystem {
   // Creates a new APIBinding for the given |api_name|.
   std::unique_ptr<APIBinding> CreateNewAPIBinding(const std::string& api_name);
 
+  // Callback for the APITypeReferenceMap in order to initialize an unknown
+  // type.
+  void InitializeType(const std::string& name);
+
   // The map of cached API reference types.
-  ArgumentSpec::RefMap type_reference_map_;
+  APITypeReferenceMap type_reference_map_;
 
   // The request handler associated with the system.
   APIRequestHandler request_handler_;

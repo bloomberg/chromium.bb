@@ -61,7 +61,7 @@ class APIBindingHooks {
       base::Callback<RequestResult(const APISignature*,
                                    v8::Local<v8::Context> context,
                                    std::vector<v8::Local<v8::Value>>*,
-                                   const ArgumentSpec::RefMap&)>;
+                                   const APITypeReferenceMap&)>;
 
   explicit APIBindingHooks(const binding::RunJSFunctionSync& run_js);
   ~APIBindingHooks();
@@ -86,7 +86,7 @@ class APIBindingHooks {
                          v8::Local<v8::Context> context,
                          const APISignature* signature,
                          std::vector<v8::Local<v8::Value>>* arguments,
-                         const ArgumentSpec::RefMap& type_refs);
+                         const APITypeReferenceMap& type_refs);
 
   // Returns a JS interface that can be used to register hooks.
   v8::Local<v8::Object> GetJSHookInterface(const std::string& api_name,

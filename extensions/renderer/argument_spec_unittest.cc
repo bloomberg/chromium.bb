@@ -5,6 +5,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/api_type_reference_map.h"
 #include "extensions/renderer/argument_spec.h"
 #include "gin/converter.h"
 #include "gin/public/isolate_holder.h"
@@ -16,7 +17,8 @@ namespace extensions {
 
 class ArgumentSpecUnitTest : public gin::V8Test {
  protected:
-  ArgumentSpecUnitTest() {}
+  ArgumentSpecUnitTest()
+      : type_refs_(APITypeReferenceMap::InitializeTypeCallback()) {}
   ~ArgumentSpecUnitTest() override {}
   void ExpectSuccess(const ArgumentSpec& spec,
                      const std::string& script_source,
@@ -59,7 +61,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
   }
 
   void AddTypeRef(const std::string& id, std::unique_ptr<ArgumentSpec> spec) {
-    type_refs_[id] = std::move(spec);
+    type_refs_.AddSpec(id, std::move(spec));
   }
 
  private:
@@ -73,7 +75,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
                const base::Value* expected_value,
                const std::string& expected_thrown_message);
 
-  ArgumentSpec::RefMap type_refs_;
+  APITypeReferenceMap type_refs_;
 
   DISALLOW_COPY_AND_ASSIGN(ArgumentSpecUnitTest);
 };

@@ -29,6 +29,7 @@ class APIBindingHooks;
 class APIEventHandler;
 class APIRequestHandler;
 class APISignature;
+class APITypeReferenceMap;
 
 // A class that vends v8::Objects for extension APIs. These APIs have function
 // interceptors for all exposed methods, which call back into the APIBinding.
@@ -66,7 +67,7 @@ class APIBinding {
   // The callback type for handling an API call.
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
-  // The ArgumentSpec::RefMap is required to outlive this object.
+  // The APITypeReferenceMap is required to outlive this object.
   // |function_definitions|, |type_definitions| and |event_definitions|
   // may be null if the API does not specify any of that category.
   APIBinding(const std::string& name,
@@ -75,7 +76,7 @@ class APIBinding {
              const base::ListValue* event_definitions,
              const SendRequestMethod& callback,
              std::unique_ptr<APIBindingHooks> binding_hooks,
-             ArgumentSpec::RefMap* type_refs,
+             APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler);
   ~APIBinding();
 
@@ -120,7 +121,7 @@ class APIBinding {
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   // The reference map for all known types; required to outlive this object.
-  const ArgumentSpec::RefMap* type_refs_;
+  const APITypeReferenceMap* type_refs_;
 
   // The associated request handler, shared between this and other bindings.
   // Required to outlive this object.

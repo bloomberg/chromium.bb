@@ -13,6 +13,7 @@
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
+#include "extensions/renderer/api_type_reference_map.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
@@ -131,7 +132,8 @@ class APIBindingUnittest : public APIBindingTest {
   }
 
  protected:
-  APIBindingUnittest() {}
+  APIBindingUnittest()
+      : type_refs_(APITypeReferenceMap::InitializeTypeCallback()) {}
   void SetUp() override {
     APIBindingTest::SetUp();
     request_handler_ = base::MakeUnique<APIRequestHandler>(
@@ -214,7 +216,7 @@ class APIBindingUnittest : public APIBindingTest {
   APIBinding* binding() { return binding_.get(); }
   APIEventHandler* event_handler() { return event_handler_.get(); }
   APIRequestHandler* request_handler() { return request_handler_.get(); }
-  const ArgumentSpec::RefMap& type_refs() const { return type_refs_; }
+  const APITypeReferenceMap& type_refs() const { return type_refs_; }
 
  private:
   void RunTest(v8::Local<v8::Context> context,
@@ -229,7 +231,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<APIBinding> binding_;
   std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;
-  ArgumentSpec::RefMap type_refs_;
+  APITypeReferenceMap type_refs_;
 
   std::unique_ptr<base::ListValue> binding_functions_;
   std::unique_ptr<base::ListValue> binding_events_;
@@ -431,8 +433,8 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   SetTypes(kTypes);
   InitializeBinding();
   EXPECT_EQ(2u, type_refs().size());
-  EXPECT_TRUE(base::ContainsKey(type_refs(), "refObj"));
-  EXPECT_TRUE(base::ContainsKey(type_refs(), "refEnum"));
+  EXPECT_TRUE(type_refs().GetSpec("refObj"));
+  EXPECT_TRUE(type_refs().GetSpec("refEnum"));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -585,7 +587,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
                  std::vector<v8::Local<v8::Value>>* arguments,
-                 const ArgumentSpec::RefMap& ref_map) {
+                 const APITypeReferenceMap& ref_map) {
     *did_call = true;
     APIBindingHooks::RequestResult result(
         APIBindingHooks::RequestResult::HANDLED);
@@ -887,7 +889,7 @@ TEST_F(APIBindingUnittest,
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
                  std::vector<v8::Local<v8::Value>>* arguments,
-                 const ArgumentSpec::RefMap& ref_map) {
+                 const APITypeReferenceMap& ref_map) {
     APIBindingHooks::RequestResult result(
         APIBindingHooks::RequestResult::HANDLED);
     if (arguments->size() != 1u) {  // ASSERT* messes with the return type.

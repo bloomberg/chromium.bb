@@ -93,7 +93,28 @@ var tests = [
     chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport);
     chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport.setOptions);
     chrome.test.succeed();
-  }
+  },
+  function injectScript() {
+    var url =
+        'http://example.com:' + portNumber + '/native_bindings/simple.html';
+    // Create a tab, and inject code in it to change its title.
+    // chrome.tabs.executeScript relies on external type references
+    // (extensionTypes.InjectDetails), so this exercises that flow as well.
+    chrome.tabs.create({url: url}, function(tab) {
+      chrome.test.assertTrue(!!tab, 'tab');
+      chrome.test.assertEq(new URL(url).host, new URL(tab.url).host);
+      var code = 'document.title = "new title";';
+      chrome.tabs.executeScript(tab.id, {code: code}, function(results) {
+        chrome.test.assertTrue(!!results, 'results');
+        chrome.test.assertEq(1, results.length);
+        chrome.test.assertEq('new title', results[0]);
+        chrome.tabs.get(tab.id, tab => {
+          chrome.test.assertEq('new title', tab.title);
+          chrome.test.succeed();
+        });
+      });
+    });
+  },
 ];
 
 chrome.test.getConfig(config => {

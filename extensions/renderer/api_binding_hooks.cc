@@ -223,7 +223,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     v8::Local<v8::Context> context,
     const APISignature* signature,
     std::vector<v8::Local<v8::Value>>* arguments,
-    const ArgumentSpec::RefMap& type_refs) {
+    const APITypeReferenceMap& type_refs) {
   // Easy case: a native custom hook.
   auto request_hooks_iter = request_hooks_.find(method_name);
   if (request_hooks_iter != request_hooks_.end()) {

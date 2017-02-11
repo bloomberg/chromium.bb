@@ -34,6 +34,8 @@ source_set("renderer") {
     "api_request_handler.h",
     "api_signature.cc",
     "api_signature.h",
+    "api_type_reference_map.cc",
+    "api_type_reference_map.h",
     "app_window_custom_bindings.cc",
     "app_window_custom_bindings.h",
     "argument_spec.cc",

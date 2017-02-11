@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "extensions/renderer/argument_spec.h"
 #include "gin/arguments.h"
 
 namespace extensions {
@@ -22,13 +23,13 @@ class ArgumentParser {
   ArgumentParser(v8::Local<v8::Context> context,
                  const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
                  const std::vector<v8::Local<v8::Value>>& arguments,
-                 const ArgumentSpec::RefMap& type_refs,
+                 const APITypeReferenceMap& type_refs,
                  std::string* error)
-    : context_(context),
-      signature_(signature),
-      arguments_(arguments),
-      type_refs_(type_refs),
-      error_(error) {}
+      : context_(context),
+        signature_(signature),
+        arguments_(arguments),
+        type_refs_(type_refs),
+        error_(error) {}
 
   // Tries to parse the arguments against the expected signature.
   bool ParseArguments();
@@ -68,7 +69,7 @@ class ArgumentParser {
   v8::Local<v8::Context> context_;
   const std::vector<std::unique_ptr<ArgumentSpec>>& signature_;
   const std::vector<v8::Local<v8::Value>>& arguments_;
-  const ArgumentSpec::RefMap& type_refs_;
+  const APITypeReferenceMap& type_refs_;
   std::string* error_;
   size_t current_index_ = 0;
 
@@ -80,7 +81,7 @@ class V8ArgumentParser : public ArgumentParser {
   V8ArgumentParser(v8::Local<v8::Context> context,
                    const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
                    const std::vector<v8::Local<v8::Value>>& arguments,
-                   const ArgumentSpec::RefMap& type_refs,
+                   const APITypeReferenceMap& type_refs,
                    std::string* error,
                    std::vector<v8::Local<v8::Value>>* values)
       : ArgumentParser(context, signature, arguments, type_refs, error),
@@ -107,7 +108,7 @@ class BaseValueArgumentParser : public ArgumentParser {
       v8::Local<v8::Context> context,
       const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
       const std::vector<v8::Local<v8::Value>>& arguments,
-      const ArgumentSpec::RefMap& type_refs,
+      const APITypeReferenceMap& type_refs,
       std::string* error,
       base::ListValue* list_value)
       : ArgumentParser(context, signature, arguments, type_refs, error),
@@ -230,7 +231,7 @@ APISignature::~APISignature() {}
 bool APISignature::ParseArgumentsToV8(
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& arguments,
-    const ArgumentSpec::RefMap& type_refs,
+    const APITypeReferenceMap& type_refs,
     std::vector<v8::Local<v8::Value>>* v8_out,
     std::string* error) const {
   DCHECK(v8_out);
@@ -246,7 +247,7 @@ bool APISignature::ParseArgumentsToV8(
 bool APISignature::ParseArgumentsToJSON(
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& arguments,
-    const ArgumentSpec::RefMap& type_refs,
+    const APITypeReferenceMap& type_refs,
     std::unique_ptr<base::ListValue>* json_out,
     v8::Local<v8::Function>* callback_out,
     std::string* error) const {
