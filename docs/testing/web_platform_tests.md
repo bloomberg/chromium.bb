@@ -1,12 +1,12 @@
 # Web Platform Tests
 
 Interoperability between browsers is
-[critical](https://www.chromium.org/blink/platform-predictability) to
-Chromium's mission of improving the web. We believe that leveraging and
-contributing to a shared test suite is one of the most important tools in
-achieving interoperability between browsers.  The [web-platform-tests
+[critical](https://www.chromium.org/blink/platform-predictability) to Chromium's
+mission of improving the web. We believe that leveraging and contributing to a
+shared test suite is one of the most important tools in achieving
+interoperability between browsers. The [web-platform-tests
 repository](https://github.com/w3c/web-platform-tests) is the primary shared
-test suite where all browser engines are collaborating.  There's also a
+test suite where all browser engines are collaborating. There's also a
 [csswg-test repository](https://github.com/w3c/csswg-test) for CSS tests, but
 that will [soon be merged into
 web-platform-tests](https://github.com/w3c/csswg-test/issues/1102).
@@ -61,10 +61,14 @@ That script will pull the latest version of the tests from our mirrors of the
 upstream repositories. If any new versions of tests are found, they will be
 committed locally to your local repository. You may then upload the changes.
 
+### Enabling import for a new directory
+
 If you wish to add more tests (by un-skipping some of the directories currently
 skipped in `W3CImportExpectations`), you can modify that file locally and commit
-it, and on the next auto-import, the new tests should be imported. If you want
-to import immediately, you can also run `wpt-import --allow-local-commits`.
+it, and on the next auto-import, the new tests should be imported.
+
+If you want to import immediately (in order to try the tests out locally, etc)
+you can also run `wpt-import --allow-local-commits`, but this is not required.
 
 ## Contributing tests back to the Web Platform Tests project.
 
@@ -74,7 +78,7 @@ directly to
 and the changes will be automatically upstreamed within 24 hours.
 
 Note that tests in Web Platform Tests are expected to match behavior defined by
-the relevant WHATWG or W3C specification, not simply Blink's behavior.  If in
+the relevant WHATWG or W3C specification, not simply Blink's behavior. If in
 doubt, please request code review from someone with expertise in the relevant
 specification text.
 
@@ -86,6 +90,18 @@ landed. The command to do so is:
 Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest --work \
     --tests-root=LayoutTests/external/wpt
 ```
+
+### What kinds of changes can be upstreamed?
+
+In general, changes involving adding, removing or modifying tests can all be
+upstreamed. From a Chromium commit, any changes outside of
+[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt) will not be
+upstreamed, and any changes `*-expected.txt`, `OWNERS`, and `MANIFEST.json`,
+will also not be upstreamed.
+
+Entirely new top-level directories should generally be added upstream, since
+that's the only way to add an OWNERS file upstream. After adding a new top-level
+directory upstream, you should add a line for it in `W3CImportExpectations`.
 
 ### Will the exported commits be linked to my GitHub profile?
 
