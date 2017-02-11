@@ -283,7 +283,7 @@ static const InterpFilterParams
         FILTER_REGULAR_UV },
       { (const int16_t *)sub_pel_filters_smooth_uv, SUBPEL_TAPS, SUBPEL_SHIFTS,
         FILTER_SMOOTH_UV },
-      { (const int16_t *)sub_pel_filters_sharp_uv, 12, SUBPEL_SHIFTS,
+      { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS,
         FILTER_SHARP_UV },
       { (const int16_t *)sub_pel_filters_smooth2_uv, SUBPEL_TAPS, SUBPEL_SHIFTS,
         FILTER_SMOOTH2_UV },
