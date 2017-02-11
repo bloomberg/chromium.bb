@@ -210,6 +210,10 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 }
 
 void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
+  if (have_context) {
+    FlushErrors();
+  }
+
   image_manager_.reset();
 
   DeleteServiceObjects(
