@@ -762,7 +762,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState) {
   // 1. Let session be the associated MediaKeySession object.
   // 2. If session is closed, return a resolved promise.
   if (m_isClosed)
-    return ScriptPromise::cast(scriptState, ScriptValue());
+    return ScriptPromise::castUndefined(scriptState);
 
   // 3. If session's callable value is false, return a promise rejected with
   //    an InvalidStateError.
