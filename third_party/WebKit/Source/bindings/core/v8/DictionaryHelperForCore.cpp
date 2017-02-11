@@ -236,23 +236,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary,
   if (!dictionary.get(key, v8Value))
     return false;
 
-  value = nullptr;
-  // We need to handle a DOMWindow specially, because a DOMWindow wrapper
-  // exists on a prototype chain of v8Value.
-  if (v8Value->IsObject()) {
-    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
-    v8::Local<v8::Object> window =
-        V8Window::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
-    if (!window.IsEmpty()) {
-      value = toWrapperTypeInfo(window)->toEventTarget(window);
-      return true;
-    }
-  }
-
-  if (V8DOMWrapper::isWrapper(dictionary.isolate(), v8Value)) {
-    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
-    value = toWrapperTypeInfo(wrapper)->toEventTarget(wrapper);
-  }
+  value = toEventTarget(dictionary.isolate(), v8Value);
   return true;
 }
 

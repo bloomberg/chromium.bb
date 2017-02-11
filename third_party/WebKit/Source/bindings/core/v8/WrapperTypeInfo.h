@@ -41,7 +41,6 @@
 namespace blink {
 
 class DOMWrapperWorld;
-class EventTarget;
 class ScriptWrappable;
 
 ScriptWrappable* toScriptWrappable(
@@ -170,8 +169,6 @@ struct WrapperTypeInfo {
   bool isActiveScriptWrappable() const {
     return activeScriptWrappableInheritance == InheritFromActiveScriptWrappable;
   }
-
-  EventTarget* toEventTarget(v8::Local<v8::Object>) const;
 
   // This field must be the first member of the struct WrapperTypeInfo.
   // See also static_assert() in .cpp file.
