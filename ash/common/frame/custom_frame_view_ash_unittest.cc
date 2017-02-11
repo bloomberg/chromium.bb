@@ -13,10 +13,9 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "grit/ash_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -188,10 +187,8 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
 
   // Avatar image becomes available.
-  const gfx::ImageSkia user_image =
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_GUEST_ICON);
-  GetTestSessionStateDelegate()->SetUserImage(user_image);
+  GetTestSessionStateDelegate()->SetUserImage(
+      gfx::test::CreateImage(27, 27).AsImageSkia());
   widget->Hide();
   widget->Show();
   EXPECT_TRUE(custom_frame_view->GetAvatarIconViewForTest());

@@ -44,7 +44,6 @@
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/tray_update.h"
 #include "ash/common/system/user/tray_user.h"
-#include "ash/common/system/user/tray_user_separator.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm_activation_observer.h"
@@ -267,14 +266,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
   // Crucially, this trailing padding has to be inside the user item(s).
   // Otherwise it could be a main axis margin on the tray's box layout.
-  if (use_md)
-    AddTrayItem(base::MakeUnique<PaddingTrayItem>());
-
-  if (!use_md && maximum_user_profiles > 1) {
-    // Add a special double line separator between users and the rest of the
-    // menu if more than one user is logged in.
-    AddTrayItem(base::MakeUnique<TrayUserSeparator>(this));
-  }
+  AddTrayItem(base::MakeUnique<PaddingTrayItem>());
 
   tray_accessibility_ = new TrayAccessibility(this);
   if (!use_md)

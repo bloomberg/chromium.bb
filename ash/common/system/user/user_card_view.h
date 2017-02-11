@@ -41,8 +41,7 @@ class UserCardView : public views::View, public MediaCaptureObserver {
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);
 
-  void AddUserContent(LoginStatus login_status);
-  void AddUserContentMd(views::BoxLayout* layout, LoginStatus login_status);
+  void AddUserContent(views::BoxLayout* layout, LoginStatus login_status);
 
   bool is_active_user() const { return !user_index_; }
 

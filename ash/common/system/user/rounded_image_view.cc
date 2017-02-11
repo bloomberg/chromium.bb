@@ -4,7 +4,6 @@
 
 #include "ash/common/system/user/rounded_image_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -14,8 +13,7 @@
 namespace ash {
 namespace tray {
 
-RoundedImageView::RoundedImageView(int corner_radius, bool active_user)
-    : active_user_(active_user) {
+RoundedImageView::RoundedImageView(int corner_radius) {
   for (int i = 0; i < 4; ++i)
     corner_radius_[i] = corner_radius;
 }
@@ -65,10 +63,6 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  const bool grayscale =
-      !active_user_ && !MaterialDesignController::IsSystemTrayMenuMaterial();
-  flags.setBlendMode(grayscale ? SkBlendMode::kLuminosity
-                               : SkBlendMode::kSrcOver);
   canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
                           flags);
 }

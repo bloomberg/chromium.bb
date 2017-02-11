@@ -17,9 +17,8 @@ namespace tray {
 class RoundedImageView : public views::View {
  public:
   // Constructs a new rounded image view with rounded corners of radius
-  // |corner_radius|. If |active_user| is set, the icon will be drawn in
-  // full colors - otherwise it will fade into the background.
-  RoundedImageView(int corner_radius, bool active_user);
+  // |corner_radius|.
+  explicit RoundedImageView(int corner_radius);
   ~RoundedImageView() override;
 
   // Set the image that should be displayed. The image contents is copied to the
@@ -41,11 +40,6 @@ class RoundedImageView : public views::View {
   gfx::ImageSkia resized_;
   gfx::Size image_size_;
   int corner_radius_[4];
-
-  // True if the given user is the active user and the icon should get
-  // painted as active.
-  // TODO(estade): remove this, it's not used in Material Design.
-  bool active_user_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedImageView);
 };

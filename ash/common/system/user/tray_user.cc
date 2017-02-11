@@ -4,7 +4,6 @@
 
 #include "ash/common/system/user/tray_user.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -156,11 +155,9 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
       label_ = nullptr;
     }
     if (need_avatar) {
-      avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius, true);
-      if (MaterialDesignController::IsShelfMaterial()) {
-        avatar_->SetPaintToLayer();
-        avatar_->layer()->SetFillsBoundsOpaquely(false);
-      }
+      avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
+      avatar_->SetPaintToLayer();
+      avatar_->layer()->SetFillsBoundsOpaquely(false);
       layout_view_->AddChildView(avatar_);
     } else {
       avatar_ = nullptr;
