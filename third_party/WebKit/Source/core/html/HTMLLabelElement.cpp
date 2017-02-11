@@ -69,6 +69,9 @@ LabelableElement* HTMLLabelElement::control() const {
     return nullptr;
   }
 
+  if (!isInTreeScope())
+    return nullptr;
+
   if (Element* element = treeScope().getElementById(controlId)) {
     if (isLabelableElement(*element) &&
         toLabelableElement(*element).supportLabels()) {
