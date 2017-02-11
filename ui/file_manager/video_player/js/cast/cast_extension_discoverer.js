@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/689773): Update to use <script>
+
 /**
  * Discover the ID of installed cast extension.
  * @constructor
@@ -10,17 +12,13 @@
 function CastExtensionDiscoverer() {}
 
 /**
- * Tentatice IDs to try.
+ * Tentative IDs to try.
  * @type {!Array<string>}
  * @const
  */
 CastExtensionDiscoverer.CAST_EXTENSION_IDS = [
-  'pkedcjkdefgpdelpbcmbmeomcjbeemfm', // MR official
-  'boadgeojelhgndaghljhdicfkmllpafd', // release
-  'dliochdbjfkdbacpmhlcpmleaejidimm', // beta
-  'enhhojjnijigcajfphajepfemndkmdlo', // dev
-  'fmfcbgogabcbclcofgocippekhfcmgfj', // staging
-  'fjhoaacokmgbjemoflkofnenfaiekifl'  // stable used during MR development.
+  'enhhojjnijigcajfphajepfemndkmdlo',  // Media Router Dev
+  'pkedcjkdefgpdelpbcmbmeomcjbeemfm'   // Media Router Stable
 ];
 
 /**

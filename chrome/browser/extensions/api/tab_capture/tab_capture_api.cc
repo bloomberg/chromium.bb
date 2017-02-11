@@ -174,30 +174,13 @@ void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
 
 }  // namespace
 
-const char* const kBetaChromecastExtensionId =
-    "dliochdbjfkdbacpmhlcpmleaejidimm";
-const char* const kStableChromecastExtensionId =
-    "boadgeojelhgndaghljhdicfkmllpafd";
-
 // Whitelisted extensions that do not check for a browser action grant because
 // they provide API's. If there are additional extension ids that need
-// whitelisting and are *not* the Chromecast extension, add them to a new
+// whitelisting and are *not* the Media Router extension, add them to a new
 // kWhitelist array.
-//
-// This list is also used by CastConfigDelegateChromeos to find official Cast
-// extensions.
-const char* const kChromecastExtensionIds[] = {
-    "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
-    "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
-    "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
-    kBetaChromecastExtensionId,          // Google Cast Beta
-    kStableChromecastExtensionId,        // Google Cast Stable
-    "hlgmmjhlnlapooncikdpiiokdjcdpjme",  // Test cast extension
-};
-
 const char* const kMediaRouterExtensionIds[] = {
+    "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
     "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Stable
-    "ekpaaapppgpmolpcldedioblbkmijaca",  // Beta
 };
 
 ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
@@ -225,8 +208,6 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
-      !SimpleFeature::IsIdInArray(extension_id, kChromecastExtensionIds,
-                                  arraysize(kChromecastExtensionIds)) &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
                                   arraysize(kMediaRouterExtensionIds))) {
     return RespondNow(Error(kGrantError));
@@ -278,8 +259,6 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   const bool is_whitelisted_extension =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) == extension()->id() ||
-      SimpleFeature::IsIdInArray(extension()->id(), kChromecastExtensionIds,
-                                 arraysize(kChromecastExtensionIds)) ||
       SimpleFeature::IsIdInArray(extension()->id(), kMediaRouterExtensionIds,
                                  arraysize(kMediaRouterExtensionIds));
   if (!is_whitelisted_extension)

@@ -116,19 +116,9 @@ void MediaCaptureDevicesDispatcher::RegisterProfilePrefs(
 bool MediaCaptureDevicesDispatcher::IsOriginForCasting(const GURL& origin) {
   // Whitelisted tab casting extensions.
   return
-      // Dev
+      // Media Router Dev
       origin.spec() == "chrome-extension://enhhojjnijigcajfphajepfemndkmdlo/" ||
-      // Canary
-      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
-      // Beta (internal)
-      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
-      // Google Cast Beta
-      origin.spec() == "chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm/" ||
-      // Google Cast Stable
-      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/" ||
-      // http://crbug.com/457908
-      origin.spec() == "chrome-extension://ekpaaapppgpmolpcldedioblbkmijaca/" ||
-      // http://crbug.com/574889
+      // Media Router Stable
       origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/";
 }
 
