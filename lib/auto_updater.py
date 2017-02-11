@@ -82,6 +82,7 @@ from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -102,10 +103,12 @@ UPDATE_STATUS_UPDATED_NEED_REBOOT = 'UPDATE_STATUS_UPDATED_NEED_REBOOT'
 # Error msg in loading shared libraries when running python command.
 ERROR_MSG_IN_LOADING_LIB = 'python: error while loading shared libraries'
 
-# Max number of the times that transfer functions will be retried for.
+# Max number of the times for retry:
+# 1. for transfer functions to be retried.
+# 2. for some retriable commands to be retried.
 MAX_RETRY = 5
 
-# The timeout limit for retrying transfer tasks.
+# The delay between retriable tasks.
 DELAY_SEC_FOR_RETRY = 5
 
 # Third-party package directory on devserver
@@ -813,7 +816,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def _cgpt(self, flag, kernel, dev='$(rootdev -s -d)'):
     """Return numeric cgpt value for the specified flag, kernel, device."""
     cmd = ['cgpt', 'show', '-n', '-i', '%d' % kernel['kernel'], flag, dev]
-    return int(self.device.RunCommand(
+    return int(self._RetryCommand(
         cmd, capture_output=True, log_output=True).output.strip())
 
   def _GetKernelPriority(self, kernel):
@@ -853,7 +856,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
 
   def _GetReleaseVersion(self):
     """Get release version of the device."""
-    lsb_release_content = self.device.RunCommand(
+    lsb_release_content = self._RetryCommand(
         ['cat', '/etc/lsb-release'],
         capture_output=True, log_output=True).output.strip()
     regex = r'^CHROMEOS_RELEASE_VERSION=(.+)$'
@@ -862,7 +865,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
 
   def _GetReleaseBuilderPath(self):
     """Get release version of the device."""
-    lsb_release_content = self.device.RunCommand(
+    lsb_release_content = self._RetryCommand(
         ['cat', '/etc/lsb-release'],
         capture_output=True, log_output=True).output.strip()
     regex = r'^CHROMEOS_RELEASE_BUILDER_PATH=(.+)$'
@@ -889,12 +892,12 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
 
   def _ResetUpdateEngine(self):
     """Resets the host to prepare for a clean update regardless of state."""
-    self.device.RunCommand(['rm', '-f', self.REMOTE_UPDATED_MARKERFILE_PATH],
-                           **self._cmd_kwargs)
-    self.device.RunCommand(['stop', 'ui'], **self._cmd_kwargs_omit_error)
-    self.device.RunCommand(['stop', 'update-engine'],
-                           **self._cmd_kwargs_omit_error)
-    self.device.RunCommand(['start', 'update-engine'], **self._cmd_kwargs)
+    self._RetryCommand(['rm', '-f', self.REMOTE_UPDATED_MARKERFILE_PATH],
+                       **self._cmd_kwargs)
+    self._RetryCommand(['stop', 'ui'], **self._cmd_kwargs_omit_error)
+    self._RetryCommand(['stop', 'update-engine'],
+                       **self._cmd_kwargs_omit_error)
+    self._RetryCommand(['start', 'update-engine'], **self._cmd_kwargs)
 
     status = retry_util.RetryException(
         Exception,
@@ -971,6 +974,22 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     return auto_update_util.VersionMatch(
         self.update_version, self._GetReleaseVersion())
 
+  def _RetryCommand(self, cmd, **kwargs):
+    """Retry commands if SSHConnectionError happens.
+
+    Args:
+      cmd: the command to be run by device.
+      kwargs: the parameters for device to run the command.
+
+    Returns:
+      the output of running the command.
+    """
+    return retry_util.RetryException(
+        remote_access.SSHConnectionError,
+        MAX_RETRY,
+        self.device.RunCommand,
+        cmd, delay_sec=DELAY_SEC_FOR_RETRY, **kwargs)
+
   def TransferDevServerPackage(self):
     """Transfer devserver package to work directory of the remote device."""
     retry_util.RetryException(
@@ -1011,8 +1030,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
          The file will be removed by stateful update or full install.
     """
     logging.debug('Start pre-setup for the whole CrOS update process...')
-    self.device.RunCommand(['touch', self.REMOTE_PROVISION_FAILED_FILE_PATH],
-                           **self._cmd_kwargs)
+    self._RetryCommand(['touch', self.REMOTE_PROVISION_FAILED_FILE_PATH],
+                       **self._cmd_kwargs)
 
     # Related to crbug.com/360944.
     release_pattern = r'^.*-release/R[0-9]+-[0-9]+\.[0-9]+\.0$'
@@ -1029,12 +1048,12 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def PreSetupStatefulUpdate(self):
     """Pre-setup for stateful update for CrOS host."""
     logging.debug('Start pre-setup for stateful update...')
-    self.device.RunCommand(['sudo', 'stop', 'ap-update-manager'],
-                           **self._cmd_kwargs_omit_error)
+    self._RetryCommand(['sudo', 'stop', 'ap-update-manager'],
+                       **self._cmd_kwargs_omit_error)
 
     for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
       touch_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
-      self.device.RunCommand(['touch', touch_path], **self._cmd_kwargs)
+      self._RetryCommand(['touch', touch_path], **self._cmd_kwargs)
 
     self._ResetUpdateEngine()
     self.ResetStatefulPartition()
@@ -1054,8 +1073,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Pre-setup for rootfs update for CrOS host."""
     logging.debug('Start pre-setup for rootfs update...')
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
-    self.device.RunCommand(['sudo', 'stop', 'ap-update-manager'],
-                           **self._cmd_kwargs_omit_error)
+    self._RetryCommand(['sudo', 'stop', 'ap-update-manager'],
+                       **self._cmd_kwargs_omit_error)
     self._ResetUpdateEngine()
 
   def _IfDevserverPackageInstalled(self):
@@ -1095,6 +1114,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Post-check for rootfs update for CrOS host."""
     logging.debug('Start post check for rootfs update...')
     active_kernel, inactive_kernel = self._GetKernelState()
+    logging.debug('active_kernel= %s, inactive_kernel=%s',
+                  active_kernel, inactive_kernel)
     if (self._GetKernelPriority(inactive_kernel) <
         self._GetKernelPriority(active_kernel)):
       raise RootfsUpdateError('Update failed. The priority of the inactive '
@@ -1109,8 +1130,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     # TPM state in theory might happen some time other than during
     # provisioning.  Also, the bad TPM state isn't supposed to happen at
     # all; this change is just papering over the real bug.
-    self.device.RunCommand('crossystem clear_tpm_owner_request=1',
-                           **self._cmd_kwargs_omit_error)
+    self._RetryCommand('crossystem clear_tpm_owner_request=1',
+                       **self._cmd_kwargs_omit_error)
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
 
   def PostCheckCrOSUpdate(self):
@@ -1120,8 +1141,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     # the content of $FILE.
     autoreboot_cmd = ('FILE="%s" ; [ -f "$FILE" ] || '
                       '( touch "$FILE" ; start autoreboot )')
-    self.device.RunCommand(autoreboot_cmd % self.REMOTE_LAB_MACHINE_FILE_PATH,
-                           **self._cmd_kwargs)
+    self._RetryCommand(autoreboot_cmd % self.REMOTE_LAB_MACHINE_FILE_PATH,
+                       **self._cmd_kwargs)
     self._VerifyBootExpectations(
         self.inactive_kernel, rollback_message=
         'Build %s failed to boot on %s; system rolled back to previous '
