@@ -80,8 +80,9 @@ class Canvas2DImageBufferSurface final : public ImageBufferSurface {
   ~Canvas2DImageBufferSurface() override { m_layerBridge->beginDestruction(); }
 
   // ImageBufferSurface implementation
-  void finalizeFrame(const FloatRect& dirtyRect) override {
-    m_layerBridge->finalizeFrame(dirtyRect);
+  void finalizeFrame() override { m_layerBridge->finalizeFrame(); }
+  void doPaintInvalidation(const FloatRect& dirtyRect) override {
+    m_layerBridge->doPaintInvalidation(dirtyRect);
   }
   void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
   PaintCanvas* canvas() override { return m_layerBridge->canvas(); }
@@ -102,9 +103,6 @@ class Canvas2DImageBufferSurface final : public ImageBufferSurface {
   void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(rect); }
   void flush(FlushReason) override { m_layerBridge->flush(); }
   void flushGpu(FlushReason) override { m_layerBridge->flushGpu(); }
-  void prepareSurfaceForPaintingIfNeeded() override {
-    m_layerBridge->prepareSurfaceForPaintingIfNeeded();
-  }
   bool writePixels(const SkImageInfo& origInfo,
                    const void* pixels,
                    size_t rowBytes,

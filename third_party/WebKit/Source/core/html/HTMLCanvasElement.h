@@ -170,6 +170,12 @@ class CORE_EXPORT HTMLCanvasElement final
 
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
+  bool isDirty() { return !m_dirtyRect.isEmpty(); }
+
+  void doDeferredPaintInvalidation();
+
+  void finalizeFrame();
+
   // ContextLifecycleObserver and PageVisibilityObserver implementation
   void contextDestroyed(ExecutionContext*) override;
 
@@ -194,12 +200,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // ImageBufferClient implementation
   void notifySurfaceInvalid() override;
-  bool isDirty() override { return !m_dirtyRect.isEmpty(); }
   void didDisableAcceleration() override;
-  void didFinalizeFrame() override;
   void restoreCanvasMatrixClipStack(PaintCanvas*) const override;
-
-  void doDeferredPaintInvalidation();
 
   // ImageBitmapSource implementation
   IntSize bitmapSourceSize() const override;

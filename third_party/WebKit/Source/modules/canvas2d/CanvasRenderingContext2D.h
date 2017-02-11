@@ -67,11 +67,9 @@ typedef CSSImageValueOrHTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrIm
 class MODULES_EXPORT CanvasRenderingContext2D final
     : public CanvasRenderingContext,
       public BaseRenderingContext2D,
-      public WebThread::TaskObserver,
       public SVGResourceClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2D);
-  USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
 
  public:
   class Factory : public CanvasRenderingContextFactory {
@@ -142,8 +140,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void restoreCanvasMatrixClipStack(PaintCanvas*) const override;
 
   // TaskObserver implementation
-  void didProcessTask() override;
-  void willProcessTask() override {}
+  void didProcessTask() final;
 
   void styleDidChange(const ComputedStyle* oldStyle,
                       const ComputedStyle& newStyle) override;
@@ -179,7 +176,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void disableDeferral(DisableDeferralReason) final;
 
   AffineTransform baseTransform() const final;
-  void didDraw(const SkIRect& dirtyRect) final;
+  void didDraw(const SkIRect& dirtyRect) final;  // overrides
+                                                 // BaseRenderingContext2D and
+                                                 // CanvasRenderingContext
 
   bool stateHasFilter() final;
   sk_sp<SkImageFilter> stateGetFilter() final;
@@ -208,14 +207,11 @@ class MODULES_EXPORT CanvasRenderingContext2D final
                            const CanvasContextCreationAttributes& attrs,
                            Document&);
 
-  void dispose();
-
   void dispatchContextLostEvent(TimerBase*);
   void dispatchContextRestoredEvent(TimerBase*);
   void tryRestoreContextEvent(TimerBase*);
 
   void pruneLocalFontCache(size_t targetSize);
-  void schedulePruneLocalFontCacheIfNeeded();
 
   void scrollPathIntoViewInternal(const Path&);
 
@@ -257,7 +253,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   FilterOperations m_filterOperations;
   HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;
-  bool m_pruneLocalFontCacheScheduled;
+  bool m_shouldPruneLocalFontCache;
   ListHashSet<String> m_fontLRUList;
 };
 

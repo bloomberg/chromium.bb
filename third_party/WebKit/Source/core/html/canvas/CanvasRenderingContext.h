@@ -32,6 +32,7 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/ColorBehavior.h"
+#include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/HashSet.h"
@@ -56,7 +57,8 @@ enum CanvasColorSpace {
 
 class CORE_EXPORT CanvasRenderingContext
     : public GarbageCollectedFinalized<CanvasRenderingContext>,
-      public ScriptWrappable {
+      public ScriptWrappable,
+      public WebThread::TaskObserver {
   WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
   USING_PRE_FINALIZER(CanvasRenderingContext, dispose);
 
@@ -109,6 +111,7 @@ class CORE_EXPORT CanvasRenderingContext
     NOTREACHED();
   }
   virtual bool isPaintable() const = 0;
+  virtual void didDraw(const SkIRect& dirtyRect);
 
   // Return true if the content is updated.
   virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) {
@@ -130,6 +133,10 @@ class CORE_EXPORT CanvasRenderingContext
     SyntheticLostContext,
   };
   virtual void loseContext(LostContextMode) {}
+
+  // WebThread::TaskObserver implementation
+  void didProcessTask() override;
+  void willProcessTask() final {}
 
   // Canvas2D-specific interface
   virtual bool is2d() const { return false; }
@@ -199,6 +206,7 @@ class CORE_EXPORT CanvasRenderingContext
   HashSet<String> m_dirtyURLs;
   CanvasColorSpace m_colorSpace;
   CanvasContextCreationAttributes m_creationAttributes;
+  bool m_finalizeFrameScheduled = false;
 };
 
 }  // namespace blink

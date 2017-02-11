@@ -853,9 +853,9 @@ bool Canvas2DLayerBridge::checkSurfaceValid() {
 
 bool Canvas2DLayerBridge::restoreSurface() {
   DCHECK(!m_destructionInProgress);
-  if (m_destructionInProgress)
+  if (m_destructionInProgress || !isAccelerated())
     return false;
-  DCHECK(isAccelerated() && !m_surface);
+  DCHECK(!m_surface);
 
   gpu::gles2::GLES2Interface* sharedGL = nullptr;
   m_layer->clearTexture();
@@ -899,12 +899,6 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
     // 4. Here.
     return false;
   }
-  DCHECK(isAccelerated() || isHibernating() || m_softwareRenderingWhileHidden);
-
-  // if hibernating but not hidden, we want to wake up from
-  // hibernation
-  if ((isHibernating() || m_softwareRenderingWhileHidden) && isHidden())
-    return false;
 
   // If the context is lost, we don't know if we should be producing GPU or
   // software frames, until we get a new context, since the compositor will
@@ -912,6 +906,13 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if (!m_contextProvider ||
       m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() !=
           GL_NO_ERROR)
+    return false;
+
+  DCHECK(isAccelerated() || isHibernating() || m_softwareRenderingWhileHidden);
+
+  // if hibernating but not hidden, we want to wake up from
+  // hibernation
+  if ((isHibernating() || m_softwareRenderingWhileHidden) && isHidden())
     return false;
 
   sk_sp<SkImage> image =
@@ -1042,17 +1043,22 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect) {
   m_didDrawSinceLastGpuFlush = true;
 }
 
-void Canvas2DLayerBridge::prepareSurfaceForPaintingIfNeeded() {
-  getOrCreateSurface(PreferAcceleration);
-}
-
-void Canvas2DLayerBridge::finalizeFrame(const FloatRect& dirtyRect) {
+void Canvas2DLayerBridge::finalizeFrame() {
   DCHECK(!m_destructionInProgress);
-  if (m_layer && m_accelerationMode != DisableAcceleration)
-    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
+
+  // Make sure surface is ready for painting: fix the rendering mode now
+  // because it will be too late during the paint invalidation phase.
+  getOrCreateSurface(PreferAcceleration);
+
   if (m_rateLimiter)
     m_rateLimiter->reset();
   m_renderingTaskCompletedForCurrentFrame = false;
+}
+
+void Canvas2DLayerBridge::doPaintInvalidation(const FloatRect& dirtyRect) {
+  DCHECK(!m_destructionInProgress);
+  if (m_layer && m_accelerationMode != DisableAcceleration)
+    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
 }
 
 void Canvas2DLayerBridge::didProcessTask() {

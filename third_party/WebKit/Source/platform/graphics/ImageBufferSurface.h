@@ -75,7 +75,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual void setIsHidden(bool) {}
   virtual void setImageBuffer(ImageBuffer*) {}
   virtual sk_sp<PaintRecord> getRecord();
-  virtual void finalizeFrame(const FloatRect& dirtyRect) {}
+  virtual void finalizeFrame() {}
+  virtual void doPaintInvalidation(const FloatRect& dirtyRect) {}
   virtual void draw(GraphicsContext&,
                     const FloatRect& destRect,
                     const FloatRect& srcRect,

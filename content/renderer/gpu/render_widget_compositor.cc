@@ -1105,10 +1105,7 @@ void RenderWidgetCompositor::RequestScheduleAnimation() {
 
 void RenderWidgetCompositor::DidSubmitCompositorFrame() {}
 
-void RenderWidgetCompositor::DidLoseCompositorFrameSink() {
-  // The CompositorFrameSink is not lost in layout tests (single thread mode).
-  NOTREACHED();
-}
+void RenderWidgetCompositor::DidLoseCompositorFrameSink() {}
 
 void RenderWidgetCompositor::SetFrameSinkId(
     const cc::FrameSinkId& frame_sink_id) {

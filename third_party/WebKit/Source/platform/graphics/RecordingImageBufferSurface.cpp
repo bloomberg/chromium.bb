@@ -229,7 +229,6 @@ sk_sp<PaintRecord> RecordingImageBufferSurface::getRecord() {
 
   FallbackReason fallbackReason = FallbackReasonUnknown;
   bool canUseRecord = finalizeFrameInternal(&fallbackReason);
-  m_imageBuffer->didFinalizeFrame();
 
   DCHECK(canUseRecord || m_fallbackFactory);
 
@@ -242,15 +241,22 @@ sk_sp<PaintRecord> RecordingImageBufferSurface::getRecord() {
   return nullptr;
 }
 
-void RecordingImageBufferSurface::finalizeFrame(const FloatRect& dirtyRect) {
+void RecordingImageBufferSurface::finalizeFrame() {
   if (m_fallbackSurface) {
-    m_fallbackSurface->finalizeFrame(dirtyRect);
+    m_fallbackSurface->finalizeFrame();
     return;
   }
 
   FallbackReason fallbackReason = FallbackReasonUnknown;
   if (!finalizeFrameInternal(&fallbackReason))
     fallBackToRasterCanvas(fallbackReason);
+}
+
+void RecordingImageBufferSurface::doPaintInvalidation(
+    const FloatRect& dirtyRect) {
+  if (m_fallbackSurface) {
+    m_fallbackSurface->doPaintInvalidation(dirtyRect);
+  }
 }
 
 static RecordingImageBufferSurface::FallbackReason flushReasonToFallbackReason(
@@ -298,9 +304,8 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(
   CHECK(m_currentFrame);
   DCHECK(m_currentFrame->getRecordingCanvas());
   DCHECK(fallbackReason);
-  DCHECK_EQ(*fallbackReason, FallbackReasonUnknown);
-
-  if (!m_imageBuffer->isDirty()) {
+  DCHECK(*fallbackReason == FallbackReasonUnknown);
+  if (!m_didRecordDrawCommandsInCurrentFrame) {
     if (!m_previousFrame) {
       // Create an initial blank frame
       m_previousFrame = m_currentFrame->finishRecordingAsPicture();

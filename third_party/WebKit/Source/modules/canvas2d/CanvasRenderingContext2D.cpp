@@ -134,7 +134,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
                                 canvas->document().frame()),
           this,
           &CanvasRenderingContext2D::tryRestoreContextEvent),
-      m_pruneLocalFontCacheScheduled(false) {
+      m_shouldPruneLocalFontCache(false) {
   if (document.settings() &&
       document.settings()->getAntialiasedClips2dCanvasEnabled())
     m_clipAntialiasing = AntiAliased;
@@ -148,11 +148,6 @@ void CanvasRenderingContext2D::setCanvasGetContextResult(
 }
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() {}
-
-void CanvasRenderingContext2D::dispose() {
-  if (m_pruneLocalFontCacheScheduled)
-    Platform::current()->currentThread()->removeTaskObserver(this);
-}
 
 void CanvasRenderingContext2D::validateStateStack() const {
 #if DCHECK_IS_ON()
@@ -362,7 +357,7 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect) {
       buffer->setHasExpensiveOp();
   }
 
-  canvas()->didDraw(SkRect::Make(dirtyRect));
+  CanvasRenderingContext::didDraw(dirtyRect);
 }
 
 bool CanvasRenderingContext2D::stateHasFilter() {
@@ -490,7 +485,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
       DCHECK(!m_fontLRUList.contains(newFont));
       m_fontLRUList.add(newFont);
       pruneLocalFontCache(canvasFontCache->hardMaxFonts());  // hard limit
-      schedulePruneLocalFontCacheIfNeeded();                 // soft limit
+      m_shouldPruneLocalFontCache = true;                    // apply soft limit
       modifiableState().setFont(
           fontStyle->font(), canvas()->document().styleEngine().fontSelector());
     }
@@ -508,31 +503,19 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
   modifiableState().setUnparsedFont(newFontSafeCopy);
 }
 
-void CanvasRenderingContext2D::schedulePruneLocalFontCacheIfNeeded() {
-  if (m_pruneLocalFontCacheScheduled)
-    return;
-  m_pruneLocalFontCacheScheduled = true;
-  Platform::current()->currentThread()->addTaskObserver(this);
-}
-
 void CanvasRenderingContext2D::didProcessTask() {
-  Platform::current()->currentThread()->removeTaskObserver(this);
-
+  CanvasRenderingContext::didProcessTask();
   // This should be the only place where canvas() needs to be checked for
-  // nullness because the circular refence with HTMLCanvasElement mean the
-  // canvas and the context keep each other alive as long as the pair is
-  // referenced the task observer is the only persisten refernce to this object
-  // that is not traced, so didProcessTask() may be call at a time when the
+  // nullness because the circular refence with HTMLCanvasElement means the
+  // canvas and the context keep each other alive. As long as the pair is
+  // referenced, the task observer is the only persistent refernce to this
+  // object
+  // that is not traced, so didProcessTask() may be called at a time when the
   // canvas has been garbage collected but not the context.
-  if (!canvas())
-    return;
-
-  // The rendering surface needs to be prepared now because it will be too late
-  // to create a layer once we are in the paint invalidation phase.
-  canvas()->prepareSurfaceForPaintingIfNeeded();
-
-  pruneLocalFontCache(canvas()->document().canvasFontCache()->maxFonts());
-  m_pruneLocalFontCacheScheduled = false;
+  if (m_shouldPruneLocalFontCache && canvas()) {
+    m_shouldPruneLocalFontCache = false;
+    pruneLocalFontCache(canvas()->document().canvasFontCache()->maxFonts());
+  }
 }
 
 void CanvasRenderingContext2D::pruneLocalFontCache(size_t targetSize) {

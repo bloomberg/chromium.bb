@@ -115,10 +115,8 @@ class PLATFORM_EXPORT ImageBuffer {
   void disableDeferral(DisableDeferralReason) const;
 
   // Called at the end of a task that rendered a whole frame
-  void finalizeFrame(const FloatRect& dirtyRect);
-  void didFinalizeFrame();
-
-  bool isDirty();
+  void finalizeFrame();
+  void doPaintInvalidation(const FloatRect& dirtyRect);
 
   bool writePixels(const SkImageInfo&,
                    const void* pixels,

@@ -148,18 +148,12 @@ bool ImageBuffer::isSurfaceValid() const {
   return m_surface->isValid();
 }
 
-bool ImageBuffer::isDirty() {
-  return m_client ? m_client->isDirty() : false;
+void ImageBuffer::finalizeFrame() {
+  m_surface->finalizeFrame();
 }
 
-void ImageBuffer::didFinalizeFrame() {
-  if (m_client)
-    m_client->didFinalizeFrame();
-}
-
-void ImageBuffer::finalizeFrame(const FloatRect& dirtyRect) {
-  m_surface->finalizeFrame(dirtyRect);
-  didFinalizeFrame();
+void ImageBuffer::doPaintInvalidation(const FloatRect& dirtyRect) {
+  m_surface->doPaintInvalidation(dirtyRect);
 }
 
 bool ImageBuffer::restoreSurface() const {

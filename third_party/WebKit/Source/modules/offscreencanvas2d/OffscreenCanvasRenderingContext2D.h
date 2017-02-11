@@ -72,7 +72,9 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void disableDeferral(DisableDeferralReason) final;
 
   AffineTransform baseTransform() const final;
-  void didDraw(const SkIRect& dirtyRect) final;
+  void didDraw(const SkIRect& dirtyRect) final;  // overrides
+                                                 // BaseRenderingContext2D and
+                                                 // CanvasRenderingContext
 
   bool stateHasFilter() final;
   sk_sp<SkImageFilter> stateGetFilter() final;

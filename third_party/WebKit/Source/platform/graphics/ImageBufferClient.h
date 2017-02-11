@@ -40,9 +40,7 @@ class PLATFORM_EXPORT ImageBufferClient {
  public:
   virtual ~ImageBufferClient() {}
   virtual void notifySurfaceInvalid() = 0;
-  virtual bool isDirty() = 0;
   virtual void didDisableAcceleration() = 0;
-  virtual void didFinalizeFrame() = 0;
   virtual void restoreCanvasMatrixClipStack(PaintCanvas*) const = 0;
 };
 

@@ -65,7 +65,8 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
                    int x,
                    int y) override;
   void willOverwriteCanvas() override;
-  virtual void finalizeFrame(const FloatRect&);
+  void finalizeFrame() override;
+  void doPaintInvalidation(const FloatRect&) override;
   void setImageBuffer(ImageBuffer*) override;
   sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
   void draw(GraphicsContext&,

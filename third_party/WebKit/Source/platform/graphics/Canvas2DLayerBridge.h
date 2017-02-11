@@ -113,7 +113,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                        bool lostResource);
 
   // ImageBufferSurface implementation
-  void finalizeFrame(const FloatRect& dirtyRect);
+  void finalizeFrame();
+  void doPaintInvalidation(const FloatRect& dirtyRect);
   void willWritePixels();
   void willOverwriteAllPixels();
   void willOverwriteCanvas();
@@ -134,7 +135,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                    int y);
   void flush();
   void flushGpu();
-  void prepareSurfaceForPaintingIfNeeded();
   bool isHidden() { return m_isHidden; }
   OpacityMode opacityMode() { return m_opacityMode; }
   void dontUseIdleSchedulingForTesting() {

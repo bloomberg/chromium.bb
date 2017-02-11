@@ -29,6 +29,7 @@
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 
 constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
@@ -127,11 +128,15 @@ SkColorType CanvasRenderingContext::colorType() const {
 }
 
 void CanvasRenderingContext::dispose() {
+  if (m_finalizeFrameScheduled) {
+    Platform::current()->currentThread()->removeTaskObserver(this);
+  }
+
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
   // When the pair is no longer reachable, their destruction order is non-
   // deterministic, so the first of the two to be destroyed needs to notify
   // the other in order to break the circular reference.  This is to avoid
-  // an error when CanvasRenderingContext2D::didProcessTask() is invoked
+  // an error when CanvasRenderingContext::didProcessTask() is invoked
   // after the HTMLCanvasElement is destroyed.
   if (canvas()) {
     canvas()->detachContext();
@@ -141,6 +146,26 @@ void CanvasRenderingContext::dispose() {
     offscreenCanvas()->detachContext();
     m_offscreenCanvas = nullptr;
   }
+}
+
+void CanvasRenderingContext::didDraw(const SkIRect& dirtyRect) {
+  canvas()->didDraw(SkRect::Make(dirtyRect));
+  if (!m_finalizeFrameScheduled) {
+    m_finalizeFrameScheduled = true;
+    Platform::current()->currentThread()->addTaskObserver(this);
+  }
+}
+
+void CanvasRenderingContext::didProcessTask() {
+  Platform::current()->currentThread()->removeTaskObserver(this);
+  m_finalizeFrameScheduled = false;
+
+  if (!canvas())
+    return;
+
+  // The end of a script task that drew content to the canvas is the point
+  // at which the current frame may be considered complete.
+  canvas()->finalizeFrame();
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(

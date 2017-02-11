@@ -1399,15 +1399,12 @@ void WebGLRenderingContextBase::markContextChanged(
 
   LayoutBox* layoutBox = canvas()->layoutBox();
   if (layoutBox && layoutBox->hasAcceleratedCompositing()) {
-    m_markedCanvasDirty = true;
-    canvas()->clearCopiedImage();
     layoutBox->contentChanged(changeType);
-  } else {
-    if (!m_markedCanvasDirty) {
-      m_markedCanvasDirty = true;
-      canvas()->didDraw(
-          FloatRect(FloatPoint(0, 0), FloatSize(clampedCanvasSize())));
-    }
+  }
+  if (!m_markedCanvasDirty) {
+    m_markedCanvasDirty = true;
+    IntSize canvasSize = clampedCanvasSize();
+    didDraw(SkIRect::MakeXYWH(0, 0, canvasSize.width(), canvasSize.height()));
   }
 }
 

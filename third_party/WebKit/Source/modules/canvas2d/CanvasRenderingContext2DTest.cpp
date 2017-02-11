@@ -822,7 +822,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState) {
     context2d()->save();
     context2d()->translate(1.0f, 0.0f);
   }
-  canvasElement().doDeferredPaintInvalidation();  // To close the current frame
+  canvasElement().finalizeFrame();  // To close the current frame
 }
 
 TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState) {
@@ -841,7 +841,7 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState) {
     context2d()->save();
     context2d()->translate(1.0f, 0.0f);
   }
-  canvasElement().doDeferredPaintInvalidation();  // To close the current frame
+  canvasElement().finalizeFrame();  // To close the current frame
 }
 
 TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText) {

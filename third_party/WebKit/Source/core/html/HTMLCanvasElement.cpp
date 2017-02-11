@@ -325,8 +325,47 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect) {
     buffer()->didDraw(rect);
 }
 
-void HTMLCanvasElement::didFinalizeFrame() {
+void HTMLCanvasElement::finalizeFrame() {
+  if (hasImageBuffer())
+    m_imageBuffer->finalizeFrame();
+  m_context->incrementFrameCount();
   notifyListenersCanvasChanged();
+}
+
+void HTMLCanvasElement::didDisableAcceleration() {
+  // We must force a paint invalidation on the canvas even if it's
+  // content did not change because it layer was destroyed.
+  didDraw(FloatRect(0, 0, size().width(), size().height()));
+}
+
+void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const {
+  if (m_context)
+    m_context->restoreCanvasMatrixClipStack(canvas);
+}
+
+void HTMLCanvasElement::doDeferredPaintInvalidation() {
+  DCHECK(!m_dirtyRect.isEmpty());
+  if (m_context->is2d()) {
+    FloatRect srcRect(0, 0, size().width(), size().height());
+    m_dirtyRect.intersect(srcRect);
+    LayoutBox* lb = layoutBox();
+    FloatRect invalidationRect;
+    if (lb) {
+      FloatRect mappedDirtyRect =
+          mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
+      if (m_context->isAccelerated()) {
+        // Accelerated 2D canvases need the dirty rect to be expressed relative
+        // to the content box, as opposed to the layout box.
+        mappedDirtyRect.move(-lb->contentBoxOffset());
+      }
+      invalidationRect = mappedDirtyRect;
+    } else {
+      invalidationRect = m_dirtyRect;
+    }
+    if (hasImageBuffer()) {
+      m_imageBuffer->doPaintInvalidation(invalidationRect);
+    }
+  }
 
   if (m_dirtyRect.isEmpty())
     return;
@@ -388,48 +427,6 @@ void HTMLCanvasElement::didFinalizeFrame() {
     m_pendingRenderingModeSwitch = false;
   }
 
-  m_context->incrementFrameCount();
-}
-
-void HTMLCanvasElement::didDisableAcceleration() {
-  // We must force a paint invalidation on the canvas even if it's
-  // content did not change because it layer was destroyed.
-  didDraw(FloatRect(0, 0, size().width(), size().height()));
-}
-
-void HTMLCanvasElement::restoreCanvasMatrixClipStack(
-    PaintCanvas* canvas) const {
-  if (m_context)
-    m_context->restoreCanvasMatrixClipStack(canvas);
-}
-
-void HTMLCanvasElement::doDeferredPaintInvalidation() {
-  DCHECK(!m_dirtyRect.isEmpty());
-  if (!m_context->is2d()) {
-    didFinalizeFrame();
-  } else {
-    FloatRect srcRect(0, 0, size().width(), size().height());
-    m_dirtyRect.intersect(srcRect);
-    LayoutBox* lb = layoutBox();
-    FloatRect invalidationRect;
-    if (lb) {
-      FloatRect mappedDirtyRect =
-          mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
-      if (m_context->isAccelerated()) {
-        // Accelerated 2D canvases need the dirty rect to be expressed relative
-        // to the content box, as opposed to the layout box.
-        mappedDirtyRect.move(-lb->contentBoxOffset());
-      }
-      invalidationRect = mappedDirtyRect;
-    } else {
-      invalidationRect = m_dirtyRect;
-    }
-    if (hasImageBuffer()) {
-      m_imageBuffer->finalizeFrame(invalidationRect);
-    } else {
-      didFinalizeFrame();
-    }
-  }
   DCHECK(m_dirtyRect.isEmpty());
 }
 
