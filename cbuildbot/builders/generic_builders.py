@@ -18,6 +18,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import results_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import build_stages
+from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
@@ -351,3 +352,57 @@ Exception thrown, but all stages marked successful. This is an internal error,
 because the stage that threw the exception should be marked as failing.""")
 
     return success
+
+
+class PreCqBuilder(Builder):
+  """Builder that runs PreCQ tests.
+
+  PreCq builders that need to run custom stages (build or test) should derive
+  from this class. Traditional builders whose behavior is driven by
+  config_lib.CONFIG_TYPE_PRECQ should derive from SimpleBuilder. The preference
+  for PreCQ builders is to use this.
+
+  Note: Override RunTestStages, NOT RunStages like a normal Builder.
+  """
+
+  def __init__(self, *args, **kwargs):
+    """Initializes a buildbot builder."""
+    super(PreCqBuilder, self).__init__(*args, **kwargs)
+    self.sync_stage = None
+    self.completion_instance = None
+
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run."""
+    self.sync_stage = self._GetStageInstance(sync_stages.PreCQSyncStage,
+                                             self.patch_pool.gerrit_patches)
+    self.patch_pool.gerrit_patches = []
+
+    return self.sync_stage
+
+  def GetCompletionInstance(self):
+    """Return the completion instance.
+
+    Returns:
+      generic_stages.BuilderStage subclass, or None if completion hasn't run.
+    """
+    return self.completion_instance
+
+  def RunStages(self):
+    """Run something after sync/reexec."""
+    try:
+      self.RunTestStages()
+    finally:
+      build_id, db = self._run.GetCIDBHandle()
+      was_build_successful = results_lib.Results.BuildSucceededSoFar(
+          db, build_id)
+
+      self.completion_instance = self._GetStageInstance(
+          completion_stages.PreCQCompletionStage,
+          self.sync_stage,
+          was_build_successful)
+
+      self.completion_instance.Run()
+
+  def RunTestStages(self):
+    """Subclasses must override this method. Runs the build/test stages."""
+    raise NotImplementedError()

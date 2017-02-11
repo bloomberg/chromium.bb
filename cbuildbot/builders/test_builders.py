@@ -111,14 +111,4 @@ class SignerTestsBuilder(generic_builders.Builder):
 
   def RunStages(self):
     """Run something after sync/reexec."""
-    try:
-      self._RunStage(test_stages.CrosSigningTestStage, True)
-    except Exception:
-      # We ignore the error, allowing the build to compelete. But make
-      # sure the build has been marked as failing.
-      build_id, db = self._run.GetCIDBHandle()
-      was_build_successful = results_lib.Results.BuildSucceededSoFar(
-          db, build_id)
-      assert not was_build_successful
-
-    self.GetCompletionInstance().Run()
+    self._RunStage(test_stages.CrosSigningTestStage)
