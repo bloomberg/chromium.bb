@@ -50,6 +50,9 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
   // (if any) DecodeError and finishes loading.
   virtual void decodeError(bool allDataReceived) = 0;
 
+  // TODO(hiroshige): Remove this.
+  virtual void setIsPlaceholder(bool) = 0;
+
   // TODO(hiroshige): Remove this once MemoryCache becomes further weaker.
   virtual void setDecodedSize(size_t) = 0;
 

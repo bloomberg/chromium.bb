@@ -54,6 +54,7 @@ class NullImageResourceInfo final
 
   void decodeError(bool allDataReceived) override {}
   void setDecodedSize(size_t) override {}
+  void setIsPlaceholder(bool) override {}
   void willAddClientOrObserver() override {}
   void didRemoveClientOrObserver() override {}
   void emulateLoadStartedForInspector(

@@ -102,6 +102,9 @@ class ImageResource::ImageResourceInfoImpl final
   void decodeError(bool allDataReceived) override {
     m_resource->decodeError(allDataReceived);
   }
+  void setIsPlaceholder(bool isPlaceholder) override {
+    m_resource->m_isPlaceholder = isPlaceholder;
+  }
   void setDecodedSize(size_t size) override {
     m_resource->setDecodedSize(size);
   }
