@@ -425,7 +425,6 @@ void TileManager::SetResources(ResourcePool* resource_pool,
 void TileManager::Release(Tile* tile) {
   FreeResourcesForTile(tile);
   tiles_.erase(tile->id());
-  pending_gpu_work_tiles_.erase(tile);
 }
 
 void TileManager::DidFinishRunningTileTasksRequiredForActivation() {
@@ -793,8 +792,10 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
 void TileManager::FreeResourcesForTile(Tile* tile) {
   TileDrawInfo& draw_info = tile->draw_info();
   Resource* resource = draw_info.TakeResource();
-  if (resource)
+  if (resource) {
     resource_pool_->ReleaseResource(resource);
+    pending_gpu_work_tiles_.erase(tile);
+  }
 }
 
 void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
@@ -1304,6 +1305,7 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
        it != pending_gpu_work_tiles_.end();) {
     Tile* tile = *it;
     const Resource* resource = tile->draw_info().resource();
+    DCHECK(resource);
 
     if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY ||
         raster_buffer_provider_->IsResourceReadyToDraw(resource->id())) {
