@@ -631,9 +631,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_SUPERTX
                                      int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
                                      int plane,
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
 #if CONFIG_GLOBAL_MOTION
                                      int is_global, int p_col, int p_row,
                                      int ref,
@@ -650,7 +648,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else
   InterpFilter tmp_ipf = interp_filter;
 #endif  // CONFIG_DUAL_FILTER
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 
 #if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
@@ -852,7 +850,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
           MV32 scaled_mv;
           int xs, ys, subpel_x, subpel_y;
           const int is_scaled = av1_is_scaled(sf);
-          ConvolveParams conv_params = get_conv_params(ref);
+          ConvolveParams conv_params = get_conv_params(ref, plane);
 
           x = x_base + idx * x_step;
           y = y_base + idy * y_step;
@@ -886,9 +884,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #if CONFIG_SUPERTX
                 wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-#if CONFIG_COMPOUND_SEGMENT
                 plane,
-#endif  // CONFIG_COMPOUND_SEGMENT
 #if CONFIG_GLOBAL_MOTION
                 is_global[ref], (mi_x >> pd->subsampling_x) + x,
                 (mi_y >> pd->subsampling_y) + y, ref
@@ -971,9 +967,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 
 #if CONFIG_CONVOLVE_ROUND
     ConvolveParams conv_params =
-        get_conv_params_no_round(ref, tmp_dst, MAX_SB_SIZE);
+        get_conv_params_no_round(ref, plane, tmp_dst, MAX_SB_SIZE);
 #else
-    ConvolveParams conv_params = get_conv_params(ref);
+    ConvolveParams conv_params = get_conv_params(ref, plane);
 #endif  // CONFIG_CONVOLVE_ROUND
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
@@ -990,9 +986,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #if CONFIG_SUPERTX
             wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
             plane,
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
 #if CONFIG_GLOBAL_MOTION
             is_global[ref], (mi_x >> pd->subsampling_x) + x,
             (mi_y >> pd->subsampling_y) + y, ref,
@@ -1035,7 +1029,7 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
   const int is_compound = has_second_ref(&mi->mbmi);
 
   for (ref = 0; ref < 1 + is_compound; ++ref) {
-    ConvolveParams conv_params = get_conv_params(ref);
+    ConvolveParams conv_params = get_conv_params(ref, plane);
     const uint8_t *pre =
         &pd->pre[ref].buf[(ir * pd->pre[ref].stride + ic) << 2];
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -2754,7 +2748,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   MV32 scaled_mv;
   int xs, ys, subpel_x, subpel_y;
   const int is_scaled = av1_is_scaled(sf);
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 #if CONFIG_GLOBAL_MOTION
   WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
   const int is_global =

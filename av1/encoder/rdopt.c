@@ -5519,11 +5519,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
-    ConvolveParams conv_params = get_conv_params(0);
+    const int plane = 0;
+    ConvolveParams conv_params = get_conv_params(0, plane);
 
     // Initialized here because of compiler problem in Visual Studio.
-    ref_yv12[0] = xd->plane[0].pre[0];
-    ref_yv12[1] = xd->plane[0].pre[1];
+    ref_yv12[0] = xd->plane[plane].pre[0];
+    ref_yv12[1] = xd->plane[plane].pre[1];
 
 #if CONFIG_DUAL_FILTER
     // reload the filter types
@@ -5556,7 +5557,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
     // Do compound motion search on the current reference frame.
-    if (id) xd->plane[0].pre[0] = ref_yv12[id];
+    if (id) xd->plane[plane].pre[0] = ref_yv12[id];
     av1_set_mv_search_range(x, &ref_mv[id].as_mv);
 
     // Use the mv result from the single mode as mv predictor.
@@ -5587,7 +5588,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       unsigned int sse;
       if (cpi->sf.use_upsampled_references) {
         // Use up-sampled reference frames.
-        struct macroblockd_plane *const pd = &xd->plane[0];
+        struct macroblockd_plane *const pd = &xd->plane[plane];
         struct buf_2d backup_pred = pd->pre[0];
         const YV12_BUFFER_CONFIG *upsampled_ref =
             get_upsampled_ref(cpi, refs[id]);
@@ -5627,7 +5628,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     }
 
     // Restore the pointer to the first (possibly scaled) prediction buffer.
-    if (id) xd->plane[0].pre[0] = ref_yv12[0];
+    if (id) xd->plane[plane].pre[0] = ref_yv12[0];
 
     if (bestsme < last_besterr[id]) {
       frame_mv[refs[id]].as_mv = *best_mv;

@@ -52,11 +52,12 @@ TEST(AV1ConvolveTest, av1_convolve8) {
   int y_step_q4 = 16;
   int subpel_x_q4 = 3;
   int subpel_y_q4 = 2;
+  const int plane = 0;
 
   int w = 1;
   int h = 1;
 
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 
   setup_convolve();
 
@@ -102,8 +103,9 @@ TEST(AV1ConvolveTest, av1_convolve) {
 
   int subpel_x_q4;
   int subpel_y_q4;
+  const int plane = 0;
 
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 
   ASSERT_LE(filter_size, 12);
   setup_convolve();
@@ -160,11 +162,12 @@ TEST(AV1ConvolveTest, av1_convolve_vert_first) {
   int y_step_q4 = 16;
   int w = 1;
   int h = 1;
+  const int plane = 0;
 
   int subpel_x_q4;
   int subpel_y_q4;
 
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 
   ASSERT_LE(filter_size_x, 12);
   ASSERT_LE(filter_size_y, 12);
@@ -229,11 +232,12 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
 
   int w = 1;
   int h = 1;
+  const int plane = 0;
 
   int subpel_x_q4;
   int subpel_y_q4;
 
-  ConvolveParams conv_params = get_conv_params(0);
+  ConvolveParams conv_params = get_conv_params(0, plane);
 
   setup_convolve();
 

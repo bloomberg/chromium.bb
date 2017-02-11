@@ -32,12 +32,14 @@ typedef struct ConvolveParams {
   int dst_stride;
   int round_0;
   int round_1;
+  int plane;
 } ConvolveParams;
 
-static INLINE ConvolveParams get_conv_params(int ref) {
+static INLINE ConvolveParams get_conv_params(int ref, int plane) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
   conv_params.round = CONVOLVE_OPT_ROUND;
+  conv_params.plane = plane;
   return conv_params;
 }
 
@@ -55,7 +57,8 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             const int subpel_y_q4, int y_step_q4,
                             ConvolveParams *conv_params);
 
-static INLINE ConvolveParams get_conv_params_no_round(int ref, int32_t *dst,
+static INLINE ConvolveParams get_conv_params_no_round(int ref, int plane,
+                                                      int32_t *dst,
                                                       int dst_stride) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
@@ -64,6 +67,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int32_t *dst,
   conv_params.round_1 = 1;
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;
+  conv_params.plane = plane;
   return conv_params;
 }
 

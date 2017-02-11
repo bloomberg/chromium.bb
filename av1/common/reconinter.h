@@ -300,9 +300,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_SUPERTX
                                      int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
                                      int plane,
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
 #if CONFIG_GLOBAL_MOTION
                                      int is_global, int p_col, int p_row,
                                      int ref,
