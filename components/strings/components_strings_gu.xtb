@@ -292,7 +292,7 @@
 <translation id="3655670868607891010">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="HELP_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="3658742229777143148">પુનરાવર્તન</translation>
 <translation id="3678029195006412963">વિનંતી પર સહી કરી શક્યાં નથી</translation>
-<translation id="3679803492151881375"><ph name="CRASH_TIME" /> એ ક્રેશ રિપોર્ટ કૅપ્ચર કરી અને <ph name="UPLOAD_TIME" /> એ અપલોડ કરી હતી</translation>
+<translation id="3679803492151881375"><ph name="CRASH_TIME" /> એ ક્રેશ રિપોર્ટ કૅપ્ચર કરી અને <ph name="UPLOAD_TIME" /> એ અપલોડ કર્યો હતો</translation>
 <translation id="3681007416295224113">પ્રમાણપત્ર માહિતી</translation>
 <translation id="3690164694835360974">લોગિન સુરક્ષિત નથી</translation>
 <translation id="3693415264595406141">પાસવર્ડ:</translation>
@@ -741,7 +741,7 @@
 <translation id="8364627913115013041">સેટ નથી.</translation>
 <translation id="8380941800586852976">જોખમી</translation>
 <translation id="8382348898565613901">તમારા તાજેતરમાં મુલાકાત લીધેલ બુકમાર્ક્સ અહીં દેખાય છે</translation>
-<translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> એ ક્રેશ રિપોર્ટ અપલોડ કરી હતી</translation>
+<translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> એ ક્રેશ રિપોર્ટ અપલોડ કર્યો હતો</translation>
 <translation id="8412145213513410671">ક્રેશેસ (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">તમારે તે જ પાસફ્રેઝ બે વાર દાખલ કરવો આવશ્યક છે.</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>

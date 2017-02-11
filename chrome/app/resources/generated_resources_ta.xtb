@@ -726,7 +726,7 @@
 <translation id="1957988341423158185">வழிசெலுத்தலைத் தடமறிவதற்கான தடத்தின் லேபிள்</translation>
 <translation id="1961376890474801922">&amp;lt;webview&gt; போன்ற கெஸ்டுகள் அவுட்-ஆஃப்-தி-பிராசஸ் அகக்கட்டமைப்பில் செயல்படுத்தப்படுகின்ற, மிகவும் பரிசோதனை தன்மை கொண்ட அம்சம்.</translation>
 <translation id="1962233722219655970">உங்கள் கணினியில் பணியாற்றாத நேட்டிவ் க்ளையன்ட் பயன்பாட்டை இந்தப் பக்கம் பயன்படுத்துகிறது.</translation>
-<translation id="1962389111849429567">WebAssembly அசல் ஆப்ஜெக்ட்டின் எல்லாப் புலங்களையும் புதிய ஆப்ஜெக்ட்டில் நகலெடுப்பதற்கான ஆதரவு.</translation>
+<translation id="1962389111849429567">WebAssembly ஸ்ட்ரக்ச்சர்டு குளோனிங் ஆதரவு.</translation>
 <translation id="1962969542251276847">திரையைப் பூட்டு</translation>
 <translation id="1963227389609234879">அனைத்தையும் அகற்று</translation>
 <translation id="1965328510789761112">தனிப்பட்ட நினைவகம்</translation>
@@ -805,7 +805,7 @@
 <translation id="2099172618127234427">sshd daemonஐ அமைக்கும் மற்றும் USB டிரைவ்களிலிருந்து தொடங்குவதை இயக்கும் Chrome OS பிழைத்திருத்த அம்சங்களை இயக்குகிறீர்கள்.</translation>
 <translation id="2099686503067610784">சேவையக சான்றிதழ் "<ph name="CERTIFICATE_NAME" />" ஐ நீக்கவா?</translation>
 <translation id="2100273922101894616">தானாக உள்நுழையவும்</translation>
-<translation id="2100499704602262897">JavaScript செயலாக்கத்திற்காக, பரிசோதனைக்குரிய இக்னிஷன் மொழிபெயர்ப்பியையும் TurboFan மொழிமாற்றியையும் பயன்படுத்த V8ஐ இயக்கும்.</translation>
+<translation id="2100499704602262897">JavaScript செயலாக்கத்திற்காக, பரிசோதனைக்குரிய இக்னிஷன் இன்டர்ப்ரெட்டரையும் TurboFan கம்பைலரையும் பயன்படுத்த V8ஐ அனுமதிக்கும்.</translation>
 <translation id="2101225219012730419">பதிப்பு:</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2103164230797186308">இந்தச் சாதனத்திற்கு இனி மென்பொருள் புதுப்பிப்புகள் கிடைக்காது என்பதால், சாதனத்தை மேம்படுத்தும்படி பரிந்துரைக்கிறோம்.</translation>
@@ -3530,7 +3530,7 @@
 <translation id="5731247495086897348">ஒட்&amp;டிவிட்டு செல்</translation>
 <translation id="5732790216998904518">சோதனைக் காரணங்களுக்காக ஆவணம், விரிதாள், ஸ்லைடின் Office எடிட்டிங்</translation>
 <translation id="5734362860645681824">தகவல்தொடர்புகள்</translation>
-<translation id="5736796278325406685">சரியான பயனர் பெயரை உள்ளிடவும்</translation>
+<translation id="5736796278325406685">சரியான பயனர்பெயரை உள்ளிடவும்</translation>
 <translation id="5739458112391494395">மிகப் பெரியது</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" />, மேலும் <ph name="NUM_ADDITIONAL_LANGUAGES" /> மொழிகள்</translation>
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />: மாற்ற, தேர்ந்தெடுக்கவும்</translation>
@@ -4110,7 +4110,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="652030171967109828">ஓவர்டிரா கருத்தைக் காட்டு</translation>
+<translation id="652030171967109828">ஓவர்டிரா ஃபீட்பேக்கைக் காட்டு</translation>
 <translation id="6526654154229718724">விசைப்பலகைப் பூட்டுப் பயன்முறையுடன் கூடிய, சோதனை ரீதியிலான முழுத்திரை, இதிலிருந்து வெளியேற, பயனர்கள் Esc விசையை அழுத்திப் பிடிக்க வேண்டும்.</translation>
 <translation id="6527303717912515753">பகிர்</translation>
 <translation id="6528546217685656218">இந்த க்ளையண்ட் சான்றிதழுக்கான தனிப்பட்ட விசை இல்லை அல்லது செல்லுபடியாகாததாக இருக்கிறது.</translation>
@@ -4328,7 +4328,7 @@
 <translation id="6843725295806269523">ஒலியடக்கு</translation>
 <translation id="6845038076637626672">பெரிதாக்கப்பட்டதை திற</translation>
 <translation id="6847758263950452722">MHTML பக்கமாகச் சேமி</translation>
-<translation id="6851261092040379723">பரிசோதனைக்குரிய JavaScript தொகுத்தல் பைப்லைன்</translation>
+<translation id="6851261092040379723">பரிசோதனைக்குரிய JavaScript கம்பைலேஷன் பைப்லைன்</translation>
 <translation id="6853388645642883916">புதுப்பிப்பான் செயலில் இல்லை</translation>
 <translation id="68541483639528434">பிற தாவல்களை மூடுக</translation>
 <translation id="6856701878604560493">ஆஃப்லைன் புத்தகக்குறிகளை இயக்கு</translation>
@@ -4788,7 +4788,7 @@
 <translation id="7508545000531937079">ஸ்லைடுகாட்சி</translation>
 <translation id="7511149348717996334">மெட்டீரியல் வடிவ அமைப்புகளை இயக்கு</translation>
 <translation id="7511955381719512146">நீங்கள் பயன்படுத்திக் கொண்டிருக்கும் வைஃபை, அதன் <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ஐ நீங்கள் பார்க்கக் கோரலாம்.</translation>
-<translation id="7512768521598401899">WebAssembly அசல் ஆப்ஜெக்ட்டின் எல்லாப் புலங்களையும் புதிய ஆப்ஜெக்ட்டில் நகலெடுப்பதைப் பயன்படுத்த, இணையப் பக்கங்களை இயக்கு.</translation>
+<translation id="7512768521598401899">WebAssembly ஸ்ட்ரக்ச்சர்டு குளோனிங் அம்சத்தைப் பயன்படுத்த இணையப் பக்கங்களை அனுமதி.</translation>
 <translation id="7514722502805496245">தற்போதைய தாவலில் பக்கம் இன்னும் ஏற்றப்படாத சூழலில், பின்னணியில் பக்கங்கள் பதிவிறக்கப்படுவதை இயக்கும்.</translation>
 <translation id="751507702149411736">பெலாரஷ்யன்</translation>
 <translation id="7517569744831774757">அமைப்புகளை, அவற்றின் அசல் இயல்புநிலைகளுக்கு மீட்டமைக்கும்.</translation>

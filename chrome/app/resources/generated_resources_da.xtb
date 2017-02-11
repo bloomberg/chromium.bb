@@ -881,7 +881,7 @@
 <translation id="2193365732679659387">Tillidsindstillinger</translation>
 <translation id="2195729137168608510">E-mail-beskyttelse</translation>
 <translation id="2198315389084035571">Kinesisk (forenklet)</translation>
-<translation id="2199829153606285995">Taleinput på det virtuelle tastatur</translation>
+<translation id="2199829153606285995">Indtaling på det virtuelle tastatur</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2201351910914874948">Oprettelse af app-shims for hostede apps på Mac-computere</translation>
 <translation id="220138918934036434">Skjul knap</translation>
@@ -1057,7 +1057,7 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2424091190911472304">Kør altid på <ph name="ORIGIN" /></translation>
 <translation id="2425632738803359658">Anvend brugermenuen for material design</translation>
 <translation id="2425665904502185219">Samlet filstørrelse</translation>
-<translation id="2431394478374894294">Aktiverer taleinput på det virtuelle tastatur.</translation>
+<translation id="2431394478374894294">Aktiverer indtaling på det virtuelle tastatur.</translation>
 <translation id="2433452467737464329">Tilføj et forespørgselsparameter i webadressen for at opdatere siden automatisk: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Udseende</translation>
 <translation id="2435248616906486374">Forbindelsen til netværket blev afbrudt</translation>
@@ -1582,7 +1582,7 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3057861065630527966">Sikkerhedskopiér dine billeder og videoer</translation>
 <translation id="3058212636943679650">Hvis du skulle få brug for at genoprette din computers operativsystem, skal du bruge et SD-kort til genoprettelse eller en USB-nøgle.</translation>
 <translation id="305932878998873762">Simple Cache til HTTP er en ny cache. Den kræver tildeling af diskplads af filsystemet.</translation>
-<translation id="3061650404498811439">Aktivér adgang til emoji, håndskrift og taleinput fra IME-tilvalgsmenuen.</translation>
+<translation id="3061650404498811439">Aktivér adgang til emoji, håndskrift og indtaling fra IME-tilvalgsmenuen.</translation>
 <translation id="3063844757726132584">Få adgang til alle dine apps via denne smarte appliste. Du kan spille spil, videochatte, lytte til musik, redigere dokumenter eller hente flere apps.</translation>
 <translation id="3064388234319122767">Translitteration (zdravo → здраво)</translation>
 <translation id="3065041951436100775">Feedback i tilfælde, hvor fanen døde.</translation>
@@ -3797,7 +3797,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6105877918873366097">Sidst åbnet</translation>
 <translation id="6107012941649240045">Udstedt til</translation>
 <translation id="6107079717483424262">Genkend din stemme, når du siger "Ok Google"</translation>
-<translation id="6109228527970300988">Emoji, håndskrift og taleinput i IME-tilvalgsmenuen</translation>
+<translation id="6109228527970300988">Emoji, håndskrift og indtaling i IME-tilvalgsmenuen</translation>
 <translation id="6111770213269631447">Translitteration (namaskar → নমস্কার)</translation>
 <translation id="6112952769866305444">Rediger person, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">Tryk på |<ph name="SHORTCUT" />| for at gå tilbage</translation>

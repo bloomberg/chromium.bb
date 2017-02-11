@@ -363,6 +363,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
+<translation id="23323722127921515">Mostra o ícone do Google Cast na barra de ferramentas</translation>
 <translation id="2337466621458842053">Permite que você defina uma lista de padrões URL para especificar os sites autorizados a exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultImagesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
@@ -487,6 +488,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política for definida como Falsa, uma mensagem de erro será exibida no lugar do prompt de configuração de rede.</translation>
 <translation id="2498238926436517902">Sempre ocultar automaticamente a estante</translation>
+<translation id="2503514368596117142">Configurar políticas para o Google Cast, um recurso que permite que os usuários enviem o conteúdo de guias, sites ou a área de trabalho do navegador para telas e sistemas de som remotos.</translation>
 <translation id="2514328368635166290">Especifica o URL do ícone favorito do provedor de pesquisa padrão. Esta política é opcional. Se for deixada sem definição, nenhum ícone será exibido para o provedor de pesquisa. Esta política só é respeitada se a política de "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2516525961735516234">Especifica se a atividade de vídeo afeta o gerenciamento de energia.
 
@@ -504,6 +506,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2529880111512635313">Configurar a lista de extensões e aplicativos instalados forçadamente</translation>
 <translation id="253135976343875019">Intervalo da advertência de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2552966063069741410">Fuso horário</translation>
+<translation id="2558917182010914102">Se esta política for definida como true ou não for configurada, o Google Cast ficará ativado e os usuários poderão iniciá-lo no menu de apps, nos menus de contexto da página, em controles de mídia em websites compatíveis com o Google Cast e no ícone do Google Cast na barra de ferramentas (quando exibido).
+
+          Se esta política for definida como false, o Google Cast será desativado.</translation>
 <translation id="2562339630163277285">Especifica o URL do mecanismo de pesquisa usado para fornecer resultados instantâneos. O URL deve conter a string <ph name="SEARCH_TERM_MARKER" />, que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
 
           Esta política é opcional. Se ela não for definida, nenhum resultado de pesquisa instantânea será fornecido.
@@ -897,6 +902,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se estas configurações não são definidas, nenhuma restrição é aplicada aos tipos aceitos de extensão/aplicativo.</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
+<translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
+
+          Se esta política for definida como false ou não for configurada, os usuários poderão fixar ou remover o ícone usando o menu contextual dele.
+
+          Se a política "EnableMediaRouter" for definida como false, o valor desta política não teria nenhum efeito, e o ícone da barra de ferramentas não seria exibido.</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
 <translation id="3793095274466276777">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem. Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará, na inicialização, se ele é o navegador padrão e automaticamente se registrará, se possível. Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará controles do usuário para configurar essa opção. Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá ao usuário controlar se ele é o navegador padrão e se as notificações do usuário devem ser exibidas quando não forem exibidas.</translation>
 <translation id="379659290574555063">Tratar dispositivos de armazenamento externo como somente leitura.</translation>
@@ -1258,6 +1268,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
 
           Se esta política estiver definida como falsa, as solicitações de bloqueio de ativação da tela são ignoradas.</translation>
+<translation id="4876805738539874299">Versão máxima de SSL ativada</translation>
 <translation id="4882546920824859909">Define os domínios autorizados a acessar Google Apps</translation>
 <translation id="4890209226533226410">Definir o tipo de lupa ativada.
 
@@ -1559,6 +1570,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se você desativar esta configuração ou não definir nenhum valor, o SafeSearch não será aplicado na Pesquisa do Google.</translation>
 <translation id="5937539742111853215">Esta política controla somente o modo de desenvolvedor do <ph name="PRODUCT_OS_NAME" />. Para impedir o acesso às Opções do desenvolvedor Android, configure a política <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Ativa o Google Cast</translation>
 <translation id="5946082169633555022">Canal Beta</translation>
 <translation id="5950205771952201658">Considerando que as verificações de revogação on-line de sistemas tolerantes a falhas (soft-fail) não fornecem benefícios de segurança efetivos, elas são desativadas por padrão nas versões 19 e posteriores do <ph name="PRODUCT_NAME" />. Quando essa política é configurada como "true", o comportamento anterior é restaurado, e as verificações on-line de OCSP/CRL são realizadas.
 
@@ -1911,6 +1923,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7027785306666625591">Configura o gerenciamento de energia no <ph name="PRODUCT_OS_NAME" />.
 
       Essas políticas permitem configurar a forma como o <ph name="PRODUCT_OS_NAME" /> se comporta quando o usuário permanece inativo por um período de tempo específico.</translation>
+<translation id="703078280527762319">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 66 (aproximadamente em fevereiro de 2018).
+
+      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará uma versão máxima padrão, que é TLSv1.3.
+
+      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="7040229947030068419">Exemplo de valor:</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME" /> envie documentos a <ph name="CLOUD_PRINT_NAME" /> para impressão. OBSERVAÇÃO: isto só afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Isto não impede que usuários enviem trabalhos de impressão em websites. Se esta configuração for ativada ou não configurada, os usuários podem imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta configuração for desativada, os usuários não poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
@@ -2126,6 +2143,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7625444193696794922">Especifica o canal de liberação ao qual este dispositivo deve ser vinculado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME" /> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> utilizará a localidade especificada. Se a localidade configurada não for compatível, "pt-BR" será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME" /> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão "pt-BR".</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve ser ativado para o dispositivo. Se configurado para true, o roaming de dados será permitido. Se não for configurado ou for configurado como false, o roaming de dados não estará disponível.</translation>
 <translation id="76810863974142048">URL no qual os clientes de acesso remoto devem conseguir o token de autenticação.
 
@@ -2388,6 +2406,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Queremos remover essa substituição no futuro.</translation>
 <translation id="8285435910062771358">Lupa de tela inteira ativada</translation>
+<translation id="8288199156259560552">Ativar o Serviço de Localização do Google para Android</translation>
 <translation id="8294750666104911727">Normalmente as páginas com X-UA-Compatible configuradas para chrome=1 são renderizadas no <ph name="PRODUCT_FRAME_NAME" /> independentemente da política "ChromeFrameRendererSettings".
 
           Se você ativar essa configuração, não haverá a busca de metatags nas páginas.
@@ -2473,6 +2492,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       que estejam vinculadas a um domínio Active Directory.</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
+<translation id="8613640727149655305">Quando esta política é definida como true, o Serviço de Localização do Google para Android é ativado. Isso permite que os apps para Android usem os dados dele para encontrar a localização do dispositivo e também ativa o envio de dados de localização anônimos ao Google.
+
+      Quando esta política é definida como false, o Serviço de Localização do Google para Android é desativado.
+
+      Se esta política for configurada, os usuários não poderão alterá-la por conta própria.
+
+      Se esta política não for configurada, os usuários poderão ativar e desativar o Serviço de Localização do Google no app Config. do Android.
+
+      Observe que o valor desta política pode ser substituído pela política <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> quando essa última estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Esta política é válida somente para os usuários que conseguem executar apps para Android.</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>
 <translation id="8631434304112909927">até a versão <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Em apps Android, esta política afeta somente a câmera integrada. Quando esta política é definida como true, a câmera é desativada para todos os apps Android, sem exceções.</translation>
