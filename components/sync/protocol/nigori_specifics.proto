@@ -87,6 +87,9 @@ message NigoriSpecifics {
 
   // The state of the passphrase required to decrypt |encryption_keybag|.
   enum PassphraseType {
+    // Proto enums should begin with an 'unknown' value for switch statements,
+    // unknown fields, etc.
+    UNKNOWN = 0;
     // Gaia-based encryption passphrase. Deprecated.
     IMPLICIT_PASSPHRASE = 1;
     // Keystore key encryption passphrase. Uses |keystore_bootstrap| to
