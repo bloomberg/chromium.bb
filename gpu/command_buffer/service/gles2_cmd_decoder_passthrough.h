@@ -316,6 +316,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
+  bool offscreen_;
 
   // Managers
   std::unique_ptr<ImageManager> image_manager_;

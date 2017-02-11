@@ -75,6 +75,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(ContextGroup* group)
       logger_(&debug_marker_manager_),
       surface_(),
       context_(),
+      offscreen_(false),
       group_(group),
       feature_info_(group->feature_info()) {
   DCHECK(group);
@@ -161,6 +162,7 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   // with SetSurface.
   context_ = context;
   surface_ = surface;
+  offscreen_ = offscreen;
 
   if (!group_->Initialize(this, attrib_helper.context_type,
                           disallowed_features)) {

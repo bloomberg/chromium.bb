@@ -2518,6 +2518,11 @@ error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
+  if (offscreen_) {
+    NOTIMPLEMENTED();
+    return error::kNoError;
+  }
+
   gfx::SwapResult result = surface_->SwapBuffers();
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because SwapBuffers failed.";
