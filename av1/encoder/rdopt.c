@@ -9933,17 +9933,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_EXT_INTER
     if (ref_frame > INTRA_FRAME && second_ref_frame == INTRA_FRAME) {
       // Mode must by compatible
-      assert(is_interintra_allowed_mode(this_mode));
-
-#if !USE_RECT_INTERINTRA
-      // Note: If the subsampling is unequal, any block size we pick will
-      // result in either a rectangular luma block or a rectangular chroma
-      // block. So in this case, we can't use any interintra modes.
-      if (xd->plane[1].subsampling_x != xd->plane[1].subsampling_y ||
-          xd->plane[2].subsampling_x != xd->plane[2].subsampling_y)
-        continue;
-#endif  // !USE_RECT_INTERINTRA
-
+      if (!is_interintra_allowed_mode(this_mode)) continue;
       if (!is_interintra_allowed_bsize(bsize)) continue;
     }
 

@@ -41,11 +41,8 @@ extern "C" {
 #define MAX_MB_PLANE 3
 
 #if CONFIG_EXT_INTER
-// Should we try rectangular interintra predictions?
-#define USE_RECT_INTERINTRA 1
 
 #if CONFIG_COMPOUND_SEGMENT
-
 // Set COMPOUND_SEGMENT_TYPE to one of the three
 // 0: Uniform
 // 1: Difference weighted
@@ -1026,19 +1023,31 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 
 #if CONFIG_EXT_INTER
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
-#if !USE_RECT_INTERINTRA
-  if (block_size_wide[bsize] != block_size_high[bsize]) return 0;
-#endif
+#if CONFIG_INTERINTRA
   // TODO(debargha): Should this be bsize < BLOCK_LARGEST?
   return (bsize >= BLOCK_8X8) && (bsize < BLOCK_64X64);
+#else
+  (void)bsize;
+  return 0;
+#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed_mode(const PREDICTION_MODE mode) {
+#if CONFIG_INTERINTRA
   return (mode >= NEARESTMV) && (mode <= NEWMV);
+#else
+  (void)mode;
+  return 0;
+#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed_ref(const MV_REFERENCE_FRAME rf[2]) {
+#if CONFIG_INTERINTRA
   return (rf[0] > INTRA_FRAME) && (rf[1] <= INTRA_FRAME);
+#else
+  (void)rf;
+  return 0;
+#endif  // CONFIG_INTERINTRA
 }
 
 static INLINE int is_interintra_allowed(const MB_MODE_INFO *mbmi) {

@@ -28,13 +28,21 @@
 #if CONFIG_EXT_INTER
 
 #define NSMOOTHERS 1
+#define USE_SOFT_WEIGHTS_IN_WEDGE 1
 static int get_masked_weight(int m, int smoothness) {
 #define SMOOTHER_LEN 32
   static const uint8_t smoothfn[NSMOOTHERS][2 * SMOOTHER_LEN + 1] = { {
+#if USE_SOFT_WEIGHTS_IN_WEDGE
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  4,  7,  13, 21, 32, 43,
       51, 57, 60, 62, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
       64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+#else
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  64, 64, 32, 64,
+      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+#endif  // USE_SOFT_WEIGHTS_IN_WEDGE
   } };
   if (m < -SMOOTHER_LEN)
     return 0;
@@ -60,7 +68,8 @@ DECLARE_ALIGNED(16, static uint8_t,
 static wedge_masks_type wedge_masks[BLOCK_SIZES][2];
 
 // Some unused wedge codebooks left temporarily to facilitate experiments.
-// To be removed when setteld.
+// To be removed when settled.
+/*
 static wedge_code_type wedge_codebook_8_hgtw[8] = {
   { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
   { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
@@ -81,6 +90,7 @@ static wedge_code_type wedge_codebook_8_heqw[8] = {
   { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 6 },
   { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 6, 4 },
 };
+*/
 
 #if !USE_LARGE_WEDGE_CODEBOOK
 static const wedge_code_type wedge_codebook_16_hgtw[16] = {
@@ -125,6 +135,7 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
+#if CONFIG_WEDGE
   { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
     wedge_masks[BLOCK_8X8] },
   { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
@@ -139,12 +150,34 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
     wedge_masks[BLOCK_32X16] },
   { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
     wedge_masks[BLOCK_32X32] },
-  { 0, wedge_codebook_8_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
+  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
     wedge_masks[BLOCK_32X64] },
-  { 0, wedge_codebook_8_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
+  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
     wedge_masks[BLOCK_64X32] },
-  { 0, wedge_codebook_8_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
+  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
     wedge_masks[BLOCK_64X64] },
+#else
+  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
+    wedge_masks[BLOCK_8X8] },
+  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
+    wedge_masks[BLOCK_8X16] },
+  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X8], 0,
+    wedge_masks[BLOCK_16X8] },
+  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_16X16], 0,
+    wedge_masks[BLOCK_16X16] },
+  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_16X32], 0,
+    wedge_masks[BLOCK_16X32] },
+  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X16], 0,
+    wedge_masks[BLOCK_32X16] },
+  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
+    wedge_masks[BLOCK_32X32] },
+  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
+    wedge_masks[BLOCK_32X64] },
+  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
+    wedge_masks[BLOCK_64X32] },
+  { 0, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
+    wedge_masks[BLOCK_64X64] },
+#endif  // CONFIG_WEDGE
 #if CONFIG_EXT_PARTITION
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -220,6 +253,7 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
+#if CONFIG_WEDGE
   { 5, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
     wedge_masks[BLOCK_8X8] },
   { 5, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
@@ -234,12 +268,34 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
     wedge_masks[BLOCK_32X16] },
   { 5, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
     wedge_masks[BLOCK_32X32] },
-  { 0, wedge_codebook_8_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
+  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
     wedge_masks[BLOCK_32X64] },
-  { 0, wedge_codebook_8_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
+  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
     wedge_masks[BLOCK_64X32] },
-  { 0, wedge_codebook_8_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
+  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
     wedge_masks[BLOCK_64X64] },
+#else
+  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
+    wedge_masks[BLOCK_8X8] },
+  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
+    wedge_masks[BLOCK_8X16] },
+  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_16X8], 0,
+    wedge_masks[BLOCK_16X8] },
+  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_16X16], 0,
+    wedge_masks[BLOCK_16X16] },
+  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_16X32], 0,
+    wedge_masks[BLOCK_16X32] },
+  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_32X16], 0,
+    wedge_masks[BLOCK_32X16] },
+  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
+    wedge_masks[BLOCK_32X32] },
+  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
+    wedge_masks[BLOCK_32X64] },
+  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
+    wedge_masks[BLOCK_64X32] },
+  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
+    wedge_masks[BLOCK_64X64] },
+#endif  // CONFIG_WEDGE
 #if CONFIG_EXT_PARTITION
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },

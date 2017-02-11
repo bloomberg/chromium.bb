@@ -260,6 +260,8 @@ EXPERIMENT_LIST="
     intra_interp
     filter_intra
     ext_inter
+    interintra
+    wedge
     compound_segment
     ext_refs
     global_motion
