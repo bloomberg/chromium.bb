@@ -108,7 +108,7 @@ class CastFlingingPage(media_router_page.CastPage):
          timeout=10)
 
       # Load Media
-      self.ExecuteAsyncJavaScript2(
+      self.ExecuteAsyncJavaScript(
           action_runner,
           js_template.Render(
               'loadMedia({{ url }});', url=utils.GetInternalVideoURL()),
@@ -120,7 +120,7 @@ class CastFlingingPage(media_router_page.CastPage):
       action_runner.ExecuteJavaScript2('collectPerfData();')
       action_runner.Wait(SESSION_TIME)
       # Stop session
-      self.ExecuteAsyncJavaScript2(
+      self.ExecuteAsyncJavaScript(
           action_runner,
           'stopSession();',
           lambda: not action_runner.EvaluateJavaScript2('currentSession'),
