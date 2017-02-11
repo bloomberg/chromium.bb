@@ -5,10 +5,13 @@
 #include "media/blink/new_session_cdm_result_promise.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "media/blink/cdm_result_promise_helper.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace media {
+
+const char kTimeUMAPrefix[] = "TimeTo.";
 
 static blink::WebContentDecryptionModuleResult::SessionStatus ConvertStatus(
     SessionInitStatus status) {
@@ -28,12 +31,14 @@ static blink::WebContentDecryptionModuleResult::SessionStatus ConvertStatus(
 
 NewSessionCdmResultPromise::NewSessionCdmResultPromise(
     const blink::WebContentDecryptionModuleResult& result,
+    const std::string& key_system_uma_prefix,
     const std::string& uma_name,
     const SessionInitializedCB& new_session_created_cb)
     : web_cdm_result_(result),
+      key_system_uma_prefix_(key_system_uma_prefix),
       uma_name_(uma_name),
-      new_session_created_cb_(new_session_created_cb) {
-}
+      new_session_created_cb_(new_session_created_cb),
+      creation_time_(base::TimeTicks::Now()) {}
 
 NewSessionCdmResultPromise::~NewSessionCdmResultPromise() {
   if (!IsPromiseSettled())
@@ -52,7 +57,12 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   }
 
   MarkPromiseSettled();
-  ReportCdmResultUMA(uma_name_, SUCCESS);
+  ReportCdmResultUMA(key_system_uma_prefix_ + uma_name_, SUCCESS);
+
+  // Only report time for promise resolution (not rejection).
+  base::UmaHistogramTimes(key_system_uma_prefix_ + kTimeUMAPrefix + uma_name_,
+                          base::TimeTicks::Now() - creation_time_);
+
   web_cdm_result_.completeWithSession(ConvertStatus(status));
 }
 

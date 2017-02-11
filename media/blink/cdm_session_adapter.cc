@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -166,7 +167,8 @@ void CdmSessionAdapter::OnCdmCreated(
       kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
 
   // Only report time for successful CDM creation.
-  ReportTimeToCreateCdmUMA(base::TimeTicks::Now() - start_time);
+  base::UmaHistogramTimes(key_system_uma_prefix_ + kTimeToCreateCdmUMAName,
+                          base::TimeTicks::Now() - start_time);
 
   cdm_ = cdm;
 
@@ -238,16 +240,6 @@ WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(
   // We can not tell if the CDM is firing events at sessions that never existed.
   SessionMap::iterator session = sessions_.find(session_id);
   return (session != sessions_.end()) ? session->second.get() : NULL;
-}
-
-void CdmSessionAdapter::ReportTimeToCreateCdmUMA(base::TimeDelta time) const {
-  // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      GetKeySystemUMAPrefix() + kTimeToCreateCdmUMAName,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
-      50, base::HistogramBase::kUmaTargetedHistogramFlag);
-
-  histogram->AddTime(time);
 }
 
 }  // namespace media

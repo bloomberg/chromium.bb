@@ -130,8 +130,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   WebContentDecryptionModuleSessionImpl* GetSession(
       const std::string& session_id);
 
-  void ReportTimeToCreateCdmUMA(base::TimeDelta cdm_creation_time) const;
-
   scoped_refptr<ContentDecryptionModule> cdm_;
 
   SessionMap sessions_;

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "media/base/cdm_promise.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -44,6 +45,7 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
  public:
   NewSessionCdmResultPromise(
       const blink::WebContentDecryptionModuleResult& result,
+      const std::string& key_system_uma_prefix,
       const std::string& uma_name,
       const SessionInitializedCB& new_session_created_cb);
   ~NewSessionCdmResultPromise() override;
@@ -57,12 +59,16 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
  private:
   blink::WebContentDecryptionModuleResult web_cdm_result_;
 
-  // UMA name to report result to.
+  // UMA prefix and name to report result and time to.
+  std::string key_system_uma_prefix_;
   std::string uma_name_;
 
   // Called on resolve() to convert the session ID into a SessionInitStatus to
   // be reported to blink.
   SessionInitializedCB new_session_created_cb_;
+
+  // Time when |this| is created.
+  base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NewSessionCdmResultPromise);
 };
