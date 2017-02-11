@@ -33,6 +33,8 @@
 [
     Exposed=Worker,
     Constructor,
+    ConstructorCallWith=ExecutionContext,
+    Measure,
 ] interface FileReaderSync {
     [CallWith=ScriptState, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
     [CallWith=ScriptState, RaisesException] DOMString readAsBinaryString(Blob blob);

@@ -1458,6 +1458,7 @@ class CORE_EXPORT UseCounter {
     V8DeprecatedStorageInfo_RequestQuota_Method = 1809,
     V8DeprecatedStorageQuota_QueryUsageAndQuota_Method = 1810,
     V8DeprecatedStorageQuota_RequestQuota_Method = 1811,
+    V8FileReaderSync_Constructor = 1812,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

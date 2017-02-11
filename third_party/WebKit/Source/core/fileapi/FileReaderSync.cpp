@@ -36,10 +36,36 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
+#include "platform/Histogram.h"
 
 namespace blink {
 
-FileReaderSync::FileReaderSync() {}
+namespace {
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum class WorkerType {
+  OTHER = 0,
+  DEDICATED_WORKER = 1,
+  SHARED_WORKER = 2,
+  SERVICE_WORKER = 3,
+  MAX
+};
+}  // namespace
+
+FileReaderSync::FileReaderSync(ExecutionContext* context) {
+  WorkerType type = WorkerType::OTHER;
+  if (context->isDedicatedWorkerGlobalScope())
+    type = WorkerType::DEDICATED_WORKER;
+  else if (context->isSharedWorkerGlobalScope())
+    type = WorkerType::SHARED_WORKER;
+  else if (context->isServiceWorkerGlobalScope())
+    type = WorkerType::SERVICE_WORKER;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, workerTypeHistogram,
+      new EnumerationHistogram("FileReaderSync.WorkerType",
+                               static_cast<int>(WorkerType::MAX)));
+  workerTypeHistogram.count(static_cast<int>(type));
+}
 
 DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
     ScriptState* scriptState,

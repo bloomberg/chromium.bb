@@ -49,7 +49,9 @@ class FileReaderSync final : public GarbageCollected<FileReaderSync>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FileReaderSync* create() { return new FileReaderSync(); }
+  static FileReaderSync* create(ExecutionContext* context) {
+    return new FileReaderSync(context);
+  }
 
   DOMArrayBuffer* readAsArrayBuffer(ScriptState*, Blob*, ExceptionState&);
   String readAsBinaryString(ScriptState*, Blob*, ExceptionState&);
@@ -65,7 +67,7 @@ class FileReaderSync final : public GarbageCollected<FileReaderSync>,
   DEFINE_INLINE_TRACE() {}
 
  private:
-  FileReaderSync();
+  explicit FileReaderSync(ExecutionContext*);
 
   void startLoading(ExecutionContext*,
                     FileReaderLoader&,
