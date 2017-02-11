@@ -102,6 +102,18 @@ class CompositorFrameSinkSupportTest : public testing::Test,
 
   SurfaceManager& surface_manager() { return surface_manager_; }
 
+  // Returns all the references where |surface_id| is the parent.
+  const SurfaceManager::SurfaceIdSet& GetChildReferences(
+      const SurfaceId& surface_id) {
+    return surface_manager().parent_to_child_refs_[surface_id];
+  }
+
+  // Returns all the temporary references for the given frame sink id.
+  std::vector<LocalSurfaceId> GetTempReferences(
+      const FrameSinkId& frame_sink_id) {
+    return surface_manager().temp_references_[frame_sink_id];
+  }
+
   SurfaceDependencyTracker& dependency_tracker() {
     return *surface_manager_.dependency_tracker();
   }
@@ -522,6 +534,43 @@ TEST_F(CompositorFrameSinkSupportTest,
   ReturnedResource returned_resource = resource.ToReturnedResource();
   EXPECT_THAT(last_returned_resources(),
               UnorderedElementsAre(returned_resource));
+}
+
+// This test verifies that a SurfaceReference from parent to child can be added
+// prior to the child submitting a CompositorFrame. This test also verifies that
+// when the child later submits a CompositorFrame,
+TEST_F(CompositorFrameSinkSupportTest,
+       DisplayCompositorLockingReferenceAddedBeforeChildExists) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // The parent submits a CompositorFrame that depends on |child_id| before the
+  // child submits a CompositorFrame.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // Verify that the CompositorFrame is blocked on |child_id|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+              UnorderedElementsAre(child_id));
+
+  // Verify that a SurfaceReference(parent_id, child_id) exists in the
+  // SurfaceManager.
+  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id));
+
+  child_support1().SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+
+  // Verify that the child CompositorFrame activates immediately.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+
+  // Verify that there is no temporary reference for the child and that
+  // the reference from the parent to the child still exists.
+  EXPECT_THAT(GetTempReferences(child_id.frame_sink_id()), IsEmpty());
+  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id));
 }
 
 }  // namespace test

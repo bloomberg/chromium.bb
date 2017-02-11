@@ -266,17 +266,6 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
   EXPECT_EQ(nullptr, manager().GetSurfaceForId(id3));
 }
 
-TEST_F(SurfaceManagerRefTest, TryAddReferenceToBadSurface) {
-  // Not creating an accompanying Surface and SurfaceFactory.
-  SurfaceId id(FrameSinkId(100u, 200u),
-               LocalSurfaceId(1u, base::UnguessableToken::Create()));
-
-  // Adding reference from root to the Surface should do nothing because
-  // SurfaceManager doesn't know Surface for |id| exists.
-  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id);
-  EXPECT_THAT(GetReferencesFor(id), IsEmpty());
-}
-
 TEST_F(SurfaceManagerRefTest, TryDoubleAddReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   SurfaceId id2 = CreateSurface(kFrameSink2, 1);

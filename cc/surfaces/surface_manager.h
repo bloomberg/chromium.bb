@@ -38,6 +38,10 @@ class CompositorFrame;
 class Surface;
 class SurfaceFactoryClient;
 
+namespace test {
+class CompositorFrameSinkSupportTest;
+}
+
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
   enum class LifetimeType {
@@ -161,6 +165,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   }
 
  private:
+  friend class test::CompositorFrameSinkSupportTest;
   friend class SurfaceManagerRefTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
