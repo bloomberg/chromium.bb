@@ -157,6 +157,11 @@ class PLATFORM_EXPORT FeaturePolicy final {
 
   String toString();
 
+  // Returns the corresponding WebFeaturePolicyFeature enum given a feature
+  // string.
+  static WebFeaturePolicyFeature getWebFeaturePolicyFeature(
+      const String& feature);
+
  private:
   friend class FeaturePolicyTest;
   friend class FeaturePolicyInFrameTest;

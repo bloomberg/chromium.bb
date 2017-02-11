@@ -63,21 +63,16 @@ HTMLIFrameElementPermissions::parseDelegatedPermissions(
     if (getPermissionType(tokens[i], &type)) {
       permissions.push_back(type);
     } else {
-      if (numTokenErrors)
-        tokenErrors.append(", '");
-      else
-        tokenErrors.append('\'');
+      tokenErrors.append(tokenErrors.isEmpty() ? "'" : ", '");
       tokenErrors.append(tokens[i]);
-      tokenErrors.append('\'');
+      tokenErrors.append("'");
       ++numTokenErrors;
     }
   }
 
   if (numTokenErrors) {
-    if (numTokenErrors > 1)
-      tokenErrors.append(" are invalid permissions flags.");
-    else
-      tokenErrors.append(" is an invalid permissions flag.");
+    tokenErrors.append(numTokenErrors > 1 ? " are invalid permissions flags."
+                                          : " is an invalid permissions flag.");
     invalidTokensErrorMessage = tokenErrors.toString();
   }
 

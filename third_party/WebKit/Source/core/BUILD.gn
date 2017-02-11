@@ -1107,6 +1107,7 @@ source_set("unit_tests") {
     "html/HTMLDimensionTest.cpp",
     "html/HTMLEmbedElementTest.cpp",
     "html/HTMLFormControlElementTest.cpp",
+    "html/HTMLIFrameElementAllowTest.cpp",
     "html/HTMLIFrameElementPermissionsTest.cpp",
     "html/HTMLIFrameElementTest.cpp",
     "html/HTMLImageElementTest.cpp",

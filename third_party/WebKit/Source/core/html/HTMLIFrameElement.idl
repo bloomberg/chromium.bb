@@ -29,6 +29,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean allowFullscreen;
     [CEReactions, Reflect] attribute DOMString width;
     [CEReactions, Reflect] attribute DOMString height;
+
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
@@ -38,6 +39,9 @@ interface HTMLIFrameElement : HTMLElement {
     // https://w3c.github.io/webappsec-csp/embedded/#dom-htmliframeelement-csp
     [RuntimeEnabled=EmbedderCSPEnforcement, CEReactions, Reflect] attribute DOMString csp;
 
+    // Feature Policy allow attribute
+    // https://wicg.github.io/feature-policy/
+    [RuntimeEnabled=FeaturePolicy, CEReactions, PutForwards=value] readonly attribute DOMTokenList allow;
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial
     [CEReactions, Reflect] attribute DOMString align;

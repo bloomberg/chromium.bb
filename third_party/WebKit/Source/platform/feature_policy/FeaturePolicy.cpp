@@ -4,6 +4,7 @@
 
 #include "platform/feature_policy/FeaturePolicy.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/json/JSONValues.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
@@ -58,6 +59,41 @@ const FeaturePolicy::Feature kVibrateFeature{
     "vibrate", FeaturePolicy::FeatureDefault::EnableForSelf};
 const FeaturePolicy::Feature kWebRTC{
     "webrtc", FeaturePolicy::FeatureDefault::EnableForAll};
+
+WebFeaturePolicyFeature FeaturePolicy::getWebFeaturePolicyFeature(
+    const String& feature) {
+  if (feature == "fullscreen")
+    return WebFeaturePolicyFeature::Fullscreen;
+  if (feature == "payment")
+    return WebFeaturePolicyFeature::Payment;
+  if (feature == "vibrate")
+    return WebFeaturePolicyFeature::Vibrate;
+  if (feature == "usermedia")
+    return WebFeaturePolicyFeature::Usermedia;
+  if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
+    if (feature == "cookie")
+      return WebFeaturePolicyFeature::DocumentCookie;
+    if (feature == "domain")
+      return WebFeaturePolicyFeature::DocumentDomain;
+    if (feature == "docwrite")
+      return WebFeaturePolicyFeature::DocumentWrite;
+    if (feature == "geolocation")
+      return WebFeaturePolicyFeature::Geolocation;
+    if (feature == "midi")
+      return WebFeaturePolicyFeature::MidiFeature;
+    if (feature == "notifications")
+      return WebFeaturePolicyFeature::Notifications;
+    if (feature == "push")
+      return WebFeaturePolicyFeature::Push;
+    if (feature == "sync-script")
+      return WebFeaturePolicyFeature::SyncScript;
+    if (feature == "sync-xhr")
+      return WebFeaturePolicyFeature::SyncXHR;
+    if (feature == "webrtc")
+      return WebFeaturePolicyFeature::WebRTC;
+  }
+  return WebFeaturePolicyFeature::NotFound;
+}
 
 // static
 std::unique_ptr<FeaturePolicy::Whitelist> FeaturePolicy::Whitelist::from(

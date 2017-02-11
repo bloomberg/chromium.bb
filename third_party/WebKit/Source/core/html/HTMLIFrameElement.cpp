@@ -40,6 +40,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(iframeTag, document),
       m_didLoadNonEmptyDocument(false),
       m_sandbox(HTMLIFrameElementSandbox::create(this)),
+      m_allow(HTMLIFrameElementAllow::create(this)),
       m_referrerPolicy(ReferrerPolicyDefault) {}
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)
@@ -47,6 +48,7 @@ DEFINE_NODE_FACTORY(HTMLIFrameElement)
 DEFINE_TRACE(HTMLIFrameElement) {
   visitor->trace(m_sandbox);
   visitor->trace(m_permissions);
+  visitor->trace(m_allow);
   HTMLFrameElementBase::trace(visitor);
   Supplementable<HTMLIFrameElement>::trace(visitor);
 }
@@ -61,6 +63,10 @@ DOMTokenList* HTMLIFrameElement::permissions() const {
   if (!const_cast<HTMLIFrameElement*>(this)->initializePermissionsAttribute())
     return nullptr;
   return m_permissions.get();
+}
+
+DOMTokenList* HTMLIFrameElement::allow() const {
+  return m_allow.get();
 }
 
 bool HTMLIFrameElement::isPresentationAttribute(
@@ -158,6 +164,9 @@ void HTMLIFrameElement::parseAttribute(
     m_csp = value;
     if (m_csp != oldCSP)
       frameOwnerPropertiesChanged();
+  } else if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
+             name == allowAttr) {
+    m_allow->setValue(value);
   } else {
     if (name == srcAttr)
       logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
@@ -218,6 +227,19 @@ void HTMLIFrameElement::sandboxValueWasSet() {
         OtherMessageSource, ErrorMessageLevel,
         "Error while parsing the 'sandbox' attribute: " + invalidTokens));
   setSynchronizedLazyAttribute(sandboxAttr, m_sandbox->value());
+}
+
+void HTMLIFrameElement::allowValueWasSet() {
+  String invalidTokens;
+  m_allowedFeatureNames = m_allow->parseAllowedFeatureNames(invalidTokens);
+  if (!invalidTokens.isNull()) {
+    document().addConsoleMessage(ConsoleMessage::create(
+        OtherMessageSource, ErrorMessageLevel,
+        "Error while parsing the 'allow' attribute: " + invalidTokens));
+  }
+  setSynchronizedLazyAttribute(allowAttr, m_allow->value());
+  // TODO(lunalu): Once allowedFeatureNames is passed to frame owner, call
+  // frameOwnerPropertiesChanged.
 }
 
 ReferrerPolicy HTMLIFrameElement::referrerPolicyAttribute() {
