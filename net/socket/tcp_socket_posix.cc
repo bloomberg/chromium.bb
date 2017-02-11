@@ -14,8 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -132,9 +131,9 @@ bool IsTCPFastOpenUserEnabled() {
 // do that on the IO thread.
 void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(/*task_is_slow=*/false).get(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(SystemSupportsTCPFastOpen),
       base::Bind(RegisterTCPFastOpenIntentAndSupport, user_enabled));
 #endif
