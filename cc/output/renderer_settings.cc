@@ -12,21 +12,7 @@
 namespace cc {
 
 RendererSettings::RendererSettings()
-    : allow_antialiasing(true),
-      force_antialiasing(false),
-      force_blending_with_shaders(false),
-      partial_swap_enabled(false),
-      finish_rendering_on_resize(false),
-      should_clear_root_render_pass(true),
-      disable_display_vsync(false),
-      release_overlay_resources_after_gpu_query(false),
-      gl_composited_texture_quad_border(false),
-      show_overdraw_feedback(false),
-      refresh_rate(60.0),
-      highp_threshold_min(0),
-      texture_id_allocation_chunk_size(64),
-      use_gpu_memory_buffer_resources(false),
-      preferred_tile_format(PlatformColor::BestTextureFormat()) {}
+    : preferred_tile_format(PlatformColor::BestTextureFormat()) {}
 
 RendererSettings::RendererSettings(const RendererSettings& other) = default;
 
@@ -46,6 +32,8 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
          gl_composited_texture_quad_border ==
              other.gl_composited_texture_quad_border &&
          show_overdraw_feedback == other.show_overdraw_feedback &&
+         enable_color_correct_rendering ==
+             other.enable_color_correct_rendering &&
          refresh_rate == other.refresh_rate &&
          highp_threshold_min == other.highp_threshold_min &&
          texture_id_allocation_chunk_size ==

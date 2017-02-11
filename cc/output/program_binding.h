@@ -66,6 +66,7 @@ enum ProgramType {
 
 class CC_EXPORT ProgramKey {
  public:
+  ProgramKey();
   ProgramKey(const ProgramKey& other);
   ~ProgramKey();
 
@@ -93,13 +94,16 @@ class CC_EXPORT ProgramKey {
   static ProgramKey YUVVideo(TexCoordPrecision precision,
                              SamplerType sampler,
                              YUVAlphaTextureMode yuv_alpha_texture_mode,
-                             UVTextureMode uv_texture_mode,
-                             ColorConversionMode color_conversion_mode);
+                             UVTextureMode uv_texture_mode);
 
   bool operator==(const ProgramKey& other) const;
+  bool operator!=(const ProgramKey& other) const;
+
+  void SetColorConversionMode(ColorConversionMode color_conversion_mode) {
+    color_conversion_mode_ = color_conversion_mode;
+  }
 
  private:
-  ProgramKey();
   friend struct ProgramKeyHash;
   friend class Program;
 
@@ -159,6 +163,7 @@ class Program : public ProgramBindingBase {
     fragment_shader_.premultiply_alpha_mode_ = key.premultiplied_alpha_;
     fragment_shader_.mask_mode_ = key.mask_mode_;
     fragment_shader_.mask_for_background_ = key.mask_for_background_;
+    fragment_shader_.color_conversion_mode_ = key.color_conversion_mode_;
 
     switch (key.type_) {
       case PROGRAM_TYPE_DEBUG_BORDER:
@@ -382,7 +387,6 @@ class Program : public ProgramBindingBase {
     fragment_shader_.has_uniform_alpha_ = true;
     fragment_shader_.yuv_alpha_texture_mode_ = key.yuv_alpha_texture_mode_;
     fragment_shader_.uv_texture_mode_ = key.uv_texture_mode_;
-    fragment_shader_.color_conversion_mode_ = key.color_conversion_mode_;
   }
 
   void InitializeInternal(ContextProvider* context_provider) {

@@ -215,7 +215,18 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void DrawQuadGeometry(const gfx::Transform& projection_matrix,
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect);
-  void SetUseProgram(const Program* program);
+
+  // If |dst_color_space| is invalid, then no color conversion (apart from
+  // YUV to RGB conversion) is performed. This explicit argument is available
+  // so that video color conversion can be enabled separately from general color
+  // conversion.
+  // TODO(ccameron): Remove the version with an explicit |dst_color_space|,
+  // since that will always be the device color space.
+  void SetUseProgram(const ProgramKey& program_key,
+                     const gfx::ColorSpace& src_color_space,
+                     const gfx::ColorSpace& dst_color_space);
+  void SetUseProgram(const ProgramKey& program_key,
+                     const gfx::ColorSpace& src_color_space);
 
   bool MakeContextCurrent();
 
@@ -280,10 +291,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unique_ptr<DynamicGeometryBinding> clipped_geometry_;
   gfx::QuadF shared_geometry_quad_;
 
-  // If the requested program has not yet been initialized, this will initialize
-  // the program before returning it.
-  const Program* GetProgram(const ProgramKey& key);
-
   // This will return nullptr if the requested program has not yet been
   // initialized.
   const Program* GetProgramIfInitialized(const ProgramKey& key) const;
@@ -302,7 +309,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool is_scissor_enabled_ = false;
   bool stencil_shadow_ = false;
   bool blend_shadow_ = false;
-  const Program* program_shadow_ = nullptr;
+  const Program* current_program_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_min_ = 0;
   int highp_threshold_cache_ = 0;

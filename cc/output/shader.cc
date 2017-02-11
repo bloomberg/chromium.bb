@@ -60,28 +60,32 @@ static void GetProgramUniformLocations(GLES2Interface* context,
 static std::string SetFragmentTexCoordPrecision(
     TexCoordPrecision requested_precision,
     std::string shader_string) {
+  std::string prefix;
   switch (requested_precision) {
     case TEX_COORD_PRECISION_HIGH:
       DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
-      return "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-             "  #define TexCoordPrecision highp\n"
-             "#else\n"
-             "  #define TexCoordPrecision mediump\n"
-             "#endif\n" +
-             shader_string;
+      prefix =
+          "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+          "  #define TexCoordPrecision highp\n"
+          "#else\n"
+          "  #define TexCoordPrecision mediump\n"
+          "#endif\n";
+      break;
     case TEX_COORD_PRECISION_MEDIUM:
       DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
-      return "#define TexCoordPrecision mediump\n" + shader_string;
+      prefix = "#define TexCoordPrecision mediump\n";
+      break;
     case TEX_COORD_PRECISION_NA:
       DCHECK_EQ(shader_string.find("TexCoordPrecision"), std::string::npos);
       DCHECK_EQ(shader_string.find("texture2D"), std::string::npos);
       DCHECK_EQ(shader_string.find("texture2DRect"), std::string::npos);
-      return shader_string;
+      break;
     default:
       NOTREACHED();
       break;
   }
-  return shader_string;
+  std::string lut_prefix = "#define LutLookup texture2D\n";
+  return prefix + lut_prefix + shader_string;
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
@@ -884,8 +888,8 @@ std::string FragmentShader::GetShaderSource() const {
     HDR("  // [0.5 .. 31.5] / N (assuming a LUT size of 17^3)");
     HDR("  pos.xy = (pos.xy + vec2(0.5)) / size;");
     HDR("  pos.y = (pos.y + layer) / size;");
-    HDR("  return mix(texture2D(sampler, pos.xy),");
-    HDR("             texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),");
+    HDR("  return mix(LutLookup(sampler, pos.xy),");
+    HDR("             LutLookup(sampler, pos.xy + vec2(0, 1.0 / size)),");
     HDR("             pos.z - layer);");
     HDR("}");
     SRC("texColor.xyz = LUT(lut_texture, texColor.xyz, lut_size).xyz;");

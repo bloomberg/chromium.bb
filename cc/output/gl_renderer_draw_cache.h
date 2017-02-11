@@ -8,11 +8,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "cc/output/program_binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
-
-class Program;
 
 // Collects 4 floats at a time for easy upload to GL.
 struct Float4 {
@@ -31,8 +30,10 @@ struct TexturedQuadDrawCache {
   TexturedQuadDrawCache();
   ~TexturedQuadDrawCache();
 
+  bool is_empty = true;
+
   // Values tracked to determine if textured quads may be coalesced.
-  const Program* program = nullptr;
+  ProgramKey program_key;
   int resource_id = -1;
   bool needs_blending = false;
   bool nearest_neighbor = false;

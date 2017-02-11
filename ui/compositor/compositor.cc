@@ -163,6 +163,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.enable_color_correct_rendering =
       command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
       command_line->HasSwitch(cc::switches::kEnableTrueColorRendering);
+  settings.renderer_settings.enable_color_correct_rendering =
+      settings.enable_color_correct_rendering;
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.

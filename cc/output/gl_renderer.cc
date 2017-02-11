@@ -182,7 +182,6 @@ struct DrawRenderPassDrawQuadParams {
 
   // Blending refers to modifications to the backdrop.
   bool use_shaders_for_blending = false;
-  const Program* program = nullptr;
 
   bool use_aa = false;
 
@@ -603,8 +602,7 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
 void GLRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  const Program* program = GetProgram(ProgramKey::DebugBorder());
-  SetUseProgram(program);
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
@@ -1307,16 +1305,14 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
         SamplerTypeFromTextureTarget(params->mask_resource_lock->target());
   }
 
-  params->program = GetProgram(ProgramKey::RenderPass(
-      tex_coord_precision, sampler_type, shader_blend_mode,
-      params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
-      params->use_color_matrix));
-  SetUseProgram(params->program);
+  SetUseProgram(ProgramKey::RenderPass(
+                    tex_coord_precision, sampler_type, shader_blend_mode,
+                    params->use_aa ? USE_AA : NO_AA, mask_mode,
+                    mask_for_background, params->use_color_matrix),
+                current_frame()->device_color_space);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
-  const Program* program = params->program;
-
   gfx::RectF tex_rect(params->src_offset.x(), params->src_offset.y(),
                       params->dst_rect.width(), params->dst_rect.height());
   gfx::Size texture_size;
@@ -1328,26 +1324,29 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   }
   tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
 
-  DCHECK(program->vertex_tex_transform_location() != -1 || IsContextLost());
+  DCHECK(current_program_->vertex_tex_transform_location() != -1 ||
+         IsContextLost());
   if (params->source_needs_flip) {
     // Flip the content vertically in the shader, as the RenderPass input
     // texture is already oriented the same way as the framebuffer, but the
     // projection transform does a flip.
-    gl_->Uniform4f(program->vertex_tex_transform_location(), tex_rect.x(),
-                   1.0f - tex_rect.y(), tex_rect.width(), -tex_rect.height());
+    gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
+                   tex_rect.x(), 1.0f - tex_rect.y(), tex_rect.width(),
+                   -tex_rect.height());
   } else {
     // Tile textures are oriented opposite the framebuffer, so can use
     // the projection transform to do the flip.
-    gl_->Uniform4f(program->vertex_tex_transform_location(), tex_rect.x(),
-                   tex_rect.y(), tex_rect.width(), tex_rect.height());
+    gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
+                   tex_rect.x(), tex_rect.y(), tex_rect.width(),
+                   tex_rect.height());
   }
 
   GLint last_texture_unit = 0;
-  if (program->mask_sampler_location() != -1) {
+  if (current_program_->mask_sampler_location() != -1) {
     DCHECK(params->mask_resource_lock);
-    DCHECK_NE(program->mask_tex_coord_scale_location(), 1);
-    DCHECK_NE(program->mask_tex_coord_offset_location(), 1);
-    gl_->Uniform1i(program->mask_sampler_location(), 1);
+    DCHECK_NE(current_program_->mask_tex_coord_scale_location(), 1);
+    DCHECK_NE(current_program_->mask_tex_coord_offset_location(), 1);
+    gl_->Uniform1i(current_program_->mask_sampler_location(), 1);
 
     gfx::RectF mask_uv_rect = params->quad->MaskUVRect();
     if (SamplerTypeFromTextureTarget(params->mask_resource_lock->target()) !=
@@ -1360,16 +1359,16 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
       // framebuffer and the RenderPass contents texture, so we flip the tex
       // coords from the RenderPass texture to find the mask texture coords.
       gl_->Uniform2f(
-          program->mask_tex_coord_offset_location(), mask_uv_rect.x(),
+          current_program_->mask_tex_coord_offset_location(), mask_uv_rect.x(),
           mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
-      gl_->Uniform2f(program->mask_tex_coord_scale_location(),
+      gl_->Uniform2f(current_program_->mask_tex_coord_scale_location(),
                      mask_uv_rect.width() / tex_rect.width(),
                      -mask_uv_rect.height() / tex_rect.height());
     } else {
       // Tile textures are oriented the same way as mask textures.
-      gl_->Uniform2f(program->mask_tex_coord_offset_location(),
+      gl_->Uniform2f(current_program_->mask_tex_coord_offset_location(),
                      mask_uv_rect.x(), mask_uv_rect.y());
-      gl_->Uniform2f(program->mask_tex_coord_scale_location(),
+      gl_->Uniform2f(current_program_->mask_tex_coord_scale_location(),
                      mask_uv_rect.width() / tex_rect.width(),
                      mask_uv_rect.height() / tex_rect.height());
     }
@@ -1377,34 +1376,35 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     last_texture_unit = 1;
   }
 
-  if (program->edge_location() != -1)
-    gl_->Uniform3fv(program->edge_location(), 8, params->edge);
+  if (current_program_->edge_location() != -1)
+    gl_->Uniform3fv(current_program_->edge_location(), 8, params->edge);
 
-  if (program->color_matrix_location() != -1) {
+  if (current_program_->color_matrix_location() != -1) {
     float matrix[16];
     for (int i = 0; i < 4; ++i) {
       for (int j = 0; j < 4; ++j)
         matrix[i * 4 + j] = SkScalarToFloat(params->color_matrix[j * 5 + i]);
     }
-    gl_->UniformMatrix4fv(program->color_matrix_location(), 1, false, matrix);
+    gl_->UniformMatrix4fv(current_program_->color_matrix_location(), 1, false,
+                          matrix);
   }
   static const float kScale = 1.0f / 255.0f;
-  if (program->color_offset_location() != -1) {
+  if (current_program_->color_offset_location() != -1) {
     float offset[4];
     for (int i = 0; i < 4; ++i)
       offset[i] = SkScalarToFloat(params->color_matrix[i * 5 + 4]) * kScale;
 
-    gl_->Uniform4fv(program->color_offset_location(), 1, offset);
+    gl_->Uniform4fv(current_program_->color_offset_location(), 1, offset);
   }
 
-  if (program->backdrop_location() != -1) {
+  if (current_program_->backdrop_location() != -1) {
     DCHECK(params->background_texture || params->background_image_id);
-    DCHECK_NE(program->backdrop_location(), 0);
-    DCHECK_NE(program->backdrop_rect_location(), 0);
+    DCHECK_NE(current_program_->backdrop_location(), 0);
+    DCHECK_NE(current_program_->backdrop_rect_location(), 0);
 
-    gl_->Uniform1i(program->backdrop_location(), ++last_texture_unit);
+    gl_->Uniform1i(current_program_->backdrop_location(), ++last_texture_unit);
 
-    gl_->Uniform4f(program->backdrop_rect_location(),
+    gl_->Uniform4f(current_program_->backdrop_rect_location(),
                    params->background_rect.x(), params->background_rect.y(),
                    params->background_rect.width(),
                    params->background_rect.height());
@@ -1414,7 +1414,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
       gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
       gl_->ActiveTexture(GL_TEXTURE0);
       if (params->mask_for_background)
-        gl_->Uniform1i(program->original_backdrop_location(),
+        gl_->Uniform1i(current_program_->original_backdrop_location(),
                        ++last_texture_unit);
     }
     if (params->background_texture) {
@@ -1748,13 +1748,15 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   SetupQuadForClippingAndAntialiasing(device_transform, quad, aa_quad,
                                       clip_region, &local_quad, edge);
 
-  const Program* program =
-      GetProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA));
-  SetUseProgram(program);
+  // TODO(ccameron): Solid color draw quads need to specify their implied
+  // color space. Assume SRGB (which is wrong) for now.
+  gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
+  SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA),
+                quad_color_space);
   SetShaderColor(color, opacity);
 
   if (use_aa) {
-    gl_->Uniform3fv(program->edge_location(), 8, edge);
+    gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
   }
 
   // Enable blending when the quad properties require it or if we decided
@@ -1898,18 +1900,17 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
     fragment_tex_scale_y /= texture_size.height();
   }
 
-  const Program* program = GetProgram(ProgramKey::Tile(
-      tex_coord_precision, sampler, USE_AA,
-      quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false));
+  SetUseProgram(
+      ProgramKey::Tile(tex_coord_precision, sampler, USE_AA,
+                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false),
+      quad_resource_lock.color_space());
 
-  SetUseProgram(program);
+  gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
 
-  gl_->Uniform3fv(program->edge_location(), 8, edge);
-
-  gl_->Uniform4f(program->vertex_tex_transform_location(),
+  gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
                  vertex_tex_translate_x, vertex_tex_translate_y,
                  vertex_tex_scale_x, vertex_tex_scale_y);
-  gl_->Uniform4f(program->fragment_tex_transform_location(),
+  gl_->Uniform4f(current_program_->fragment_tex_transform_location(),
                  fragment_tex_translate_x, fragment_tex_translate_y,
                  fragment_tex_scale_x, fragment_tex_scale_y);
 
@@ -1975,14 +1976,13 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_, quad->texture_size);
 
-  const Program* program = GetProgram(
+  SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
-                       !quad->ShouldDrawWithBlending()));
+                       !quad->ShouldDrawWithBlending()),
+      quad_resource_lock.color_space());
 
-  SetUseProgram(program);
-
-  gl_->Uniform4f(program->vertex_tex_transform_location(),
+  gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
                  vertex_tex_translate_x, vertex_tex_translate_y,
                  vertex_tex_scale_x, vertex_tex_scale_y);
 
@@ -2021,7 +2021,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
       tile_quad.p1().y(), tile_quad.p2().x(), tile_quad.p2().y(),
       tile_quad.p3().x(), tile_quad.p3().y(),
   };
-  gl_->Uniform2fv(program->quad_location(), 4, gl_quad);
+  gl_->Uniform2fv(current_program_->quad_location(), 4, gl_quad);
 
   SetShaderMatrix(current_frame()->projection_matrix *
                   quad->shared_quad_state->quad_to_target_transform);
@@ -2031,25 +2031,12 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
 // TODO(ccameron): This has been replicated in ui/gfx/color_transform.cc. Delete
 // one of the instances.
-void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
+void ComputeYUVToRGBMatrices(const gfx::ColorSpace& src_color_space,
+                             const gfx::ColorSpace& dst_color_space,
                              uint32_t bits_per_channel,
                              float resource_multiplier,
                              float resource_offset,
-                             ColorConversionMode color_conversion_mode,
                              float* yuv_to_rgb_matrix) {
-  gfx::ColorSpace gfx_color_space;
-  switch (color_space) {
-    case YUVVideoDrawQuad::REC_601:
-      gfx_color_space = gfx::ColorSpace::CreateREC601();
-      break;
-    case YUVVideoDrawQuad::REC_709:
-      gfx_color_space = gfx::ColorSpace::CreateREC709();
-      break;
-    case YUVVideoDrawQuad::JPEG:
-      gfx_color_space = gfx::ColorSpace::CreateJpeg();
-      break;
-  }
-
   // Compute the matrix |full_transform| which converts input YUV values to RGB
   // values.
   SkMatrix44 full_transform;
@@ -2062,7 +2049,7 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
 
   // If we're using a LUT for conversion, we only need the resource adjust,
   // so just return this matrix.
-  if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT) {
+  if (dst_color_space.IsValid()) {
     full_transform.asColMajorf(yuv_to_rgb_matrix);
     return;
   }
@@ -2070,14 +2057,14 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
   // Then apply the range adjust.
   {
     SkMatrix44 range_adjust;
-    gfx_color_space.GetRangeAdjustMatrix(&range_adjust);
+    src_color_space.GetRangeAdjustMatrix(&range_adjust);
     full_transform.postConcat(range_adjust);
   }
 
   // Then apply the YUV to RGB full_transform.
   {
     SkMatrix44 rgb_to_yuv;
-    gfx_color_space.GetTransferMatrix(&rgb_to_yuv);
+    src_color_space.GetTransferMatrix(&rgb_to_yuv);
     SkMatrix44 yuv_to_rgb;
     rgb_to_yuv.invert(&yuv_to_rgb);
     full_transform.postConcat(yuv_to_rgb);
@@ -2100,10 +2087,28 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       quad->v_plane_resource_id() == quad->u_plane_resource_id()
           ? UV_TEXTURE_MODE_UV
           : UV_TEXTURE_MODE_U_V;
-  ColorConversionMode color_conversion_mode =
-      base::FeatureList::IsEnabled(media::kVideoColorManagement)
-          ? COLOR_CONVERSION_MODE_LUT
-          : COLOR_CONVERSION_MODE_NONE;
+
+  // TODO(ccameron): There are currently three sources of the color space: the
+  // resource, quad->color_space, and quad->video_color_space. Remove two of
+  // them.
+  gfx::ColorSpace src_color_space = quad->video_color_space;
+  gfx::ColorSpace dst_color_space = current_frame()->device_color_space;
+  if (!base::FeatureList::IsEnabled(media::kVideoColorManagement)) {
+    if (!settings_->enable_color_correct_rendering)
+      dst_color_space = gfx::ColorSpace();
+    switch (quad->color_space) {
+      case YUVVideoDrawQuad::REC_601:
+        src_color_space = gfx::ColorSpace::CreateREC601();
+        break;
+      case YUVVideoDrawQuad::REC_709:
+        src_color_space = gfx::ColorSpace::CreateREC709();
+        break;
+      case YUVVideoDrawQuad::JPEG:
+        src_color_space = gfx::ColorSpace::CreateJpeg();
+        break;
+    }
+  }
+
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   ResourceProvider::ScopedSamplerGL u_plane_lock(
@@ -2129,10 +2134,9 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // All planes must have the same sampler type.
   SamplerType sampler = SamplerTypeFromTextureTarget(y_plane_lock.target());
 
-  const Program* program = GetProgram(
-      ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
-                           uv_texture_mode, color_conversion_mode));
-  SetUseProgram(program);
+  SetUseProgram(ProgramKey::YUVVideo(tex_coord_precision, sampler,
+                                     alpha_texture_mode, uv_texture_mode),
+                src_color_space, dst_color_space);
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
   gfx::SizeF uv_tex_scale(1.0f, 1.0f);
@@ -2163,14 +2167,14 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   float uv_vertex_tex_scale_y =
       quad->uv_tex_coord_rect.height() * uv_tex_scale.height();
 
-  gl_->Uniform2f(program->ya_tex_scale_location(), ya_vertex_tex_scale_x,
-                 ya_vertex_tex_scale_y);
-  gl_->Uniform2f(program->ya_tex_offset_location(), ya_vertex_tex_translate_x,
-                 ya_vertex_tex_translate_y);
-  gl_->Uniform2f(program->uv_tex_scale_location(), uv_vertex_tex_scale_x,
-                 uv_vertex_tex_scale_y);
-  gl_->Uniform2f(program->uv_tex_offset_location(), uv_vertex_tex_translate_x,
-                 uv_vertex_tex_translate_y);
+  gl_->Uniform2f(current_program_->ya_tex_scale_location(),
+                 ya_vertex_tex_scale_x, ya_vertex_tex_scale_y);
+  gl_->Uniform2f(current_program_->ya_tex_offset_location(),
+                 ya_vertex_tex_translate_x, ya_vertex_tex_translate_y);
+  gl_->Uniform2f(current_program_->uv_tex_scale_location(),
+                 uv_vertex_tex_scale_x, uv_vertex_tex_scale_y);
+  gl_->Uniform2f(current_program_->uv_tex_offset_location(),
+                 uv_vertex_tex_translate_x, uv_vertex_tex_translate_y);
 
   gfx::RectF ya_clamp_rect(ya_vertex_tex_translate_x, ya_vertex_tex_translate_y,
                            ya_vertex_tex_scale_x, ya_vertex_tex_scale_y);
@@ -2180,38 +2184,29 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                            uv_vertex_tex_scale_x, uv_vertex_tex_scale_y);
   uv_clamp_rect.Inset(0.5f * uv_tex_scale.width(),
                       0.5f * uv_tex_scale.height());
-  gl_->Uniform4f(program->ya_clamp_rect_location(), ya_clamp_rect.x(),
+  gl_->Uniform4f(current_program_->ya_clamp_rect_location(), ya_clamp_rect.x(),
                  ya_clamp_rect.y(), ya_clamp_rect.right(),
                  ya_clamp_rect.bottom());
-  gl_->Uniform4f(program->uv_clamp_rect_location(), uv_clamp_rect.x(),
+  gl_->Uniform4f(current_program_->uv_clamp_rect_location(), uv_clamp_rect.x(),
                  uv_clamp_rect.y(), uv_clamp_rect.right(),
                  uv_clamp_rect.bottom());
 
-  gl_->Uniform1i(program->y_texture_location(), 1);
+  gl_->Uniform1i(current_program_->y_texture_location(), 1);
   if (uv_texture_mode == UV_TEXTURE_MODE_UV) {
-    gl_->Uniform1i(program->uv_texture_location(), 2);
+    gl_->Uniform1i(current_program_->uv_texture_location(), 2);
   } else {
-    gl_->Uniform1i(program->u_texture_location(), 2);
-    gl_->Uniform1i(program->v_texture_location(), 3);
+    gl_->Uniform1i(current_program_->u_texture_location(), 2);
+    gl_->Uniform1i(current_program_->v_texture_location(), 3);
   }
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE)
-    gl_->Uniform1i(program->a_texture_location(), 4);
+    gl_->Uniform1i(current_program_->a_texture_location(), 4);
 
-  if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT) {
-    ColorLUTCache::LUT lut = color_lut_cache_.GetLUT(
-        quad->video_color_space, current_frame()->device_color_space);
-    gl_->ActiveTexture(GL_TEXTURE5);
-    gl_->BindTexture(GL_TEXTURE_2D, lut.texture);
-    gl_->Uniform1i(program->lut_texture_location(), 5);
-    gl_->Uniform1f(program->lut_size_location(), lut.size);
-    gl_->ActiveTexture(GL_TEXTURE0);
-  }
   float yuv_to_rgb_matrix[16] = {0};
-  ComputeYUVToRGBMatrices(quad->color_space, quad->bits_per_channel,
-                          quad->resource_multiplier, quad->resource_offset,
-                          color_conversion_mode, yuv_to_rgb_matrix);
-  gl_->UniformMatrix4fv(program->yuv_and_resource_matrix_location(), 1, 0,
-                        yuv_to_rgb_matrix);
+  ComputeYUVToRGBMatrices(src_color_space, dst_color_space,
+                          quad->bits_per_channel, quad->resource_multiplier,
+                          quad->resource_offset, yuv_to_rgb_matrix);
+  gl_->UniformMatrix4fv(current_program_->yuv_and_resource_matrix_location(), 1,
+                        0, yuv_to_rgb_matrix);
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
@@ -2248,12 +2243,11 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  const Program* program =
-      GetProgram(ProgramKey::VideoStream(tex_coord_precision));
-  SetUseProgram(program);
-
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id());
+
+  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
+                lock.color_space());
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
@@ -2261,7 +2255,7 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0], quad->matrix);
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      program->tex_matrix_location(), false, gl_matrix);
+      current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad);
   if (!clip_region) {
@@ -2282,7 +2276,7 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
-  if (!draw_cache_.program)
+  if (draw_cache_.is_empty)
     return;
 
   PrepareGeometry(flush_binding);
@@ -2290,14 +2284,15 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Set the correct blending mode.
   SetBlendEnabled(draw_cache_.needs_blending);
 
-  // Bind the program to the GL state.
-  SetUseProgram(draw_cache_.program);
-
   // Assume the current active textures is 0.
   ResourceProvider::ScopedSamplerGL locked_quad(
       resource_provider_,
       draw_cache_.resource_id,
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
+
+  // Bind the program to the GL state.
+  SetUseProgram(draw_cache_.program_key, locked_quad.color_space());
+
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(locked_quad.target(), locked_quad.texture_id());
 
@@ -2308,22 +2303,22 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   // Upload the tranforms for both points and uvs.
   gl_->UniformMatrix4fv(
-      draw_cache_.program->matrix_location(),
+      current_program_->matrix_location(),
       static_cast<int>(draw_cache_.matrix_data.size()), false,
       reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
-  gl_->Uniform4fv(draw_cache_.program->vertex_tex_transform_location(),
+  gl_->Uniform4fv(current_program_->vertex_tex_transform_location(),
                   static_cast<int>(draw_cache_.uv_xform_data.size()),
                   reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front()));
 
   if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
     Float4 background_color =
         PremultipliedColor(draw_cache_.background_color, 1.f);
-    gl_->Uniform4fv(draw_cache_.program->background_color_location(), 1,
+    gl_->Uniform4fv(current_program_->background_color_location(), 1,
                     background_color.data);
   }
 
   gl_->Uniform1fv(
-      draw_cache_.program->vertex_opacity_location(),
+      current_program_->vertex_opacity_location(),
       static_cast<int>(draw_cache_.vertex_opacity_data.size()),
       static_cast<float*>(&draw_cache_.vertex_opacity_data.front()));
 
@@ -2339,11 +2334,10 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
     // When we draw the composited borders we have one flush per quad.
     DCHECK_EQ(1u, draw_cache_.matrix_data.size());
     SetBlendEnabled(false);
-    const Program* program = GetProgram(ProgramKey::DebugBorder());
-    SetUseProgram(program);
+    SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
     gl_->UniformMatrix4fv(
-        program->matrix_location(), 1, false,
+        current_program_->matrix_location(), 1, false,
         reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
 
     // Pick a random color based on the scale on X and Y.
@@ -2359,7 +2353,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   }
 
   // Clear the cache.
-  draw_cache_.program = nullptr;
+  draw_cache_.is_empty = true;
   draw_cache_.resource_id = -1;
   draw_cache_.uv_xform_data.resize(0);
   draw_cache_.vertex_opacity_data.resize(0);
@@ -2391,21 +2385,22 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
                                           quad->resource_id());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
 
-  const Program* program = GetProgram(ProgramKey::Texture(
+  ProgramKey program_key = ProgramKey::Texture(
       tex_coord_precision, sampler,
       quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
-      quad->background_color != SK_ColorTRANSPARENT));
+      quad->background_color != SK_ColorTRANSPARENT);
   int resource_id = quad->resource_id();
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
-  if (draw_cache_.program != program ||
+  if (draw_cache_.is_empty || draw_cache_.program_key != program_key ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
       draw_cache_.matrix_data.size() >= max_quads) {
     FlushTextureQuadCache(SHARED_BINDING);
-    draw_cache_.program = program;
+    draw_cache_.is_empty = false;
+    draw_cache_.program_key = program_key;
     draw_cache_.resource_id = resource_id;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
@@ -2537,7 +2532,7 @@ void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
 }
 
 void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
-  if (!program_shadow_ || program_shadow_->quad_location() == -1)
+  if (!current_program_ || current_program_->quad_location() == -1)
     return;
   float gl_quad[8];
   gl_quad[0] = quad.p1().x();
@@ -2548,30 +2543,30 @@ void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
   gl_quad[5] = quad.p3().y();
   gl_quad[6] = quad.p4().x();
   gl_quad[7] = quad.p4().y();
-  gl_->Uniform2fv(program_shadow_->quad_location(), 4, gl_quad);
+  gl_->Uniform2fv(current_program_->quad_location(), 4, gl_quad);
 }
 
 void GLRenderer::SetShaderOpacity(const DrawQuad* quad) {
-  if (!program_shadow_ || program_shadow_->alpha_location() == -1)
+  if (!current_program_ || current_program_->alpha_location() == -1)
     return;
-  gl_->Uniform1f(program_shadow_->alpha_location(),
+  gl_->Uniform1f(current_program_->alpha_location(),
                  quad->shared_quad_state->opacity);
 }
 
 void GLRenderer::SetShaderMatrix(const gfx::Transform& transform) {
-  if (!program_shadow_ || program_shadow_->matrix_location() == -1)
+  if (!current_program_ || current_program_->matrix_location() == -1)
     return;
   float gl_matrix[16];
   ToGLMatrix(gl_matrix, transform);
-  gl_->UniformMatrix4fv(program_shadow_->matrix_location(), 1, false,
+  gl_->UniformMatrix4fv(current_program_->matrix_location(), 1, false,
                         gl_matrix);
 }
 
 void GLRenderer::SetShaderColor(SkColor color, float opacity) {
-  if (!program_shadow_ || program_shadow_->color_location() == -1)
+  if (!current_program_ || current_program_->color_location() == -1)
     return;
   Float4 float_color = PremultipliedColor(color, opacity);
-  gl_->Uniform4fv(program_shadow_->color_location(), 1, float_color.data);
+  gl_->Uniform4fv(current_program_->color_location(), 1, float_color.data);
 }
 
 void GLRenderer::SetStencilEnabled(bool enabled) {
@@ -2594,28 +2589,6 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
   else
     gl_->Disable(GL_BLEND);
   blend_shadow_ = enabled;
-}
-
-void GLRenderer::SetUseProgram(const Program* program) {
-  DCHECK(program);
-  DCHECK(program->initialized() || IsContextLost());
-  if (program == program_shadow_)
-    return;
-  gl_->UseProgram(program->program());
-
-  // Set uniforms that are common to all programs.
-  if (program->sampler_location() != -1)
-    gl_->Uniform1i(program->sampler_location(), 0);
-  if (program->viewport_location() != -1) {
-    float viewport[4] = {
-        static_cast<float>(current_window_space_viewport_.x()),
-        static_cast<float>(current_window_space_viewport_.y()),
-        static_cast<float>(current_window_space_viewport_.width()),
-        static_cast<float>(current_window_space_viewport_.height()),
-    };
-    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
-  }
-  program_shadow_ = program;
 }
 
 void GLRenderer::DrawQuadGeometryClippedByQuadF(
@@ -3043,13 +3016,58 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
   bound_geometry_ = binding;
 }
 
-const Program* GLRenderer::GetProgram(const ProgramKey& desc) {
-  std::unique_ptr<Program>& program = program_cache_[desc];
+void GLRenderer::SetUseProgram(const ProgramKey& program_key,
+                               const gfx::ColorSpace& src_color_space) {
+  gfx::ColorSpace dst_color_space;
+  if (settings_->enable_color_correct_rendering)
+    dst_color_space = current_frame()->device_color_space;
+  SetUseProgram(program_key, src_color_space, dst_color_space);
+}
+
+void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
+                               const gfx::ColorSpace& src_color_space,
+                               const gfx::ColorSpace& dst_color_space) {
+  ProgramKey program_key = program_key_no_color;
+  if (src_color_space.IsValid() && dst_color_space.IsValid())
+    program_key.SetColorConversionMode(COLOR_CONVERSION_MODE_LUT);
+
+  // Create and set the program if needed.
+  std::unique_ptr<Program>& program = program_cache_[program_key];
   if (!program) {
     program.reset(new Program);
-    program->Initialize(output_surface_->context_provider(), desc);
+    program->Initialize(output_surface_->context_provider(), program_key);
   }
-  return program.get();
+  DCHECK(program);
+  if (current_program_ != program.get()) {
+    current_program_ = program.get();
+    gl_->UseProgram(current_program_->program());
+  }
+  if (!current_program_->initialized()) {
+    DCHECK(IsContextLost());
+    return;
+  }
+
+  // Set uniforms that are common to all programs.
+  if (current_program_->sampler_location() != -1)
+    gl_->Uniform1i(current_program_->sampler_location(), 0);
+  if (current_program_->viewport_location() != -1) {
+    float viewport[4] = {
+        static_cast<float>(current_window_space_viewport_.x()),
+        static_cast<float>(current_window_space_viewport_.y()),
+        static_cast<float>(current_window_space_viewport_.width()),
+        static_cast<float>(current_window_space_viewport_.height()),
+    };
+    gl_->Uniform4fv(current_program_->viewport_location(), 1, viewport);
+  }
+  if (current_program_->lut_texture_location() != -1) {
+    ColorLUTCache::LUT lut =
+        color_lut_cache_.GetLUT(src_color_space, dst_color_space);
+    gl_->ActiveTexture(GL_TEXTURE5);
+    gl_->BindTexture(GL_TEXTURE_2D, lut.texture);
+    gl_->Uniform1i(current_program_->lut_texture_location(), 5);
+    gl_->Uniform1f(current_program_->lut_size_location(), lut.size);
+    gl_->ActiveTexture(GL_TEXTURE0);
+  }
 }
 
 const Program* GLRenderer::GetProgramIfInitialized(
@@ -3081,7 +3099,7 @@ void GLRenderer::ReinitializeGLState() {
   scissor_rect_ = gfx::Rect();
   stencil_shadow_ = false;
   blend_shadow_ = true;
-  program_shadow_ = nullptr;
+  current_program_ = nullptr;
 
   RestoreGLState();
 }
@@ -3097,8 +3115,8 @@ void GLRenderer::RestoreGLState() {
   gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   gl_->ActiveTexture(GL_TEXTURE0);
 
-  if (program_shadow_)
-    gl_->UseProgram(program_shadow_->program());
+  if (current_program_)
+    gl_->UseProgram(current_program_->program());
 
   if (stencil_shadow_)
     gl_->Enable(GL_STENCIL_TEST);
@@ -3422,8 +3440,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
 
   PrepareGeometry(SHARED_BINDING);
 
-  const Program* program = GetProgram(ProgramKey::DebugBorder());
-  SetUseProgram(program);
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
   gfx::Transform render_matrix;
   render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),

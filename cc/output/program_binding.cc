@@ -32,6 +32,10 @@ bool ProgramKey::operator==(const ProgramKey& other) const {
          color_conversion_mode_ == other.color_conversion_mode_;
 }
 
+bool ProgramKey::operator!=(const ProgramKey& other) const {
+  return !(*this == other);
+}
+
 // static
 ProgramKey ProgramKey::DebugBorder() {
   ProgramKey result;
@@ -110,8 +114,7 @@ ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision) {
 ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
                                 SamplerType sampler,
                                 YUVAlphaTextureMode yuv_alpha_texture_mode,
-                                UVTextureMode uv_texture_mode,
-                                ColorConversionMode color_conversion_mode) {
+                                UVTextureMode uv_texture_mode) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_YUV_VIDEO;
   result.precision_ = precision;
@@ -122,7 +125,6 @@ ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
   result.uv_texture_mode_ = uv_texture_mode;
   DCHECK(uv_texture_mode == UV_TEXTURE_MODE_UV ||
          uv_texture_mode == UV_TEXTURE_MODE_U_V);
-  result.color_conversion_mode_ = color_conversion_mode;
   return result;
 }
 
