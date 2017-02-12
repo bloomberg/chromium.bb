@@ -10,17 +10,23 @@
 
 // clang-format off
 
-#include "test_interface_3.h"
+#include "web/api/test_interface_3.h"
 
-// TODO(dglazkov): Implement generating includes.
-#include "wtf/text/WTFString.h.h"
+// TODO(dglazkov): Properly sort the includes.
+#include "wtf/text/WTFString.h"
+#include "bindings/tests/idls/core/TestInterface3.h"
 
-namespace blink {
-namespace api {
+namespace web {
+
+TestInterface3* TestInterface3::Create(blink::TestInterface3* test_interface_3) {
+  return test_interface_3 ? new TestInterface3(test_interface_3) : nullptr;
+}
+
+DEFINE_TRACE(TestInterface3) {
+  visitor->trace(test_interface_3_);
+}
 
 // TODO(dglazkov): Implement constant generation
-
-// TODO(dglazkov): Implement constructor generation
 
 // TODO(dglazkov): Implement attribute getter/setter generation
 // unsigned long length
@@ -29,5 +35,11 @@ namespace api {
 // TODO(dglazkov): Implement method generation
 // void TestInterface3::voidMethodDocument
 
-}  // namespace api
-}  // namespace blink
+TestInterface3::TestInterface3(blink::TestInterface3* test_interface_3)
+    : test_interface_3_(test_interface_3) {}
+
+blink::TestInterface3* TestInterface3::test_interface_3() const {
+  return test_interface_3_;
+}
+
+}  // namespace web

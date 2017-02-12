@@ -2,22 +2,29 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "{{class_name.snake_case}}.h"
+#include "web/api/{{class_name.snake_case}}.h"
 
-// TODO(dglazkov): Implement generating includes.
+// TODO(dglazkov): Properly sort the includes.
 {% for filename in cpp_includes %}
-#include "{{filename}}.h"
+#include "{{filename}}"
 {% endfor %}
 
-namespace blink {
-namespace api {
+namespace web {
+
+{{class_name.upper_camel_case}}* {{class_name.upper_camel_case}}::Create(blink::{{class_name.upper_camel_case}}* {{class_name.snake_case}}) {
+  return {{class_name.snake_case}} ? new {{class_name.upper_camel_case}}({{class_name.snake_case}}) : nullptr;
+}
+
+{% if not base_class %}
+DEFINE_TRACE({{class_name.upper_camel_case}}) {
+  visitor->trace({{class_name.snake_case}}_);
+}
+{% endif %}
 
 // TODO(dglazkov): Implement constant generation
 {% for constant in constants %}
 // {{ constant.name }}
 {% endfor %}
-
-// TODO(dglazkov): Implement constructor generation
 
 // TODO(dglazkov): Implement attribute getter/setter generation
 {% for attribute in attributes %}
@@ -29,7 +36,13 @@ namespace api {
 // {{method.return_type}} {{class_name.upper_camel_case}}::{{method.name}}
 {% endfor %}
 
-}  // namespace api
-}  // namespace blink
+{{class_name.upper_camel_case}}::{{class_name.upper_camel_case}}(blink::{{class_name.upper_camel_case}}* {{class_name.snake_case}})
+    : {{class_name.snake_case}}_({{class_name.snake_case}}) {}
+
+blink::{{class_name.upper_camel_case}}* {{class_name.upper_camel_case}}::{{class_name.snake_case}}() const {
+  return {{class_name.snake_case}}_;
+}
+
+}  // namespace web
 
 {% endfilter %}

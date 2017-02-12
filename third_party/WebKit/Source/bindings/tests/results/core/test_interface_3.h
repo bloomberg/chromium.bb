@@ -10,17 +10,33 @@
 
 // clang-format off
 
-// TODO(dglazkov): Use chromium-style path.
-#ifndef TEST_INTERFACE_3_H
-#define TEST_INTERFACE_3_H
+#ifndef WEB_API_TEST_INTERFACE_3_H
+#define WEB_API_TEST_INTERFACE_3_H
+
+#include "platform/heap/Handle.h"
 
 namespace blink {
-namespace api {
+class TestInterface3;
+}
 
-class TestInterface3 {
+namespace web {
+
+class TestInterface3 : public blink::GarbageCollected<TestInterface3> {
+ public:
+  virtual ~TestInterface3() = default;
+
+  static TestInterface3* Create(blink::TestInterface3*);
+
+  DECLARE_TRACE();
+
+ protected:
+  explicit TestInterface3(blink::TestInterface3* test_interface_3);
+  blink::TestInterface3* test_interface_3() const;
+
+ private:
+  blink::Member<blink::TestInterface3> test_interface_3_;
 };
 
-}  // namespace api
-}  // namespace blink
+}  // namespace web
 
-#endif  // TEST_INTERFACE_3_H
+#endif  // WEB_API_TEST_INTERFACE_3_H

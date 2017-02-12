@@ -2,24 +2,45 @@
 
 {% include 'copyright_block.txt' %}
 
-// TODO(dglazkov): Use chromium-style path.
-#ifndef {{class_name.macro_case}}_H
-#define {{class_name.macro_case}}_H
+#ifndef WEB_API_{{class_name.macro_case}}_H
+#define WEB_API_{{class_name.macro_case}}_H
 
 {% for include_file in header_includes %}
 #include "{{include_file}}"
 {% endfor %}
 
 namespace blink {
-namespace api {
+class {{class_name.upper_camel_case}};
+}
 
-class {{class_name.upper_camel_case}}{{inherits_expression}} {
+namespace web {
 
+class {{class_name.upper_camel_case}} : public {% if not base_class -%}
+  blink::GarbageCollected<{{class_name.upper_camel_case}}>
+{%- else -%}
+  {{base_class}}
+{%- endif %} {
+ public:
+  virtual ~{{class_name.upper_camel_case}}() = default;
+
+  static {{class_name.upper_camel_case}}* Create(blink::{{class_name.upper_camel_case}}*);
+
+{% if not base_class %}
+  DECLARE_TRACE();
+{% endif %}
+
+ protected:
+  explicit {{class_name.upper_camel_case}}(blink::{{class_name.upper_camel_case}}* {{class_name.snake_case}});
+  blink::{{class_name.upper_camel_case}}* {{class_name.snake_case}}() const;
+
+{% if not base_class %}
+ private:
+  blink::Member<blink::{{class_name.upper_camel_case}}> {{class_name.snake_case}}_;
+{% endif %}
 };
 
-}  // namespace api
-}  // namespace blink
+}  // namespace web
 
-#endif  // {{class_name.macro_case}}_H
+#endif  // WEB_API_{{class_name.macro_case}}_H
 
 {% endfilter %}

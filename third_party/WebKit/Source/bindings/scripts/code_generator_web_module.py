@@ -29,11 +29,12 @@ from name_style_converter import NameStyleConverter
 
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
-WEB_MODULE_IDL_ATTRIBUTE = 'WebModuleAPI'
 STRING_INCLUDE_PATH = 'wtf/text/WTFString.h'
+WEB_MODULE_IDL_ATTRIBUTE = 'WebModuleAPI'
 
-def interface_context(idl_interface):
-    builder = InterfaceContextBuilder(MODULE_PYNAME, TypeResolver())
+
+def interface_context(idl_interface, type_resolver):
+    builder = InterfaceContextBuilder(MODULE_PYNAME, type_resolver)
     builder.set_class_name(idl_interface.name)
     builder.set_inheritance(idl_interface.parent)
 
@@ -50,9 +51,14 @@ class TypeResolver(object):
     """Resolves Web IDL types into corresponding C++ types and include paths
        to the generated and existing files."""
 
-    def includes_from_interface(self, base_type):
-        # TODO(dglazkov): Are there any exceptional conditions here?
-        return set([base_type])
+    def __init__(self, interfaces_info):
+        self.interfaces_info = interfaces_info
+
+    def includes_from_interface(self, interface_name):
+        interface_info = self.interfaces_info.get(interface_name)
+        if interface_info is None:
+            raise KeyError('Unknown interface "%s".' % interface_name)
+        return set([interface_info['include_path']])
 
     def _includes_from_type(self, idl_type):
         if idl_type.is_void:
@@ -63,9 +69,7 @@ class TypeResolver(object):
             return set([STRING_INCLUDE_PATH])
 
         # TODO(dglazkov): Handle complex/weird types.
-        # TODO(dglazkov): Make these proper paths to generated and non-generated
-        # files.
-        return set([idl_type.base_type])
+        return self.includes_from_interface(idl_type.base_type)
 
     def includes_from_definition(self, idl_definition):
         return self._includes_from_type(idl_definition.idl_type)
@@ -74,6 +78,9 @@ class TypeResolver(object):
         # TODO(dglazkov): The output of this method must be a reasonable C++
         # type that can be used directly in the jinja2 template.
         return idl_definition.idl_type.base_type
+
+    def base_class_includes(self):
+        return set(['platform/heap/Handle.h'])
 
 
 class InterfaceContextBuilder(object):
@@ -84,12 +91,16 @@ class InterfaceContextBuilder(object):
     def set_class_name(self, class_name):
         converter = NameStyleConverter(class_name)
         self.result['class_name'] = converter.to_all_cases()
+        self._ensure_set('cpp_includes').update(
+            self.type_resolver.includes_from_interface(class_name))
 
     def set_inheritance(self, base_interface):
         if base_interface is None:
+            self._ensure_set('header_includes').update(
+                self.type_resolver.base_class_includes())
             return
-        self.result['inherits_expression'] = ' : public %s' % base_interface
-        self._ensure_set('cpp_includes').update(
+        self.result['base_class'] = base_interface
+        self._ensure_set('header_includes').update(
             self.type_resolver.includes_from_interface(base_interface))
 
     def _ensure_set(self, name):
@@ -136,6 +147,7 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
     def __init__(self, info_provider, cache_dir, output_dir):
         CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
                                    cache_dir, output_dir)
+        self.type_resolver = TypeResolver(info_provider.interfaces_info)
         self.typedef_resolver = TypedefResolver(info_provider)
 
     def get_template(self, file_extension):
@@ -157,7 +169,7 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
         if interface.is_callback or interface.is_partial:
             raise ValueError('Partial or callback interfaces are not supported')
 
-        template_context = interface_context(interface)
+        template_context = interface_context(interface, self.type_resolver)
 
         return (
             self.generate_file(template_context, 'h'),
