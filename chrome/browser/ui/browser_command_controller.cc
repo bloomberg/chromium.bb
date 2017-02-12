@@ -88,18 +88,6 @@ using content::NavigationEntry;
 using content::NavigationController;
 using content::WebContents;
 
-namespace {
-
-enum WindowState {
-  // Not in fullscreen mode.
-  WINDOW_STATE_NOT_FULLSCREEN,
-
-  // Fullscreen mode, occupying the whole screen.
-  WINDOW_STATE_FULLSCREEN,
-};
-
-}  // namespace
-
 namespace chrome {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,8 +187,23 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   }
 #endif
 
-  if (window()->IsFullscreen() && command_id == IDC_FULLSCREEN)
-    return true;
+  const bool is_tab_or_window_command =
+      command_id == IDC_CLOSE_TAB ||
+      command_id == IDC_CLOSE_WINDOW ||
+      command_id == IDC_NEW_INCOGNITO_WINDOW ||
+      command_id == IDC_NEW_TAB ||
+      command_id == IDC_NEW_WINDOW ||
+      command_id == IDC_RESTORE_TAB ||
+      command_id == IDC_SELECT_NEXT_TAB ||
+      command_id == IDC_SELECT_PREVIOUS_TAB;
+  if (window()->IsFullscreen()) {
+    // In fullscreen, all commands except for IDC_FULLSCREEN and IDC_EXIT should
+    // be delivered to the web page. See https://goo.gl/4tJ32G.
+    if (command_id == IDC_FULLSCREEN)
+      return true;
+    if (is_tab_or_window_command)
+      return false;
+  }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // If this key was registered by the user as a content editing hotkey, then
@@ -211,15 +214,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     return false;
 #endif
 
-  return command_id == IDC_CLOSE_TAB ||
-         command_id == IDC_CLOSE_WINDOW ||
-         command_id == IDC_NEW_INCOGNITO_WINDOW ||
-         command_id == IDC_NEW_TAB ||
-         command_id == IDC_NEW_WINDOW ||
-         command_id == IDC_RESTORE_TAB ||
-         command_id == IDC_SELECT_NEXT_TAB ||
-         command_id == IDC_SELECT_PREVIOUS_TAB ||
-         command_id == IDC_EXIT;
+  return is_tab_or_window_command || command_id == IDC_EXIT;
 }
 
 void BrowserCommandController::SetBlockCommandExecution(bool block) {
@@ -1020,13 +1015,9 @@ void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
 }
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode() {
-  WindowState window_state = WINDOW_STATE_NOT_FULLSCREEN;
-  if (window() && window()->IsFullscreen()) {
-    window_state = WINDOW_STATE_FULLSCREEN;
-  }
-  bool show_main_ui = IsShowingMainUI();
-  bool main_not_fullscreen =
-      show_main_ui && window_state == WINDOW_STATE_NOT_FULLSCREEN;
+  const bool is_fullscreen = window() && window()->IsFullscreen();
+  const bool show_main_ui = IsShowingMainUI();
+  const bool main_not_fullscreen = show_main_ui && !is_fullscreen;
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
@@ -1034,8 +1025,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_AS_TAB,
-      !browser_->is_type_tabbed() &&
-          window_state == WINDOW_STATE_NOT_FULLSCREEN);
+      !browser_->is_type_tabbed() && !is_fullscreen);
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
@@ -1077,18 +1067,28 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   if (base::debug::IsProfilingSupported())
     command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 
-  bool fullscreen_enabled = true;
 #if !defined(OS_MACOSX)
-  if (window_state == WINDOW_STATE_NOT_FULLSCREEN &&
-      !profile()->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed)) {
-    // Disable toggling into fullscreen mode if disallowed by pref.
-    fullscreen_enabled = false;
-  }
+  // Disable toggling into fullscreen mode if disallowed by pref.
+  const bool fullscreen_enabled = is_fullscreen ||
+      profile()->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed);
+#else
+  const bool fullscreen_enabled = true;
 #endif
 
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_FULLSCREEN_TOOLBAR,
                                         fullscreen_enabled);
+
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW,
+                                        !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, !is_fullscreen);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
+                                        !is_fullscreen);
 
   UpdateCommandsForBookmarkBar();
 }
