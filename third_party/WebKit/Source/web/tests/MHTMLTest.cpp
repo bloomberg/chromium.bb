@@ -40,7 +40,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCache.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -89,8 +88,9 @@ class MHTMLTest : public ::testing::Test {
   void SetUp() override { m_helper.initialize(); }
 
   void TearDown() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void registerMockedURLLoad(const std::string& url,

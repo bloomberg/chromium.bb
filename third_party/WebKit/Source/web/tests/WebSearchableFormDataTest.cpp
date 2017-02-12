@@ -33,7 +33,6 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCache.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
@@ -57,8 +56,9 @@ class WebSearchableFormDataTest : public ::testing::Test {
   WebSearchableFormDataTest() {}
 
   ~WebSearchableFormDataTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   FrameTestHelpers::WebViewHelper m_webViewHelper;

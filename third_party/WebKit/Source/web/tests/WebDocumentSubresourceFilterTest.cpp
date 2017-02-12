@@ -110,8 +110,9 @@ class WebDocumentSubresourceFilterTest : public ::testing::Test {
 
   // ::testing::Test:
   void TearDown() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   SubresourceFilteringWebFrameClient m_client;

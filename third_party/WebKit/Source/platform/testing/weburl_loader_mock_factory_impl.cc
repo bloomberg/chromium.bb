@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/weburl_loader_mock.h"
@@ -72,9 +73,10 @@ void WebURLLoaderMockFactoryImpl::unregisterURL(const blink::WebURL& url) {
     url_to_error_info_.remove(error_iter);
 }
 
-void WebURLLoaderMockFactoryImpl::unregisterAllURLs() {
+void WebURLLoaderMockFactoryImpl::unregisterAllURLsAndClearMemoryCache() {
   url_to_response_info_.clear();
   url_to_error_info_.clear();
+  memoryCache()->evictResources();
 }
 
 void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {

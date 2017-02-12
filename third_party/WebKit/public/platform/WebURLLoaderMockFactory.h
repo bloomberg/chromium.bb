@@ -45,9 +45,12 @@ class WebURLLoaderMockFactory {
                                 const WebURLResponse&,
                                 const WebURLError&) = 0;
 
-  // Unregisters URLs so they are no longer mocked.
+  // Unregisters the given URL so it is no longer mocked.
   virtual void unregisterURL(const WebURL&) = 0;
-  virtual void unregisterAllURLs() = 0;
+
+  // Unregisters URLs so they are no longer mocked. This also clears the
+  // MemoryCache.
+  virtual void unregisterAllURLsAndClearMemoryCache() = 0;
 
   // Causes all pending asynchronous requests to be served. When this method
   // returns all the pending requests have been processed.

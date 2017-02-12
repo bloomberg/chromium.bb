@@ -41,7 +41,6 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCache.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebFrame.h"
@@ -61,8 +60,9 @@ class ViewportTest : public ::testing::Test {
       : m_baseURL("http://www.test.com/"), m_chromeURL("chrome://") {}
 
   ~ViewportTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {

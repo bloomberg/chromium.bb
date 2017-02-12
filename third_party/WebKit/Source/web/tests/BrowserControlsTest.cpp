@@ -38,7 +38,6 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCache.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebSettings.h"
@@ -66,8 +65,9 @@ class BrowserControlsTest : public ::testing::Test {
   }
 
   ~BrowserControlsTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   WebViewImpl* initialize(const std::string& pageName = "large-div.html") {

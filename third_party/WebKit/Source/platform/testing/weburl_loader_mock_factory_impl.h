@@ -44,7 +44,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
                         const WebURLResponse& response,
                         const WebURLError& error) override;
   void unregisterURL(const WebURL& url) override;
-  void unregisterAllURLs() override;
+  void unregisterAllURLsAndClearMemoryCache() override;
   void serveAsynchronousRequests() override;
   void setLoaderDelegate(WebURLLoaderTestDelegate* delegate) override {
     delegate_ = delegate;

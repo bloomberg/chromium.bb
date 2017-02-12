@@ -82,8 +82,9 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   }
 
   ~ScrollingCoordinatorTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void navigateTo(const std::string& url) {

@@ -13,7 +13,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCache.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,8 +90,9 @@ class ScreenWakeLockTest : public testing::Test {
   }
 
   void TearDown() override {
-    blink::Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    blink::WebCache::clear();
+    blink::Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
     blink::testing::runPendingTasks();
   }
 

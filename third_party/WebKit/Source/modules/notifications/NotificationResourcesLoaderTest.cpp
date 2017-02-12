@@ -45,8 +45,9 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
 
   ~NotificationResourcesLoaderTest() override {
     m_loader->stop();
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    memoryCache()->evictResources();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
  protected:

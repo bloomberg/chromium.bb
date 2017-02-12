@@ -24,7 +24,9 @@ SimNetwork::SimNetwork() : m_currentRequest(nullptr) {
 
 SimNetwork::~SimNetwork() {
   Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(nullptr);
-  Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+  Platform::current()
+      ->getURLLoaderMockFactory()
+      ->unregisterAllURLsAndClearMemoryCache();
   s_network = nullptr;
 }
 

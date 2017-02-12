@@ -107,8 +107,9 @@ class WebFrameSerializerTest : public ::testing::Test {
   WebFrameSerializerTest() { m_helper.initialize(); }
 
   ~WebFrameSerializerTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void registerMockedImageURLLoad(const String& url) {

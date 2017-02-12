@@ -159,8 +159,9 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
 class PrerenderingTest : public ::testing::Test {
  public:
   ~PrerenderingTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void initialize(const char* baseURL, const char* fileName) {

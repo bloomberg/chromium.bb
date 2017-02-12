@@ -25,7 +25,9 @@ namespace blink {
 
 class FontResourceTest : public ::testing::Test {
   void TearDown() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 };
 

@@ -251,8 +251,9 @@ TEST(LinkLoaderTest, Preload) {
       }
       dummyPageHolder->document().fetcher()->clearPreloads();
     }
-    memoryCache()->evictResources();
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 }
 
@@ -303,7 +304,9 @@ TEST(LinkLoaderTest, Prefetch) {
                   resource->resourceRequest().getReferrerPolicy());
       }
     }
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 }
 

@@ -406,8 +406,9 @@ class ThreadableLoaderTest
 
   void TearDown() override {
     m_helper->onTearDown();
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    memoryCache()->evictResources();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
     m_client.reset();
   }
 

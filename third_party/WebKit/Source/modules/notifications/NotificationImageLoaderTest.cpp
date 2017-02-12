@@ -44,8 +44,9 @@ class NotificationImageLoaderTest : public ::testing::Test {
 
   ~NotificationImageLoaderTest() override {
     m_loader->stop();
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    memoryCache()->evictResources();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   // Registers a mocked URL. When fetched it will be loaded form the test data

@@ -195,8 +195,9 @@ class WebFrameTest : public ::testing::Test {
         m_chromeURL("chrome://") {}
 
   ~WebFrameTest() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-    WebCache::clear();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {

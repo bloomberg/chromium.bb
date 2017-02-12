@@ -41,7 +41,9 @@ class PingLoaderTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    Platform::current()
+        ->getURLLoaderMockFactory()
+        ->unregisterAllURLsAndClearMemoryCache();
   }
 
   void setDocumentURL(const KURL& url) {

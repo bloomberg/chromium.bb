@@ -22,7 +22,7 @@ FetchTestingPlatformSupport::~FetchTestingPlatformSupport() {
   // Shutdowns WebURLLoaderMockFactory gracefully, serving all pending requests
   // first, then flushing all registered URLs.
   m_urlLoaderMockFactory->serveAsynchronousRequests();
-  m_urlLoaderMockFactory->unregisterAllURLs();
+  m_urlLoaderMockFactory->unregisterAllURLsAndClearMemoryCache();
 }
 
 MockFetchContext* FetchTestingPlatformSupport::context() {
