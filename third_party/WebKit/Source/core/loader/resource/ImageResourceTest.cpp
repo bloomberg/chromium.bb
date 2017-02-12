@@ -31,7 +31,6 @@
 #include "core/loader/resource/ImageResource.h"
 
 #include <memory>
-#include "core/loader/resource/MockImageResourceClient.h"
 #include "core/loader/resource/MockImageResourceObserver.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
