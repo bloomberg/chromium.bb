@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
 
@@ -166,7 +166,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
   size_t num_free_blocks_;
 
   // Vector of memory segments.
-  ScopedVector<ScopedMemorySegment> memory_segments_;
+  std::vector<std::unique_ptr<ScopedMemorySegment>> memory_segments_;
 
   // Mapping from first/last block of span to Span instance.
   typedef base::hash_map<size_t, Span*> SpanMap;

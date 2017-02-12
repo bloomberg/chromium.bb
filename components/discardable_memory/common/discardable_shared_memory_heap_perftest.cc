@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/discardable_shared_memory.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -59,7 +59,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
     random_blocks[i] = 1 + log(1.0 - v) / -kLambda * kBlocks;
   }
 
-  ScopedVector<base::ScopedClosureRunner> spans;
+  std::vector<std::unique_ptr<base::ScopedClosureRunner>> spans;
 
   base::TimeTicks start = base::TimeTicks::Now();
   base::TimeTicks end = start + base::TimeDelta::FromMilliseconds(kTimeLimitMs);
@@ -73,7 +73,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
       std::unique_ptr<DiscardableSharedMemoryHeap::Span> span =
           heap.SearchFreeLists(random_blocks[i], slack);
       if (span) {
-        spans.push_back(new base::ScopedClosureRunner(
+        spans.push_back(base::MakeUnique<base::ScopedClosureRunner>(
             base::Bind(&DiscardableSharedMemoryHeap::MergeIntoFreeLists,
                        base::Unretained(&heap), base::Passed(&span))));
       } else if (!spans.empty()) {
