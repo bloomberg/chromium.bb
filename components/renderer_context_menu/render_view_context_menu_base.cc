@@ -69,12 +69,13 @@ bool IsCustomItemCheckedInternal(const std::vector<content::MenuItem>& items,
 const size_t kMaxCustomMenuDepth = 5;
 const size_t kMaxCustomMenuTotalItems = 1000;
 
-void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
-                          size_t depth,
-                          size_t* total_items,
-                          ScopedVector<ui::SimpleMenuModel>* submenus,
-                          ui::SimpleMenuModel::Delegate* delegate,
-                          ui::SimpleMenuModel* menu_model) {
+void AddCustomItemsToMenu(
+    const std::vector<content::MenuItem>& items,
+    size_t depth,
+    size_t* total_items,
+    std::vector<std::unique_ptr<ui::SimpleMenuModel>>* submenus,
+    ui::SimpleMenuModel::Delegate* delegate,
+    ui::SimpleMenuModel* menu_model) {
   if (depth > kMaxCustomMenuDepth) {
     LOG(ERROR) << "Custom menu too deeply nested.";
     return;
@@ -113,7 +114,7 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
         break;
       case content::MenuItem::SUBMENU: {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
-        submenus->push_back(submenu);
+        submenus->push_back(base::WrapUnique(submenu));
         AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, submenus,
                              delegate, submenu);
         menu_model->AddSubMenu(
