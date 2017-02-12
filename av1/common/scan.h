@@ -32,9 +32,9 @@ extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 #if CONFIG_ADAPT_SCAN
 void av1_update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
                           int rate_16);
-void av1_update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size,
-                                  TX_TYPE tx_type, const tran_low_t *dqcoeffs,
-                                  int max_scan);
+void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
+                                  TX_SIZE tx_size, TX_TYPE tx_type,
+                                  const tran_low_t *dqcoeffs, int max_scan);
 
 // embed r + c and coeff_idx info with nonzero probabilities. When sorting the
 // nonzero probabilities, if there is a tie, the coefficient with smaller r + c

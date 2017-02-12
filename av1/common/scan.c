@@ -6629,13 +6629,13 @@ static void update_scan_count(int16_t *scan, int max_scan,
   }
 }
 
-void av1_update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size,
-                                  TX_TYPE tx_type, const tran_low_t *dqcoeffs,
-                                  int max_scan) {
+void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
+                                  TX_SIZE tx_size, TX_TYPE tx_type,
+                                  const tran_low_t *dqcoeffs, int max_scan) {
   int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
-  uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  uint32_t *non_zero_count = get_non_zero_counts(counts, tx_size, tx_type);
   update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
-  ++cm->counts.txb_count[tx_size][tx_type];
+  ++counts->txb_count[tx_size][tx_type];
 }
 
 static int cmp_prob(const void *a, const void *b) {
