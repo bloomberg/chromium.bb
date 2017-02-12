@@ -159,8 +159,7 @@ bool SVGMarkerElement::selfHasRelativeLengths() const {
 }
 
 bool SVGMarkerElement::layoutObjectIsNeeded(const ComputedStyle&) {
-  ContainerNode* parent = FlatTreeTraversal::parent(*this);
-  return parent && parent->isSVGElement() && isValid();
+  return isValid() && hasSVGParent();
 }
 
 }  // namespace blink

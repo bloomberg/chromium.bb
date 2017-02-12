@@ -510,7 +510,10 @@ bool SVGSVGElement::layoutObjectIsNeeded(const ComputedStyle& style) {
   // https://bugs.webkit.org/show_bug.cgi?id=103493
   if (document().documentElement() == this)
     return true;
-  return SVGElement::layoutObjectIsNeeded(style);
+
+  // <svg> elements don't need an SVG parent to render, so we bypass
+  // SVGElement::layoutObjectIsNeeded.
+  return isValid() && Element::layoutObjectIsNeeded(style);
 }
 
 LayoutObject* SVGSVGElement::createLayoutObject(const ComputedStyle&) {

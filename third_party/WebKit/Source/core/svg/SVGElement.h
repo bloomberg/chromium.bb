@@ -236,6 +236,8 @@ class CORE_EXPORT SVGElement : public Element {
 
   virtual bool selfHasRelativeLengths() const { return false; }
 
+  bool hasSVGParent() const;
+
   SVGElementRareData* ensureSVGRareData();
   inline bool hasSVGRareData() const { return m_SVGRareData; }
   inline SVGElementRareData* svgRareData() const {

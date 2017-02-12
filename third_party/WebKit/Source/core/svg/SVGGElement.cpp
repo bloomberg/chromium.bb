@@ -48,8 +48,7 @@ bool SVGGElement::layoutObjectIsNeeded(const ComputedStyle&) {
   // Unlike SVGElement::layoutObjectIsNeeded(), we still create layoutObjects,
   // even if display is set to 'none' - which is special to SVG <g> container
   // elements.
-  return parentOrShadowHostElement() &&
-         parentOrShadowHostElement()->isSVGElement() && isValid();
+  return isValid() && hasSVGParent();
 }
 
 }  // namespace blink

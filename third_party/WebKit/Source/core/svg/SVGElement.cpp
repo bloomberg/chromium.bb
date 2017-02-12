@@ -1027,18 +1027,14 @@ PassRefPtr<ComputedStyle> SVGElement::customStyleForLayoutObject() {
 }
 
 bool SVGElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  // SVG elements only render when inside <svg>, or if the element is an <svg>
-  // itself.
-  if (!isSVGSVGElement(*this)) {
-    ContainerNode* parent = FlatTreeTraversal::parent(*this);
-    if (!parent || !parent->isSVGElement())
-      return false;
-  }
+  return isValid() && hasSVGParent() && Element::layoutObjectIsNeeded(style);
+}
 
-  if (!isValid())
-    return false;
-
-  return Element::layoutObjectIsNeeded(style);
+bool SVGElement::hasSVGParent() const {
+  // Should we use the flat tree parent instead? If so, we should probably fix a
+  // few other checks.
+  return parentOrShadowHostElement() &&
+         parentOrShadowHostElement()->isSVGElement();
 }
 
 MutableStylePropertySet* SVGElement::animatedSMILStyleProperties() const {
