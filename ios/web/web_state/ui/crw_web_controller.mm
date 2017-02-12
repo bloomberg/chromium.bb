@@ -702,9 +702,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                     stateObject:(NSString*)stateObject;
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL;
-// Sets last committed NavigationItem's title to the given |title|, which can
-// not be nil.
-- (void)setNavigationItemTitle:(NSString*)title;
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;
@@ -1371,28 +1368,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)setNavigationItemTitle:(NSString*)title {
-  DCHECK(title);
-  auto& navigationManager = _webStateImpl->GetNavigationManagerImpl();
-  web::NavigationItem* item = navigationManager.GetLastCommittedItem();
-  if (!item)
-    return;
-
-  base::string16 newTitle = base::SysNSStringToUTF16(title);
-  if (item->GetTitle() == newTitle)
-    return;
-
-  item->SetTitle(newTitle);
-  // TODO(crbug.com/546218): See if this can be removed; it's not clear that
-  // other platforms send this (tab sync triggers need to be compared against
-  // upstream).
-  navigationManager.OnNavigationItemChanged();
-
-  if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
-    [_delegate webController:self titleDidChange:title];
-  }
-}
-
 - (BOOL)isCurrentNavigationItemPOST {
   // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
   // were not called.
@@ -1817,13 +1792,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Perform post-load-finished updates.
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
 
-  NSString* title = [self.nativeController title];
-  if (title)
-    [self setNavigationItemTitle:title];
-
-  // If the controller handles title change notification, route those to the
-  // delegate.
+  // Inform the embedder the title changed.
   if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
+    NSString* title = [self.nativeController title];
+    // If a title is present, notify the delegate.
+    if (title)
+      [_delegate webController:self titleDidChange:title];
+    // If the controller handles title change notification, route those to the
+    // delegate.
     if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
       [self.nativeController setDelegate:self];
     }
@@ -4798,10 +4774,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Attempt to update the HTML5 history state.
   [self updateHTML5HistoryState];
 
-  // This is the point where pending entry has been committed, and navigation
-  // item title should be updated.
-  [self setNavigationItemTitle:[_webView title]];
-
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {
     scoped_refptr<net::X509Certificate> cert =
@@ -4997,12 +4969,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  bool hasPendingNavigation = web::WKNavigationState::COMMITTED <=
-                              [_navigationStates lastAddedNavigationState];
-  if (hasPendingNavigation) {
-    // Do not update the title if there is a navigation in progress because
-    // there is no way to tell if KVO change fired for new or previous page.
-    [self setNavigationItemTitle:[_webView title]];
+  if ([self.delegate
+          respondsToSelector:@selector(webController:titleDidChange:)]) {
+    DCHECK([_webView title]);
+    [self.delegate webController:self titleDidChange:[_webView title]];
   }
 }
 

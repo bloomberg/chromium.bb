@@ -105,13 +105,4 @@
   return result;
 }
 
-- (web::WKNavigationState)lastAddedNavigationState {
-  CRWWKNavigationsStateRecord* lastAddedRecord = nil;
-  WKNavigation* lastAddedNavigation = [self lastAddedNavigation];
-  if (lastAddedNavigation)
-    lastAddedRecord = [_records objectForKey:lastAddedNavigation];
-
-  return lastAddedRecord.state;
-}
-
 @end

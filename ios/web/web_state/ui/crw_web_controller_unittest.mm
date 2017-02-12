@@ -778,7 +778,6 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
   [[[mockWebView_ stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
   [[[mockWebView_ stub] andReturnBool:NO] hasOnlySecureContent];
-  [[[mockWebView_ stub] andReturn:@""] title];
 
   // Stub out the injection process.
   [[mockWebView_ stub] evaluateJavaScript:OCMOCK_ANY

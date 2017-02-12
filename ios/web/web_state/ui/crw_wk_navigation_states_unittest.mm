@@ -31,22 +31,14 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   // navigation_1 is the only navigation and it is the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
   EXPECT_EQ(navigation1_, [states_ lastAddedNavigation]);
-  EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // navigation_2 is added later and hence the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation2_];
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
-  EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // Updating state for existing navigation does not make it the latest.
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation1_];
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
-  EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
-
-  // navigation_2 is still the latest.
-  [states_ setState:WKNavigationState::STARTED forNavigation:navigation2_];
-  EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
-  EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
 }
 
 }  // namespace web
