@@ -337,10 +337,6 @@ enum class RendererTerminationTabState {
 // Sets the favicon on the current NavigationItem.
 - (void)setFavicon:(const gfx::Image*)image;
 
-// Updates the title field of the current session entry. Also updates the
-// history database.
-- (void)updateTitle:(NSString*)title;
-
 // Saves the current title to the history database.
 - (void)saveTitleToHistoryDB;
 
@@ -991,20 +987,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       setDelegate:overscrollActionsControllerDelegate];
   overscrollActionsControllerDelegate_.reset(
       overscrollActionsControllerDelegate);
-}
-
-- (void)updateTitle:(NSString*)title {
-  web::NavigationItem* item = [self navigationManager]->GetVisibleItem();
-  if (!item)
-    return;
-  item->SetTitle(base::SysNSStringToUTF16(title));
-  // TODO(crbug.com/546218): See if this can be removed; it's not clear that
-  // other platforms send this (tab sync triggers need to be compared against
-  // upstream).
-  if (webStateImpl_)
-    webStateImpl_->GetNavigationManagerImpl().OnNavigationItemChanged();
-
-  [self saveTitleToHistoryDB];
 }
 
 - (void)saveTitleToHistoryDB {
@@ -1831,13 +1813,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webController:(CRWWebController*)webController
        titleDidChange:(NSString*)title {
-  NSString* oldTitle = [self title];
-  BOOL isTitleChanged = (!oldTitle && title) || (oldTitle && !title) ||
-                        (![oldTitle isEqualToString:title]);
-  if (isTitleChanged) {
-    [self updateTitle:title];
-    [parentTabModel_ notifyTabChanged:self];
-  }
+  [self saveTitleToHistoryDB];
+  [parentTabModel_ notifyTabChanged:self];
 }
 
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url

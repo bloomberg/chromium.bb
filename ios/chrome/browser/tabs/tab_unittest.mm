@@ -242,6 +242,8 @@ class TabTest : public BlockCleanupTest {
     [[tab_ navigationManager]->GetSessionController() commitPendingItem];
     [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
     [tab_ webDidStartLoadingURL:redirectUrl shouldUpdateHistory:YES];
+    base::string16 new_title = base::SysNSStringToUTF16(title);
+    [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
     [tab_ webController:mock_web_controller_ titleDidChange:title];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
