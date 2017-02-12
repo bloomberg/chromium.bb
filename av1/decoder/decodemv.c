@@ -1944,6 +1944,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
+  mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
   if (cm->reference_mode != SINGLE_REFERENCE &&
       is_inter_compound_mode(mbmi->mode)
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
