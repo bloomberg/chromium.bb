@@ -79,9 +79,7 @@ class GeometryMapperTest : public ::testing::Test,
   }
 
  private:
-  void SetUp() override {
-    geometryMapper = WTF::makeUnique<GeometryMapper>();
-  }
+  void SetUp() override { geometryMapper = GeometryMapper::create(); }
 
   void TearDown() override { geometryMapper.reset(); }
 };

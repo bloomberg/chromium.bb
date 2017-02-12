@@ -238,7 +238,8 @@ void CompositingLayerAssigner::updateSquashingAssignment(
     squashingState.mostRecentMapping->setNeedsGraphicsLayerUpdate(
         GraphicsLayerUpdateSubtree);
 
-    layer->clipper().clearClipRectsIncludingDescendants();
+    layer->clipper(PaintLayer::DoNotUseGeometryMapper)
+        .clearClipRectsIncludingDescendants();
 
     // Issue a paint invalidation, since |layer| may have been added to an
     // already-existing squashing layer.

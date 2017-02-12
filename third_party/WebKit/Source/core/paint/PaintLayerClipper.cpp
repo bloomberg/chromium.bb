@@ -114,9 +114,8 @@ static void applyClipRects(const ClipRectsContext& context,
 }
 
 PaintLayerClipper::PaintLayerClipper(const PaintLayer& layer,
-                                     bool useGeometryMapper)
-    : m_layer(layer),
-      m_geometryMapper(useGeometryMapper ? new GeometryMapper : nullptr) {}
+                                     GeometryMapper* geometryMapper)
+    : m_layer(layer), m_geometryMapper(geometryMapper) {}
 
 ClipRects* PaintLayerClipper::clipRectsIfCached(
     const ClipRectsContext& context) const {
@@ -160,14 +159,17 @@ ClipRects& PaintLayerClipper::storeClipRectsInCache(
 
 ClipRects& PaintLayerClipper::getClipRects(
     const ClipRectsContext& context) const {
+  DCHECK(!m_geometryMapper);
   if (ClipRects* result = clipRectsIfCached(context))
     return *result;
   // Note that it's important that we call getClipRects on our parent
   // before we call calculateClipRects so that calculateClipRects will hit
   // the cache.
   ClipRects* parentClipRects = nullptr;
-  if (context.rootLayer != &m_layer && m_layer.parent())
-    parentClipRects = &m_layer.parent()->clipper().getClipRects(context);
+  if (context.rootLayer != &m_layer && m_layer.parent()) {
+    parentClipRects =
+        &PaintLayerClipper(*m_layer.parent(), nullptr).getClipRects(context);
+  }
   RefPtr<ClipRects> clipRects = ClipRects::create();
   calculateClipRects(context, *clipRects);
   return storeClipRectsInCache(context, parentClipRects, *clipRects);
@@ -178,9 +180,6 @@ void PaintLayerClipper::clearCache(ClipRectsCacheSlot cacheSlot) {
     m_layer.clearClipRectsCache();
   else if (ClipRectsCache* cache = m_layer.clipRectsCache())
     cache->clear(cacheSlot);
-
-  if (m_geometryMapper)
-    m_geometryMapper.reset(new GeometryMapper);
 }
 
 void PaintLayerClipper::clearClipRectsIncludingDescendants() {
@@ -195,7 +194,7 @@ void PaintLayerClipper::clearClipRectsIncludingDescendants(
   while (!layers.empty()) {
     const PaintLayer* currentLayer = layers.top();
     layers.pop();
-    currentLayer->clipper().clearCache(cacheSlot);
+    PaintLayerClipper(*currentLayer, m_geometryMapper).clearCache(cacheSlot);
     for (const PaintLayer* layer = currentLayer->firstChild(); layer;
          layer = layer->nextSibling())
       layers.push(layer);
@@ -402,7 +401,8 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
   // Ensure that our parent's clip has been calculated so that we can examine
   // the values.
   if (parentLayer) {
-    parentLayer->clipper().getOrCalculateClipRects(context, clipRects);
+    PaintLayerClipper(*parentLayer, m_geometryMapper)
+        .getOrCalculateClipRects(context, clipRects);
   } else {
     clipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
   }
@@ -512,11 +512,12 @@ ClipRect PaintLayerClipper::backgroundClipRect(
   DCHECK(layoutView);
 
   RefPtr<ClipRects> parentClipRects = ClipRects::create();
-  if (&m_layer == context.rootLayer)
+  if (&m_layer == context.rootLayer) {
     parentClipRects->reset(LayoutRect(LayoutRect::infiniteIntRect()));
-  else
-    m_layer.parent()->clipper().getOrCalculateClipRects(context,
-                                                        *parentClipRects);
+  } else {
+    PaintLayerClipper(*m_layer.parent(), m_geometryMapper)
+        .getOrCalculateClipRects(context, *parentClipRects);
+  }
 
   ClipRect result = backgroundClipRectForPosition(
       *parentClipRects, m_layer.layoutObject()->styleRef().position());
@@ -533,6 +534,8 @@ ClipRect PaintLayerClipper::backgroundClipRect(
 
 void PaintLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context,
                                                 ClipRects& clipRects) const {
+  DCHECK(!m_geometryMapper);
+
   if (context.usesCache())
     clipRects = getClipRects(context);
   else

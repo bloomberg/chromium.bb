@@ -139,9 +139,9 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
 void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  GeometryMapper geometryMapper;
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
   rect = blink::mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
-      object, rect, *this, geometryMapper);
+      object, rect, *this, *geometryMapper);
 }
 
 LayoutRect PaintInvalidator::computeVisualRectInBacking(

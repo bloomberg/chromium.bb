@@ -11,7 +11,7 @@
  </head>
  <body>
   <div class="control">FAIL</div>
-  <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <svg style="overflow: visible" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
    <circle cx="100" cy="100" r="50" fill="green"/>
    <foreignObject x="0" y="0" width="200" height="200" transform="rotate(45)">
     <div xmlns="http://www.w3.org/1999/xhtml" class="test"> There should be a green circle below with no red on this page. </div>

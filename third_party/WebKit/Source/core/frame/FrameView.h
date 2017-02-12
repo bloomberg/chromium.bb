@@ -828,6 +828,9 @@ class CORE_EXPORT FrameView final
   void setAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
   void setAnimationHost(std::unique_ptr<CompositorAnimationHost>);
 
+  // Returns the GeometryMapper associated with the root local frame.
+  GeometryMapper& geometryMapper();
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);

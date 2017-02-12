@@ -280,7 +280,8 @@ void PaintLayer::updateLayerPositionsAfterLayout() {
   TRACE_EVENT0("blink,benchmark",
                "PaintLayer::updateLayerPositionsAfterLayout");
 
-  clipper().clearClipRectsIncludingDescendants();
+  clipper(PaintLayer::DoNotUseGeometryMapper)
+      .clearClipRectsIncludingDescendants();
   updateLayerPositionRecursive();
 
   {
@@ -368,7 +369,8 @@ bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const {
 }
 
 void PaintLayer::updateLayerPositionsAfterOverflowScroll() {
-  clipper().clearClipRectsIncludingDescendants();
+  clipper(PaintLayer::DoNotUseGeometryMapper)
+      .clearClipRectsIncludingDescendants();
   updateLayerPositionRecursive();
 }
 
@@ -405,9 +407,11 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
 
     // PaintLayers with transforms act as clip rects roots, so clear the cached
     // clip rects here.
-    clipper().clearClipRectsIncludingDescendants();
+    clipper(PaintLayer::DoNotUseGeometryMapper)
+        .clearClipRectsIncludingDescendants();
   } else if (hasTransform) {
-    clipper().clearClipRectsIncludingDescendants(AbsoluteClipRects);
+    clipper(PaintLayer::DoNotUseGeometryMapper)
+        .clearClipRectsIncludingDescendants(AbsoluteClipRects);
   }
 
   updateTransformationMatrix();
@@ -1329,7 +1333,8 @@ void PaintLayer::removeOnlyThisLayerAfterStyleChange() {
       enclosingSelfPaintingLayer->mergeNeedsPaintPhaseFlagsFrom(*this);
   }
 
-  clipper().clearClipRectsIncludingDescendants();
+  clipper(PaintLayer::DoNotUseGeometryMapper)
+      .clearClipRectsIncludingDescendants();
 
   PaintLayer* nextSib = nextSibling();
 
@@ -1393,7 +1398,8 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange() {
   }
 
   // Clear out all the clip rects.
-  clipper().clearClipRectsIncludingDescendants();
+  clipper(PaintLayer::DoNotUseGeometryMapper)
+      .clearClipRectsIncludingDescendants();
 }
 
 // Returns the layer reached on the walk up towards the ancestor.
@@ -1516,6 +1522,7 @@ void PaintLayer::appendSingleFragmentIgnoringPagination(
     const PaintLayer* rootLayer,
     const LayoutRect& dirtyRect,
     ClipRectsCacheSlot clipRectsCacheSlot,
+    PaintLayer::GeometryMapperOption geometryMapperOption,
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior,
     ShouldRespectOverflowClipType respectOverflowClip,
     const LayoutPoint* offsetFromRoot,
@@ -1526,9 +1533,10 @@ void PaintLayer::appendSingleFragmentIgnoringPagination(
                                     subPixelAccumulation);
   if (respectOverflowClip == IgnoreOverflowClip)
     clipRectsContext.setIgnoreOverflowClip();
-  clipper().calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds,
-                           fragment.backgroundRect, fragment.foregroundRect,
-                           offsetFromRoot);
+  clipper(geometryMapperOption)
+      .calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds,
+                      fragment.backgroundRect, fragment.foregroundRect,
+                      offsetFromRoot);
   fragments.push_back(fragment);
 }
 
@@ -1544,6 +1552,7 @@ void PaintLayer::collectFragments(
     const PaintLayer* rootLayer,
     const LayoutRect& dirtyRect,
     ClipRectsCacheSlot clipRectsCacheSlot,
+    PaintLayer::GeometryMapperOption geometryMapperOption,
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior,
     ShouldRespectOverflowClipType respectOverflowClip,
     const LayoutPoint* offsetFromRoot,
@@ -1553,16 +1562,16 @@ void PaintLayer::collectFragments(
     // For unpaginated layers, there is only one fragment.
     appendSingleFragmentIgnoringPagination(
         fragments, rootLayer, dirtyRect, clipRectsCacheSlot,
-        overlayScrollbarClipBehavior, respectOverflowClip, offsetFromRoot,
-        subPixelAccumulation);
+        geometryMapperOption, overlayScrollbarClipBehavior, respectOverflowClip,
+        offsetFromRoot, subPixelAccumulation);
     return;
   }
 
   if (!shouldFragmentCompositedBounds(rootLayer)) {
     appendSingleFragmentIgnoringPagination(
         fragments, rootLayer, dirtyRect, clipRectsCacheSlot,
-        overlayScrollbarClipBehavior, respectOverflowClip, offsetFromRoot,
-        subPixelAccumulation);
+        geometryMapperOption, overlayScrollbarClipBehavior, respectOverflowClip,
+        offsetFromRoot, subPixelAccumulation);
     return;
   }
 
@@ -1582,10 +1591,11 @@ void PaintLayer::collectFragments(
   LayoutRect layerBoundsInFlowThread;
   ClipRect backgroundRectInFlowThread;
   ClipRect foregroundRectInFlowThread;
-  clipper().calculateRects(
-      paginationClipRectsContext, LayoutRect(LayoutRect::infiniteIntRect()),
-      layerBoundsInFlowThread, backgroundRectInFlowThread,
-      foregroundRectInFlowThread, &offsetWithinPaginatedLayer);
+  clipper(geometryMapperOption)
+      .calculateRects(paginationClipRectsContext,
+                      LayoutRect(LayoutRect::infiniteIntRect()),
+                      layerBoundsInFlowThread, backgroundRectInFlowThread,
+                      foregroundRectInFlowThread, &offsetWithinPaginatedLayer);
 
   // Take our bounding box within the flow thread and clip it.
   LayoutRect layerBoundingBoxInFlowThread =
@@ -1636,8 +1646,9 @@ void PaintLayer::collectFragments(
                                       overlayScrollbarClipBehavior);
     if (respectOverflowClip == IgnoreOverflowClip)
       clipRectsContext.setIgnoreOverflowClip();
-    ancestorClipRect = enclosingPaginationLayer()->clipper().backgroundClipRect(
-        clipRectsContext);
+    ancestorClipRect = enclosingPaginationLayer()
+                           ->clipper(geometryMapperOption)
+                           .backgroundClipRect(clipRectsContext);
     if (rootLayerIsInsidePaginationLayer)
       ancestorClipRect.moveBy(
           -rootLayer->visualOffsetFromAncestor(ancestorLayer));
@@ -1888,9 +1899,10 @@ PaintLayer* PaintLayer::hitTestLayer(
 
     // Make sure the parent's clip rects have been calculated.
     if (parent()) {
-      ClipRect clipRect = clipper().backgroundClipRect(
-          ClipRectsContext(rootLayer, clipRectsCacheSlot,
-                           ExcludeOverlayScrollbarSizeForHitTesting));
+      ClipRect clipRect = clipper(PaintLayer::DoNotUseGeometryMapper)
+                              .backgroundClipRect(ClipRectsContext(
+                                  rootLayer, clipRectsCacheSlot,
+                                  ExcludeOverlayScrollbarSizeForHitTesting));
       // Go ahead and test the enclosing clip now.
       if (!clipRect.intersects(hitTestLocation))
         return nullptr;
@@ -1994,9 +2006,11 @@ PaintLayer* PaintLayer::hitTestLayer(
   if (appliedTransform)
     appendSingleFragmentIgnoringPagination(
         layerFragments, rootLayer, hitTestRect, clipRectsCacheSlot,
+        PaintLayer::DoNotUseGeometryMapper,
         ExcludeOverlayScrollbarSizeForHitTesting);
   else
     collectFragments(layerFragments, rootLayer, hitTestRect, clipRectsCacheSlot,
+                     PaintLayer::DoNotUseGeometryMapper,
                      ExcludeOverlayScrollbarSizeForHitTesting);
 
   if (m_scrollableArea &&
@@ -2112,6 +2126,7 @@ PaintLayer* PaintLayer::hitTestTransformedLayerInFragments(
       PaintLayer::RootOfTransparencyClipBox, LayoutSize());
   enclosingPaginationLayer()->collectFragments(
       enclosingPaginationFragments, rootLayer, hitTestRect, clipRectsCacheSlot,
+      PaintLayer::DoNotUseGeometryMapper,
       ExcludeOverlayScrollbarSizeForHitTesting, RespectOverflowClip,
       &offsetOfPaginationLayerFromRoot, LayoutSize(), &transformedExtent);
 
@@ -2127,7 +2142,7 @@ PaintLayer* PaintLayer::hitTestTransformedLayerInFragments(
       enclosingPaginationLayer()->convertToLayerCoords(
           rootLayer, offsetOfPaginationLayerFromRoot);
       LayoutRect parentClipRect =
-          clipper()
+          clipper(PaintLayer::DoNotUseGeometryMapper)
               .backgroundClipRect(ClipRectsContext(
                   enclosingPaginationLayer(), clipRectsCacheSlot,
                   ExcludeOverlayScrollbarSizeForHitTesting))
@@ -2511,7 +2526,8 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
 
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, apply that clip.
-  LayoutRect result = clipper().localClipRect(compositedLayer);
+  LayoutRect result = clipper(PaintLayer::DoNotUseGeometryMapper)
+                          .localClipRect(compositedLayer);
 
   result.intersect(physicalBoundingBox(LayoutPoint()));
 
@@ -2943,6 +2959,17 @@ void PaintLayer::styleDidChange(StyleDifference diff,
 
   setNeedsCompositingInputsUpdate();
   layoutObject()->setNeedsPaintPropertyUpdate();
+}
+
+PaintLayerClipper PaintLayer::clipper(
+    GeometryMapperOption geometryMapperOption) const {
+  GeometryMapper* geometryMapper = nullptr;
+  if (geometryMapperOption == UseGeometryMapper) {
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    if (FrameView* frameView = m_layoutObject->document().view())
+      geometryMapper = &frameView->geometryMapper();
+  }
+  return PaintLayerClipper(*this, geometryMapper);
 }
 
 bool PaintLayer::scrollsOverflow() const {

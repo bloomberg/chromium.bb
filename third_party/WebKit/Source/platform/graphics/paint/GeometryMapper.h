@@ -53,7 +53,10 @@ struct PrecomputedDataForAncestor {
 // TODO(chrishtr): take effect tree into account.
 class PLATFORM_EXPORT GeometryMapper {
  public:
-  GeometryMapper() {}
+  static std::unique_ptr<GeometryMapper> create() {
+    return WTF::wrapUnique(new GeometryMapper());
+  }
+
   // The runtime of m calls among localToAncestorVisualRect, localToAncestorRect
   // or ancestorToLocalRect with the same |ancestorState| parameter is
   // guaranteed to be O(n + m), where n is the number of transform and clip
@@ -142,6 +145,9 @@ class PLATFORM_EXPORT GeometryMapper {
                                                               const NodeType*);
 
   void clearCache();
+
+ protected:
+  GeometryMapper() {}
 
  private:
   // The internal methods do the same things as their public counterparts, but

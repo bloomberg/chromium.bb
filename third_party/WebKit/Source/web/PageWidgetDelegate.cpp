@@ -83,6 +83,7 @@ static void paintInternal(Page& page,
 
     IntRect dirtyRect(rect);
     FrameView* view = root.view();
+    view->updateAllLifecyclePhasesExceptPaint();
     if (view) {
       ClipRecorder clipRecorder(paintContext, builder,
                                 DisplayItem::kPageWidgetDelegateClip,

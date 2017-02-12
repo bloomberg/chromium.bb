@@ -232,8 +232,11 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff,
 
   FloatStateForStyleChange::setWasFloating(this, isFloating());
 
-  if (hasLayer() && diff.cssClipChanged())
-    layer()->clipper().clearClipRectsIncludingDescendants();
+  if (hasLayer() && diff.cssClipChanged()) {
+    layer()
+        ->clipper(PaintLayer::DoNotUseGeometryMapper)
+        .clearClipRectsIncludingDescendants();
+  }
 
   LayoutObject::styleWillChange(diff, newStyle);
 }

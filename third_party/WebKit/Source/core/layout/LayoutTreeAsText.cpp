@@ -670,9 +670,9 @@ void LayoutTreeAsText::writeLayers(TextStream& ts,
   // Calculate the clip rects we should use.
   LayoutRect layerBounds;
   ClipRect damageRect, clipRectToApply;
-  layer->clipper().calculateRects(
-      ClipRectsContext(rootLayer, UncachedClipRects), paintRect, layerBounds,
-      damageRect, clipRectToApply);
+  layer->clipper(PaintLayer::DoNotUseGeometryMapper)
+      .calculateRects(ClipRectsContext(rootLayer, UncachedClipRects), paintRect,
+                      layerBounds, damageRect, clipRectToApply);
 
   // Ensure our lists are up to date.
   layer->stackingNode()->updateLayerListsIfNeeded();

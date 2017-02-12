@@ -2822,6 +2822,19 @@ void FrameView::updateWidgetGeometriesIfNeeded() {
   updateWidgetGeometries();
 }
 
+GeometryMapper& FrameView::geometryMapper() {
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(lifecycle().state() >= DocumentLifecycle::InPrePaint);
+
+  if (m_frame->isLocalRoot()) {
+    if (!m_geometryMapper)
+      m_geometryMapper = GeometryMapper::create();
+    return *m_geometryMapper.get();
+  }
+
+  return frame().localFrameRoot()->view()->geometryMapper();
+}
+
 void FrameView::updateAllLifecyclePhases() {
   frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(
       DocumentLifecycle::PaintClean);
@@ -3074,12 +3087,6 @@ void FrameView::prePaint() {
   if (!m_paintController)
     m_paintController = PaintController::create();
 
-  if (!m_geometryMapper)
-    m_geometryMapper.reset(new GeometryMapper());
-  // TODO(chrishtr): the cache only needs to be invalidated if one or more of
-  // the property tree nodes changed.
-  m_geometryMapper->clearCache();
-
   forAllNonThrottledFrameViews([](FrameView& frameView) {
     frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
     if (frameView.canThrottleRendering()) {
@@ -3092,8 +3099,14 @@ void FrameView::prePaint() {
   });
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // TODO(chrishtr): the cache only needs to be invalidated if one or more of
+    // the property tree nodes changed.
+    geometryMapper().clearCache();
+  }
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
-    PrePaintTreeWalk(*m_geometryMapper).walk(*this);
+    PrePaintTreeWalk(geometryMapper()).walk(*this);
   }
 
   forAllNonThrottledFrameViews([](FrameView& frameView) {

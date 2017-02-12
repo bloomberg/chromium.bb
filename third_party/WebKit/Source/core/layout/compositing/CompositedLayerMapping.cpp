@@ -547,7 +547,9 @@ void CompositedLayerMapping::
                                     IgnoreOverlayScrollbarSize);
   clipRectsContext.setIgnoreOverflowClip();
   LayoutRect unsnappedParentClipRect =
-      m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect();
+      m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect();
   IntRect parentClipRect = pixelSnappedIntRect(unsnappedParentClipRect);
   owningLayerIsClipped = parentClipRect != LayoutRect::infiniteIntRect();
 
@@ -1142,7 +1144,9 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
                                     PaintingClipRectsIgnoringOverflowClip,
                                     IgnoreOverlayScrollbarSize);
   IntRect parentClipRect = pixelSnappedIntRect(
-      m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
+      m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect());
   ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
   m_ancestorClippingLayer->setPosition(
       FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
@@ -2860,10 +2864,10 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(
   // these clip rects or otherwise optimizing.
   ClipRectsContext clipRectsContext(ancestorPaintInfo->paintLayer,
                                     UncachedClipRects);
-  IntRect parentClipRect =
-      pixelSnappedIntRect(paintInfo.paintLayer->clipper()
-                              .backgroundClipRect(clipRectsContext)
-                              .rect());
+  IntRect parentClipRect = pixelSnappedIntRect(
+      paintInfo.paintLayer->clipper(PaintLayer::DoNotUseGeometryMapper)
+          .backgroundClipRect(clipRectsContext)
+          .rect());
   ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
 
   // Convert from ancestor to local coordinates.

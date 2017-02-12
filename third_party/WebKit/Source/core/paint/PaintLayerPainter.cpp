@@ -227,8 +227,10 @@ static bool shouldRepaintSubsequence(
 
   // Repaint if layer's clip changes.
   if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    ClipRects& clipRects = paintLayer.clipper().paintingClipRects(
-        paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
+    ClipRects& clipRects =
+        paintLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
+            .paintingClipRects(paintingInfo.rootLayer, respectOverflowClip,
+                               subpixelAccumulation);
     ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
     if (&clipRects != previousClipRects &&
         (!previousClipRects || clipRects != *previousClipRects)) {
@@ -437,6 +439,11 @@ PaintResult PaintLayerPainter::paintLayerContents(
       localPaintingInfo.paintDirtyRect.moveBy(offsetToClipper);
     }
 
+    PaintLayer::GeometryMapperOption geometryMapperOption =
+        PaintLayer::DoNotUseGeometryMapper;
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+      geometryMapperOption = PaintLayer::UseGeometryMapper;
+
     // TODO(trchen): We haven't decided how to handle visual fragmentation with
     // SPv2.  Related thread
     // https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
@@ -444,14 +451,14 @@ PaintResult PaintLayerPainter::paintLayerContents(
         RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       paintLayerForFragments->appendSingleFragmentIgnoringPagination(
           layerFragments, localPaintingInfo.rootLayer,
-          localPaintingInfo.paintDirtyRect, cacheSlot,
+          localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
           IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
           localPaintingInfo.subPixelAccumulation);
     } else if (isFixedPositionObjectInPagedMedia()) {
       PaintLayerFragments singleFragment;
       paintLayerForFragments->appendSingleFragmentIgnoringPagination(
           singleFragment, localPaintingInfo.rootLayer,
-          localPaintingInfo.paintDirtyRect, cacheSlot,
+          localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
           IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
           localPaintingInfo.subPixelAccumulation);
       repeatFixedPositionObjectInPages(singleFragment[0], paintingInfo,
@@ -459,7 +466,7 @@ PaintResult PaintLayerPainter::paintLayerContents(
     } else {
       paintLayerForFragments->collectFragments(
           layerFragments, localPaintingInfo.rootLayer,
-          localPaintingInfo.paintDirtyRect, cacheSlot,
+          localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
           IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
           localPaintingInfo.subPixelAccumulation);
     }
@@ -684,6 +691,11 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
   // its parent.
   PaintLayer* parentLayer = m_paintLayer.parent();
 
+  PaintLayer::GeometryMapperOption geometryMapperOption =
+      PaintLayer::DoNotUseGeometryMapper;
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    geometryMapperOption = PaintLayer::UseGeometryMapper;
+
   PaintLayer* paginationLayer = m_paintLayer.enclosingPaginationLayer();
   PaintLayerFragments layerFragments;
   bool isFixedPositionObjectInPagedMedia =
@@ -714,13 +726,15 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
         &m_paintLayer, paginationLayer, PaintLayer::PaintingTransparencyClipBox,
         PaintLayer::RootOfTransparencyClipBox,
         paintingInfo.subPixelAccumulation, paintingInfo.getGlobalPaintFlags());
+
     // FIXME: we don't check if paginationLayer is within
     // paintingInfo.rootLayer
     // here.
     paginationLayer->collectFragments(
         layerFragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
-        cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, nullptr,
-        paintingInfo.subPixelAccumulation, &transformedExtent);
+        cacheSlot, geometryMapperOption, IgnoreOverlayScrollbarSize,
+        respectOverflowClip, nullptr, paintingInfo.subPixelAccumulation,
+        &transformedExtent);
   }
 
   Optional<DisplayItemCacheSkipper> cacheSkipper;
@@ -739,8 +753,8 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
       if (shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject()) ==
           IgnoreOverflowClip)
         clipRectsContext.setIgnoreOverflowClip();
-      ancestorBackgroundClipRect =
-          m_paintLayer.clipper().backgroundClipRect(clipRectsContext);
+      ancestorBackgroundClipRect = m_paintLayer.clipper(geometryMapperOption)
+                                       .backgroundClipRect(clipRectsContext);
     }
   }
 

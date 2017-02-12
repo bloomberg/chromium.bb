@@ -1634,13 +1634,6 @@ crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-anc
 # Rebaselined for small pixel differences.
 # compositing/geometry/layer-due-to-layer-children-deep.html
 #
-# Rebaselined because GeometryMapper applies a control clip for the input element; SPv1 does not.
-# fast/css/input-search-padding.html
-# fast/forms/search/search-vertical-alignment.html
-# fast/forms/search/searchfield-heights.html
-# fast/forms/text/text-font-height-mismatch.html
-# fast/forms/text/textfield-overflow-by-value-update.html
-# fast/replaced/width100percent-searchfield.html
 #
 # SPv2 correctly positions a background clip that includes the transformed size of div #two.
 # SPv1 does not understand how to apply transforms properly in PaintLayerClipper (the issue is

@@ -78,18 +78,18 @@ void PaintPropertyTreeBuilderTest::TearDown() {
 #define CHECK_VISUAL_RECT(expected, sourceLayoutObject, ancestorLayoutObject,  \
                           slopFactor)                                          \
   do {                                                                         \
-    GeometryMapper geometryMapper;                                             \
+    std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create(); \
     LayoutRect source((sourceLayoutObject)->localVisualRect());                \
     source.moveBy((sourceLayoutObject)->paintOffset());                        \
     const auto& contentsProperties =                                           \
         *(ancestorLayoutObject)->paintProperties()->contentsProperties();      \
     LayoutRect actual = LayoutRect(                                            \
         geometryMapper                                                         \
-            .sourceToDestinationVisualRect(FloatRect(source),                  \
-                                           *(sourceLayoutObject)               \
-                                                ->paintProperties()            \
-                                                ->localBorderBoxProperties(),  \
-                                           contentsProperties)                 \
+            ->sourceToDestinationVisualRect(FloatRect(source),                 \
+                                            *(sourceLayoutObject)              \
+                                                 ->paintProperties()           \
+                                                 ->localBorderBoxProperties(), \
+                                            contentsProperties)                \
             .rect());                                                          \
     actual.moveBy(-(ancestorLayoutObject)->paintOffset());                     \
     EXPECT_EQ(expected, actual)                                                \

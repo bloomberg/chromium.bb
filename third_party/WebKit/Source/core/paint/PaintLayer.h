@@ -626,10 +626,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_scrollableArea.get();
   }
 
-  PaintLayerClipper clipper() const {
-    return PaintLayerClipper(*this,
-                             RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-  }
+  enum GeometryMapperOption { UseGeometryMapper, DoNotUseGeometryMapper };
+
+  PaintLayerClipper clipper(GeometryMapperOption) const;
 
   bool scrollsOverflow() const;
 
@@ -849,6 +848,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer* rootLayer,
       const LayoutRect& dirtyRect,
       ClipRectsCacheSlot,
+      GeometryMapperOption,
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = RespectOverflowClip,
       const LayoutPoint* offsetFromRoot = 0,
@@ -858,6 +858,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer* rootLayer,
       const LayoutRect& dirtyRect,
       ClipRectsCacheSlot,
+      GeometryMapperOption,
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = RespectOverflowClip,
       const LayoutPoint* offsetFromRoot = 0,
