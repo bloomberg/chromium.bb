@@ -99,7 +99,7 @@ class CORE_EXPORT MouseEventManager final
   WebInputEventResult handleMouseReleaseEvent(
       const MouseEventWithHitTestResults&);
 
-  static DragState& dragState();
+  DragState& dragState();
 
   void focusDocumentView();
 
@@ -188,6 +188,8 @@ class CORE_EXPORT MouseEventManager final
   bool tryStartDrag(const MouseEventWithHitTestResults&);
   void clearDragDataTransfer();
   DataTransfer* createDraggingDataTransfer() const;
+
+  void resetDragState();
 
   // Implementations of |SynchronousMutationObserver|
   void nodeChildrenWillBeRemoved(ContainerNode&) final;

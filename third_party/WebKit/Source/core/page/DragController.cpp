@@ -1229,10 +1229,17 @@ bool DragController::isCopyKeyDown(DragData* dragData) {
 #endif
 }
 
+DragState& DragController::dragState() {
+  if (!m_dragState)
+    m_dragState = new DragState;
+  return *m_dragState;
+}
+
 DEFINE_TRACE(DragController) {
   visitor->trace(m_page);
   visitor->trace(m_documentUnderMouse);
   visitor->trace(m_dragInitiator);
+  visitor->trace(m_dragState);
   visitor->trace(m_fileInputElementUnderMouse);
 }
 

@@ -79,10 +79,12 @@ class CORE_EXPORT DragController final
                  const WebMouseEvent& dragEvent,
                  const IntPoint& dragOrigin);
 
+  DragState& dragState();
+
   DECLARE_TRACE();
 
  private:
-  DragController(Page*);
+  explicit DragController(Page*);
 
   DispatchEventResult dispatchTextInputEventFor(LocalFrame*, DragData*);
   bool canProcessDrag(DragData*, LocalFrame& localRoot);
@@ -113,6 +115,8 @@ class CORE_EXPORT DragController final
   Member<Document> m_documentUnderMouse;
   // The Document (if any) that initiated the drag.
   Member<Document> m_dragInitiator;
+
+  Member<DragState> m_dragState;
 
   Member<HTMLInputElement> m_fileInputElementUnderMouse;
   bool m_documentIsHandlingDrag;

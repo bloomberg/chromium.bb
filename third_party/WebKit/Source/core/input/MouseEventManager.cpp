@@ -556,9 +556,7 @@ WebInputEventResult MouseEventManager::handleMousePressEvent(
     const MouseEventWithHitTestResults& event) {
   TRACE_EVENT0("blink", "MouseEventManager::handleMousePressEvent");
 
-  // Reset drag state.
-  dragState().m_dragSrc = nullptr;
-
+  resetDragState();
   cancelFakeMouseMoveEvent();
 
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -672,7 +670,7 @@ bool MouseEventManager::handleDragDropIfPossible(
         EventHandlingUtil::performMouseEventHitTest(m_frame, request,
                                                     mouseDragEvent);
     m_mouseDownMayStartDrag = true;
-    dragState().m_dragSrc = nullptr;
+    resetDragState();
     m_mouseDownPos = m_frame->view()->rootFrameToContents(
         flooredIntPoint(mouseDragEvent.positionInRootFrame()));
     return handleDrag(mev, DragInitiator::Touch);
@@ -778,7 +776,7 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
           m_frame, node, m_mouseDownPos, selectionDragPolicy,
           dragState().m_dragType);
     } else {
-      dragState().m_dragSrc = nullptr;
+      resetDragState();
     }
 
     if (!dragState().m_dragSrc)
@@ -801,7 +799,7 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   if (initiator == DragInitiator::Mouse &&
       !dragThresholdExceeded(
           flooredIntPoint(event.event().positionInRootFrame()))) {
-    dragState().m_dragSrc = nullptr;
+    resetDragState();
     return true;
   }
 
@@ -812,7 +810,7 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   if (!tryStartDrag(event)) {
     // Something failed to start the drag, clean up.
     clearDragDataTransfer();
-    dragState().m_dragSrc = nullptr;
+    resetDragState();
   }
 
   m_mouseDownMayStartDrag = false;
@@ -922,15 +920,21 @@ void MouseEventManager::dragSourceEndedAt(const WebMouseEvent& event,
     dispatchDragSrcEvent(EventTypeNames::dragend, event);
   }
   clearDragDataTransfer();
-  dragState().m_dragSrc = nullptr;
+  resetDragState();
   // In case the drag was ended due to an escape key press we need to ensure
   // that consecutive mousemove events don't reinitiate the drag and drop.
   m_mouseDownMayStartDrag = false;
 }
 
 DragState& MouseEventManager::dragState() {
-  DEFINE_STATIC_LOCAL(DragState, state, (new DragState));
-  return state;
+  DCHECK(m_frame->page());
+  return m_frame->page()->dragController().dragState();
+}
+
+void MouseEventManager::resetDragState() {
+  if (!m_frame->page())
+    return;
+  dragState().m_dragSrc = nullptr;
 }
 
 bool MouseEventManager::dragThresholdExceeded(
