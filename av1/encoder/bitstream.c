@@ -206,7 +206,7 @@ void av1_encode_token_init(void) {
 #endif
 }
 
-#if !CONFIG_DAALA_EC
+#if !CONFIG_EC_MULTISYMBOL
 static void write_intra_mode(aom_writer *w, PREDICTION_MODE mode,
                              const aom_prob *probs) {
   av1_write_token(w, av1_intra_mode_tree, probs, &intra_mode_encodings[mode]);
