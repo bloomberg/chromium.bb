@@ -140,6 +140,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // be delayed.
   bool priority_requests_delayable_;
 
+  // True if the scheduler should yield between several successive calls to
+  // start resource requests.
+  bool yielding_scheduler_enabled_;
+  int max_requests_before_yielding_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceScheduler);
 };
 
