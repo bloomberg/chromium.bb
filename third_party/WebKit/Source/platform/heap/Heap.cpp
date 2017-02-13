@@ -314,8 +314,8 @@ void ThreadHeap::pushThreadLocalWeakCallback(void* closure,
                                              WeakCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  ThreadState* state = pageFromObject(object)->arena()->getThreadState();
-  state->pushThreadLocalWeakCallback(closure, callback);
+  CallbackStack::Item* slot = m_globalWeakCallbackStack->allocateEntry();
+  *slot = CallbackStack::Item(closure, callback);
 }
 
 bool ThreadHeap::popAndInvokeGlobalWeakCallback(Visitor* visitor) {
