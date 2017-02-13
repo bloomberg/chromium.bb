@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType;
-import org.chromium.chrome.browser.suggestions.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -44,7 +43,7 @@ import java.util.Set;
 /**
  * The model and controller for a group of site suggestion tiles.
  */
-public class TileGroup implements MostVisitedURLsObserver {
+public class TileGroup implements MostVisitedSites.Observer {
     /**
      * Performs work in other parts of the system that the {@link TileGroup} should not know about.
      */
@@ -58,7 +57,7 @@ public class TileGroup implements MostVisitedURLsObserver {
          * @param observer The observer to be notified with the list of sites.
          * @param maxResults The maximum number of sites to retrieve.
          */
-        void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int maxResults);
+        void setMostVisitedSitesObserver(MostVisitedSites.Observer observer, int maxResults);
 
         /**
          * Called when the NTP has completely finished loading (all views will be inflated
@@ -190,7 +189,7 @@ public class TileGroup implements MostVisitedURLsObserver {
      * @param maxResults The maximum number of sites to retrieve.
      */
     public void startObserving(int maxResults) {
-        mTileGroupDelegate.setMostVisitedURLsObserver(this, maxResults);
+        mTileGroupDelegate.setMostVisitedSitesObserver(this, maxResults);
     }
 
     /**

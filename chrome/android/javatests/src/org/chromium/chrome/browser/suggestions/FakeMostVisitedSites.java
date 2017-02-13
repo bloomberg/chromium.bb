@@ -20,7 +20,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     private String[] mUrls = new String[] {};
     private String[] mWhitelistIconPaths = new String[] {};
     private int[] mSources = new int[] {};
-    private MostVisitedURLsObserver mObserver;
+    private Observer mObserver;
 
     /**
      * @param profile The profile for which to fetch site suggestions.
@@ -31,7 +31,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {
+    public void setObserver(Observer observer, int numResults) {
         mObserver = observer;
         notifyTileSuggestionsAvailable();
     }

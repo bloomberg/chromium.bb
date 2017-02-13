@@ -72,7 +72,7 @@ void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
     whitelist_icon_paths.emplace_back(tile.whitelist_icon_path.value());
     sources.emplace_back(static_cast<int>(tile.source));
   }
-  Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
+  Java_Observer_onMostVisitedURLsAvailable(
       env, observer_, ToJavaArrayOfStrings(env, titles),
       ToJavaArrayOfStrings(env, urls),
       ToJavaArrayOfStrings(env, whitelist_icon_paths),
@@ -82,7 +82,7 @@ void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
 void MostVisitedSitesBridge::JavaObserver::OnIconMadeAvailable(
     const GURL& site_url) {
   JNIEnv* env = AttachCurrentThread();
-  Java_MostVisitedURLsObserver_onIconMadeAvailable(
+  Java_Observer_onIconMadeAvailable(
       env, observer_, ConvertUTF8ToJavaString(env, site_url.spec()));
 }
 
@@ -101,7 +101,7 @@ void MostVisitedSitesBridge::Destroy(
   delete this;
 }
 
-void MostVisitedSitesBridge::SetMostVisitedURLsObserver(
+void MostVisitedSitesBridge::SetObserver(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_observer,

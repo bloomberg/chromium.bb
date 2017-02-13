@@ -16,9 +16,9 @@ public class MostVisitedSites {
     private long mNativeMostVisitedSitesBridge;
 
     /**
-     * Interface for receiving the list of most visited urls.
+     * An interface for handling events in {@link MostVisitedSites}.
      */
-    public interface MostVisitedURLsObserver {
+    public interface Observer {
         /**
          * This is called when the list of most visited URLs is initially available or updated.
          * Parameters guaranteed to be non-null.
@@ -31,7 +31,7 @@ public class MostVisitedSites {
          *                           strings otherwise.
          * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
          */
-        @CalledByNative("MostVisitedURLsObserver")
+        @CalledByNative("Observer")
         void onMostVisitedURLsAvailable(
                 String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources);
 
@@ -41,7 +41,7 @@ public class MostVisitedSites {
          *
          * @param siteUrl URL of site with newly-cached icon.
          */
-        @CalledByNative("MostVisitedURLsObserver")
+        @CalledByNative("Observer")
         void onIconMadeAvailable(String siteUrl);
     }
 
@@ -64,16 +64,13 @@ public class MostVisitedSites {
     }
 
     /**
-     * Sets the MostVisitedURLsObserver to receive the list of most visited sites now or soon, and
-     * after any changes to the list. Note: the observer may be notified synchronously or
-     * asynchronously.
-     * @param observer The MostVisitedURLsObserver to be called once when the most visited sites
-     *                 are initially available and again whenever the list of most visited sites
-     *                 changes.
-     * @param numSites The maximum number of most visited sites to return.
+     * Sets the recipient for events from {@link MostVisitedSites}. The observer may be notified
+     * synchronously or asynchronously.
+     * @param observer The observer to be notified.
+     * @param numSites The maximum number of sites to return.
      */
-    public void setMostVisitedURLsObserver(final MostVisitedURLsObserver observer, int numSites) {
-        MostVisitedURLsObserver wrappedObserver = new MostVisitedURLsObserver() {
+    public void setObserver(final Observer observer, int numSites) {
+        Observer wrappedObserver = new Observer() {
             @Override
             public void onMostVisitedURLsAvailable(
                     String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources) {
@@ -90,7 +87,7 @@ public class MostVisitedSites {
                 }
             }
         };
-        nativeSetMostVisitedURLsObserver(mNativeMostVisitedSitesBridge, wrappedObserver, numSites);
+        nativeSetObserver(mNativeMostVisitedSitesBridge, wrappedObserver, numSites);
     }
 
     /**
@@ -133,8 +130,8 @@ public class MostVisitedSites {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
-    private native void nativeSetMostVisitedURLsObserver(
-            long nativeMostVisitedSitesBridge, MostVisitedURLsObserver observer, int numSites);
+    private native void nativeSetObserver(
+            long nativeMostVisitedSitesBridge, Observer observer, int numSites);
     private native void nativeAddOrRemoveBlacklistedUrl(
             long nativeMostVisitedSitesBridge, String url, boolean addUrl);
     private native void nativeRecordPageImpression(

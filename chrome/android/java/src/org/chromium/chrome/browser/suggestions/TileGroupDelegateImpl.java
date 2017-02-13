@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.suggestions.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -81,10 +80,10 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     }
 
     @Override
-    public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int maxResults) {
+    public void setMostVisitedSitesObserver(MostVisitedSites.Observer observer, int maxResults) {
         assert !mIsDestroyed;
 
-        mMostVisitedSites.setMostVisitedURLsObserver(observer, maxResults);
+        mMostVisitedSites.setObserver(observer, maxResults);
     }
 
     @Override

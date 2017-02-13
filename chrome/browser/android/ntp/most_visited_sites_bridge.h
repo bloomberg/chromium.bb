@@ -25,11 +25,10 @@ class MostVisitedSitesBridge {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  void SetMostVisitedURLsObserver(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_observer,
-      jint num_sites);
+  void SetObserver(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& j_observer,
+                   jint num_sites);
 
   void AddOrRemoveBlacklistedUrl(
       JNIEnv* env,
