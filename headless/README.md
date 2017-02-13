@@ -23,6 +23,37 @@ missing Mesa library.
 [DevTools](https://developer.chrome.com/devtools) interface or use a tool such
 as [Selenium](http://www.seleniumhq.org/) to drive the headless browser.
 
+## Usage from Node.js
+
+For example, the [chrome-remote-interface](https://github.com/cyrus-and/chrome-remote-interface)
+Node.js package can be used to extract a page's DOM like this:
+
+```
+const CDP = require('chrome-remote-interface');
+
+CDP((client) => {
+  // Extract used DevTools domains.
+  const {Page, Runtime} = client;
+
+  // Enable events on domains we are interested in.
+  Promise.all([
+    Page.enable()
+  ]).then(() => {
+    return Page.navigate({url: 'https://example.com'});
+  });
+
+  // Evaluate outerHTML after page has loaded.
+  Page.loadEventFired(() => {
+    Runtime.evaluate({expression: 'document.body.outerHTML'}).then((result) => {
+      console.log(result.result.value);
+      client.close();
+    });
+  });
+}).on('error', (err) => {
+  console.error('Cannot connect to browser:', err);
+});
+```
+
 ## Usage as a C++ library
 
 Headless Chromium can be built as a library for embedding into a C++
