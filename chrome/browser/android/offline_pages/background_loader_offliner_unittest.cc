@@ -18,8 +18,11 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -87,9 +90,11 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
       const OfflinerPolicy* policy,
       OfflinePageModel* offline_page_model);
   ~TestBackgroundLoaderOffliner() override;
-  content::WebContentsTester* web_contents() {
+  content::WebContentsTester* web_contents_tester() {
     return content::WebContentsTester::For(stub_->web_contents());
   }
+
+  content::WebContents* web_contents() { return stub_->web_contents(); }
 
   bool is_loading() { return stub_->is_loading(); }
 
@@ -137,7 +142,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void CompleteLoading() {
     // For some reason, setting loading to True will call DidStopLoading
     // on the observers.
-    offliner()->web_contents()->TestSetIsLoading(true);
+    offliner()->web_contents_tester()->TestSetIsLoading(true);
   }
 
  private:
@@ -338,6 +343,29 @@ TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnWebContentsDestroyed) {
 
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+
+  // Create handle with net error code.
+  // Called after calling LoadAndSave so we have web_contents to work with.
+  std::unique_ptr<content::NavigationHandle> handle(
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
+          net::Error::ERR_NAME_NOT_RESOLVED));
+  // Call DidFinishNavigation with handle that contains error.
+  offliner()->DidFinishNavigation(handle.get());
+  // NavigationHandle is always destroyed after finishing navigation.
+  handle.reset();
+  offliner()->DidStopLoading();
+  PumpLoop();
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_RETRY, request_status());
 }
 
 }  // namespace offline_pages

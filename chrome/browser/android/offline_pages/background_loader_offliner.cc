@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 namespace offline_pages {
@@ -25,6 +26,7 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       offline_page_model_(offline_page_model),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       save_state_(NONE),
+      page_load_state_(SUCCESS),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
@@ -127,8 +129,19 @@ void BackgroundLoaderOffliner::DidStopLoading() {
     return;
   }
 
-  save_state_ = SAVING;
   SavePageRequest request(*pending_request_.get());
+  // If there was an error navigating to page, return loading failed.
+  if (page_load_state_ != SUCCESS) {
+    Offliner::RequestStatus status =
+        (page_load_state_ == RETRIABLE)
+            ? Offliner::RequestStatus::LOADING_FAILED
+            : Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
+    completion_callback_.Run(request, status);
+    ResetState();
+    return;
+  }
+
+  save_state_ = SAVING;
   content::WebContents* web_contents(
       content::WebContentsObserver::web_contents());
 
@@ -169,9 +182,47 @@ void BackgroundLoaderOffliner::RenderProcessGone(
 void BackgroundLoaderOffliner::WebContentsDestroyed() {
   if (pending_request_) {
     SavePageRequest request(*pending_request_.get());
-    completion_callback_.Run(*pending_request_.get(),
-                             Offliner::RequestStatus::LOADING_FAILED);
+    completion_callback_.Run(request, Offliner::RequestStatus::LOADING_FAILED);
     ResetState();
+  }
+}
+
+void BackgroundLoaderOffliner::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // If there was an error of any kind (certificate, client, DNS, etc),
+  // Mark as error page. Resetting here causes RecordNavigationMetrics to crash.
+  if (navigation_handle->IsErrorPage()) {
+    // TODO(chili): we need to UMA this.
+    switch (navigation_handle->GetNetErrorCode()) {
+      case net::ERR_ACCESS_DENIED:
+      case net::ERR_ADDRESS_INVALID:
+      case net::ERR_ADDRESS_UNREACHABLE:
+      case net::ERR_CERT_COMMON_NAME_INVALID:
+      case net::ERR_CERT_AUTHORITY_INVALID:
+      case net::ERR_CERT_CONTAINS_ERRORS:
+      case net::ERR_CERT_INVALID:
+      case net::ERR_CONNECTION_FAILED:
+      case net::ERR_DISALLOWED_URL_SCHEME:
+      case net::ERR_DNS_SERVER_FAILED:
+      case net::ERR_FILE_NOT_FOUND:
+      case net::ERR_FILE_PATH_TOO_LONG:
+      case net::ERR_FILE_TOO_BIG:
+      case net::ERR_FILE_VIRUS_INFECTED:
+      case net::ERR_INVALID_HANDLE:
+      case net::ERR_INVALID_RESPONSE:
+      case net::ERR_INVALID_URL:
+      case net::ERR_MSG_TOO_BIG:
+      case net::ERR_NAME_NOT_RESOLVED:
+      case net::ERR_NAME_RESOLUTION_FAILED:
+      case net::ERR_SSL_PROTOCOL_ERROR:
+      case net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED:
+      case net::ERR_SSL_SERVER_CERT_BAD_FORMAT:
+      case net::ERR_UNKNOWN_URL_SCHEME:
+        page_load_state_ = NONRETRIABLE;
+        break;
+      default:
+        page_load_state_ = RETRIABLE;
+    }
   }
 }
 
@@ -201,6 +252,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 
 void BackgroundLoaderOffliner::ResetState() {
   pending_request_.reset();
+  page_load_state_ = SUCCESS;
   // TODO(chili): Remove after RequestCoordinator can handle multiple offliners.
   // We reset the loader and observer after completion so loaders
   // will not be re-used across different requests/tries. This is a temporary

@@ -43,6 +43,8 @@ class BackgroundLoaderOffliner : public Offliner,
   void DidStopLoading() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  protected:
   // Called to reset internal loader and observer state.
@@ -52,6 +54,7 @@ class BackgroundLoaderOffliner : public Offliner,
   friend class TestBackgroundLoaderOffliner;
 
   enum SaveState { NONE, SAVING, DELETE_AFTER_SAVE };
+  enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE };
 
   // Called when the page has been saved.
   void OnPageSaved(SavePageResult save_result, int64_t offline_id);
@@ -75,6 +78,8 @@ class BackgroundLoaderOffliner : public Offliner,
   bool is_low_end_device_;
   // Save state.
   SaveState save_state_;
+  // Page load state.
+  PageLoadState page_load_state_;
 
   base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);
