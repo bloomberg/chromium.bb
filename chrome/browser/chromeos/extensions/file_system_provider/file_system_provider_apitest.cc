@@ -160,7 +160,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ReadDirectory) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ReadFile) {
+// http://crbug.com/691449
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReadFile ReadFile
+#else
+#define MAYBE_ReadFile DISABLED_ReadFile
+#endif
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MAYBE_ReadFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/read_file",
                                           kFlagLoadAsComponent))
       << message_;
