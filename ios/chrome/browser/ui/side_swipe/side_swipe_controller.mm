@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#import "base/ios/weak_nsobject.h"
 #include "components/reading_list/core/reading_list_switches.h"
 #import "components/reading_list/ios/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -50,7 +51,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
                                   UIGestureRecognizerDelegate> {
  @private
 
-  TabModel* model_;
+  base::WeakNSObject<TabModel> model_;
 
   // Side swipe view for tab navigation.
   base::scoped_nsobject<CardSideSwipeView> tabSideSwipeView_;
@@ -117,7 +118,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   DCHECK(model);
   self = [super init];
   if (self) {
-    model_ = model;
+    model_.reset(model);
     [model_ addObserver:self];
     historySideSwipeProvider_.reset(
         [[HistorySideSwipeProvider alloc] initWithTabModel:model_]);
@@ -254,14 +255,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     index = index + dx;
   }
   [[SnapshotCache sharedInstance] createGreyCache:sessionIDs];
-  for (Tab* tab in model_) {
+  for (Tab* tab in model_.get()) {
     tab.useGreyImageCache = YES;
   }
 }
 
 - (void)deleteGreyCache {
   [[SnapshotCache sharedInstance] removeGreyCache];
-  for (Tab* tab in model_) {
+  for (Tab* tab in model_.get()) {
     tab.useGreyImageCache = NO;
   }
 }
