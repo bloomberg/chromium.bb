@@ -39,11 +39,8 @@ WebThreadSupportingGC::WebThreadSupportingGC(const char* name,
 }
 
 WebThreadSupportingGC::~WebThreadSupportingGC() {
-  if (ThreadState::current() && m_owningThread) {
-    // WebThread's destructor blocks until all the tasks are processed.
-    SafePointScope scope(BlinkGC::HeapPointersOnStack);
-    m_owningThread.reset();
-  }
+  // WebThread's destructor blocks until all the tasks are processed.
+  m_owningThread.reset();
 }
 
 void WebThreadSupportingGC::initialize() {

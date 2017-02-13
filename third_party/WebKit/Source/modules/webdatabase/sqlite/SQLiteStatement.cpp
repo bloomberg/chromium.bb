@@ -102,8 +102,6 @@ int SQLiteStatement::prepare() {
   *statement = nullptr;
   int error;
   {
-    SafePointScope scope(BlinkGC::HeapPointersOnStack);
-
     SQL_DVLOG(1) << "SQL - prepare - " << query.data();
 
     // Pass the length of the string including the null character to
@@ -130,9 +128,6 @@ int SQLiteStatement::prepare() {
 }
 
 int SQLiteStatement::step() {
-  SafePointScope scope(BlinkGC::HeapPointersOnStack);
-  // ASSERT(m_isPrepared);
-
   if (!m_statement)
     return SQLITE_OK;
 

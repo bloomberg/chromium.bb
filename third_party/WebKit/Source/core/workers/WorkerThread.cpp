@@ -225,11 +225,8 @@ void WorkerThread::startRunningDebuggerTasksOnPauseOnWorkerThread() {
   ThreadDebugger::idleStarted(isolate());
   std::unique_ptr<CrossThreadClosure> task;
   do {
-    {
-      SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
-      task =
-          m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::WaitForTask);
-    }
+    task =
+        m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::WaitForTask);
     if (task)
       (*task)();
     // Keep waiting until execution is resumed.
