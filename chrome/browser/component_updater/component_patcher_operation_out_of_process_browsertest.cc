@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -42,8 +43,9 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::FilePath path = installed_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
@@ -55,8 +57,9 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::FilePath path = input_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
@@ -82,23 +85,21 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     done_called_ = false;
 
     content::BrowserThread::PostBlockingPoolSequencedTask(
-        "OutOfProcessPatchTest::PatchOnBlockingPoolSequencedTaskRunner",
-        FROM_HERE,
-        base::Bind(
-            &OutOfProcessPatchTest::PatchOnBlockingPoolSequencedTaskRunner,
-            base::Unretained(this), operation, input, patch, output,
-            expected_result));
+        "OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner", FROM_HERE,
+        base::Bind(&OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner,
+                   base::Unretained(this), operation, input, patch, output,
+                   expected_result));
 
     run_loop.Run();
     EXPECT_TRUE(done_called_);
   }
 
  private:
-  void PatchOnBlockingPoolSequencedTaskRunner(const std::string& operation,
-                                              const base::FilePath& input,
-                                              const base::FilePath& patch,
-                                              const base::FilePath& output,
-                                              int expected_result) {
+  void PatchAsyncSequencedTaskRunner(const std::string& operation,
+                                     const base::FilePath& input,
+                                     const base::FilePath& patch,
+                                     const base::FilePath& output,
+                                     int expected_result) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
         base::SequencedTaskRunnerHandle::Get();
 
