@@ -82,7 +82,7 @@ class PLATFORM_EXPORT BlinkGC final {
     MemoryPressureGC,
     PageNavigationGC,
     ThreadTerminationGC,
-    NumberOfGCReason,
+    LastGCReason = ThreadTerminationGC,
   };
 
   enum ArenaIndices {

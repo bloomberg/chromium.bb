@@ -93,8 +93,8 @@ const char* ThreadState::gcReasonString(BlinkGC::GCReason reason) {
       return "MemoryPressureGC";
     case BlinkGC::PageNavigationGC:
       return "PageNavigationGC";
-    default:
-      NOTREACHED();
+    case BlinkGC::ThreadTerminationGC:
+      return "ThreadTerminationGC";
   }
   return "<Unknown>";
 }
@@ -1618,7 +1618,7 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, gcReasonHistogram,
         new EnumerationHistogram("BlinkGC.GCReason",
-                                 BlinkGC::NumberOfGCReason));
+                                 BlinkGC::LastGCReason + 1));
     gcReasonHistogram.count(reason);
 
     heap().m_lastGCReason = reason;
