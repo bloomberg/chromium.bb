@@ -28,14 +28,14 @@
 }
 
 .trash > .lid {
-  -webkit-transform-origin: -7% 100%;
   -webkit-transition: transform 150ms;
   height: 6px;
+  transform-origin: -7% 100%;
   width: 14px;
 }
 
 html[dir='rtl'] .trash > .lid {
-  -webkit-transform-origin: 107% 100%;
+  transform-origin: 107% 100%;
 }
 
 .trash:-webkit-any(:focus, :hover, .open) > .lid {

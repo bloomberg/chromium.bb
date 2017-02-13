@@ -38,7 +38,7 @@
 
       /* SVG elements seem to have a different default origin */
       .qp-circular-loader, .qp-circular-loader * {
-        -webkit-transform-origin: 50% 50%;
+        transform-origin: 50% 50%;
       }
 
       /* Rotating the whole thing */
