@@ -8,6 +8,10 @@
 #import "ios/web_view/internal/criwv_web_client.h"
 #import "ios/web_view/public/criwv_delegate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios_web_view {
 
 CRIWVWebMainDelegate::CRIWVWebMainDelegate(id<CRIWVDelegate> delegate)

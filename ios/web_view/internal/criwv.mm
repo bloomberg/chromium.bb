@@ -17,27 +17,33 @@
 #import "ios/web_view/public/criwv_web_view_configuration.h"
 #import "ios/web_view/public/criwv_website_data_store.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 CRIWV* g_criwv = nil;
 }
 
 @interface CRIWV () {
-  id<CRIWVDelegate> _delegate;
   std::unique_ptr<ios_web_view::CRIWVWebMainDelegate> _webMainDelegate;
   std::unique_ptr<web::WebMain> _webMain;
 }
+
+@property(nonatomic, weak) id<CRIWVDelegate> delegate;
 
 - (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate;
 @end
 
 @implementation CRIWV
 
+@synthesize delegate = _delegate;
+
 + (void)configureWithDelegate:(id<CRIWVDelegate>)delegate {
   g_criwv = [[CRIWV alloc] initWithDelegate:delegate];
 }
 
 + (void)shutDown {
-  [g_criwv release];
   g_criwv = nil;
 }
 
@@ -46,8 +52,7 @@ CRIWV* g_criwv = nil;
       [[CRIWVWebViewConfiguration alloc] init];
   configuration.websiteDataStore = [CRIWVWebsiteDataStore defaultDataStore];
 
-  return [[[CRIWVWebView alloc] initWithFrame:frame configuration:configuration]
-      autorelease];
+  return [[CRIWVWebView alloc] initWithFrame:frame configuration:configuration];
 }
 
 - (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate {
@@ -64,7 +69,6 @@ CRIWV* g_criwv = nil;
 - (void)dealloc {
   _webMain.reset();
   _webMainDelegate.reset();
-  [super dealloc];
 }
 
 @end

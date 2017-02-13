@@ -25,7 +25,7 @@ class CRIWVWebMainDelegate : public web::WebMainDelegate {
 
  private:
   // This object's delegate.
-  id<CRIWVDelegate> delegate_;
+  __weak id<CRIWVDelegate> delegate_;
 
   // The content and web clients registered by this object.
   std::unique_ptr<CRIWVWebClient> web_client_;

@@ -22,7 +22,7 @@
 @property(nonatomic, readonly) UIView* view;
 
 // This web view's delegate.
-@property(nonatomic, readwrite, assign) id<CRIWVWebViewDelegate> delegate;
+@property(nonatomic, weak) id<CRIWVWebViewDelegate> delegate;
 
 // Whether or not this web view can go backwards or forwards.
 @property(nonatomic, readonly) BOOL canGoBack;

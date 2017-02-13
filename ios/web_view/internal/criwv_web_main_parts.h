@@ -33,7 +33,7 @@ class CRIWVWebMainParts : public web::WebMainParts {
 
  private:
   // This object's delegate.
-  id<CRIWVDelegate> delegate_;
+  __weak id<CRIWVDelegate> delegate_;
 
   // The BrowserState for this embedder.
   std::unique_ptr<CRIWVBrowserState> browser_state_;
