@@ -333,8 +333,14 @@ void PepperVideoRenderer3D::OnDecodeDone(int32_t result) {
 }
 
 void PepperVideoRenderer3D::GetNextPicture() {
-  if (get_picture_pending_)
+  // Return early if |decoded_frames_| is empty or the decoder is already
+  // preparing a picture.  If we call GetPicture() before a new frame has been
+  // prepared (i.e. |decoded_frames_| is populated), the OnPictureReady callback
+  // could be called before OnDecodeDone() is called which will cause a crash.
+  // See crbug.com/689229 for more details.
+  if (get_picture_pending_ || decoded_frames_.empty()) {
     return;
+  }
 
   int32_t result =
       video_decoder_.GetPicture(callback_factory_.NewCallbackWithOutput(
