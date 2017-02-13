@@ -18,7 +18,7 @@
 
 {# Macro for defining a member function for a given command. #}
 {% macro command_decl(command) %}
-  {% set method_name = command.name | to_title_case %}
+  {% set method_name = command.name | sanitize_literal | to_title_case %}
   {% if command.description %}
   // {{ command.description }}
   {% endif %}
@@ -108,7 +108,7 @@ class HEADLESS_EXPORT Domain {
   {# Generate response handlers for commands that need them. #}
   {% for command in domain.commands %}
     {% if not "returns" in command %}{% continue %}{% endif %}
-    {% set method_name = command.name | to_title_case %}
+    {% set method_name = command.name | sanitize_literal | to_title_case %}
   static void Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response);
   {% endfor %}
 

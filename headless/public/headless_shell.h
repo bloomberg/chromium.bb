@@ -11,8 +11,7 @@ namespace headless {
 
 // Start the Headless Shell application. Intended to be called early in main().
 // Returns the exit code for the process.
-int HEADLESS_EXPORT HeadlessShellMain(int argc, const char** argv);
-
+HEADLESS_EXPORT int HeadlessShellMain(int argc, const char** argv);
 }  // namespace headless
 
 #endif  // HEADLESS_PUBLIC_HEADLESS_SHELL_H_

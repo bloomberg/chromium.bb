@@ -65,6 +65,11 @@ def SanitizeLiteral(literal):
   return {
       # Rename null enumeration values to avoid a clash with the NULL macro.
       'null': 'none',
+      # Rename literals that clash with Win32 defined macros.
+      'error': 'err',
+      'mouseMoved': 'mouse_ptr_moved',
+      'Strict': 'exact',
+      'getCurrentTime': 'getCurrentAnimationTime',
       # Rename mathematical constants to avoid colliding with C macros.
       'Infinity': 'InfinityValue',
       '-Infinity': 'NegativeInfinityValue',
@@ -321,10 +326,10 @@ def SynthesizeCommandTypes(json_api):
           if 'enum' in parameter and not '$ref' in parameter:
             SynthesizeEnumType(domain, command['name'], parameter)
         parameters_type = {
-            'id': ToTitleCase(command['name']) + 'Params',
+            'id': ToTitleCase(SanitizeLiteral(command['name'])) + 'Params',
             'type': 'object',
             'description': 'Parameters for the %s command.' % ToTitleCase(
-                command['name']),
+                SanitizeLiteral(command['name'])),
             'properties': command['parameters']
         }
         domain['types'].append(parameters_type)
@@ -333,10 +338,10 @@ def SynthesizeCommandTypes(json_api):
           if 'enum' in parameter and not '$ref' in parameter:
             SynthesizeEnumType(domain, command['name'], parameter)
         result_type = {
-            'id': ToTitleCase(command['name']) + 'Result',
+            'id': ToTitleCase(SanitizeLiteral(command['name'])) + 'Result',
             'type': 'object',
             'description': 'Result for the %s command.' % ToTitleCase(
-                command['name']),
+                SanitizeLiteral(command['name'])),
             'properties': command['returns']
         }
         domain['types'].append(result_type)

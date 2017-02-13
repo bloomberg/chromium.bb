@@ -77,8 +77,10 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
 void HeadlessContentMainDelegate::InitLogging(
     const base::CommandLine& command_line) {
+#if !defined(OS_WIN)
   if (!command_line.HasSwitch(switches::kEnableLogging))
     return;
+#endif
 
   logging::LoggingDestination log_mode;
   base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));

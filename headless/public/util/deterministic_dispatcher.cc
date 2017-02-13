@@ -89,7 +89,7 @@ void DeterministicDispatcher::MaybeDispatchJobLocked() {
 
 void DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask() {
   Request request;
-  net::Error job_status;
+  net::Error job_status = net::ERR_FAILED;
 
   {
     base::AutoLock lock(lock_);

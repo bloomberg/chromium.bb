@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "headless/app/shell_navigation_request.h"
 #include "headless/public/devtools/domains/emulation.h"
@@ -65,13 +66,14 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void OnScreenshotFileOpened(
       std::unique_ptr<page::CaptureScreenshotResult> result,
       const base::FilePath file_name,
-      const int open_result);
+      base::File::Error error_code);
 
   void OnScreenshotFileWritten(const base::FilePath file_name,
                                const int length,
-                               const int write_result);
+                               base::File::Error error_code,
+                               int write_result);
 
-  void OnScreenshotFileClosed(const int close_result);
+  void OnScreenshotFileClosed(base::File::Error error_code);
 
   bool RemoteDebuggingEnabled() const;
 
@@ -85,7 +87,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   HeadlessWebContents* web_contents_;
   bool processed_page_ready_;
-  std::unique_ptr<net::FileStream> screenshot_file_stream_;
+  std::unique_ptr<base::FileProxy> screenshot_file_proxy_;
   HeadlessBrowserContext* browser_context_;
   std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;

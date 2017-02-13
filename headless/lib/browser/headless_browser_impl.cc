@@ -203,8 +203,8 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
 }
 
 void RunChildProcessIfNeeded(int argc, const char** argv) {
-  base::CommandLine command_line(argc, argv);
-  if (!command_line.HasSwitch(switches::kProcessType))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kProcessType))
     return;
 
   HeadlessBrowser::Options::Builder builder(argc, argv);
@@ -223,8 +223,8 @@ int HeadlessBrowserMain(
   browser_was_initialized = true;
 
   // Child processes should not end up here.
-  base::CommandLine command_line(options.argc, options.argv);
-  DCHECK(!command_line.HasSwitch(switches::kProcessType));
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kProcessType));
 #endif
   return RunContentMain(std::move(options),
                         std::move(on_browser_start_callback));

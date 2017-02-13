@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
             .SetPath("")
             .SetSecure(true)
             .SetHttpOnly(true)
-            .SetSameSite(network::CookieSameSite::STRICT)
+            .SetSameSite(network::CookieSameSite::EXACT)
             .SetExpirationDate(0)
             .Build();
     CookieSetter cookie_setter(this, web_contents,

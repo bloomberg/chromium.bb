@@ -87,7 +87,11 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   // TODO(alexclarke): Should we navigate to about:blank first if using
   // virtual time?
   if (args.empty())
+#if defined(OS_WIN)
+    args.push_back(L"about:blank");
+#else
     args.push_back("about:blank");
+#endif
   for (auto it = args.rbegin(); it != args.rend(); ++it) {
     GURL url(*it);
     HeadlessWebContents* web_contents = builder.SetInitialURL(url).Build();
@@ -321,28 +325,26 @@ void HeadlessShell::OnScreenshotCaptured(
     file_name = base::FilePath().AppendASCII(kDefaultScreenshotFileName);
   }
 
-  screenshot_file_stream_.reset(
-      new net::FileStream(browser_->BrowserFileThread()));
-  const int open_result = screenshot_file_stream_->Open(
-      file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-                     base::File::FLAG_ASYNC,
-      base::Bind(&HeadlessShell::OnScreenshotFileOpened,
-                 weak_factory_.GetWeakPtr(), base::Passed(std::move(result)),
-                 file_name));
-  if (open_result != net::ERR_IO_PENDING) {
+  screenshot_file_proxy_.reset(
+      new base::FileProxy(browser_->BrowserFileThread().get()));
+  if (!screenshot_file_proxy_->CreateOrOpen(
+          file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
+          base::Bind(&HeadlessShell::OnScreenshotFileOpened,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(std::move(result)), file_name))) {
     // Operation could not be started.
-    OnScreenshotFileOpened(nullptr, file_name, open_result);
+    OnScreenshotFileOpened(nullptr, file_name, base::File::FILE_ERROR_FAILED);
   }
 }
 
 void HeadlessShell::OnScreenshotFileOpened(
     std::unique_ptr<page::CaptureScreenshotResult> result,
     const base::FilePath file_name,
-    const int open_result) {
-  if (open_result != net::OK) {
+    base::File::Error error_code) {
+  if (!screenshot_file_proxy_->IsValid()) {
     LOG(ERROR) << "Writing screenshot to file " << file_name.value()
                << " was unsuccessful, could not open file: "
-               << net::ErrorToString(open_result);
+               << base::File::ErrorToString(error_code);
     return;
   }
 
@@ -351,19 +353,21 @@ void HeadlessShell::OnScreenshotFileOpened(
   scoped_refptr<net::IOBufferWithSize> buf =
       new net::IOBufferWithSize(decoded_png.size());
   memcpy(buf->data(), decoded_png.data(), decoded_png.size());
-  const int write_result = screenshot_file_stream_->Write(
-      buf.get(), buf->size(),
-      base::Bind(&HeadlessShell::OnScreenshotFileWritten,
-                 weak_factory_.GetWeakPtr(), file_name, buf->size()));
-  if (write_result != net::ERR_IO_PENDING) {
+
+  if (!screenshot_file_proxy_->Write(
+          0, buf->data(), buf->size(),
+          base::Bind(&HeadlessShell::OnScreenshotFileWritten,
+                     weak_factory_.GetWeakPtr(), file_name, buf->size()))) {
     // Operation may have completed successfully or failed.
-    OnScreenshotFileWritten(file_name, buf->size(), write_result);
+    OnScreenshotFileWritten(file_name, buf->size(),
+                            base::File::FILE_ERROR_FAILED, 0);
   }
 }
 
 void HeadlessShell::OnScreenshotFileWritten(const base::FilePath file_name,
                                             const int length,
-                                            const int write_result) {
+                                            base::File::Error error_code,
+                                            int write_result) {
   if (write_result < length) {
     // TODO(eseckler): Support recovering from partial writes.
     LOG(ERROR) << "Writing screenshot to file " << file_name.value()
@@ -372,15 +376,15 @@ void HeadlessShell::OnScreenshotFileWritten(const base::FilePath file_name,
     LOG(INFO) << "Screenshot written to file " << file_name.value() << "."
               << std::endl;
   }
-  int close_result = screenshot_file_stream_->Close(base::Bind(
-      &HeadlessShell::OnScreenshotFileClosed, weak_factory_.GetWeakPtr()));
-  if (close_result != net::ERR_IO_PENDING) {
+  if (!screenshot_file_proxy_->Close(
+          base::Bind(&HeadlessShell::OnScreenshotFileClosed,
+                     weak_factory_.GetWeakPtr()))) {
     // Operation could not be started.
-    OnScreenshotFileClosed(close_result);
+    OnScreenshotFileClosed(base::File::FILE_ERROR_FAILED);
   }
 }
 
-void HeadlessShell::OnScreenshotFileClosed(const int close_result) {
+void HeadlessShell::OnScreenshotFileClosed(base::File::Error error_code) {
   Shutdown();
 }
 
@@ -426,12 +430,12 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
 }
 
 int HeadlessShellMain(int argc, const char** argv) {
+  base::CommandLine::Init(argc, argv);
   RunChildProcessIfNeeded(argc, argv);
   HeadlessShell shell;
   HeadlessBrowser::Options::Builder builder(argc, argv);
 
   // Enable devtools if requested.
-  base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))

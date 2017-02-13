@@ -285,6 +285,14 @@ static_library("headless_lib") {
     "//url",
   ]
 
+  if (is_win) {
+    deps += [
+      "//build/win:default_exe_manifest",
+      "//content:sandbox_helper_win",
+      "//sandbox",
+    ]
+  }
+
   if (headless_use_embedded_resources) {
     deps += [ ":embed_resources" ]
     sources += [
@@ -419,6 +427,8 @@ static_library("headless_shell_lib") {
   deps = [
     "//headless:headless_lib",
   ]
+
+  configs += [ ":headless_implementation" ]
 }
 
 executable("headless_shell") {
@@ -429,4 +439,6 @@ executable("headless_shell") {
   deps = [
     "//headless:headless_shell_lib",
   ]
+
+  configs += [ ":headless_implementation" ]
 }
