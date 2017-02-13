@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
@@ -310,12 +311,11 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
     return;
   }
 
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&WidevineCdmComponentInstallerTraits::UpdateCdmAdapter,
-                 base::Unretained(this),
-                 version,
-                 path,
+                 base::Unretained(this), version, path,
                  base::Passed(&manifest)));
 }
 
