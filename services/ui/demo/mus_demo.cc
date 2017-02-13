@@ -73,7 +73,6 @@ class MusDemo::WindowTreeData {
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
     Init(std::move(window_tree_host));
   }
-  ~WindowTreeData();
 
  private:
   // Initializes the window tree host and start drawing frames.
@@ -82,14 +81,14 @@ class MusDemo::WindowTreeData {
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();
 
+  // Helper function to retrieve the window to which we draw the bitmap.
+  aura::Window* bitmap_window() {
+    DCHECK(!window_tree_host_->window()->children().empty());
+    return window_tree_host_->window()->children()[0];
+  }
+
   // The Window tree host corresponding to this data.
   std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
-
-  // Root window of the window tree host.
-  aura::Window* root_window_ = nullptr;
-
-  // Window to which we draw the bitmap.
-  std::unique_ptr<aura::Window> bitmap_window_;
 
   // Destroys itself when the window gets destroyed.
   aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
@@ -100,33 +99,25 @@ class MusDemo::WindowTreeData {
   // Current rotation angle for drawing.
   double angle_ = 0.0;
 
-  // Last time a frame was drawn.
-  base::TimeTicks last_draw_frame_time_;
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeData);
 };
-
-MusDemo::WindowTreeData::~WindowTreeData() {
-  timer_.Stop();
-  root_window_->RemoveChild(bitmap_window_.get());
-  bitmap_window_.reset();
-}
 
 void MusDemo::WindowTreeData::Init(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   window_tree_host->InitHost();
   window_tree_host->Show();
-  root_window_ = window_tree_host->window();
   // Take ownership of the WTH.
   window_tree_host_ = std::move(window_tree_host);
 
   // Initialize the window for the bitmap.
   window_delegate_ = new aura_extra::ImageWindowDelegate();
-  bitmap_window_ = base::MakeUnique<aura::Window>(window_delegate_);
-  bitmap_window_->Init(LAYER_TEXTURED);
-  bitmap_window_->SetBounds(root_window_->bounds());
-  bitmap_window_->Show();
-  bitmap_window_->SetName("Bitmap");
-
-  root_window_->AddChild(bitmap_window_.get());
+  aura::Window* root_window = window_tree_host_->window();
+  aura::Window* bitmap_window = new aura::Window(window_delegate_);
+  bitmap_window->Init(LAYER_TEXTURED);
+  bitmap_window->SetBounds(gfx::Rect(root_window->bounds().size()));
+  bitmap_window->Show();
+  bitmap_window->SetName("Bitmap");
+  root_window->AddChild(bitmap_window);
 
   // Draw initial frame and start the timer to regularly draw frames.
   DrawFrame();
@@ -257,17 +248,11 @@ bool MusDemo::IsWindowActive(aura::Window* window) { return false; }
 void MusDemo::OnWmDeactivateWindow(aura::Window* window) {}
 
 void MusDemo::WindowTreeData::DrawFrame() {
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  VLOG(1) << (now - last_draw_frame_time_).InMilliseconds()
-          << "ms since the last frame was drawn.";
-  last_draw_frame_time_ = now;
-
   angle_ += 2.0;
   if (angle_ >= 360.0)
     angle_ = 0.0;
 
-  const gfx::Rect& bounds = bitmap_window_->bounds();
+  const gfx::Rect& bounds = bitmap_window()->bounds();
 
   // Allocate a bitmap of correct size.
   SkBitmap bitmap;
@@ -287,7 +272,7 @@ void MusDemo::WindowTreeData::DrawFrame() {
   gfx::Image image(image_skia);
 
   window_delegate_->SetImage(image);
-  bitmap_window_->SchedulePaintInRect(bitmap_window_->bounds());
+  bitmap_window()->SchedulePaintInRect(gfx::Rect(bounds.size()));
 }
 
 }  // namespace demo
