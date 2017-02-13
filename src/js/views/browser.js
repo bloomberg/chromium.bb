@@ -141,6 +141,10 @@ camera.views.Browser.prototype.onLeave = function() {
  * @override
  */
 camera.views.Browser.prototype.onResize = function() {
+  this.pictures.forEach(function(picture) {
+    this.updateImageSize_(picture.element.firstChild);
+  }.bind(this));
+
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
     camera.util.scrollToCenter(selectedPicture.element,
@@ -412,6 +416,20 @@ camera.views.Browser.prototype.onPictureDeleting = function(picture) {
 };
 
 /**
+ * Workaround for broken flex layout model. Possibly crbug.com/240765.
+ * TODO(mtomasz, yuli): Reevaluate after 2017/09/01.
+ * @param {Image} img Image object to update.
+ */
+camera.views.Browser.prototype.updateImageSize_ = function(img) {
+  console.warn(img);
+  var heightScale = 0.72;  // Keep in sync with main.css
+  var height = heightScale * document.body.offsetHeight;
+  var width = img.width * (height / img.height);
+  img.style.width = width + 'px';
+  img.style.height = height + 'px';
+};
+
+/**
  * @override
  */
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
@@ -428,6 +446,10 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   img.src = picture.thumbnailURL;
   wrapper.appendChild(img);
   browser.insertBefore(wrapper, boundsPadder.nextSibling);
+
+  img.onload = function(e) {
+    this.updateImageSize_(img);
+  }.bind(this);
 
   // Add to the collection.
   var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
