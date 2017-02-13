@@ -207,7 +207,7 @@ class BlockChildrenLayoutInfo {
                           LayoutUnit beforeEdge,
                           LayoutUnit afterEdge)
       : m_marginInfo(blockFlow, beforeEdge, afterEdge),
-        m_previousBreakAfterValue(BreakAuto),
+        m_previousBreakAfterValue(EBreakBetween::kAuto),
         m_isAtFirstInFlowChild(true) {}
 
   // Store multicol layout state before first layout of a block child. The child
@@ -227,8 +227,10 @@ class BlockChildrenLayoutInfo {
     return m_previousFloatLogicalBottom;
   }
 
-  EBreak previousBreakAfterValue() const { return m_previousBreakAfterValue; }
-  void setPreviousBreakAfterValue(EBreak value) {
+  EBreakBetween previousBreakAfterValue() const {
+    return m_previousBreakAfterValue;
+  }
+  void setPreviousBreakAfterValue(EBreakBetween value) {
     m_previousBreakAfterValue = value;
   }
 
@@ -239,7 +241,7 @@ class BlockChildrenLayoutInfo {
   MultiColumnLayoutState m_multiColumnLayoutState;
   MarginInfo m_marginInfo;
   LayoutUnit m_previousFloatLogicalBottom;
-  EBreak m_previousBreakAfterValue;
+  EBreakBetween m_previousBreakAfterValue;
   bool m_isAtFirstInFlowChild;
 };
 
@@ -754,7 +756,7 @@ void LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(
   // Figure out if a forced break should be inserted in front of the child. If
   // we insert a forced break, the margins on this child may not collapse with
   // those preceding the break.
-  EBreak classABreakPointValue =
+  EBreakBetween classABreakPointValue =
       child.classABreakPointValue(layoutInfo.previousBreakAfterValue());
   if (isForcedFragmentainerBreakValue(classABreakPointValue)) {
     layoutInfo.marginInfo().clearMargin();
@@ -2118,7 +2120,7 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(
       // out the children of |child|. There may be forced break-before values
       // set on first-children inside that get propagated up to the child.
       // Just make an estimate with what we know so far.
-      EBreak breakValue =
+      EBreakBetween breakValue =
           child.classABreakPointValue(layoutInfo.previousBreakAfterValue());
       if (isForcedFragmentainerBreakValue(breakValue)) {
         logicalTopEstimate = applyForcedBreak(logicalHeight(), breakValue);
@@ -2339,7 +2341,7 @@ bool LayoutBlockFlow::mustSeparateMarginAfterForChild(
 }
 
 LayoutUnit LayoutBlockFlow::applyForcedBreak(LayoutUnit logicalOffset,
-                                             EBreak breakValue) {
+                                             EBreakBetween breakValue) {
   if (!isForcedFragmentainerBreakValue(breakValue))
     return logicalOffset;
   // TODO(mstensho): honor breakValue. There are different types of forced
@@ -2368,29 +2370,32 @@ LayoutUnit LayoutBlockFlow::applyForcedBreak(LayoutUnit logicalOffset,
   return logicalOffset + remainingLogicalHeight;
 }
 
-void LayoutBlockFlow::setBreakBefore(EBreak breakValue) {
-  if (breakValue != BreakAuto && !isBreakBetweenControllable(breakValue))
-    breakValue = BreakAuto;
-  if (breakValue == BreakAuto && !m_rareData)
+void LayoutBlockFlow::setBreakBefore(EBreakBetween breakValue) {
+  if (breakValue != EBreakBetween::kAuto &&
+      !isBreakBetweenControllable(breakValue))
+    breakValue = EBreakBetween::kAuto;
+  if (breakValue == EBreakBetween::kAuto && !m_rareData)
     return;
-  ensureRareData().m_breakBefore = breakValue;
+  ensureRareData().m_breakBefore = static_cast<unsigned>(breakValue);
 }
 
-void LayoutBlockFlow::setBreakAfter(EBreak breakValue) {
-  if (breakValue != BreakAuto && !isBreakBetweenControllable(breakValue))
-    breakValue = BreakAuto;
-  if (breakValue == BreakAuto && !m_rareData)
+void LayoutBlockFlow::setBreakAfter(EBreakBetween breakValue) {
+  if (breakValue != EBreakBetween::kAuto &&
+      !isBreakBetweenControllable(breakValue))
+    breakValue = EBreakBetween::kAuto;
+  if (breakValue == EBreakBetween::kAuto && !m_rareData)
     return;
-  ensureRareData().m_breakAfter = breakValue;
+  ensureRareData().m_breakAfter = static_cast<unsigned>(breakValue);
 }
 
-EBreak LayoutBlockFlow::breakBefore() const {
-  return m_rareData ? static_cast<EBreak>(m_rareData->m_breakBefore)
-                    : BreakAuto;
+EBreakBetween LayoutBlockFlow::breakBefore() const {
+  return m_rareData ? static_cast<EBreakBetween>(m_rareData->m_breakBefore)
+                    : EBreakBetween::kAuto;
 }
 
-EBreak LayoutBlockFlow::breakAfter() const {
-  return m_rareData ? static_cast<EBreak>(m_rareData->m_breakAfter) : BreakAuto;
+EBreakBetween LayoutBlockFlow::breakAfter() const {
+  return m_rareData ? static_cast<EBreakBetween>(m_rareData->m_breakAfter)
+                    : EBreakBetween::kAuto;
 }
 
 void LayoutBlockFlow::addOverflowFromFloats() {

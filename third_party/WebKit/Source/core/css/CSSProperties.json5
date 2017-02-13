@@ -765,15 +765,15 @@
     "box-sizing",
     {
       name: "break-after",
-      type_name: "EBreak",
+      type_name: "EBreakBetween",
     },
     {
       name: "break-before",
-      type_name: "EBreak",
+      type_name: "EBreakBetween",
     },
     {
       name: "break-inside",
-      type_name: "EBreak",
+      type_name: "EBreakInside",
     },
     {
       name: "buffered-rendering",

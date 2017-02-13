@@ -1906,40 +1906,65 @@ static CSSValue* valueForScrollSnapCoordinate(
   return list;
 }
 
-// Returns a suitable value for the page-break-(before|after|inside) property,
-// given the computed value of the more general break-(before|after|inside)
-// property.
-static CSSValue* valueForPageBreak(EBreak breakValue) {
+// Returns a suitable value for the page-break-(before|after) property, given
+// the computed value of the more general break-(before|after) property.
+static CSSValue* valueForPageBreakBetween(EBreakBetween breakValue) {
   switch (breakValue) {
-    case BreakAvoidColumn:
-    case BreakColumn:
-    case BreakRecto:
-    case BreakVerso:
+    case EBreakBetween::kAvoidColumn:
+    case EBreakBetween::kColumn:
+    case EBreakBetween::kRecto:
+    case EBreakBetween::kVerso:
       return CSSIdentifierValue::create(CSSValueAuto);
-    case BreakPage:
+    case EBreakBetween::kPage:
       return CSSIdentifierValue::create(CSSValueAlways);
-    case BreakAvoidPage:
+    case EBreakBetween::kAvoidPage:
       return CSSIdentifierValue::create(CSSValueAvoid);
     default:
       return CSSIdentifierValue::create(breakValue);
   }
 }
 
-// Returns a suitable value for the -webkit-column-break-(before|after|inside)
-// property, given the computed value of the more general
-// break-(before|after|inside) property.
-static CSSValue* valueForWebkitColumnBreak(EBreak breakValue) {
+// Returns a suitable value for the -webkit-column-break-(before|after)
+// property, given the computed value of the more general break-(before|after)
+// property.
+static CSSValue* valueForWebkitColumnBreakBetween(EBreakBetween breakValue) {
   switch (breakValue) {
-    case BreakAvoidPage:
-    case BreakLeft:
-    case BreakPage:
-    case BreakRecto:
-    case BreakRight:
-    case BreakVerso:
+    case EBreakBetween::kAvoidPage:
+    case EBreakBetween::kLeft:
+    case EBreakBetween::kPage:
+    case EBreakBetween::kRecto:
+    case EBreakBetween::kRight:
+    case EBreakBetween::kVerso:
       return CSSIdentifierValue::create(CSSValueAuto);
-    case BreakColumn:
+    case EBreakBetween::kColumn:
       return CSSIdentifierValue::create(CSSValueAlways);
-    case BreakAvoidColumn:
+    case EBreakBetween::kAvoidColumn:
+      return CSSIdentifierValue::create(CSSValueAvoid);
+    default:
+      return CSSIdentifierValue::create(breakValue);
+  }
+}
+
+// Returns a suitable value for the page-break-inside property, given the
+// computed value of the more general break-inside property.
+static CSSValue* valueForPageBreakInside(EBreakInside breakValue) {
+  switch (breakValue) {
+    case EBreakInside::kAvoidColumn:
+      return CSSIdentifierValue::create(CSSValueAuto);
+    case EBreakInside::kAvoidPage:
+      return CSSIdentifierValue::create(CSSValueAvoid);
+    default:
+      return CSSIdentifierValue::create(breakValue);
+  }
+}
+
+// Returns a suitable value for the -webkit-column-break-inside property, given
+// the computed value of the more general break-inside property.
+static CSSValue* valueForWebkitColumnBreakInside(EBreakInside breakValue) {
+  switch (breakValue) {
+    case EBreakInside::kAvoidPage:
+      return CSSIdentifierValue::create(CSSValueAuto);
+    case EBreakInside::kAvoidColumn:
       return CSSIdentifierValue::create(CSSValueAvoid);
     default:
       return CSSIdentifierValue::create(breakValue);
@@ -2243,11 +2268,11 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.getColumnSpan() ? CSSValueAll
                                                               : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
-      return valueForWebkitColumnBreak(style.breakAfter());
+      return valueForWebkitColumnBreakBetween(style.breakAfter());
     case CSSPropertyWebkitColumnBreakBefore:
-      return valueForWebkitColumnBreak(style.breakBefore());
+      return valueForWebkitColumnBreakBetween(style.breakBefore());
     case CSSPropertyWebkitColumnBreakInside:
-      return valueForWebkitColumnBreak(style.breakInside());
+      return valueForWebkitColumnBreakInside(style.breakInside());
     case CSSPropertyColumnWidth:
       if (style.hasAutoColumnWidth())
         return CSSIdentifierValue::create(CSSValueAuto);
@@ -2663,11 +2688,11 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyBreakInside:
       return CSSIdentifierValue::create(style.breakInside());
     case CSSPropertyPageBreakAfter:
-      return valueForPageBreak(style.breakAfter());
+      return valueForPageBreakBetween(style.breakAfter());
     case CSSPropertyPageBreakBefore:
-      return valueForPageBreak(style.breakBefore());
+      return valueForPageBreakBetween(style.breakBefore());
     case CSSPropertyPageBreakInside:
-      return valueForPageBreak(style.breakInside());
+      return valueForPageBreakInside(style.breakInside());
     case CSSPropertyPosition:
       return CSSIdentifierValue::create(style.position());
     case CSSPropertyQuotes:

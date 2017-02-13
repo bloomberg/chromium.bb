@@ -836,15 +836,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Is the specified break-before or break-after value supported on this
   // object? It needs to be in-flow all the way up to a fragmentation context
   // that supports the specified value.
-  bool isBreakBetweenControllable(EBreak) const;
+  bool isBreakBetweenControllable(EBreakBetween) const;
 
   // Is the specified break-inside value supported on this object? It needs to
   // be contained by a fragmentation context that supports the specified value.
-  bool isBreakInsideControllable(EBreak) const;
+  bool isBreakInsideControllable(EBreakInside) const;
 
-  virtual EBreak breakAfter() const;
-  virtual EBreak breakBefore() const;
-  EBreak breakInside() const;
+  virtual EBreakBetween breakAfter() const;
+  virtual EBreakBetween breakBefore() const;
+  EBreakInside breakInside() const;
 
   // Join two adjacent break values specified on break-before and/or break-
   // after. avoid* values win over auto values, and forced break values win over
@@ -856,18 +856,19 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // break-after values on last children to their container.
   //
   // [1] https://drafts.csswg.org/css-break/#possible-breaks
-  static EBreak joinFragmentainerBreakValues(EBreak firstValue,
-                                             EBreak secondValue);
+  static EBreakBetween joinFragmentainerBreakValues(EBreakBetween firstValue,
+                                                    EBreakBetween secondValue);
 
-  static bool isForcedFragmentainerBreakValue(EBreak);
+  static bool isForcedFragmentainerBreakValue(EBreakBetween);
 
-  EBreak classABreakPointValue(EBreak previousBreakAfterValue) const;
+  EBreakBetween classABreakPointValue(
+      EBreakBetween previousBreakAfterValue) const;
 
   // Return true if we should insert a break in front of this box. The box needs
   // to start at a valid class A break point in order to allow a forced break.
   // To determine whether or not to break, we also need to know the break-after
   // value of the previous in-flow sibling.
-  bool needsForcedBreakBefore(EBreak previousBreakAfterValue) const;
+  bool needsForcedBreakBefore(EBreakBetween previousBreakAfterValue) const;
 
   bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   LayoutRect localVisualRect() const override;
@@ -1630,10 +1631,14 @@ inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper) {
   m_inlineBoxWrapper = boxWrapper;
 }
 
-inline bool LayoutBox::isForcedFragmentainerBreakValue(EBreak breakValue) {
-  return breakValue == BreakColumn || breakValue == BreakLeft ||
-         breakValue == BreakPage || breakValue == BreakRecto ||
-         breakValue == BreakRight || breakValue == BreakVerso;
+inline bool LayoutBox::isForcedFragmentainerBreakValue(
+    EBreakBetween breakValue) {
+  return breakValue == EBreakBetween::kColumn ||
+         breakValue == EBreakBetween::kLeft ||
+         breakValue == EBreakBetween::kPage ||
+         breakValue == EBreakBetween::kRecto ||
+         breakValue == EBreakBetween::kRight ||
+         breakValue == EBreakBetween::kVerso;
 }
 
 }  // namespace blink

@@ -306,22 +306,22 @@ enum TextUnderlinePosition {
   TextUnderlinePositionUnder
 };
 
-enum EBreak {
-  BreakAuto,
-  BreakAvoid,
-  BreakAvoidColumn,
-  BreakAvoidPage,
-  // Values below are only allowed for break-after and break-before. Values
-  // above are also allowed for break-inside (in addition to break-after and
-  // break-before).
-  BreakValueLastAllowedForBreakInside = BreakAvoidPage,
-  BreakColumn,
-  BreakLeft,
-  BreakPage,
-  BreakRecto,
-  BreakRight,
-  BreakVerso
+// Values applicable to the break-before, break-after properties.
+enum class EBreakBetween : unsigned {
+  kAuto,
+  kAvoid,
+  kAvoidColumn,
+  kAvoidPage,
+  kColumn,
+  kLeft,
+  kPage,
+  kRecto,
+  kRight,
+  kVerso
 };
+
+// Values applicable to the break-inside property.
+enum class EBreakInside : unsigned { kAuto, kAvoid, kAvoidColumn, kAvoidPage };
 
 enum class ECursor : unsigned {
   kAuto,

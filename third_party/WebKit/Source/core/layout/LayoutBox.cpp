@@ -2120,8 +2120,8 @@ void LayoutBox::setPaginationStrut(LayoutUnit strut) {
   ensureRareData().m_paginationStrut = strut;
 }
 
-bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const {
-  if (breakValue == BreakAuto)
+bool LayoutBox::isBreakBetweenControllable(EBreakBetween breakValue) const {
+  if (breakValue == EBreakBetween::kAuto)
     return true;
   // We currently only support non-auto break-before and break-after values on
   // in-flow block level elements, which is the minimum requirement according to
@@ -2136,15 +2136,16 @@ bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const {
   if (!viewIsPaginated && !flowThreadContainingBlock())
     return false;
   while (curr) {
-    if (curr == layoutView)
-      return viewIsPaginated && breakValue != BreakColumn &&
-             breakValue != BreakAvoidColumn;
+    if (curr == layoutView) {
+      return viewIsPaginated && breakValue != EBreakBetween::kColumn &&
+             breakValue != EBreakBetween::kAvoidColumn;
+    }
     if (curr->isLayoutFlowThread()) {
       if (breakValue ==
-          BreakAvoid)  // Valid in any kind of fragmentation context.
+          EBreakBetween::kAvoid)  // Valid in any kind of fragmentation context.
         return true;
-      bool isMulticolValue =
-          breakValue == BreakColumn || breakValue == BreakAvoidColumn;
+      bool isMulticolValue = breakValue == EBreakBetween::kColumn ||
+                             breakValue == EBreakBetween::kAvoidColumn;
       if (toLayoutFlowThread(curr)->isLayoutPagedFlowThread())
         return !isMulticolValue;
       if (isMulticolValue)
@@ -2160,19 +2161,19 @@ bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const {
   return false;
 }
 
-bool LayoutBox::isBreakInsideControllable(EBreak breakValue) const {
-  ASSERT(!isForcedFragmentainerBreakValue(breakValue));
-  if (breakValue == BreakAuto)
+bool LayoutBox::isBreakInsideControllable(EBreakInside breakValue) const {
+  if (breakValue == EBreakInside::kAuto)
     return true;
   // First check multicol.
   const LayoutFlowThread* flowThread = flowThreadContainingBlock();
   // 'avoid-column' is only valid in a multicol context.
-  if (breakValue == BreakAvoidColumn)
+  if (breakValue == EBreakInside::kAvoidColumn)
     return flowThread && !flowThread->isLayoutPagedFlowThread();
   // 'avoid' is valid in any kind of fragmentation context.
-  if (breakValue == BreakAvoid && flowThread)
+  if (breakValue == EBreakInside::kAvoid && flowThread)
     return true;
-  ASSERT(breakValue == BreakAvoidPage || breakValue == BreakAvoid);
+  DCHECK(breakValue == EBreakInside::kAvoidPage ||
+         breakValue == EBreakInside::kAvoid);
   if (view()->fragmentationContext())
     return true;  // The view is paginated, probably because we're printing.
   if (!flowThread)
@@ -2188,25 +2189,28 @@ bool LayoutBox::isBreakInsideControllable(EBreak breakValue) const {
   return false;
 }
 
-EBreak LayoutBox::breakAfter() const {
-  EBreak breakValue = style()->breakAfter();
-  if (breakValue == BreakAuto || isBreakBetweenControllable(breakValue))
+EBreakBetween LayoutBox::breakAfter() const {
+  EBreakBetween breakValue = style()->breakAfter();
+  if (breakValue == EBreakBetween::kAuto ||
+      isBreakBetweenControllable(breakValue))
     return breakValue;
-  return BreakAuto;
+  return EBreakBetween::kAuto;
 }
 
-EBreak LayoutBox::breakBefore() const {
-  EBreak breakValue = style()->breakBefore();
-  if (breakValue == BreakAuto || isBreakBetweenControllable(breakValue))
+EBreakBetween LayoutBox::breakBefore() const {
+  EBreakBetween breakValue = style()->breakBefore();
+  if (breakValue == EBreakBetween::kAuto ||
+      isBreakBetweenControllable(breakValue))
     return breakValue;
-  return BreakAuto;
+  return EBreakBetween::kAuto;
 }
 
-EBreak LayoutBox::breakInside() const {
-  EBreak breakValue = style()->breakInside();
-  if (breakValue == BreakAuto || isBreakInsideControllable(breakValue))
+EBreakInside LayoutBox::breakInside() const {
+  EBreakInside breakValue = style()->breakInside();
+  if (breakValue == EBreakInside::kAuto ||
+      isBreakInsideControllable(breakValue))
     return breakValue;
-  return BreakAuto;
+  return EBreakInside::kAuto;
 }
 
 // At a class A break point [1], the break value with the highest precedence
@@ -2214,7 +2218,7 @@ EBreak LayoutBox::breakInside() const {
 // the value specified on a latter object wins.
 //
 // [1] https://drafts.csswg.org/css-break/#possible-breaks
-static inline int fragmentainerBreakPrecedence(EBreak breakValue) {
+static inline int fragmentainerBreakPrecedence(EBreakBetween breakValue) {
   // "auto" has the lowest priority.
   // "avoid*" values win over "auto".
   // "avoid-page" wins over "avoid-column".
@@ -2228,49 +2232,53 @@ static inline int fragmentainerBreakPrecedence(EBreak breakValue) {
     default:
       ASSERT_NOT_REACHED();
     // fall-through
-    case BreakAuto:
+    case EBreakBetween::kAuto:
       return 0;
-    case BreakAvoidColumn:
+    case EBreakBetween::kAvoidColumn:
       return 1;
-    case BreakAvoidPage:
+    case EBreakBetween::kAvoidPage:
       return 2;
-    case BreakAvoid:
+    case EBreakBetween::kAvoid:
       return 3;
-    case BreakColumn:
+    case EBreakBetween::kColumn:
       return 4;
-    case BreakPage:
+    case EBreakBetween::kPage:
       return 5;
-    case BreakLeft:
-    case BreakRight:
-    case BreakRecto:
-    case BreakVerso:
+    case EBreakBetween::kLeft:
+    case EBreakBetween::kRight:
+    case EBreakBetween::kRecto:
+    case EBreakBetween::kVerso:
       return 6;
   }
 }
 
-EBreak LayoutBox::joinFragmentainerBreakValues(EBreak firstValue,
-                                               EBreak secondValue) {
+EBreakBetween LayoutBox::joinFragmentainerBreakValues(
+    EBreakBetween firstValue,
+    EBreakBetween secondValue) {
   if (fragmentainerBreakPrecedence(secondValue) >=
       fragmentainerBreakPrecedence(firstValue))
     return secondValue;
   return firstValue;
 }
 
-EBreak LayoutBox::classABreakPointValue(EBreak previousBreakAfterValue) const {
+EBreakBetween LayoutBox::classABreakPointValue(
+    EBreakBetween previousBreakAfterValue) const {
   // First assert that we're at a class A break point.
   ASSERT(isBreakBetweenControllable(previousBreakAfterValue));
 
   return joinFragmentainerBreakValues(previousBreakAfterValue, breakBefore());
 }
 
-bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const {
+bool LayoutBox::needsForcedBreakBefore(
+    EBreakBetween previousBreakAfterValue) const {
   // Forced break values are only honored when specified on in-flow objects, but
   // floats and out-of-flow positioned objects may be affected by a break-after
   // value of the previous in-flow object, even though we're not at a class A
   // break point.
-  EBreak breakValue = isFloatingOrOutOfFlowPositioned()
-                          ? previousBreakAfterValue
-                          : classABreakPointValue(previousBreakAfterValue);
+  EBreakBetween breakValue =
+      isFloatingOrOutOfFlowPositioned()
+          ? previousBreakAfterValue
+          : classABreakPointValue(previousBreakAfterValue);
   return isForcedFragmentainerBreakValue(breakValue);
 }
 
@@ -5044,9 +5052,10 @@ LayoutBox::PaginationBreakability LayoutBox::getPaginationBreakability() const {
       (isOutOfFlowPositioned() && style()->position() == FixedPosition))
     return ForbidBreaks;
 
-  EBreak breakValue = breakInside();
-  if (breakValue == BreakAvoid || breakValue == BreakAvoidPage ||
-      breakValue == BreakAvoidColumn)
+  EBreakInside breakValue = breakInside();
+  if (breakValue == EBreakInside::kAvoid ||
+      breakValue == EBreakInside::kAvoidPage ||
+      breakValue == EBreakInside::kAvoidColumn)
     return AvoidBreaks;
   return AllowAnyBreaks;
 }

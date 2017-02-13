@@ -72,9 +72,10 @@ class ColumnBalancer {
   // to the flow thread. Two hooks are provided here. The first one is called
   // right after entering and before traversing the subtree of the box, and the
   // second one right after having traversed the subtree.
-  virtual void examineBoxAfterEntering(const LayoutBox&,
-                                       LayoutUnit childLogicalHeight,
-                                       EBreak previousBreakAfterValue) = 0;
+  virtual void examineBoxAfterEntering(
+      const LayoutBox&,
+      LayoutUnit childLogicalHeight,
+      EBreakBetween previousBreakAfterValue) = 0;
   virtual void examineBoxBeforeLeaving(const LayoutBox&,
                                        LayoutUnit childLogicalHeight) = 0;
 
@@ -132,7 +133,7 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
  private:
   void examineBoxAfterEntering(const LayoutBox&,
                                LayoutUnit childLogicalHeight,
-                               EBreak previousBreakAfterValue);
+                               EBreakBetween previousBreakAfterValue);
   void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
   void examineLine(const RootInlineBox&);
 
@@ -245,7 +246,7 @@ class MinimumSpaceShortageFinder final : public ColumnBalancer {
  private:
   void examineBoxAfterEntering(const LayoutBox&,
                                LayoutUnit childLogicalHeight,
-                               EBreak previousBreakAfterValue);
+                               EBreakBetween previousBreakAfterValue);
   void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
   void examineLine(const RootInlineBox&);
 

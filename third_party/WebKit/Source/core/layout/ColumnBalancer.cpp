@@ -52,7 +52,7 @@ void ColumnBalancer::traverseLines(const LayoutBlockFlow& blockFlow) {
 void ColumnBalancer::traverseChildren(const LayoutObject& object) {
   // The break-after value from the previous in-flow block-level object to be
   // joined with the break-before value of the next in-flow block-level sibling.
-  EBreak previousBreakAfterValue = BreakAuto;
+  EBreakBetween previousBreakAfterValue = EBreakBetween::kAuto;
 
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
@@ -172,7 +172,7 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const {
 void InitialColumnHeightFinder::examineBoxAfterEntering(
     const LayoutBox& box,
     LayoutUnit childLogicalHeight,
-    EBreak previousBreakAfterValue) {
+    EBreakBetween previousBreakAfterValue) {
   if (m_lastBreakSeen > flowThreadOffset()) {
     // We have moved backwards. We're probably in a parallel flow, caused by
     // floats, sibling table cells, etc.
@@ -361,7 +361,7 @@ MinimumSpaceShortageFinder::MinimumSpaceShortageFinder(
 void MinimumSpaceShortageFinder::examineBoxAfterEntering(
     const LayoutBox& box,
     LayoutUnit childLogicalHeight,
-    EBreak previousBreakAfterValue) {
+    EBreakBetween previousBreakAfterValue) {
   LayoutBox::PaginationBreakability breakability =
       box.getPaginationBreakability();
 
