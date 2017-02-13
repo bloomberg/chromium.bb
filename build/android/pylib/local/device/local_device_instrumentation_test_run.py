@@ -257,7 +257,6 @@ class LocalDeviceInstrumentationTestRun(
       device.RunShellCommand(
           ['log', '-p', 'i', '-t', _TAG, 'START %s' % test_name],
           check_return=True)
-      logcat_url = None
       time_ms = lambda: int(time.time() * 1e3)
       start_ms = time_ms()
 
@@ -265,16 +264,16 @@ class LocalDeviceInstrumentationTestRun(
           test_name.replace('#', '.'),
           time.strftime('%Y%m%dT%H%M%S', time.localtime()),
           device.serial)
+      logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
+          device.adb, stream_name)
       with contextlib_ext.Optional(
-          logdog_logcat_monitor.LogdogLogcatMonitor(device.adb, stream_name),
-          self._test_instance.should_save_logcat) as logmon:
+          logmon, self._test_instance.should_save_logcat):
         with contextlib_ext.Optional(
             trace_event.trace(test_name),
             self._env.trace_output):
           output = device.StartInstrumentation(
               target, raw=True, extras=extras, timeout=timeout, retries=0)
-        if logmon:
-          logcat_url = logmon.GetLogcatURL()
+      logcat_url = logmon.GetLogcatURL()
     finally:
       device.RunShellCommand(
           ['log', '-p', 'i', '-t', _TAG, 'END %s' % test_name],
