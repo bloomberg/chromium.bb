@@ -218,7 +218,7 @@ static INLINE RansacFunc get_ransac_type(TransformationType type) {
 
 // computes global motion parameters by fitting a model using RANSAC
 static int compute_global_motion_params(TransformationType type,
-                                        double *correspondences,
+                                        int *correspondences,
                                         int num_correspondences, double *params,
                                         int *inlier_map) {
   int result;
@@ -259,7 +259,7 @@ int compute_global_motion_feature_based(TransformationType type,
                                         double *params) {
   int num_frm_corners, num_ref_corners;
   int num_correspondences;
-  double *correspondences;
+  int *correspondences;
   int num_inliers;
   int frm_corners[2 * MAX_CORNERS], ref_corners[2 * MAX_CORNERS];
   int *inlier_map = NULL;
@@ -291,7 +291,7 @@ int compute_global_motion_feature_based(TransformationType type,
 
   // find correspondences between the two images
   correspondences =
-      (double *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
+      (int *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
   num_correspondences = determine_correspondence(
       frm_buffer, (int *)frm_corners, num_frm_corners, ref_buffer,
       (int *)ref_corners, num_ref_corners, frm->y_width, frm->y_height,

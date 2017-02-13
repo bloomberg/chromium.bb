@@ -16,14 +16,14 @@
 #include <memory.h>
 
 typedef struct {
-  double x, y;
-  double rx, ry;
+  int x, y;
+  int rx, ry;
 } Correspondence;
 
 int determine_correspondence(unsigned char *frm, int *frm_corners,
                              int num_frm_corners, unsigned char *ref,
                              int *ref_corners, int num_ref_corners, int width,
                              int height, int frm_stride, int ref_stride,
-                             double *correspondence_pts);
+                             int *correspondence_pts);
 
 #endif  // AV1_ENCODER_CORNER_MATCH_H_

@@ -116,7 +116,7 @@ static int get_rand_indices(int npoints, int minpts, int *indices,
   return 1;
 }
 
-static int ransac(double *matched_points, int npoints, int *number_of_inliers,
+static int ransac(int *matched_points, int npoints, int *number_of_inliers,
                   int *best_inlier_mask, double *best_params, const int minpts,
                   IsDegenerateFunc is_degenerate,
                   FindTransformationFunc find_transformation,
@@ -305,31 +305,29 @@ static int is_degenerate_homography(double *p) {
          is_collinear3(p, p + 4, p + 6) || is_collinear3(p + 2, p + 4, p + 6);
 }
 
-int ransac_translation(double *matched_points, int npoints,
-                       int *number_of_inliers, int *best_inlier_mask,
-                       double *best_params) {
+int ransac_translation(int *matched_points, int npoints, int *number_of_inliers,
+                       int *best_inlier_mask, double *best_params) {
   return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
                 best_params, 3, is_degenerate_translation, find_translation,
                 project_points_double_translation);
 }
 
-int ransac_rotzoom(double *matched_points, int npoints, int *number_of_inliers,
+int ransac_rotzoom(int *matched_points, int npoints, int *number_of_inliers,
                    int *best_inlier_mask, double *best_params) {
   return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
                 best_params, 3, is_degenerate_affine, find_rotzoom,
                 project_points_double_rotzoom);
 }
 
-int ransac_affine(double *matched_points, int npoints, int *number_of_inliers,
+int ransac_affine(int *matched_points, int npoints, int *number_of_inliers,
                   int *best_inlier_mask, double *best_params) {
   return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
                 best_params, 3, is_degenerate_affine, find_affine,
                 project_points_double_affine);
 }
 
-int ransac_homography(double *matched_points, int npoints,
-                      int *number_of_inliers, int *best_inlier_mask,
-                      double *best_params) {
+int ransac_homography(int *matched_points, int npoints, int *number_of_inliers,
+                      int *best_inlier_mask, double *best_params) {
   return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
                 best_params, 4, is_degenerate_homography, find_homography,
                 project_points_double_homography);
