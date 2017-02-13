@@ -568,11 +568,6 @@ void ThreadHeap::visitStackRoots(Visitor* visitor) {
     state->visitStack(visitor);
 }
 
-void ThreadHeap::checkAndPark(ThreadState* threadState,
-                              SafePointAwareMutexLocker* locker) {
-  m_safePointBarrier->checkAndPark(threadState, locker);
-}
-
 void ThreadHeap::enterSafePoint(ThreadState* threadState) {
   m_safePointBarrier->enterSafePoint(threadState);
 }

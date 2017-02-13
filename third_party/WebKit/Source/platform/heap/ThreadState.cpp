@@ -1172,10 +1172,6 @@ void ThreadState::safePoint(BlinkGC::StackState stackState) {
 
   runScheduledGC(stackState);
   ASSERT(!m_atSafePoint);
-  m_stackState = stackState;
-  m_atSafePoint = true;
-  m_heap->checkAndPark(this, nullptr);
-  m_atSafePoint = false;
   m_stackState = BlinkGC::HeapPointersOnStack;
 }
 

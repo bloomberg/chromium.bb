@@ -290,7 +290,6 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void visitPersistentRoots(Visitor*);
   void visitStackRoots(Visitor*);
-  void checkAndPark(ThreadState*, SafePointAwareMutexLocker*);
   void enterSafePoint(ThreadState*);
   void leaveSafePoint(ThreadState*, SafePointAwareMutexLocker*);
 
