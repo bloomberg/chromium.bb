@@ -120,11 +120,11 @@ html[dir='rtl'] #range-next {
 
 html[dir='rtl'] #range-next,
 #range-previous {
-  -webkit-transform: scalex(-1);
+  transform: scalex(-1);
 }
 
 html[dir='rtl'] #range-previous {
-  -webkit-transform: scaleX(1);
+  transform: scaleX(1);
 }
 
 #range-today {
@@ -480,8 +480,7 @@ html[dir='rtl'] .number-visits {
 }
 
 .site-domain-arrow {
-  -webkit-transform: rotate(0);
-  -webkit-transition: -webkit-transform 300ms linear;
+  -webkit-transition: transform 300ms linear;
   background: url(../disclosure_triangle_small.png) no-repeat;
   background-position: 5px 5px;
   color: rgb(143, 143, 143);
@@ -489,15 +488,16 @@ html[dir='rtl'] .number-visits {
   margin-right: 2px;
   opacity: 0.58;
   text-align: center;
+  transform: rotate(0);
   width: 21px;
 }
 
 html[dir='rtl'] .site-domain-arrow {
-  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 html .expand .site-domain-arrow {
-  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .entry .bookmark-section {

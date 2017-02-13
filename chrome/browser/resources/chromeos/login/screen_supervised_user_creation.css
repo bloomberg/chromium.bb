@@ -413,7 +413,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 #supervised-user-creation-image-preview-img.animated-transform {
-  -webkit-transition: -webkit-transform 200ms linear;
+  -webkit-transition: transform 200ms linear;
 }
 
 .camera.live #supervised-user-creation-image-preview-img {
@@ -421,7 +421,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 .camera.flip-x #supervised-user-creation-image-preview-img {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .default-image #supervised-user-creation-image-preview-img {
@@ -442,7 +442,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 #supervised-user-creation-image-stream-crop {
-  -webkit-transition: -webkit-transform 200ms linear;
+  -webkit-transition: transform 200ms linear;
   height: 220px;
   overflow: hidden;
   position: relative;
@@ -450,7 +450,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 .flip-x #supervised-user-creation-image-stream-crop {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .supervised-user-creation-image-stream {
@@ -491,7 +491,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 
 /* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
 .flip-trick {
-  -webkit-transform: translateZ(1px);
+  transform: translateZ(1px);
 }
 
 html[dir=rtl] #supervised-user-creation-flip-photo {
@@ -527,11 +527,11 @@ html[dir=rtl] #supervised-user-creation-flip-photo {
 }
 
 #supervised-user-creation-image-preview .perspective-box {
-  -webkit-perspective: 600px;
-   border: solid 1px #cacaca;
-   border-radius: 4px;
-   padding: 2px;
-   width: 220px;
+  border: solid 1px #cacaca;
+  border-radius: 4px;
+  padding: 2px;
+  perspective: 600px;
+  width: 220px;
 }
 
 .supervised-user-creation-image-stream-area .spinner {

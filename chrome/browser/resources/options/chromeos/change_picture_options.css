@@ -58,10 +58,10 @@
 }
 
 #user-image-preview .perspective-box {
-  -webkit-perspective: 600px;
   border: solid 1px #cacaca;
   border-radius: 4px;
   padding: 3px;
+  perspective: 600px;
   width: 220px;
 }
 
@@ -79,7 +79,7 @@
 }
 
 .camera.flip-x #user-image-preview-img {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .user-image-stream-area {
@@ -99,7 +99,7 @@
 }
 
 .flip-x #user-image-stream-crop {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 /* TODO(ivankr): specify dimensions from real capture size. */

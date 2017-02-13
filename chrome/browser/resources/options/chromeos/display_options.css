@@ -31,11 +31,11 @@
  * This is achieved by a square rotated by 45-deg, and it has border at the
  * upper-half, which were left/top before the rotation. */
 #display-configuration-arrow {
-  -webkit-transform: rotate(45deg);
   border-left: 1px solid lightgrey;
   border-top: 1px solid lightgrey;
   height: 20px;
   position: absolute;
+  transform: rotate(45deg);
   width: 20px;
   z-index: 1;
 }

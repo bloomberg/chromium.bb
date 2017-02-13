@@ -45,7 +45,7 @@ cr.define('uber', function() {
     for (var i = 0; i < headerElements.length; i++) {
       // As a workaround for http://crbug.com/231830, set the transform to
       // 'none' rather than 0px.
-      headerElements[i].style.webkitTransform = offset ?
+      headerElements[i].style.transform = offset ?
           'translateX(' + offset + 'px)' : 'none';
     }
 

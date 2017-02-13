@@ -120,7 +120,7 @@ cr.define('uber_frame', function() {
    */
   function adjustToScroll(scrollLeft) {
     assert(isRTL());
-    document.body.style.webkitTransform = 'translateX(' + -scrollLeft + 'px)';
+    document.body.style.transform = 'translateX(' + -scrollLeft + 'px)';
   }
 
   /**

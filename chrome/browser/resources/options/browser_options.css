@@ -271,11 +271,11 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-options-button {
   -webkit-box-flex: 0;
-  -webkit-transform: scale(0.6);
   background-image: none;
   background-position: center center;
   display: block;
   opacity: 0.5;
+  transform: scale(0.6);
   vertical-align: middle;
   width: 19px;
 }

@@ -28,7 +28,7 @@ body {
 }
 
 #navigation.changing-content {
-  -webkit-transition: -webkit-transform 100ms, width 100ms;
+  -webkit-transition: transform 100ms, width 100ms;
 }
 
 .iframe-container {

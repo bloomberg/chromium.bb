@@ -147,8 +147,8 @@ img {
 }
 
 .port-icon.transient {
-  -webkit-transform: scale(1.2);
   background-color: orange;
+  transform: scale(1.2);
 }
 
 .port-number {

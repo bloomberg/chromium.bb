@@ -238,8 +238,8 @@ cr.define('ntp', function() {
       if (isRTL())
         x *= -1;
 
-      this.doppleganger_.style.WebkitTransform = 'translate(' + x + 'px, ' +
-                                                                y + 'px)';
+      this.doppleganger_.style.transform = 'translate(' + x + 'px, ' +
+                                                          y + 'px)';
     },
 
     /**

@@ -40,7 +40,6 @@
 
 /* Provides the arrow which points at the anchor element. */
 .search-bubble-innards::after {
-  -webkit-transform: rotate(45deg);
   background: linear-gradient(-45deg, rgb(251, 255, 181),
                                       rgb(255, 248, 172) 50%,
                                       rgba(255, 248, 172, 0));
@@ -52,6 +51,7 @@
   left: 53px;
   position: absolute;
   top: -7px;
+  transform: rotate(45deg);
   width: 12px;
   z-index: -1;
 }

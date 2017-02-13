@@ -47,13 +47,13 @@
 }
 
 .error-header {
-  /* A hack used to prevent aliasing on High-DPI displays. */
-  -webkit-transform: scale3d(1,1,1);
   background-clip: padding-box;
   background-color: white;
   border-bottom: 1px solid rgb(238,238,238);
   padding: 71px 20px 50px;
   text-align: center;
+  /* A hack used to prevent aliasing on High-DPI displays. */
+  transform: scale3d(1,1,1);
 }
 
 .error-icon {

@@ -426,7 +426,7 @@ cr.define('uber', function() {
       var navWidth = Math.max(0, +navFrame.dataset.width + scrollOffset);
       navFrame.style.width = navWidth + 'px';
     } else {
-      navFrame.style.webkitTransform = 'translateX(' + -scrollOffset + 'px)';
+      navFrame.style.transform = 'translateX(' + -scrollOffset + 'px)';
     }
   }
 

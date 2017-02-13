@@ -79,7 +79,7 @@ a:visited {
 
 .mv-tile {
   -webkit-transition-duration: 200ms;
-  -webkit-transition-property: -webkit-transform, border,
+  -webkit-transition-property: transform, border,
     box-shadow, margin, opacity, width;
   cursor: pointer;
 }
@@ -90,9 +90,9 @@ a:visited {
 }
 
 .mv-tile.blacklisted {
-  -webkit-transform: scale(0, 0);
   border: none !important;
   margin: 0;
+  transform: scale(0, 0);
   width: 0;
 }
 
@@ -105,10 +105,10 @@ a:visited {
 }
 
 .mv-tile.mv-blacklist {
-  -webkit-transform: scale(0, 0);
-  -webkit-transform-origin: 0 41px;
   margin-left: 0;
   margin-right: 0;
+  transform: scale(0, 0);
+  transform-origin: 0 41px;
   width: 0;
 }
 

@@ -9,8 +9,8 @@
   <template>
     <style include="settings-shared">
       #perspectiveBox {
-        -webkit-perspective: 600px;
         height: 228px;
+        perspective: 600px;
         width: 228px;
       }
 
@@ -22,7 +22,7 @@
       }
 
       #userImageStreamCrop.flip-x {
-        -webkit-transform: rotateY(180deg);
+        transform: rotateY(180deg);
       }
 
       paper-spinner {

@@ -262,11 +262,11 @@ html[dir='rtl'] #trash > .can {
 }
 
 #footer.showing-trash-mode #trash.drag-target .lid {
-  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
 }
 
 html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
-  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 
 #fontMeasuringDiv {

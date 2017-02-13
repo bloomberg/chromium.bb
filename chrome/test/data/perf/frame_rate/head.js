@@ -414,7 +414,7 @@ function __start_recording() {
 }
 
 function __make_body_composited() {
-  document.body.style.webkitTransform = "translateZ(0)";
+  document.body.style.transform = "translateZ(0)";
 }
 
 function __start(gesture_function) {
@@ -491,5 +491,5 @@ function __reset() {
 }
 
 function __force_compositor() {
-  document.body.style.webkitTransform = "translateZ(0)";
+  document.body.style.transform = "translateZ(0)";
 }

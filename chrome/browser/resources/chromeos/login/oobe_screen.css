@@ -15,7 +15,7 @@
 }
 
 .step.animated:not(.faded) {
-  -webkit-transition: -webkit-transform 200ms ease-in-out,
+  -webkit-transition: transform 200ms ease-in-out,
                       opacity 200ms ease-in-out,
                       visibility 200ms ease-in-out;
 }
@@ -31,11 +31,11 @@
 }
 
 .step.right {
-  -webkit-transform: translateX(50px);
+  transform: translateX(50px);
 }
 
 .step.left {
-  -webkit-transform: translateX(-50px)
+  transform: translateX(-50px)
 }
 
 .step.fullscreen {

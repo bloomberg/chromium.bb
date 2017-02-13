@@ -105,7 +105,7 @@ html[dir=rtl] #user-image-preview {
 }
 
 #user-image-preview-img.animated-transform {
-  -webkit-transition: -webkit-transform 200ms linear;
+  -webkit-transition: transform 200ms linear;
 }
 
 .camera.live #user-image-preview-img {
@@ -113,7 +113,7 @@ html[dir=rtl] #user-image-preview {
 }
 
 .camera.flip-x #user-image-preview-img {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .default-image #user-image-preview-img {
@@ -134,7 +134,7 @@ html[dir=rtl] #user-image-preview {
 }
 
 #user-image-stream-crop {
-  -webkit-transition: -webkit-transform 200ms linear;
+  -webkit-transition: transform 200ms linear;
   height: 220px;
   overflow: hidden;
   position: relative;
@@ -142,7 +142,7 @@ html[dir=rtl] #user-image-preview {
 }
 
 .flip-x #user-image-stream-crop {
-  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 /* TODO(ivankr): specify dimensions from real capture size. */
@@ -185,7 +185,7 @@ html[dir=rtl] #user-image-preview {
 
 /* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
 .flip-trick {
-  -webkit-transform: translateZ(1px);
+  transform: translateZ(1px);
 }
 
 html[dir=rtl] #flip-photo {
@@ -221,10 +221,10 @@ html[dir=rtl] #flip-photo {
 }
 
 #user-image-preview .perspective-box {
-  -webkit-perspective: 600px;
   border: solid 1px #cacaca;
   border-radius: 4px;
   padding: 2px;
+  perspective: 600px;
   width: 220px;
 }
 

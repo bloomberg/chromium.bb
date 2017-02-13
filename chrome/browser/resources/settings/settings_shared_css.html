@@ -350,13 +350,13 @@
 
       /* Provides the arrow which points at the anchor element. */
       .search-bubble-innards::after {
-        -webkit-transform: rotate(-45deg);
         background-color: var(--paper-yellow-500);
         content: '';
         height: 10px;
         left: 55px;
         position: absolute;
         top: -5px;
+        transform: rotate(-45deg);
         width: 10px;
         z-index: -1;
       }
@@ -364,9 +364,9 @@
       /* Turns the arrow direction downwards, when the bubble is placed above
        * the anchor element */
       .search-bubble-innards.above::after {
-        -webkit-transform: rotate(-135deg);
         bottom: -5px;
         top: auto;
+        transform: rotate(-135deg);
       }
     </style>
   </template>

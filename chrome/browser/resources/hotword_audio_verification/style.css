@@ -175,8 +175,8 @@ a[is='action-link'] {
 }
 
 @-webkit-keyframes rotate {
-  from { -webkit-transform: rotate(0); }
-  to { -webkit-transform: rotate(359deg); }
+  from { transform: rotate(0); }
+  to { transform: rotate(359deg); }
 }
 
 .train.listening .icon {

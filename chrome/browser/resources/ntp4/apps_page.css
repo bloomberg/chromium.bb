@@ -9,13 +9,13 @@
 }
 
 .app-contents {
-  -webkit-transition: -webkit-transform 100ms;
+  -webkit-transition: transform 100ms;
 }
 
 .app-contents:active:not(.suppress-active),
 .app:not(.click-focus):focus .app-contents:not(.suppress-active),
 .drag-representation:not(.placing) .app-contents {
-  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 /* Don't animate the initial scaling.  */
