@@ -84,7 +84,6 @@ action("cloud_policy_code_generate") {
     protobuf_decoder_path,
     chrome_settings_proto_path,
     cloud_policy_proto_path,
-    cloud_policy_full_runtime_proto_path,
     app_restrictions_path,
     risk_tag_header_path,
   ]
@@ -102,13 +101,40 @@ action("cloud_policy_code_generate") {
         rebase_path(chrome_settings_proto_path, root_build_dir),
     "--cloud-policy-protobuf=" +
         rebase_path(cloud_policy_proto_path, root_build_dir),
-    "--cloud-policy-full-runtime-protobuf=" +
-        rebase_path(cloud_policy_full_runtime_proto_path, root_build_dir),
     "--cloud-policy-decoder=" +
         rebase_path(protobuf_decoder_path, root_build_dir),
     "--app-restrictions-definition=" +
         rebase_path(app_restrictions_path, root_build_dir),
     "--risk-tag-header=" + rebase_path(risk_tag_header_path, root_build_dir),
+    chrome_version_path,
+    target_os,
+    chromeos_flag,
+    rebase_path("resources/policy_templates.json", root_build_dir),
+  ]
+}
+
+action("cloud_policy_full_runtime_code_generate") {
+  script = "tools/generate_policy_source.py"
+  chrome_version_abspath = "//chrome/VERSION"
+  chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
+
+  if (is_chromeos) {
+    chromeos_flag = "1"
+  } else {
+    chromeos_flag = "0"
+  }
+
+  inputs = [
+    chrome_version_abspath,
+    "resources/policy_templates.json",
+  ]
+  outputs = [
+    cloud_policy_full_runtime_proto_path,
+  ]
+
+  args = [
+    "--cloud-policy-full-runtime-protobuf=" +
+        rebase_path(cloud_policy_full_runtime_proto_path, root_build_dir),
     chrome_version_path,
     target_os,
     chromeos_flag,

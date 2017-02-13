@@ -232,16 +232,23 @@ def main():
         writer(sorted and sorted_policy_details or policy_details,
                os, f, riskTags)
 
-  GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
-  GenerateFile(opts.source_path, _WritePolicyConstantSource, sorted=True)
-  GenerateFile(opts.risk_header_path, _WritePolicyRiskTagHeader)
-  GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
-  GenerateFile(opts.cloud_policy_full_runtime_proto_path,
-      _WriteCloudPolicyFullRuntimeProtobuf)
-  GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
-  GenerateFile(opts.cloud_policy_decoder_path, _WriteCloudPolicyDecoder)
+  if opts.header_path:
+    GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
+  if opts.source_path:
+    GenerateFile(opts.source_path, _WritePolicyConstantSource, sorted=True)
+  if opts.risk_header_path:
+    GenerateFile(opts.risk_header_path, _WritePolicyRiskTagHeader)
+  if opts.cloud_policy_proto_path:
+    GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
+  if opts.cloud_policy_full_runtime_proto_path:
+    GenerateFile(opts.cloud_policy_full_runtime_proto_path,
+        _WriteCloudPolicyFullRuntimeProtobuf)
+  if opts.chrome_settings_proto_path:
+    GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
+  if opts.cloud_policy_decoder_path:
+    GenerateFile(opts.cloud_policy_decoder_path, _WriteCloudPolicyDecoder)
 
-  if os == 'android':
+  if os == 'android' and opts.app_restrictions_path:
     GenerateFile(opts.app_restrictions_path, _WriteAppRestrictions, xml=True)
 
   return 0
