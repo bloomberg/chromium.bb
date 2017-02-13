@@ -249,6 +249,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable FrameLoader m_loader;
   Member<NavigationScheduler> m_navigationScheduler;
 
+  // Cleared by LocalFrame::detach(), so as to keep the observable lifespan
+  // of LocalFrame::view().
   Member<FrameView> m_view;
   // Usually 0. Non-null if this is the top frame of PagePopup.
   Member<Element> m_pagePopupOwner;

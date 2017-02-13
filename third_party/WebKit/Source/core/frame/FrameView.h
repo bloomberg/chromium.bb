@@ -1039,13 +1039,6 @@ class CORE_EXPORT FrameView final
   // Member<Widget> instead.
   HashSet<RefPtr<LayoutPart>> m_parts;
 
-  // The RefPtr cycle between LocalFrame and FrameView is broken
-  // when a LocalFrame is detached by LocalFrame::detach().
-  // It clears the LocalFrame's m_view reference via setView(nullptr).
-  //
-  // For Oilpan, Member reference cycles pose no problem, but
-  // LocalFrame's FrameView is also cleared by that setView(), so as to
-  // keep the observable lifespan of LocalFrame::view() identical.
   Member<LocalFrame> m_frame;
 
   WebDisplayMode m_displayMode;
