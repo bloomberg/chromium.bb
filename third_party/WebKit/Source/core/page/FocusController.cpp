@@ -1076,10 +1076,11 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame,
     return;
 
   FrameSelection& selection = oldFocusedFrame->selection();
-  if (selection.isNone())
+  const SelectionInDOMTree& selectionInDOMTree = selection.selectionInDOMTree();
+  if (selectionInDOMTree.isNone())
     return;
 
-  Node* selectionStartNode = selection.selection().start().anchorNode();
+  Node* selectionStartNode = selectionInDOMTree.base().anchorNode();
   if (selectionStartNode == newFocusedElement ||
       selectionStartNode->isDescendantOf(newFocusedElement))
     return;

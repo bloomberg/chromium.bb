@@ -45,7 +45,6 @@
 
 namespace blink {
 
-class CharacterData;
 class DisplayItemClient;
 class LayoutBlock;
 class LocalFrame;
@@ -55,7 +54,6 @@ class GraphicsContext;
 class HTMLFormElement;
 class SelectionEditor;
 class PendingSelection;
-class Text;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
 
@@ -91,6 +89,7 @@ class CORE_EXPORT FrameSelection final
     DoNotSetFocus = 1 << 3,
     DoNotUpdateAppearance = 1 << 4,
     DoNotClearStrategy = 1 << 5,
+    // TODO(yosin): We should get rid of |DoNotAdjustInFlatTree|.
     DoNotAdjustInFlatTree = 1 << 6,
   };
   // Union of values in SetSelectionOption and EUserTriggered
@@ -102,8 +101,7 @@ class CORE_EXPORT FrameSelection final
 
   bool isAvailable() const { return lifecycleContext(); }
   // You should not call |document()| when |!isAvailable()|.
-  const Document& document() const;
-  Document& document();
+  Document& document() const;
   LocalFrame* frame() const { return m_frame; }
   Element* rootEditableElement() const {
     return selection().rootEditableElement();
@@ -122,6 +120,8 @@ class CORE_EXPORT FrameSelection final
 
   template <typename Strategy>
   const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
+  const VisibleSelection& computeVisibleSelectionInDOMTree() const;
+  const VisibleSelectionInFlatTree& computeVisibleSelectionInFlatTree() const;
 
   const VisibleSelection& selection() const;
 
@@ -203,11 +203,13 @@ class CORE_EXPORT FrameSelection final
 
   void didChangeFocus();
 
+  const SelectionInDOMTree& selectionInDOMTree() const;
+  // TODO(yosin): We should rename |isNone()| to |isVisibleNone()|.
   bool isNone() const { return selection().isNone(); }
   bool isCaret() const { return selection().isCaret(); }
   bool isRange() const { return selection().isRange(); }
   bool isInPasswordField() const;
-  bool isDirectional() const { return selection().isDirectional(); }
+  bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 
   // If this FrameSelection has a logical range which is still valid, this
   // function return its clone. Otherwise, the return value from underlying
@@ -245,9 +247,7 @@ class CORE_EXPORT FrameSelection final
 
   void setUseSecureKeyboardEntryWhenActive(bool);
 
-  bool isHandleVisible() const {
-    return m_handleVisibility == HandleVisibility::Visible;
-  }
+  bool isHandleVisible() const;
 
   void updateSecureKeyboardEntryIfActive();
 
@@ -311,19 +311,6 @@ class CORE_EXPORT FrameSelection final
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.
   const VisibleSelectionInFlatTree& selectionInFlatTree() const;
 
-  template <typename Strategy>
-  void setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&,
-                             HandleVisibility,
-                             SetSelectionOptions,
-                             CursorAlignOnScroll,
-                             TextGranularity);
-
-  void respondToNodeModification(Node&,
-                                 bool baseRemoved,
-                                 bool extentRemoved,
-                                 bool startRemoved,
-                                 bool endRemoved);
-
   void notifyAccessibilityForSelectionChange();
   void notifyCompositorForSelectionChange();
   void notifyEventHandlerForSelectionChange();
@@ -343,14 +330,6 @@ class CORE_EXPORT FrameSelection final
   void contextDestroyed(Document*) final;
   void nodeChildrenWillBeRemoved(ContainerNode&) final;
   void nodeWillBeRemoved(Node&) final;
-  void didUpdateCharacterData(CharacterData*,
-                              unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength) final;
-  void didMergeTextNodes(const Text& mergedNode,
-                         const NodeWithIndex& nodeToBeRemovedWithIndex,
-                         unsigned oldLength) final;
-  void didSplitTextNode(const Text& oldNode) final;
 
   Member<LocalFrame> m_frame;
   const Member<PendingSelection> m_pendingSelection;
@@ -360,8 +339,6 @@ class CORE_EXPORT FrameSelection final
   LayoutUnit m_xPosForVerticalArrowNavigation;
 
   bool m_focused : 1;
-
-  HandleVisibility m_handleVisibility = HandleVisibility::NotVisible;
 
   // Controls text granularity used to adjust the selection's extent in
   // moveRangeSelectionExtent.
