@@ -237,7 +237,8 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
   [button setTitle:title forState:UIControlStateNormal];
-  button.titleLabel.numberOfLines = 0;
+  button.titleLabel.numberOfLines = 3;
+  button.titleLabel.adjustsFontSizeToFitWidth = YES;
 
   button.backgroundColor = [UIColor whiteColor];
   UIColor* textColor = isDestructive ? [[MDCPalette cr_redPalette] tint500]
