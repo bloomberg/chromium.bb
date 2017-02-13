@@ -227,8 +227,41 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     ]
   }
 
+  if (enable_dsyms) {
+    action("cronet_dsym_archive") {
+      script = "//chrome/tools/build/mac/archive_symbols.py"
+
+      # These are the dSYMs that will be archived. The sources list must be
+      # the target outputs that correspond to the dSYMs (since a dSYM is a
+      # directory it cannot be listed as a source file). The targets that
+      # generate both the dSYM and binary image are listed in deps.
+      _dsyms = [ "$root_out_dir/Cronet.dSYM" ]
+
+      sources = [
+        "$root_out_dir/Cronet.framework",
+      ]
+
+      _output = "$_package_dir/Cronet.dSYM.tar.bz2"
+
+      outputs = [
+        _output,
+      ]
+
+      args = [ rebase_path(_output, root_out_dir) ] +
+             rebase_path(_dsyms, root_out_dir)
+
+      deps = [
+        ":cronet_framework",
+      ]
+    }
+  } else {
+    group("cronet_dsym_archive") {
+    }
+  }
+
   group("cronet_package") {
     deps = [
+      ":cronet_dsym_archive",
       ":cronet_package_copy",
       ":generate_license",
     ]
