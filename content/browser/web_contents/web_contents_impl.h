@@ -571,22 +571,11 @@ class CONTENT_EXPORT WebContentsImpl
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                               const GURL& validated_url,
-                               bool is_error_page) override;
-  void DidFailProvisionalLoadWithError(RenderFrameHostImpl* render_frame_host,
-                                       const GURL& validated_url,
-                                       int error_code,
-                                       const base::string16& error_description,
-                                       bool was_ignored_by_handler) override;
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
                             int error_code,
                             const base::string16& error_description,
                             bool was_ignored_by_handler) override;
-  void DidCommitProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                                const GURL& url,
-                                ui::PageTransition transition_type) override;
   void DidNavigateMainFramePreCommit(bool navigation_is_within_page) override;
   void DidNavigateMainFramePostCommit(
       RenderFrameHostImpl* render_frame_host,

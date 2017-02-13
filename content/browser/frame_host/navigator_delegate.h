@@ -47,12 +47,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // TODO(clamy): all methods below that are related to navigation
   // events should go away in favor of the ones above.
 
-  // The RenderFrameHost started a provisional load for the frame
-  // represented by |render_frame_host|.
-  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                                       const GURL& validated_url,
-                                       bool is_error_page) {}
-
   // A provisional load in |render_frame_host| failed.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
@@ -68,12 +62,6 @@ class CONTENT_EXPORT NavigatorDelegate {
       int error_code,
       const base::string16& error_description,
       bool was_ignored_by_handler) {}
-
-  // A navigation was committed in |render_frame_host|.
-  virtual void DidCommitProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) {}
 
   // Handles post-navigation tasks in navigation BEFORE the entry has been
   // committed to the NavigationController.

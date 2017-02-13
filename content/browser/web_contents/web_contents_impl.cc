@@ -3302,6 +3302,19 @@ void WebContentsImpl::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
   for (auto& observer : observers_)
     observer.DidRedirectNavigation(navigation_handle);
+
+  // Notify accessibility if this is a reload. This has to called on the
+  // BrowserAccessibilityManager associated with the old RFHI.
+  if (navigation_handle->GetReloadType() != ReloadType::NONE) {
+    NavigationHandleImpl* nhi =
+        static_cast<NavigationHandleImpl*>(navigation_handle);
+    BrowserAccessibilityManager* manager =
+        nhi->frame_tree_node()
+            ->current_frame_host()
+            ->browser_accessibility_manager();
+    if (manager)
+      manager->UserIsReloading();
+  }
 }
 
 void WebContentsImpl::ReadyToCommitNavigation(
@@ -3313,47 +3326,20 @@ void WebContentsImpl::ReadyToCommitNavigation(
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
   for (auto& observer : observers_)
     observer.DidFinishNavigation(navigation_handle);
-}
 
-void WebContentsImpl::DidStartProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
-  // Notify observers about the start of the provisional load.
-  for (auto& observer : observers_) {
-    observer.DidStartProvisionalLoadForFrame(render_frame_host, validated_url,
-                                             is_error_page);
-  }
-
-  // Notify accessibility if this is a reload.
-  NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (entry && ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
-                                            ui::PAGE_TRANSITION_RELOAD)) {
-    FrameTreeNode* ftn = render_frame_host->frame_tree_node();
+  if (navigation_handle->HasCommitted()) {
     BrowserAccessibilityManager* manager =
-        ftn->current_frame_host()->browser_accessibility_manager();
-    if (manager)
-      manager->UserIsReloading();
+        static_cast<RenderFrameHostImpl*>(
+            navigation_handle->GetRenderFrameHost())
+            ->browser_accessibility_manager();
+    if (manager) {
+      if (navigation_handle->IsErrorPage()) {
+        manager->NavigationFailed();
+      } else {
+        manager->NavigationSucceeded();
+      }
+    }
   }
-}
-
-void WebContentsImpl::DidFailProvisionalLoadWithError(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  for (auto& observer : observers_) {
-    observer.DidFailProvisionalLoad(render_frame_host, validated_url,
-                                    error_code, error_description,
-                                    was_ignored_by_handler);
-  }
-
-  FrameTreeNode* ftn = render_frame_host->frame_tree_node();
-  BrowserAccessibilityManager* manager =
-      ftn->current_frame_host()->browser_accessibility_manager();
-  if (manager)
-    manager->NavigationFailed();
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -3411,22 +3397,6 @@ bool WebContentsImpl::ShouldPreserveAbortedURLs() {
   return delegate_->ShouldPreserveAbortedURLs(this);
 }
 
-void WebContentsImpl::DidCommitProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  // Notify observers about the commit of the provisional load.
-  for (auto& observer : observers_) {
-    observer.DidCommitProvisionalLoadForFrame(render_frame_host, url,
-                                              transition_type);
-  }
-
-  BrowserAccessibilityManager* manager =
-      render_frame_host->browser_accessibility_manager();
-  if (manager)
-    manager->NavigationSucceeded();
-}
-
 void WebContentsImpl::DidNavigateMainFramePreCommit(
     bool navigation_is_within_page) {
   // Ensure fullscreen mode is exited before committing the navigation to a
@@ -3465,10 +3435,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     theme_color_ = SK_ColorTRANSPARENT;
   }
 
-  // Notify observers about navigation.
-  for (auto& observer : observers_)
-    observer.DidNavigateMainFrame(details, params);
-
   if (delegate_)
     delegate_->DidNavigateMainFramePostCommit(this);
   view_->SetOverscrollControllerEnabled(CanOverscrollContent());
@@ -3491,10 +3457,6 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   if (params.gesture == NavigationGestureUser && dialog_manager_) {
     dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
-
-  // Notify observers about navigation.
-  for (auto& observer : observers_)
-    observer.DidNavigateAnyFrame(render_frame_host, details, params);
 }
 
 void WebContentsImpl::SetMainFrameMimeType(const std::string& mime_type) {

@@ -209,42 +209,6 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
   ongoing_navigations_.erase(navigation_handle);
 }
 
-void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page) {
-  AssertRenderFrameExists(render_frame_host);
-}
-
-void WebContentsObserverSanityChecker::DidCommitProvisionalLoadForFrame(
-    RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  AssertRenderFrameExists(render_frame_host);
-}
-
-void WebContentsObserverSanityChecker::DidFailProvisionalLoad(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  AssertRenderFrameExists(render_frame_host);
-}
-
-void WebContentsObserverSanityChecker::DidNavigateMainFrame(
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  AssertMainFrameExists();
-}
-
-void WebContentsObserverSanityChecker::DidNavigateAnyFrame(
-    RenderFrameHost* render_frame_host,
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  AssertRenderFrameExists(render_frame_host);
-}
-
 void WebContentsObserverSanityChecker::DocumentAvailableInMainFrame() {
   AssertMainFrameExists();
 }

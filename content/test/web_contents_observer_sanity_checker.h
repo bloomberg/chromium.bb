@@ -46,23 +46,6 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
-                                       const GURL& validated_url,
-                                       bool is_error_page) override;
-  void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-  void DidFailProvisionalLoad(RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
-  void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                            const FrameNavigateParams& params) override;
-  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                           const LoadCommittedDetails& details,
-                           const FrameNavigateParams& params) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DocumentLoadedInFrame(RenderFrameHost* render_frame_host) override;

@@ -35,7 +35,6 @@ class WebContentsImpl;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct FaviconURL;
-struct FrameNavigateParams;
 struct LoadCommittedDetails;
 struct Referrer;
 struct ResourceRedirectDetails;
@@ -202,61 +201,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // function will be removed when PlzNavigate is enabled.
   virtual void DidStartNavigationToPendingEntry(const GURL& url,
                                                 ReloadType reload_type) {}
-
-  // |render_frame_host| is the RenderFrameHost for which the provisional load
-  // is happening.
-  //
-  // Since the URL validation will strip error URLs, the boolean flag
-  // |is_error_page| will indicate that the not validated URL was an error page.
-  //
-  // Note that during a cross-process navigation, several provisional loads
-  // can be on-going in parallel.
-  //
-  // DEPRECATED. Use DidStartNavigation instead in all cases.
-  virtual void DidStartProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) {}
-
-  // This method is invoked when the provisional load was successfully
-  // committed.
-  //
-  // If the navigation only changed the reference fragment, or was triggered
-  // using the history API (e.g. window.history.replaceState), we will receive
-  // this signal without a prior DidStartProvisionalLoadForFrame signal.
-  //
-  // DEPRECATED. Use DidFinishNavigation instead in all cases.
-  virtual void DidCommitProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) {}
-
-  // This method is invoked when the provisional load failed.
-  //
-  // DEPRECATED. Use DidFinishNavigation instead in all cases.
-  virtual void DidFailProvisionalLoad(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) {}
-
-  // If the provisional load corresponded to the main frame, this method is
-  // invoked in addition to DidCommitProvisionalLoadForFrame.
-  //
-  // DEPRECATED. Use DidFinishNavigation instead in all cases.
-  virtual void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) {}
-
-  // And regardless of what frame navigated, this method is invoked after
-  // DidCommitProvisionalLoadForFrame was invoked.
-  //
-  // DEPRECATED. Use DidFinishNavigation instead in all cases.
-  virtual void DidNavigateAnyFrame(
-      RenderFrameHost* render_frame_host,
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) {}
 
   // Document load events ------------------------------------------------------
 

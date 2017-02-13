@@ -192,12 +192,6 @@ void NavigatorImpl::DidStartProvisionalLoad(
                                 render_frame_host->navigation_handle());
   }
 
-  if (delegate_) {
-    // Notify the observer about the start of the provisional load.
-    delegate_->DidStartProvisionalLoad(render_frame_host, validated_url,
-                                       is_error_page);
-  }
-
   if (is_error_page || IsBrowserSideNavigationEnabled())
     return;
 
@@ -698,20 +692,6 @@ void NavigatorImpl::DidNavigate(
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
     DCHECK_EQ(!render_frame_host->GetParent(),
               did_navigate ? details.is_main_frame : false);
-    ui::PageTransition transition_type = params.transition;
-    // Whether or not a page transition was triggered by going backward or
-    // forward in the history is only stored in the navigation controller's
-    // entry list.
-    if (did_navigate &&
-        (controller_->GetLastCommittedEntry()->GetTransitionType() &
-            ui::PAGE_TRANSITION_FORWARD_BACK)) {
-      transition_type = ui::PageTransitionFromInt(
-          params.transition | ui::PAGE_TRANSITION_FORWARD_BACK);
-    }
-
-    delegate_->DidCommitProvisionalLoad(render_frame_host,
-                                        params.url,
-                                        transition_type);
     navigation_handle->DidCommitNavigation(params, details.did_replace_entry,
                                            details.previous_url, details.type,
                                            render_frame_host);
