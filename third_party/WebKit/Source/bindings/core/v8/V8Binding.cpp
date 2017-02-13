@@ -797,15 +797,7 @@ EventTarget* toEventTarget(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   // exists on a prototype chain of v8Value.
   if (DOMWindow* window = toDOMWindow(isolate, value))
     return window;
-  if (V8EventTarget::hasInstance(value, isolate)) {
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-    const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
-    if (wrapperTypeInfo->eventTargetInheritance ==
-        WrapperTypeInfo::NotInheritFromEventTarget)
-      return nullptr;
-    return static_cast<EventTarget*>(toScriptWrappable(object));
-  }
-  return nullptr;
+  return V8EventTarget::toImplWithTypeCheck(isolate, value);
 }
 
 void toFlexibleArrayBufferView(v8::Isolate* isolate,

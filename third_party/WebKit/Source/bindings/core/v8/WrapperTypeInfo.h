@@ -95,11 +95,6 @@ struct WrapperTypeInfo {
     InheritFromActiveScriptWrappable,
   };
 
-  enum EventTargetInheritance {
-    NotInheritFromEventTarget,
-    InheritFromEventTarget,
-  };
-
   enum Lifetime {
     Dependent,
     Independent,
@@ -185,7 +180,6 @@ struct WrapperTypeInfo {
   const unsigned wrapperClassId : 2;        // WrapperClassId
   const unsigned
       activeScriptWrappableInheritance : 1;  // ActiveScriptWrappableInheritance
-  const unsigned eventTargetInheritance : 1;  // EventTargetInheritance
   const unsigned lifetime : 1;                // Lifetime
 };
 
