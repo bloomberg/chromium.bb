@@ -831,6 +831,10 @@ class CORE_EXPORT FrameView final
   // Returns the GeometryMapper associated with the root local frame.
   GeometryMapper& geometryMapper();
 
+  // The visual viewport can supply scrollbars which affect the existence of
+  // our scrollbars (see: computeScrollbarExistence).
+  void visualViewportScrollbarsChanged();
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -1206,6 +1210,8 @@ class CORE_EXPORT FrameView final
   std::unique_ptr<GeometryMapper> m_geometryMapper;
 
   Member<PrintContext> m_printContext;
+
+  FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

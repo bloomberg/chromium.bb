@@ -4292,4 +4292,53 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
   EXPECT_EQ(800, vwElement->offsetWidth());
 }
 
+TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
+  WebViewImpl* webView = m_webViewHelper.initialize();
+  webView->resize(WebSize(800, 600));
+
+  WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(),
+                                   "<!doctype html>"
+                                   "<meta name='viewport'"
+                                   "    content='width=device-width'>"
+                                   "<style>"
+                                   "  body {margin: 0px; height:3000px;}"
+                                   "</style>",
+                                   baseURL);
+
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  auto* frameView = frame->frameView();
+  EXPECT_FALSE(frameView->visualViewportSuppliesScrollbars());
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    EXPECT_NE(nullptr,
+              frameView->layoutViewportScrollableArea()->verticalScrollbar());
+  } else {
+    EXPECT_NE(nullptr, frameView->verticalScrollbar());
+  }
+
+  WebDeviceEmulationParams params;
+  params.screenPosition = WebDeviceEmulationParams::Mobile;
+  params.deviceScaleFactor = 0;
+  params.fitToView = false;
+  params.offset = WebFloatPoint();
+  params.scale = 1;
+
+  webView->enableDeviceEmulation(params);
+
+  // The visual viewport should now proivde the scrollbars instead of the view.
+  EXPECT_TRUE(frameView->visualViewportSuppliesScrollbars());
+  EXPECT_EQ(nullptr, frameView->verticalScrollbar());
+
+  webView->disableDeviceEmulation();
+
+  // The view should once again provide the scrollbars.
+  EXPECT_FALSE(frameView->visualViewportSuppliesScrollbars());
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    EXPECT_NE(nullptr,
+              frameView->layoutViewportScrollableArea()->verticalScrollbar());
+  } else {
+    EXPECT_NE(nullptr, frameView->verticalScrollbar());
+  }
+}
+
 }  // namespace blink

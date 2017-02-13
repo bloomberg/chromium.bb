@@ -2799,6 +2799,12 @@ void FrameView::didChangeGlobalRootScroller() {
     return;
 
   // Avoid drawing two sets of scrollbars when visual viewport is enabled.
+  visualViewportScrollbarsChanged();
+}
+
+// TODO(pdr): This logic is similar to adjustScrollbarExistence and the common
+// logic should be factored into a helper.
+void FrameView::visualViewportScrollbarsChanged() {
   bool hasHorizontalScrollbar = horizontalScrollbar();
   bool hasVerticalScrollbar = verticalScrollbar();
   bool shouldHaveHorizontalScrollbar = false;
@@ -2809,8 +2815,12 @@ void FrameView::didChangeGlobalRootScroller() {
   m_scrollbarManager.setHasVerticalScrollbar(shouldHaveVerticalScrollbar);
 
   if (hasHorizontalScrollbar != shouldHaveHorizontalScrollbar ||
-      hasVerticalScrollbar != shouldHaveVerticalScrollbar)
+      hasVerticalScrollbar != shouldHaveVerticalScrollbar) {
     scrollbarExistenceDidChange();
+
+    if (!visualViewportSuppliesScrollbars())
+      updateScrollbarGeometry();
+  }
 }
 
 void FrameView::updateWidgetGeometriesIfNeeded() {

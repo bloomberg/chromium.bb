@@ -424,6 +424,13 @@ void VisualViewport::initializeScrollbars() {
 
   setupScrollbar(WebScrollbar::Horizontal);
   setupScrollbar(WebScrollbar::Vertical);
+
+  // Ensure existing FrameView scrollbars are removed if the visual viewport
+  // scrollbars are now supplied, or created if the visual viewport no longer
+  // supplies scrollbars.
+  LocalFrame* frame = mainFrame();
+  if (frame && frame->view())
+    frame->view()->visualViewportScrollbarsChanged();
 }
 
 void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
