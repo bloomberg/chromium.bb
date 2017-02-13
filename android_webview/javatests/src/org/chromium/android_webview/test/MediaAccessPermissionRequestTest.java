@@ -11,9 +11,11 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -76,6 +78,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/623921")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     @RetryOnFailure
     public void testGrantAccess() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
@@ -100,6 +103,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     @RetryOnFailure
     public void testDenyAccess() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
@@ -134,6 +138,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     @RetryOnFailure
     public void testDenyAccessByDefault() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
@@ -171,6 +176,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     @RetryOnFailure
     public void testCancelPermission() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();

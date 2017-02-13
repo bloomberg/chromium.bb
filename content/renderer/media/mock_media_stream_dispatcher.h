@@ -23,7 +23,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamControls& controls,
-      const url::Origin& url) override;
+      const url::Origin& security_origin,
+      bool is_procesing_user_gesture) override;
   void CancelGenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler)

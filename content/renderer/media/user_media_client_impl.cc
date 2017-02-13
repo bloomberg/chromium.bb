@@ -18,12 +18,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
+#include "content/renderer/media/media_stream_constraints_util_video_source.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -33,6 +36,7 @@
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -40,6 +44,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace content {
 namespace {
@@ -214,13 +219,27 @@ static int g_next_request_id = 0;
 
 }  // namespace
 
+struct UserMediaClientImpl::RequestSettings {
+  RequestSettings(bool is_processing_user_gesture, url::Origin security_origin)
+      : enable_automatic_audio_output_device_selection(false),
+        is_processing_user_gesture(is_processing_user_gesture),
+        security_origin(security_origin) {}
+  ~RequestSettings() = default;
+
+  bool enable_automatic_audio_output_device_selection;
+  bool is_processing_user_gesture;
+  url::Origin security_origin;
+};
+
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher)
+    std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner)
     : RenderFrameObserver(render_frame),
       dependency_factory_(dependency_factory),
       media_stream_dispatcher_(std::move(media_stream_dispatcher)),
+      worker_task_runner_(worker_task_runner),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_dispatcher_.get());
@@ -256,9 +275,16 @@ void UserMediaClientImpl::requestUserMedia(
   int request_id = g_next_request_id++;
   std::unique_ptr<StreamControls> controls = base::MakeUnique<StreamControls>();
 
-  bool enable_automatic_output_device_selection = false;
-  bool request_audio_input_devices = false;
+  // The value returned by isProcessingUserGesture() is used by the browser to
+  // make decisions about the permissions UI. Its value can be lost while
+  // switching threads, so saving its value here.
+  RequestSettings request_settings(
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
+      static_cast<url::Origin>(user_media_request.getSecurityOrigin()));
   if (user_media_request.audio()) {
+    bool request_audio_input_devices = false;
+    // TODO(guidou): Implement spec-compliant device selection for audio. See
+    // http://crbug.com/623104.
     CopyConstraintsToTrackControls(user_media_request.audioConstraints(),
                                    &controls->audio,
                                    &request_audio_input_devices);
@@ -269,73 +295,122 @@ void UserMediaClientImpl::requestUserMedia(
     GetConstraintValueAsBoolean(
         user_media_request.audioConstraints(),
         &blink::WebMediaTrackConstraintSet::renderToAssociatedSink,
-        &enable_automatic_output_device_selection);
-  }
-  bool request_video_input_devices = false;
-  if (user_media_request.video()) {
-    CopyConstraintsToTrackControls(user_media_request.videoConstraints(),
-                                   &controls->video,
-                                   &request_video_input_devices);
+        &request_settings.enable_automatic_audio_output_device_selection);
+
+    if (request_audio_input_devices) {
+      GetMediaDevicesDispatcher()->EnumerateDevices(
+          true /* audio_input */, false /* video_input */,
+          false /* audio_output */, request_settings.security_origin,
+          base::Bind(&UserMediaClientImpl::SelectAudioInputDevice,
+                     weak_factory_.GetWeakPtr(), request_id, user_media_request,
+                     base::Passed(&controls), request_settings));
+      return;
+    }
   }
 
-  url::Origin security_origin = user_media_request.getSecurityOrigin();
-  if (request_audio_input_devices || request_video_input_devices) {
-    GetMediaDevicesDispatcher()->EnumerateDevices(
-        request_audio_input_devices, request_video_input_devices,
-        false /* request_audio_output_devices */, security_origin,
-        base::Bind(&UserMediaClientImpl::SelectUserMediaDevice,
-                   weak_factory_.GetWeakPtr(), request_id, user_media_request,
-                   base::Passed(&controls),
-                   enable_automatic_output_device_selection, security_origin));
-  } else {
-    FinalizeRequestUserMedia(
-        request_id, user_media_request, std::move(controls),
-        enable_automatic_output_device_selection, security_origin);
-  }
+  SetupVideoInput(request_id, user_media_request, std::move(controls),
+                  request_settings);
 }
 
-void UserMediaClientImpl::SelectUserMediaDevice(
+void UserMediaClientImpl::SelectAudioInputDevice(
     int request_id,
     const blink::WebUserMediaRequest& user_media_request,
     std::unique_ptr<StreamControls> controls,
-    bool enable_automatic_output_device_selection,
-    const url::Origin& security_origin,
+    const RequestSettings& request_settings,
     const EnumerationResult& device_enumeration) {
   DCHECK(CalledOnValidThread());
+  DCHECK(controls->audio.requested);
+  DCHECK(IsDeviceSource(controls->audio.stream_source));
 
-  if (controls->audio.requested &&
-      IsDeviceSource(controls->audio.stream_source)) {
-    if (!PickDeviceId(user_media_request.audioConstraints(),
-                      device_enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT],
-                      &controls->audio.device_id)) {
-      GetUserMediaRequestFailed(user_media_request, MEDIA_DEVICE_NO_HARDWARE,
-                                "");
+  if (!PickDeviceId(user_media_request.audioConstraints(),
+                    device_enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT],
+                    &controls->audio.device_id)) {
+    GetUserMediaRequestFailed(user_media_request, MEDIA_DEVICE_NO_HARDWARE, "");
+    return;
+  }
+
+  SetupVideoInput(request_id, user_media_request, std::move(controls),
+                  request_settings);
+}
+
+void UserMediaClientImpl::SetupVideoInput(
+    int request_id,
+    const blink::WebUserMediaRequest& user_media_request,
+    std::unique_ptr<StreamControls> controls,
+    const RequestSettings& request_settings) {
+  if (user_media_request.video()) {
+    bool ignore;
+    CopyConstraintsToTrackControls(user_media_request.videoConstraints(),
+                                   &controls->video, &ignore);
+    if (IsDeviceSource(controls->video.stream_source)) {
+      GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
+          request_settings.security_origin,
+          base::Bind(&UserMediaClientImpl::SelectVideoDeviceSourceSettings,
+                     weak_factory_.GetWeakPtr(), request_id, user_media_request,
+                     base::Passed(&controls), request_settings));
       return;
     }
   }
-
-  if (controls->video.requested &&
-      IsDeviceSource(controls->video.stream_source)) {
-    if (!PickDeviceId(user_media_request.videoConstraints(),
-                      device_enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT],
-                      &controls->video.device_id)) {
-      GetUserMediaRequestFailed(user_media_request, MEDIA_DEVICE_NO_HARDWARE,
-                                "");
-      return;
-    }
-  }
-
   FinalizeRequestUserMedia(request_id, user_media_request, std::move(controls),
-                           enable_automatic_output_device_selection,
-                           security_origin);
+                           request_settings);
+}
+
+void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
+    int request_id,
+    const blink::WebUserMediaRequest& user_media_request,
+    std::unique_ptr<StreamControls> controls,
+    const RequestSettings& request_settings,
+    std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
+        video_input_capabilities) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(controls->video.requested);
+  DCHECK(IsDeviceSource(controls->video.stream_source));
+
+  VideoCaptureCapabilities capabilities;
+  capabilities.device_capabilities = std::move(video_input_capabilities);
+  capabilities.power_line_capabilities = {
+      media::PowerLineFrequency::FREQUENCY_DEFAULT,
+      media::PowerLineFrequency::FREQUENCY_50HZ,
+      media::PowerLineFrequency::FREQUENCY_60HZ};
+
+  base::PostTaskAndReplyWithResult(
+      worker_task_runner_.get(), FROM_HERE,
+      base::Bind(&SelectVideoCaptureSourceSettings, std::move(capabilities),
+                 user_media_request.videoConstraints()),
+      base::Bind(&UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings,
+                 weak_factory_.GetWeakPtr(), request_id, user_media_request,
+                 base::Passed(&controls), request_settings));
+}
+
+void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
+    int request_id,
+    const blink::WebUserMediaRequest& user_media_request,
+    std::unique_ptr<StreamControls> controls,
+    const RequestSettings& request_settings,
+    const VideoCaptureSourceSelectionResult& selection_result) {
+  DCHECK(CalledOnValidThread());
+  // Select video device.
+  if (!selection_result.has_value()) {
+    blink::WebString failed_constraint_name =
+        blink::WebString::fromASCII(selection_result.failed_constraint_name);
+    MediaStreamRequestResult result =
+        failed_constraint_name.isEmpty()
+            ? MEDIA_DEVICE_NO_HARDWARE
+            : MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+    GetUserMediaRequestFailed(user_media_request, result,
+                              failed_constraint_name);
+    return;
+  }
+  controls->video.device_id = selection_result.settings.device_id();
+  FinalizeRequestUserMedia(request_id, user_media_request, std::move(controls),
+                           request_settings);
 }
 
 void UserMediaClientImpl::FinalizeRequestUserMedia(
     int request_id,
     const blink::WebUserMediaRequest& user_media_request,
     std::unique_ptr<StreamControls> controls,
-    bool enable_automatic_output_device_selection,
-    const url::Origin& security_origin) {
+    const RequestSettings& request_settings) {
   DCHECK(CalledOnValidThread());
 
   WebRtcLogMessage(
@@ -345,12 +420,14 @@ void UserMediaClientImpl::FinalizeRequestUserMedia(
                          request_id, controls->audio.device_id.c_str(),
                          controls->video.device_id.c_str()));
 
-  user_media_requests_.push_back(std::unique_ptr<UserMediaRequestInfo>(
-      new UserMediaRequestInfo(request_id, user_media_request,
-                               enable_automatic_output_device_selection)));
+  user_media_requests_.push_back(base::MakeUnique<UserMediaRequestInfo>(
+      request_id, user_media_request,
+      request_settings.enable_automatic_audio_output_device_selection));
 
   media_stream_dispatcher_->GenerateStream(
-      request_id, weak_factory_.GetWeakPtr(), *controls, security_origin);
+      request_id, weak_factory_.GetWeakPtr(), *controls,
+      request_settings.security_origin,
+      request_settings.is_processing_user_gesture);
 }
 
 void UserMediaClientImpl::cancelUserMediaRequest(

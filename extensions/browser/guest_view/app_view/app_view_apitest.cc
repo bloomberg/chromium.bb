@@ -146,6 +146,10 @@ class AppViewTest : public AppShellTest,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     AppShellTest::SetUpCommandLine(command_line);
+    // This switch ensures that there will always be at least one media device,
+    // even on machines without physical devices. This is required by tests that
+    // request permission to use media devices.
+    command_line->AppendSwitch("use-fake-device-for-media-stream");
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {

@@ -74,6 +74,10 @@ public abstract class ContentSwitches {
     // Enable content intent detection in the renderer
     public static final String ENABLE_CONTENT_INTENT_DETECTION = "enable-content-intent-detection";
 
+    // Use fake device for Media Stream to replace actual camera and microphone.
+    public static final String USE_FAKE_DEVICE_FOR_MEDIA_STREAM =
+            "use-fake-device-for-media-stream";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 
