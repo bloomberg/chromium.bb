@@ -14,3 +14,5 @@ per-file tab_helpers.*=avi@chromium.org
 
 # Instant/Search files.
 per-file browser_instant_controller*=file://chrome/browser/search/OWNERS
+
+# COMPONENT: UI>Browser
