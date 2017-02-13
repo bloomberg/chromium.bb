@@ -40,11 +40,17 @@ foreach(config_file, _bindings_configuration_files) {
 foreach(configuration, _bindings_configurations) {
   # Check that the mojom field of each typemap refers to a mojom that exists.
   foreach(typemap, configuration.typemaps) {
-    read_file(typemap.mojom, "")
+    _typemap_config = {
+    }
+    _typemap_config = typemap.config
+    read_file(_typemap_config.mojom, "")
   }
   if (is_mac && defined(configuration.typemaps_mac)) {
     foreach(typemap, configuration.typemaps_mac) {
-      read_file(typemap.mojom, "")
+      _typemap_config = {
+      }
+      _typemap_config = typemap.config
+      read_file(_typemap_config.mojom, "")
     }
   }
 }
@@ -300,13 +306,19 @@ template("mojom") {
       foreach(source, enabled_sources) {
         # TODO(sammc): Use a map instead of a linear scan when GN supports maps.
         foreach(typemap, bindings_configuration.typemaps) {
-          if (get_path_info(source, "abspath") == typemap.mojom) {
+          _typemap_config = {
+          }
+          _typemap_config = typemap.config
+          if (get_path_info(source, "abspath") == _typemap_config.mojom) {
             active_typemaps += [ typemap ]
           }
         }
         if (is_mac && defined(bindings_configuration.typemaps_mac)) {
           foreach(typemap, bindings_configuration.typemaps_mac) {
-            if (get_path_info(source, "abspath") == typemap.mojom) {
+            _typemap_config = {
+            }
+            _typemap_config = typemap.config
+            if (get_path_info(source, "abspath") == _typemap_config.mojom) {
               active_typemaps += [ typemap ]
             }
           }
@@ -419,20 +431,28 @@ template("mojom") {
         # line length limitations.
         typemap_description = []
         foreach(typemap, active_typemaps) {
+          _typemap_config = {
+          }
+          _typemap_config = typemap.config
           typemap_description += [ "--start-typemap" ]
-          if (defined(typemap.public_headers)) {
-            foreach(value, typemap.public_headers) {
+          if (defined(_typemap_config.public_headers)) {
+            foreach(value, _typemap_config.public_headers) {
               typemap_description += [ "public_headers=$value" ]
             }
           }
-          if (defined(typemap.traits_headers)) {
-            foreach(value, typemap.traits_headers) {
+          if (defined(_typemap_config.traits_headers)) {
+            foreach(value, _typemap_config.traits_headers) {
               typemap_description += [ "traits_headers=$value" ]
             }
           }
-          foreach(value, typemap.type_mappings) {
+          foreach(value, _typemap_config.type_mappings) {
             typemap_description += [ "type_mappings=$value" ]
           }
+
+          # The typemap configuration files are not actually used as inputs here
+          # but this establishes a necessary build dependency to ensure that
+          # typemap changes force a rebuild of affected targets.
+          inputs += [ typemap.filename ]
         }
         args += typemap_description
       }
@@ -510,20 +530,23 @@ template("mojom") {
         }
       }
       foreach(typemap, active_typemaps) {
-        if (defined(typemap.public_headers)) {
-          sources += typemap.public_headers
+        _typemap_config = {
         }
-        if (defined(typemap.traits_headers)) {
-          sources += typemap.traits_headers
+        _typemap_config = typemap.config
+        if (defined(_typemap_config.public_headers)) {
+          sources += _typemap_config.public_headers
         }
-        if (defined(typemap.sources)) {
-          sources += typemap.sources
+        if (defined(_typemap_config.traits_headers)) {
+          sources += _typemap_config.traits_headers
         }
-        if (defined(typemap.public_deps)) {
-          public_deps += typemap.public_deps
+        if (defined(_typemap_config.sources)) {
+          sources += _typemap_config.sources
         }
-        if (defined(typemap.deps)) {
-          deps += typemap.deps
+        if (defined(_typemap_config.public_deps)) {
+          public_deps += _typemap_config.public_deps
+        }
+        if (defined(_typemap_config.deps)) {
+          deps += _typemap_config.deps
         }
       }
       if (defined(bindings_configuration.for_blink) &&
