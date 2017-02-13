@@ -3688,7 +3688,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <ph name="USER_COUNT">$1<ex>10,479</ex></ph> users
       </message>
       <message name="IDS_EXTENSION_PROMPT_STORE_LINK" desc="Anchor text for link to Chrome Web Store in app or extension installation dialog">
-        View details
+        Open in Web Store
       </message>
       <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. [ICU Syntax]">
         {NUM_FILES, plural,

@@ -63,6 +63,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
+  views::View* CreateExtraView() override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;

@@ -245,13 +245,6 @@ void ExtensionInstallDialogView::InitView() {
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     layout->AddView(user_count);
-
-    layout->StartRow(0, column_set_id);
-    views::Link* store_link = new views::Link(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-    store_link->SetFontList(small_font_list);
-    store_link->set_listener(this);
-    layout->AddView(store_link);
   }
 
   if (prompt_->ShouldShowPermissions()) {
@@ -557,6 +550,16 @@ void ExtensionInstallDialogView::Layout() {
 
 gfx::Size ExtensionInstallDialogView::GetPreferredSize() const {
   return dialog_size_;
+}
+
+views::View* ExtensionInstallDialogView::CreateExtraView() {
+  if (!prompt_->has_webstore_data())
+    return nullptr;
+
+  views::Link* store_link = new views::Link(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
+  store_link->set_listener(this);
+  return store_link;
 }
 
 void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
