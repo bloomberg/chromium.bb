@@ -820,10 +820,9 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
      *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
-     * @return The installed payment app.
      */
-    protected TestPay installPaymentApp(final int instrumentPresence, final int responseSpeed) {
-        return installPaymentApp("https://bobpay.com", instrumentPresence, responseSpeed);
+    protected void installPaymentApp(int instrumentPresence, int responseSpeed) {
+        installPaymentApp("https://bobpay.com", instrumentPresence, responseSpeed);
     }
 
     /**
@@ -834,11 +833,9 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
      *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
-     * @return The installed payment app.
      */
-    protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
-            final int responseSpeed) {
-        return installPaymentApp(methodName, instrumentPresence, responseSpeed, IMMEDIATE_CREATION);
+    protected void installPaymentApp(String methodName, int instrumentPresence, int responseSpeed) {
+        installPaymentApp(methodName, instrumentPresence, responseSpeed, IMMEDIATE_CREATION);
     }
 
     /**
@@ -851,21 +848,19 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
      * @param creationSpeed      How quickly the app factory will create this app. Either
      *                           IMMEDIATE_CREATION or DELAYED_CREATION.
-     * @return The installed payment app.
      */
-    protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
-            final int responseSpeed, final int creationSpeed) {
-        return installPaymentApp(new ArrayList<String>(asList(methodName)), instrumentPresence,
-                responseSpeed, creationSpeed);
+    protected void installPaymentApp(
+            String methodName, int instrumentPresence, int responseSpeed, int creationSpeed) {
+        installPaymentApp(asList(methodName), instrumentPresence, responseSpeed, creationSpeed);
     }
 
-    protected TestPay installPaymentApp(final List<String> methodNames,
+    protected void installPaymentApp(final List<String> appMethodNames,
             final int instrumentPresence, final int responseSpeed, final int creationSpeed) {
-        final TestPay app = new TestPay(methodNames, instrumentPresence, responseSpeed);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(WebContents webContents, Set<String> methodNames,
                     final PaymentAppFactory.PaymentAppCreatedCallback callback) {
+                final TestPay app = new TestPay(appMethodNames, instrumentPresence, responseSpeed);
                 if (creationSpeed == IMMEDIATE_CREATION) {
                     callback.onPaymentAppCreated(app);
                     callback.onAllPaymentAppsCreated();
@@ -880,7 +875,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
                 }
             }
         });
-        return app;
     }
 
     /** A payment app implementation for test. */

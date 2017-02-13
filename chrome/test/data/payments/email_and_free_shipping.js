@@ -5,7 +5,6 @@
  */
 
 /* global PaymentRequest:false */
-/* global toDictionary:false */
 
 /**
  * Launches the PaymentRequest UI that requests an email address and offers free
@@ -28,12 +27,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.payerEmail + '<br>' + resp.shippingOption + '<br>' +
-                    JSON.stringify(
-                        toDictionary(resp.shippingAddress), undefined, 2) +
-                    '<br>' + resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error);

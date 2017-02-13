@@ -5,7 +5,6 @@
  */
 
 /* global PaymentRequest:false */
-/* global toDictionary:false */
 
 /**
  * Launches the PaymentRequest UI that requests an email address and a phone

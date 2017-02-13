@@ -19,12 +19,7 @@ function noQueryShow() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.shippingOption + '<br>' +
-                    JSON.stringify(
-                        toDictionary(resp.shippingAddress), undefined, 2) +
-                    '<br>' + resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) { print(error); });
         })
@@ -49,12 +44,7 @@ function queryShow() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.shippingOption + '<br>' +
-                    JSON.stringify(
-                        toDictionary(resp.shippingAddress), undefined, 2) +
-                    '<br>' + resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) { print(error); });
         })

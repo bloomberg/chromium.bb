@@ -204,8 +204,11 @@ public class PaymentRequestImpl
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
 
-    /** True if show() was called in any PaymentRequestImpl object. */
-    private static boolean sIsShowing;
+    /**
+     * True if show() was called in any PaymentRequestImpl object. Used to prevent showing more than
+     * one PaymentRequest UI per browser process.
+     */
+    private static boolean sIsAnyPaymentRequestShowing;
 
     /**
      * In-memory mapping of the origins of websites that have recently called canMakePayment()
@@ -241,6 +244,7 @@ public class PaymentRequestImpl
     private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
 
     private PaymentRequestClient mClient;
+    private boolean mIsCurrentPaymentRequestShowing;
 
     /**
      * The raw total amount being charged, as it was received from the website. This data is passed
@@ -426,6 +430,7 @@ public class PaymentRequestImpl
                     activity, Collections.unmodifiableList(profiles), mContactEditor);
         }
 
+        setIsAnyPaymentRequestShowing(true);
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
                 mMerchantSupportsAutofillPaymentInstruments,
@@ -509,14 +514,14 @@ public class PaymentRequestImpl
     public void show() {
         if (mClient == null) return;
 
-        if (getIsShowing()) {
+        if (getIsAnyPaymentRequestShowing()) {
             disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             return;
         }
 
-        setIsShowing(true);
+        mIsCurrentPaymentRequestShowing = true;
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
@@ -543,7 +548,7 @@ public class PaymentRequestImpl
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
         if (mShouldSkipShowingPaymentRequestUi && isFinishedQueryingPaymentApps()
-                && getIsShowing()) {
+                && mIsCurrentPaymentRequestShowing) {
             assert !mPaymentMethodsSection.isEmpty();
 
             recordSuccessFunnelHistograms("Shown");
@@ -1400,8 +1405,8 @@ public class PaymentRequestImpl
         boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
-        if (!mArePaymentMethodsSupported
-                || (getIsShowing() && !foundPaymentMethods && !userCanAddCreditCard)) {
+        if (!mArePaymentMethodsSupported || (mIsCurrentPaymentRequestShowing && !foundPaymentMethods
+                                                    && !userCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
@@ -1520,6 +1525,8 @@ public class PaymentRequestImpl
                 }
             });
             mUI = null;
+            mIsCurrentPaymentRequestShowing = false;
+            setIsAnyPaymentRequestShowing(false);
         }
 
         if (mPaymentMethodsSection != null) {
@@ -1545,15 +1552,19 @@ public class PaymentRequestImpl
     private void closeClient() {
         if (mClient != null) mClient.close();
         mClient = null;
-        setIsShowing(false);
     }
 
-    private static boolean getIsShowing() {
-        return sIsShowing;
+    /**
+     * @return Whether any instance of PaymentRequest has received a show() call. Don't use this
+     *         function to check whether the current instance has received a show() call.
+     */
+    private static boolean getIsAnyPaymentRequestShowing() {
+        return sIsAnyPaymentRequestShowing;
     }
 
-    private static void setIsShowing(boolean isShowing) {
-        sIsShowing = isShowing;
+    /** @param isShowing Whether any instance of PaymentRequest has received a show() call. */
+    private static void setIsAnyPaymentRequestShowing(boolean isShowing) {
+        sIsAnyPaymentRequestShowing = isShowing;
     }
 
     @VisibleForTesting

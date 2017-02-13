@@ -122,6 +122,8 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
             byte[][] certificateChain, InstrumentsCallback callback) {
+        assert mInstrumentsCallback == null
+                : "Have not responded to previous request for instruments yet";
         mInstrumentsCallback = callback;
         if (mIsReadyToPayIntent.getPackage() == null) {
             mHandler.post(new Runnable() {
@@ -171,6 +173,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
             instruments.add(instrument);
         }
         mInstrumentsCallback.onInstrumentsReady(this, instruments);
+        mInstrumentsCallback = null;
     }
 
     private void sendIsReadyToPayIntentToPaymentApp() {

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import static java.util.Arrays.asList;
-
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.Feature;
@@ -13,8 +11,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
+import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
+import org.chromium.content_public.browser.WebContents;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -44,11 +46,20 @@ public class PaymentRequestPaymentAppsSortingTest extends PaymentRequestTestBase
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install a payment app with Bob Pay and Alice Pay, and another payment app with Charlie
         // Pay.
-        TestPay appA = installPaymentApp(
-                new ArrayList<String>(asList("https://alicepay.com", "https://bobpay.com")),
-                HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
-        TestPay appB =
-                installPaymentApp("https://charliepay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay appA =
+                new TestPay(Arrays.asList("https://alicepay.com", "https://bobpay.com"),
+                        HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay appB = new TestPay(
+                Arrays.asList("https://charliepay.com"), HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
+            @Override
+            public void create(WebContents webContents, Set<String> methodNames,
+                    PaymentAppCreatedCallback callback) {
+                callback.onPaymentAppCreated(appA);
+                callback.onPaymentAppCreated(appB);
+                callback.onAllPaymentAppsCreated();
+            }
+        });
         String appAAlicePayId = appA.getAppIdentifier() + "https://alicepay.com";
         String appABobPayId = appA.getAppIdentifier() + "https://bobpay.com";
         String appBCharliePayId = appB.getAppIdentifier() + "https://charliepay.com";
