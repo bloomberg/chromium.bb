@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -418,13 +418,12 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
 }
 
 void BrowserTabStripController::CheckFileSupported(const GURL& url) {
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_VISIBLE),
       base::Bind(&FindURLMimeType, url),
       base::Bind(&BrowserTabStripController::OnFindURLMimeTypeCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 url));
+                 weak_ptr_factory_.GetWeakPtr(), url));
 }
 
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
