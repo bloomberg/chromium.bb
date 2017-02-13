@@ -36,6 +36,8 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -170,6 +172,7 @@ void Range::setStart(Node* refNode,
     return;
   }
 
+  Document& oldDocument = ownerDocument();
   bool didMoveDocument = false;
   if (refNode->document() != m_ownerDocument) {
     setDocument(refNode->document());
@@ -182,8 +185,12 @@ void Range::setStart(Node* refNode,
 
   m_start.set(refNode, offset, childNode);
 
-  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end))
+  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end)) {
+    removeFromSelectionIfInDifferentRoot(oldDocument);
     collapse(true);
+    return;
+  }
+  updateSelectionIfAddedToSelection();
 }
 
 void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState) {
@@ -195,6 +202,7 @@ void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState) {
   }
 
   bool didMoveDocument = false;
+  Document& oldDocument = ownerDocument();
   if (refNode->document() != m_ownerDocument) {
     setDocument(refNode->document());
     didMoveDocument = true;
@@ -206,8 +214,12 @@ void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState) {
 
   m_end.set(refNode, offset, childNode);
 
-  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end))
+  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end)) {
+    removeFromSelectionIfInDifferentRoot(oldDocument);
     collapse(false);
+    return;
+  }
+  updateSelectionIfAddedToSelection();
 }
 
 void Range::setStart(const Position& start, ExceptionState& exceptionState) {
@@ -227,6 +239,7 @@ void Range::collapse(bool toStart) {
     m_end = m_start;
   else
     m_start = m_end;
+  updateSelectionIfAddedToSelection();
 }
 
 bool Range::isNodeFullyContained(Node& node) const {
@@ -1176,9 +1189,6 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState) {
       return;
   }
 
-  if (m_ownerDocument != refNode->document())
-    setDocument(refNode->document());
-
   setStartBefore(refNode);
   setEndAfter(refNode);
 }
@@ -1213,11 +1223,14 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState) {
     }
   }
 
+  Document& oldDocument = ownerDocument();
   if (m_ownerDocument != refNode->document())
     setDocument(refNode->document());
 
   m_start.setToStartOfNode(*refNode);
   m_end.setToEndOfNode(*refNode);
+  removeFromSelectionIfInDifferentRoot(oldDocument);
+  updateSelectionIfAddedToSelection();
 }
 
 bool Range::selectNodeContents(Node* refNode, Position& start, Position& end) {
@@ -1698,6 +1711,33 @@ FloatRect Range::boundingRect() const {
     return quads.front().boundingBox();
 
   return result;
+}
+
+void Range::updateSelectionIfAddedToSelection() {
+  if (!ownerDocument().frame())
+    return;
+  FrameSelection& selection = ownerDocument().frame()->selection();
+  if (this != selection.documentCachedRange())
+    return;
+  DCHECK(startContainer()->isConnected());
+  DCHECK(startContainer()->document() == ownerDocument());
+  DCHECK(endContainer()->isConnected());
+  DCHECK(endContainer()->document() == ownerDocument());
+  selection.setSelectedRange(EphemeralRange(this), VP_DEFAULT_AFFINITY);
+  selection.cacheRangeOfDocument(this);
+}
+
+void Range::removeFromSelectionIfInDifferentRoot(Document& oldDocument) {
+  if (!oldDocument.frame())
+    return;
+  FrameSelection& selection = oldDocument.frame()->selection();
+  if (this != selection.documentCachedRange())
+    return;
+  if (ownerDocument() == oldDocument && startContainer()->isConnected() &&
+      endContainer()->isConnected())
+    return;
+  selection.clear();
+  selection.clearDocumentCachedRange();
 }
 
 DEFINE_TRACE(Range) {

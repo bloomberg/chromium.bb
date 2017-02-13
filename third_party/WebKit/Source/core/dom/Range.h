@@ -207,6 +207,8 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
                                                 Node* clonedContainer,
                                                 Node* commonRoot,
                                                 ExceptionState&);
+  void updateSelectionIfAddedToSelection();
+  void removeFromSelectionIfInDifferentRoot(Document& oldDocument);
 
   Member<Document> m_ownerDocument;  // Cannot be null.
   RangeBoundaryPoint m_start;

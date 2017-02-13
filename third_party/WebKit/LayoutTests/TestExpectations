@@ -2201,6 +2201,12 @@ crbug.com/686478 fast/text/ellipsis-with-list-marker-in-rtl-flow.html [ Pass Fai
 crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [ Pass Failure ]
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
+crbug.com/490206 paint/spellmarkers/document-markers-zoom-125.html [ NeedsRebaseline ]
+crbug.com/490206 paint/spellmarkers/document-markers-zoom-150.html [ NeedsRebaseline ]
+crbug.com/490206 paint/spellmarkers/document-markers-zoom-175.html [ NeedsRebaseline ]
+crbug.com/490206 paint/spellmarkers/document-markers-zoom-200.html [ NeedsRebaseline ]
+crbug.com/490206 paint/spellmarkers/document-markers-zoom-250.html [ NeedsRebaseline ]
+crbug.com/490206 paint/spellmarkers/document-markers.html [ NeedsRebaseline ]
 
 crbug.com/688670 media/track/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 

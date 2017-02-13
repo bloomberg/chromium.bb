@@ -22,18 +22,14 @@ CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
-CONSOLE ERROR: line 7: Discontiguous selection is not supported.
-CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
+CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
-CONSOLE ERROR: line 7: Discontiguous selection is not supported.
-CONSOLE ERROR: line 7: Discontiguous selection is not supported.
-CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
@@ -48,9 +44,12 @@ CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
+CONSOLE ERROR: line 7: Discontiguous selection is not supported.
+CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
+CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: Discontiguous selection is not supported.
 CONSOLE ERROR: line 7: The given range isn't in document.
@@ -1490,9 +1489,9 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChil
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in rangeCount being 1 
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 2 but got 6
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈" but got object "b̈c̈d̈"
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 2
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: first addRange() must result in rangeCount being 1 
@@ -1502,9 +1501,9 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChil
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in rangeCount being 1 
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 2 but got 6
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈e" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈e" but got object "b̈c̈d̈e"
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 2
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 4 [paras[1].firstChild, 0, paras[1].firstChild, 0]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 4 [paras[1].firstChild, 0, paras[1].firstChild, 0]: first addRange() must result in rangeCount being 1 
@@ -1816,11 +1815,11 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, para
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in rangeCount being 1 
-PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 23 [paras[0], 0, paras[0], 1]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 23 [paras[0], 0, paras[0], 1]: first addRange() must result in rangeCount being 1 
@@ -1872,10 +1871,13 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChi
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in rangeCount being 1 
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d̈ëf̈g̈ḧ
-" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+" but got object "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, endContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
+" but got Text node "Ijklmnop
+"
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: first addRange() must result in rangeCount being 1 
@@ -1885,10 +1887,13 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChi
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in rangeCount being 1 
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d̈ëf̈g̈ḧ
-Ijklmnop" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+Ijklmnop" but got object "Äb̈c̈d̈ëf̈g̈ḧ
+Ijklmnop"
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, endContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
+" but got Text node "Ijklmnop
+"
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: first addRange() must result in rangeCount being 1 
@@ -1898,11 +1903,13 @@ PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChi
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in rangeCount being 1 
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 3 but got 6
+PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "̈c̈d̈ëf̈g̈ḧ
 Ijklmnop
-QrstuvwxYzabcdef" but got object ""
-FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+QrstuvwxYzabcdef" but got object "̈c̈d̈ëf̈g̈ḧ
+Ijklmnop
+QrstuvwxYzabcdef"
+FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 3
 FAIL Range 22 [paras[0], 0, paras[0], 0] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 22 [paras[0], 0, paras[0], 0] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: first addRange() must result in rangeCount being 1 
@@ -2356,14 +2363,9 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChil
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "" but got object "Äb̈c̈d̈ëf̈g̈ḧ
-"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "" but got object ""
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: first addRange() must result in rangeCount being 1 
@@ -2373,14 +2375,9 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChil
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "A" but got object "Äb̈c̈d̈ëf̈g̈ḧ
-"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startOffset of the Selection's last Range must match the added Range expected 0 but got 6
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "A" but got object ""
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 1]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: first addRange() must result in rangeCount being 1 
@@ -2390,14 +2387,9 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChil
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈" but got object "Äb̈c̈d̈ëf̈g̈ḧ
-"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈" but got object "b̈c̈d̈"
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 2
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 2 [paras[0].firstChild, 2, paras[0].firstChild, 8]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: first addRange() must result in rangeCount being 1 
@@ -2407,14 +2399,9 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChil
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈e" but got object "Äb̈c̈d̈ëf̈g̈ḧ
-"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "b̈c̈d̈e" but got object "b̈c̈d̈e"
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 2
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 9]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 4 [paras[1].firstChild, 0, paras[1].firstChild, 0]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 4 [paras[1].firstChild, 0, paras[1].firstChild, 0]: first addRange() must result in rangeCount being 1 
@@ -2726,12 +2713,11 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, para
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: endOffset of the Selection's last Range must match the added Range expected 0 but got 1
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "" but got object "Äb̈c̈d̈ëf̈g̈ḧ
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "" but got object ""
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 22 [paras[0], 0, paras[0], 0]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 23 [paras[0], 0, paras[0], 1]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 23 [paras[0], 0, paras[0], 1]: first addRange() must result in rangeCount being 1 
@@ -2783,15 +2769,13 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChi
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d̈ëf̈g̈ḧ
 " but got object "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, endContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
+" but got Text node "Ijklmnop
+"
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 26 [paras[0].firstChild, 0, paras[1].firstChild, 0]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: first addRange() must result in rangeCount being 1 
@@ -2801,15 +2785,13 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChi
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d̈ëf̈g̈ḧ
 Ijklmnop" but got object "Äb̈c̈d̈ëf̈g̈ḧ
 Ijklmnop"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, endContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
+" but got Text node "Ijklmnop
+"
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 8]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: first addRange() must result in rangeCount being 1 
@@ -2819,17 +2801,13 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChi
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range having the specified endpoints 
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "̈c̈d̈ëf̈g̈ḧ
 Ijklmnop
-QrstuvwxYzabcdef" but got object "Äb̈c̈d̈ëf̈g̈ḧ
+QrstuvwxYzabcdef" but got object "̈c̈d̈ëf̈g̈ḧ
 Ijklmnop
 QrstuvwxYzabcdef"
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 3
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 28 [paras[0].firstChild, 3, paras[3], 1]: modifying the Selection's last Range must modify the second added Range assert_equals: After second addRange(), after mutating the Selection's last Range, startOffset of the Selection's last Range must match the added Range expected 0 but got 6
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: first addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: first addRange() must result in rangeCount being 1 
@@ -2839,11 +2817,8 @@ PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, para
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: modifying the Selection's last Range must modify the first added Range 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must not throw exceptions or modify the range it's given 
 PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must result in rangeCount being 1 
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must result in the selection's last range having the specified endpoints assert_equals: endContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d" but got object "Äb̈c̈d̈ëf̈g̈ḧ
-"
+PASS Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must result in the selection's last range having the specified endpoints 
+FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: second addRange() must result in the selection's last range being the same object we added assert_equals: getRangeAt(rangeCount - 1) must return the same object we added expected object "Äb̈c̈d" but got object "Äb̈c̈d"
 FAIL Range 23 [paras[0], 0, paras[0], 1] followed by Range 29 [paras[0], 0, paras[0].firstChild, 7]: modifying the second added range must modify the Selection's last Range assert_equals: After mutating the second added Range, startContainer of the Selection's last Range must match the added Range expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
 " but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p>
