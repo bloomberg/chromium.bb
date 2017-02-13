@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/base/device_monitor_linux.h"
@@ -185,9 +184,7 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(udev_device* device) {
 
 UsbServiceLinux::UsbServiceLinux(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_in)
-    : UsbService(base::ThreadTaskRunnerHandle::Get(),
-                 std::move(blocking_task_runner_in)),
-      weak_factory_(this) {
+    : UsbService(std::move(blocking_task_runner_in)), weak_factory_(this) {
   helper_ = base::MakeUnique<FileThreadHelper>(weak_factory_.GetWeakPtr(),
                                                task_runner());
   blocking_task_runner()->PostTask(

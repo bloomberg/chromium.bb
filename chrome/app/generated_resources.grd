@@ -6547,6 +6547,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_DESCRIPTION" desc="Description of the flag that experimentally enables enumerating audio devices on ChromeOS.">
         Experimentally enable the use of enumerating audio devices.
       </message>
+      <message name="IDS_FLAGS_NEW_USB_BACKEND_NAME" desc="Name of the flag to enable the new USB backend.">
+        Enable new USB backend
+      </message>
+      <message name="IDS_FLAGS_NEW_USB_BACKEND_DESCRIPTION" desc="Description of the flag to enable the new USB backend.">
+        Enables the new experimental USB backend for Windows.
+      </message>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

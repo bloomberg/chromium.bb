@@ -71,6 +71,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/features.h"
+#include "device/base/features.h"
 #include "extensions/features/features.h"
 #include "gin/public/gin_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -2227,7 +2228,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-midi-manager-dynamic-instantiation",
      IDS_FLAGS_ENABLE_MIDI_MANAGER_DYNAMIC_INSTANTIATION_NAME,
      IDS_FLAGS_ENABLE_MIDI_MANAGER_DYNAMIC_INSTANTIATION_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(midi::features::kMidiManagerDynamicInstantiation)}
+     FEATURE_VALUE_TYPE(midi::features::kMidiManagerDynamicInstantiation)},
+
+#if defined(OS_WIN)
+    {"new-usb-backend", IDS_FLAGS_NEW_USB_BACKEND_NAME,
+     IDS_FLAGS_NEW_USB_BACKEND_DESCRIPTION, kOsWin,
+     FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
+#endif  // defined(OS_WIN)
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -14,6 +14,8 @@ component("base") {
     "device_info_query_win.h",
     "device_monitor_win.cc",
     "device_monitor_win.h",
+    "features.cc",
+    "features.h",
   ]
 
   defines = [ "DEVICE_BASE_IMPLEMENTATION" ]

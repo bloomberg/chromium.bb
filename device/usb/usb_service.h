@@ -76,17 +76,16 @@ class UsbService : public base::NonThreadSafe {
   void GetTestDevices(std::vector<scoped_refptr<UsbDevice>>* devices);
 
  protected:
-  UsbService(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  UsbService(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
     return task_runner_;
   }
 
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner() {
+  const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner() const {
     return blocking_task_runner_;
   }
 

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device_android.h"
 #include "jni/ChromeUsbService_jni.h"
@@ -29,8 +28,7 @@ bool UsbServiceAndroid::RegisterJNI(JNIEnv* env) {
 
 UsbServiceAndroid::UsbServiceAndroid(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : UsbService(base::ThreadTaskRunnerHandle::Get(), blocking_task_runner),
-      weak_factory_(this) {
+    : UsbService(blocking_task_runner), weak_factory_(this) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_ChromeUsbService_create(env, base::android::GetApplicationContext(),

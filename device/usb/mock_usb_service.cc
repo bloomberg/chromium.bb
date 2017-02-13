@@ -12,11 +12,7 @@
 
 namespace device {
 
-MockUsbService::MockUsbService()
-    : UsbService(base::ThreadTaskRunnerHandle::IsSet()
-                     ? base::ThreadTaskRunnerHandle::Get()
-                     : nullptr,
-                 nullptr) {}
+MockUsbService::MockUsbService() : UsbService(nullptr) {}
 
 MockUsbService::~MockUsbService() {
   // Shutdown() must be called before the base class destructor.
