@@ -26,6 +26,7 @@ enum GLImplementation {
   kGLImplementationDesktopGL,
   kGLImplementationDesktopGLCoreProfile,
   kGLImplementationOSMesaGL,
+  kGLImplementationSwiftShaderGL,
   kGLImplementationAppleGL,
   kGLImplementationEGLGLES2,
   kGLImplementationMockGL,

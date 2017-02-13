@@ -379,7 +379,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
   if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-      kGLImplementationSwiftShaderName) {
+      kGLImplementationSwiftShaderForWebGLName) {
     init_displays->push_back(SWIFT_SHADER);
     return;
   }

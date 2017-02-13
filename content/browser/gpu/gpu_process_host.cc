@@ -1046,8 +1046,8 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get(),
                                                           gpu_preferences);
   if (cmd_line->HasSwitch(switches::kUseGL)) {
-    swiftshader_rendering_ =
-        (cmd_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
+    swiftshader_rendering_ = (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
+                              gl::kGLImplementationSwiftShaderForWebGLName);
   }
 
   bool current_gpu_type_enabled =

@@ -38,7 +38,10 @@ bool InitializeGLOneOff() {
     if (requested_implementation_name == "any") {
       fallback_to_osmesa = true;
     } else if (requested_implementation_name ==
-                   kGLImplementationSwiftShaderName ||
+               kGLImplementationSwiftShaderName) {
+      impl = kGLImplementationSwiftShaderGL;
+    } else if (requested_implementation_name ==
+                   kGLImplementationSwiftShaderForWebGLName ||
                requested_implementation_name == kGLImplementationANGLEName) {
       impl = kGLImplementationEGLGLES2;
     } else {

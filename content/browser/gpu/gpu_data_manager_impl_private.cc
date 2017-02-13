@@ -733,7 +733,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kDisableDirectComposition);
   }
   if (use_swiftshader_) {
-    command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
   } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
               IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) ||
               IsFeatureBlacklisted(

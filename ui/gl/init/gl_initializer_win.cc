@@ -98,9 +98,11 @@ bool InitializeStaticEGLInternal() {
   base::FilePath gles_path;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+  const std::string use_gl =
+      command_line->GetSwitchValueASCII(switches::kUseGL);
   bool using_swift_shader =
-      command_line->GetSwitchValueASCII(switches::kUseGL) ==
-      kGLImplementationSwiftShaderName;
+      (use_gl == kGLImplementationSwiftShaderName) ||
+      (use_gl == kGLImplementationSwiftShaderForWebGLName);
   if (using_swift_shader) {
     if (!command_line->HasSwitch(switches::kSwiftShaderPath))
       return false;
@@ -242,6 +244,7 @@ bool InitializeGLOneOffPlatform() {
         return false;
       }
       break;
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff(GetDC(nullptr))) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
@@ -273,6 +276,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeStaticOSMesaInternal();
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       return InitializeStaticEGLInternal();
     case kGLImplementationDesktopGL:

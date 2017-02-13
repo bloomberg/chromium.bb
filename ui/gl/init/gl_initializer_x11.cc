@@ -39,6 +39,9 @@ const char kEGLLibraryName[] = "libEGL.so.1";
 const char kGLESv2ANGLELibraryName[] = "libGLESv2.so";
 const char kEGLANGLELibraryName[] = "libEGL.so";
 
+const char kGLESv2SwiftShaderLibraryName[] = "libGLESv2.so";
+const char kEGLSwiftShaderLibraryName[] = "libEGL.so";
+
 bool InitializeStaticGLXInternal() {
   base::NativeLibrary library = NULL;
   const base::CommandLine* command_line =
@@ -89,6 +92,15 @@ bool InitializeStaticEGLInternal() {
 
     glesv2_path = module_path.Append(kGLESv2ANGLELibraryName);
     egl_path = module_path.Append(kEGLANGLELibraryName);
+  } else if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+             kGLImplementationSwiftShaderName) {
+    base::FilePath module_path;
+    if (!command_line->HasSwitch(switches::kSwiftShaderPath))
+      return false;
+    module_path = command_line->GetSwitchValuePath(switches::kSwiftShaderPath);
+
+    glesv2_path = module_path.Append(kGLESv2SwiftShaderLibraryName);
+    egl_path = module_path.Append(kEGLSwiftShaderLibraryName);
   }
 
   base::NativeLibrary gles_library = LoadLibraryAndPrintError(glesv2_path);
@@ -143,6 +155,7 @@ bool InitializeGLOneOffPlatform() {
         return false;
       }
       return true;
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff(gfx::GetXDisplay())) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
@@ -171,6 +184,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationDesktopGL:
       return InitializeStaticGLXInternal();
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       return InitializeStaticEGLInternal();
     case kGLImplementationMockGL:

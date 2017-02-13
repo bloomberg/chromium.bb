@@ -252,7 +252,8 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
     std::string requested_implementation_name =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kUseGL);
-    if (requested_implementation_name == "swiftshader") {
+    if (requested_implementation_name ==
+        gl::kGLImplementationSwiftShaderForWebGLName) {
       gpu_info->software_rendering = true;
       gpu_info->context_info_state = kCollectInfoNonFatalFailure;
       return kCollectInfoNonFatalFailure;

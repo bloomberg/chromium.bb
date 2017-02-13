@@ -31,6 +31,7 @@ std::vector<GLImplementation> GetAllowedGLImplementations() {
   impls.push_back(kGLImplementationEGLGLES2);
   impls.push_back(kGLImplementationDesktopGL);
   impls.push_back(kGLImplementationOSMesaGL);
+  impls.push_back(kGLImplementationSwiftShaderGL);
   return impls;
 }
 
@@ -53,6 +54,7 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
                                  compatible_surface, attribs);
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       return InitializeGLContext(new GLContextEGL(share_group),
                                  compatible_surface, attribs);
@@ -78,6 +80,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL:
       return InitializeGLSurface(new GLSurfaceOSMesaWin(window));
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2: {
       DCHECK(window != gfx::kNullAcceleratedWidget);
       scoped_refptr<NativeViewGLSurfaceEGL> surface(
@@ -108,6 +111,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
       format.SetDefaultPixelLayout(GLSurfaceFormat::PIXEL_LAYOUT_RGBA);
       return InitializeGLSurfaceWithFormat(
           new GLSurfaceOSMesa(format, size), format);
+    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
       return InitializeGLSurfaceWithFormat(
           new PbufferGLSurfaceEGL(size), format);

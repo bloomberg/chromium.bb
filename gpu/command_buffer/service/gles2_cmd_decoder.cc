@@ -3115,7 +3115,7 @@ bool GLES2DecoderImpl::Initialize(
   // If the failIfMajorPerformanceCaveat context creation attribute was true
   // and we are using a software renderer, fail.
   if (attrib_helper.fail_if_major_perf_caveat &&
-      feature_info_->feature_flags().is_swiftshader) {
+      feature_info_->feature_flags().is_swiftshader_for_webgl) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;

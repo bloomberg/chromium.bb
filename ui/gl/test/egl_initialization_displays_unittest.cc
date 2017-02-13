@@ -46,7 +46,7 @@ TEST(EGLInitializationDisplaysTest, SwiftShader) {
 
   // If swiftshader is requested, only SWIFT_SHADER should be returned
   command_line->AppendSwitchASCII(switches::kUseGL,
-                                  gl::kGLImplementationSwiftShaderName);
+                                  gl::kGLImplementationSwiftShaderForWebGLName);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
   EXPECT_NE(std::find(displays.begin(), displays.end(), gl::SWIFT_SHADER),
