@@ -299,20 +299,20 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       if (base::FeatureList::IsEnabled(features::kBackspaceGoesBackFeature))
         GoBack(browser_, disposition);
       else
-        browser_->window()->MaybeShowNewBackShortcutBubble(false);
+        window()->MaybeShowNewBackShortcutBubble(false);
       break;
     case IDC_BACK:
-      browser_->window()->HideNewBackShortcutBubble();
+      window()->HideNewBackShortcutBubble();
       GoBack(browser_, disposition);
       break;
     case IDC_BACKSPACE_FORWARD:
       if (base::FeatureList::IsEnabled(features::kBackspaceGoesBackFeature))
         GoForward(browser_, disposition);
       else
-        browser_->window()->MaybeShowNewBackShortcutBubble(true);
+        window()->MaybeShowNewBackShortcutBubble(true);
       break;
     case IDC_FORWARD:
-      browser_->window()->HideNewBackShortcutBubble();
+      window()->HideNewBackShortcutBubble();
       GoForward(browser_, disposition);
       break;
     case IDC_RELOAD:
@@ -396,13 +396,13 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3:
-      ExecuteVisitDesktopCommand(id, browser_->window()->GetNativeWindow());
+      ExecuteVisitDesktopCommand(id, window()->GetNativeWindow());
       break;
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     case IDC_USE_SYSTEM_TITLE_BAR: {
-      PrefService* prefs = browser_->profile()->GetPrefs();
+      PrefService* prefs = profile()->GetPrefs();
       prefs->SetBoolean(prefs::kUseCustomChromeFrame,
                         !prefs->GetBoolean(prefs::kUseCustomChromeFrame));
       break;
