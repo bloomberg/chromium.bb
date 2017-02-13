@@ -50,8 +50,6 @@
   aom_read_tree_(r, tree, probs ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_literal(r, bits, ACCT_STR_NAME) \
   aom_read_literal_(r, bits ACCT_STR_ARG(ACCT_STR_NAME))
-#define aom_read_tree_bits(r, tree, probs, ACCT_STR_NAME) \
-  aom_read_tree_bits_(r, tree, probs ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_cdf(r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_cdf_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME) \
@@ -189,14 +187,12 @@ static INLINE int aom_read_literal_(aom_reader *r, int bits ACCT_STR_PARAM) {
   return literal;
 }
 
-static INLINE int aom_read_tree_bits_(aom_reader *r, const aom_tree_index *tree,
-                                      const aom_prob *probs ACCT_STR_PARAM) {
+static INLINE int aom_read_tree_as_bits(aom_reader *r,
+                                        const aom_tree_index *tree,
+                                        const aom_prob *probs) {
   aom_tree_index i = 0;
 
   while ((i = tree[i + aom_read(r, probs[i >> 1], NULL)]) > 0) continue;
-#if CONFIG_ACCOUNTING
-  if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
-#endif
   return -i;
 }
 
@@ -274,7 +270,7 @@ static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
 #if CONFIG_EC_MULTISYMBOL
   ret = aom_read_tree_as_cdf(r, tree, probs);
 #else
-  ret = aom_read_tree_bits(r, tree, probs, NULL);
+  ret = aom_read_tree_as_bits(r, tree, probs);
 #endif
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);

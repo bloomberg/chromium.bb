@@ -137,9 +137,10 @@ static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
   for (bit = bits - 1; bit >= 0; bit--) aom_write_bit(w, 1 & (data >> bit));
 }
 
-static INLINE void aom_write_tree_bits(aom_writer *w, const aom_tree_index *tr,
-                                       const aom_prob *probs, int bits, int len,
-                                       aom_tree_index i) {
+static INLINE void aom_write_tree_as_bits(aom_writer *w,
+                                          const aom_tree_index *tr,
+                                          const aom_prob *probs, int bits,
+                                          int len, aom_tree_index i) {
   do {
     const int bit = (bits >> --len) & 1;
     aom_write(w, bit, probs[i >> 1]);
@@ -147,11 +148,9 @@ static INLINE void aom_write_tree_bits(aom_writer *w, const aom_tree_index *tr,
   } while (len);
 }
 
-static INLINE void aom_write_tree_bits_record(aom_writer *w,
-                                              const aom_tree_index *tr,
-                                              const aom_prob *probs, int bits,
-                                              int len, aom_tree_index i,
-                                              TOKEN_STATS *token_stats) {
+static INLINE void aom_write_tree_as_bits_record(
+    aom_writer *w, const aom_tree_index *tr, const aom_prob *probs, int bits,
+    int len, aom_tree_index i, TOKEN_STATS *token_stats) {
   do {
     const int bit = (bits >> --len) & 1;
     aom_write_record(w, bit, probs[i >> 1], token_stats);
@@ -243,7 +242,7 @@ static INLINE void aom_write_tree(aom_writer *w, const aom_tree_index *tree,
 #if CONFIG_EC_MULTISYMBOL
   aom_write_tree_as_cdf(w, tree, probs, bits, len, i);
 #else
-  aom_write_tree_bits(w, tree, probs, bits, len, i);
+  aom_write_tree_as_bits(w, tree, probs, bits, len, i);
 #endif
 }
 
@@ -256,7 +255,7 @@ static INLINE void aom_write_tree_record(aom_writer *w,
   (void)token_stats;
   aom_write_tree_as_cdf(w, tree, probs, bits, len, i);
 #else
-  aom_write_tree_bits_record(w, tree, probs, bits, len, i, token_stats);
+  aom_write_tree_as_bits_record(w, tree, probs, bits, len, i, token_stats);
 #endif
 }
 
