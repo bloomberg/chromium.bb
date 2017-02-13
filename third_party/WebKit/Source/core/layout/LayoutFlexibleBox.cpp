@@ -632,45 +632,45 @@ LayoutFlexibleBox::getTransformedWritingMode() const {
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderStart() const {
   if (isHorizontalFlow())
-    return LayoutUnit(isLeftToRightFlow() ? borderLeft() : borderRight());
-  return LayoutUnit(isLeftToRightFlow() ? borderTop() : borderBottom());
+    return isLeftToRightFlow() ? borderLeft() : borderRight();
+  return isLeftToRightFlow() ? borderTop() : borderBottom();
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderEnd() const {
   if (isHorizontalFlow())
-    return LayoutUnit(isLeftToRightFlow() ? borderRight() : borderLeft());
-  return LayoutUnit(isLeftToRightFlow() ? borderBottom() : borderTop());
+    return isLeftToRightFlow() ? borderRight() : borderLeft();
+  return isLeftToRightFlow() ? borderBottom() : borderTop();
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const {
   switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
-      return LayoutUnit(borderTop());
+      return borderTop();
     case TransformedWritingMode::BottomToTopWritingMode:
-      return LayoutUnit(borderBottom());
+      return borderBottom();
     case TransformedWritingMode::LeftToRightWritingMode:
-      return LayoutUnit(borderLeft());
+      return borderLeft();
     case TransformedWritingMode::RightToLeftWritingMode:
-      return LayoutUnit(borderRight());
+      return borderRight();
   }
   NOTREACHED();
-  return LayoutUnit(borderTop());
+  return borderTop();
 }
 
 DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwareBorderAfter() const {
   switch (getTransformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
-      return LayoutUnit(borderBottom());
+      return borderBottom();
     case TransformedWritingMode::BottomToTopWritingMode:
-      return LayoutUnit(borderTop());
+      return borderTop();
     case TransformedWritingMode::LeftToRightWritingMode:
-      return LayoutUnit(borderRight());
+      return borderRight();
     case TransformedWritingMode::RightToLeftWritingMode:
-      return LayoutUnit(borderLeft());
+      return borderLeft();
   }
   NOTREACHED();
-  return LayoutUnit(borderTop());
+  return borderTop();
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingStart() const {

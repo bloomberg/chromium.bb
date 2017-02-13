@@ -67,33 +67,33 @@ layer at (0,0) size 785x1624 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (48,565) size 721x18
         LayoutText {#text} at (0,0) size 603x17
           text run at (0,0) width 603: "This paragraph should have a left margin of 3 picas (the plus sign should make no difference)."
-      LayoutBlockFlow {P} at (0,623) size 769x239 [bgcolor=#00FFFF] [border: none (17px solid #800080)]
-        LayoutText {#text} at (17,1) size 309x45
-          text run at (17,1) width 309: "This element has a "
+      LayoutBlockFlow {P} at (0,623) size 769x239 [bgcolor=#00FFFF] [border: none (17.89px solid #800080)]
+        LayoutText {#text} at (17,1) size 310x45
+          text run at (17,1) width 310: "This element has a "
         LayoutInline {CODE} at (0,0) size 217x45
-          LayoutText {#text} at (325,4) size 217x45
-            text run at (325,4) width 217: "font-size"
-        LayoutText {#text} at (541,1) size 55x45
-          text run at (541,1) width 55: " of "
+          LayoutText {#text} at (326,4) size 217x45
+            text run at (326,4) width 217: "font-size"
+        LayoutText {#text} at (542,1) size 55x45
+          text run at (542,1) width 55: " of "
         LayoutInline {CODE} at (0,0) size 97x45
-          LayoutText {#text} at (595,4) size 97x45
-            text run at (595,4) width 97: "40px"
-        LayoutText {#text} at (691,1) size 742x94
-          text run at (691,1) width 68: " and"
-          text run at (17,50) width 28: "a "
+          LayoutText {#text} at (596,4) size 97x45
+            text run at (596,4) width 97: "40px"
+        LayoutText {#text} at (692,1) size 743x94
+          text run at (692,1) width 68: " and"
+          text run at (17,50) width 29: "a "
         LayoutInline {CODE} at (0,0) size 265x45
-          LayoutText {#text} at (44,53) size 265x45
-            text run at (44,53) width 265: "border-left"
-        LayoutText {#text} at (308,50) size 55x45
-          text run at (308,50) width 55: " of "
-        LayoutInline {CODE} at (0,0) size 385x45
-          LayoutText {#text} at (362,53) size 385x45
-            text run at (362,53) width 385: "1ex solid purple"
-        LayoutText {#text} at (746,50) size 740x188
-          text run at (746,50) width 11: "."
+          LayoutText {#text} at (45,53) size 265x45
+            text run at (45,53) width 265: "border-left"
+        LayoutText {#text} at (309,50) size 54x45
+          text run at (309,50) width 54: " of "
+        LayoutInline {CODE} at (0,0) size 386x45
+          LayoutText {#text} at (362,53) size 386x45
+            text run at (362,53) width 386: "1ex solid purple"
+        LayoutText {#text} at (747,50) size 741x188
+          text run at (747,50) width 11: "."
           text run at (17,99) width 673: "This should make the left border the same"
-          text run at (17,146) width 709: "number of pixels as the lower-case 'x' in this"
-          text run at (17,193) width 610: "element's font, as well as solid purple."
+          text run at (17,146) width 710: "number of pixels as the lower-case 'x' in this"
+          text run at (17,193) width 611: "element's font, as well as solid purple."
       LayoutTable {TABLE} at (0,902) size 769x706 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x704
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -142,31 +142,31 @@ layer at (0,0) size 785x1624 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (52,328) size 699x18
                 LayoutText {#text} at (0,0) size 603x17
                   text run at (0,0) width 603: "This paragraph should have a left margin of 3 picas (the plus sign should make no difference)."
-              LayoutBlockFlow {P} at (4,386) size 747x288 [bgcolor=#00FFFF] [border: none (17px solid #800080)]
-                LayoutText {#text} at (17,1) size 309x45
-                  text run at (17,1) width 309: "This element has a "
+              LayoutBlockFlow {P} at (4,386) size 747x288 [bgcolor=#00FFFF] [border: none (17.89px solid #800080)]
+                LayoutText {#text} at (17,1) size 310x45
+                  text run at (17,1) width 310: "This element has a "
                 LayoutInline {CODE} at (0,0) size 217x45
-                  LayoutText {#text} at (325,4) size 217x45
-                    text run at (325,4) width 217: "font-size"
-                LayoutText {#text} at (541,1) size 55x45
-                  text run at (541,1) width 55: " of "
+                  LayoutText {#text} at (326,4) size 217x45
+                    text run at (326,4) width 217: "font-size"
+                LayoutText {#text} at (542,1) size 55x45
+                  text run at (542,1) width 55: " of "
                 LayoutInline {CODE} at (0,0) size 97x45
-                  LayoutText {#text} at (595,4) size 97x45
-                    text run at (595,4) width 97: "40px"
-                LayoutText {#text} at (17,50) size 96x45
-                  text run at (17,50) width 96: "and a "
+                  LayoutText {#text} at (596,4) size 97x45
+                    text run at (596,4) width 97: "40px"
+                LayoutText {#text} at (17,50) size 97x45
+                  text run at (17,50) width 97: "and a "
                 LayoutInline {CODE} at (0,0) size 265x45
-                  LayoutText {#text} at (112,53) size 265x45
-                    text run at (112,53) width 265: "border-left"
-                LayoutText {#text} at (376,50) size 54x45
-                  text run at (376,50) width 54: " of "
-                LayoutInline {CODE} at (0,0) size 629x94
-                  LayoutText {#text} at (429,53) size 629x94
-                    text run at (429,53) width 217: "1ex solid"
+                  LayoutText {#text} at (113,53) size 265x45
+                    text run at (113,53) width 265: "border-left"
+                LayoutText {#text} at (377,50) size 54x45
+                  text run at (377,50) width 54: " of "
+                LayoutInline {CODE} at (0,0) size 630x94
+                  LayoutText {#text} at (430,53) size 630x94
+                    text run at (430,53) width 217: "1ex solid"
                     text run at (17,102) width 145: "purple"
-                LayoutText {#text} at (161,99) size 707x188
+                LayoutText {#text} at (161,99) size 708x188
                   text run at (161,99) width 21: ". "
-                  text run at (181,99) width 521: "This should make the left border"
-                  text run at (17,148) width 707: "the same number of pixels as the lower-case"
-                  text run at (17,195) width 641: "'x' in this element's font, as well as solid"
-                  text run at (17,242) width 113: "purple."
+                  text run at (181,99) width 522: "This should make the left border"
+                  text run at (17,148) width 708: "the same number of pixels as the lower-case"
+                  text run at (17,195) width 642: "'x' in this element's font, as well as solid"
+                  text run at (17,242) width 114: "purple."

@@ -632,7 +632,7 @@
     {
       name: "border-bottom-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "convertLineWidth<unsigned>",
+      converter: "convertLineWidth<float>",
       initial: "initialBorderWidth",
       interpolable: true,
     },
@@ -689,7 +689,7 @@
     {
       name: "border-left-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "convertLineWidth<unsigned>",
+      converter: "convertLineWidth<float>",
       initial: "initialBorderWidth",
       interpolable: true,
     },
@@ -706,7 +706,7 @@
     {
       name: "border-right-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "convertLineWidth<unsigned>",
+      converter: "convertLineWidth<float>",
       initial: "initialBorderWidth",
       interpolable: true,
     },
@@ -739,7 +739,7 @@
     {
       name: "border-top-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "convertLineWidth<unsigned>",
+      converter: "convertLineWidth<float>",
       initial: "initialBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],

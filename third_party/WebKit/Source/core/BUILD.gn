@@ -1243,6 +1243,7 @@ source_set("unit_tests") {
     "paint/TextPainterTest.cpp",
     "paint/VideoPainterTest.cpp",
     "streams/ReadableStreamOperationsTest.cpp",
+    "style/BorderValueTest.cpp",
     "style/ComputedStyleTest.cpp",
     "style/FilterOperationsTest.cpp",
     "style/OutlineValueTest.cpp",

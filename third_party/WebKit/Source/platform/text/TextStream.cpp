@@ -159,7 +159,7 @@ TextStream& operator<<(TextStream& ts, const FloatRect& r) {
 }
 
 TextStream& operator<<(TextStream& ts, const LayoutUnit& unit) {
-  return ts << unit.toDouble();
+  return ts << TextStream::FormatNumberRespectingIntegers(unit.toDouble());
 }
 
 TextStream& operator<<(TextStream& ts, const LayoutPoint& point) {

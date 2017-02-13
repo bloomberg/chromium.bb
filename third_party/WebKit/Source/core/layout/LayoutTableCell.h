@@ -157,10 +157,11 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     // add in the border and padding.
     // Call computedCSSPadding* directly to avoid including implicitPadding.
     if (!document().inQuirksMode() &&
-        style()->boxSizing() != EBoxSizing::kBorderBox)
+        style()->boxSizing() != EBoxSizing::kBorderBox) {
       styleLogicalHeight +=
           (computedCSSPaddingBefore() + computedCSSPaddingAfter()).floor() +
-          borderBefore() + borderAfter();
+          (borderBefore() + borderAfter()).floor();
+    }
     return styleLogicalHeight;
   }
 
@@ -176,14 +177,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   void setCellLogicalWidth(int constrainedLogicalWidth, SubtreeLayoutScope&);
 
-  int borderLeft() const override;
-  int borderRight() const override;
-  int borderTop() const override;
-  int borderBottom() const override;
-  int borderStart() const override;
-  int borderEnd() const override;
-  int borderBefore() const override;
-  int borderAfter() const override;
+  LayoutUnit borderLeft() const override;
+  LayoutUnit borderRight() const override;
+  LayoutUnit borderTop() const override;
+  LayoutUnit borderBottom() const override;
+  LayoutUnit borderStart() const override;
+  LayoutUnit borderEnd() const override;
+  LayoutUnit borderBefore() const override;
+  LayoutUnit borderAfter() const override;
 
   void collectBorderValues(LayoutTable::CollapsedBorderValues&);
   static void sortBorderValues(LayoutTable::CollapsedBorderValues&);
@@ -378,15 +379,15 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutSize offsetFromContainer(const LayoutObject*) const override;
   LayoutRect localVisualRect() const override;
 
-  int borderHalfLeft(bool outer) const;
-  int borderHalfRight(bool outer) const;
-  int borderHalfTop(bool outer) const;
-  int borderHalfBottom(bool outer) const;
+  LayoutUnit borderHalfLeft(bool outer) const;
+  LayoutUnit borderHalfRight(bool outer) const;
+  LayoutUnit borderHalfTop(bool outer) const;
+  LayoutUnit borderHalfBottom(bool outer) const;
 
-  int borderHalfStart(bool outer) const;
-  int borderHalfEnd(bool outer) const;
-  int borderHalfBefore(bool outer) const;
-  int borderHalfAfter(bool outer) const;
+  LayoutUnit borderHalfStart(bool outer) const;
+  LayoutUnit borderHalfEnd(bool outer) const;
+  LayoutUnit borderHalfBefore(bool outer) const;
+  LayoutUnit borderHalfAfter(bool outer) const;
 
   void setIntrinsicPaddingBefore(int p) { m_intrinsicPaddingBefore = p; }
   void setIntrinsicPaddingAfter(int p) { m_intrinsicPaddingAfter = p; }

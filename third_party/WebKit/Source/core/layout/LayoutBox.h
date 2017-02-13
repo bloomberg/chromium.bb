@@ -364,8 +364,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // As such their location doesn't account for 'top'/'left'.
   LayoutRect borderBoxRect() const { return LayoutRect(LayoutPoint(), size()); }
   LayoutRect paddingBoxRect() const {
-    return LayoutRect(LayoutUnit(borderLeft()), LayoutUnit(borderTop()),
-                      clientWidth(), clientHeight());
+    return LayoutRect(borderLeft(), borderTop(), clientWidth(), clientHeight());
   }
   IntRect pixelSnappedBorderBoxRect() const {
     return IntRect(IntPoint(), m_frameRect.pixelSnappedSize());
@@ -526,9 +525,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                            ? verticalScrollbarWidth()
                            : 0));
   }
-  DISABLE_CFI_PERF LayoutUnit clientTop() const {
-    return LayoutUnit(borderTop());
-  }
+  DISABLE_CFI_PERF LayoutUnit clientTop() const { return borderTop(); }
   LayoutUnit clientWidth() const;
   LayoutUnit clientHeight() const;
   DISABLE_CFI_PERF LayoutUnit clientLogicalWidth() const {

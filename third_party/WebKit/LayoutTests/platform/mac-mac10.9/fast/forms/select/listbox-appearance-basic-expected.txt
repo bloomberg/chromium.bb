@@ -39,11 +39,11 @@ layer at (0,0) size 800x551
       LayoutText {#text} at (245,383) size 5x18
         text run at (245,383) width 5: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (57,517) size 5x18
-        text run at (57,517) width 5: " "
-      LayoutText {#text} at (135,517) size 5x18
-        text run at (135,517) width 5: " "
-      LayoutBR {BR} at (139,517) size 1x18
+      LayoutText {#text} at (58,517) size 5x18
+        text run at (58,517) width 5: " "
+      LayoutText {#text} at (136,517) size 5x18
+        text run at (136,517) width 5: " "
+      LayoutBR {BR} at (140,517) size 1x18
 layer at (12,12) size 35x59 clip at (13,13) size 22x57
   LayoutListBox {SELECT} at (4,4.25) size 34.56x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 21.56x14.19
@@ -169,13 +169,13 @@ layer at (195,284) size 55x121 clip at (196,285) size 42x119
     LayoutBlockFlow {OPTION} at (1,21.19) size 42.19x29.80
       LayoutText {#text} at (2,0) size 39x28
         text run at (2,0) width 39: "bar"
-layer at (14,450) size 45x87 clip at (15,451) size 32x85
-  LayoutListBox {SELECT} at (6,441.81) size 45.34x87.19 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 32.34x21.30
+layer at (14,449) size 46x88 clip at (16,450) size 32x86
+  LayoutListBox {SELECT} at (6,440.81) size 46.34x88.19 [bgcolor=#FFFFFF] [border: (1.50px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1.50,1.50) size 32.34x21.30
       LayoutText {#text} at (3,0) size 27x19
         text run at (3,0) width 27: "foo"
-layer at (77,417) size 58x118 clip at (79,419) size 43x114
-  LayoutListBox {SELECT} at (69.34,409.44) size 58.13x117.56 [bgcolor=#FFFFFF] [border: (2px solid #999999)]
+layer at (78,417) size 58x118 clip at (80,419) size 43x114
+  LayoutListBox {SELECT} at (70.34,409.44) size 58.13x117.56 [bgcolor=#FFFFFF] [border: (2px solid #999999)]
     LayoutBlockFlow {OPTION} at (2,2) size 43.13x28.39
       LayoutText {#text} at (4,0) size 36x26
         text run at (4,0) width 36: "foo"

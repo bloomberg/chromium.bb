@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 896
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 900
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x896 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x896.38
-    LayoutBlockFlow {BODY} at (8,8) size 769x872.38 [bgcolor=#FFFFFF]
+layer at (0,0) size 785x900 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x900.03
+    LayoutBlockFlow {BODY} at (8,8) size 769x876.03 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
         LayoutText {#text} at (0,0) size 357x37
           text run at (0,0) width 357: "Tests de conformit\x{E9} CSS 2"
@@ -64,41 +64,41 @@ layer at (0,0) size 785x896 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,150) width 305: "                border-style : double ;"
           text run at (304,150) width 1: " "
           text run at (0,165) width 344: "                border-collapse : collapse }"
-      LayoutTable {TABLE} at (96.50,438.38) size 576x130 [border: (13px double #FFFF00)]
-        LayoutTableSection {TBODY} at (13,13) size 550x104
-          LayoutTableRow {TR} at (0,2) size 550x32
-            LayoutTableCell {TD} at (2,2) size 180x32 [border: (6px double #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "1"
-            LayoutTableCell {TD} at (184,2) size 181x32 [border: (6px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "2"
-            LayoutTableCell {TD} at (367,2) size 181x32 [border: (6px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "3"
-          LayoutTableRow {TR} at (0,36) size 550x32
-            LayoutTableCell {TD} at (2,36) size 180x32 [border: (6px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "4"
-            LayoutTableCell {TD} at (184,36) size 181x32 [border: (6px double #000000)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "5"
-            LayoutTableCell {TD} at (367,36) size 181x32 [border: (6px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "6"
-          LayoutTableRow {TR} at (0,70) size 550x32
-            LayoutTableCell {TD} at (2,70) size 180x32 [border: (6px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "7"
-            LayoutTableCell {TD} at (184,70) size 181x32 [border: (6px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "8"
-            LayoutTableCell {TD} at (367,70) size 181x32 [border: (6px double #000000)] [r=2 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,7) size 8x18
-                text run at (7,7) width 8: "9"
-      LayoutBlockFlow (anonymous) at (0,568.38) size 769x18
+      LayoutTable {TABLE} at (96.50,438.38) size 576x133.66 [border: (13.33px double #FFFF00)]
+        LayoutTableSection {TBODY} at (13,13.33) size 550x107
+          LayoutTableRow {TR} at (0,2) size 550x33
+            LayoutTableCell {TD} at (2,2) size 180x33.31 [border: (6.66px double #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "1"
+            LayoutTableCell {TD} at (184,2) size 181x33.31 [border: (6.66px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "2"
+            LayoutTableCell {TD} at (367,2) size 181x33.31 [border: (6.66px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "3"
+          LayoutTableRow {TR} at (0,37) size 550x33
+            LayoutTableCell {TD} at (2,37) size 180x33.31 [border: (6.66px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "4"
+            LayoutTableCell {TD} at (184,37) size 181x33.31 [border: (6.66px double #000000)] [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "5"
+            LayoutTableCell {TD} at (367,37) size 181x33.31 [border: (6.66px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "6"
+          LayoutTableRow {TR} at (0,72) size 550x33
+            LayoutTableCell {TD} at (2,72) size 180x33.31 [border: (6.66px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "7"
+            LayoutTableCell {TD} at (184,72) size 181x33.31 [border: (6.66px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "8"
+            LayoutTableCell {TD} at (367,72) size 181x33.31 [border: (6.66px double #000000)] [r=2 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x18
+                text run at (7,8) width 9: "9"
+      LayoutBlockFlow (anonymous) at (0,572.03) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
-      LayoutTable {TABLE} at (96.50,586.38) size 576x98 [border: (6px double #FFFF00)]
+      LayoutTable {TABLE} at (96.50,590.03) size 576x98 [border: (6px double #FFFF00)]
         LayoutTableSection {TBODY} at (6,6) size 563x85
           LayoutTableRow {TR} at (0,0) size 563x30
             LayoutTableCell {TD} at (0,0) size 204x30 [border: (7px double #000000)] [r=0 c=0 rs=1 cs=1]
@@ -130,13 +130,13 @@ layer at (0,0) size 785x896 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutTableCell {TD} at (368,56) size 195x29 [border: (3px double #000000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 8x18
                 text run at (4,4) width 8: "9"
-      LayoutBlockFlow {P} at (0,700.38) size 769x36
+      LayoutBlockFlow {P} at (0,704.03) size 769x36
         LayoutText {#text} at (0,0) size 757x36
           text run at (0,0) width 311: "Si toutes les conditions exprim\x{E9}es par les r\x{E8}gles "
           text run at (310,0) width 447: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus,"
           text run at (0,18) width 60: "la valeur "
           text run at (59,18) width 165: "de ce test est 2 et 0 sinon."
-      LayoutTable (floating) {TABLE} at (193,752.38) size 576x46
+      LayoutTable (floating) {TABLE} at (193,756.03) size 576x46
         LayoutTableSection {TBODY} at (0,0) size 576x46
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
@@ -153,15 +153,15 @@ layer at (0,0) size 785x896 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutInline {A} at (0,0) size 73x18 [color=#0000EE]
                 LayoutText {#text} at (68,1) size 73x18
                   text run at (68,1) width 73: "test suivant"
-      LayoutBlockFlow {P} at (0,752.38) size 769x18
+      LayoutBlockFlow {P} at (0,756.03) size 769x18
         LayoutText {#text} at (0,0) size 4x18
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,786.38) size 769x18
+      LayoutBlockFlow {P} at (0,790.03) size 769x18
         LayoutText {#text} at (0,0) size 4x18
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,820.38) size 769x18
+      LayoutBlockFlow {P} at (0,824.03) size 769x18
         LayoutText {#text} at (0,0) size 4x18
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,854.38) size 769x18
+      LayoutBlockFlow {P} at (0,858.03) size 769x18
         LayoutText {#text} at (0,0) size 166x18
           text run at (0,0) width 166: "Auteur : Daniel Glazman."

@@ -39,9 +39,9 @@ class LineLayoutInline : public LineLayoutBoxModel {
 
   LayoutUnit marginEnd() const { return toInline()->marginEnd(); }
 
-  int borderStart() const { return toInline()->borderStart(); }
+  LayoutUnit borderStart() const { return toInline()->borderStart(); }
 
-  int borderEnd() const { return toInline()->borderEnd(); }
+  LayoutUnit borderEnd() const { return toInline()->borderEnd(); }
 
   LayoutUnit paddingStart() const { return toInline()->paddingStart(); }
 

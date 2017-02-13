@@ -83,17 +83,17 @@ class LineLayoutBoxModel : public LineLayoutItem {
 
   LayoutUnit paddingAfter() const { return toBoxModel()->paddingAfter(); }
 
-  int borderTop() const { return toBoxModel()->borderTop(); }
+  LayoutUnit borderTop() const { return toBoxModel()->borderTop(); }
 
-  int borderBottom() const { return toBoxModel()->borderBottom(); }
+  LayoutUnit borderBottom() const { return toBoxModel()->borderBottom(); }
 
-  int borderLeft() const { return toBoxModel()->borderLeft(); }
+  LayoutUnit borderLeft() const { return toBoxModel()->borderLeft(); }
 
-  int borderRight() const { return toBoxModel()->borderRight(); }
+  LayoutUnit borderRight() const { return toBoxModel()->borderRight(); }
 
-  int borderBefore() const { return toBoxModel()->borderBefore(); }
+  LayoutUnit borderBefore() const { return toBoxModel()->borderBefore(); }
 
-  int borderAfter() const { return toBoxModel()->borderAfter(); }
+  LayoutUnit borderAfter() const { return toBoxModel()->borderAfter(); }
 
   LayoutSize relativePositionLogicalOffset() const {
     return toBoxModel()->relativePositionLogicalOffset();

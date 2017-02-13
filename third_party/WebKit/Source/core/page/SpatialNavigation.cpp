@@ -419,12 +419,12 @@ LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder) {
   if (ignoreBorder) {
     rect.move(node->layoutObject()->style()->borderLeftWidth(),
               node->layoutObject()->style()->borderTopWidth());
-    rect.setWidth(rect.width() -
-                  node->layoutObject()->style()->borderLeftWidth() -
-                  node->layoutObject()->style()->borderRightWidth());
-    rect.setHeight(rect.height() -
-                   node->layoutObject()->style()->borderTopWidth() -
-                   node->layoutObject()->style()->borderBottomWidth());
+    rect.setWidth(LayoutUnit(
+        rect.width() - node->layoutObject()->style()->borderLeftWidth() -
+        node->layoutObject()->style()->borderRightWidth()));
+    rect.setHeight(LayoutUnit(
+        rect.height() - node->layoutObject()->style()->borderTopWidth() -
+        node->layoutObject()->style()->borderBottomWidth()));
   }
   return rect;
 }

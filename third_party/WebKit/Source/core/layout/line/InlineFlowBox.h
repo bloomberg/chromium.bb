@@ -174,27 +174,23 @@ class InlineFlowBox : public InlineBox {
   LayoutUnit marginLogicalWidth() const {
     return marginLogicalLeft() + marginLogicalRight();
   }
-  int borderLogicalLeft() const {
+  LayoutUnit borderLogicalLeft() const {
     if (!includeLogicalLeftEdge())
-      return 0;
-    return isHorizontal()
-               ? getLineLayoutItem()
-                     .style(isFirstLineStyle())
-                     ->borderLeftWidth()
-               : getLineLayoutItem()
-                     .style(isFirstLineStyle())
-                     ->borderTopWidth();
+      return LayoutUnit();
+    return LayoutUnit(
+        isHorizontal()
+            ? getLineLayoutItem().style(isFirstLineStyle())->borderLeftWidth()
+            : getLineLayoutItem().style(isFirstLineStyle())->borderTopWidth());
   }
-  int borderLogicalRight() const {
+  LayoutUnit borderLogicalRight() const {
     if (!includeLogicalRightEdge())
-      return 0;
-    return isHorizontal()
-               ? getLineLayoutItem()
-                     .style(isFirstLineStyle())
-                     ->borderRightWidth()
-               : getLineLayoutItem()
-                     .style(isFirstLineStyle())
-                     ->borderBottomWidth();
+      return LayoutUnit();
+    return LayoutUnit(
+        isHorizontal()
+            ? getLineLayoutItem().style(isFirstLineStyle())->borderRightWidth()
+            : getLineLayoutItem()
+                  .style(isFirstLineStyle())
+                  ->borderBottomWidth());
   }
   int paddingLogicalLeft() const {
     if (!includeLogicalLeftEdge())

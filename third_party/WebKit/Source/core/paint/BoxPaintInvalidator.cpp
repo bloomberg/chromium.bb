@@ -38,7 +38,7 @@ void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box) {
 static LayoutRect computeRightDelta(const LayoutPoint& location,
                                     const LayoutSize& oldSize,
                                     const LayoutSize& newSize,
-                                    int extraWidth) {
+                                    const LayoutUnit& extraWidth) {
   LayoutUnit delta = newSize.width() - oldSize.width();
   if (delta > 0) {
     return LayoutRect(location.x() + oldSize.width() - extraWidth, location.y(),
@@ -54,7 +54,7 @@ static LayoutRect computeRightDelta(const LayoutPoint& location,
 static LayoutRect computeBottomDelta(const LayoutPoint& location,
                                      const LayoutSize& oldSize,
                                      const LayoutSize& newSize,
-                                     int extraHeight) {
+                                     const LayoutUnit& extraHeight) {
   LayoutUnit delta = newSize.height() - oldSize.height();
   if (delta > 0) {
     return LayoutRect(location.x(),
@@ -76,10 +76,12 @@ bool BoxPaintInvalidator::incrementallyInvalidatePaint(
   DCHECK(oldRect.location() == newRect.location());
   LayoutRect rightDelta = computeRightDelta(
       newRect.location(), oldRect.size(), newRect.size(),
-      reason == PaintInvalidationIncremental ? m_box.borderRight() : 0);
+      reason == PaintInvalidationIncremental ? m_box.borderRight()
+                                             : LayoutUnit());
   LayoutRect bottomDelta = computeBottomDelta(
       newRect.location(), oldRect.size(), newRect.size(),
-      reason == PaintInvalidationIncremental ? m_box.borderBottom() : 0);
+      reason == PaintInvalidationIncremental ? m_box.borderBottom()
+                                             : LayoutUnit());
 
   if (rightDelta.isEmpty() && bottomDelta.isEmpty())
     return false;

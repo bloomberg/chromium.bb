@@ -24,11 +24,11 @@ layer at (0,0) size 800x418
       LayoutText {#text} at (309,300) size 4x18
         text run at (309,300) width 4: " "
       LayoutBR {BR} at (313,300) size 0x18
-      LayoutText {#text} at (235,384) size 4x18
-        text run at (235,384) width 4: " "
-      LayoutText {#text} at (542,384) size 4x18
-        text run at (542,384) width 4: " "
-      LayoutBR {BR} at (546,384) size 0x18
+      LayoutText {#text} at (236,384) size 4x18
+        text run at (236,384) width 4: " "
+      LayoutText {#text} at (543,384) size 4x18
+        text run at (543,384) width 4: " "
+      LayoutBR {BR} at (547,384) size 0x18
 layer at (12,12) size 161x32 clip at (13,13) size 159x30
   LayoutTextControl {TEXTAREA} at (4,4) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x13
@@ -69,13 +69,13 @@ layer at (12,256) size 301x62 clip at (13,257) size 299x60
     LayoutBlockFlow {DIV} at (3,3) size 295x28
       LayoutText {#text} at (0,0) size 39x28
         text run at (0,0) width 39: "foo"
-layer at (14,354) size 223x46 clip at (15,355) size 221x44
-  LayoutTextControl {TEXTAREA} at (6,346) size 223x46 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (4,4) size 215x19
+layer at (14,353) size 224x47 clip at (16,355) size 221x44
+  LayoutTextControl {TEXTAREA} at (6,345) size 224x47 [bgcolor=#FFFFFF] [border: (1.50px solid #000000)]
+    LayoutBlockFlow {DIV} at (4.50,4.50) size 215x19
       LayoutText {#text} at (0,0) size 27x19
         text run at (0,0) width 27: "foo"
-layer at (255,334) size 287x64 clip at (257,336) size 283x60
-  LayoutTextControl {TEXTAREA} at (247,326) size 287x64 [bgcolor=#FFFFFF] [border: (2px solid #000000)]
+layer at (256,334) size 287x64 clip at (258,336) size 283x60
+  LayoutTextControl {TEXTAREA} at (248,326) size 287x64 [bgcolor=#FFFFFF] [border: (2px solid #000000)]
     LayoutBlockFlow {DIV} at (6,6) size 275x26
       LayoutText {#text} at (0,0) size 36x26
         text run at (0,0) width 36: "foo"

@@ -63,27 +63,27 @@ class BorderData {
     return false;
   }
 
-  int borderLeftWidth() const {
+  float borderLeftWidth() const {
     if (m_left.style() == BorderStyleNone ||
         m_left.style() == BorderStyleHidden)
       return 0;
     return m_left.width();
   }
 
-  int borderRightWidth() const {
+  float borderRightWidth() const {
     if (m_right.style() == BorderStyleNone ||
         m_right.style() == BorderStyleHidden)
       return 0;
     return m_right.width();
   }
 
-  int borderTopWidth() const {
+  float borderTopWidth() const {
     if (m_top.style() == BorderStyleNone || m_top.style() == BorderStyleHidden)
       return 0;
     return m_top.width();
   }
 
-  int borderBottomWidth() const {
+  float borderBottomWidth() const {
     if (m_bottom.style() == BorderStyleNone ||
         m_bottom.style() == BorderStyleHidden)
       return 0;

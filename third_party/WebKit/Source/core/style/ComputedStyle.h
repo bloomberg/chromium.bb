@@ -103,6 +103,14 @@ inline bool compareEqual(const T& a, const T& b) {
   if (!compareEqual(group->variable.color(), value))  \
   group.access()->variable.setColor(value)
 
+#define SET_BORDER_WIDTH(group, variable, value) \
+  if (!group->variable.widthEquals(value))       \
+  group.access()->variable.setWidth(value)
+
+#define SET_NESTED_BORDER_WIDTH(group, base, variable, value) \
+  if (!group->base->variable.widthEquals(value))              \
+  group.access()->base.access()->variable.setWidth(value)
+
 namespace blink {
 
 using std::max;
@@ -602,32 +610,34 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setBorderImageOutset(const BorderImageLengthBox&);
 
   // Border width properties.
-  static unsigned initialBorderWidth() { return 3; }
+  static float initialBorderWidth() { return 3; }
 
   // border-top-width
-  int borderTopWidth() const { return m_surround->border.borderTopWidth(); }
-  void setBorderTopWidth(unsigned v) {
-    SET_VAR(m_surround, border.m_top.m_width, v);
+  float borderTopWidth() const { return m_surround->border.borderTopWidth(); }
+  void setBorderTopWidth(float v) {
+    SET_BORDER_WIDTH(m_surround, border.m_top, v);
   }
 
   // border-bottom-width
-  int borderBottomWidth() const {
+  float borderBottomWidth() const {
     return m_surround->border.borderBottomWidth();
   }
-  void setBorderBottomWidth(unsigned v) {
-    SET_VAR(m_surround, border.m_bottom.m_width, v);
+  void setBorderBottomWidth(float v) {
+    SET_BORDER_WIDTH(m_surround, border.m_bottom, v);
   }
 
   // border-left-width
-  int borderLeftWidth() const { return m_surround->border.borderLeftWidth(); }
-  void setBorderLeftWidth(unsigned v) {
-    SET_VAR(m_surround, border.m_left.m_width, v);
+  float borderLeftWidth() const { return m_surround->border.borderLeftWidth(); }
+  void setBorderLeftWidth(float v) {
+    SET_BORDER_WIDTH(m_surround, border.m_left, v);
   }
 
   // border-right-width
-  int borderRightWidth() const { return m_surround->border.borderRightWidth(); }
-  void setBorderRightWidth(unsigned v) {
-    SET_VAR(m_surround, border.m_right.m_width, v);
+  float borderRightWidth() const {
+    return m_surround->border.borderRightWidth();
+  }
+  void setBorderRightWidth(float v) {
+    SET_BORDER_WIDTH(m_surround, border.m_right, v);
   }
 
   // Border style properties.
@@ -861,7 +871,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_rareNonInheritedData->m_multiCol->ruleWidth();
   }
   void setColumnRuleWidth(unsigned short w) {
-    SET_NESTED_VAR(m_rareNonInheritedData, m_multiCol, m_rule.m_width, w);
+    SET_NESTED_BORDER_WIDTH(m_rareNonInheritedData, m_multiCol, m_rule, w);
   }
 
   // column-span (aka -webkit-column-span)
@@ -1437,13 +1447,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // outline-width
   static unsigned short initialOutlineWidth() { return 3; }
-  int outlineWidth() const {
+  unsigned short outlineWidth() const {
     if (m_rareNonInheritedData->m_outline.style() == BorderStyleNone)
       return 0;
     return m_rareNonInheritedData->m_outline.width();
   }
   void setOutlineWidth(unsigned short v) {
-    SET_VAR(m_rareNonInheritedData, m_outline.m_width, v);
+    SET_BORDER_WIDTH(m_rareNonInheritedData, m_outline, v);
   }
 
   // outline-offset
@@ -3126,12 +3136,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   const BorderValue& borderAfter() const;
   const BorderValue& borderStart() const;
   const BorderValue& borderEnd() const;
-  int borderAfterWidth() const;
-  int borderBeforeWidth() const;
-  int borderEndWidth() const;
-  int borderStartWidth() const;
-  int borderOverWidth() const;
-  int borderUnderWidth() const;
+  float borderAfterWidth() const;
+  float borderBeforeWidth() const;
+  float borderEndWidth() const;
+  float borderStartWidth() const;
+  float borderOverWidth() const;
+  float borderUnderWidth() const;
 
   bool hasBorderFill() const { return m_surround->border.hasBorderFill(); }
   bool hasBorder() const { return m_surround->border.hasBorder(); }

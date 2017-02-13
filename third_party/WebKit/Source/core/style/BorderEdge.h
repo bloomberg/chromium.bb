@@ -15,7 +15,7 @@ struct BorderEdge {
   STACK_ALLOCATED();
 
  public:
-  BorderEdge(int edgeWidth,
+  BorderEdge(float edgeWidth,
              const Color& edgeColor,
              EBorderStyle edgeStyle,
              bool edgeIsPresent = true);
@@ -26,7 +26,7 @@ struct BorderEdge {
   bool presentButInvisible() const;
   bool obscuresBackgroundEdge() const;
   bool obscuresBackground() const;
-  int usedWidth() const;
+  float usedWidth() const;
 
   bool sharesColorWith(const BorderEdge& other) const;
 
@@ -34,14 +34,16 @@ struct BorderEdge {
 
   enum DoubleBorderStripe { DoubleBorderStripeOuter, DoubleBorderStripeInner };
 
-  int getDoubleBorderStripeWidth(DoubleBorderStripe) const;
+  float getDoubleBorderStripeWidth(DoubleBorderStripe) const;
 
-  int width;
+  float width() const { return m_width; }
+
   Color color;
   bool isPresent;
 
  private:
   unsigned style : 4;  // EBorderStyle
+  float m_width;
 };
 
 }  // namespace blink

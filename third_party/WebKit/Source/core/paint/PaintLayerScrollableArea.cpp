@@ -1049,10 +1049,10 @@ IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(
   const IntRect& scrollCorner = scrollCornerRect();
 
   return IntRect(horizontalScrollbarStart(borderBoxRect.x()),
-                 borderBoxRect.maxY() - box().borderBottom() -
+                 borderBoxRect.maxY() - box().borderBottom().toInt() -
                      horizontalScrollbar()->scrollbarThickness(),
                  borderBoxRect.width() -
-                     (box().borderLeft() + box().borderRight()) -
+                     (box().borderLeft() + box().borderRight()).toInt() -
                      scrollCorner.width(),
                  horizontalScrollbar()->scrollbarThickness());
 }
@@ -1066,20 +1066,22 @@ IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(
 
   return IntRect(
       verticalScrollbarStart(borderBoxRect.x(), borderBoxRect.maxX()),
-      borderBoxRect.y() + box().borderTop(),
+      borderBoxRect.y() + box().borderTop().toInt(),
       verticalScrollbar()->scrollbarThickness(),
-      borderBoxRect.height() - (box().borderTop() + box().borderBottom()) -
+      borderBoxRect.height() -
+          (box().borderTop() + box().borderBottom()).toInt() -
           scrollCorner.height());
 }
 
 int PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const {
   if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    return minX + box().borderLeft();
-  return maxX - box().borderRight() - verticalScrollbar()->scrollbarThickness();
+    return minX + box().borderLeft().toInt();
+  return maxX - box().borderRight().toInt() -
+         verticalScrollbar()->scrollbarThickness();
 }
 
 int PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const {
-  int x = minX + box().borderLeft();
+  int x = minX + box().borderLeft().toInt();
   if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     x += hasVerticalScrollbar()
              ? verticalScrollbar()->scrollbarThickness()
@@ -1091,9 +1093,10 @@ int PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const {
 
 IntSize PaintLayerScrollableArea::scrollbarOffset(
     const Scrollbar& scrollbar) const {
-  if (&scrollbar == verticalScrollbar())
+  if (&scrollbar == verticalScrollbar()) {
     return IntSize(verticalScrollbarStart(0, box().size().width().toInt()),
-                   box().borderTop());
+                   box().borderTop().toInt());
+  }
 
   if (&scrollbar == horizontalScrollbar())
     return IntSize(
@@ -1369,10 +1372,10 @@ bool PaintLayerScrollableArea::hitTestOverflowControls(
   if (hasVerticalScrollbar() &&
       verticalScrollbar()->shouldParticipateInHitTesting()) {
     LayoutRect vBarRect(verticalScrollbarStart(0, box().size().width().toInt()),
-                        box().borderTop(),
+                        box().borderTop().toInt(),
                         verticalScrollbar()->scrollbarThickness(),
                         box().size().height().toInt() -
-                            (box().borderTop() + box().borderBottom()) -
+                            (box().borderTop() + box().borderBottom()).toInt() -
                             (hasHorizontalScrollbar()
                                  ? horizontalScrollbar()->scrollbarThickness()
                                  : resizeControlSize));

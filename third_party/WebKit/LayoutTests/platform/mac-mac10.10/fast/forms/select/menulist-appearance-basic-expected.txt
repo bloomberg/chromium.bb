@@ -94,25 +94,25 @@ layer at (0,0) size 800x488
       LayoutText {#text} at (327,163) size 4x18
         text run at (327,163) width 4: " "
       LayoutBR {BR} at (331,163) size 0x18
-      LayoutMenuList {SELECT} at (6,204) size 59x25 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
-        LayoutBlockFlow (anonymous) at (1,1) size 57x23
+      LayoutMenuList {SELECT} at (6,204) size 60x26 [bgcolor=#F8F8F8] [border: (1.50px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1.50,1.50) size 57x23
           LayoutText (anonymous) at (12,1) size 25x19
             text run at (12,1) width 25: "foo"
-      LayoutText {#text} at (71,208) size 4x18
-        text run at (71,208) width 4: " "
-      LayoutMenuList {SELECT} at (83,197) size 79x36 [bgcolor=#F8F8F8] [border: (2px solid #A6A6A6)]
+      LayoutText {#text} at (72,208) size 4x18
+        text run at (72,208) width 4: " "
+      LayoutMenuList {SELECT} at (84,197) size 79x36 [bgcolor=#F8F8F8] [border: (2px solid #A6A6A6)]
         LayoutBlockFlow (anonymous) at (2,2) size 75x32
           LayoutText (anonymous) at (16,2) size 33x26
             text run at (16,2) width 33: "foo"
-      LayoutText {#text} at (170,208) size 4x18
-        text run at (170,208) width 4: " "
-      LayoutMenuList {SELECT} at (176,212) size 29x15 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
+      LayoutText {#text} at (171,208) size 4x18
+        text run at (171,208) width 4: " "
+      LayoutMenuList {SELECT} at (177,212) size 29x15 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
         LayoutBlockFlow (anonymous) at (1,1.50) size 27x12
           LayoutText (anonymous) at (4,0) size 14x11
             text run at (4,0) width 14: "foo"
-      LayoutText {#text} at (207,208) size 4x18
-        text run at (207,208) width 4: " "
-      LayoutBR {BR} at (211,208) size 0x18
+      LayoutText {#text} at (208,208) size 4x18
+        text run at (208,208) width 4: " "
+      LayoutBR {BR} at (212,208) size 0x18
       LayoutText {#text} at (208,256) size 4x18
         text run at (208,256) width 4: " "
       LayoutBR {BR} at (212,256) size 0x18

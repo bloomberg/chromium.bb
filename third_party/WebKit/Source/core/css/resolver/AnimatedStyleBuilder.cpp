@@ -129,6 +129,16 @@ T animatableLineWidthClamp(const AnimatableValue* value,
   return (lineWidth > 0 && lineWidth < 1) ? 1 : roundedClampTo<T>(lineWidth);
 }
 
+float animatableLineWidth(const AnimatableValue* value,
+                          const StyleResolverState& state) {
+  double lineWidth =
+      toAnimatableLength(value)
+          ->getLength(state.style()->effectiveZoom(), ValueRangeNonNegative)
+          .pixels();
+  // This matches StyleBuilderConverter::convertLineWidth().
+  return (lineWidth > 0 && lineWidth < 1) ? 1 : lineWidth;
+}
+
 LengthBox animatableValueToLengthBox(const AnimatableValue* value,
                                      const StyleResolverState& state,
                                      ValueRange range = ValueRangeAll) {
@@ -360,8 +370,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
           animatableValueToLengthSize(value, state, ValueRangeNonNegative));
       return;
     case CSSPropertyBorderBottomWidth:
-      style->setBorderBottomWidth(
-          animatableLineWidthClamp<unsigned>(value, state));
+      style->setBorderBottomWidth(animatableLineWidth(value, state));
       return;
     case CSSPropertyBorderImageOutset:
       style->setBorderImageOutset(
@@ -388,8 +397,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
           toAnimatableColor(value)->visitedLinkColor());
       return;
     case CSSPropertyBorderLeftWidth:
-      style->setBorderLeftWidth(
-          animatableLineWidthClamp<unsigned>(value, state));
+      style->setBorderLeftWidth(animatableLineWidth(value, state));
       return;
     case CSSPropertyBorderRightColor:
       style->setBorderRightColor(toAnimatableColor(value)->getColor());
@@ -397,8 +405,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
           toAnimatableColor(value)->visitedLinkColor());
       return;
     case CSSPropertyBorderRightWidth:
-      style->setBorderRightWidth(
-          animatableLineWidthClamp<unsigned>(value, state));
+      style->setBorderRightWidth(animatableLineWidth(value, state));
       return;
     case CSSPropertyBorderTopColor:
       style->setBorderTopColor(toAnimatableColor(value)->getColor());
@@ -414,8 +421,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
           animatableValueToLengthSize(value, state, ValueRangeNonNegative));
       return;
     case CSSPropertyBorderTopWidth:
-      style->setBorderTopWidth(
-          animatableLineWidthClamp<unsigned>(value, state));
+      style->setBorderTopWidth(animatableLineWidth(value, state));
       return;
     case CSSPropertyBottom:
       style->setBottom(animatableValueToLength(value, state));

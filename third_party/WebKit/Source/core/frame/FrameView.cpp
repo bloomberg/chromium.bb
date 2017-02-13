@@ -3546,7 +3546,7 @@ IntRect FrameView::convertFromContainingWidget(
     IntRect rect = parentView->convertToLayoutItem(layoutItem, parentRect);
     // Subtract borders and padding
     rect.move((-layoutItem.borderLeft() - layoutItem.paddingLeft()).toInt(),
-              (-layoutItem.borderTop() - layoutItem.paddingTop().toInt()));
+              (-layoutItem.borderTop() - layoutItem.paddingTop()).toInt());
     return rect;
   }
 

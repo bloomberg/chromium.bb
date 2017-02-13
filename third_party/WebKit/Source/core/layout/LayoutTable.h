@@ -148,33 +148,33 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return style()->borderCollapse() == EBorderCollapse::kCollapse;
   }
 
-  int borderStart() const override { return m_borderStart; }
-  int borderEnd() const override { return m_borderEnd; }
-  int borderBefore() const override;
-  int borderAfter() const override;
+  LayoutUnit borderStart() const override { return LayoutUnit(m_borderStart); }
+  LayoutUnit borderEnd() const override { return LayoutUnit(m_borderEnd); }
+  LayoutUnit borderBefore() const override;
+  LayoutUnit borderAfter() const override;
 
-  int borderLeft() const override {
+  LayoutUnit borderLeft() const override {
     if (style()->isHorizontalWritingMode())
       return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
     return style()->isFlippedBlocksWritingMode() ? borderAfter()
                                                  : borderBefore();
   }
 
-  int borderRight() const override {
+  LayoutUnit borderRight() const override {
     if (style()->isHorizontalWritingMode())
       return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
     return style()->isFlippedBlocksWritingMode() ? borderBefore()
                                                  : borderAfter();
   }
 
-  int borderTop() const override {
+  LayoutUnit borderTop() const override {
     if (style()->isHorizontalWritingMode())
       return style()->isFlippedBlocksWritingMode() ? borderAfter()
                                                    : borderBefore();
     return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
   }
 
-  int borderBottom() const override {
+  LayoutUnit borderBottom() const override {
     if (style()->isHorizontalWritingMode())
       return style()->isFlippedBlocksWritingMode() ? borderBefore()
                                                    : borderAfter();

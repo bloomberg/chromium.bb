@@ -24,7 +24,7 @@ layer at (0,0) size 800x339
                 text run at (0,0) width 64: "No viewBox"
             LayoutTableCell {TH} at (66,35) size 113x0 [bgcolor=#DDDD99] [r=1 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (180,16) size 140x38 [r=1 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,16) size 140x38 [r=1 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -33,7 +33,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (43,0) size 27x14
                 text run at (43,0) width 27: "none"
             LayoutTableCell {TD} at (180,55) size 140x38 [r=2 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,55) size 140x38 [r=2 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -42,7 +42,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (43,0) size 27x14
                 text run at (43,0) width 27: "meet"
             LayoutTableCell {TD} at (180,94) size 140x38 [r=3 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,94) size 140x38 [r=3 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -51,7 +51,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (44,0) size 25x14
                 text run at (44,0) width 25: "slice"
             LayoutTableCell {TD} at (180,133) size 140x38 [r=4 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,133) size 140x38 [r=4 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -61,7 +61,7 @@ layer at (0,0) size 800x339
                 text run at (9,0) width 46: "viewBox"
             LayoutTableCell {TH} at (66,191) size 113x0 [bgcolor=#DDDD99] [r=5 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (180,172) size 140x38 [r=5 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,172) size 140x38 [r=5 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -70,7 +70,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (43,0) size 27x14
                 text run at (43,0) width 27: "none"
             LayoutTableCell {TD} at (180,211) size 140x38 [r=6 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,211) size 140x38 [r=6 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -79,7 +79,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (43,0) size 27x14
                 text run at (43,0) width 27: "meet"
             LayoutTableCell {TD} at (180,250) size 140x38 [r=7 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,250) size 140x38 [r=7 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
@@ -88,7 +88,7 @@ layer at (0,0) size 800x339
               LayoutText {#text} at (44,0) size 25x14
                 text run at (44,0) width 25: "slice"
             LayoutTableCell {TD} at (180,289) size 140x38 [r=8 c=2 rs=1 cs=1]
-              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1px dashed #800000)]
+              LayoutImage {IMG} at (0,0) size 138.88x34.72 [border: (1.38px dashed #800000)]
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (321,289) size 140x38 [r=8 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0

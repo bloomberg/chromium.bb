@@ -31,10 +31,10 @@ class ObjectPainter {
   void addPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paintOffset);
 
   static void drawLineForBoxSide(GraphicsContext&,
-                                 int x1,
-                                 int y1,
-                                 int x2,
-                                 int y2,
+                                 float x1,
+                                 float y1,
+                                 float x2,
+                                 float y2,
                                  BoxSide,
                                  Color,
                                  EBorderStyle,
@@ -94,7 +94,7 @@ class ObjectPainter {
                                 int length,
                                 BoxSide,
                                 Color,
-                                int thickness,
+                                float thickness,
                                 int adjacentWidth1,
                                 int adjacentWidth2,
                                 bool antialias);

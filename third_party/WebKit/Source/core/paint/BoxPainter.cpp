@@ -77,10 +77,8 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo,
     // The background painting code assumes that the borders are part of the
     // paintRect so we expand the paintRect by the border size when painting the
     // background into the scrolling contents layer.
-    paintRect.expandEdges(LayoutUnit(m_layoutBox.borderTop()),
-                          LayoutUnit(m_layoutBox.borderRight()),
-                          LayoutUnit(m_layoutBox.borderBottom()),
-                          LayoutUnit(m_layoutBox.borderLeft()));
+    paintRect.expandEdges(m_layoutBox.borderTop(), m_layoutBox.borderRight(),
+                          m_layoutBox.borderBottom(), m_layoutBox.borderLeft());
   } else {
     paintRect = m_layoutBox.borderBoxRect();
   }
@@ -370,10 +368,10 @@ FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(
       }
     }
 
-    FloatRectOutsets insets(-fractionalInset * edges[BSTop].width,
-                            -fractionalInset * edges[BSRight].width,
-                            -fractionalInset * edges[BSBottom].width,
-                            -fractionalInset * edges[BSLeft].width);
+    FloatRectOutsets insets(-fractionalInset * edges[BSTop].width(),
+                            -fractionalInset * edges[BSRight].width(),
+                            -fractionalInset * edges[BSBottom].width(),
+                            -fractionalInset * edges[BSLeft].width());
 
     FloatRoundedRect backgroundRoundedRect = getBackgroundRoundedRect(
         obj, borderRect, box, boxSize.width(), boxSize.height(),
@@ -659,8 +657,8 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
     clipToBorder.emplace(obj, paintInfo, rect, border, ApplyToContext);
   }
 
-  int bLeft = info.includeLeftEdge ? obj.borderLeft() : 0;
-  int bRight = info.includeRightEdge ? obj.borderRight() : 0;
+  LayoutUnit bLeft = info.includeLeftEdge ? obj.borderLeft() : LayoutUnit();
+  LayoutUnit bRight = info.includeRightEdge ? obj.borderRight() : LayoutUnit();
   LayoutUnit pLeft = info.includeLeftEdge ? obj.paddingLeft() : LayoutUnit();
   LayoutUnit pRight = info.includeRightEdge ? obj.paddingRight() : LayoutUnit();
 

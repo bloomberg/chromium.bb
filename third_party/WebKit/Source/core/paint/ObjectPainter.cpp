@@ -338,18 +338,18 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo,
 }
 
 void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
-                                       int x1,
-                                       int y1,
-                                       int x2,
-                                       int y2,
+                                       float x1,
+                                       float y1,
+                                       float x2,
+                                       float y2,
                                        BoxSide side,
                                        Color color,
                                        EBorderStyle style,
                                        int adjacentWidth1,
                                        int adjacentWidth2,
                                        bool antialias) {
-  int thickness;
-  int length;
+  float thickness;
+  float length;
   if (side == BSTop || side == BSBottom) {
     thickness = y2 - y1;
     length = x2 - x1;
@@ -449,7 +449,7 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
                                       int length,
                                       BoxSide side,
                                       Color color,
-                                      int thickness,
+                                      float thickness,
                                       int adjacentWidth1,
                                       int adjacentWidth2,
                                       bool antialias) {

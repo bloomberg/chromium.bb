@@ -9,37 +9,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutIFrame (positioned) IFRAME",
-          "rect": [2, 64, 235, 236],
+          "rect": [2, 65, 236, 235],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [2, 65, 235, 235],
+          "rect": [3, 65, 235, 235],
           "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
-          "rect": [2, 65, 235, 235],
+          "rect": [3, 65, 235, 235],
           "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
-          "rect": [2, 300, 235, 15],
+          "rect": [3, 300, 235, 15],
           "reason": "scroll"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [2, 65, 225, 235],
+          "rect": [3, 65, 225, 235],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [2, 65, 58, 15],
+          "rect": [3, 65, 58, 15],
           "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
-          "rect": [237, 65, 15, 235],
+          "rect": [238, 65, 15, 235],
           "reason": "scroll"
         }
       ]

@@ -139,10 +139,9 @@ void LayoutScrollbarPart::computeScrollbarWidth() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visibleSize = (m_scrollbar->styleSource()->size().width() -
-                     m_scrollbar->styleSource()->style()->borderLeftWidth() -
-                     m_scrollbar->styleSource()->style()->borderRightWidth())
-                        .toInt();
+  int visibleSize = m_scrollbar->styleSource()->size().width() -
+                    m_scrollbar->styleSource()->style()->borderLeftWidth() -
+                    m_scrollbar->styleSource()->style()->borderRightWidth();
   int w = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->width(),
                                       visibleSize);
   int minWidth =
@@ -168,10 +167,9 @@ void LayoutScrollbarPart::computeScrollbarHeight() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visibleSize = (m_scrollbar->styleSource()->size().height() -
-                     m_scrollbar->styleSource()->style()->borderTopWidth() -
-                     m_scrollbar->styleSource()->style()->borderBottomWidth())
-                        .toInt();
+  int visibleSize = m_scrollbar->styleSource()->size().height() -
+                    m_scrollbar->styleSource()->style()->borderTopWidth() -
+                    m_scrollbar->styleSource()->style()->borderBottomWidth();
   int h = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->height(),
                                       visibleSize);
   int minHeight =

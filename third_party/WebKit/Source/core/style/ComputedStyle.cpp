@@ -63,7 +63,7 @@ namespace blink {
 
 struct SameSizeAsBorderValue {
   RGBA32 m_color;
-  unsigned m_width;
+  unsigned m_bitfield;
 };
 
 ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
@@ -1493,12 +1493,13 @@ FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(
   bool horizontal = isHorizontalWritingMode();
 
   int leftWidth =
-      (!horizontal || includeLogicalLeftEdge) ? borderLeftWidth() : 0;
+      (!horizontal || includeLogicalLeftEdge) ? roundf(borderLeftWidth()) : 0;
   int rightWidth =
-      (!horizontal || includeLogicalRightEdge) ? borderRightWidth() : 0;
-  int topWidth = (horizontal || includeLogicalLeftEdge) ? borderTopWidth() : 0;
+      (!horizontal || includeLogicalRightEdge) ? roundf(borderRightWidth()) : 0;
+  int topWidth =
+      (horizontal || includeLogicalLeftEdge) ? roundf(borderTopWidth()) : 0;
   int bottomWidth =
-      (horizontal || includeLogicalRightEdge) ? borderBottomWidth() : 0;
+      (horizontal || includeLogicalRightEdge) ? roundf(borderBottomWidth()) : 0;
 
   return getRoundedInnerBorderFor(
       borderRect,
@@ -2215,7 +2216,7 @@ const BorderValue& ComputedStyle::borderEnd() const {
   return isLeftToRightDirection() ? borderBottom() : borderTop();
 }
 
-int ComputedStyle::borderBeforeWidth() const {
+float ComputedStyle::borderBeforeWidth() const {
   switch (getWritingMode()) {
     case WritingMode::kHorizontalTb:
       return borderTopWidth();
@@ -2228,7 +2229,7 @@ int ComputedStyle::borderBeforeWidth() const {
   return borderTopWidth();
 }
 
-int ComputedStyle::borderAfterWidth() const {
+float ComputedStyle::borderAfterWidth() const {
   switch (getWritingMode()) {
     case WritingMode::kHorizontalTb:
       return borderBottomWidth();
@@ -2241,23 +2242,23 @@ int ComputedStyle::borderAfterWidth() const {
   return borderBottomWidth();
 }
 
-int ComputedStyle::borderStartWidth() const {
+float ComputedStyle::borderStartWidth() const {
   if (isHorizontalWritingMode())
     return isLeftToRightDirection() ? borderLeftWidth() : borderRightWidth();
   return isLeftToRightDirection() ? borderTopWidth() : borderBottomWidth();
 }
 
-int ComputedStyle::borderEndWidth() const {
+float ComputedStyle::borderEndWidth() const {
   if (isHorizontalWritingMode())
     return isLeftToRightDirection() ? borderRightWidth() : borderLeftWidth();
   return isLeftToRightDirection() ? borderBottomWidth() : borderTopWidth();
 }
 
-int ComputedStyle::borderOverWidth() const {
+float ComputedStyle::borderOverWidth() const {
   return isHorizontalWritingMode() ? borderTopWidth() : borderRightWidth();
 }
 
-int ComputedStyle::borderUnderWidth() const {
+float ComputedStyle::borderUnderWidth() const {
   return isHorizontalWritingMode() ? borderBottomWidth() : borderLeftWidth();
 }
 

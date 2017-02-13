@@ -39,11 +39,11 @@ layer at (0,0) size 785x623 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutText {#text} at (246,432) size 5x17
         text run at (246,432) width 5: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (62,589) size 5x17
-        text run at (62,589) width 5: " "
-      LayoutText {#text} at (146,589) size 5x17
-        text run at (146,589) width 5: " "
-      LayoutBR {BR} at (150,589) size 1x17
+      LayoutText {#text} at (63,589) size 5x17
+        text run at (63,589) width 5: " "
+      LayoutText {#text} at (147,589) size 5x17
+        text run at (147,589) width 5: " "
+      LayoutBR {BR} at (151,589) size 1x17
 layer at (12,12) size 38x70 clip at (13,13) size 21x68
   LayoutListBox {SELECT} at (4,4) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 21x17
@@ -169,13 +169,13 @@ layer at (194,332) size 56x121 clip at (195,333) size 39x119
     LayoutBlockFlow {OPTION} at (1,21.19) size 38.69x29.80
       LayoutText {#text} at (2,0) size 35x27
         text run at (2,0) width 35: "bar"
-layer at (14,504) size 51x104 backgroundClip at (14,504) size 51x96 clip at (15,505) size 34x95
-  LayoutListBox {SELECT} at (6,496) size 50.81x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 33.81x25.50
+layer at (14,503) size 52x105 backgroundClip at (14,503) size 52x97 clip at (16,505) size 33x95
+  LayoutListBox {SELECT} at (6,495) size 51.81x105 [bgcolor=#FFFFFF] [border: (1.50px solid #A9A9A9)]
+    LayoutBlockFlow {OPTION} at (1.50,1.50) size 33.81x25.50
       LayoutText {#text} at (3,0) size 28x22
         text run at (3,0) width 28: "foo"
-layer at (83,466) size 64x140 backgroundClip at (83,466) size 64x134 clip at (85,468) size 45x132
-  LayoutListBox {SELECT} at (74.81,458) size 64.06x140 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
+layer at (84,466) size 64x140 backgroundClip at (84,466) size 64x134 clip at (86,468) size 45x132
+  LayoutListBox {SELECT} at (75.81,458) size 64.06x140 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (2,2) size 45.06x34
       LayoutText {#text} at (4,0) size 38x30
         text run at (4,0) width 38: "foo"

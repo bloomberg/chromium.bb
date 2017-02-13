@@ -250,19 +250,39 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutUnit paddingOver() const { return computedCSSPaddingOver(); }
   LayoutUnit paddingUnder() const { return computedCSSPaddingUnder(); }
 
-  virtual int borderTop() const { return style()->borderTopWidth(); }
-  virtual int borderBottom() const { return style()->borderBottomWidth(); }
-  virtual int borderLeft() const { return style()->borderLeftWidth(); }
-  virtual int borderRight() const { return style()->borderRightWidth(); }
-  virtual int borderBefore() const { return style()->borderBeforeWidth(); }
-  virtual int borderAfter() const { return style()->borderAfterWidth(); }
-  virtual int borderStart() const { return style()->borderStartWidth(); }
-  virtual int borderEnd() const { return style()->borderEndWidth(); }
-  int borderOver() const { return style()->borderOverWidth(); }
-  int borderUnder() const { return style()->borderUnderWidth(); }
+  virtual LayoutUnit borderTop() const {
+    return LayoutUnit(style()->borderTopWidth());
+  }
+  virtual LayoutUnit borderBottom() const {
+    return LayoutUnit(style()->borderBottomWidth());
+  }
+  virtual LayoutUnit borderLeft() const {
+    return LayoutUnit(style()->borderLeftWidth());
+  }
+  virtual LayoutUnit borderRight() const {
+    return LayoutUnit(style()->borderRightWidth());
+  }
+  virtual LayoutUnit borderBefore() const {
+    return LayoutUnit(style()->borderBeforeWidth());
+  }
+  virtual LayoutUnit borderAfter() const {
+    return LayoutUnit(style()->borderAfterWidth());
+  }
+  virtual LayoutUnit borderStart() const {
+    return LayoutUnit(style()->borderStartWidth());
+  }
+  virtual LayoutUnit borderEnd() const {
+    return LayoutUnit(style()->borderEndWidth());
+  }
+  LayoutUnit borderOver() const {
+    return LayoutUnit(style()->borderOverWidth());
+  }
+  LayoutUnit borderUnder() const {
+    return LayoutUnit(style()->borderUnderWidth());
+  }
 
-  int borderWidth() const { return borderLeft() + borderRight(); }
-  int borderHeight() const { return borderTop() + borderBottom(); }
+  LayoutUnit borderWidth() const { return borderLeft() + borderRight(); }
+  LayoutUnit borderHeight() const { return borderTop() + borderBottom(); }
 
   // Insets from the border box to the inside of the border.
   LayoutRectOutsets borderInsets() const {

@@ -31,9 +31,9 @@ class LayoutBoxModel : public LayoutItem {
     return toBoxModel()->getScrollableArea();
   }
 
-  int borderTop() const { return toBoxModel()->borderTop(); }
+  LayoutUnit borderTop() const { return toBoxModel()->borderTop(); }
 
-  int borderLeft() const { return toBoxModel()->borderLeft(); }
+  LayoutUnit borderLeft() const { return toBoxModel()->borderLeft(); }
 
   LayoutUnit paddingTop() const { return toBoxModel()->paddingTop(); }
 

@@ -32,6 +32,16 @@
 
 namespace blink {
 
+// In order to conserve memory, the border width uses fixed point,
+// which can be bitpacked.  This fixed point implementation is
+// essentially the same as in LayoutUnit.  Six bits are used for the
+// fraction, which leaves 20 bits for the integer part, making 1048575
+// the largest number.
+
+static const int kBorderWidthFractionalBits = 6;
+static const int kBorderWidthDenominator = 1 << kBorderWidthFractionalBits;
+static const int kMaxForBorderWidth = ((1 << 26) - 1) / kBorderWidthDenominator;
+
 class BorderValue {
   DISALLOW_NEW();
   friend class ComputedStyle;
@@ -40,9 +50,10 @@ class BorderValue {
   BorderValue()
       : m_color(0),
         m_colorIsCurrentColor(true),
-        m_width(3),
         m_style(BorderStyleNone),
-        m_isAuto(OutlineIsAutoOff) {}
+        m_isAuto(OutlineIsAutoOff) {
+    setWidth(3);
+  }
 
   bool nonZero() const { return width() && (m_style != BorderStyleNone); }
 
@@ -78,16 +89,31 @@ class BorderValue {
                                  : StyleColor(m_color);
   }
 
-  int width() const { return m_width; }
+  float width() const {
+    return static_cast<float>(m_width) / kBorderWidthDenominator;
+  }
+  void setWidth(float width) { m_width = widthToFixedPoint(width); }
+
+  // Since precision is lost with fixed point, comparisons also have
+  // to be done in fixed point.
+  bool widthEquals(float width) const {
+    return widthToFixedPoint(width) == m_width;
+  }
 
   EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
   void setStyle(EBorderStyle style) { m_style = style; }
 
  protected:
+  static unsigned widthToFixedPoint(float width) {
+    DCHECK_GE(width, 0);
+    return static_cast<unsigned>(std::min<float>(width, kMaxForBorderWidth) *
+                                 kBorderWidthDenominator);
+  }
+
   Color m_color;
   unsigned m_colorIsCurrentColor : 1;
 
-  unsigned m_width : 26;
+  unsigned m_width : 26;  // Fixed point width
   unsigned m_style : 4;  // EBorderStyle
 
   // This is only used by OutlineValue but moved here to keep the bits packed.

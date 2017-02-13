@@ -136,7 +136,7 @@ FloatRect calculateSideRect(const FloatRoundedRect& outerBorder,
                             const BorderEdge& edge,
                             int side) {
   FloatRect sideRect = outerBorder.rect();
-  int width = edge.width;
+  float width = edge.width();
 
   if (side == BSTop)
     sideRect.setHeight(width);
@@ -154,23 +154,23 @@ FloatRect calculateSideRectIncludingInner(const FloatRoundedRect& outerBorder,
                                           const BorderEdge edges[],
                                           BoxSide side) {
   FloatRect sideRect = outerBorder.rect();
-  int width;
+  float width;
 
   switch (side) {
     case BSTop:
-      width = sideRect.height() - edges[BSBottom].width;
+      width = sideRect.height() - edges[BSBottom].width();
       sideRect.setHeight(width);
       break;
     case BSBottom:
-      width = sideRect.height() - edges[BSTop].width;
+      width = sideRect.height() - edges[BSTop].width();
       sideRect.shiftYEdgeTo(sideRect.maxY() - width);
       break;
     case BSLeft:
-      width = sideRect.width() - edges[BSRight].width;
+      width = sideRect.width() - edges[BSRight].width();
       sideRect.setWidth(width);
       break;
     case BSRight:
-      width = sideRect.width() - edges[BSLeft].width;
+      width = sideRect.width() - edges[BSLeft].width();
       sideRect.shiftXEdgeTo(sideRect.maxX() - width);
       break;
   }
@@ -280,6 +280,7 @@ void drawSolidBorderRect(GraphicsContext& context,
                          float borderWidth,
                          const Color& color) {
   FloatRect strokeRect(borderRect);
+  borderWidth = roundf(borderWidth);
   strokeRect.inflate(-borderWidth / 2);
 
   bool wasAntialias = context.shouldAntialias();
@@ -513,7 +514,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context,
     if (firstEdge().borderStyle() == BorderStyleSolid) {
       if (m_isUniformWidth && !m_outer.isRounded()) {
         // 4-side, solid, uniform-width, rectangular border => one drawRect()
-        drawSolidBorderRect(context, m_outer.rect(), firstEdge().width,
+        drawSolidBorderRect(context, m_outer.rect(), firstEdge().width(),
                             firstEdge().color);
       } else {
         // 4-side, solid border => one drawDRRect()
@@ -636,7 +637,7 @@ void BoxBorderPainter::computeBorderProperties() {
 
     m_isUniformStyle &=
         edge.borderStyle() == m_edges[m_firstVisibleEdge].borderStyle();
-    m_isUniformWidth &= edge.width == m_edges[m_firstVisibleEdge].width;
+    m_isUniformWidth &= edge.width() == m_edges[m_firstVisibleEdge].width();
     m_isUniformColor &= edge.color == m_edges[m_firstVisibleEdge].color;
   }
 }
@@ -797,7 +798,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
       if (usePath)
         path = &borderInfo.roundedBorderPath;
       else
-        sideRect.setHeight(edge.width);
+        sideRect.setHeight(roundf(edge.width()));
 
       paintOneBorderSide(context, sideRect, BSTop, BSLeft, BSRight, path,
                          borderInfo.antiAlias, color, completedEdges);
@@ -811,7 +812,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
       if (usePath)
         path = &borderInfo.roundedBorderPath;
       else
-        sideRect.shiftYEdgeTo(sideRect.maxY() - edge.width);
+        sideRect.shiftYEdgeTo(sideRect.maxY() - roundf(edge.width()));
 
       paintOneBorderSide(context, sideRect, BSBottom, BSLeft, BSRight, path,
                          borderInfo.antiAlias, color, completedEdges);
@@ -825,7 +826,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
       if (usePath)
         path = &borderInfo.roundedBorderPath;
       else
-        sideRect.setWidth(edge.width);
+        sideRect.setWidth(roundf(edge.width()));
 
       paintOneBorderSide(context, sideRect, BSLeft, BSTop, BSBottom, path,
                          borderInfo.antiAlias, color, completedEdges);
@@ -839,7 +840,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
       if (usePath)
         path = &borderInfo.roundedBorderPath;
       else
-        sideRect.shiftXEdgeTo(sideRect.maxX() - edge.width);
+        sideRect.shiftXEdgeTo(sideRect.maxX() - roundf(edge.width()));
 
       paintOneBorderSide(context, sideRect, BSRight, BSTop, BSBottom, path,
                          borderInfo.antiAlias, color, completedEdges);
@@ -908,7 +909,7 @@ void BoxBorderPainter::paintOneBorderSide(
     Color color,
     BorderEdgeFlags completedEdges) const {
   const BorderEdge& edgeToRender = m_edges[side];
-  DCHECK(edgeToRender.width);
+  DCHECK(edgeToRender.width());
   const BorderEdge& adjacentEdge1 = m_edges[adjacentSide1];
   const BorderEdge& adjacentEdge2 = m_edges[adjacentSide2];
 
@@ -925,10 +926,11 @@ void BoxBorderPainter::paintOneBorderSide(
       clipBorderSidePolygon(graphicsContext, side, miter1, miter2);
     else
       clipBorderSideForComplexInnerPath(graphicsContext, side);
-    float thickness = std::max(
-        std::max(edgeToRender.width, adjacentEdge1.width), adjacentEdge2.width);
+    float thickness =
+        std::max(std::max(edgeToRender.width(), adjacentEdge1.width()),
+                 adjacentEdge2.width());
     drawBoxSideFromPath(graphicsContext, LayoutRect(m_outer.rect()), *path,
-                        edgeToRender.width, thickness, side, color,
+                        edgeToRender.width(), thickness, side, color,
                         edgeToRender.borderStyle());
   } else {
     MiterType miter1 =
@@ -949,8 +951,8 @@ void BoxBorderPainter::paintOneBorderSide(
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, sideRect.x(), sideRect.y(), sideRect.maxX(),
         sideRect.maxY(), side, color, edgeToRender.borderStyle(),
-        miter1 != NoMiter ? adjacentEdge1.width : 0,
-        miter2 != NoMiter ? adjacentEdge2.width : 0, antialias);
+        miter1 != NoMiter ? roundf(adjacentEdge1.width()) : 0,
+        miter2 != NoMiter ? roundf(adjacentEdge2.width()) : 0, antialias);
   }
 }
 
@@ -1074,10 +1076,10 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
 
       // Paint inner only
       GraphicsContextStateSaver stateSaver(graphicsContext);
-      LayoutUnit topWidth(m_edges[BSTop].usedWidth() / 2);
-      LayoutUnit bottomWidth(m_edges[BSBottom].usedWidth() / 2);
-      LayoutUnit leftWidth(m_edges[BSLeft].usedWidth() / 2);
-      LayoutUnit rightWidth(m_edges[BSRight].usedWidth() / 2);
+      int topWidth = m_edges[BSTop].usedWidth() / 2;
+      int bottomWidth = m_edges[BSBottom].usedWidth() / 2;
+      int leftWidth = m_edges[BSLeft].usedWidth() / 2;
+      int rightWidth = m_edges[BSRight].usedWidth() / 2;
 
       FloatRoundedRect clipRect = m_style.getRoundedInnerBorderFor(
           borderRect,
