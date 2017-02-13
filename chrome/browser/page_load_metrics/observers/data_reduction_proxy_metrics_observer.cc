@@ -53,11 +53,15 @@ std::string GetConstHistogramWithSuffix(const char* suffix) {
     }                                                                          \
   } while (false)
 
-// Records the kilobytes (i.e., bytes / 1024) to |histogram_name| in a histogram
-// with 50 buckets capped at 500 MB.
-#define RECORD_KILOBYTES_HISTOGRAM(histogram_name, bytes) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(                            \
-      histogram_name, static_cast<int>((bytes) / 1024), 1, 500 * 1024, 50)
+// Like RECORD_HISTOGRAMS_FOR_SUFFIX, but only records histograms if the event
+// occurred while the page was in the foreground.
+#define RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data, timing,         \
+                                                histogram_suffix)           \
+  do {                                                                      \
+    if (WasStartedInForegroundOptionalEventInForeground(timing, info)) {    \
+      RECORD_HISTOGRAMS_FOR_SUFFIX(data, timing.value(), histogram_suffix); \
+    }                                                                       \
+  } while (false)
 
 }  // namespace
 
@@ -87,16 +91,18 @@ const char kHistogramParseBlockedOnScriptLoadSuffix[] =
     "ParseTiming.ParseBlockedOnScriptLoad";
 const char kHistogramParseDurationSuffix[] = "ParseTiming.ParseDuration";
 
-const char kRequestsPercentProxied[] =
-    "Experimental.Requests.Network.PercentProxied";
+const char kResourcesPercentProxied[] =
+    "Experimental.CompletedResources.Network.PercentProxied";
 const char kBytesPercentProxied[] = "Experimental.Bytes.Network.PercentProxied";
 const char kBytesCompressionRatio[] =
     "Experimental.Bytes.Network.CompressionRatio";
 const char kBytesInflationPercent[] =
     "Experimental.Bytes.Network.InflationPercent";
-const char kNetworkRequests[] = "Experimental.Requests.Network";
-const char kRequestsProxied[] = "Experimental.Requests.Network.Proxied";
-const char kRequestsNotProxied[] = "Experimental.Requests.Network.NonProxied";
+const char kNetworkResources[] = "Experimental.CompletedResources.Network";
+const char kResourcesProxied[] =
+    "Experimental.CompletedResources.Network.Proxied";
+const char kResourcesNotProxied[] =
+    "Experimental.CompletedResources.Network.NonProxied";
 const char kNetworkBytes[] = "Experimental.Bytes.Network";
 const char kBytesProxied[] = "Experimental.Bytes.Network.Proxied";
 const char kBytesNotProxied[] = "Experimental.Bytes.Network.NonProxied";
@@ -108,8 +114,8 @@ const char kBytesInflation[] = "Experimental.Bytes.Network.Inflation";
 
 DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
     : browser_context_(nullptr),
-      num_data_reduction_proxy_requests_(0),
-      num_network_requests_(0),
+      num_data_reduction_proxy_resources_(0),
+      num_network_resources_(0),
       original_network_bytes_(0),
       network_bytes_proxied_(0),
       network_bytes_(0) {}
@@ -159,15 +165,6 @@ DataReductionProxyMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataReductionProxyMetricsObserver::OnHidden(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageSizeUMA();
-  SendPingback(timing, info);
-  return STOP_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -175,8 +172,10 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we send a pingback with data collected up to this point.
-  RecordPageSizeUMA();
-  SendPingback(timing, info);
+  if (!info.committed_url.is_empty()) {
+    RecordPageSizeUMA();
+    SendPingback(timing, info);
+  }
   return STOP_OBSERVING;
 }
 
@@ -188,17 +187,20 @@ void DataReductionProxyMetricsObserver::OnComplete(
 }
 
 void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
+  if (!data_)
+    return;
+
   // If the first request didn't complete, don't record UMA.
-  if (num_network_requests_ == 0)
+  if (num_network_resources_ == 0)
     return;
 
   // TODO(ryansturm): Evaluate if any of the below histograms are unncessary
   // once data is available. crbug.com/682782
 
-  // The percent of requests that went through the data reduction proxy.
+  // The percent of resources that went through the data reduction proxy.
   UMA_HISTOGRAM_PERCENTAGE(
-      GetConstHistogramWithSuffix(internal::kRequestsPercentProxied),
-      (100 * num_data_reduction_proxy_requests_) / num_network_requests_);
+      GetConstHistogramWithSuffix(internal::kResourcesPercentProxied),
+      (100 * num_data_reduction_proxy_resources_) / num_network_resources_);
 
   // The percent of bytes that went through the data reduction proxy.
   if (network_bytes_ > 0) {
@@ -222,53 +224,48 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
                          100));
   }
 
-  // Record the number of network requests seen.
-  UMA_HISTOGRAM_COUNTS_10000(
-      GetConstHistogramWithSuffix(internal::kNetworkRequests),
-      num_network_requests_);
+  // Record the number of network resources seen.
+  PAGE_RESOURCE_COUNT_HISTOGRAM(
+      GetConstHistogramWithSuffix(internal::kNetworkResources),
+      num_network_resources_);
 
-  // Record the number of requests that used data reduction proxy.
-  UMA_HISTOGRAM_COUNTS_10000(
-      GetConstHistogramWithSuffix(internal::kRequestsProxied),
-      num_data_reduction_proxy_requests_);
+  // Record the number of resources that used data reduction proxy.
+  PAGE_RESOURCE_COUNT_HISTOGRAM(
+      GetConstHistogramWithSuffix(internal::kResourcesProxied),
+      num_data_reduction_proxy_resources_);
 
-  // Record the number of requests that did not use data reduction proxy.
-  UMA_HISTOGRAM_COUNTS_10000(
-      GetConstHistogramWithSuffix(internal::kRequestsNotProxied),
-      num_network_requests_ - num_data_reduction_proxy_requests_);
+  // Record the number of resources that did not use data reduction proxy.
+  PAGE_RESOURCE_COUNT_HISTOGRAM(
+      GetConstHistogramWithSuffix(internal::kResourcesNotProxied),
+      num_network_resources_ - num_data_reduction_proxy_resources_);
 
   // Record the total KB of network bytes.
-  RECORD_KILOBYTES_HISTOGRAM(
-      GetConstHistogramWithSuffix(internal::kNetworkBytes), network_bytes_);
+  PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kNetworkBytes),
+                       network_bytes_);
 
   // Record the total amount of bytes that went through the data reduction
   // proxy.
-  RECORD_KILOBYTES_HISTOGRAM(
-      GetConstHistogramWithSuffix(internal::kBytesProxied),
-      network_bytes_proxied_);
+  PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesProxied),
+                       network_bytes_proxied_);
 
   // Record the total amount of bytes that did not go through the data reduction
   // proxy.
-  RECORD_KILOBYTES_HISTOGRAM(
-      GetConstHistogramWithSuffix(internal::kBytesNotProxied),
-      network_bytes_ - network_bytes_proxied_);
+  PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesNotProxied),
+                       network_bytes_ - network_bytes_proxied_);
 
   // Record the total KB of network bytes that the user would have seen without
   // using data reduction proxy.
-  RECORD_KILOBYTES_HISTOGRAM(
-      GetConstHistogramWithSuffix(internal::kBytesOriginal),
-      original_network_bytes_);
+  PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesOriginal),
+                       original_network_bytes_);
 
   // Record the savings the user saw by using data reduction proxy. If there was
   // inflation instead, record that.
   if (network_bytes_ <= original_network_bytes_) {
-    RECORD_KILOBYTES_HISTOGRAM(
-        GetConstHistogramWithSuffix(internal::kBytesSavings),
-        original_network_bytes_ - network_bytes_);
+    PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesSavings),
+                         original_network_bytes_ - network_bytes_);
   } else {
-    RECORD_KILOBYTES_HISTOGRAM(
-        GetConstHistogramWithSuffix(internal::kBytesInflation),
-        network_bytes_proxied_ - original_network_bytes_);
+    PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesInflation),
+                         network_bytes_proxied_ - original_network_bytes_);
   }
 }
 
@@ -277,7 +274,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
   // shutdown cases. crbug.com/618072
-  if (!browser_context_)
+  if (!browser_context_ || !data_)
     return;
   if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
       data_reduction_proxy::params::IsIncludedInTamperDetectionExperiment()) {
@@ -334,70 +331,78 @@ void DataReductionProxyMetricsObserver::SendPingback(
 void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(
-      data_, timing.dom_content_loaded_event_start.value(),
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.dom_content_loaded_event_start,
       internal::kHistogramDOMContentLoadedEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnLoadEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.load_event_start.value(),
-                               internal::kHistogramLoadEventFiredSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.load_event_start,
+      internal::kHistogramLoadEventFiredSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstLayout(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_layout.value(),
-                               internal::kHistogramFirstLayoutSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.first_layout, internal::kHistogramFirstLayoutSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_paint.value(),
-                               internal::kHistogramFirstPaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_, timing.first_paint,
+                                          internal::kHistogramFirstPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstTextPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_text_paint.value(),
-                               internal::kHistogramFirstTextPaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.first_text_paint,
+      internal::kHistogramFirstTextPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstImagePaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_image_paint.value(),
-                               internal::kHistogramFirstImagePaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.first_image_paint,
+      internal::kHistogramFirstImagePaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_contentful_paint.value(),
-                               internal::kHistogramFirstContentfulPaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.first_contentful_paint,
+      internal::kHistogramFirstContentfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_meaningful_paint.value(),
-                               internal::kHistogramFirstMeaningfulPaintSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
+      info, data_, timing.first_meaningful_paint,
+      internal::kHistogramFirstMeaningfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.parse_start.value(),
-                               internal::kHistogramParseStartSuffix);
+  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_, timing.parse_start,
+                                          internal::kHistogramParseStartSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!WasStartedInForegroundOptionalEventInForeground(timing.parse_stop, info))
+    return;
+
   base::TimeDelta parse_duration =
       timing.parse_stop.value() - timing.parse_start.value();
   RECORD_HISTOGRAMS_FOR_SUFFIX(data_, parse_duration,
@@ -413,10 +418,10 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
     return;
   original_network_bytes_ += extra_request_info.original_network_content_length;
   network_bytes_ += extra_request_info.raw_body_bytes;
-  num_network_requests_++;
+  num_network_resources_++;
   if (!extra_request_info.data_reduction_proxy_used)
     return;
-  num_data_reduction_proxy_requests_++;
+  num_data_reduction_proxy_resources_++;
   network_bytes_proxied_ += extra_request_info.raw_body_bytes;
 }
 

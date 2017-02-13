@@ -44,13 +44,13 @@ extern const char kHistogramParseBlockedOnScriptLoadSuffix[];
 extern const char kHistogramParseDurationSuffix[];
 
 // Byte and request specific histogram suffixes.
-extern const char kRequestsPercentProxied[];
+extern const char kResourcesPercentProxied[];
 extern const char kBytesPercentProxied[];
 extern const char kBytesCompressionRatio[];
 extern const char kBytesInflationPercent[];
-extern const char kNetworkRequests[];
-extern const char kRequestsProxied[];
-extern const char kRequestsNotProxied[];
+extern const char kNetworkResources[];
+extern const char kResourcesProxied[];
+extern const char kResourcesNotProxied[];
 extern const char kNetworkBytes[];
 extern const char kBytesProxied[];
 extern const char kBytesNotProxied[];
@@ -73,9 +73,6 @@ class DataReductionProxyMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
-  ObservePolicy OnHidden(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -127,11 +124,11 @@ class DataReductionProxyMetricsObserver
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_;
 
-  // The number of requests that used data reduction proxy.
-  int num_data_reduction_proxy_requests_;
+  // The number of resources that used data reduction proxy.
+  int num_data_reduction_proxy_resources_;
 
-  // The number of request that did not come from cache.
-  int num_network_requests_;
+  // The number of resources that did not come from cache.
+  int num_network_resources_;
 
   // The total content network bytes that the user would have downloaded if they
   // were not using data reduction proxy.

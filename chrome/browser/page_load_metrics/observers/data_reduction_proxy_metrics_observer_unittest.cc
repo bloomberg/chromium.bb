@@ -30,7 +30,6 @@ namespace data_reduction_proxy {
 namespace {
 
 const char kDefaultTestUrl[] = "http://google.com";
-const char kDefaultTestUrl2[] = "http://example.com";
 
 data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
     content::WebContents* web_contents,
@@ -151,21 +150,18 @@ class DataReductionProxyMetricsObserverTest
     PopulateRequiredTimingFields(&timing_);
   }
 
-  void RunTest(
-      bool data_reduction_proxy_used,
-      bool is_using_lofi,
-      std::function<void(page_load_metrics::PageLoadTracker*)> extra_steps) {
+  void RunTest(bool data_reduction_proxy_used, bool is_using_lofi) {
     data_reduction_proxy_used_ = data_reduction_proxy_used;
     is_using_lofi_ = is_using_lofi;
     NavigateAndCommit(GURL(kDefaultTestUrl));
     SimulateTimingUpdate(timing_);
     pingback_client_->Reset();
+  }
 
-    extra_steps(recent_tracker_);
-
-    // Navigate again to force OnComplete, which happens when a new navigation
-    // occurs.
-    NavigateAndCommit(GURL(kDefaultTestUrl2));
+  void RunTestAndNavigateToUntrackedUrl(bool data_reduction_proxy_used,
+                                        bool is_using_lofi) {
+    RunTest(data_reduction_proxy_used, is_using_lofi);
+    NavigateToUntrackedUrl();
   }
 
   // Verify that, if expected and actual are set, their values are equal.
@@ -252,15 +248,15 @@ class DataReductionProxyMetricsObserverTest
         event.value().InMilliseconds(), is_using_lofi_ ? 1 : 0);
   }
 
-  void ValidateDataHistograms(int network_requests,
-                              int drp_requests,
+  void ValidateDataHistograms(int network_resources,
+                              int drp_resources,
                               int64_t network_bytes,
                               int64_t drp_bytes,
                               int64_t ocl_bytes) {
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
-            .append(internal::kRequestsPercentProxied),
-        100 * drp_requests / network_requests, 1);
+            .append(internal::kResourcesPercentProxied),
+        100 * drp_resources / network_resources, 1);
 
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
@@ -269,18 +265,18 @@ class DataReductionProxyMetricsObserverTest
 
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
-            .append(internal::kNetworkRequests),
-        network_requests, 1);
+            .append(internal::kNetworkResources),
+        network_resources, 1);
 
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
-            .append(internal::kRequestsProxied),
-        drp_requests, 1);
+            .append(internal::kResourcesProxied),
+        drp_resources, 1);
 
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
-            .append(internal::kRequestsNotProxied),
-        network_requests - drp_requests, 1);
+            .append(internal::kResourcesNotProxied),
+        network_resources - drp_resources, 1);
 
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
@@ -326,7 +322,6 @@ class DataReductionProxyMetricsObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    recent_tracker_ = tracker;
     tracker->AddObserver(
         base::MakeUnique<TestDataReductionProxyMetricsObserver>(
             web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
@@ -337,7 +332,6 @@ class DataReductionProxyMetricsObserverTest
   page_load_metrics::PageLoadTiming timing_;
 
  private:
-  page_load_metrics::PageLoadTracker* recent_tracker_;
   bool data_reduction_proxy_used_;
   bool is_using_lofi_;
 
@@ -347,7 +341,7 @@ class DataReductionProxyMetricsObserverTest
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
   ResetTest();
   // Verify that when the data reduction proxy was not used, no UMA is reported.
-  RunTest(false, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTest(false, false);
   ValidateHistograms();
 }
 
@@ -355,7 +349,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   ResetTest();
   // Verify that when the data reduction proxy was used, but lofi was not used,
   // the correpsonding UMA is reported.
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTest(true, false);
   ValidateHistograms();
 }
 
@@ -363,7 +357,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
   ResetTest();
   // Verify that when the data reduction proxy was used and lofi was used, both
   // histograms are reported.
-  RunTest(true, true, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTest(true, true);
   ValidateHistograms();
 }
 
@@ -371,41 +365,41 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   ResetTest();
   // Verify that when data reduction proxy was used the correct timing
   // information is sent to SendPingback.
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first image paint is
   // unset, the correct timing information is sent to SendPingback.
   timing_.first_image_paint = base::nullopt;
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first contentful paint
   // is unset, SendPingback is not called.
   timing_.first_contentful_paint = base::nullopt;
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first meaningful paint
   // is unset, SendPingback is not called.
   timing_.first_meaningful_paint = base::nullopt;
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but load event start is
   // unset, SendPingback is not called.
   timing_.load_event_start = base::nullopt;
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was not used, SendPingback is not
   // called.
-  RunTest(false, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(false, false);
   EXPECT_FALSE(pingback_client_->send_pingback_called());
 
   ResetTest();
@@ -413,115 +407,105 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
-  RunTest(true, false, [](page_load_metrics::PageLoadTracker* tracker) {});
+  RunTestAndNavigateToUntrackedUrl(true, false);
   EXPECT_FALSE(pingback_client_->send_pingback_called());
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   ResetTest();
 
-  int network_requests = 0;
-  int drp_requests = 0;
+  RunTest(true, false);
+
+  // Prepare 4 resources of varying size and configurations.
+  page_load_metrics::ExtraRequestInfo resources[] = {
+      // Cached request.
+      {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       0 /* original_network_content_length */},
+      // Uncached non-proxied request.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+      // Uncached proxied request with .1 compression ratio.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       true /* data_reduction_proxy_used*/,
+       1024 * 40 * 10 /* original_network_content_length */},
+      // Uncached proxied request with .5 compression ratio.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       true /* data_reduction_proxy_used*/,
+       1024 * 40 * 5 /* original_network_content_length */},
+  };
+
+  int network_resources = 0;
+  int drp_resources = 0;
   int64_t network_bytes = 0;
   int64_t drp_bytes = 0;
   int64_t ocl_bytes = 0;
+  for (auto request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+      ocl_bytes += request.original_network_content_length;
+      ++network_resources;
+    }
+    if (request.data_reduction_proxy_used) {
+      drp_bytes += request.raw_body_bytes;
+      ++drp_resources;
+    }
+  }
 
-  std::function<void(page_load_metrics::PageLoadTracker*)> extra_steps =
-      [&network_requests, &drp_requests, &network_bytes, &drp_bytes,
-       &ocl_bytes](page_load_metrics::PageLoadTracker* tracker) {
-        // Prepare 4 requests of varying size and configurations.
-        page_load_metrics::ExtraRequestInfo requests[] = {
-            // Cached request.
-            {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             false /* data_reduction_proxy_used*/,
-             0 /* original_network_content_length */},
-            // Uncached non-proxied request.
-            {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             false /* data_reduction_proxy_used*/,
-             1024 * 40 /* original_network_content_length */},
-            // Uncached proxied request with .1 compression ratio.
-            {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             true /* data_reduction_proxy_used*/,
-             1024 * 40 * 10 /* original_network_content_length */},
-            // Uncached proxied request with .5 compression ratio.
-            {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             true /* data_reduction_proxy_used*/,
-             1024 * 40 * 5 /* original_network_content_length */},
+  NavigateToUntrackedUrl();
 
-        };
-
-        for (auto request : requests) {
-          tracker->OnLoadedResource(request);
-          if (!request.was_cached) {
-            network_bytes += request.raw_body_bytes;
-            ocl_bytes += request.original_network_content_length;
-            ++network_requests;
-          }
-          if (request.data_reduction_proxy_used) {
-            drp_bytes += request.raw_body_bytes;
-            ++drp_requests;
-          }
-        }
-      };
-
-  RunTest(true, false, extra_steps);
-
-  ValidateDataHistograms(network_requests, drp_requests, network_bytes,
+  ValidateDataHistograms(network_resources, drp_resources, network_bytes,
                          drp_bytes, ocl_bytes);
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   ResetTest();
 
-  int network_requests = 0;
-  int drp_requests = 0;
+  RunTest(true, false);
+
+  // Prepare 4 resources of varying size and configurations.
+  page_load_metrics::ExtraRequestInfo resources[] = {
+      // Cached request.
+      {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       0 /* original_network_content_length */},
+      // Uncached non-proxied request.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+      // Uncached proxied request with .1 compression ratio.
+      {false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
+       true /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+      // Uncached proxied request with .5 compression ratio.
+      {false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
+       true /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+  };
+
+  int network_resources = 0;
+  int drp_resources = 0;
   int64_t network_bytes = 0;
   int64_t drp_bytes = 0;
   int64_t ocl_bytes = 0;
+  for (auto request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+      ocl_bytes += request.original_network_content_length;
+      ++network_resources;
+    }
+    if (request.data_reduction_proxy_used) {
+      drp_bytes += request.raw_body_bytes;
+      ++drp_resources;
+    }
+  }
 
-  std::function<void(page_load_metrics::PageLoadTracker*)> extra_steps =
-      [&network_requests, &drp_requests, &network_bytes, &drp_bytes,
-       &ocl_bytes](page_load_metrics::PageLoadTracker* tracker) {
-        // Prepare 4 requests of varying size and configurations.
+  NavigateToUntrackedUrl();
 
-        // Prepare 4 requests of varying size and configurations.
-        page_load_metrics::ExtraRequestInfo requests[] = {
-            // Cached request.
-            {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             false /* data_reduction_proxy_used*/,
-             0 /* original_network_content_length */},
-            // Uncached non-proxied request.
-            {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-             false /* data_reduction_proxy_used*/,
-             1024 * 40 /* original_network_content_length */},
-            // Uncached proxied request with .1 compression ratio.
-            {false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
-             true /* data_reduction_proxy_used*/,
-             1024 * 40 /* original_network_content_length */},
-            // Uncached proxied request with .5 compression ratio.
-            {false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
-             true /* data_reduction_proxy_used*/,
-             1024 * 40 /* original_network_content_length */},
-
-        };
-
-        for (auto request : requests) {
-          tracker->OnLoadedResource(request);
-          if (!request.was_cached) {
-            network_bytes += request.raw_body_bytes;
-            ocl_bytes += request.original_network_content_length;
-            ++network_requests;
-          }
-          if (request.data_reduction_proxy_used) {
-            drp_bytes += request.raw_body_bytes;
-            ++drp_requests;
-          }
-        }
-      };
-
-  RunTest(true, false, extra_steps);
-
-  ValidateDataHistograms(network_requests, drp_requests, network_bytes,
+  ValidateDataHistograms(network_resources, drp_resources, network_bytes,
                          drp_bytes, ocl_bytes);
 }
 

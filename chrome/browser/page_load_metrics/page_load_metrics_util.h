@@ -14,6 +14,13 @@
                              base::TimeDelta::FromMilliseconds(10), \
                              base::TimeDelta::FromMinutes(10), 100)
 
+// Records |bytes| to |histogram_name| in kilobytes (i.e., bytes / 1024).
+#define PAGE_BYTES_HISTOGRAM(histogram_name, bytes) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                      \
+      histogram_name, static_cast<int>((bytes) / 1024), 1, 500 * 1024, 50)
+
+#define PAGE_RESOURCE_COUNT_HISTOGRAM UMA_HISTOGRAM_COUNTS_10000
+
 namespace page_load_metrics {
 
 struct PageLoadExtraInfo;

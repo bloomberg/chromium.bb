@@ -207,13 +207,20 @@ const char kHistogramTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
 const char kHistogramNetworkBytes[] = "PageLoad.Experimental.Bytes.Network";
 const char kHistogramCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 
+const char kHistogramTotalCompletedResources[] =
+    "PageLoad.Experimental.CompletedResources.Total";
+const char kHistogramNetworkCompletedResources[] =
+    "PageLoad.Experimental.CompletedResources.Network";
+const char kHistogramCacheCompletedResources[] =
+    "PageLoad.Experimental.CompletedResources.Cache";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
     : transition_(ui::PAGE_TRANSITION_LINK),
       was_no_store_main_resource_(false),
-      num_cache_requests_(0),
-      num_network_requests_(0),
+      num_cache_resources_(0),
+      num_network_resources_(0),
       cache_bytes_(0),
       network_bytes_(0) {}
 
@@ -502,15 +509,15 @@ void CorePageLoadMetricsObserver::OnParseStop(
         timing.parse_blocked_on_script_execution_from_document_write_duration
             .value());
 
-    int total_requests = num_cache_requests_ + num_network_requests_;
-    if (total_requests) {
-      int percent_cached = (100 * num_cache_requests_) / total_requests;
+    int total_resources = num_cache_resources_ + num_network_resources_;
+    if (total_resources) {
+      int percent_cached = (100 * num_cache_resources_) / total_resources;
       UMA_HISTOGRAM_PERCENTAGE(internal::kHistogramCacheRequestPercentParseStop,
                                percent_cached);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramCacheTotalRequestsParseStop,
-                           num_cache_requests_);
+                           num_cache_resources_);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramTotalRequestsParseStop,
-                           num_cache_requests_ + num_network_requests_);
+                           num_cache_resources_ + num_network_resources_);
 
       // Separate out parse duration based on cache percent.
       if (percent_cached <= 50) {
@@ -539,21 +546,23 @@ void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingHistograms(timing, info);
+  RecordByteAndResourceHistograms(timing, info);
   RecordRappor(timing, info);
+}
 
-  int64_t total_kb = (network_bytes_ + cache_bytes_) / 1024;
-  int64_t network_kb = network_bytes_ / 1024;
-  int64_t cache_kb = cache_bytes_ / 1024;
-  DCHECK_LE(network_kb, total_kb);
-  DCHECK_LE(cache_kb, total_kb);
-  DCHECK_LE(total_kb, std::numeric_limits<int>::max());
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramNetworkBytes,
-                              static_cast<int>(network_kb), 1, 500 * 1024, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramCacheBytes,
-                              static_cast<int>(cache_kb), 1, 500 * 1024, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramTotalBytes,
-                              static_cast<int>(total_kb), 1, 500 * 1024, 50);
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
+  // app is about to be backgrounded, as part of the Activity.onPause()
+  // flow. After this method is invoked, Chrome may be killed without further
+  // notification, so we record final metrics collected up to this point.
+  if (!info.committed_url.is_empty()) {
+    RecordTimingHistograms(timing, info);
+    RecordByteAndResourceHistograms(timing, info);
+  }
+  return STOP_OBSERVING;
 }
 
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
@@ -610,10 +619,10 @@ void CorePageLoadMetricsObserver::OnUserInput(
 void CorePageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestInfo& extra_request_info) {
   if (extra_request_info.was_cached) {
-    ++num_cache_requests_;
+    ++num_cache_resources_;
     cache_bytes_ += extra_request_info.raw_body_bytes;
   } else {
-    ++num_network_requests_;
+    ++num_network_resources_;
     network_bytes_ += extra_request_info.raw_body_bytes;
   }
 }
@@ -659,6 +668,25 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                           timing.first_meaningful_paint.value());
     }
   }
+}
+
+void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_GE(network_bytes_, 0);
+  DCHECK_GE(cache_bytes_, 0);
+  int64_t total_bytes = network_bytes_ + cache_bytes_;
+
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramNetworkBytes, network_bytes_);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramCacheBytes, cache_bytes_);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramTotalBytes, total_bytes);
+
+  PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramNetworkCompletedResources,
+                                num_network_resources_);
+  PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramCacheCompletedResources,
+                                num_cache_resources_);
+  PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramTotalCompletedResources,
+                                num_cache_resources_ + num_network_resources_);
 }
 
 void CorePageLoadMetricsObserver::RecordRappor(

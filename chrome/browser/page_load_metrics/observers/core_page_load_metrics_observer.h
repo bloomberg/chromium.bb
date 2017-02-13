@@ -51,6 +51,10 @@ extern const char kHistogramTotalBytes[];
 extern const char kHistogramNetworkBytes[];
 extern const char kHistogramCacheBytes[];
 
+extern const char kHistogramTotalCompletedResources[];
+extern const char kHistogramNetworkCompletedResources[];
+extern const char kHistogramCacheCompletedResources[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,
@@ -108,6 +112,9 @@ class CorePageLoadMetricsObserver
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnUserInput(const blink::WebInputEvent& event) override;
   void OnLoadedResource(
       const page_load_metrics::ExtraRequestInfo& extra_request_info) override;
@@ -115,6 +122,9 @@ class CorePageLoadMetricsObserver
  private:
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
                               const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordByteAndResourceHistograms(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info);
   void RecordRappor(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info);
 
@@ -124,8 +134,8 @@ class CorePageLoadMetricsObserver
   // Note: these are only approximations, based on WebContents attribution from
   // ResourceRequestInfo objects while this is the currently committed load in
   // the WebContents.
-  int num_cache_requests_;
-  int num_network_requests_;
+  int num_cache_resources_;
+  int num_network_resources_;
 
   // The number of body (not header) prefilter bytes consumed by requests for
   // the page.

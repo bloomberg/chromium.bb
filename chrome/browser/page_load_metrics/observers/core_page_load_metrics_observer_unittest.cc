@@ -482,12 +482,18 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       timing.parse_start.value().InMilliseconds(), 1);
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, BytesCounted) {
+TEST_F(CorePageLoadMetricsObserverTest, BytesAndResourcesCounted) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   NavigateAndCommit(GURL(kDefaultTestUrl2));
   histogram_tester().ExpectTotalCount(internal::kHistogramTotalBytes, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramNetworkBytes, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramCacheBytes, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramTotalCompletedResources, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNetworkCompletedResources, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramCacheCompletedResources, 1);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {

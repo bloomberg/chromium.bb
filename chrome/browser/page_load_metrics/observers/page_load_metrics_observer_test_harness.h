@@ -9,6 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -42,12 +43,21 @@ class PageLoadMetricsObserverTestHarness
   void NavigateWithPageTransitionAndCommit(const GURL& url,
                                            ui::PageTransition transition);
 
+  // Navigates to a URL that is not tracked by page_load_metrics. Useful for
+  // forcing the OnComplete method of a PageLoadMetricsObserver to run.
+  void NavigateToUntrackedUrl() {
+    NavigateAndCommit(GURL(url::kAboutBlankURL));
+  }
+
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
   // most recently committed navigation.
   void SimulateTimingUpdate(const PageLoadTiming& timing);
   void SimulateTimingAndMetadataUpdate(const PageLoadTiming& timing,
                                        const PageLoadMetadata& metadata);
+
+  // Simulates a loaded resource.
+  void SimulateLoadedResource(const ExtraRequestInfo& info);
 
   // Simulates a user input.
   void SimulateInputEvent(const blink::WebInputEvent& event);
