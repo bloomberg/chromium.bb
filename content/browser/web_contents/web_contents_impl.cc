@@ -2116,8 +2116,6 @@ void WebContentsImpl::CreateNewWindow(
     // Save the created window associated with the route so we can show it
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
-    CHECK(RenderWidgetHostImpl::FromID(render_process_id,
-                                       main_frame_widget_route_id));
     pending_contents_[std::make_pair(
         render_process_id, main_frame_widget_route_id)] = new_contents;
     AddDestructionObserver(new_contents);
@@ -2135,9 +2133,15 @@ void WebContentsImpl::CreateNewWindow(
     bool was_blocked = false;
     if (delegate_) {
       gfx::Rect initial_rect;
+      base::WeakPtr<WebContentsImpl> weak_new_contents =
+          new_contents->weak_factory_.GetWeakPtr();
+
       delegate_->AddNewContents(
           this, new_contents, params.disposition, initial_rect,
           params.user_gesture, &was_blocked);
+
+      if (!weak_new_contents)
+        return;  // The delegate deleted |new_contents| during AddNewContents().
     }
     if (!was_blocked) {
       OpenURLParams open_params(params.target_url, params.referrer,
@@ -2215,27 +2219,25 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
                                         bool user_gesture) {
-  WebContentsImpl* contents =
+  WebContentsImpl* popup =
       GetCreatedWindow(process_id, main_frame_widget_route_id);
-  if (contents) {
-    RenderWidgetHostImpl* rwh =
-        RenderWidgetHostImpl::FromID(process_id, main_frame_widget_route_id);
-    if (!rwh) {
-      // TODO(nick): Temporary for https://crbug.com/680876
-      base::debug::DumpWithoutCrashing();
-      return;
-    }
-
+  if (popup) {
     WebContentsDelegate* delegate = GetDelegate();
-    contents->is_resume_pending_ = true;
+    popup->is_resume_pending_ = true;
     if (!delegate || delegate->ShouldResumeRequestsForCreatedWindow())
-      contents->ResumeLoadingCreatedWebContents();
+      popup->ResumeLoadingCreatedWebContents();
 
     if (delegate) {
-      delegate->AddNewContents(this, contents, disposition, initial_rect,
-                               user_gesture, NULL);
+      base::WeakPtr<WebContentsImpl> weak_popup =
+          popup->weak_factory_.GetWeakPtr();
+      delegate->AddNewContents(this, popup, disposition, initial_rect,
+                               user_gesture, nullptr);
+      if (!weak_popup)
+        return;  // The delegate deleted |popup| during AddNewContents().
     }
 
+    RenderWidgetHostImpl* rwh = popup->GetMainFrame()->GetRenderWidgetHost();
+    DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
     rwh->Send(new ViewMsg_Move_ACK(rwh->GetRoutingID()));
   }
 }
