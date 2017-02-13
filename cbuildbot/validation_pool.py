@@ -310,6 +310,10 @@ class ValidationPool(object):
     return self.applied_patches or patch_series.PatchSeries(
         self.build_root, helper_pool=self._helper_pool)
 
+  def HasPickedUpCLs(self):
+    """Returns True if this pool has picked up chump CLs or applied new CLs."""
+    return self.has_chump_cls or self.applied
+
   @property
   def build_log(self):
     if self._run:

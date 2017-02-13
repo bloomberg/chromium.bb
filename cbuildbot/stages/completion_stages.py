@@ -550,6 +550,29 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   # board-aware submission.
   _CRITICAL_STAGES = ('CommitQueueSync',)
 
+  def _IsFailureFatal(self, failing, inflight, no_stat):
+    """Returns a boolean indicating whether the build should fail.
+
+    Args:
+      failing: Set of builder names of slave builders that failed.
+      inflight: Set of builder names of slave builders that are inflight
+      no_stat: Set of builder names of slave builders that had status None.
+
+    Returns:
+      False if this is a CQ-master and the sync_stage.validation_pool hasn't
+      picked up any chump CLs or new CLs. Else, returns True if any of the
+      failing or inflight builders are not sanity check builders for this
+      master, or if there were any non-sanity-check builders with status None.
+    """
+    if (config_lib.IsMasterCQ(self._run.config) and
+        not self.sync_stage.pool.HasPickedUpCLs()):
+      # If it's a CQ-master build and the validation pool hasn't picked up any
+      # CLs, no slave CQ builds have been scheduled.
+      return False
+
+    return super(CommitQueueCompletionStage, self)._IsFailureFatal(
+        failing, inflight, no_stat)
+
   def HandleSuccess(self):
     if self._run.config.master:
       self.sync_stage.pool.SubmitPool(reason=constants.STRATEGY_CQ_SUCCESS)

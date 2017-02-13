@@ -134,8 +134,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (config_lib.IsMasterCQ(self._run.config) and
-        not (self.sync_stage.pool.applied or
-             self.sync_stage.pool.has_chump_cls)):
+        not self.sync_stage.pool.HasPickedUpCLs()):
       logging.info('No new CLs or chumpped CLs found to verify in this CQ run,'
                    'do not schedule CQ slaves.')
       return

@@ -749,6 +749,21 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
                      handle_timeout=False, sane_tot=False, alert=True,
                      stage=stage)
 
+  def test_IsFailureFatalWithCLs(self):
+    """Test _IsFailureFatal with CLs."""
+    stage = self.ConstructStage()
+    stage.sync_stage.pool.HasPickedUpCLs.return_value = True
+
+    self.assertFalse(stage._IsFailureFatal(set(), set(), set()))
+    self.assertTrue(stage._IsFailureFatal(set(['test3']), set(), set()))
+
+  def test_IsFailureFatalWithoutCLs(self):
+    """Test _IsFailureFatal without CLs."""
+    stage = self.ConstructStage()
+    stage.sync_stage.pool.HasPickedUpCLs.return_value = False
+
+    self.assertFalse(stage._IsFailureFatal(set(), set(), set()))
+    self.assertFalse(stage._IsFailureFatal(set(['test3']), set(), set()))
 
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):

@@ -1078,6 +1078,14 @@ class TestCoreLogic(MoxBase):
     }
     self.assertDictEqual(dep_map, expected_map)
 
+  def testHasPickedUpCLs(self):
+    """Test HasPickedUpCLs."""
+    pool = self.MakePool()
+    self.assertFalse(pool.HasPickedUpCLs())
+    pool.has_chump_cls = True
+    self.assertTrue(pool.HasPickedUpCLs())
+
+
 class TestPickling(cros_test_lib.TempDirTestCase):
   """Tests to validate pickling of ValidationPool, covering CQ's needs"""
 
