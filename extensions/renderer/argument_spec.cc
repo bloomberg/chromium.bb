@@ -89,12 +89,19 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   if (dict->GetInteger("minimum", &min))
     minimum_ = min;
 
-  const base::DictionaryValue* properties_value = nullptr;
-  if (type_ == ArgumentType::OBJECT &&
-      dict->GetDictionary("properties", &properties_value)) {
-    for (base::DictionaryValue::Iterator iter(*properties_value);
-         !iter.IsAtEnd(); iter.Advance()) {
-      properties_[iter.key()] = base::MakeUnique<ArgumentSpec>(iter.value());
+  if (type_ == ArgumentType::OBJECT) {
+    const base::DictionaryValue* properties_value = nullptr;
+    if (dict->GetDictionary("properties", &properties_value)) {
+      for (base::DictionaryValue::Iterator iter(*properties_value);
+           !iter.IsAtEnd(); iter.Advance()) {
+        properties_[iter.key()] = base::MakeUnique<ArgumentSpec>(iter.value());
+      }
+    }
+    const base::DictionaryValue* additional_properties_value = nullptr;
+    if (dict->GetDictionary("additionalProperties",
+                            &additional_properties_value)) {
+      additional_properties_ =
+          base::MakeUnique<ArgumentSpec>(*additional_properties_value);
     }
   } else if (type_ == ArgumentType::LIST) {
     const base::DictionaryValue* item_value = nullptr;
@@ -253,6 +260,7 @@ bool ArgumentSpec::ParseArgumentToObject(
   // Only construct the result if we have an |out_value| to populate.
   if (out_value)
     result = base::MakeUnique<base::DictionaryValue>();
+
   gin::Dictionary dictionary(context->GetIsolate(), object);
   for (const auto& kv : properties_) {
     v8::Local<v8::Value> subvalue;
@@ -282,6 +290,51 @@ bool ArgumentSpec::ParseArgumentToObject(
     if (result)
       result->Set(kv.first, std::move(property));
   }
+
+  // Check for additional properties.
+  if (additional_properties_) {
+    v8::Local<v8::Array> own_property_names;
+    if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names))
+      return false;
+    uint32_t length = own_property_names->Length();
+    for (uint32_t i = 0; i < length; ++i) {
+      v8::Local<v8::Value> key;
+      if (!own_property_names->Get(context, i).ToLocal(&key))
+        return false;
+      // In JS, all keys are strings or numbers (or symbols, but those are
+      // excluded by GetOwnPropertyNames()). If you try to set anything else
+      // (e.g. an object), it is converted to a string.
+      DCHECK(key->IsString() || key->IsNumber());
+      v8::String::Utf8Value utf8_key(key);
+      // If the key was one of the specified properties, we've already handled
+      // it. Continue.
+      if (properties_.find(*utf8_key) != properties_.end())
+        continue;
+      v8::Local<v8::Value> subvalue;
+      // Fun: It's possible that a previous getter has removed the property from
+      // the object. This isn't that big of a deal, since it would only manifest
+      // in the case of some reasonably-crazy script objects, and it's probably
+      // not worth optimizing for the uncommon case to the detriment of the
+      // common (and either should be totally safe). We can always add a
+      // HasOwnProperty() check here in the future, if we desire.
+      if (!object->Get(context, key).ToLocal(&subvalue))
+        return false;
+
+      // We don't serialize undefined values.
+      // TODO(devlin): This matches current behavior, but it is correct?
+      if (subvalue->IsUndefined())
+        continue;
+
+      std::unique_ptr<base::Value> property;
+      if (!additional_properties_->ParseArgument(
+              context, subvalue, refs, result ? &property : nullptr, error)) {
+        return false;
+      }
+      if (result)
+        result->SetWithoutPathExpansion(*utf8_key, std::move(property));
+    }
+  }
+
   if (out_value)
     *out_value = std::move(result);
   return true;

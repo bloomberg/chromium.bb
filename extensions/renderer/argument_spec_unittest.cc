@@ -381,4 +381,101 @@ TEST_F(ArgumentSpecUnitTest, TypeChoicesTest) {
   }
 }
 
+TEST_F(ArgumentSpecUnitTest, AdditionalPropertiesTest) {
+  {
+    const char kOnlyAnyAdditionalProperties[] =
+        "{"
+        "  'type': 'object',"
+        "  'additionalProperties': {'type': 'any'}"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kOnlyAnyAdditionalProperties));
+    ExpectSuccess(spec, "({prop1: 'alpha', prop2: 42, prop3: {foo: 'bar'}})",
+                  "{'prop1':'alpha','prop2':42,'prop3':{'foo':'bar'}}");
+    ExpectSuccess(spec, "({})", "{}");
+    // Test some crazy keys.
+    ExpectSuccess(spec,
+                  "var x = {};\n"
+                  "var y = {prop1: 'alpha'};\n"
+                  "y[42] = 'beta';\n"
+                  "y[x] = 'gamma';\n"
+                  "y[undefined] = 'delta';\n"
+                  "y;",
+                  "{'42':'beta','[object Object]':'gamma','prop1':'alpha',"
+                  "'undefined':'delta'}");
+    // We (typically*, see "Fun case" below) don't serialize properties on an
+    // object prototype.
+    ExpectSuccess(spec,
+                  "({\n"
+                  "  __proto__: {protoProp: 'proto'},\n"
+                  "  instanceProp: 'instance'\n"
+                  "})",
+                  "{'instanceProp':'instance'}");
+    // Fun case: Remove a property as a result of getting another. Currently,
+    // we don't check each property with HasOwnProperty() during iteration, so
+    // Fun case: Remove a property as a result of getting another. Currently,
+    // we don't check each property with HasOwnProperty() during iteration, so
+    // we still try to serialize it. But we don't serialize undefined, so in the
+    // case of the property not being defined on the prototype, this works as
+    // expected.
+    ExpectSuccess(spec,
+                  "var x = {};\n"
+                  "Object.defineProperty(\n"
+                  "    x, 'alpha',\n"
+                  "    {\n"
+                  "      enumerable: true,\n"
+                  "      get: () => { delete x.omega; return 'alpha'; }\n"
+                  "    });\n"
+                  "x.omega = 'omega';\n"
+                  "x;",
+                  "{'alpha':'alpha'}");
+    // Fun case continued: If an object removes the property, and the property
+    // *is* present on the prototype, then we serialize the value from the
+    // prototype. This is inconsistent, but only manifests scripts are doing
+    // crazy things (and is still safe).
+    // TODO(devlin): We *could* add a HasOwnProperty() check, in which case
+    // the result of this call should be {'alpha':'alpha'}.
+    ExpectSuccess(spec,
+                  "var x = {\n"
+                  "  __proto__: { omega: 'different omega' }\n"
+                  "};\n"
+                  "Object.defineProperty(\n"
+                  "    x, 'alpha',\n"
+                  "    {\n"
+                  "      enumerable: true,\n"
+                  "      get: () => { delete x.omega; return 'alpha'; }\n"
+                  "    });\n"
+                  "x.omega = 'omega';\n"
+                  "x;",
+                  "{'alpha':'alpha','omega':'different omega'}");
+  }
+  {
+    const char kPropertiesAndAnyAdditionalProperties[] =
+        "{"
+        "  'type': 'object',"
+        "  'properties': {"
+        "    'prop1': {'type': 'string'}"
+        "  },"
+        "  'additionalProperties': {'type': 'any'}"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kPropertiesAndAnyAdditionalProperties));
+    ExpectSuccess(spec, "({prop1: 'alpha', prop2: 42, prop3: {foo: 'bar'}})",
+                  "{'prop1':'alpha','prop2':42,'prop3':{'foo':'bar'}}");
+    // Additional properties are optional.
+    ExpectSuccess(spec, "({prop1: 'foo'})", "{'prop1':'foo'}");
+    ExpectFailure(spec, "({prop2: 42, prop3: {foo: 'bar'}})");
+    ExpectFailure(spec, "({prop1: 42})");
+  }
+  {
+    const char kTypedAdditionalProperties[] =
+        "{"
+        "  'type': 'object',"
+        "  'additionalProperties': {'type': 'string'}"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kTypedAdditionalProperties));
+    ExpectSuccess(spec, "({prop1: 'alpha', prop2: 'beta', prop3: 'gamma'})",
+                  "{'prop1':'alpha','prop2':'beta','prop3':'gamma'}");
+    ExpectFailure(spec, "({prop1: 'alpha', prop2: 42})");
+  }
+}
+
 }  // namespace extensions

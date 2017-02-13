@@ -118,6 +118,11 @@ class ArgumentSpec {
   // The possible enum values, if defined for this argument.
   std::set<std::string> enum_values_;
 
+  // The specification for 'additional properties'. This is used when we want
+  // to allow the API to pass an object with arbitrary properties. Only
+  // applicable for ArgumentType::OBJECT.
+  std::unique_ptr<ArgumentSpec> additional_properties_;
+
   DISALLOW_COPY_AND_ASSIGN(ArgumentSpec);
 };
 
