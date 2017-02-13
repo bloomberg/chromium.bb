@@ -920,12 +920,29 @@ V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), pro
 {##############################################################################}
 {% block partial_interface %}
 {% if has_partial_interface %}
+{% if needs_runtime_enabled_installer %}
+InstallRuntimeEnabledFunction {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction = (InstallRuntimeEnabledFunction)&{{v8_class}}::installRuntimeEnabledFeatures;
+{% endif %}
+
 InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction = (InstallTemplateFunction)&{{v8_class}}::install{{v8_class}}Template;
 
-void {{v8_class}}::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
-  {{v8_class}}::install{{v8_class}}TemplateFunction = installTemplateFunction;
-  if (preparePrototypeAndInterfaceObjectFunction)
-    {{v8_class}}::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction = preparePrototypeAndInterfaceObjectFunction;
+void {{v8_class}}::updateWrapperTypeInfo(
+    InstallTemplateFunction installTemplateFunction,
+    InstallRuntimeEnabledFunction installRuntimeEnabledFunction,
+    PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
+  ALLOW_UNUSED_LOCAL(installRuntimeEnabledFunction);
+
+  {{v8_class}}::install{{v8_class}}TemplateFunction =
+      installTemplateFunction;
+  {% if needs_runtime_enabled_installer %}
+  CHECK(installRuntimeEnabledFunction);
+  {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction =
+      installRuntimeEnabledFunction;
+  {% endif %}
+  if (preparePrototypeAndInterfaceObjectFunction) {
+    {{v8_class}}::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction =
+        preparePrototypeAndInterfaceObjectFunction;
+  }
 }
 
 {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}

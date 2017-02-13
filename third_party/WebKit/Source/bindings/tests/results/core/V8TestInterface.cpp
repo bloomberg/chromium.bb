@@ -2967,10 +2967,18 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
 
 InstallTemplateFunction V8TestInterface::installV8TestInterfaceTemplateFunction = (InstallTemplateFunction)&V8TestInterface::installV8TestInterfaceTemplate;
 
-void V8TestInterface::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
-  V8TestInterface::installV8TestInterfaceTemplateFunction = installTemplateFunction;
-  if (preparePrototypeAndInterfaceObjectFunction)
-    V8TestInterface::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction = preparePrototypeAndInterfaceObjectFunction;
+void V8TestInterface::updateWrapperTypeInfo(
+    InstallTemplateFunction installTemplateFunction,
+    InstallRuntimeEnabledFunction installRuntimeEnabledFunction,
+    PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
+  ALLOW_UNUSED_LOCAL(installRuntimeEnabledFunction);
+
+  V8TestInterface::installV8TestInterfaceTemplateFunction =
+      installTemplateFunction;
+  if (preparePrototypeAndInterfaceObjectFunction) {
+    V8TestInterface::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction =
+        preparePrototypeAndInterfaceObjectFunction;
+  }
 }
 
 void V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&)) {

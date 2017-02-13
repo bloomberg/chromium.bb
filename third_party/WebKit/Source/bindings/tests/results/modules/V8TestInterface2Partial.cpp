@@ -97,6 +97,7 @@ void V8TestInterface2Partial::initialize() {
   // Should be invoked from ModulesInitializer.
   V8TestInterface2::updateWrapperTypeInfo(
       &V8TestInterface2Partial::installV8TestInterface2Template,
+      nullptr,
       nullptr);
 }
 

@@ -448,6 +448,7 @@ void V8TestInterfacePartial::initialize() {
   // Should be invoked from ModulesInitializer.
   V8TestInterface::updateWrapperTypeInfo(
       &V8TestInterfacePartial::installV8TestInterfaceTemplate,
+      nullptr,
       V8TestInterfacePartial::preparePrototypeAndInterfaceObject);
   V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::voidMethodPartialOverloadMethod);
   V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticVoidMethodPartialOverloadMethod);

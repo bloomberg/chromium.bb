@@ -1152,9 +1152,15 @@ class V8IsolateInterruptor final : public BlinkGCInterruptor {
 };
 
 typedef void (*InstallTemplateFunction)(
-    v8::Isolate*,
-    const DOMWrapperWorld&,
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interfaceTemplate);
+typedef void (*InstallRuntimeEnabledFunction)(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface);
 
 // Freeze a V8 object. The type of the first parameter and the return value is
 // intentionally v8::Value so that this function can wrap ToV8().

@@ -664,10 +664,18 @@ TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::
 
 InstallTemplateFunction V8TestInterface2::installV8TestInterface2TemplateFunction = (InstallTemplateFunction)&V8TestInterface2::installV8TestInterface2Template;
 
-void V8TestInterface2::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
-  V8TestInterface2::installV8TestInterface2TemplateFunction = installTemplateFunction;
-  if (preparePrototypeAndInterfaceObjectFunction)
-    V8TestInterface2::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction = preparePrototypeAndInterfaceObjectFunction;
+void V8TestInterface2::updateWrapperTypeInfo(
+    InstallTemplateFunction installTemplateFunction,
+    InstallRuntimeEnabledFunction installRuntimeEnabledFunction,
+    PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
+  ALLOW_UNUSED_LOCAL(installRuntimeEnabledFunction);
+
+  V8TestInterface2::installV8TestInterface2TemplateFunction =
+      installTemplateFunction;
+  if (preparePrototypeAndInterfaceObjectFunction) {
+    V8TestInterface2::wrapperTypeInfo.preparePrototypeAndInterfaceObjectFunction =
+        preparePrototypeAndInterfaceObjectFunction;
+  }
 }
 
 }  // namespace blink
