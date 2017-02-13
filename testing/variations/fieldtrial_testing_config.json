@@ -2522,6 +2522,23 @@
             ]
         }
     ],
+    "TranslateUI2016Q2": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "TranslateUI2016Q2OnGroup",
+                    "enable_features": [
+                        "TranslateUI2016Q2"
+                    ]
+                }
+            ]
+        }
+    ],
     "TranslateUiLangTrial": [
         {
             "platforms": [
