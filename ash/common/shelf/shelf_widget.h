@@ -21,6 +21,7 @@ class ApplicationDragAndDropHost;
 }
 
 namespace ash {
+enum class AnimationChangeType;
 class AppListButton;
 class FocusCycler;
 class ShelfLayoutManager;
@@ -46,7 +47,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Sets the shelf's background type.
   void SetPaintsBackground(ShelfBackgroundType background_type,
-                           BackgroundAnimatorChangeType change_type);
+                           AnimationChangeType change_type);
   ShelfBackgroundType GetBackgroundType() const;
 
   // Hide the shelf behind a black bar during e.g. a user transition when |hide|

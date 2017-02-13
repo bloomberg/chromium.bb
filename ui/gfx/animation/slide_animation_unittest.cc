@@ -41,7 +41,7 @@ class SlideAnimationTest: public testing::Test {
 
 // Tests animation construction.
 TEST_F(SlideAnimationTest, InitialState) {
-  SlideAnimation animation(NULL);
+  SlideAnimation animation(nullptr);
   // By default, slide animations are 60 Hz, so the timer interval should be
   // 1/60th of a second.
   EXPECT_EQ(1000 / 60, animation.timer_interval().InMilliseconds());
@@ -55,7 +55,7 @@ TEST_F(SlideAnimationTest, InitialState) {
 }
 
 TEST_F(SlideAnimationTest, Basics) {
-  SlideAnimation animation(NULL);
+  SlideAnimation animation(nullptr);
   SlideAnimation::TestApi test_api(&animation);
 
   // Use linear tweening to make the math easier below.

@@ -6,10 +6,12 @@
 #define ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/background_animator.h"
+#include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
+
+enum class AnimationChangeType;
 
 class ASH_EXPORT ShelfLayoutManagerObserver {
  public:
@@ -26,7 +28,7 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
 
   // Called when shelf background animation is started.
   virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
-                                   BackgroundAnimatorChangeType change_type) {}
+                                   AnimationChangeType change_type) {}
 };
 
 }  // namespace ash

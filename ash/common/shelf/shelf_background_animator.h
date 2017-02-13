@@ -10,13 +10,18 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
-#include "ash/common/wm/background_animator.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/gfx/animation/animation_delegate.h"
+
+namespace gfx {
+class SlideAnimation;
+}  // namespace gfx
 
 namespace ash {
 
+enum class AnimationChangeType;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
 class WmShelf;
@@ -30,10 +35,10 @@ class WmShelf;
 //
 //  Material Design:
 //    1. Shelf button backgrounds
-//    2. Opaque overlay for the SHELF_BACKGROUND_OVERLAP and
-//       SHELF_BACKGROUND_MAXIMIZED states.
+//    2. Overlay for the SHELF_BACKGROUND_OVERLAP and SHELF_BACKGROUND_MAXIMIZED
+//       states.
 class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
-                                           public BackgroundAnimatorDelegate {
+                                           public gfx::AnimationDelegate {
  public:
   // Initializes this with the given |background_type|. This will observe the
   // |wm_shelf| for background type changes if |wm_shelf| is not null.
@@ -50,7 +55,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   void RemoveObserver(ShelfBackgroundAnimatorObserver* observer);
 
   // Updates |observer| with current values.
-  void Initialize(ShelfBackgroundAnimatorObserver* observer) const;
+  void NotifyObserver(ShelfBackgroundAnimatorObserver* observer);
 
   // Conditionally animates the background to the specified |background_type|
   // and notifies observers of the new background parameters (e.g. alpha).
@@ -63,36 +68,86 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   // BACKGROUND_CHANGE_ANIMATE change type is received it will be ignored and
   // observers will NOT be notified.
   void PaintBackground(ShelfBackgroundType background_type,
-                       BackgroundAnimatorChangeType change_type);
+                       AnimationChangeType change_type);
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
  protected:
   // WmShelfObserver:
-  void OnBackgroundTypeChanged(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) override;
-
-  // BackgroundAnimatorDelegate:
-  void UpdateBackground(BackgroundAnimator* animator, int alpha) override;
-  void BackgroundAnimationEnded(BackgroundAnimator* animator) override;
+  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
+                               AnimationChangeType change_type) override;
 
  private:
   friend class ShelfBackgroundAnimatorTestApi;
 
+  // Track the values related to a single animation (e.g. Shelf background,
+  // shelf item background)
+  class AnimationValues {
+   public:
+    AnimationValues();
+    ~AnimationValues();
+
+    int current_alpha() const { return current_alpha_; }
+
+    // Updates the current values based on |t| value between 0 and 1.
+    void UpdateCurrentValues(double t);
+
+    // Set the target values and assign the current values to the initial
+    // values.
+    void SetTargetValues(int target_alpha);
+
+    // Returns true if the initial values of |this| equal the target values of
+    // |other|.
+    bool InitialValuesEqualTargetValuesOf(const AnimationValues& other) const;
+
+   private:
+    int initial_alpha_ = 0;
+    int current_alpha_ = 0;
+    int target_alpha_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(AnimationValues);
+  };
+
+  // The maximum alpha value that can be used.
+  static const int kMaxAlpha = 255;
+
   // Helper function used by PaintBackground() to animate the background.
   void AnimateBackground(ShelfBackgroundType background_type,
-                         BackgroundAnimatorChangeType change_type);
+                         AnimationChangeType change_type);
 
-  // Creates new BackgroundAnimators configured with the correct durations and
-  // initial/target alpha values. If any BackgroundAnimators are currently
-  // animating they will be stopped.
-  void CreateAnimators(ShelfBackgroundType background_type,
-                       BackgroundAnimatorChangeType change_type);
+  // Returns true if the current |animator_| should be re-used to animate to the
+  // given |background_type|.  This allows for pre-empted animations to take the
+  // same amount of time to reverse to the |previous_background_type_|.
+  bool CanReuseAnimator(ShelfBackgroundType background_type) const;
 
-  // Stops all existing animators owned by this.
-  void StopAnimators();
+  // Creates a new |animator_| configured with the correct duration. If the
+  // |animator_| is currently animating it will be stopped.
+  void CreateAnimator(ShelfBackgroundType background_type);
 
-  // Called when an alpha value changes and observers need to be notified.
-  void OnAlphaChanged(BackgroundAnimator* animator, int alpha);
+  // Stops the animator owned by this.
+  void StopAnimator();
+
+  // Updates the |shelf_background_values_| and |shelf_item_background_values_|.
+  void SetTargetValues(ShelfBackgroundType background_type);
+
+  // Sets the target values for |shelf_background_values| and
+  // |item_background_values| according to |background_type|.
+  void GetTargetValues(ShelfBackgroundType background_type,
+                       AnimationValues* shelf_background_values,
+                       AnimationValues* item_background_values) const;
+
+  // Updates the animation values corresponding to the |t| value between 0 and
+  // 1.
+  void SetAnimationValues(double t);
+
+  // Called when observers need to be notified.
+  void NotifyObservers();
+
+  // The shelf to observe for changes to the shelf background type, can be null.
+  WmShelf* wm_shelf_;
 
   // The background type that this is animating towards or has reached.
   ShelfBackgroundType target_background_type_ = SHELF_BACKGROUND_DEFAULT;
@@ -100,27 +155,16 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   // The last background type this is animating away from.
   ShelfBackgroundType previous_background_type_ = SHELF_BACKGROUND_MAXIMIZED;
 
-  // Animates the solid color background of the Shelf.
-  // TODO(bruthig): Replace all BackgroundAnimators with a single
-  // gfx::SlideAnimation.
-  std::unique_ptr<BackgroundAnimator> opaque_background_animator_;
+  // Drives the animtion.
+  std::unique_ptr<gfx::SlideAnimation> animator_;
 
-  // Animates the backgrounds of Shelf child Views.
-  std::unique_ptr<BackgroundAnimator> item_background_animator_;
+  // Tracks the shelf background animation values.
+  AnimationValues shelf_background_values_;
+
+  // Tracks the item background animation values.
+  AnimationValues item_background_values_;
 
   base::ObserverList<ShelfBackgroundAnimatorObserver> observers_;
-
-  // True if the existing BackgroundAnimators can be re-used to animate to the
-  // |previous_background_type_|. This allows for pre-empted animations to take
-  // the same amount of time to reverse to the |previous_background_type_|.
-  bool can_reuse_animators_ = false;
-
-  // Tracks how many animators completed successfully since the last
-  // CreateAnimators() call. Used to properly set |can_reuse_animators_|.
-  int successful_animator_count_ = 0;
-
-  // The shelf to observe for changes to the shelf background type, can be null.
-  WmShelf* wm_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimator);
 };

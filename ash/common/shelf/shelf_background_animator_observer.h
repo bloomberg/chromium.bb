@@ -12,8 +12,8 @@ namespace ash {
 // Observer for the ShelfBackgroundAnimator class.
 class ASH_EXPORT ShelfBackgroundAnimatorObserver {
  public:
-  // Called when the Shelf's opaque background should be updated.
-  virtual void UpdateShelfOpaqueBackground(int alpha) {}
+  // Called when the Shelf's background should be updated.
+  virtual void UpdateShelfBackground(int alpha) {}
 
   // Called when the Shelf item (aka button) backgrounds should be updated.
   virtual void UpdateShelfItemBackground(int alpha) {}

@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
+#include "ash/animation/animation_change_type.h"
 #include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -55,7 +56,7 @@ class DockedBackgroundWidget : public views::Widget,
         background_animator_(SHELF_BACKGROUND_DEFAULT, nullptr),
         opaque_background_(ui::LAYER_SOLID_COLOR),
         visible_background_type_(manager_->shelf()->GetBackgroundType()),
-        visible_background_change_type_(BACKGROUND_CHANGE_IMMEDIATE) {
+        visible_background_change_type_(AnimationChangeType::IMMEDIATE) {
     manager_->shelf()->AddObserver(this);
     InitWidget(manager_->dock_container());
 
@@ -82,15 +83,14 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfOpaqueBackground(int alpha) override {
+  void UpdateShelfBackground(int alpha) override {
     const float kMaxAlpha = 255.0f;
     opaque_background_.SetOpacity(alpha / kMaxAlpha);
   }
 
   // WmShelfObserver:
-  void OnBackgroundTypeChanged(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) override {
+  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
+                               AnimationChangeType change_type) override {
     // Sets the background type. Starts an animation to transition to
     // |background_type| if the widget is visible. If the widget is not visible,
     // the animation is postponed till the widget becomes visible.
@@ -131,9 +131,9 @@ class DockedBackgroundWidget : public views::Widget,
   void UpdateBackground() {
     ShelfBackgroundType background_type =
         IsVisible() ? visible_background_type_ : SHELF_BACKGROUND_DEFAULT;
-    BackgroundAnimatorChangeType change_type =
-        IsVisible() ? visible_background_change_type_
-                    : BACKGROUND_CHANGE_IMMEDIATE;
+    AnimationChangeType change_type = IsVisible()
+                                          ? visible_background_change_type_
+                                          : AnimationChangeType::IMMEDIATE;
     background_animator_.PaintBackground(background_type, change_type);
     SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
   }
@@ -154,7 +154,7 @@ class DockedBackgroundWidget : public views::Widget,
   ShelfBackgroundType visible_background_type_;
 
   // Whether the widget should animate to |visible_background_type_|.
-  BackgroundAnimatorChangeType visible_background_change_type_;
+  AnimationChangeType visible_background_change_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
 };

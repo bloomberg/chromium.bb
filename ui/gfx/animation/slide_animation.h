@@ -68,6 +68,10 @@ class GFX_EXPORT SlideAnimation : public LinearAnimation {
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
   double GetCurrentValue() const override;
+  // TODO(bruthig): Fix IsShowing() and IsClosing() to be consistent. e.g.
+  // IsShowing() will currently return true after the 'show' animation has been
+  // completed however IsClosing() will return false after the 'hide' animation
+  // has been completed.
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
 

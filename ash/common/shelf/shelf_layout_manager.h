@@ -11,7 +11,6 @@
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_observer.h"
-#include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
@@ -32,6 +31,7 @@ class MouseEvent;
 
 namespace ash {
 
+enum class AnimationChangeType;
 class PanelLayoutManagerTest;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
@@ -242,7 +242,7 @@ class ASH_EXPORT ShelfLayoutManager
   void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
 
   // Updates the background of the shelf if it has changed.
-  void MaybeUpdateShelfBackground(BackgroundAnimatorChangeType change_type);
+  void MaybeUpdateShelfBackground(AnimationChangeType change_type);
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

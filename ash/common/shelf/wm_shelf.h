@@ -22,6 +22,7 @@ class GestureEvent;
 
 namespace ash {
 
+enum class AnimationChangeType;
 class ShelfBezelEventHandler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
@@ -146,7 +147,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
-                           BackgroundAnimatorChangeType change_type) override;
+                           AnimationChangeType change_type) override;
 
  private:
   class AutoHideEventHandler;

@@ -373,7 +373,7 @@ void WmShelf::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
 }
 
 void WmShelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
-                                  BackgroundAnimatorChangeType change_type) {
+                                  AnimationChangeType change_type) {
   if (background_type == GetBackgroundType())
     return;
   for (auto& observer : observers_)

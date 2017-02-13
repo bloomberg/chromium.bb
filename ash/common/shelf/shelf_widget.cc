@@ -4,6 +4,7 @@
 
 #include "ash/common/shelf/shelf_widget.h"
 
+#include "ash/animation/animation_change_type.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_button.h"
@@ -61,13 +62,14 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfOpaqueBackground(int alpha) override;
+  void UpdateShelfBackground(int alpha) override;
 
  private:
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
+  // A black background layer that may be visible depending on a
+  // ShelfBackgroundAnimator.
   // TODO(bruthig): Remove opaque_background_ (see https://crbug.com/621551).
-  // A black background layer which is shown when a maximized window is visible.
   ui::Layer opaque_background_;
   // A black foreground layer which is shown while transitioning between users.
   // Note: Since the back- and foreground layers have different functions they
@@ -123,7 +125,7 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_foreground_.SetBounds(GetLocalBounds());
 }
 
-void ShelfWidget::DelegateView::UpdateShelfOpaqueBackground(int alpha) {
+void ShelfWidget::DelegateView::UpdateShelfBackground(int alpha) {
   const float kMaxAlpha = 255.0f;
   opaque_background_.SetOpacity(alpha / kMaxAlpha);
 }
@@ -160,7 +162,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
   shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
-      BACKGROUND_CHANGE_IMMEDIATE);
+      AnimationChangeType::IMMEDIATE);
 
   views::Widget::AddObserver(this);
 }
@@ -189,9 +191,8 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
       base::MakeUnique<StatusAreaLayoutManager>(this));
 }
 
-void ShelfWidget::SetPaintsBackground(
-    ShelfBackgroundType background_type,
-    BackgroundAnimatorChangeType change_type) {
+void ShelfWidget::SetPaintsBackground(ShelfBackgroundType background_type,
+                                      AnimationChangeType change_type) {
   background_animator_.PaintBackground(background_type, change_type);
 }
 
@@ -242,7 +243,7 @@ void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(WmShell::Get()->focus_cycler());
 
   // Ensure the newly created |shelf_| gets current values.
-  background_animator_.Initialize(this);
+  background_animator_.NotifyObserver(this);
 
   // TODO(jamescook): The IsActiveUserSessionStarted() check may not be needed
   // because the shelf is only created after the first user session is active.

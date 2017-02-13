@@ -6,17 +6,17 @@
 #define ASH_COMMON_SHELF_WM_SHELF_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/background_animator.h"
 #include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 
+enum class AnimationChangeType;
+
 // Used to observe changes to the shelf.
 class ASH_EXPORT WmShelfObserver {
  public:
-  virtual void OnBackgroundTypeChanged(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) {}
+  virtual void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
+                                       AnimationChangeType change_type) {}
   virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
   virtual void OnShelfIconPositionsChanged() {}
