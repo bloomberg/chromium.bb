@@ -377,7 +377,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
 	data->refcount = 1;
 	data->addr = addr;
 	data->handle = bo->handles[plane].u32;
-	drmHashInsert(bo->drv->buffer_table, bo->handles[plane].u32,
+	drmHashInsert(bo->drv->map_table, bo->handles[plane].u32,
 		      (void *) data);
 
 success:
