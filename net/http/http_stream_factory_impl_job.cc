@@ -55,7 +55,6 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/ssl/ssl_connection_status_flags.h"
 #include "url/url_constants.h"
 
 namespace net {
@@ -1259,19 +1258,11 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
   }
 
-  SSLInfo ssl_info;
-  if (spdy_session->GetSSLInfo(&ssl_info)) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.Http2SSLCipherSuite",
-        SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
-  }
-
   new_spdy_session_ = spdy_session;
   spdy_session_direct_ = direct;
   const HostPortPair host_port_pair = spdy_session_key.host_port_pair();
-  bool is_https = ssl_info.is_valid();
   url::SchemeHostPort scheme_host_port(
-      is_https ? url::kHttpsScheme : url::kHttpScheme, host_port_pair.host(),
+      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme, host_port_pair.host(),
       host_port_pair.port());
 
   HttpServerProperties* http_server_properties =
