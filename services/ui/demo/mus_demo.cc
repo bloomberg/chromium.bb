@@ -40,12 +40,14 @@ const int kSquareSize = 300;
 const SkColor kBgColor = SK_ColorRED;
 const SkColor kFgColor = SK_ColorYELLOW;
 
-void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
+void DrawSquare(const gfx::Rect& bounds,
+                double angle,
+                SkCanvas* canvas,
+                int size) {
   // Create SkRect to draw centered inside the bounds.
   gfx::Point top_left = bounds.CenterPoint();
-  top_left.Offset(-kSquareSize / 2, -kSquareSize / 2);
-  SkRect rect =
-      SkRect::MakeXYWH(top_left.x(), top_left.y(), kSquareSize, kSquareSize);
+  top_left.Offset(-size / 2, -size / 2);
+  SkRect rect = SkRect::MakeXYWH(top_left.x(), top_left.y(), size, size);
 
   // Set SkPaint to fill solid color.
   SkPaint paint;
@@ -70,7 +72,9 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 class MusDemo::WindowTreeData {
  public:
   explicit WindowTreeData(
-      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
+      int square_size)
+      : square_size_(square_size) {
     Init(std::move(window_tree_host));
   }
 
@@ -98,6 +102,9 @@ class MusDemo::WindowTreeData {
 
   // Current rotation angle for drawing.
   double angle_ = 0.0;
+
+  // Size in pixels of the square to draw.
+  const int square_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeData);
 };
@@ -215,8 +222,8 @@ void MusDemo::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
   DCHECK(!window_tree_data_);  // Only support one display.
-  window_tree_data_ =
-      base::MakeUnique<WindowTreeData>(std::move(window_tree_host));
+  window_tree_data_ = base::MakeUnique<WindowTreeData>(
+      std::move(window_tree_host), kSquareSize);
 }
 
 void MusDemo::OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) {
@@ -264,7 +271,7 @@ void MusDemo::WindowTreeData::DrawFrame() {
   SkCanvas canvas(bitmap);
   canvas.clear(kBgColor);
   // TODO(kylechar): Add GL drawing instead of software rasterization in future.
-  DrawSquare(bounds, angle_, &canvas);
+  DrawSquare(bounds, angle_, &canvas, square_size_);
   canvas.flush();
 
   gfx::ImageSkiaRep image_skia_rep(bitmap, 1);
