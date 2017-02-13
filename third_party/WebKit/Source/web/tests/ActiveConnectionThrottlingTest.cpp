@@ -6,8 +6,10 @@
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCSessionDescription.h"
+#include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebViewScheduler.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
@@ -31,6 +33,10 @@ TEST_F(ActiveConnectionThrottlingTest, WebSocketStopsThrottling) {
       "</script>)");
 
   EXPECT_TRUE(webView().scheduler()->hasActiveConnectionForTest());
+
+  mainFrame().executeScript(WebString("socket.close();"));
+
+  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
 }
 
 namespace {
@@ -109,6 +115,10 @@ TEST_F(ActiveConnectionThrottlingTest, WebRTCStopsThrottling) {
       "</script>)");
 
   EXPECT_TRUE(webView().scheduler()->hasActiveConnectionForTest());
+
+  mainFrame().executeScript(WebString("data_channel.close();"));
+
+  EXPECT_FALSE(webView().scheduler()->hasActiveConnectionForTest());
 }
 
 }  // namespace blink
