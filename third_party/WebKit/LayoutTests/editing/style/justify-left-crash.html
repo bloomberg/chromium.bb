@@ -21,11 +21,9 @@ html, head, style {
     test(() => {
         var sample = document.getElementById('sample');
         assert_equals(sample.innerHTML, '<i>foo</i>');
-        const selection = window.getSelection();
-        assert_equals(selection.anchorNode, sample.firstChild.firstChild, 'anchorNode');
-        assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-        assert_equals(selection.focusNode, sample.firstChild.firstChild, 'focusNode');
-        assert_equals(selection.focusOffset, 3, 'focusOffset');
+        // TODO(yosin): Once we do lazy visible position canonicalization,
+        // we should have a caret.
+        assert_equals(getSelection().rangeCount, 0);
     }, 'This is a crash test.');
 </script>
 </body>

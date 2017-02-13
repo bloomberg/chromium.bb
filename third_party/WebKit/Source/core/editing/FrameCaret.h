@@ -58,7 +58,7 @@ class CORE_EXPORT FrameCaret final
   const DisplayItemClient& displayItemClient() const;
   bool isActive() const { return caretPosition().isNotNull(); }
 
-  void scheduleVisualUpdateForPaintInvalidationIfNeeded();
+  void updateAppearance();
 
   // Used to suspend caret blinking while the mouse is down.
   void setCaretBlinkingSuspended(bool suspended) {
@@ -99,7 +99,8 @@ class CORE_EXPORT FrameCaret final
   bool shouldBlinkCaret() const;
   void caretBlinkTimerFired(TimerBase*);
   bool caretPositionIsValidForDocument(const Document&) const;
-  void updateAppearance();
+
+  void scheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   const Member<const SelectionEditor> m_selectionEditor;
   const Member<LocalFrame> m_frame;
