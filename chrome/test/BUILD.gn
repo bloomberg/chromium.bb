@@ -3371,7 +3371,6 @@ test("unit_tests") {
     "../browser/ui/webui/local_state/local_state_ui_unittest.cc",
     "../browser/ui/webui/log_web_ui_url_unittest.cc",
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
-    "../browser/webshare/share_service_impl_unittest.cc",
     "../browser/webshare/share_target_pref_helper_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/enumerate_modules_model_unittest.cc",
@@ -3789,6 +3788,10 @@ test("unit_tests") {
       "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
       "$root_out_dir/test_data/ui/webui/",
     ]
+  }
+
+  if (is_linux || is_win) {
+    sources += [ "../browser/webshare/share_service_impl_unittest.cc" ]
   }
 
   if (is_ios || is_chromeos) {
