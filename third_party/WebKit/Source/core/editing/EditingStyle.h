@@ -151,9 +151,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   void mergeInlineAndImplicitStyleOfElement(Element*,
                                             CSSPropertyOverrideMode,
                                             PropertiesToInclude);
-  static EditingStyle* wrappingStyleForAnnotatedSerialization(
-      ContainerNode* context);
-  static EditingStyle* wrappingStyleForSerialization(ContainerNode* context);
   void mergeStyleFromRules(Element*);
   void mergeStyleFromRulesForSerialization(Element*);
   void removeStyleFromRulesAndContext(Element*, ContainerNode* context);
@@ -166,19 +163,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   bool hasFontSizeDelta() const { return m_fontSizeDelta != NoFontDelta; }
 
   void setProperty(CSSPropertyID, const String& value, bool important = false);
-
-  static EditingStyle* styleAtSelectionStart(
-      const VisibleSelection&,
-      bool shouldUseBackgroundColorInEffect = false,
-      MutableStylePropertySet* styleToCheck = nullptr);
-  static WritingDirection textDirectionForSelection(
-      const VisibleSelection&,
-      EditingStyle* typingStyle,
-      bool& hasNestedOrMultipleEmbeddings);
-  static bool isEmbedOrIsolate(CSSValueID unicodeBidi) {
-    return unicodeBidi == CSSValueIsolate ||
-           unicodeBidi == CSSValueWebkitIsolate || unicodeBidi == CSSValueEmbed;
-  }
 
   DECLARE_TRACE();
 
