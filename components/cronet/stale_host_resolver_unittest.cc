@@ -14,7 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
+#include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/http/http_network_session.h"
@@ -135,6 +137,12 @@ class StaleHostResolverTest : public testing::Test {
     resolver_ = nullptr;
   }
 
+  void CreateNetworkChangeNotifier() {
+    net::NetworkChangeNotifier::SetFactory(
+        new net::NetworkChangeNotifierFactoryAndroid());
+    net::NetworkChangeNotifier::Create();
+  }
+
   // Creates a cache entry for |kHostname| that is |age_sec| seconds old.
   void CreateCacheEntry(int age_sec) {
     DCHECK(resolver_);
@@ -149,10 +157,8 @@ class StaleHostResolverTest : public testing::Test {
   }
 
   void OnNetworkChange() {
-    DCHECK(resolver_);
-    DCHECK(resolver_->GetHostCache());
-
-    resolver_->GetHostCache()->OnNetworkChange();
+    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+    base::RunLoop().RunUntilIdle();  // Wait for notification.
   }
 
   void LookupStale() {
@@ -400,6 +406,7 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
   };
 
   SetStaleDelay(kNoStaleDelaySec);
+  CreateNetworkChangeNotifier();
 
   for (size_t i = 0; i < arraysize(kUsabilityTestCases); ++i) {
     const auto& test_case = kUsabilityTestCases[i];

@@ -948,6 +948,7 @@ test("cronet_unittests") {
     "//components/metrics",
     "//net",
     "//net:test_support",
+    "//net/android:net_java",
     "//testing/gtest",
   ]
 
