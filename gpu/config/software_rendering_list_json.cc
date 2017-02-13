@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.10",
+  "version": "12.11",
   "entries": [
     {
       "id": 1,
@@ -1461,6 +1461,18 @@ LONG_STRING_CONST(
       "device_id": ["0x2a02"],
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 132,
+      "description": "Mali accelerated 2d canvas is slow on Linux",
+      "cr_bugs": [691601],
+      "os": {
+        "type": "linux"
+      },
+      "gl_renderer": "Mali-4.*",
+      "features": [
+        "accelerated_2d_canvas"
       ]
     }
   ]
