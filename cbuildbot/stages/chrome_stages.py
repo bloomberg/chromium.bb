@@ -127,7 +127,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
     # means something.  In other words, this stage tried to run.
     self._run.attrs.chrome_version = self.chrome_version
     self._WriteChromeVersionToMetadata()
-    super(SyncChromeStage, self)._Finish()
+    super(SyncChromeStage, self).Finish()
 
 class PatchChromeStage(generic_stages.BuilderStage):
   """Stage that applies Chrome patches if needed."""

@@ -167,4 +167,4 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     # means something.  In other words, this stage tried to run.
     self._run.attrs.android_version = self.android_version
     self._WriteAndroidVersionToMetadata()
-    super(AndroidMetadataStage, self)._Finish()
+    super(AndroidMetadataStage, self).Finish()
