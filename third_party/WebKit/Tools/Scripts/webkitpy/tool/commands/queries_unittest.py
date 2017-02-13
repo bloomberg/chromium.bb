@@ -104,7 +104,7 @@ class PrintExpectationsTest(unittest.TestCase):
 
     def test_paths(self):
         self.run_test([],
-                      ('/mock-checkout/LayoutTests/TestExpectations\n'
+                      ('LayoutTests/TestExpectations\n'
                        'LayoutTests/NeverFixTests\n'
                        'LayoutTests/StaleTestExpectations\n'
                        'LayoutTests/SlowTests\n'),
