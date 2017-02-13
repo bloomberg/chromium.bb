@@ -25,7 +25,18 @@ const char kV4DatabaseSizeMetric[] = "SafeBrowsing.V4Database.Size";
 }  // namespace
 
 // static
-V4StoreFactory* V4Database::factory_ = NULL;
+V4DatabaseFactory* V4Database::db_factory_ = NULL;
+
+// static
+V4StoreFactory* V4Database::store_factory_ = NULL;
+
+std::unique_ptr<V4Database> V4DatabaseFactory::Create(
+    const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+    std::unique_ptr<StoreMap> store_map) {
+  // Not using MakeUnique since the constructor of V4Database is protected.
+  return std::unique_ptr<V4Database>(
+      new V4Database(db_task_runner, std::move(store_map)));
+}
 
 // static
 void V4Database::Create(
@@ -54,9 +65,9 @@ void V4Database::CreateOnTaskRunner(
     const TimeTicks create_start_time) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
 
-  if (!factory_) {
-    factory_ = new V4StoreFactory();
-    ANNOTATE_LEAKING_OBJECT_PTR(factory_);
+  if (!store_factory_) {
+    store_factory_ = new V4StoreFactory();
+    ANNOTATE_LEAKING_OBJECT_PTR(store_factory_);
   }
 
   if (!base::CreateDirectory(base_path)) {
@@ -72,10 +83,15 @@ void V4Database::CreateOnTaskRunner(
 
     const base::FilePath store_path = base_path.AppendASCII(it.filename());
     (*store_map)[it.list_id()].reset(
-        factory_->CreateV4Store(db_task_runner, store_path));
+        store_factory_->CreateV4Store(db_task_runner, store_path));
+  }
+
+  if (!db_factory_) {
+    db_factory_ = new V4DatabaseFactory();
+    ANNOTATE_LEAKING_OBJECT_PTR(db_factory_);
   }
   std::unique_ptr<V4Database> v4_database(
-      new V4Database(db_task_runner, std::move(store_map)));
+      db_factory_->Create(db_task_runner, std::move(store_map)));
 
   // Database is done loading, pass it to the new_db_callback on the caller's
   // thread. This would unblock resource loads.
@@ -86,11 +102,29 @@ void V4Database::CreateOnTaskRunner(
                       TimeTicks::Now() - create_start_time);
 }
 
+// static
+void V4Database::RegisterDatabaseFactoryForTest(
+    std::unique_ptr<V4DatabaseFactory> factory) {
+  if (db_factory_) {
+    delete db_factory_;
+  }
+  db_factory_ = factory.release();
+}
+
+// static
+void V4Database::RegisterStoreFactoryForTest(
+    std::unique_ptr<V4StoreFactory> factory) {
+  if (store_factory_) {
+    delete store_factory_;
+  }
+  store_factory_ = factory.release();
+}
+
 V4Database::V4Database(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     std::unique_ptr<StoreMap> store_map)
-    : db_task_runner_(db_task_runner),
-      store_map_(std::move(store_map)),
+    : store_map_(std::move(store_map)),
+      db_task_runner_(db_task_runner),
       pending_store_updates_(0),
       weak_factory_on_io_(this) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());

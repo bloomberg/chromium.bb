@@ -54,6 +54,9 @@
 #include "components/safe_browsing_db/metadata.pb.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_database.h"
+#include "components/safe_browsing_db/v4_feature_list.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
@@ -64,6 +67,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "crypto/sha2.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -454,7 +458,7 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   TestProtocolManager* GetProtocolManager() { return pm_; }
 
  private:
-  // Owned by the SafebrowsingService.
+  // Owned by the SafeBrowsingService.
   TestProtocolManager* pm_;
 };
 
@@ -689,7 +693,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     ASSERT_TRUE(enabled_helper->Run());
   }
 
- private:
+ protected:
   std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   TestSafeBrowsingDatabaseFactory db_factory_;
   TestSBProtocolManagerFactory pm_factory_;
@@ -697,6 +701,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // Owned by ContentSubresourceFilterFactory.
   MockSubresourceFilterDriver* driver_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
 };
 
@@ -744,8 +749,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {
   // Add the iframe url as malware and then load the parent page.
   SBFullHashResult malware_full_hash;
   GenUrlFullHashResultWithMetadata(iframe_url, &malware_full_hash);
-  EXPECT_CALL(observer_,
-              OnSafeBrowsingHit(IsUnsafeResourceFor(iframe_url))).Times(1);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(iframe_url)))
+      .Times(1);
   SetupResponseForUrl(iframe_url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), main_url);
   // All types should show the interstitial.
@@ -1690,7 +1695,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
         base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    sb_factory_.reset(new TestSafeBrowsingServiceFactory());
+    sb_factory_ = base::MakeUnique<TestSafeBrowsingServiceFactory>();
     SetProtocolConfigURLPrefix(
         embedded_test_server()->GetURL("/testpath").spec(), sb_factory_.get());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
@@ -1833,5 +1838,302 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
                  base::Unretained(this)));
   observer.Wait();
 }
+
+class TestV4Store : public V4Store {
+ public:
+  TestV4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+              const base::FilePath& store_path)
+      : V4Store(task_runner, store_path, 0) {}
+
+  void MarkPrefixAsBad(HashPrefix prefix) {
+    hash_prefix_map_[prefix.size()] = prefix;
+  }
+};
+
+class TestV4StoreFactory : public V4StoreFactory {
+ public:
+  V4Store* CreateV4Store(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const base::FilePath& store_path) override {
+    V4Store* new_store = new TestV4Store(task_runner, store_path);
+    new_store->Initialize();
+    return new_store;
+  }
+};
+
+class TestV4Database : public V4Database {
+ public:
+  TestV4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+                 std::unique_ptr<StoreMap> store_map)
+      : V4Database(db_task_runner, std::move(store_map)) {}
+
+  void MarkPrefixAsBad(ListIdentifier list_id, HashPrefix prefix) {
+    V4Store* base_store = store_map_->at(list_id).get();
+    TestV4Store* test_store = static_cast<TestV4Store*>(base_store);
+    test_store->MarkPrefixAsBad(prefix);
+  }
+};
+
+class TestV4DatabaseFactory : public V4DatabaseFactory {
+ public:
+  TestV4DatabaseFactory() : v4_db_(nullptr) {}
+
+  std::unique_ptr<V4Database> Create(
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+      std::unique_ptr<StoreMap> store_map) override {
+    v4_db_ = new TestV4Database(db_task_runner, std::move(store_map));
+    return base::WrapUnique(v4_db_);
+  }
+
+  void MarkPrefixAsBad(ListIdentifier list_id, HashPrefix prefix) {
+    v4_db_->MarkPrefixAsBad(list_id, prefix);
+  }
+
+ private:
+  // Owned by V4LocalDatabaseManager. Each test in the V4SafeBrowsingServiceTest
+  // class instantiates a new SafebrowsingService instance, which instantiates a
+  // new V4LocalDatabaseManager, which instantiates a new V4Database using this
+  // method so use-after-free isn't possible.
+  TestV4Database* v4_db_;
+};
+
+class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
+ public:
+  TestV4GetHashProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config)
+      : V4GetHashProtocolManager(request_context_getter,
+                                 stores_to_check,
+                                 config) {}
+
+  void AddToFullHashCache(FullHashInfo fhi) {
+    full_hash_cache_[fhi.full_hash].full_hash_infos.push_back(fhi);
+  }
+};
+
+class TestV4GetHashProtocolManagerFactory
+    : public V4GetHashProtocolManagerFactory {
+ public:
+  std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config) override {
+    pm_ = new TestV4GetHashProtocolManager(request_context_getter,
+                                           stores_to_check, config);
+    return base::WrapUnique(pm_);
+  }
+
+  void AddToFullHashCache(FullHashInfo fhi) { pm_->AddToFullHashCache(fhi); }
+
+ private:
+  // Owned by the SafeBrowsingService.
+  TestV4GetHashProtocolManager* pm_;
+};
+
+// Tests the safe browsing blocking page in a browser.
+class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
+ public:
+  V4SafeBrowsingServiceTest() : SafeBrowsingServiceTest() {}
+
+  void SetUp() override {
+    sb_factory_ = base::MakeUnique<TestSafeBrowsingServiceFactory>(
+        V4FeatureList::V4UsageStatus::V4_ONLY);
+    sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
+    SafeBrowsingService::RegisterFactory(sb_factory_.get());
+
+    v4_db_factory_ = new TestV4DatabaseFactory();
+    V4Database::RegisterDatabaseFactoryForTest(
+        base::WrapUnique(v4_db_factory_));
+
+    v4_get_hash_factory_ = new TestV4GetHashProtocolManagerFactory();
+    V4GetHashProtocolManager::RegisterFactory(
+        base::WrapUnique(v4_get_hash_factory_));
+    InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    InProcessBrowserTest::TearDown();
+
+    // Unregister test factories after InProcessBrowserTest::TearDown
+    // (which destructs SafeBrowsingService).
+    V4GetHashProtocolManager::RegisterFactory(nullptr);
+    V4Database::RegisterDatabaseFactoryForTest(nullptr);
+    SafeBrowsingService::RegisterFactory(nullptr);
+  }
+
+  // Returns a FullHashInfo info for the basic host+path pattern for a given URL
+  // after canonicalization.
+  FullHashInfo GetFullHashInfo(const GURL& url, const ListIdentifier& list_id) {
+    std::string host;
+    std::string path;
+    V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path, nullptr);
+
+    return FullHashInfo(crypto::SHA256HashString(host + path), list_id,
+                        base::Time::Now() + base::TimeDelta::FromMinutes(5));
+  }
+
+  // Returns a FullHashInfo info for the basic host+path pattern for a given URL
+  // after canonicalization. Also adds metadata information to the FullHashInfo
+  // object.
+  FullHashInfo GetFullHashInfoWithMetadata(
+      const GURL& url,
+      const ListIdentifier& list_id,
+      ThreatPatternType threat_pattern_type) {
+    FullHashInfo fhi = GetFullHashInfo(url, list_id);
+    fhi.metadata.threat_pattern_type = threat_pattern_type;
+    return fhi;
+  }
+
+  // Sets up the prefix database and the full hash cache to match one of the
+  // prefixes for the given URL and metadata.
+  void MarkUrlForMalwareUnexpired(const GURL& bad_url,
+                                  ThreatPatternType threat_pattern_type) {
+    FullHashInfo full_hash_info = GetFullHashInfoWithMetadata(
+        bad_url, GetUrlMalwareId(), threat_pattern_type);
+
+    v4_db_factory_->MarkPrefixAsBad(GetUrlMalwareId(),
+                                    full_hash_info.full_hash);
+    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+  }
+
+  // Sets up the prefix database and the full hash cache to match one of the
+  // prefixes for the given URL.
+  void MarkUrlForUwsUnexpired(const GURL& bad_url) {
+    FullHashInfo full_hash_info = GetFullHashInfo(bad_url, GetUrlUwsId());
+    v4_db_factory_->MarkPrefixAsBad(GetUrlUwsId(), full_hash_info.full_hash);
+    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+  }
+
+ private:
+  // Owned by the V4Database.
+  TestV4DatabaseFactory* v4_db_factory_;
+  // Owned by the V4GetHashProtocolManager.
+  TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceTest);
+};
+
+// Ensures that if an image is marked as UwS, the main page doesn't show an
+// interstitial.
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, UnwantedImgIgnored) {
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
+
+  // Add the img url as coming from a site serving UwS and then load the parent
+  // page.
+  MarkUrlForUwsUnexpired(img_url);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  EXPECT_FALSE(ShowingInterstitialPage());
+  EXPECT_FALSE(got_hit_report());
+}
+
+// TODO(vakh): Add test for UnwantedMainFrame.
+
+class V4SafeBrowsingServiceMetadataTest
+    : public V4SafeBrowsingServiceTest,
+      public ::testing::WithParamInterface<ThreatPatternType> {
+ public:
+  V4SafeBrowsingServiceMetadataTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceMetadataTest);
+};
+
+// Irrespective of the threat_type classification, if the main frame URL is
+// marked as Malware, an interstitial should be shown.
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
+  GURL url = embedded_test_server()->GetURL(kEmptyPage);
+  MarkUrlForMalwareUnexpired(url, GetParam());
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // All types should show the interstitial.
+  EXPECT_TRUE(ShowingInterstitialPage());
+
+  EXPECT_TRUE(got_hit_report());
+  EXPECT_EQ(url, hit_report().malicious_url);
+  EXPECT_EQ(url, hit_report().page_url);
+  EXPECT_EQ(GURL(), hit_report().referrer_url);
+  EXPECT_FALSE(hit_report().is_subresource);
+}
+
+// Irrespective of the threat_type classification, if the iframe URL is marked
+// as Malware, an interstitial should be shown.
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareIFrame) {
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL iframe_url = embedded_test_server()->GetURL(kMalwareIFrame);
+
+  // Add the iframe url as malware and then load the parent page.
+  MarkUrlForMalwareUnexpired(iframe_url, GetParam());
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(iframe_url)))
+      .Times(1);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  // All types should show the interstitial.
+  EXPECT_TRUE(ShowingInterstitialPage());
+
+  EXPECT_TRUE(got_hit_report());
+  EXPECT_EQ(iframe_url, hit_report().malicious_url);
+  EXPECT_EQ(main_url, hit_report().page_url);
+  EXPECT_EQ(GURL(), hit_report().referrer_url);
+  EXPECT_TRUE(hit_report().is_subresource);
+}
+
+// Depending on the threat_type classification, if an embedded resource is
+// marked as Malware, an interstitial may be shown.
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareImg) {
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
+
+  // Add the img url as malware and then load the parent page.
+  MarkUrlForMalwareUnexpired(img_url, GetParam());
+
+  switch (GetParam()) {
+    case ThreatPatternType::NONE:  // Falls through.
+    case ThreatPatternType::MALWARE_DISTRIBUTION:
+      EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(img_url)))
+          .Times(1);
+      break;
+    case ThreatPatternType::MALWARE_LANDING:
+      // No interstitial shown, so no notifications expected.
+      break;
+    default:
+      break;
+  }
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Subresource which is tagged as a landing page should not show an
+  // interstitial, the other types should.
+  switch (GetParam()) {
+    case ThreatPatternType::NONE:  // Falls through.
+    case ThreatPatternType::MALWARE_DISTRIBUTION:
+      EXPECT_TRUE(ShowingInterstitialPage());
+      EXPECT_TRUE(got_hit_report());
+      EXPECT_EQ(img_url, hit_report().malicious_url);
+      EXPECT_EQ(main_url, hit_report().page_url);
+      EXPECT_EQ(GURL(), hit_report().referrer_url);
+      EXPECT_TRUE(hit_report().is_subresource);
+      break;
+    case ThreatPatternType::MALWARE_LANDING:
+      EXPECT_FALSE(ShowingInterstitialPage());
+      EXPECT_FALSE(got_hit_report());
+      break;
+    default:
+      break;
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    MaybeSetMetadata,
+    V4SafeBrowsingServiceMetadataTest,
+    testing::Values(ThreatPatternType::NONE,
+                    ThreatPatternType::MALWARE_LANDING,
+                    ThreatPatternType::MALWARE_DISTRIBUTION));
 
 }  // namespace safe_browsing

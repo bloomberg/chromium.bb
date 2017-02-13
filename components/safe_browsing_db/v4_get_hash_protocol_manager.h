@@ -288,6 +288,10 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                    const std::vector<FullHashInfo>& full_hash_infos,
                    const base::Time& negative_cache_expire);
 
+ protected:
+  // A cache of full hash results.
+  FullHashCache full_hash_cache_;
+
  private:
   // Map of GetHash requests to parameters which created it.
   using PendingHashRequests =
@@ -328,9 +332,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
-
-  // A cache of full hash results.
-  FullHashCache full_hash_cache_;
 
   // The following sets represent the combination of lists that we would always
   // request from the server, irrespective of which list we found the hash
