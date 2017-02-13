@@ -33,8 +33,7 @@ public class LocationProviderFactory {
         public boolean isRunning();
     }
 
-    private LocationProviderFactory() {
-    }
+    private LocationProviderFactory() {}
 
     @VisibleForTesting
     public static void setLocationProviderImpl(LocationProviderFactory.LocationProvider provider) {
@@ -56,7 +55,6 @@ public class LocationProviderFactory {
      */
     private static class LocationProviderImpl
             implements LocationListener, LocationProviderFactory.LocationProvider {
-
         // Log tag
         private static final String TAG = "cr_LocationProvider";
 
@@ -105,31 +103,26 @@ public class LocationProviderFactory {
         }
 
         private void updateNewLocation(Location location) {
-            LocationProviderAdapter.newLocationAvailable(
-                    location.getLatitude(), location.getLongitude(),
-                    location.getTime() / 1000.0,
-                    location.hasAltitude(), location.getAltitude(),
-                    location.hasAccuracy(), location.getAccuracy(),
-                    location.hasBearing(), location.getBearing(),
-                    location.hasSpeed(), location.getSpeed());
+            LocationProviderAdapter.newLocationAvailable(location.getLatitude(),
+                    location.getLongitude(), location.getTime() / 1000.0, location.hasAltitude(),
+                    location.getAltitude(), location.hasAccuracy(), location.getAccuracy(),
+                    location.hasBearing(), location.getBearing(), location.hasSpeed(),
+                    location.getSpeed());
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
 
         @Override
-        public void onProviderEnabled(String provider) {
-        }
+        public void onProviderEnabled(String provider) {}
 
         @Override
-        public void onProviderDisabled(String provider) {
-        }
+        public void onProviderDisabled(String provider) {}
 
         private void ensureLocationManagerCreated() {
             if (mLocationManager != null) return;
-            mLocationManager = (LocationManager) mContext.getSystemService(
-                    Context.LOCATION_SERVICE);
+            mLocationManager =
+                    (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
             if (mLocationManager == null) {
                 Log.e(TAG, "Could not get location manager.");
             }
@@ -150,12 +143,12 @@ public class LocationProviderFactory {
             try {
                 Criteria criteria = new Criteria();
                 if (enableHighAccuracy) criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                mLocationManager.requestLocationUpdates(0, 0, criteria, this,
-                        ThreadUtils.getUiThreadLooper());
+                mLocationManager.requestLocationUpdates(
+                        0, 0, criteria, this, ThreadUtils.getUiThreadLooper());
             } catch (SecurityException e) {
                 Log.e(TAG, "Caught security exception while registering for location updates "
-                        + "from the system. The application does not have sufficient geolocation "
-                        + "permissions.");
+                                + "from the system. The application does not have sufficient "
+                                + "geolocation permissions.");
                 unregisterFromLocationUpdates();
                 // Propagate an error to JavaScript, this can happen in case of WebView
                 // when the embedding app does not have sufficient permissions.
@@ -184,8 +177,8 @@ public class LocationProviderFactory {
             // Do not request a location update if the only available location provider is
             // the passive one. Make use of the last known location and call
             // onLocationChanged directly.
-            final Location location = mLocationManager.getLastKnownLocation(
-                    LocationManager.PASSIVE_PROVIDER);
+            final Location location =
+                    mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
             if (location != null) {
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
@@ -208,5 +201,3 @@ public class LocationProviderFactory {
         }
     }
 }
-
-

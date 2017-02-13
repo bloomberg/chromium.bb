@@ -15,4 +15,5 @@ include_rules = [
   "+components/web_restrictions",
   "+content/public/android/java",
   "+device/geolocation/android/java",
+  "+device/geolocation/android/javatests",
 ]

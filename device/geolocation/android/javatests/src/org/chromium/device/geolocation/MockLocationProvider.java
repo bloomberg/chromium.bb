@@ -21,8 +21,7 @@ public class MockLocationProvider implements LocationProviderFactory.LocationPro
 
     private static final int UPDATE_LOCATION_MSG = 100;
 
-    public MockLocationProvider() {
-    }
+    public MockLocationProvider() {}
 
     public void stopUpdates() {
         if (mHandlerThread != null) {
@@ -79,11 +78,6 @@ public class MockLocationProvider implements LocationProviderFactory.LocationPro
 
     private void newLocation() {
         LocationProviderAdapter.newLocationAvailable(
-                0, 0, System.currentTimeMillis() / 1000.0,
-                false, 0,
-                true, 0.5,
-                false, 0,
-                false, 0);
+                0, 0, System.currentTimeMillis() / 1000.0, false, 0, true, 0.5, false, 0, false, 0);
     }
 };
-

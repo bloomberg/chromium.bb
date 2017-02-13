@@ -24,7 +24,6 @@ import java.util.concurrent.FutureTask;
 @MainDex
 @VisibleForTesting
 public class LocationProviderAdapter {
-
     // Delegate handling the real work in the main thread.
     private LocationProviderFactory.LocationProvider mImpl;
 
@@ -77,10 +76,8 @@ public class LocationProviderAdapter {
     }
 
     public static void newLocationAvailable(double latitude, double longitude, double timestamp,
-            boolean hasAltitude, double altitude,
-            boolean hasAccuracy, double accuracy,
-            boolean hasHeading, double heading,
-            boolean hasSpeed, double speed) {
+            boolean hasAltitude, double altitude, boolean hasAccuracy, double accuracy,
+            boolean hasHeading, double heading, boolean hasSpeed, double speed) {
         nativeNewLocationAvailable(latitude, longitude, timestamp, hasAltitude, altitude,
                 hasAccuracy, accuracy, hasHeading, heading, hasSpeed, speed);
     }
@@ -90,11 +87,8 @@ public class LocationProviderAdapter {
     }
 
     // Native functions
-    private static native void nativeNewLocationAvailable(
-            double latitude, double longitude, double timeStamp,
-            boolean hasAltitude, double altitude,
-            boolean hasAccuracy, double accuracy,
-            boolean hasHeading, double heading,
-            boolean hasSpeed, double speed);
+    private static native void nativeNewLocationAvailable(double latitude, double longitude,
+            double timeStamp, boolean hasAltitude, double altitude, boolean hasAccuracy,
+            double accuracy, boolean hasHeading, double heading, boolean hasSpeed, double speed);
     private static native void nativeNewErrorAvailable(String message);
 }

@@ -117,15 +117,15 @@ component("geolocation") {
 if (is_android) {
   generate_jni("geolocation_jni_headers") {
     sources = [
-      "android/java/org/chromium/device/geolocation/LocationProviderAdapter.java",
+      "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
     ]
     jni_package = "device"
   }
 
   android_library("geolocation_java") {
     java_files = [
-      "android/java/org/chromium/device/geolocation/LocationProviderAdapter.java",
-      "android/java/org/chromium/device/geolocation/LocationProviderFactory.java",
+      "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
+      "android/java/src/org/chromium/device/geolocation/LocationProviderFactory.java",
     ]
 
     deps = [
@@ -138,7 +138,7 @@ if (is_android) {
   android_library("geolocation_java_test_support") {
     testonly = true
 
-    java_files = [ "android/java/org/chromium/device/geolocation/MockLocationProvider.java" ]
+    java_files = [ "android/javatests/src/org/chromium/device/geolocation/MockLocationProvider.java" ]
     deps = [
       ":geolocation_java",
       "//base:base_java",
