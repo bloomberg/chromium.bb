@@ -37,6 +37,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -209,6 +210,7 @@ void Location::setHash(LocalDOMWindow* currentWindow,
                        LocalDOMWindow* enteredWindow,
                        const String& hash,
                        ExceptionState& exceptionState) {
+  TRACE_EVENT0("blink", "Location::setHash");
   if (!m_frame)
     return;
   KURL url = toLocalFrame(m_frame)->document()->url();
