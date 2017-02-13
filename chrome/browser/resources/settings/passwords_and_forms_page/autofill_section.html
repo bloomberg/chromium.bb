@@ -75,10 +75,15 @@
                 $i18n{googlePayments}
               </span>
             </div>
-            <paper-icon-button id="addressMenu" icon="cr:more-vert"
-                tabindex$="[[tabIndex]]" alt="$i18n{overflowMenu}"
-                on-tap="onAddressMenuTap_">
-            </paper-icon-button>
+            <template is="dom-if" if="[[item.metadata.isLocal]]">
+              <paper-icon-button id="addressMenu" icon="cr:more-vert"
+                  on-tap="onAddressMenuTap_" alt="$i18n{overflowMenu}">
+              </paper-icon-button>
+            </template>
+            <template is="dom-if" if="[[!item.metadata.isLocal]]">
+              <button is="paper-icon-button-light" class="icon-external"
+                  on-tap="onRemoteEditAddressTap_" actionable></button>
+            </template>
           </div>
         </template>
       </div>
@@ -91,7 +96,6 @@
       <button id="menuEditAddress" class="dropdown-item"
           on-tap="onMenuEditAddressTap_">$i18n{editAddress}</button>
       <button id="menuRemoveAddress" class="dropdown-item"
-          hidden$="[[!activeAddress.metadata.isLocal]]"
           on-tap="onMenuRemoveAddressTap_">$i18n{removeAddress}</button>
     </dialog>
     <template is="dom-if" if="[[showAddressDialog_]]" restamp>
@@ -129,10 +133,15 @@
             <div class="expiration-column">
               <div id="creditCardExpiration"
                   class="expiration-date">[[expiration_(item)]]</div>
-              <paper-icon-button id="creditCardMenu" icon="cr:more-vert"
-                  tabindex$="[[tabIndex]]" alt="$i18n{overflowMenu}"
-                  on-tap="onCreditCardMenuTap_">
-              </paper-icon-button>
+              <template is="dom-if" if="[[item.metadata.isLocal]]">
+                <paper-icon-button id="creditCardMenu" icon="cr:more-vert"
+                    on-tap="onCreditCardMenuTap_" alt="$i18n{overflowMenu}">
+                </paper-icon-button>
+              </template>
+              <template is="dom-if" if="[[!item.metadata.isLocal]]">
+                <button is="paper-icon-button-light" class="icon-external"
+                    on-tap="onRemoteEditCreditCardTap_" actionable></button>
+              </template>
             </div>
           </div>
         </template>
@@ -146,7 +155,6 @@
       <button id="menuEditCreditCard" class="dropdown-item"
           on-tap="onMenuEditCreditCardTap_">$i18n{editCreditCard}</button>
       <button id="menuRemoveCreditCard" class="dropdown-item"
-          hidden$="[[!activeCreditCard.metadata.isLocal]]"
           on-tap="onMenuRemoveCreditCardTap_">$i18n{removeCreditCard}</button>
       <button id="menuClearCreditCard" class="dropdown-item"
           on-tap="onMenuClearCreditCardTap_"

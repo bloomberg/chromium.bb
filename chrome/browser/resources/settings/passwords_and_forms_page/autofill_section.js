@@ -31,7 +31,7 @@
       showAddressDialog_: Boolean,
 
       /**
-       * An array of saved addresses.
+       * An array of saved credit cards.
        * @type {!Array<!chrome.autofillPrivate.CreditCardEntry>}
        */
       creditCards: Array,
@@ -63,9 +63,13 @@
     onAddressMenuTap_: function(e) {
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
 
+      /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
+       https://github.com/Polymer/polymer/issues/2574 */
+      var item = menuEvent.model['dataHost']['dataHost'].item;
+
       // Copy item so dialog won't update model on cancel.
       this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */(
-          Object.assign({}, menuEvent.model.item));
+          Object.assign({}, item));
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
@@ -95,12 +99,13 @@
      */
     onMenuEditAddressTap_: function(e) {
       e.preventDefault();
-      if (this.activeAddress.metadata.isLocal)
-        this.showAddressDialog_ = true;
-      else
-        window.open(this.i18n('manageAddressesUrl'));
-
+      this.showAddressDialog_ = true;
       this.$.addressSharedMenu.close();
+    },
+
+    /** @private */
+    onRemoteEditAddressTap_: function() {
+      window.open(this.i18n('manageAddressesUrl'));
     },
 
     /**
@@ -120,10 +125,14 @@
     onCreditCardMenuTap_: function(e) {
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
 
+      /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
+       https://github.com/Polymer/polymer/issues/2574 */
+      var item = menuEvent.model['dataHost']['dataHost'].item;
+
       // Copy item so dialog won't update model on cancel.
       this.activeCreditCard =
           /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
-              Object.assign({}, menuEvent.model.item));
+              Object.assign({}, item));
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
@@ -158,14 +167,14 @@
      */
     onMenuEditCreditCardTap_: function(e) {
       e.preventDefault();
-      if (this.activeCreditCard.metadata.isLocal)
-        this.showCreditCardDialog_ = true;
-      else
-        window.open(this.i18n('manageCreditCardsUrl'));
-
+      this.showCreditCardDialog_ = true;
       this.$.creditCardSharedMenu.close();
     },
 
+    /** @private */
+    onRemoteEditCreditCardTap_: function() {
+      window.open(this.i18n('manageCreditCardsUrl'));
+    },
 
     /**
      * Handles tapping on the "Remove" credit card button.

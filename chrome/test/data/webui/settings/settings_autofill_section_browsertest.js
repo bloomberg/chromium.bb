@@ -217,6 +217,32 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
                    row.querySelector('#creditCardExpiration').textContent);
     });
 
+    test('verifyCreditCardRowButtonIsDropdownWhenLocal', function() {
+      var creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isLocal = true;
+      var section = self.createAutofillSection_([], [creditCard]);
+      var creditCardList = section.$.creditCardList;
+      var row = creditCardList.children[0];
+      assertTrue(!!row);
+      var menuButton = row.querySelector('#creditCardMenu');
+      assertTrue(!!menuButton);
+      var outlinkButton = row.querySelector('[is="paper-icon-button-light"');
+      assertFalse(!!outlinkButton);
+    });
+
+    test('verifyCreditCardRowButtonIsOutlinkWhenRemote', function() {
+      var creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isLocal = false;
+      var section = self.createAutofillSection_([], [creditCard]);
+      var creditCardList = section.$.creditCardList;
+      var row = creditCardList.children[0];
+      assertTrue(!!row);
+      var menuButton = row.querySelector('#creditCardMenu');
+      assertFalse(!!menuButton);
+      var outlinkButton = row.querySelector('[is="paper-icon-button-light"');
+      assertTrue(!!outlinkButton);
+    });
+
     test('verifyAddVsEditCreditCardTitle', function() {
       var newCreditCard = FakeDataMaker.emptyCreditCardEntry();
       var newCreditCardDialog = self.createCreditCardDialog_(newCreditCard);
@@ -428,6 +454,32 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       }
 
       assertEquals(addressSummary, actualSummary);
+    });
+
+    test('verifyAddressRowButtonIsDropdownWhenLocal', function() {
+      var address = FakeDataMaker.addressEntry();
+      address.metadata.isLocal = true;
+      var section = self.createAutofillSection_([address], []);
+      var addressList = section.$.addressList;
+      var row = addressList.children[0];
+      assertTrue(!!row);
+      var menuButton = row.querySelector('#addressMenu')
+      assertTrue(!!menuButton);
+      var outlinkButton = row.querySelector('[is="paper-icon-button-light"]');
+      assertFalse(!!outlinkButton);
+    });
+
+    test('verifyAddressRowButtonIsOutlinkWhenRemote', function() {
+      var address = FakeDataMaker.addressEntry();
+      address.metadata.isLocal = false;
+      var section = self.createAutofillSection_([address], []);
+      var addressList = section.$.addressList;
+      var row = addressList.children[0];
+      assertTrue(!!row);
+      var menuButton = row.querySelector('#addressMenu')
+      assertFalse(!!menuButton);
+      var outlinkButton = row.querySelector('[is="paper-icon-button-light"]');
+      assertTrue(!!outlinkButton);
     });
 
     test('verifyAddAddressDialog', function() {
