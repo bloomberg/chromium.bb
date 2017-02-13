@@ -65,8 +65,12 @@ Polymer({
    * @param {!{target: Element, model: !{item: !LanguageState}}} e
    */
   onSpellCheckChange_: function(e) {
-    this.languageHelper.toggleSpellCheck(e.model.item.language.code,
-                                         e.target.checked);
+    var item = e.model.item;
+    if (!item.language.supportsSpellcheck)
+      return;
+
+    this.languageHelper.toggleSpellCheck(item.language.code,
+                                         !item.spellCheckEnabled);
   },
 
   /** @private */

@@ -204,13 +204,15 @@
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class="list-item">
-                <paper-checkbox
-                    checked="[[item.spellCheckEnabled]]"
-                    on-change="onSpellCheckChange_"
-                    disabled$="[[!item.language.supportsSpellcheck]]">
+                <div class="start" on-tap="onSpellCheckChange_"
+                    actionable$="[[item.language.supportsSpellcheck]]">
                   [[item.language.displayName]]
-                </paper-checkbox>
-              </label>
+                </div>
+                <paper-toggle-button on-change="onSpellCheckChange_"
+                    disabled="[[!item.language.supportsSpellcheck]]"
+                    checked="[[item.spellCheckEnabled]]">
+                </paper-toggle-button>
+              </div>
             </template>
             <div class="list-item">
               <a is="action-link" class="list-button"
