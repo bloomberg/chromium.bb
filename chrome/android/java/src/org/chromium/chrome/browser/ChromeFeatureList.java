@@ -49,6 +49,21 @@ public abstract class ChromeFeatureList {
     }
 
     /**
+     * Returns a field trial param for the specified feature.
+     *
+     * Note: Features queried through this API must be added to the array
+     * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc
+     *
+     * @param featureName The name of the feature to retrieve a param for.
+     * @param paramName The name of the param for which to get as an integer.
+     * @return The parameter value as a String. The string is empty if the feature does not exist or
+     *   the specified parameter does not exist.
+     */
+    public static String getFieldTrialParamByFeature(String featureName, String paramName) {
+        return nativeGetFieldTrialParamByFeature(featureName, paramName);
+    }
+
+    /**
      * Returns a field trial param as an int for the specified feature.
      *
      * Note: Features queried through this API must be added to the array
@@ -58,11 +73,45 @@ public abstract class ChromeFeatureList {
      * @param paramName The name of the param for which to get as an integer.
      * @param defaultValue The integer value to use if the param is not available.
      * @return The parameter value as an int. Default value if the feature does not exist or the
-     *         specified parameter does not exist.
+     *         specified parameter does not exist or its string value does not represent an int.
      */
     public static long getFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue) {
         return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
+    }
+
+    /**
+     * Returns a field trial param as a double for the specified feature.
+     *
+     * Note: Features queried through this API must be added to the array
+     * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc
+     *
+     * @param featureName The name of the feature to retrieve a param for.
+     * @param paramName The name of the param for which to get as an integer.
+     * @param defaultValue The double value to use if the param is not available.
+     * @return The parameter value as a double. Default value if the feature does not exist or the
+     *         specified parameter does not exist or its string value does not represent a double.
+     */
+    public static double getFieldTrialParamByFeatureAsDouble(
+            String featureName, String paramName, double defaultValue) {
+        return nativeGetFieldTrialParamByFeatureAsDouble(featureName, paramName, defaultValue);
+    }
+
+    /**
+     * Returns a field trial param as a boolean for the specified feature.
+     *
+     * Note: Features queried through this API must be added to the array
+     * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc
+     *
+     * @param featureName The name of the feature to retrieve a param for.
+     * @param paramName The name of the param for which to get as an integer.
+     * @param defaultValue The boolean value to use if the param is not available.
+     * @return The parameter value as a boolean. Default value if the feature does not exist or the
+     *         specified parameter does not exist or its string value is neither "true" nor "false".
+     */
+    public static boolean getFieldTrialParamByFeatureAsBoolean(
+            String featureName, String paramName, boolean defaultValue) {
+        return nativeGetFieldTrialParamByFeatureAsBoolean(featureName, paramName, defaultValue);
     }
 
     // Alphabetical:
@@ -99,6 +148,12 @@ public abstract class ChromeFeatureList {
     public static final String WEBVR_CARDBOARD_SUPPORT = "WebVRCardboardSupport";
 
     private static native boolean nativeIsEnabled(String featureName);
+    private static native String nativeGetFieldTrialParamByFeature(
+            String featureName, String paramName);
     private static native int nativeGetFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue);
+    private static native double nativeGetFieldTrialParamByFeatureAsDouble(
+            String featureName, String paramName, double defaultValue);
+    private static native boolean nativeGetFieldTrialParamByFeatureAsBoolean(
+            String featureName, String paramName, boolean defaultValue);
 }
