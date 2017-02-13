@@ -7,11 +7,12 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -125,12 +126,11 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
 #if defined(OS_CHROMEOS)
   // Try the legacy path first for ChromeOS. We pass the new salt in as well
   // in case the legacy id doesn't exist.
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&DeviceIDFetcher::LegacyComputeOnBlockingPool,
-                 this,
-                 profile->GetPath(),
-                 salt));
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::BACKGROUND),
+                           base::Bind(&DeviceIDFetcher::LegacyComputeAsync,
+                                      this, profile->GetPath(), salt));
 #else
   // Get the machine ID and call ComputeOnUIThread with salt + machine_id.
   GetMachineIDAsync(
@@ -179,9 +179,8 @@ void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
 // TODO(raymes): This is temporary code to migrate ChromeOS devices to the new
 // scheme for generating device IDs. Delete this once we are sure most ChromeOS
 // devices have been migrated.
-void DeviceIDFetcher::LegacyComputeOnBlockingPool(
-    const base::FilePath& profile_path,
-    const std::string& salt) {
+void DeviceIDFetcher::LegacyComputeAsync(const base::FilePath& profile_path,
+                                         const std::string& salt) {
   std::string id;
   // First check if the legacy device ID file exists on ChromeOS. If it does, we
   // should just return that.
