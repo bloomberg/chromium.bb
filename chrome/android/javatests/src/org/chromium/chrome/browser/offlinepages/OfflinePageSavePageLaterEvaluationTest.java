@@ -145,6 +145,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         checkTrue(mClearingSemaphore.tryAcquire(REMOVE_REQUESTS_TIMEOUT_MS, TimeUnit.MILLISECONDS),
                 "Timed out when clearing remaining requests!");
         mBridge.closeLog();
+        mBridge.destory();
         super.tearDown();
     }
 
@@ -228,7 +229,7 @@ public class OfflinePageSavePageLaterEvaluationTest
             @Override
             public void run() {
                 Profile profile = Profile.getLastUsedProfile();
-                mBridge = OfflinePageEvaluationBridge.getForProfile(
+                mBridge = new OfflinePageEvaluationBridge(
                         profile, useTestingScheduler, useBackgroundLoader);
                 if (mBridge == null) {
                     fail("OfflinePageEvaluationBridge initialization failed!");

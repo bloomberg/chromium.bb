@@ -91,10 +91,11 @@ public class OfflinePageEvaluationBridge {
      *                               GCMNetworkManager one.
      * @param useBackgroundLoader True if using background loader. False for prerenderer.
      */
-    public static OfflinePageEvaluationBridge getForProfile(
+    public OfflinePageEvaluationBridge(
             Profile profile, boolean useEvaluationScheduler, boolean useBackgroundLoader) {
         ThreadUtils.assertOnUiThread();
-        return nativeGetBridgeForProfile(profile, useEvaluationScheduler, useBackgroundLoader);
+        mNativeOfflinePageEvaluationBridge =
+                nativeCreateBridgeForProfile(profile, useEvaluationScheduler, useBackgroundLoader);
     }
 
     private static final String TAG = "OPEvalBridge";
@@ -105,19 +106,14 @@ public class OfflinePageEvaluationBridge {
 
     private OutputStreamWriter mLogOutput;
 
-    /**
-     * Creates an offline page evalutaion bridge for a given profile.
-     */
-    OfflinePageEvaluationBridge(long nativeOfflinePageEvaluationBridge) {
-        mNativeOfflinePageEvaluationBridge = nativeOfflinePageEvaluationBridge;
-    }
-
-    /**
-     * Called by the native OfflinePageEvaluationBridge.
-     */
-    @CalledByNative
-    private static OfflinePageEvaluationBridge create(long nativeOfflinePageEvaluationBridge) {
-        return new OfflinePageEvaluationBridge(nativeOfflinePageEvaluationBridge);
+    /** Destroys the native portion of the bridge. */
+    public void destory() {
+        if (mNativeOfflinePageEvaluationBridge != 0) {
+            nativeDestory(mNativeOfflinePageEvaluationBridge);
+            mNativeOfflinePageEvaluationBridge = 0;
+            mIsOfflinePageModelLoaded = false;
+        }
+        mObservers.clear();
     }
 
     /**
@@ -250,17 +246,6 @@ public class OfflinePageEvaluationBridge {
     }
 
     @CalledByNative
-    private void offlinePageEvaluationBridgeDestroyed() {
-        ThreadUtils.assertOnUiThread();
-        assert mNativeOfflinePageEvaluationBridge != 0;
-
-        mNativeOfflinePageEvaluationBridge = 0;
-        mIsOfflinePageModelLoaded = false;
-
-        mObservers.clear();
-    }
-
-    @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
             String url, long offlineId, String clientNamespace, String clientId, String filePath,
             long fileSize, long creationTime, int accessCount, long lastAccessTimeMs) {
@@ -275,8 +260,9 @@ public class OfflinePageEvaluationBridge {
                 creationTime, accessCount, lastAccessTimeMs);
     }
 
-    private static native OfflinePageEvaluationBridge nativeGetBridgeForProfile(
+    private native long nativeCreateBridgeForProfile(
             Profile profile, boolean useEvaluationScheduler, boolean useBackgroundLoader);
+    private native void nativeDestory(long nativeOfflinePageEvaluationBridge);
 
     private native void nativeGetAllPages(long nativeOfflinePageEvaluationBridge,
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);

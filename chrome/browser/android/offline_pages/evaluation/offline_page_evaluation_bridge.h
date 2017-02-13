@@ -32,11 +32,13 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
   static bool Register(JNIEnv* env);
 
   OfflinePageEvaluationBridge(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
                               content::BrowserContext* browser_context,
                               OfflinePageModel* offline_page_model,
                               RequestCoordinator* request_coordinator);
 
   ~OfflinePageEvaluationBridge() override;
+  void Destory(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
@@ -87,8 +89,6 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                      const base::android::JavaParamRef<jstring>& j_client_id,
                      jboolean user_requested);
 
-  base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
-
  private:
   void NotifyIfDoneLoading() const;
 
@@ -96,7 +96,7 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
       JNIEnv* env,
       const ClientId& clientId) const;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+  JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.
   content::BrowserContext* browser_context_;
   // Not owned.

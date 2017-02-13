@@ -62,7 +62,8 @@ void StartProcessing() {
 }  // namespace
 
 EvaluationTestScheduler::EvaluationTestScheduler()
-    : device_conditions_(kPowerRequired,
+    : coordinator_(nullptr),
+      device_conditions_(kPowerRequired,
                          kBatteryPercentageHigh,
                          net::NetworkChangeNotifier::CONNECTION_2G) {}
 
@@ -70,8 +71,8 @@ EvaluationTestScheduler::~EvaluationTestScheduler() {}
 
 void EvaluationTestScheduler::Schedule(
     const TriggerConditions& trigger_conditions) {
-  Profile* profile = ProfileManager::GetLastUsedProfile();
   if (!coordinator_) {
+    Profile* profile = ProfileManager::GetLastUsedProfile();
     coordinator_ =
         RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
     // It's not expected that the coordinator would be nullptr since this bridge
@@ -89,15 +90,17 @@ void EvaluationTestScheduler::BackupSchedule(
     long delay_in_seconds) {
   // This method is not expected to be called in test harness. Adding a log in
   // case we somehow get called here and need to implement the method.
-  coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
-                                            " BackupSchedule called!");
+  if (coordinator_)
+    coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
+                                              " BackupSchedule called!");
 }
 
 void EvaluationTestScheduler::Unschedule() {
   // This method is not expected to be called in test harness. Adding a log in
   // case we somehow get called here and need to implement the method.
-  coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
-                                            " Unschedule called!");
+  if (coordinator_)
+    coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
+                                              " Unschedule called!");
 }
 
 DeviceConditions& EvaluationTestScheduler::GetCurrentDeviceConditions() {
