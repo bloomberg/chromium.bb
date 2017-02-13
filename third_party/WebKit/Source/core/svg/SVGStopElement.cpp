@@ -56,7 +56,7 @@ LayoutObject* SVGStopElement::createLayoutObject(const ComputedStyle&) {
 }
 
 bool SVGStopElement::layoutObjectIsNeeded(const ComputedStyle&) {
-  return true;
+  return isValid() && hasSVGParent();
 }
 
 Color SVGStopElement::stopColorIncludingOpacity() const {
