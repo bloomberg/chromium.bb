@@ -207,7 +207,7 @@ bool ChannelNacl::Send(Message* message) {
                          "ChannelNacl::Send",
                          message->header()->flags,
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  output_queue_.push_back(linked_ptr<Message>(message_ptr.release()));
+  output_queue_.push_back(std::move(message_ptr));
   if (!waiting_connect_)
     return ProcessOutgoingMessages();
 
@@ -220,9 +220,9 @@ void ChannelNacl::DidRecvMsg(std::unique_ptr<MessageContents> contents) {
   if (pipe_ == -1)
     return;
 
-  linked_ptr<std::vector<char> > data(new std::vector<char>);
+  auto data = base::MakeUnique<std::vector<char>>();
   data->swap(contents->data);
-  read_queue_.push_back(data);
+  read_queue_.push_back(std::move(data));
 
   input_attachments_.reserve(contents->fds.size());
   for (int fd : contents->fds) {
@@ -273,7 +273,7 @@ bool ChannelNacl::ProcessOutgoingMessages() {
   // Write out all the messages. The trusted implementation is guaranteed to not
   // block. See NaClIPCAdapter::Send for the implementation of imc_sendmsg.
   while (!output_queue_.empty()) {
-    linked_ptr<Message> msg = output_queue_.front();
+    std::unique_ptr<Message> msg = std::move(output_queue_.front());
     output_queue_.pop_front();
 
     const size_t num_fds = msg->attachment_set()->size();
@@ -330,7 +330,7 @@ ChannelNacl::ReadState ChannelNacl::ReadData(
   if (read_queue_.empty())
     return READ_PENDING;
   while (!read_queue_.empty() && *bytes_read < buffer_len) {
-    linked_ptr<std::vector<char> > vec(read_queue_.front());
+    std::vector<char>* vec = read_queue_.front().get();
     size_t bytes_to_read = buffer_len - *bytes_read;
     if (vec->size() <= bytes_to_read) {
       // We can read and discard the entire vector.
@@ -386,7 +386,7 @@ std::unique_ptr<Channel> Channel::Create(
     const IPC::ChannelHandle& channel_handle,
     Mode mode,
     Listener* listener) {
-  return base::WrapUnique(new ChannelNacl(channel_handle, mode, listener));
+  return base::MakeUnique<ChannelNacl>(channel_handle, mode, listener);
 }
 
 }  // namespace IPC

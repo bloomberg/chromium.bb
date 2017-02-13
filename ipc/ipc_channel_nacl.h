@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/simple_thread.h"
@@ -97,13 +96,13 @@ class ChannelNacl : public Channel,
   //                 the trouble given that we probably want to implement 1 and
   //                 2 above in NaCl eventually.
   // When ReadData is called, it pulls the bytes out of this queue in order.
-  std::deque<linked_ptr<std::vector<char> > > read_queue_;
+  std::deque<std::unique_ptr<std::vector<char>>> read_queue_;
   // Queue of file descriptor attachments extracted from imc_recvmsg messages.
   std::vector<scoped_refptr<MessageAttachment>> input_attachments_;
 
   // This queue is used when a message is sent prior to Connect having been
   // called. Normally after we're connected, the queue is empty.
-  std::deque<linked_ptr<Message> > output_queue_;
+  std::deque<std::unique_ptr<Message>> output_queue_;
 
   base::WeakPtrFactory<ChannelNacl> weak_ptr_factory_;
 
