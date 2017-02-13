@@ -26,6 +26,77 @@ const char* const kLegacyCSSHistogramName =
 
 namespace blink {
 
+template <typename T>
+void histogramBasicTest(const std::string& histogram,
+                        const std::string& legacyHistogram,
+                        const std::vector<std::string>& unaffectedHistograms,
+                        T item,
+                        T secondItem,
+                        std::function<bool(T)> counted,
+                        std::function<void(T)> count,
+                        std::function<int(T)> histogramMap,
+                        std::function<void(KURL)> didCommitLoad,
+                        const std::string& url,
+                        int pageVisitBucket) {
+  HistogramTester histogramTester;
+
+  // Test recording a single (arbitrary) counter
+  EXPECT_FALSE(counted(item));
+  count(item);
+  EXPECT_TRUE(counted(item));
+  histogramTester.expectUniqueSample(histogram, histogramMap(item), 1);
+  histogramTester.expectTotalCount(legacyHistogram, 0);
+
+  // Test that repeated measurements have no effect
+  count(item);
+  histogramTester.expectUniqueSample(histogram, histogramMap(item), 1);
+  histogramTester.expectTotalCount(legacyHistogram, 0);
+
+  // Test recording a different sample
+  EXPECT_FALSE(counted(secondItem));
+  count(secondItem);
+  EXPECT_TRUE(counted(secondItem));
+  histogramTester.expectBucketCount(histogram, histogramMap(item), 1);
+  histogramTester.expectBucketCount(histogram, histogramMap(secondItem), 1);
+  histogramTester.expectTotalCount(histogram, 2);
+  histogramTester.expectTotalCount(legacyHistogram, 0);
+
+  // After a page load, the histograms will be updated, even when the URL
+  // scheme is internal
+  didCommitLoad(URLTestHelpers::toKURL(url));
+  histogramTester.expectBucketCount(histogram, histogramMap(item), 1);
+  histogramTester.expectBucketCount(histogram, histogramMap(secondItem), 1);
+  histogramTester.expectBucketCount(histogram, pageVisitBucket, 1);
+  histogramTester.expectTotalCount(histogram, 3);
+
+  // And verify the legacy histogram now looks the same
+  histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 1);
+  histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
+                                    1);
+  histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 1);
+  histogramTester.expectTotalCount(legacyHistogram, 3);
+
+  // Now a repeat measurement should get recorded again, exactly once
+  EXPECT_FALSE(counted(item));
+  count(item);
+  count(item);
+  EXPECT_TRUE(counted(item));
+  histogramTester.expectBucketCount(histogram, histogramMap(item), 2);
+  histogramTester.expectTotalCount(histogram, 4);
+
+  // And on the next page load, the legacy histogram will again be updated
+  didCommitLoad(URLTestHelpers::toKURL(url));
+  histogramTester.expectBucketCount(legacyHistogram, histogramMap(item), 2);
+  histogramTester.expectBucketCount(legacyHistogram, histogramMap(secondItem),
+                                    1);
+  histogramTester.expectBucketCount(legacyHistogram, pageVisitBucket, 2);
+  histogramTester.expectTotalCount(legacyHistogram, 5);
+
+  for (size_t i = 0; i < unaffectedHistograms.size(); ++i) {
+    histogramTester.expectTotalCount(unaffectedHistograms[i], 0);
+  }
+}
+
 // Failing on Android: crbug.com/667913
 #if OS(ANDROID)
 #define MAYBE_RecordingFeatures DISABLED_RecordingFeatures
@@ -34,223 +105,83 @@ namespace blink {
 #endif
 TEST(UseCounterTest, MAYBE_RecordingFeatures) {
   UseCounter useCounter;
-  HistogramTester histogramTester;
-
-  // Test recording a single (arbitrary) counter
-  EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
-  useCounter.recordMeasurement(UseCounter::Fetch);
-  EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
-  histogramTester.expectUniqueSample(kFeaturesHistogramName, UseCounter::Fetch,
-                                     1);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
-
-  // Test that repeated measurements have no effect
-  useCounter.recordMeasurement(UseCounter::Fetch);
-  histogramTester.expectUniqueSample(kFeaturesHistogramName, UseCounter::Fetch,
-                                     1);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
-
-  // Test recording a different sample
-  EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::FetchBodyStream));
-  useCounter.recordMeasurement(UseCounter::FetchBodyStream);
-  EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::FetchBodyStream));
-  histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch,
-                                    1);
-  histogramTester.expectBucketCount(kFeaturesHistogramName,
-                                    UseCounter::FetchBodyStream, 1);
-  histogramTester.expectTotalCount(kFeaturesHistogramName, 2);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
-
-  // Test the impact of page load on the new histogram
-  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
-  histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch,
-                                    1);
-  histogramTester.expectBucketCount(kFeaturesHistogramName,
-                                    UseCounter::FetchBodyStream, 1);
-  histogramTester.expectBucketCount(kFeaturesHistogramName,
-                                    UseCounter::PageVisits, 1);
-  histogramTester.expectTotalCount(kFeaturesHistogramName, 3);
-
-  // And verify the legacy histogram now looks the same
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::Fetch, 1);
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::FetchBodyStream, 1);
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::PageVisits, 1);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 3);
-
-  // Now a repeat measurement should get recorded again, exactly once
-  EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
-  useCounter.recordMeasurement(UseCounter::Fetch);
-  useCounter.recordMeasurement(UseCounter::Fetch);
-  EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
-  histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch,
-                                    2);
-  histogramTester.expectTotalCount(kFeaturesHistogramName, 4);
-
-  // And on the next page load, the legacy histogram will again be updated
-  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::Fetch, 2);
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::FetchBodyStream, 1);
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::PageVisits, 2);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 5);
-
-  // None of this should update any of the SVG histograms
-  histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 0);
-  histogramTester.expectTotalCount(kSVGCSSHistogramName, 0);
+  histogramBasicTest<UseCounter::Feature>(
+      kFeaturesHistogramName, kLegacyFeaturesHistogramName,
+      {kSVGFeaturesHistogramName, kSVGCSSHistogramName}, UseCounter::Fetch,
+      UseCounter::FetchBodyStream,
+      [&](UseCounter::Feature feature) -> bool {
+        return useCounter.hasRecordedMeasurement(feature);
+      },
+      [&](UseCounter::Feature feature) {
+        useCounter.recordMeasurement(feature);
+      },
+      [](UseCounter::Feature feature) -> int { return feature; },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); },
+      "https://dummysite.com/", UseCounter::PageVisits);
 }
 
 TEST(UseCounterTest, RecordingCSSProperties) {
   UseCounter useCounter;
-  HistogramTester histogramTester;
-
-  // Test recording a single (arbitrary) property
-  EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
-  useCounter.count(HTMLStandardMode, CSSPropertyFont);
-  EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
-  histogramTester.expectUniqueSample(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
-
-  // Test that repeated measurements have no effect
-  useCounter.count(HTMLStandardMode, CSSPropertyFont);
-  histogramTester.expectUniqueSample(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
-
-  // Test recording a different sample
-  EXPECT_FALSE(useCounter.isCounted(CSSPropertyZoom));
-  useCounter.count(HTMLStandardMode, CSSPropertyZoom);
-  EXPECT_TRUE(useCounter.isCounted(CSSPropertyZoom));
-  histogramTester.expectBucketCount(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectBucketCount(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom),
-      1);
-  histogramTester.expectTotalCount(kCSSHistogramName, 2);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
-
-  // Test the impact of page load on the new histogram
-  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
-  histogramTester.expectBucketCount(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectBucketCount(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom),
-      1);
-  histogramTester.expectBucketCount(kCSSHistogramName, 1, 1);
-  histogramTester.expectTotalCount(kCSSHistogramName, 3);
-
-  // And verify the legacy histogram now looks the same
-  histogramTester.expectBucketCount(
-      kLegacyCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectBucketCount(
-      kLegacyCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom),
-      1);
-  histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 1);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 3);
-
-  // Now a repeat measurement should get recorded again, exactly once
-  EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
-  useCounter.count(HTMLStandardMode, CSSPropertyFont);
-  useCounter.count(HTMLStandardMode, CSSPropertyFont);
-  EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
-  histogramTester.expectBucketCount(
-      kCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      2);
-  histogramTester.expectTotalCount(kCSSHistogramName, 4);
-
-  // And on the next page load, the legacy histogram will again be updated
-  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
-  histogramTester.expectBucketCount(
-      kLegacyCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      2);
-  histogramTester.expectBucketCount(
-      kLegacyCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom),
-      1);
-  histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 2);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 5);
-
-  // None of this should update any of the SVG histograms
-  histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 0);
-  histogramTester.expectTotalCount(kSVGCSSHistogramName, 0);
+  histogramBasicTest<CSSPropertyID>(
+      kCSSHistogramName, kLegacyCSSHistogramName,
+      {kSVGFeaturesHistogramName, kSVGCSSHistogramName}, CSSPropertyFont,
+      CSSPropertyZoom,
+      [&](CSSPropertyID property) -> bool {
+        return useCounter.isCounted(property);
+      },
+      [&](CSSPropertyID property) {
+        useCounter.count(HTMLStandardMode, property);
+      },
+      [](CSSPropertyID property) -> int {
+        return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
+      },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); },
+      "https://dummysite.com/", 1 /* page visit bucket */);
 }
 
 // Failing on Android: crbug.com/667913
 #if OS(ANDROID)
-#define MAYBE_SVGImageContext DISABLED_SVGImageContext
+#define MAYBE_SVGImageContextFeatures DISABLED_SVGImageContextFeatures
 #else
-#define MAYBE_SVGImageContext SVGImageContext
+#define MAYBE_SVGImageContextFeatures SVGImageContextFeatures
 #endif
-
-TEST(UseCounterTest, MAYBE_SVGImageContext) {
+TEST(UseCounterTest, MAYBE_SVGImageContextFeatures) {
   UseCounter useCounter(UseCounter::SVGImageContext);
-  HistogramTester histogramTester;
+  histogramBasicTest<UseCounter::Feature>(
+      kSVGFeaturesHistogramName, kLegacyFeaturesHistogramName,
+      {kFeaturesHistogramName, kCSSHistogramName},
+      UseCounter::SVGSMILAdditiveAnimation,
+      UseCounter::SVGSMILAnimationElementTiming,
+      [&](UseCounter::Feature feature) -> bool {
+        return useCounter.hasRecordedMeasurement(feature);
+      },
+      [&](UseCounter::Feature feature) {
+        useCounter.recordMeasurement(feature);
+      },
+      [](UseCounter::Feature feature) -> int { return feature; },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); }, "about:blank",
+      // In practice SVGs always appear to be loaded with an about:blank URL
+      UseCounter::PageVisits);
+}
 
-  // Verify that SVGImage related feature counters get recorded in a separate
-  // histogram.
-  EXPECT_FALSE(
-      useCounter.hasRecordedMeasurement(UseCounter::SVGSMILAdditiveAnimation));
-  useCounter.recordMeasurement(UseCounter::SVGSMILAdditiveAnimation);
-  EXPECT_TRUE(
-      useCounter.hasRecordedMeasurement(UseCounter::SVGSMILAdditiveAnimation));
-  histogramTester.expectUniqueSample(kSVGFeaturesHistogramName,
-                                     UseCounter::SVGSMILAdditiveAnimation, 1);
-
-  // And for the CSS counters
-  EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
-  useCounter.count(HTMLStandardMode, CSSPropertyFont);
-  EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
-  histogramTester.expectUniqueSample(
-      kSVGCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-
-  // After a page load, the histograms will be updated, even when the URL
-  // scheme is internal (in practice SVGs always appear to get loaded with
-  // an about:blank URL).
-  useCounter.didCommitLoad(URLTestHelpers::toKURL("about:blank"));
-  histogramTester.expectBucketCount(kSVGFeaturesHistogramName,
-                                    UseCounter::PageVisits, 1);
-  histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 2);
-  histogramTester.expectBucketCount(kSVGCSSHistogramName, 1, 1);
-  histogramTester.expectTotalCount(kSVGCSSHistogramName, 2);
-
-  // And the legacy histogram will be updated to include these
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::SVGSMILAdditiveAnimation, 1);
-  histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
-                                    UseCounter::PageVisits, 1);
-  histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 2);
-  histogramTester.expectBucketCount(
-      kLegacyCSSHistogramName,
-      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
-      1);
-  histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 1);
-  histogramTester.expectTotalCount(kLegacyCSSHistogramName, 2);
-
-  // None of this should update the non-legacy non-SVG histograms
-  histogramTester.expectTotalCount(kCSSHistogramName, 0);
-  histogramTester.expectTotalCount(kFeaturesHistogramName, 0);
+TEST(UseCounterTest, SVGImageContextCSSProperties) {
+  UseCounter useCounter(UseCounter::SVGImageContext);
+  histogramBasicTest<CSSPropertyID>(
+      kSVGCSSHistogramName, kLegacyCSSHistogramName,
+      {kFeaturesHistogramName, kCSSHistogramName}, CSSPropertyFont,
+      CSSPropertyZoom,
+      [&](CSSPropertyID property) -> bool {
+        return useCounter.isCounted(property);
+      },
+      [&](CSSPropertyID property) {
+        useCounter.count(HTMLStandardMode, property);
+      },
+      [](CSSPropertyID property) -> int {
+        return UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property);
+      },
+      [&](KURL kurl) { useCounter.didCommitLoad(kurl); }, "about:blank",
+      // In practice SVGs always appear to be loaded with an about:blank URL
+      1 /* page visit bucket */);
 }
 
 // Failing on Android: crbug.com/667913
@@ -259,7 +190,6 @@ TEST(UseCounterTest, MAYBE_SVGImageContext) {
 #else
 #define MAYBE_InspectorDisablesMeasurement InspectorDisablesMeasurement
 #endif
-
 TEST(UseCounterTest, MAYBE_InspectorDisablesMeasurement) {
   UseCounter useCounter;
   HistogramTester histogramTester;
