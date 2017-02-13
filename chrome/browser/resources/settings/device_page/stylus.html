@@ -73,11 +73,13 @@
         hidden$="[[!prefs.arc.enabled.value]]">
       <div class="start">
         $i18n{stylusFindMoreAppsPrimary}
-        <div class="secondary">
+        <div class="secondary" id="stylusFindMoreAppsSecondary">
           $i18n{stylusFindMoreAppsSecondary}
         </div>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"></button>
+      <button class="icon-external" is="paper-icon-button-light"
+          aria-label="$i18n{stylusFindMoreAppsPrimary}"
+          aria-describedby="stylusFindMoreAppsSecondary"></button>
     </div>
 
   </template>

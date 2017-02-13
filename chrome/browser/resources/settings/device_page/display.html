@@ -134,10 +134,14 @@
           on-tap="onOverscanTap_" hidden$="[[selectedDisplay.isInternal]]"
           actionable>
         <div class="start">
-          <div>$i18n{displayOverscanPageTitle}</div>
-          <div class="secondary">$i18n{displayOverscanPageText}</div>
+          $i18n{displayOverscanPageTitle}
+          <div class="secondary" id="displayOverscanSecondary">
+            $i18n{displayOverscanPageText}
+          </div>
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{displayOverscanPageTitle}"
+            aria-describedby="displayOverscanSecondary"></button>
       </div>
 
       <settings-display-overscan-dialog id="displayOverscan"
@@ -149,10 +153,14 @@
           hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]"
           actionable>
         <div class="start">
-          <div>$i18n{displayTouchCalibrationTitle}</div>
-          <div class="secondary">$i18n{displayTouchCalibrationText}</div>
+          $i18n{displayTouchCalibrationTitle}
+          <div class="secondary" id="touchCalibrationSecondary">
+            $i18n{displayTouchCalibrationText}
+          </div>
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{displayTouchCalibrationTitle}"
+            aria-describedby="touchCalibrationSecondary"></button>
       </div>
     </div>
   </template>

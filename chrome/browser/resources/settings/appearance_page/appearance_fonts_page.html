@@ -114,12 +114,14 @@
       <div class="settings-box two-line" id="advancedButton"
           on-tap="openAdvancedExtension_" actionable>
         <div class="start">
-          <div>$i18n{advancedFontSettings}</div>
+          $i18n{advancedFontSettings}
           <div class="secondary" id="advancedButtonSublabel">
             [[advancedExtensionSublabel_]]
           </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light"></button>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{advancedFontSettings}"
+            aria-describedby="advancedButtonSublabel"></button>
       </div>
     </template>
   </template>

@@ -41,9 +41,13 @@
             hidden="[[!pageVisibility.setWallpaper]]">
           <div class="start">
             $i18n{setWallpaper}
-            <div class="secondary">$i18n{openWallpaperApp}</div>
+            <div class="secondary" id="wallpaperSecondary">
+              $i18n{openWallpaperApp}
+            </div>
           </div>
-          <button class="icon-external" is="paper-icon-button-light"></button>
+          <button class="icon-external" is="paper-icon-button-light"
+              aria-label="$i18n{setWallpaper}"
+              aria-describedby="wallpaperSecondary"></button>
         </div>
         <div class="settings-box two-line"
             hidden="[[!pageVisibility.setTheme]]">
@@ -54,10 +58,14 @@
 </if>
           <div class="start two-line" on-tap="onThemesTap_" actionable>
             <div class="flex">
-              <div>$i18n{themes}</div>
-              <div class="secondary">[[themeSublabel_]]</div>
+              $i18n{themes}
+              <div class="secondary" id="themesSecondary">
+                [[themeSublabel_]]
+              </div>
             </div>
-            <button class="icon-external" is="paper-icon-button-light"></button>
+            <button class="icon-external" is="paper-icon-button-light"
+                aria-label="$i18n{themes}"
+                aria-describedby="themesSecondary"></button>
           </div>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
@@ -156,10 +164,12 @@
         <div id="customize-fonts-subpage-trigger" class="settings-box two-line"
             on-tap="onCustomizeFontsTap_" actionable>
           <div class="start">
-            <div>$i18n{customizeFonts}</div>
-            <div class="secondary">$i18n{chooseFonts}</div>
+            $i18n{customizeFonts}
+            <div class="secondary" id="fontsSecondary">$i18n{chooseFonts}</div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{customizeFonts}"
+              aria-describedby="fontsSecondary"></button>
         </div>
         <div class="settings-box"
             hidden="[[!pageVisibility.pageZoom]]">

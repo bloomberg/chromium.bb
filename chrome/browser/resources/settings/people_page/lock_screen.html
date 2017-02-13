@@ -55,11 +55,13 @@
               actionable>
             <div class="start">
               $i18n{lockScreenEditFingerprints}
-              <div class="secondary">
+              <div class="secondary" id="lockScreenEditFingerprintsSecondary">
                 $i18n{lockScreenEditFingerprintsDescription}
               </div>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"></button>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                aria-label="$i18n{lockScreenEditFingerprints}"
+                aria-describedby="lockScreenEditFingerprintsSecondary"></button>
           </div>
         </iron-collapse>
       </template>

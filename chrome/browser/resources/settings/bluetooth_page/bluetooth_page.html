@@ -22,15 +22,18 @@
         <div class="settings-box two-line" actionable on-tap="onTap_">
           <iron-icon icon="[[getIcon_(bluetoothEnabled_)]]"></iron-icon>
           <div class="middle">
-            <div>$i18n{bluetoothPageTitle}</div>
-            <div class="secondary">[[getDescription_(bluetoothEnabled_)]]</div>
+            $i18n{bluetoothPageTitle}
+            <div class="secondary" id="bluetoothSecondary">
+              [[getDescription_(bluetoothEnabled_)]]
+            </div>
           </div>
           <cr-policy-pref-indicator
               pref="[[prefs.cros.device.allow_bluetooth]]"
             hidden="[[prefs.cros.device.allow_bluetooth.value]]">
           </cr-policy-pref-indicator>
           <button class="subpage-arrow" is="paper-icon-button-light"
-              on-tap="onSubpageArrowTap_">
+              on-tap="onSubpageArrowTap_" aria-label="$i18n{bluetoothPageTitle}"
+              aria-describedby="bluetoothSecondary">
           </button>
           <div class="secondary-action">
             <paper-toggle-button id="enableBluetooth"

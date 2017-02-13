@@ -50,10 +50,9 @@
     </div>
     <div class="settings-box" id="setDateTime" actionable
         on-tap="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]">
-      <div class="start">
-        <div>$i18n{setDateTime}</div>
-      </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <div class="start">$i18n{setDateTime}</div>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{setDateTime}"></button>
     </div>
   </template>
   <script src="date_time_page.js"></script>

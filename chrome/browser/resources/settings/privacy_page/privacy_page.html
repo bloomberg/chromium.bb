@@ -161,13 +161,19 @@
             actionable on-tap="onManageCertificatesTap_">
           <div class="start">
             $i18n{manageCertificates}
-            <div class="secondary">$i18n{manageCertificatesDescription}</div>
+            <div class="secondary" id="manageCertificatesSecondary">
+              $i18n{manageCertificatesDescription}
+            </div>
           </div>
 <if expr="use_nss_certs">
-          <button is="paper-icon-button-light" class="subpage-arrow"></button>
+          <button is="paper-icon-button-light" class="subpage-arrow"
+              aria-label="$i18n{manageCertificates}"
+              aria-describedby="manageCertificatesSecondary"></button>
 </if>
 <if expr="not use_nss_certs">
-          <button is="paper-icon-button-light" class="icon-external"></button>
+          <button is="paper-icon-button-light" class="icon-external"
+              aria-label="$i18n{manageCertificates}"
+              aria-describedby="manageCertificatesSecondary"></button>
 </if>
         </div>
 </if>
@@ -176,17 +182,25 @@
             on-tap="onSiteSettingsTap_">
           <div class="start">
             [[siteSettingsPageTitle_()]]
-            <div class="secondary">$i18n{siteSettingsDescription}</div>
+            <div class="secondary" id="siteSettingsSecondary">
+              $i18n{siteSettingsDescription}
+            </div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="[[siteSettingsPageTitle_()]]"
+              aria-describedby="siteSettingsSecondary"></button>
         </div>
         <div class="settings-box two-line" id="clearBrowsingData"
             on-tap="onClearBrowsingDataTap_" actionable>
           <div class="start">
             $i18n{clearBrowsingData}
-            <div class="secondary">$i18n{clearBrowsingDataDescription}</div>
+            <div class="secondary" id="clearBrowsingDataSecondary">
+              $i18n{clearBrowsingDataDescription}
+            </div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{clearBrowsingData}"
+              aria-describedby="clearBrowsingDataSecondary"></button>
         </div>
       </neon-animatable>
 <if expr="use_nss_certs">
@@ -362,10 +376,9 @@
 <if expr="chromeos">
           <div actionable class="settings-box"
               on-tap="onAdobeFlashStorageClicked_">
-            <div class="start">
-              $i18n{adobeFlashStorage}
-            </div>
-            <button class="icon-external" is="paper-icon-button-light"></button>
+            <div class="start">$i18n{adobeFlashStorage}</div>
+            <button class="icon-external" is="paper-icon-button-light"
+                aria-label="$i18n{adobeFlashStorage}"></button>
           </div>
 </if>
           <category-setting-exceptions

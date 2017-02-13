@@ -69,7 +69,7 @@
                 <div class="selectable">[[item.displayName]]</div>
 
                 <!-- This div must not contain extra whitespace. -->
-                <div class="selectable secondary"
+                <div class="selectable secondary" id="siteDescription"
                     >[[computeSiteDescription_(item)]]</div>
               </div>
             </div>
@@ -84,8 +84,9 @@
             </paper-icon-button>
             <template is="dom-if" if="[[enableSiteSettings_]]">
               <div on-tap="onOriginTap_" actionable>
-                <button class="subpage-arrow" is="paper-icon-button-light">
-                </button>
+                <button class="subpage-arrow" is="paper-icon-button-light"
+                    aria-label="[[item.displayName]]"
+                    aria-describedby="siteDescription"></button>
               </div>
             </template>
           </div>

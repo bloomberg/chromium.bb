@@ -185,9 +185,13 @@
           on-tap="onManageSyncedDataTap_">
         <div class="start">
           $i18n{manageSyncedDataTitle}
-          <div class="secondary">$i18n{manageSyncedDataDescription}</div>
+          <div class="secondary" id="manageSyncedDataSecondary">
+            $i18n{manageSyncedDataDescription}
+          </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light"></button>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{manageSyncedDataTitle}"
+            aria-describedby="manageSyncedDataSecondary"></button>
       </div>
 
       <div class="settings-box two-line single-column">

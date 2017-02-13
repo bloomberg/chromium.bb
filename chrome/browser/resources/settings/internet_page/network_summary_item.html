@@ -78,6 +78,8 @@
         </template>
         <template is="dom-if"
             if="[[showDetailsIsVisible_(deviceState, networkStateList)]]">
+          <!-- TODO(dbeam): this needs an aria-label. Maybe
+               [[activeNetworkState.name]]? -->
           <button class="subpage-arrow" is="paper-icon-button-light"
               on-tap="onShowDetailsTap_">
           </button>

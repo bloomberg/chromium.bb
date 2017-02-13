@@ -183,7 +183,9 @@
       <div id="downloadsSize" class="storage-size">
         $i18n{storageSizeComputing}
       </div>
-      <button class="icon-external" is="paper-icon-button-light"></button>
+      <button class="icon-external" is="paper-icon-button-light"
+          aria-label="$i18n{storageItemDownloads}"
+          aria-describedby="downloadsSize"></button>
     </div>
     <template is="dom-if" if="[[driveEnabled_]]">
       <div class="settings-box" on-tap="onDriveCacheTap_" actionable>
@@ -191,7 +193,9 @@
         <div id="driveCacheSize" class="storage-size">
           $i18n{storageSizeComputing}
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{storageItemDriveCache}"
+            aria-describedby="driveSizeCache"></button>
       </div>
     </template>
     <div class="settings-box" on-tap="onBrowsingDataTap_" actionable>
@@ -199,7 +203,9 @@
       <div id="browsingDataSize" class="storage-size">
         $i18n{storageSizeComputing}
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{storageItemBrowsingData}"
+          aria-describedby="browsingDataSize"></button>
     </div>
     <template is="dom-if" if="[[androidEnabled_]]">
       <div class="settings-box" on-tap="onAndroidTap_" actionable>
@@ -207,7 +213,9 @@
         <div id="androidSize" class="storage-size">
           $i18n{storageSizeComputing}
         </div>
-        <button class="icon-external" is="paper-icon-button-light"></button>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{storageItemAndroid}"
+            aria-describedby="androidSize"></button>
       </div>
     </template>
     <template is="dom-if" if="[[!isGuest_]]">
@@ -216,7 +224,9 @@
         <div id="otherUsersSize" class="storage-size">
           $i18n{storageSizeComputing}
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{storageItemOtherUsers}"
+            aria-describedby="otherUsersSize"></button>
       </div>
     </template>
 

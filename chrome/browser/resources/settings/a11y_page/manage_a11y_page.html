@@ -41,7 +41,8 @@
           label="$i18n{chromeVoxLabel}">
         <button class="more-actions icon-external" is="paper-icon-button-light"
             on-tap="onChromeVoxSettingsTap_"
-            hidden="[[!prefs.settings.accessibility.value]]"></button>
+            hidden="[[!prefs.settings.accessibility.value]]"
+            aria-label="$i18n{chromeVoxLabel}"></button>
       </settings-toggle-button>
     </div>
     <template is="dom-if" if="[[showExperimentalFeatures_]]">
@@ -68,16 +69,24 @@
     <div class="settings-box two-line" on-tap="onDisplayTap_" actionable>
       <div class="start">
         $i18n{displaySettingsTitle}
-        <div class="secondary">$i18n{displaySettingsDescription}</div>
+        <div class="secondary" id="deisplaySettingsSecondary">
+          $i18n{displaySettingsDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{displaySettingsTitle}"
+          aria-describedby="displaySettingsSecondary"></button>
     </div>
     <div class="settings-box two-line" on-tap="onAppearanceTap_" actionable>
       <div class="start">
         $i18n{appearanceSettingsTitle}
-        <div class="secondary">$i18n{appearanceSettingsDescription}</div>
+        <div class="secondary" id="appearanceSettingsSecondary">
+          $i18n{appearanceSettingsDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{appearanceSettingsTitle}"
+          aria-describedby="appearanceSettingsSecondary"></button>
     </div>
 
     <h2>$i18n{keyboardHeading}</h2>
@@ -108,9 +117,13 @@
     <div class="settings-box two-line" on-tap="onKeyboardTap_" actionable>
       <div class="start">
         $i18n{keyboardSettingsTitle}
-        <div class="secondary">$i18n{keyboardSettingsDescription}</div>
+        <div class="secondary" id="keyboardSettingsSecondary">
+          $i18n{keyboardSettingsDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{keyboardSettingsTitle}"
+          aria-describedby="keyboardSettingsSecondary"></button>
     </div>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
@@ -143,9 +156,13 @@
     <div class="settings-box two-line" on-tap="onMouseTap_" actionable>
       <div class="start">
         $i18n{mouseSettingsTitle}
-        <div class="secondary">$i18n{mouseSettingsDescription}</div>
+        <div class="secondary" id="mouseSettingsSecondary">
+          $i18n{mouseSettingsDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{mouseSettingsTitle}"
+          aria-describedby="mouseSettingsSecondary"></button>
     </div>
 
     <h2>$i18n{audioHeading}</h2>
@@ -159,9 +176,13 @@
     <div class="settings-box two-line" on-tap="onMoreFeaturesTap_" actionable>
       <div class="start">
         $i18n{additionalFeaturesTitle}
-        <div class="secondary">$i18n{a11yWebStore}</div>
+        <div class="secondary" id="moreFeaturesSecondary">
+          $i18n{a11yWebStore}
+        </div>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"></button>
+      <button class="icon-external" is="paper-icon-button-light"
+          aria-label="$i18n{additionalFeaturesTitle}"
+          aria-describedby="moreFeaturesSecondary"></button>
     </div>
   </template>
   <script src="manage_a11y_page.js"></script>

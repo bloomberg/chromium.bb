@@ -16,10 +16,14 @@
     <div class="settings-box first two-line" id="resetProfile"
         on-tap="onShowResetProfileDialog_" actionable>
       <div class="start">
-        <div>$i18n{resetPageTitle}</div>
-        <div class="secondary">$i18n{resetPageDescription}</div>
+        $i18n{resetPageTitle}
+        <div class="secondary" id="resetProfileSecondary">
+          $i18n{resetPageDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{resetPageTitle}"
+          aria-describedby="resetProfileSecondary"></button>
     </div>
     <template is="dom-if" if="[[showResetProfileDialog_]]" restamp>
       <settings-reset-profile-dialog on-close="onResetProfileDialogClose_">
@@ -29,10 +33,14 @@
     <div class="settings-box two-line" id="powerwash" actionable
         on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
       <div class="start">
-        <div>$i18n{powerwashTitle}</div>
-        <div class="secondary">$i18n{powerwashDescription}</div>
+        $i18n{powerwashTitle}
+        <div class="secondary" id="powerwashSecondary">
+          $i18n{powerwashDescription}
+        </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{powerwashTitle}"
+          aria-describedby="powerwashSecondary"></button>
     </div>
     <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>
       <settings-powerwash-dialog on-close="onPowerwashDialogClose_">

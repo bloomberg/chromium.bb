@@ -42,9 +42,11 @@
           </div>
           <div class="middle">
             [[item.site]]
-            <div class="secondary">[[item.localData]]</div>
+            <div class="secondary" id="siteSecondary">[[item.localData]]</div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="[[item.site]]"
+              aria-describedby="siteSecondary"></button>
         </div>
       </template>
     </div>

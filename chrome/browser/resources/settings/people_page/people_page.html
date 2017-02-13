@@ -123,12 +123,14 @@
 </if>
               <div class="flex text-elide">
                 <span id="profile-name">[[profileName_]]</span>
-                <div class="secondary" hidden="[[!syncStatus.signedIn]]">
+                <div class="secondary" hidden="[[!syncStatus.signedIn]]"
+                    id="profileNameSecondary">
                   [[syncStatus.signedInUsername]]
                 </div>
               </div>
-              <button class="subpage-arrow" is="paper-icon-button-light">
-              </button>
+              <button class="subpage-arrow" is="paper-icon-button-light"
+                  aria-labelledby="profile-name"
+                  aria-describedby="profileNameSecondary"></button>
             </div>
 <if expr="not chromeos">
             <template is="dom-if" if="[[showSignin_(syncStatus)]]">
@@ -184,12 +186,15 @@
               </iron-icon>
             </div>
             <div class="middle">
-              <div>$i18n{sync}</div>
-              <div class$="secondary [[getSyncStatusTextClass_(syncStatus)]]">
+              $i18n{sync}
+              <div class$="secondary [[getSyncStatusTextClass_(syncStatus)]]"
+                  id="syncSecondary">
                 [[syncStatus.statusText]]
               </div>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"></button>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                aria-label="$i18n{sync}"
+                aria-describedby="syncSecondary"></button>
           </div>
         </template>
 
@@ -200,10 +205,14 @@
             <div id="googleg-logo"></div>
           </div>
           <div class="middle">
-            <div>$i18n{personalizeGoogleServicesTitle}</div>
-            <div class="secondary">$i18n{personalizeGoogleServicesText}</div>
+            $i18n{personalizeGoogleServicesTitle}
+            <div class="secondary" id="personalizeGoogleServicesSecondary">
+              $i18n{personalizeGoogleServicesText}
+            </div>
           </div>
-          <button class="icon-external" is="paper-icon-button-light"></button>
+          <button class="icon-external" is="paper-icon-button-light"
+              aria-label="$i18n{personalizeGoogleServicesTitle}"
+              aria-describedby="personalizeGoogleServicesSecondary"></button>
         </div>
 
 <if expr="chromeos">
@@ -221,12 +230,14 @@
                on-tap="onConfigureLockTap_">
             <div class="start">
               $i18n{lockScreenTitle}
-              <div class="secondary">
+              <div class="secondary" id="lockScreenSecondary">
                 [[getPasswordState_(hasPin,
                                     prefs.settings.enable_screen_lock.value)]]
               </div>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"></button>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                aria-label="$i18n{lockScreenTitle}"
+                aria-describedby="lockScrenSecondary"></button>
           </div>
         </template>
 
@@ -278,13 +289,15 @@
         <div id="manage-other-people-subpage-trigger"
             class="settings-box" on-tap="onManageOtherPeople_" actionable>
           <div class="start">$i18n{manageOtherPeople}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{manageOtherPeople}"></button>
         </div>
 
 <if expr="not chromeos">
         <div class="settings-box" on-tap="onImportDataTap_" actionable>
           <div class="start">$i18n{importTitle}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{importTitle}"></button>
         </div>
 </if>
 
@@ -293,11 +306,13 @@
               on-tap="onManageSupervisedUsers_" actionable>
             <div class="start">
               $i18n{manageSupervisedUsers}
-              <div class="secondary">
+              <div class="secondary" id="manageSupervisedUsersSecondary">
                 $i18n{manageSupervisedUsersDescription}
               </div>
             </div>
-            <button class="icon-external" is="paper-icon-button-light"></button>
+            <button class="icon-external" is="paper-icon-button-light"
+                aria-label="$i18n{manageSupervisedUsers}"
+                aria-describedby="manageSupervisedUsersSecondary"></button>
           </div>
         </template>
       </neon-animatable>

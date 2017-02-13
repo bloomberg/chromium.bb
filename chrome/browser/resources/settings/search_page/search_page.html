@@ -105,16 +105,16 @@
             <div class="settings-box two-line continuation indented"
                 on-tap="onManageAudioHistoryTap_" actionable>
               <div class="start">
-                <div>
-                  [[i18n('searchOkGoogleAudioHistoryLabel',
-                  hotwordInfo_.userName)]]
-                </div>
-                <div class="secondary">
+                [[i18n('searchOkGoogleAudioHistoryLabel',
+                       hotwordInfo_.userName)]]
+                <div class="secondary" id="audioHistorySecondary">
                   $i18n{searchOkGoogleAudioHistorySubtext}
                 </div>
               </div>
-              <button class="icon-external" is="paper-icon-button-light">
-              </button>
+              <button class="icon-external" is="paper-icon-button-light"
+                  aria-label="[[i18n('searchOkGoogleAudioHistoryLabel',
+                                     hotwordInfo_.userName)]]"
+                  aria-describedby="audioHistorySecondary"></button>
             </div>
           </template>
         </template>
@@ -124,11 +124,13 @@
             on-tap="onManageSearchEnginesTap_" actionable>
           <div class="start">
             $i18n{searchEnginesManage}
-            <div class="secondary">
+            <div class="secondary" id="manageSearchEnginesSecondary">
               $i18n{searchEnginesManageDescription}
             </div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{searchEnginesManage}"
+              aria-describedby="manageSearchEnginesSecondary"></button>
         </div>
       </neon-animatable>
       <template is="dom-if" route-path="/searchEngines">
