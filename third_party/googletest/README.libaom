@@ -14,9 +14,11 @@ generation.
 Local Modifications:
 - Remove everything but:
   googletest-release-1.8.0/googletest/
-   CHANGES
-   CONTRIBUTORS
-   include
-   LICENSE
-   README.md
-   src
+    cmake/
+    include/
+    src/
+    CHANGES
+    CMakelists.txt
+    CONTRIBUTORS
+    LICENSE
+    README.md
