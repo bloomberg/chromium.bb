@@ -211,7 +211,7 @@ static_library("test_support") {
   if (is_win) {
     sources += [ "//chrome/app/chrome_crash_reporter_client_win.cc" ]
     public_deps += [
-      "//chrome/install_static:install_static_util",
+      "//chrome/install_static/test:test_support",
       "//components/crash/content/app",
       "//third_party/wtl",
     ]

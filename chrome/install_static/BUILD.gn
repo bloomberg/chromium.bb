@@ -91,6 +91,7 @@ test("install_static_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//chrome/install_static:install_static_util",
+    "//chrome/install_static/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

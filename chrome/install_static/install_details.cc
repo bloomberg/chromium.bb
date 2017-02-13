@@ -22,7 +22,7 @@ namespace {
 constexpr char kProductVersion[] = PRODUCT_VERSION;
 
 // This module's instance (intentionally leaked at shutdown).
-InstallDetails* g_module_details = nullptr;
+const InstallDetails* g_module_details = nullptr;
 
 }  // namespace
 
@@ -72,6 +72,14 @@ void InstallDetails::InitializeFromPayload(
   assert(!g_module_details);
   // Intentionally leaked at shutdown.
   g_module_details = new InstallDetails(payload);
+}
+
+// static
+std::unique_ptr<const InstallDetails> InstallDetails::Swap(
+    std::unique_ptr<const InstallDetails> install_details) {
+  std::unique_ptr<const InstallDetails> previous_value(g_module_details);
+  g_module_details = install_details.release();
+  return previous_value;
 }
 
 PrimaryInstallDetails::PrimaryInstallDetails() : InstallDetails(&payload_) {

@@ -14,6 +14,7 @@
 namespace install_static {
 
 class PrimaryInstallDetails;
+class ScopedInstallDetails;
 
 // Details relating to how Chrome is installed. This class and
 // PrimaryInstallDetails (below) are used in tandem so that one instance of the
@@ -133,6 +134,13 @@ class InstallDetails {
   }
 
  private:
+  friend class ScopedInstallDetails;
+
+  // Swaps this module's instance with a provided instance, returning the
+  // module's previous instance.
+  static std::unique_ptr<const InstallDetails> Swap(
+      std::unique_ptr<const InstallDetails> install_details);
+
   const Payload* const payload_;
 };
 
