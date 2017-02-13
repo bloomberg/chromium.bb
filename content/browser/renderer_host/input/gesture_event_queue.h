@@ -171,6 +171,11 @@ class CONTENT_EXPORT GestureEventQueue {
   // for an ACK, so the next gesture ACK should be ignored.
   bool ignore_next_ack_;
 
+  // True if compositor event queue is enabled. GestureEventQueue won't coalesce
+  // events and will forward events immediately (instead of waiting for previous
+  // ack).
+  bool allow_multiple_inflight_events_;
+
   // An object tracking the state of touchpad on the delivery of mouse events to
   // the renderer to filter mouse immediately after a touchpad fling canceling
   // tap.

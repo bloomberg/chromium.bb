@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -22,6 +23,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/blink/blink_features.h"
 
 using base::TimeDelta;
 using blink::WebGestureDevice;
@@ -34,9 +36,15 @@ class GestureEventQueueTest : public testing::Test,
                               public GestureEventQueueClient,
                               public TouchpadTapSuppressionControllerClient {
  public:
-  GestureEventQueueTest()
-      : acked_gesture_event_count_(0),
-        sent_gesture_event_count_(0) {}
+  GestureEventQueueTest() : GestureEventQueueTest(false) {}
+
+  GestureEventQueueTest(bool enable_compositor_event_queue)
+      : acked_gesture_event_count_(0), sent_gesture_event_count_(0) {
+    if (enable_compositor_event_queue)
+      feature_list_.InitAndEnableFeature(features::kVsyncAlignedInputEvents);
+    else
+      feature_list_.InitAndDisableFeature(features::kVsyncAlignedInputEvents);
+  }
 
   ~GestureEventQueueTest() override {}
 
@@ -197,6 +205,7 @@ class GestureEventQueueTest : public testing::Test,
   std::unique_ptr<InputEventAckState> sync_ack_result_;
   std::unique_ptr<WebGestureEvent> sync_followup_event_;
   base::MessageLoopForUI message_loop_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 #if GTEST_HAS_PARAM_TEST
@@ -205,6 +214,13 @@ class GestureEventQueueWithSourceTest
     : public GestureEventQueueTest,
       public testing::WithParamInterface<WebGestureDevice> {};
 #endif  // GTEST_HAS_PARAM_TEST
+
+class GestureEventQueueWithCompositorEventQueueTest
+    : public GestureEventQueueTest {
+ public:
+  GestureEventQueueWithCompositorEventQueueTest()
+      : GestureEventQueueTest(true) {}
+};
 
 TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   // Test coalescing of only GestureScrollUpdate events.
@@ -1178,6 +1194,56 @@ TEST_F(GestureEventQueueTest, CoalescesSyntheticScrollBeginEndEvents) {
   SimulateGestureEvent(synthetic_begin);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(1U, GestureEventQueueSize());
+}
+
+TEST_F(GestureEventQueueWithCompositorEventQueueTest,
+       MultipleGesturesInFlight) {
+  // Simulate a pinch sequence, events should be forwarded immediately.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+
+  SimulateGestureScrollUpdateEvent(8, -4, 1);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            GestureEventLastQueueEvent().type());
+
+  // Simulate 2 pinch update events.
+  SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
+  EXPECT_EQ(4U, GestureEventQueueSize());
+  SimulateGesturePinchUpdateEvent(1.3, 60, 60, 1);
+  // Events should be forwarded immediately instead of being coalesced.
+  EXPECT_EQ(5U, GestureEventQueueSize());
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            GestureEventLastQueueEvent().type());
+
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Both GestureScrollUpdate and GesturePinchUpdate should have been sent.
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+
+  // Ack the last 2 GesturePinchUpdate events.
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
 }  // namespace content

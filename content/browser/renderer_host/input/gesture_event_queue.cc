@@ -7,6 +7,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
@@ -25,6 +26,8 @@ GestureEventQueue::GestureEventQueue(
       fling_in_progress_(false),
       scrolling_in_progress_(false),
       ignore_next_ack_(false),
+      allow_multiple_inflight_events_(
+          base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)),
       touchpad_tap_suppression_controller_(
           touchpad_client,
           config.touchpad_tap_suppression_config),
@@ -138,6 +141,17 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
 
 void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
+  if (allow_multiple_inflight_events_) {
+    // Event coalescing should be handled in compositor thread event queue.
+    if (gesture_event.event.type() == WebInputEvent::GestureFlingCancel)
+      fling_in_progress_ = false;
+    else if (gesture_event.event.type() == WebInputEvent::GestureFlingStart)
+      fling_in_progress_ = true;
+    coalesced_gesture_events_.push_back(gesture_event);
+    client_->SendGestureEventImmediately(gesture_event);
+    return;
+  }
+
   switch (gesture_event.event.type()) {
     case WebInputEvent::GestureFlingCancel:
       fling_in_progress_ = false;
@@ -190,13 +204,29 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     return;
   }
 
-  // It's possible that the ack for the second event in an in-flight, coalesced
-  // Gesture{Scroll,Pinch}Update pair is received prior to the first event ack.
   size_t event_index = 0;
-  if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
-      coalesced_gesture_events_[0].event.type() != type &&
-      coalesced_gesture_events_[1].event.type() == type) {
-    event_index = 1;
+  if (allow_multiple_inflight_events_) {
+    // Events are forwarded immediately.
+    // Assuming events of the same type are acked in a FIFO order, but it's
+    // still possible that GestureFling events are acked before
+    // GestureScroll/Pinch as they don't need to go through the queue in
+    // |InputHandlerProxy::HandleInputEventWithLatencyInfo|.
+    for (size_t i = 0; i < coalesced_gesture_events_.size(); ++i) {
+      if (coalesced_gesture_events_[i].event.type() == type) {
+        event_index = i;
+        break;
+      }
+    }
+  } else {
+    // Events are forwarded one-by-one.
+    // It's possible that the ack for the second event in an in-flight,
+    // coalesced Gesture{Scroll,Pinch}Update pair is received prior to the first
+    // event ack.
+    if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
+        coalesced_gesture_events_[0].event.type() != type &&
+        coalesced_gesture_events_[1].event.type() == type) {
+      event_index = 1;
+    }
   }
   GestureEventWithLatencyInfo event_with_latency =
       coalesced_gesture_events_[event_index];
@@ -219,6 +249,10 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   DCHECK_LT(event_index, coalesced_gesture_events_.size());
   coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
                                   event_index);
+
+  // Events have been forwarded already.
+  if (allow_multiple_inflight_events_)
+    return;
 
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
@@ -356,6 +390,13 @@ void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
 }
 
 size_t GestureEventQueue::EventsInFlightCount() const {
+  if (allow_multiple_inflight_events_) {
+    // Currently unused, can be removed if compositor event queue was enabled by
+    // default.
+    NOTREACHED();
+    return coalesced_gesture_events_.size();
+  }
+
   if (coalesced_gesture_events_.empty())
     return 0;
 
