@@ -5,7 +5,9 @@
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
@@ -28,8 +30,12 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
       base::TimeDelta::FromMilliseconds(kMobileTouchAckTimeoutDelayMs);
 
 #if defined(OS_ANDROID)
-  // For historical reasons only Android enables the touch ack timeout.
-  config.touch_ack_timeout_supported = true;
+  // For historical reasons only Android enables the touch ack timeout. The
+  // touch ack timeout will be replaced by an intervention which forces events
+  // to be non-blocking if the main thread is busy. This is currently behind a
+  // flag.
+  config.touch_ack_timeout_supported = !base::FeatureList::IsEnabled(
+      features::kMainThreadBusyScrollIntervention);
 #else
   config.touch_ack_timeout_supported = false;
 #endif
