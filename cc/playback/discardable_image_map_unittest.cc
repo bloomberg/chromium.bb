@@ -535,11 +535,17 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
   // | x |   | x |   |
   // |---|---|---|---|
   sk_sp<SkImage> discardable_image[4][4];
+
+  // Skia doesn't allow shader instantiation with non-invertible local
+  // transforms, so we can't let the scale drop all the way to 0.
+  static constexpr float kMinScale = 0.1f;
+
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
-        SkMatrix scale = SkMatrix::MakeScale(x * 0.5f, y * 0.5f);
+        SkMatrix scale = SkMatrix::MakeScale(std::max(x * 0.5f, kMinScale),
+                                             std::max(y * 0.5f, kMinScale));
         SkPaint paint;
         paint.setShader(discardable_image[y][x]->makeShader(
             SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &scale));
@@ -570,8 +576,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
                                                                 << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
-        EXPECT_EQ(x * 0.5f, images[0].scale.fWidth);
-        EXPECT_EQ(y * 0.5f, images[0].scale.fHeight);
+        EXPECT_EQ(std::max(x * 0.5f, kMinScale), images[0].scale.fWidth);
+        EXPECT_EQ(std::max(y * 0.5f, kMinScale), images[0].scale.fHeight);
       } else {
         EXPECT_EQ(0u, images.size()) << x << " " << y;
       }
