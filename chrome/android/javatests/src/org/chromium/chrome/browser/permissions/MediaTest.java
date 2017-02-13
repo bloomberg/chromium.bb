@@ -9,15 +9,15 @@ import android.support.test.filters.MediumTest;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * Test suite for media permissions requests.
  */
 @RetryOnFailure
 public class MediaTest extends PermissionTestCaseBase {
-    private static final String FAKE_DEVICE = ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM;
+    private static final String FAKE_DEVICE = ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM;
     private static final String TEST_FILE = "/content/test/data/android/media_permissions.html";
 
     public MediaTest() {}

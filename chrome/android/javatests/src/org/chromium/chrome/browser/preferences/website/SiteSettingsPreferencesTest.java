@@ -13,7 +13,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -445,7 +445,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testCameraBlocked() throws Exception {
         setEnableCamera(false);
 
@@ -463,7 +463,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testMicBlocked() throws Exception {
         setEnableMic(false);
 
@@ -481,7 +481,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testCameraNotBlocked() throws Exception {
         setEnableCamera(true);
 
@@ -501,7 +501,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testMicNotBlocked() throws Exception {
         setEnableCamera(true);
 

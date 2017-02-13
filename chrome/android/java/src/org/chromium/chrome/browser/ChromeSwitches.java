@@ -118,13 +118,6 @@ public abstract class ChromeSwitches {
     public static final String GOOGLE_BASE_URL = "google-base-url";
 
     /**
-     * Use fake device for Media Stream to replace actual camera and microphone.
-     * Native switch - switches::kUseFakeDeviceForMediaStream.
-     */
-    public static final String USE_FAKE_DEVICE_FOR_MEDIA_STREAM =
-            "use-fake-device-for-media-stream";
-
-    /**
      * Disable domain reliability
      * Native switch - switches::kDisableDomainReliability
      */
