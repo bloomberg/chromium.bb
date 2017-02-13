@@ -758,18 +758,13 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bs,
 #endif  // CONFIG_INTRA_INTERP
       } else {
         base2 = y >> 8;
-        if (base2 >= 0) {
-          shift2 = y & 0xFF;
+        shift2 = y & 0xFF;
 #if CONFIG_INTRA_INTERP
-          val =
-              intra_subpel_interp(base2, shift2, left, 0, bs - 1, filter_type);
+        val = intra_subpel_interp(base2, shift2, left, -1, bs - 1, filter_type);
 #else
-          val = left[base2] * (256 - shift2) + left[base2 + 1] * shift2;
-          val = ROUND_POWER_OF_TWO(val, 8);
+        val = left[base2] * (256 - shift2) + left[base2 + 1] * shift2;
+        val = ROUND_POWER_OF_TWO(val, 8);
 #endif  // CONFIG_INTRA_INTERP
-        } else {
-          val = left[0];
-        }
       }
       dst[c] = clip_pixel(val);
     }
@@ -1053,18 +1048,14 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bs,
         x = c + 1;
         y = (r << 8) - x * dy;
         base = y >> 8;
-        if (base >= 0) {
-          shift = y & 0xFF;
+        shift = y & 0xFF;
 #if CONFIG_INTRA_INTERP
-          val = highbd_intra_subpel_interp(base, shift, left, 0, bs - 1,
-                                           filter_type);
+        val = highbd_intra_subpel_interp(base, shift, left, -1, bs - 1,
+                                         filter_type);
 #else
-          val = left[base] * (256 - shift) + left[base + 1] * shift;
-          val = ROUND_POWER_OF_TWO(val, 8);
+        val = left[base] * (256 - shift) + left[base + 1] * shift;
+        val = ROUND_POWER_OF_TWO(val, 8);
 #endif  // CONFIG_INTRA_INTERP
-        } else {
-          val = left[0];
-        }
       }
       dst[c] = clip_pixel_highbd(val, bd);
     }
@@ -1559,9 +1550,10 @@ static void build_intra_predictors_high(
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-  DECLARE_ALIGNED(16, uint16_t, left_col[MAX_TX_SIZE * 2]);
+  DECLARE_ALIGNED(16, uint16_t, left_data[MAX_TX_SIZE * 2 + 16]);
   DECLARE_ALIGNED(16, uint16_t, above_data[MAX_TX_SIZE * 2 + 16]);
   uint16_t *above_row = above_data + 16;
+  uint16_t *left_col = left_data + 16;
   const uint16_t *const_above_row = above_row;
   const int bs = tx_size_wide[tx_size];
   int need_left = extend_modes[mode] & NEED_LEFT;
@@ -1683,6 +1675,7 @@ static void build_intra_predictors_high(
   if (need_above_left) {
     above_row[-1] =
         n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : base + 1) : base - 1;
+    left_col[-1] = above_row[-1];
   }
 
 #if CONFIG_FILTER_INTRA
@@ -1727,10 +1720,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int n_left_px, int n_bottomleft_px,
                                    int plane) {
   int i;
-  DECLARE_ALIGNED(16, uint8_t, left_col[MAX_TX_SIZE * 2]);
   const uint8_t *above_ref = ref - ref_stride;
+  DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 16]);
   DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 16]);
   uint8_t *above_row = above_data + 16;
+  uint8_t *left_col = left_data + 16;
   const uint8_t *const_above_row = above_row;
   const int bs = tx_size_wide[tx_size];
   int need_left = extend_modes[mode] & NEED_LEFT;
@@ -1850,6 +1844,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   if (need_above_left) {
     above_row[-1] = n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : 129) : 127;
+    left_col[-1] = above_row[-1];
   }
 
 #if CONFIG_FILTER_INTRA
