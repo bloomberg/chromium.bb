@@ -308,7 +308,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertContains(err, 'No tests to run.\n')
 
     def test_no_tests_found_3(self):
-        details, err, _ = logging_run(['--run-chunk', '5:400', 'foo/bar.html'], tests_included=True)
+        details, err, _ = logging_run(['--shard-index', '4', '--total-shards', '400', 'foo/bar.html'], tests_included=True)
         self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertContains(err, 'No tests to run.\n')
 
@@ -446,34 +446,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         self.assertContains(err, "All 16 tests ran as expected (8 passed, 8 didn't).\n")
 
-    def test_run_chunk(self):
-        # Test that we wrap around if the number of tests is not evenly divisible by the chunk size
-        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        chunk_tests_run = get_tests_run(['--run-chunk', '1:3', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(['passes/text.html', 'passes/error.html', 'passes/image.html'], chunk_tests_run)
-
-    def test_run_part(self):
-        # Test that we actually select the right part
-        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--run-part', '1:2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(['passes/error.html', 'passes/image.html'], tests_run)
-
-        # Test that we wrap around if the number of tests is not evenly divisible by the chunk size
-        # (here we end up with 3 parts, each with 2 tests, and we only have 4 tests total, so the
-        # last part repeats the first two tests).
-        chunk_tests_run = get_tests_run(['--order', 'natural', '--run-part', '3:3'] + tests_to_run)
-        self.assertEqual(['passes/error.html', 'passes/image.html'], chunk_tests_run)
-
     def test_run_singly(self):
         batch_tests_run = get_test_batches(['--run-singly'])
         for batch in batch_tests_run:
             self.assertEqual(len(batch), 1, '%s had too many tests' % ', '.join(batch))
-
-    def test_sharding(self):
-        # Test that we actually select the right part
-        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_skip_failing_tests(self):
         # This tests that we skip both known failing and known flaky tests. Because there are
@@ -526,17 +502,45 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
 
-    def test_gtest_shard_index(self):
+    def test_sharding_even(self):
+        # Test that we actually select the right part
+        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
+        # Shard 0 of 2
+        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
+        # Shard 1 of 2
+        tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
+
+    def test_sharding_uneven(self):
+        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html',
+                        'perf/foo/test.html']
+        # Shard 0 of 3
+        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
+        # Shard 1 of 3
+        tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
+        # Shard 2 of 3
+        tests_run = get_tests_run(['--shard-index', '2', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['perf/foo/test.html'])
+
+    def test_sharding_incorrect_arguments(self):
+        self.assertRaises(ValueError, get_tests_run, ['--shard-index', '3'])
+        self.assertRaises(ValueError, get_tests_run, ['--total-shards', '3'])
+        self.assertRaises(ValueError, get_tests_run, ['--shard-index', '3', '--total-shards', '3'])
+
+    def test_sharding_environ(self):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
         host = MockHost()
 
         host.environ['GTEST_SHARD_INDEX'] = '0'
-        host.environ['GTEST_TOTAL_SHARDS'] = '1'
+        host.environ['GTEST_TOTAL_SHARDS'] = '2'
         shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
         self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
 
         host.environ['GTEST_SHARD_INDEX'] = '1'
-        host.environ['GTEST_TOTAL_SHARDS'] = '1'
+        host.environ['GTEST_TOTAL_SHARDS'] = '2'
         shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
         self.assertEqual(shard_1_tests_run, ['passes/platform_image.html', 'passes/text.html'])
 

@@ -362,12 +362,6 @@ def parse_args(args):
                 help=("Number of times to retry failures, default is 3. Only relevant when "
                       "failure retries are enabled.")),
             optparse.make_option(
-                "--run-chunk",
-                help="Run a specified chunk (n:l), the nth of len l, of the layout tests"),
-            optparse.make_option(
-                "--run-part",
-                help="Run a specified part (n:m), the nth of m parts, of the layout tests"),
-            optparse.make_option(
                 "--total-shards",
                 type=int,
                 help=('Total number of shards being used for this test run. '
@@ -545,14 +539,10 @@ def _set_up_derived_options(port, options, args):
     if not options.skipped:
         options.skipped = 'default'
 
-    if not options.run_part:
-        if not options.total_shards and 'GTEST_TOTAL_SHARDS' in port.host.environ:
-            options.total_shards = int(port.host.environ['GTEST_TOTAL_SHARDS']) + 1
-        if not options.shard_index and 'GTEST_SHARD_INDEX' in port.host.environ:
-            options.shard_index = int(port.host.environ['GTEST_SHARD_INDEX'])
-        if options.shard_index is not None and options.total_shards is not None:
-            options.run_part = '%d:%d' % (int(options.shard_index) + 1,
-                                          int(options.total_shards))
+    if not options.total_shards and 'GTEST_TOTAL_SHARDS' in port.host.environ:
+        options.total_shards = int(port.host.environ['GTEST_TOTAL_SHARDS'])
+    if not options.shard_index and 'GTEST_SHARD_INDEX' in port.host.environ:
+        options.shard_index = int(port.host.environ['GTEST_SHARD_INDEX'])
 
     if not options.seed:
         options.seed = port.host.time()

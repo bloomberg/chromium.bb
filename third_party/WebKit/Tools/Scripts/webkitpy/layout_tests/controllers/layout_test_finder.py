@@ -29,6 +29,7 @@
 import errno
 import json
 import logging
+import math
 import re
 
 from webkitpy.layout_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
@@ -176,60 +177,30 @@ class LayoutTestFinder(object):
         return tests_to_skip
 
     def split_into_chunks(self, test_names):
-        """split into a list to run and a set to skip, based on --run-chunk and --run-part."""
-        if not self._options.run_chunk and not self._options.run_part:
+        """split into a list to run and a set to skip, based on --shard_index and --total_shards."""
+        if self._options.shard_index is None and self._options.total_shards is None:
             return test_names, set()
 
-        # If the user specifies they just want to run a subset of the tests,
-        # just grab a subset of the non-skipped tests.
-        chunk_value = self._options.run_chunk or self._options.run_part
-        try:
-            (chunk_num, chunk_len) = chunk_value.split(":")
-            chunk_num = int(chunk_num)
-            assert chunk_num >= 0
-            test_size = int(chunk_len)
-            assert test_size > 0
-        except AssertionError:
-            _log.critical("invalid chunk '%s'", chunk_value)
-            return (None, None)
+        if self._options.shard_index is None:
+            raise ValueError('Must provide --shard-index or GTEST_SHARD_INDEX when sharding.')
+        if self._options.total_shards is None:
+            raise ValueError('Must provide --total-shards or GTEST_TOTAL_SHARDS when sharding.')
+        if self._options.shard_index >= self._options.total_shards:
+            raise ValueError('Shard index (%d) should be less than total shards (%d)!' % (
+                self._options.shard_index, self._options.total_shards))
 
-        # Get the number of tests
-        num_tests = len(test_names)
+        return self._split_into_chunks(test_names, self._options.shard_index, self._options.total_shards)
 
-        # Get the start offset of the slice.
-        if self._options.run_chunk:
-            chunk_len = test_size
-            # In this case chunk_num can be really large. We need
-            # to make the slave fit in the current number of tests.
-            slice_start = (chunk_num * chunk_len) % num_tests
-        else:
-            # Validate the data.
-            assert test_size <= num_tests
-            assert chunk_num <= test_size
+    @staticmethod
+    def _split_into_chunks(test_names, index, count):
+        chunk_size = int(math.ceil(len(test_names) * 1.0 / count))
 
-            # To count the chunk_len, and make sure we don't skip
-            # some tests, we round to the next value that fits exactly
-            # all the parts.
-            rounded_tests = num_tests
-            if rounded_tests % test_size != 0:
-                rounded_tests = (num_tests + test_size - (num_tests % test_size))
+        chunk_start = index * chunk_size
+        chunk_end = (index + 1) * chunk_size
 
-            chunk_len = rounded_tests / test_size
-            slice_start = chunk_len * (chunk_num - 1)
-            # It does not mind if we go over test_size.
+        tests_to_run = test_names[chunk_start:chunk_end]
+        other_tests = test_names[:chunk_start] + test_names[chunk_end:]
 
-        # Get the end offset of the slice.
-        slice_end = min(num_tests, slice_start + chunk_len)
+        _log.debug('chunk slice [%d:%d] of %d is %d tests', chunk_start, chunk_end, len(test_names), len(tests_to_run))
 
-        tests_to_run = test_names[slice_start:slice_end]
-
-        _log.debug('chunk slice [%d:%d] of %d is %d tests', slice_start, slice_end, num_tests, (slice_end - slice_start))
-
-        # If we reached the end and we don't have enough tests, we run some
-        # from the beginning.
-        if slice_end - slice_start < chunk_len:
-            extra = chunk_len - (slice_end - slice_start)
-            _log.debug('   last chunk is partial, appending [0:%d]', extra)
-            tests_to_run.extend(test_names[0:extra])
-
-        return (tests_to_run, set(test_names) - set(tests_to_run))
+        return tests_to_run, other_tests

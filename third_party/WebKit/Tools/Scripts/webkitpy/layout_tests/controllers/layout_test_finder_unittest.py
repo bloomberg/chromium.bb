@@ -85,3 +85,36 @@ class LayoutTestFinderTests(unittest.TestCase):
 
         tests = finder.find_tests(fastest_percentile=90, args=[])
         self.assertEqual(set(tests[1]), set(['fast/css/1.html']))
+
+    def test_split_chunks(self):
+        split = layout_test_finder.LayoutTestFinder._split_into_chunks  # pylint: disable=protected-access
+
+        tests = [1, 2, 3, 4]
+        self.assertEqual(([1, 2, 3, 4], []), split(tests, 0, 1))
+
+        self.assertEqual(([1, 2], [3, 4]), split(tests, 0, 2))
+        self.assertEqual(([3, 4], [1, 2]), split(tests, 1, 2))
+
+        self.assertEqual(([1, 2], [3, 4]), split(tests, 0, 3))
+        self.assertEqual(([3, 4], [1, 2]), split(tests, 1, 3))
+        self.assertEqual(([], [1, 2, 3, 4]), split(tests, 2, 3))
+
+        tests = [1, 2, 3, 4, 5]
+        self.assertEqual(([1, 2, 3, 4, 5], []), split(tests, 0, 1))
+
+        self.assertEqual(([1, 2, 3], [4, 5]), split(tests, 0, 2))
+        self.assertEqual(([4, 5], [1, 2, 3]), split(tests, 1, 2))
+
+        self.assertEqual(([1, 2], [3, 4, 5]), split(tests, 0, 3))
+        self.assertEqual(([3, 4], [1, 2, 5]), split(tests, 1, 3))
+        self.assertEqual(([5], [1, 2, 3, 4]), split(tests, 2, 3))
+
+        tests = [1, 2, 3, 4, 5, 6]
+        self.assertEqual(([1, 2, 3, 4, 5, 6], []), split(tests, 0, 1))
+
+        self.assertEqual(([1, 2, 3], [4, 5, 6]), split(tests, 0, 2))
+        self.assertEqual(([4, 5, 6], [1, 2, 3]), split(tests, 1, 2))
+
+        self.assertEqual(([1, 2], [3, 4, 5, 6]), split(tests, 0, 3))
+        self.assertEqual(([3, 4], [1, 2, 5, 6]), split(tests, 1, 3))
+        self.assertEqual(([5, 6], [1, 2, 3, 4]), split(tests, 2, 3))
