@@ -9,6 +9,20 @@ from common import IntegrationTest
 
 class Bypass(IntegrationTest):
 
+  # Ensure Chrome does not use Data Saver for block-once, but does use Data
+  # Saver for a subsequent request.
+  def testBlockOnce(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://check.googlezip.net/blocksingle/')
+      responses = t.GetHTTPResponses()
+      self.assertEqual(2, len(responses))
+      for response in responses:
+        if response.url == "http://check.googlezip.net/image.png":
+          self.assertHasChromeProxyViaHeader(response)
+        else:
+          self.assertNotHasChromeProxyViaHeader(response)
+
   # Ensure Chrome does not use Data Saver for block=0, which uses the default
   # proxy retry delay.
   def testBypass(self):
