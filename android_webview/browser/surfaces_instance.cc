@@ -16,9 +16,9 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/rect.h"
@@ -51,9 +51,9 @@ SurfacesInstance::SurfacesInstance()
 
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
-  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_factory_.reset(
-      new cc::SurfaceFactory(frame_sink_id_, surface_manager_.get(), this));
+  support_.reset(new cc::CompositorFrameSinkSupport(
+      this, surface_manager_.get(), frame_sink_id_,
+      true /* submits_to_display_compositor */));
 
   begin_frame_source_.reset(new cc::StubBeginFrameSource);
   std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
@@ -75,17 +75,12 @@ SurfacesInstance::SurfacesInstance()
 
   DCHECK(!g_surfaces_instance);
   g_surfaces_instance = this;
-
 }
 
 SurfacesInstance::~SurfacesInstance() {
   DCHECK_EQ(g_surfaces_instance, this);
   g_surfaces_instance = nullptr;
-
   DCHECK(child_ids_.empty());
-  surface_factory_->EvictSurface();
-
-  surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void SurfacesInstance::DisplayOutputSurfaceLost() {
@@ -137,8 +132,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
     root_id_ = surface_id_allocator_->GenerateId();
     display_->SetLocalSurfaceId(root_id_, 1.f);
   }
-  surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
-                                          cc::SurfaceFactory::DrawCallback());
+  support_->SubmitCompositorFrame(root_id_, std::move(frame));
 
   display_->Resize(viewport);
   display_->DrawAndSwap();
@@ -163,20 +157,19 @@ void SurfacesInstance::RemoveChildId(const cc::SurfaceId& child_id) {
 void SurfacesInstance::SetEmptyRootFrame() {
   cc::CompositorFrame empty_frame;
   empty_frame.metadata.referenced_surfaces = child_ids_;
-  surface_factory_->SubmitCompositorFrame(root_id_, std::move(empty_frame),
-                                          cc::SurfaceFactory::DrawCallback());
+  support_->SubmitCompositorFrame(root_id_, std::move(empty_frame));
 }
 
-void SurfacesInstance::ReturnResources(
+void SurfacesInstance::DidReceiveCompositorFrameAck() {}
+
+void SurfacesInstance::OnBeginFrame(const cc::BeginFrameArgs& args) {}
+
+void SurfacesInstance::WillDrawSurface() {}
+
+void SurfacesInstance::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   // Root surface should have no resources to return.
   CHECK(resources.empty());
-}
-
-void SurfacesInstance::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
-  // Parent compsitor calls DrawAndSwap directly and doesn't use
-  // BeginFrameSource.
 }
 
 }  // namespace android_webview
