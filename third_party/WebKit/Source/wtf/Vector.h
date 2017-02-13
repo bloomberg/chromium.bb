@@ -57,6 +57,14 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 template <typename T, size_t inlineBuffer, typename Allocator>
 class Deque;
 
+//
+// Vector Traits
+//
+
+// Bunch of traits for Vector are defined here, with which you can customize
+// Vector's behavior. In most cases the default traits are appropriate, so you
+// usually don't have to specialize those traits by yourself.
+
 template <bool needsDestruction, typename T>
 struct VectorDestructor;
 
@@ -279,6 +287,9 @@ struct VectorElementComparer<std::unique_ptr<T>> {
   }
 };
 
+// A collection of all the traits used by Vector. This is basically an
+// implementation detail of Vector, and you should specialize individual traits
+// defined above, if you want to customize Vector's behavior.
 template <typename T>
 struct VectorTypeOperations {
   STATIC_ONLY(VectorTypeOperations);
@@ -326,6 +337,16 @@ struct VectorTypeOperations {
                                                     std::forward<U>(right));
   }
 };
+
+//
+// VectorBuffer
+//
+
+// VectorBuffer is an implementation detail of Vector and Deque. It manages
+// Vector's underlying buffer, and does operations like allocation or
+// expansion.
+//
+// Not meant for general consumption.
 
 template <typename T, bool hasInlineCapacity, typename Allocator>
 class VectorBufferBase {
@@ -795,12 +816,17 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   template <typename U, size_t inlineBuffer, typename V>
   friend class Deque;
 };
-// Heap-allocated vectors with no inlineCapacity never need a destructor.
+
+//
+// Vector
+//
+
 template <typename T,
           size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
 class Vector
     : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
+      // Heap-allocated vectors with no inlineCapacity never need a destructor.
       public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
                                    (INLINE_CAPACITY == 0) &&
                                        Allocator::isGarbageCollected> {
@@ -1039,6 +1065,10 @@ class Vector
   using Base::allocateBuffer;
   using Base::allocationSize;
 };
+
+//
+// Vector out-of-line implementation
+//
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>::Vector(const Vector& other)
