@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -610,7 +609,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
       SchemaAllowsAnyAdditionalItems(schema, &additional_properties_schema);
 
   const base::DictionaryValue* pattern_properties = NULL;
-  ScopedVector<re2::RE2> pattern_properties_pattern;
+  std::vector<std::unique_ptr<re2::RE2>> pattern_properties_pattern;
   std::vector<const base::DictionaryValue*> pattern_properties_schema;
 
   if (schema->GetDictionary(schema::kPatternProperties, &pattern_properties)) {
@@ -628,7 +627,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
       }
       const base::DictionaryValue* prop_schema = NULL;
       CHECK(it.value().GetAsDictionary(&prop_schema));
-      pattern_properties_pattern.push_back(prop_pattern);
+      pattern_properties_pattern.push_back(base::WrapUnique(prop_pattern));
       pattern_properties_schema.push_back(prop_schema);
     }
   }
