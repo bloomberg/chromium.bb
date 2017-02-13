@@ -24,10 +24,16 @@ import android.widget.FrameLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.NativePageHost;
+import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -42,7 +48,9 @@ import java.lang.annotation.RetentionPolicy;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-public class BottomSheet extends FrameLayout implements FadingBackgroundView.FadingViewObserver {
+
+public class BottomSheet
+        extends FrameLayout implements FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
     @IntDef({SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL})
     @Retention(RetentionPolicy.SOURCE)
@@ -325,6 +333,7 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
+     * @param activity An activity for loading native pages.
      * @param root The container of the bottom sheet.
      * @param controlContainer The container for the toolbar.
      */
@@ -379,6 +388,45 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
     }
 
+    @Override
+    public int loadUrl(LoadUrlParams params) {
+        // Native page URLs in this context do not need to communicate with the tab.
+        if (NativePageFactory.isNativePageUrl(params.getUrl(), isIncognito())) {
+            return TabLoadStatus.PAGE_LOAD_FAILED;
+        }
+
+        // In all non-native cases, minimize the sheet.
+        setSheetState(SHEET_STATE_PEEK, true);
+
+        assert mTabModelSelector != null;
+
+        // First try to get the tab behind the sheet.
+        if (mTabModelSelector.getCurrentTab() != null) {
+            return mTabModelSelector.getCurrentTab().loadUrl(params);
+        }
+
+        // If no tab is active behind the sheet, open a new one.
+        mTabModelSelector.openNewTab(
+                params, TabModel.TabLaunchType.FROM_CHROME_UI, null, isIncognito());
+        return TabLoadStatus.DEFAULT_PAGE_LOAD;
+    }
+
+    @Override
+    public boolean isIncognito() {
+        if (getActiveTab() == null) return false;
+        return getActiveTab().isIncognito();
+    }
+
+    @Override
+    public int getParentId() {
+        return Tab.INVALID_TAB_ID;
+    }
+
+    @Override
+    public Tab getActiveTab() {
+        return mTabModelSelector.getCurrentTab();
+    }
+
     /**
      * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
      * width of the screen and that the toolbar is at the top of the bottom sheet.
@@ -399,8 +447,7 @@ public class BottomSheet extends FrameLayout implements FadingBackgroundView.Fad
     private void onExitPeekState() {
         if (mSuggestionsContent == null) {
             mSuggestionsContent = new SuggestionsBottomSheetContent(
-                        mTabModelSelector.getCurrentTab().getActivity(),
-                        mTabModelSelector.getCurrentTab(), mTabModelSelector);
+                    mTabModelSelector.getCurrentTab().getActivity(), this, mTabModelSelector);
         }
 
         showContent(mSuggestionsContent);

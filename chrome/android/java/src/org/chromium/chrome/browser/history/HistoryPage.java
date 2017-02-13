@@ -9,8 +9,8 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Native page for managing browsing history.
@@ -23,14 +23,14 @@ public class HistoryPage extends BasicNativePage {
      * Create a new instance of the history page.
      * @param activity The {@link Activity} used to get context and instantiate the
      *                 {@link HistoryManager}.
-     * @param tab The tab to load URLs.
+     * @param host A NativePageHost to load URLs.
      */
-    public HistoryPage(Activity activity, Tab tab) {
-        super(activity, tab);
+    public HistoryPage(Activity activity, NativePageHost host) {
+        super(activity, host);
     }
 
     @Override
-    protected void initialize(Activity activity, final Tab tab) {
+    protected void initialize(Activity activity, final NativePageHost host) {
         mHistoryManager = new HistoryManager(activity, this);
         mTitle = activity.getString(R.string.menu_history);
     }

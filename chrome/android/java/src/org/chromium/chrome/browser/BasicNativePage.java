@@ -11,7 +11,6 @@ import android.widget.FrameLayout.LayoutParams;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -20,16 +19,16 @@ import org.chromium.content_public.browser.LoadUrlParams;
 public abstract class BasicNativePage implements NativePage {
 
     private final Activity mActivity;
-    private final Tab mTab;
+    private final NativePageHost mHost;
     private final int mBackgroundColor;
     private final int mThemeColor;
 
     private String mUrl;
 
-    public BasicNativePage(Activity activity, Tab tab) {
-        initialize(activity, tab);
+    public BasicNativePage(Activity activity, NativePageHost host) {
+        initialize(activity, host);
         mActivity = activity;
-        mTab = tab;
+        mHost = host;
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 R.color.default_primary_color);
         mThemeColor = ApiCompatibilityUtils.getColor(
@@ -49,7 +48,7 @@ public abstract class BasicNativePage implements NativePage {
     /**
      * Subclasses shall implement this method to initialize the UI that they hold.
      */
-    protected abstract void initialize(Activity activity, Tab tab);
+    protected abstract void initialize(Activity activity, NativePageHost host);
 
     @Override
     public abstract View getView();
@@ -87,6 +86,6 @@ public abstract class BasicNativePage implements NativePage {
      */
     public void onStateChange(String url) {
         if (url.equals(mUrl)) return;
-        mTab.loadUrl(new LoadUrlParams(url));
+        mHost.loadUrl(new LoadUrlParams(url));
     }
 }

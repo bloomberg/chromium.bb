@@ -9,8 +9,8 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * A native page holding a {@link BookmarkManager} on _tablet_.
@@ -22,14 +22,14 @@ public class BookmarkPage extends BasicNativePage {
     /**
      * Create a new instance of the bookmarks page.
      * @param activity The activity to get context and manage fragments.
-     * @param tab The tab to load urls.
+     * @param host A NativePageHost to load urls.
      */
-    public BookmarkPage(Activity activity, Tab tab) {
-        super(activity, tab);
+    public BookmarkPage(Activity activity, NativePageHost host) {
+        super(activity, host);
     }
 
     @Override
-    protected void initialize(Activity activity, Tab tab) {
+    protected void initialize(Activity activity, NativePageHost host) {
         mManager = new BookmarkManager(activity, false);
         mManager.setBasicNativePage(this);
         mTitle = activity.getString(R.string.bookmarks);

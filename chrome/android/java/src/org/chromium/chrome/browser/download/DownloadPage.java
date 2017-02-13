@@ -13,9 +13,9 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
-import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Native page for managing downloads handled through Chrome.
@@ -29,17 +29,17 @@ public class DownloadPage extends BasicNativePage {
     /**
      * Create a new instance of the downloads page.
      * @param activity The activity to get context and manage fragments.
-     * @param tab The tab to load urls.
+     * @param host A NativePageHost to load urls.
      */
-    public DownloadPage(Activity activity, Tab tab) {
-        super(activity, tab);
+    public DownloadPage(Activity activity, NativePageHost host) {
+        super(activity, host);
     }
 
     @Override
-    protected void initialize(Activity activity, final Tab tab) {
+    protected void initialize(Activity activity, final NativePageHost host) {
         ThreadUtils.assertOnUiThread();
 
-        mManager = new DownloadManagerUi(activity, tab.isIncognito(), activity.getComponentName());
+        mManager = new DownloadManagerUi(activity, host.isIncognito(), activity.getComponentName());
         mManager.setBasicNativePage(this);
         mTitle = activity.getString(R.string.download_manager_ui_all_downloads);
 
@@ -53,7 +53,7 @@ public class DownloadPage extends BasicNativePage {
             public void onActivityStateChange(Activity activity, int newState) {
                 if (newState == ActivityState.RESUMED) {
                     DownloadUtils.checkForExternallyRemovedDownloads(
-                            mManager.getBackendProvider(), tab.isIncognito());
+                            mManager.getBackendProvider(), host.isIncognito());
                 }
             }
         };

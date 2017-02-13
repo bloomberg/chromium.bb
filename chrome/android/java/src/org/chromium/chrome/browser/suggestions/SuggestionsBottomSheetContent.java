@@ -10,6 +10,7 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
@@ -17,7 +18,6 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -36,7 +36,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final TileGroup.Delegate mTileGroupDelegate;
 
     public SuggestionsBottomSheetContent(
-            final ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
+            final ChromeActivity activity, NativePageHost host, TabModelSelector tabModelSelector) {
         mRecyclerView = (NewTabPageRecyclerView) LayoutInflater.from(activity).inflate(
                 R.layout.new_tab_page_recycler_view, null, false);
 
@@ -45,11 +45,10 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         mSnippetsBridge = new SnippetsBridge(profile);
         SuggestionsNavigationDelegate navigationDelegate =
-                new SuggestionsNavigationDelegateImpl(activity, profile, tab, tabModelSelector);
+                new SuggestionsNavigationDelegateImpl(activity, profile, host, tabModelSelector);
 
         mSuggestionsManager = new SuggestionsUiDelegateImpl(
-                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, tab);
-
+                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, host);
         mContextMenuManager = new ContextMenuManager(activity, navigationDelegate, mRecyclerView);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         mSuggestionsManager.addDestructionObserver(new DestructionObserver() {

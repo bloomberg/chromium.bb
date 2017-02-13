@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,7 +41,7 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
     private final Profile mProfile;
 
-    private final Tab mTab;
+    private final NativePageHost mHost;
 
     private FaviconHelper mFaviconHelper;
     private LargeIconBridge mLargeIconBridge;
@@ -50,13 +50,14 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
     public SuggestionsUiDelegateImpl(SuggestionsSource suggestionsSource,
             SuggestionsMetricsReporter metricsReporter,
-            SuggestionsNavigationDelegate navigationDelegate, Profile profile, Tab currentTab) {
+            SuggestionsNavigationDelegate navigationDelegate, Profile profile,
+            NativePageHost host) {
         mSuggestionsSource = suggestionsSource;
         mSuggestionsMetricsReporter = metricsReporter;
         mSuggestionsNavigationDelegate = navigationDelegate;
 
         mProfile = profile;
-        mTab = currentTab;
+        mHost = host;
     }
 
     @Override
@@ -76,8 +77,11 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
     public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
             boolean isTemporary, IconAvailabilityCallback callback) {
         if (mIsDestroyed) return;
-        getFaviconHelper().ensureIconIsAvailable(mProfile, mTab.getWebContents(), pageUrl, iconUrl,
-                isLargeIcon, isTemporary, callback);
+        if (mHost.getActiveTab() != null) {
+            getFaviconHelper().ensureIconIsAvailable(mProfile,
+                    mHost.getActiveTab().getWebContents(), pageUrl, iconUrl, isLargeIcon,
+                    isTemporary, callback);
+        }
     }
 
     @Override
