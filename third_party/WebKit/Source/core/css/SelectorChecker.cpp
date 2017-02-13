@@ -884,7 +884,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         if (context.inRightmostCompound) {
           m_elementStyle->setAffectedByDrag();
         } else {
-          m_elementStyle->setUnique(true);
+          m_elementStyle->setUnique();
           element.setChildrenOrSiblingsAffectedByDrag();
         }
       }
@@ -896,7 +896,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         if (context.inRightmostCompound) {
           m_elementStyle->setAffectedByFocus();
         } else {
-          m_elementStyle->setUnique(true);
+          m_elementStyle->setUnique();
           element.setChildrenOrSiblingsAffectedByFocus();
         }
       }
@@ -908,7 +908,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         if (context.inRightmostCompound) {
           m_elementStyle->setAffectedByHover();
         } else {
-          m_elementStyle->setUnique(true);
+          m_elementStyle->setUnique();
           element.setChildrenOrSiblingsAffectedByHover();
         }
       }
@@ -925,7 +925,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
         if (context.inRightmostCompound) {
           m_elementStyle->setAffectedByActive();
         } else {
-          m_elementStyle->setUnique(true);
+          m_elementStyle->setUnique();
           element.setChildrenOrSiblingsAffectedByActive();
         }
       }

@@ -327,7 +327,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(
     textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
   textBlockStyle->setDisplay(EDisplay::Block);
-  textBlockStyle->setUnique(true);
+  textBlockStyle->setUnique();
 
   if (inputElement()->shouldRevealPassword())
     textBlockStyle->setTextSecurity(TSNONE);

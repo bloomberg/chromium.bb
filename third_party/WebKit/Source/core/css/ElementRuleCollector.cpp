@@ -340,7 +340,7 @@ void ElementRuleCollector::didMatchRule(
     m_style->setHasPseudoStyle(dynamicPseudo);
   } else {
     if (m_style && ruleData.containsUncommonAttributeSelector())
-      m_style->setUnique(true);
+      m_style->setUnique();
 
     m_matchedRules.push_back(
         MatchedRule(&ruleData, result.specificity, cascadeOrder,

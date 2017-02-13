@@ -581,7 +581,7 @@ PassRefPtr<ComputedStyle> DateTimeEditElement::customStyleForLayoutObject() {
     }
   }
   style->setWidth(Length(ceilf(width), Fixed));
-  style->setUnique(true);
+  style->setUnique();
   return style.release();
 }
 

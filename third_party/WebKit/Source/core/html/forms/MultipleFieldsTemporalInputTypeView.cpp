@@ -346,7 +346,7 @@ MultipleFieldsTemporalInputTypeView::customStyleForLayoutObject(
   RefPtr<ComputedStyle> style = ComputedStyle::clone(*originalStyle);
   style->setDirection(contentDirection);
   style->setDisplay(newDisplay);
-  style->setUnique(true);
+  style->setUnique();
   return style.release();
 }
 

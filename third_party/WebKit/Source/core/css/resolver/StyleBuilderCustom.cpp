@@ -794,9 +794,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
         DCHECK_EQ(functionValue->functionType(), CSSValueAttr);
         // FIXME: Can a namespace be specified for an attr(foo)?
         if (state.style()->styleType() == PseudoIdNone)
-          state.style()->setUnique(true);
+          state.style()->setUnique();
         else
-          state.parentStyle()->setUnique(true);
+          state.parentStyle()->setUnique();
         QualifiedName attr(
             nullAtom, toCSSCustomIdentValue(functionValue->item(0)).value(),
             nullAtom);

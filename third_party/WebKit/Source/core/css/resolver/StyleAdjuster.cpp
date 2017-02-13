@@ -458,7 +458,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
   // share this style.
   if (style.hasPseudoStyle(PseudoIdFirstLetter) || style.transitions() ||
       style.animations())
-    style.setUnique(true);
+    style.setUnique();
 
   adjustStyleForEditing(style);
 
