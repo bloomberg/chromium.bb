@@ -24,12 +24,14 @@
     {
       "app": "cronet_test",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "9.3",
+      "xcode version": "8.0"
     },
     {
       "app": "cronet_test",
       "device type": "iPad Retina",
-      "os": "9.3"
+      "os": "9.3",
+      "xcode version": "8.0"
     }
   ]
 }
