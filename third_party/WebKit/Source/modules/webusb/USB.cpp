@@ -9,7 +9,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/frame/UseCounter.h"
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webusb/USBConnectionEvent.h"
@@ -76,16 +75,13 @@ void USB::dispose() {
 }
 
 ScriptPromise USB::getDevices(ScriptState* scriptState) {
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  UseCounter::count(executionContext, UseCounter::UsbGetDevices);
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
   if (!m_deviceManager) {
     resolver->reject(DOMException::create(NotSupportedError));
   } else {
     String errorMessage;
-    if (!executionContext->isSecureContext(errorMessage)) {
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
       resolver->reject(DOMException::create(SecurityError, errorMessage));
     } else {
       m_deviceManagerRequests.insert(resolver);
@@ -101,7 +97,6 @@ ScriptPromise USB::getDevices(ScriptState* scriptState) {
 ScriptPromise USB::requestDevice(ScriptState* scriptState,
                                  const USBDeviceRequestOptions& options) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  UseCounter::count(executionContext, UseCounter::UsbRequestDevice);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
