@@ -219,6 +219,7 @@ bundle_data("settings_resources") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "callback_counter_unittest.mm",

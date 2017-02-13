@@ -8,26 +8,29 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/backoff_entry.h"
 #include "testing/platform_test.h"
 
-@interface MockDispatcher : NSObject<DispatcherProtocol>
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface FakeDispatcher : NSObject<DispatcherProtocol>
 - (int64_t)lastDelayInNSec;
 @end
 
-@implementation MockDispatcher {
+@implementation FakeDispatcher {
   int _dispatchCount;
   int64_t _lastDelayInNSec;
-  base::scoped_nsobject<NSMutableDictionary> _blocks;
+  NSMutableDictionary* _blocks;
 }
 
 - (instancetype)init {
   if ((self = [super init]))
-    _blocks.reset([[NSMutableDictionary alloc] init]);
+    _blocks = [[NSMutableDictionary alloc] init];
   return self;
 }
 
@@ -35,7 +38,7 @@
 #pragma mark Testing methods
 
 - (void)executeAfter:(int)dispatchCount block:(ProceduralBlock)block {
-  [_blocks setObject:[[block copy] autorelease]
+  [_blocks setObject:[block copy]
               forKey:[NSNumber numberWithInt:dispatchCount]];
 }
 
@@ -113,10 +116,11 @@ class InstallationNotifierTest : public PlatformTest {
  protected:
   void SetUp() override {
     installationNotifier_ = [InstallationNotifier sharedInstance];
-    dispatcher_ = [[MockDispatcher alloc] init];
-    notificationReceiver1_.reset(([[MockNotificationReceiver alloc] init]));
-    notificationReceiver2_.reset(([[MockNotificationReceiver alloc] init]));
-    sharedApplication_.reset([[MockUIApplication alloc] init]);
+    FakeDispatcher* dispatcher = [[FakeDispatcher alloc] init];
+    dispatcher_ = dispatcher;
+    notificationReceiver1_ = ([[MockNotificationReceiver alloc] init]);
+    notificationReceiver2_ = ([[MockNotificationReceiver alloc] init]);
+    sharedApplication_ = [[MockUIApplication alloc] init];
     [installationNotifier_ setSharedApplication:sharedApplication_];
     [installationNotifier_ setDispatcher:dispatcher_];
     histogramTester_.reset(new base::HistogramTester());
@@ -146,13 +150,11 @@ class InstallationNotifierTest : public PlatformTest {
 
   base::MessageLoopForUI message_loop_;
   web::TestWebThread ui_thread_;
-  __unsafe_unretained InstallationNotifier*
-      installationNotifier_;  // Weak pointer to singleton.
-  __unsafe_unretained MockDispatcher*
-      dispatcher_;  // Weak. installationNotifier_ owns it.
-  base::scoped_nsobject<MockNotificationReceiver> notificationReceiver1_;
-  base::scoped_nsobject<MockNotificationReceiver> notificationReceiver2_;
-  base::scoped_nsobject<MockUIApplication> sharedApplication_;
+  __weak InstallationNotifier* installationNotifier_;
+  __weak FakeDispatcher* dispatcher_;
+  MockNotificationReceiver* notificationReceiver1_;
+  MockNotificationReceiver* notificationReceiver2_;
+  MockUIApplication* sharedApplication_;
   std::unique_ptr<base::HistogramTester> histogramTester_;
 };
 
