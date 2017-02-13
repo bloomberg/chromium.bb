@@ -698,9 +698,9 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     if (mat[2] == 0) {
       // assert(0 &&
       //   "Warped motion model is incompatible with new warp filter");
-      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
-                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                     x_scale, y_scale, ref_frm);
+      highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col,
+                            p_row, p_width, p_height, p_stride, subsampling_x,
+                            subsampling_y, x_scale, y_scale, bd, ref_frm);
       return;
     }
 
