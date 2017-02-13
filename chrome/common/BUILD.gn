@@ -520,10 +520,6 @@ static_library("common") {
     }
   }
 
-  if (enable_vr_shell) {
-    defines += [ "ENABLE_VR_SHELL" ]
-  }
-
   if (is_linux) {
     deps = [
       "//sandbox/linux:sandbox_services",

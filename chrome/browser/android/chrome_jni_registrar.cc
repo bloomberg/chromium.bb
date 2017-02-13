@@ -186,7 +186,7 @@
 #include "printing/printing_context_android.h"
 #endif
 
-#if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
+#if defined(ENABLE_WEBVR)
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "third_party/gvr-android-sdk/display_synchronizer_jni.h"
@@ -410,7 +410,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UsbChooserDialogAndroid", UsbChooserDialogAndroid::Register},
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
-#if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
+#if defined(ENABLE_WEBVR)
     {"VrShell", vr_shell::RegisterVrShell},
     {"VrShellDelegate", vr_shell::RegisterVrShellDelegate},
     {"DisplaySynchronizer",

@@ -52,9 +52,8 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    {% set enable_vr_shell = enable_vr_shell|default(0) %}
     {% set enable_webvr = enable_webvr|default(0) %}
-    {% if enable_vr_shell == "true" or enable_webvr == "true" %}
+    {% if enable_webvr == "true" %}
     <!-- Required to read the paired viewer's distortion parameters. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <!-- Indicates use of Android's VR-mode, available only on Android N+. -->
@@ -376,7 +375,7 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
-        {% if enable_vr_shell == "true" or enable_webvr == "true" %}
+        {% if enable_webvr == "true" %}
         <!--
             TODO(mthiesse): Temporarily skip ChromeLauncherActivity when returning from Daydream
             DON flow to avoid polluting metrics.

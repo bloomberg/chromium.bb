@@ -173,7 +173,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                                 const gvr::Rectf& right_bounds) override;
   void OnVRVsyncProviderRequest(
       device::mojom::VRVSyncProviderRequest request) override;
-  void UpdateVSyncInterval(long timebase_nanos,
+  void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
   bool SupportsPresentation() override;
   void ResetPose() override;
@@ -182,6 +182,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
       uint32_t device_id) override;
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
+
+  bool vr_shell_enabled_;
 
   std::unique_ptr<UiInterface> html_interface_;
   bool content_paused_ = false;

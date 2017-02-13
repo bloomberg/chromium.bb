@@ -3484,11 +3484,7 @@ split_static_library("browser") {
     ]
   }
 
-  if (enable_vr_shell || enable_webvr) {
-    if (enable_vr_shell) {
-      defines += [ "ENABLE_VR_SHELL" ]
-    }
-
+  if (enable_webvr) {
     deps += [ "android/vr_shell:vr_common" ]
     configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
   }

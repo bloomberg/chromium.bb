@@ -269,7 +269,7 @@ extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
 #endif
 
-#if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
+#if defined(ENABLE_WEBVR)
 extern const char kChromeUIVrShellUIHost[];
 #endif
 

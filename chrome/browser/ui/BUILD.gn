@@ -2292,10 +2292,7 @@ split_static_library("ui") {
       "webui/webapks_ui.cc",
       "webui/webapks_ui.h",
     ]
-    if (enable_vr_shell || enable_webvr) {
-      if (enable_vr_shell) {
-        defines += [ "ENABLE_VR_SHELL" ]
-      }
+    if (enable_webvr) {
       sources += [
         "webui/vr_shell/vr_shell_ui_message_handler.cc",
         "webui/vr_shell/vr_shell_ui_message_handler.h",
@@ -2306,7 +2303,7 @@ split_static_library("ui") {
       deps += [ "//chrome/browser/android/vr_shell:vr_common" ]
     }
     if (enable_vr_shell_ui_dev) {
-      assert(enable_vr_shell)
+      assert(enable_webvr)
       defines += [ "ENABLE_VR_SHELL_UI_DEV" ]
     }
     deps += [

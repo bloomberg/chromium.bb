@@ -23,7 +23,7 @@ class DEVICE_VR_EXPORT GvrDelegate {
                                         const gvr::Rectf& right_bounds) = 0;
   virtual void OnVRVsyncProviderRequest(
       mojom::VRVSyncProviderRequest request) = 0;
-  virtual void UpdateVSyncInterval(long timebase_nanos,
+  virtual void UpdateVSyncInterval(int64_t timebase_nanos,
                                    double interval_seconds) = 0;
   virtual bool SupportsPresentation() = 0;
   virtual void ResetPose() = 0;

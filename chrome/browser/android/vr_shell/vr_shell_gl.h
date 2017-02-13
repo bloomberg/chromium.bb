@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <queue>
+#include <utility>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -85,7 +87,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
-  void UpdateVSyncInterval(long timebase_nanos, double interval_seconds);
+  void UpdateVSyncInterval(int64_t timebase_nanos, double interval_seconds);
 
   void OnRequest(device::mojom::VRVSyncProviderRequest request);
   void ResetPose();

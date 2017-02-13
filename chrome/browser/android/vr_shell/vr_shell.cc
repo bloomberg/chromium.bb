@@ -31,6 +31,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
@@ -72,6 +73,7 @@ VrShell::VrShell(JNIEnv* env,
                  gvr_context* gvr_api,
                  bool reprojected_rendering)
     : WebContentsObserver(ui_contents),
+      vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrShell)),
       main_contents_(main_contents),
       content_compositor_(
           base::MakeUnique<VrCompositor>(content_window, false)),
@@ -334,9 +336,8 @@ void VrShell::GvrDelegateReady() {
 }
 
 void VrShell::AppButtonPressed() {
-#if defined(ENABLE_VR_SHELL)
-  html_interface_->HandleAppButtonClicked();
-#endif
+  if (vr_shell_enabled_)
+    html_interface_->HandleAppButtonClicked();
 }
 
 void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
@@ -479,7 +480,7 @@ void VrShell::OnVRVsyncProviderRequest(
                                      base::Passed(&request)));
 }
 
-void VrShell::UpdateVSyncInterval(long timebase_nanos,
+void VrShell::UpdateVSyncInterval(int64_t timebase_nanos,
                                   double interval_seconds) {
   PostToGlThreadWhenReady(
       base::Bind(&VrShellGl::UpdateVSyncInterval,

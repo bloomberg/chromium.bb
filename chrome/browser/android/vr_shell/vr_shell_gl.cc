@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -34,7 +35,7 @@ namespace vr_shell {
 namespace {
 // TODO(mthiesse): If gvr::PlatformInfo().GetPosePredictionTime() is ever
 // exposed, use that instead (it defaults to 50ms on most platforms).
-static constexpr long kPredictionTimeWithoutVsyncNanos = 50000000;
+static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
 static constexpr float kZNear = 0.1f;
 static constexpr float kZFar = 1000.0f;
@@ -308,9 +309,9 @@ bool VrShellGl::GetPixelEncodedFrameIndex(uint16_t* frame_index) {
     last_frame_index_ = pixels[0];
     return true;
   }
-  VLOG(1) << "WebVR: reject decoded pose index " << (int)pixels[0]
-          << ", bad magic number " << (int)pixels[1] << ", "
-          << (int)pixels[2];
+  VLOG(1) << "WebVR: reject decoded pose index " << static_cast<int>(pixels[0])
+          << ", bad magic number " << static_cast<int>(pixels[1]) << ", "
+          << static_cast<int>(pixels[2]);
   return false;
 }
 
@@ -1036,7 +1037,7 @@ void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
   SendVSync(pending_time_, callback);
 }
 
-void VrShellGl::UpdateVSyncInterval(long timebase_nanos,
+void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
                                     double interval_seconds) {
   vsync_timebase_ = base::TimeTicks();
   vsync_timebase_ += base::TimeDelta::FromMicroseconds(timebase_nanos / 1000);

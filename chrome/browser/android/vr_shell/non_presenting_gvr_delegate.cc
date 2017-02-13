@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -11,7 +13,7 @@
 namespace vr_shell {
 
 namespace {
-static constexpr long kPredictionTimeWithoutVsyncNanos = 50000000;
+static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 }  // namespace
 
 NonPresentingGvrDelegate::NonPresentingGvrDelegate(gvr_context* context)
@@ -117,7 +119,7 @@ void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
   SendVSync(pending_time_, callback);
 }
 
-void NonPresentingGvrDelegate::UpdateVSyncInterval(long timebase_nanos,
+void NonPresentingGvrDelegate::UpdateVSyncInterval(int64_t timebase_nanos,
                                                    double interval_seconds) {
   vsync_timebase_ = base::TimeTicks();
   vsync_timebase_ += base::TimeDelta::FromMicroseconds(timebase_nanos / 1000);

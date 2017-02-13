@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
@@ -32,7 +34,7 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
                                 const gvr::Rectf& right_bounds) override {}
   void OnVRVsyncProviderRequest(
       device::mojom::VRVSyncProviderRequest request) override;
-  void UpdateVSyncInterval(long timebase_nanos,
+  void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
   bool SupportsPresentation() override;
   void ResetPose() override;

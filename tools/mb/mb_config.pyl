@@ -97,7 +97,7 @@
 
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'release_afl_asan',
-      'Android Builder (dbg)': 'android_debug_static_bot_vr_shell',
+      'Android Builder (dbg)': 'android_debug_static_bot',
       'Android Builder Goma Canary (dbg)': 'android_debug_bot',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
@@ -830,10 +830,6 @@
 
     'android_debug_static_bot_x86': [
       'android', 'debug_static_bot', 'x86',
-    ],
-
-    'android_debug_static_bot_vr_shell': [
-      'android', 'debug_static_bot', 'vr_shell',
     ],
 
     'android_debug_static_minimal_symbols_mipsel': [
@@ -1888,10 +1884,6 @@
 
     'v8_heap': {
       'gn_args': 'v8_enable_verify_heap=true',
-    },
-
-    'vr_shell': {
-      'gn_args': 'enable_vr_shell=true',
     },
 
     'win_analyze': {

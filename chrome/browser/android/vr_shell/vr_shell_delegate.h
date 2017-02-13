@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -62,7 +64,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   device::GvrDeviceProvider* device_provider_ = nullptr;
   device::GvrDelegate* delegate_ = nullptr;
   base::Callback<void(bool)> present_callback_;
-  long timebase_nanos_ = 0;
+  int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
 
   // TODO(mthiesse): Remove the need for this to be stored here.
