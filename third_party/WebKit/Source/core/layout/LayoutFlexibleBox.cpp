@@ -484,27 +484,21 @@ LayoutUnit LayoutFlexibleBox::crossAxisExtentForChild(
   return isHorizontalFlow() ? child.size().height() : child.size().width();
 }
 
-static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(
-    const LayoutBox& child,
-    LayoutUnit childIntrinsicContentLogicalHeight) {
-  // TODO(cbiesinger): scrollbar height?
-  return child.constrainLogicalHeightByMinMax(
-      childIntrinsicContentLogicalHeight +
-          child.borderAndPaddingLogicalHeight(),
-      childIntrinsicContentLogicalHeight);
-}
-
 LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalHeight(
     const LayoutBox& child) const {
   // This should only be called if the logical height is the cross size
   DCHECK(!hasOrthogonalFlow(child));
   if (needToStretchChildLogicalHeight(child)) {
     LayoutUnit childIntrinsicContentLogicalHeight;
-    if (!child.styleRef().containsSize())
+    if (!child.styleRef().containsSize()) {
       childIntrinsicContentLogicalHeight =
           child.intrinsicContentLogicalHeight();
-    return constrainedChildIntrinsicContentLogicalHeight(
-        child, childIntrinsicContentLogicalHeight);
+    }
+    LayoutUnit childIntrinsicLogicalHeight =
+        childIntrinsicContentLogicalHeight + child.scrollbarLogicalHeight() +
+        child.borderAndPaddingLogicalHeight();
+    return child.constrainLogicalHeightByMinMax(
+        childIntrinsicLogicalHeight, childIntrinsicContentLogicalHeight);
   }
   return child.logicalHeight();
 }
@@ -1838,8 +1832,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
       childCrossAxisMarginBoxExtent = maxAscent + maxDescent;
     } else {
       childCrossAxisMarginBoxExtent = crossAxisIntrinsicExtentForChild(*child) +
-                                      crossAxisMarginExtentForChild(*child) +
-                                      crossAxisScrollbarExtentForChild(*child);
+                                      crossAxisMarginExtentForChild(*child);
     }
     if (!isColumnFlow())
       setLogicalHeight(std::max(
