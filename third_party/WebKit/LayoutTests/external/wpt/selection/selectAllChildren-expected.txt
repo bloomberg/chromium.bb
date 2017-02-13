@@ -383,15 +383,9 @@ FAIL Range 0 [], node 31 detachedXmlComment assert_equals: After selectAllChildr
 FAIL Range 0 [], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 0 [], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 0 [], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 0 [], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 0 [], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 0 [], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 0 [], node 35 doctype 
+PASS Range 0 [], node 36 foreignDoctype 
+PASS Range 0 [], node 37 xmlDoctype 
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -462,15 +456,9 @@ FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 33 foreignDo
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 35 doctype 
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 36 foreignDoctype 
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], node 37 xmlDoctype 
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -541,15 +529,9 @@ FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 33 foreignDo
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 35 doctype 
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 36 foreignDoctype 
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], node 37 xmlDoctype 
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -620,15 +602,9 @@ FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 33 foreignDo
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 35 doctype 
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 36 foreignDoctype 
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], node 37 xmlDoctype 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -699,15 +675,9 @@ FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 33 foreignDo
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 35 doctype 
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 36 foreignDoctype 
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], node 37 xmlDoctype 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -750,15 +720,9 @@ FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 31 detachedX
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 35 doctype 
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 36 foreignDoctype 
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 37 xmlDoctype 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -801,15 +765,9 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 31 detachedX
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 35 doctype 
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 36 foreignDoctype 
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 37 xmlDoctype 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -852,15 +810,9 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 31 detachedX
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 35 doctype 
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 36 foreignDoctype 
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 37 xmlDoctype 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -903,15 +855,9 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 31 detachedX
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 35 doctype 
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 36 foreignDoctype 
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 37 xmlDoctype 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -954,15 +900,9 @@ FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 31
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 35 doctype 
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 36 foreignDoctype 
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], node 37 xmlDoctype 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1005,15 +945,9 @@ FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 3
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 35 doctype 
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 36 foreignDoctype 
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], node 37 xmlDoctype 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1056,15 +990,9 @@ FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 3
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 35 doctype 
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 36 foreignDoctype 
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], node 37 xmlDoctype 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1107,15 +1035,9 @@ FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 31 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 35 doctype 
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 36 foreignDoctype 
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], node 37 xmlDoctype 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1158,15 +1080,9 @@ FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 31 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 35 doctype 
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 36 foreignDoctype 
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], node 37 xmlDoctype 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1209,15 +1125,9 @@ FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 31 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 35 doctype 
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 36 foreignDoctype 
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 37 xmlDoctype 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1288,15 +1198,9 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 3
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], node 35 doctype 
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], node 36 foreignDoctype 
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], node 37 xmlDoctype 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1367,15 +1271,9 @@ FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 3
 "
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 35 doctype 
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 36 foreignDoctype 
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 37 xmlDoctype 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1446,15 +1344,9 @@ FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 3
 "
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 35 doctype 
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 36 foreignDoctype 
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 37 xmlDoctype 
 FAIL Range 18 [document.head, 1, document.head, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1525,15 +1417,9 @@ FAIL Range 18 [document.head, 1, document.head, 1], node 33 foreignDocfrag asser
 "
 FAIL Range 18 [document.head, 1, document.head, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 18 [document.head, 1, document.head, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 18 [document.head, 1, document.head, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 18 [document.head, 1, document.head, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 18 [document.head, 1, document.head, 1], node 35 doctype 
+PASS Range 18 [document.head, 1, document.head, 1], node 36 foreignDoctype 
+PASS Range 18 [document.head, 1, document.head, 1], node 37 xmlDoctype 
 FAIL Range 19 [document.body, 0, document.body, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1604,15 +1490,9 @@ FAIL Range 19 [document.body, 0, document.body, 1], node 33 foreignDocfrag asser
 "
 FAIL Range 19 [document.body, 0, document.body, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 19 [document.body, 0, document.body, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 19 [document.body, 0, document.body, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 19 [document.body, 0, document.body, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 19 [document.body, 0, document.body, 1], node 35 doctype 
+PASS Range 19 [document.body, 0, document.body, 1], node 36 foreignDoctype 
+PASS Range 19 [document.body, 0, document.body, 1], node 37 xmlDoctype 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1655,15 +1535,9 @@ FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], no
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 35 doctype 
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 36 foreignDoctype 
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], node 37 xmlDoctype 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1706,15 +1580,9 @@ FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 31 detachedXmlComme
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 35 doctype 
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 36 foreignDoctype 
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], node 37 xmlDoctype 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1757,15 +1625,9 @@ FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 31 detachedXmlComme
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 35 doctype 
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 36 foreignDoctype 
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 37 xmlDoctype 
 FAIL Range 23 [paras[0], 0, paras[0], 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1836,15 +1698,9 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], node 33 foreignDocfrag assert_equals: 
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 23 [paras[0], 0, paras[0], 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 23 [paras[0], 0, paras[0], 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 23 [paras[0], 0, paras[0], 0], node 35 doctype 
+PASS Range 23 [paras[0], 0, paras[0], 0], node 36 foreignDoctype 
+PASS Range 23 [paras[0], 0, paras[0], 0], node 37 xmlDoctype 
 FAIL Range 24 [paras[0], 0, paras[0], 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1915,15 +1771,9 @@ FAIL Range 24 [paras[0], 0, paras[0], 1], node 33 foreignDocfrag assert_equals: 
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 24 [paras[0], 0, paras[0], 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 24 [paras[0], 0, paras[0], 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 24 [paras[0], 0, paras[0], 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 24 [paras[0], 0, paras[0], 1], node 35 doctype 
+PASS Range 24 [paras[0], 0, paras[0], 1], node 36 foreignDoctype 
+PASS Range 24 [paras[0], 0, paras[0], 1], node 37 xmlDoctype 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1966,15 +1816,9 @@ FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 31 detachedXmlComment a
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], node 35 doctype 
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], node 36 foreignDoctype 
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], node 37 xmlDoctype 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2017,15 +1861,9 @@ FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 31 detachedXmlComment a
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], node 35 doctype 
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], node 36 foreignDoctype 
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], node 37 xmlDoctype 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2096,15 +1934,9 @@ FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 33 foreignD
 "
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 35 doctype 
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 36 foreignDoctype 
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], node 37 xmlDoctype 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2175,15 +2007,9 @@ FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 33 foreignD
 "
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 35 doctype 
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 36 foreignDoctype 
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], node 37 xmlDoctype 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2254,15 +2080,9 @@ FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 33 foreignDocfrag asse
 "
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], node 35 doctype 
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], node 36 foreignDoctype 
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], node 37 xmlDoctype 
 FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2333,15 +2153,9 @@ FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 33 foreignDocfrag asse
 "
 FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 30 [paras[0], 0, paras[0].firstChild, 7], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 30 [paras[0], 0, paras[0].firstChild, 7], node 35 doctype 
+PASS Range 30 [paras[0], 0, paras[0].firstChild, 7], node 36 foreignDoctype 
+PASS Range 30 [paras[0], 0, paras[0].firstChild, 7], node 37 xmlDoctype 
 FAIL Range 31 [testDiv, 2, paras[4], 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2384,15 +2198,9 @@ FAIL Range 31 [testDiv, 2, paras[4], 1], node 31 detachedXmlComment assert_equal
 FAIL Range 31 [testDiv, 2, paras[4], 1], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 31 [testDiv, 2, paras[4], 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 31 [testDiv, 2, paras[4], 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 31 [testDiv, 2, paras[4], 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 31 [testDiv, 2, paras[4], 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 31 [testDiv, 2, paras[4], 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 31 [testDiv, 2, paras[4], 1], node 35 doctype 
+PASS Range 31 [testDiv, 2, paras[4], 1], node 36 foreignDoctype 
+PASS Range 31 [testDiv, 2, paras[4], 1], node 37 xmlDoctype 
 FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2435,15 +2243,9 @@ FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 31 detachedXmlComment a
 FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 32 [testDiv, 1, paras[2].firstChild, 5], node 35 doctype 
+PASS Range 32 [testDiv, 1, paras[2].firstChild, 5], node 36 foreignDoctype 
+PASS Range 32 [testDiv, 1, paras[2].firstChild, 5], node 37 xmlDoctype 
 FAIL Range 33 [document.documentElement, 1, document.body, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2514,15 +2316,9 @@ FAIL Range 33 [document.documentElement, 1, document.body, 0], node 33 foreignDo
 "
 FAIL Range 33 [document.documentElement, 1, document.body, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 33 [document.documentElement, 1, document.body, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 33 [document.documentElement, 1, document.body, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 33 [document.documentElement, 1, document.body, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 33 [document.documentElement, 1, document.body, 0], node 35 doctype 
+PASS Range 33 [document.documentElement, 1, document.body, 0], node 36 foreignDoctype 
+PASS Range 33 [document.documentElement, 1, document.body, 0], node 37 xmlDoctype 
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2565,15 +2361,9 @@ FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 31 detac
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 35 doctype 
+PASS Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 36 foreignDoctype 
+PASS Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 37 xmlDoctype 
 FAIL Range 35 [document, 0, document, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2644,15 +2434,9 @@ FAIL Range 35 [document, 0, document, 1], node 33 foreignDocfrag assert_equals: 
 "
 FAIL Range 35 [document, 0, document, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 35 [document, 0, document, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 35 [document, 0, document, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 35 [document, 0, document, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 35 [document, 0, document, 1], node 35 doctype 
+PASS Range 35 [document, 0, document, 1], node 36 foreignDoctype 
+PASS Range 35 [document, 0, document, 1], node 37 xmlDoctype 
 FAIL Range 36 [document, 0, document, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2723,15 +2507,9 @@ FAIL Range 36 [document, 0, document, 2], node 33 foreignDocfrag assert_equals: 
 "
 FAIL Range 36 [document, 0, document, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 36 [document, 0, document, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 36 [document, 0, document, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 36 [document, 0, document, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 36 [document, 0, document, 2], node 35 doctype 
+PASS Range 36 [document, 0, document, 2], node 36 foreignDoctype 
+PASS Range 36 [document, 0, document, 2], node 37 xmlDoctype 
 FAIL Range 37 [document, 1, document, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2802,15 +2580,9 @@ FAIL Range 37 [document, 1, document, 2], node 33 foreignDocfrag assert_equals: 
 "
 FAIL Range 37 [document, 1, document, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 37 [document, 1, document, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 37 [document, 1, document, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 37 [document, 1, document, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 37 [document, 1, document, 2], node 35 doctype 
+PASS Range 37 [document, 1, document, 2], node 36 foreignDoctype 
+PASS Range 37 [document, 1, document, 2], node 37 xmlDoctype 
 FAIL Range 38 [testDiv, 0, comment, 5], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2881,15 +2653,9 @@ FAIL Range 38 [testDiv, 0, comment, 5], node 33 foreignDocfrag assert_equals: Af
 "
 FAIL Range 38 [testDiv, 0, comment, 5], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 38 [testDiv, 0, comment, 5], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 38 [testDiv, 0, comment, 5], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 38 [testDiv, 0, comment, 5], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 38 [testDiv, 0, comment, 5], node 35 doctype 
+PASS Range 38 [testDiv, 0, comment, 5], node 36 foreignDoctype 
+PASS Range 38 [testDiv, 0, comment, 5], node 37 xmlDoctype 
 FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2932,15 +2698,9 @@ FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 31 detachedXmlComment a
 FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 39 [paras[2].firstChild, 4, comment, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 39 [paras[2].firstChild, 4, comment, 2], node 35 doctype 
+PASS Range 39 [paras[2].firstChild, 4, comment, 2], node 36 foreignDoctype 
+PASS Range 39 [paras[2].firstChild, 4, comment, 2], node 37 xmlDoctype 
 FAIL Range 40 [paras[3], 1, comment, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2983,15 +2743,9 @@ FAIL Range 40 [paras[3], 1, comment, 8], node 31 detachedXmlComment assert_equal
 FAIL Range 40 [paras[3], 1, comment, 8], node 32 docfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 40 [paras[3], 1, comment, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 40 [paras[3], 1, comment, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, anchorNode must be the given node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL Range 40 [paras[3], 1, comment, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 40 [paras[3], 1, comment, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 40 [paras[3], 1, comment, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 40 [paras[3], 1, comment, 8], node 35 doctype 
+PASS Range 40 [paras[3], 1, comment, 8], node 36 foreignDoctype 
+PASS Range 40 [paras[3], 1, comment, 8], node 37 xmlDoctype 
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3034,15 +2788,9 @@ FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 31 detachedXmlComment assert_
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 41 [foreignDoc, 0, foreignDoc, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 41 [foreignDoc, 0, foreignDoc, 0], node 35 doctype 
+PASS Range 41 [foreignDoc, 0, foreignDoc, 0], node 36 foreignDoctype 
+PASS Range 41 [foreignDoc, 0, foreignDoc, 0], node 37 xmlDoctype 
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3085,15 +2833,9 @@ FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 31 detachedXmlComment ass
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 42 [foreignDoc, 1, foreignComment, 2], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 42 [foreignDoc, 1, foreignComment, 2], node 35 doctype 
+PASS Range 42 [foreignDoc, 1, foreignComment, 2], node 36 foreignDoctype 
+PASS Range 42 [foreignDoc, 1, foreignComment, 2], node 37 xmlDoctype 
 FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3136,15 +2878,9 @@ FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 31 detachedXmlComm
 FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 35 doctype 
+PASS Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 36 foreignDoctype 
+PASS Range 43 [foreignDoc.body, 0, foreignTextNode, 36], node 37 xmlDoctype 
 FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3187,15 +2923,9 @@ FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 31 detachedXmlComment assert_equals: 
 FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 44 [xmlDoc, 0, xmlDoc, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 44 [xmlDoc, 0, xmlDoc, 0], node 35 doctype 
+PASS Range 44 [xmlDoc, 0, xmlDoc, 0], node 36 foreignDoctype 
+PASS Range 44 [xmlDoc, 0, xmlDoc, 0], node 37 xmlDoctype 
 FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3238,15 +2968,9 @@ FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 31 detachedXmlComment assert_equa
 FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 45 [xmlDoc, 1, xmlComment, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 45 [xmlDoc, 1, xmlComment, 0], node 35 doctype 
+PASS Range 45 [xmlDoc, 1, xmlComment, 0], node 36 foreignDoctype 
+PASS Range 45 [xmlDoc, 1, xmlComment, 0], node 37 xmlDoctype 
 FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3289,15 +3013,9 @@ FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 31 detachedXmlCom
 FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 35 doctype 
+PASS Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 36 foreignDoctype 
+PASS Range 46 [detachedTextNode, 0, detachedTextNode, 8], node 37 xmlDoctype 
 FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3340,15 +3058,9 @@ FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 31 
 FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 35 doctype 
+PASS Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 36 foreignDoctype 
+PASS Range 47 [detachedForeignTextNode, 7, detachedForeignTextNode, 7], node 37 xmlDoctype 
 FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3391,15 +3103,9 @@ FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 31 
 FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 35 doctype 
+PASS Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 36 foreignDoctype 
+PASS Range 48 [detachedForeignTextNode, 0, detachedForeignTextNode, 8], node 37 xmlDoctype 
 FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3442,15 +3148,9 @@ FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 31 detached
 FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 35 doctype 
+PASS Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 36 foreignDoctype 
+PASS Range 49 [detachedXmlTextNode, 7, detachedXmlTextNode, 7], node 37 xmlDoctype 
 FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3493,15 +3193,9 @@ FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 31 detached
 FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 35 doctype 
+PASS Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 36 foreignDoctype 
+PASS Range 50 [detachedXmlTextNode, 0, detachedXmlTextNode, 8], node 37 xmlDoctype 
 FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3544,15 +3238,9 @@ FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 31 detachedXmlComme
 FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 51 [detachedComment, 3, detachedComment, 4], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 51 [detachedComment, 3, detachedComment, 4], node 35 doctype 
+PASS Range 51 [detachedComment, 3, detachedComment, 4], node 36 foreignDoctype 
+PASS Range 51 [detachedComment, 3, detachedComment, 4], node 37 xmlDoctype 
 FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3595,15 +3283,9 @@ FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 31 detachedXmlComme
 FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 52 [detachedComment, 5, detachedComment, 5], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 52 [detachedComment, 5, detachedComment, 5], node 35 doctype 
+PASS Range 52 [detachedComment, 5, detachedComment, 5], node 36 foreignDoctype 
+PASS Range 52 [detachedComment, 5, detachedComment, 5], node 37 xmlDoctype 
 FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3646,15 +3328,9 @@ FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 31 de
 FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 35 doctype 
+PASS Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 36 foreignDoctype 
+PASS Range 53 [detachedForeignComment, 0, detachedForeignComment, 1], node 37 xmlDoctype 
 FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3697,15 +3373,9 @@ FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 31 de
 FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 35 doctype 
+PASS Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 36 foreignDoctype 
+PASS Range 54 [detachedForeignComment, 4, detachedForeignComment, 4], node 37 xmlDoctype 
 FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3748,15 +3418,9 @@ FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 31 detachedXm
 FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 35 doctype 
+PASS Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 36 foreignDoctype 
+PASS Range 55 [detachedXmlComment, 2, detachedXmlComment, 6], node 37 xmlDoctype 
 FAIL Range 56 [docfrag, 0, docfrag, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3799,15 +3463,9 @@ FAIL Range 56 [docfrag, 0, docfrag, 0], node 31 detachedXmlComment assert_equals
 FAIL Range 56 [docfrag, 0, docfrag, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 56 [docfrag, 0, docfrag, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 56 [docfrag, 0, docfrag, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 56 [docfrag, 0, docfrag, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 56 [docfrag, 0, docfrag, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 56 [docfrag, 0, docfrag, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 56 [docfrag, 0, docfrag, 0], node 35 doctype 
+PASS Range 56 [docfrag, 0, docfrag, 0], node 36 foreignDoctype 
+PASS Range 56 [docfrag, 0, docfrag, 0], node 37 xmlDoctype 
 FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3850,15 +3508,9 @@ FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 31 detachedXmlComment
 FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 35 doctype 
+PASS Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 36 foreignDoctype 
+PASS Range 57 [foreignDocfrag, 0, foreignDocfrag, 0], node 37 xmlDoctype 
 FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3901,14 +3553,8 @@ FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 31 detachedXmlComment assert_
 FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 32 docfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 33 foreignDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
 FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 34 xmlDocfrag assert_equals: After selectAllChildren, rangeCount must be 1 expected 1 but got 0
-FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 35 doctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 36 foreignDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
-FAIL Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 37 xmlDoctype assert_throws: selectAllChildren() on a DocumentType must throw InvalidNodeTypeError function "function () {
-                    selection.selectAllChildren(node);
-                }" did not throw
+PASS Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 35 doctype 
+PASS Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 36 foreignDoctype 
+PASS Range 58 [xmlDocfrag, 0, xmlDocfrag, 0], node 37 xmlDoctype 
 Harness: the test ran to completion.
 

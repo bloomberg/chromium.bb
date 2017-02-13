@@ -9,7 +9,7 @@
     var x2 = subframe.offsetLeft + target.offsetLeft + target.offsetWidth;
     var y = subframe.offsetTop + target.offsetTop + target.offsetHeight / 2;
 
-    subframe.contentWindow.getSelection().setBaseAndExtent(target, 0, target, 1);
+    subframe.contentWindow.getSelection().setBaseAndExtent(target, 0, target, 0);
 
     if (window.eventSender) {
       eventSender.dragMode = true;

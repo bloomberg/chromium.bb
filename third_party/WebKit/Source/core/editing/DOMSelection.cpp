@@ -197,11 +197,11 @@ void DOMSelection::collapse(Node* node,
         IndexSizeError, String::number(offset) + " is not a valid offset.");
     return;
   }
-
-  if (!isValidForPosition(node))
-    return;
   Range::checkNodeWOffset(node, offset, exceptionState);
   if (exceptionState.hadException())
+    return;
+
+  if (!isValidForPosition(node))
     return;
 
   frame()->selection().setSelection(
@@ -283,6 +283,15 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
   if (!extentNode) {
     UseCounter::count(frame(), UseCounter::SelectionSetBaseAndExtentNull);
     extentOffset = 0;
+  }
+
+  Range::checkNodeWOffset(baseNode, baseOffset, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  if (extentNode) {
+    Range::checkNodeWOffset(extentNode, extentOffset, exceptionState);
+    if (exceptionState.hadException())
+      return;
   }
 
   if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
@@ -380,12 +389,9 @@ void DOMSelection::extend(Node* node,
         IndexSizeError, String::number(offset) + " is not a valid offset.");
     return;
   }
-  if (static_cast<unsigned>(offset) > node->lengthOfContents()) {
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        String::number(offset) + " is larger than the given node's length.");
+  Range::checkNodeWOffset(node, offset, exceptionState);
+  if (exceptionState.hadException())
     return;
-  }
 
   if (!isValidForPosition(node))
     return;

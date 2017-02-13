@@ -23,7 +23,7 @@
         shouldThrow('getSelection().extend(0, -1)', '"TypeError: Failed to execute \'extend\' on \'Selection\': parameter 1 is not of type \'Node\'."');
         getSelection().addRange(document.createRange());
         shouldThrow('getSelection().extend(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': -1 is not a valid offset."');
-        shouldThrow('getSelection().extend(document.documentElement, 1000)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': 1000 is larger than the given node\'s length."');
+        shouldThrow('getSelection().extend(document.documentElement, 1000)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': There is no child at offset 1000."');
     </script>
 </body>
 </html>

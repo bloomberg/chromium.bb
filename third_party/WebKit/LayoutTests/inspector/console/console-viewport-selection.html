@@ -161,7 +161,7 @@ function test()
             while (blueSpan.nodeName !== "SPAN" || blueSpan.textContent !== "world")
                 blueSpan = blueSpan.traverseNextNode();
 
-            window.getSelection().setBaseAndExtent(blueSpan, 0, blueSpan, blueSpan.textContent.length);
+            window.getSelection().setBaseAndExtent(blueSpan, 0, blueSpan, blueSpan.childNodes.length);
             InspectorTest.addResult("Selected text: " + viewport._selectedText());
             next();
         },

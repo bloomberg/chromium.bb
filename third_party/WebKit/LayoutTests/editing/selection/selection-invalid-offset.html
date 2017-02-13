@@ -1,5 +1,5 @@
 <body>
-You should see 7 OKs below (and not hang): <br>
+You should see 9 OKs below (and not hang): <br>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -22,8 +22,6 @@ shouldThrowIndexSizeErrorException("selection.collapse(body, -1);");
 shouldThrowIndexSizeErrorException("selection.getRangeAt(-1);");
 shouldThrowIndexSizeErrorException("selection.getRangeAt(10000);");
 shouldThrowIndexSizeErrorException("selection.collapse(body, 10000);");
-
-// these should throw as well but don't at the moment. Just checking they don't crash. 
-selection.setBaseAndExtent(body, 1000, body, 0);
-selection.setBaseAndExtent(body, 0, body, 10000);
+shouldThrowIndexSizeErrorException("selection.setBaseAndExtent(body, 1000, body, 0)");
+shouldThrowIndexSizeErrorException("selection.setBaseAndExtent(body, 0, body, 10000)");
 </script>

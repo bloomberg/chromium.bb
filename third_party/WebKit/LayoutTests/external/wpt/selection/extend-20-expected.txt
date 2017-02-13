@@ -673,21 +673,13 @@ FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 81 [foreignDocf
 "
 FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 82 [xmlDocfrag, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() with range 23 [paras[0], 0, paras[0], 0] and point 83 [doctype, 0] 
 FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
             selection.extend(node, offset);
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
-FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
-FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
-FAIL extend() with range 23 [paras[0], 0, paras[0], 0] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() with range 23 [paras[0], 0, paras[0], 0] and point 85 [doctype, 1] 
+PASS extend() with range 23 [paras[0], 0, paras[0], 0] and point 86 [foreignDoctype, 0] 
+PASS extend() with range 23 [paras[0], 0, paras[0], 0] and point 87 [xmlDoctype, 0] 
 PASS extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 0 [paras[0].firstChild, -1] 
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 0 [paras[0].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1083,9 +1075,7 @@ FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 82 [xm
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1095,21 +1085,15 @@ FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 84 [do
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 24 [paras[0], 0, paras[0], 1] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 24 [paras[0], 0, paras[0], 1] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -1689,9 +1673,7 @@ FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChil
 "
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 83 [doctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
 FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -1699,19 +1681,13 @@ FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChil
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 84 [doctype, -17] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 85 [doctype, 1] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
 PASS extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 0 [paras[0].firstChild, -1] 
@@ -2026,9 +2002,7 @@ FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChil
 "
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 83 [doctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
 FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -2036,19 +2010,13 @@ FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChil
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 84 [doctype, -17] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 85 [doctype, 1] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
-FAIL extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
 PASS extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 0 [paras[0].firstChild, -1] 
@@ -2280,25 +2248,17 @@ FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and 
 FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 82 [xmlDocfrag, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected DocumentFragment node with 0 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
-FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 83 [doctype, 0] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
 FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
             selection.extend(node, offset);
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 84 [doctype, -17] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
-FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 85 [doctype, 1] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
-FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
-FAIL extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 29 [paras[0].firstChild, 3, paras[3], 1] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startOffset must be correct expected 3 but got 4
 PASS extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 0 [paras[0].firstChild, -1] 
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 0 [paras[0].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
@@ -2695,9 +2655,7 @@ FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and p
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2707,21 +2665,15 @@ FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and p
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 30 [paras[0], 0, paras[0].firstChild, 7] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2984,9 +2936,7 @@ FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 81 [fo
 FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 82 [xmlDocfrag, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -2994,19 +2944,13 @@ FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 84 [doc
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 31 [testDiv, 2, paras[4], 1] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 31 [testDiv, 2, paras[4], 1] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 0 [paras[0].firstChild, -1] 
@@ -3268,9 +3212,7 @@ FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and p
 FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 82 [xmlDocfrag, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -3278,19 +3220,13 @@ FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and po
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 32 [testDiv, 1, paras[2].firstChild, 5] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 0 [paras[0].firstChild, -1] 
@@ -3688,9 +3624,7 @@ FAIL extend() forwards with range 33 [document.documentElement, 1, document.body
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3700,21 +3634,15 @@ FAIL extend() forwards with range 33 [document.documentElement, 1, document.body
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 33 [document.documentElement, 1, document.body, 0] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 33 [document.documentElement, 1, document.body, 0] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4206,9 +4134,7 @@ FAIL extend() forwards with range 35 [document, 0, document, 1] and point 82 [xm
 "
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 35 [document, 0, document, 1] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 35 [document, 0, document, 1] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL extend() forwards with range 35 [document, 0, document, 1] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -4216,19 +4142,13 @@ FAIL extend() forwards with range 35 [document, 0, document, 1] and point 84 [do
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 35 [document, 0, document, 1] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 35 [document, 0, document, 1] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 35 [document, 0, document, 1] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 35 [document, 0, document, 1] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 35 [document, 0, document, 1] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 35 [document, 0, document, 1] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 35 [document, 0, document, 1] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() forwards with range 36 [document, 0, document, 2] and point 0 [paras[0].firstChild, -1] 
@@ -4543,9 +4463,7 @@ FAIL extend() forwards with range 36 [document, 0, document, 2] and point 82 [xm
 "
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 36 [document, 0, document, 2] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 36 [document, 0, document, 2] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL extend() forwards with range 36 [document, 0, document, 2] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -4553,19 +4471,13 @@ FAIL extend() forwards with range 36 [document, 0, document, 2] and point 84 [do
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 36 [document, 0, document, 2] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 36 [document, 0, document, 2] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 36 [document, 0, document, 2] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 36 [document, 0, document, 2] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 36 [document, 0, document, 2] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 36 [document, 0, document, 2] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 36 [document, 0, document, 2] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() forwards with range 37 [document, 1, document, 2] and point 0 [paras[0].firstChild, -1] 
@@ -4880,9 +4792,7 @@ FAIL extend() forwards with range 37 [document, 1, document, 2] and point 82 [xm
 "
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 37 [document, 1, document, 2] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 37 [document, 1, document, 2] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL extend() forwards with range 37 [document, 1, document, 2] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
@@ -4890,19 +4800,13 @@ FAIL extend() forwards with range 37 [document, 1, document, 2] and point 84 [do
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 37 [document, 1, document, 2] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 37 [document, 1, document, 2] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 37 [document, 1, document, 2] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 37 [document, 1, document, 2] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 37 [document, 1, document, 2] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 37 [document, 1, document, 2] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 37 [document, 1, document, 2] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() forwards with range 38 [testDiv, 0, comment, 5] and point 0 [paras[0].firstChild, -1] 
@@ -5300,9 +5204,7 @@ FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 82 [xmlD
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 38 [testDiv, 0, comment, 5] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 83 [doctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -5312,21 +5214,15 @@ FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 84 [doct
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 84 [doctype, -17] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 38 [testDiv, 0, comment, 5] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 85 [doctype, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 38 [testDiv, 0, comment, 5] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 38 [testDiv, 0, comment, 5] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 38 [testDiv, 0, comment, 5] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 38 [testDiv, 0, comment, 5] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -5520,25 +5416,17 @@ FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and po
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 81 [foreignDocfrag, 0] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 82 [xmlDocfrag, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 82 [xmlDocfrag, 0] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 83 [doctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 83 [doctype, 0] 
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 83 [doctype, 0] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 84 [doctype, -17] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
             selection.extend(node, offset);
         }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 84 [doctype, -17] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 85 [doctype, 1] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" threw object "IndexSizeError: Failed to execute 'extend' on 'Selection': 1 is larger than the given node's length." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
+PASS extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 85 [doctype, 1] 
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 85 [doctype, 1] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 86 [foreignDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 86 [foreignDoctype, 0] 
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 86 [foreignDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 87 [xmlDoctype, 0] assert_throws: extend() to a doctype must throw InvalidNodeTypeError function "function () {
-            selection.extend(node, offset);
-        }" did not throw
+PASS extend() forwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 87 [xmlDoctype, 0] 
 FAIL extend() backwards with range 39 [paras[2].firstChild, 4, comment, 2] and point 87 [xmlDoctype, 0] assert_equals: Sanity check: endContainer must be correct expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 Harness: the test ran to completion.
 

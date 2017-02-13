@@ -17,27 +17,27 @@ var before = document.getElementById("before");
 var after = document.getElementById("after");
 
 var sel = window.getSelection();
-sel.setBaseAndExtent(before, 0, before, 6);
+sel.setBaseAndExtent(before, 0, before, 1);
 sel.modify("extend", "forward", "character");
 shouldBe("sel.focusNode", "after");
 
-sel.setBaseAndExtent(after, 5, after, 0);
+sel.setBaseAndExtent(after, 1, after, 0);
 sel.modify("extend", "backward", "character");
 shouldBe("sel.focusNode.parentElement", "before");
 
-sel.setBaseAndExtent(before, 0, before, 6);
+sel.setBaseAndExtent(before, 0, before, 1);
 sel.modify("extend", "forward", "word");
 shouldBe("sel.focusNode", "after");
 
-sel.setBaseAndExtent(after, 5, after, 0);
+sel.setBaseAndExtent(after, 1, after, 0);
 sel.modify("extend", "backward", "word");
 shouldBe("sel.focusNode.parentElement", "before");
 
-sel.setBaseAndExtent(before, 0, before, 6);
+sel.setBaseAndExtent(before, 0, before, 1);
 sel.modify("extend", "forward", "line");
 shouldBe("sel.focusNode.parentElement", "after");
 
-sel.setBaseAndExtent(after, 5, after, 0);
+sel.setBaseAndExtent(after, 1, after, 0);
 sel.modify("extend", "backward", "line");
 shouldBe("sel.focusNode.parentElement", "before");
 </script>

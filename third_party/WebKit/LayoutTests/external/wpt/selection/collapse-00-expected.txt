@@ -493,15 +493,11 @@ PASS Range 0 [], point 15 [paras[1].firstChild, 65535]
 FAIL Range 0 [], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 0 [], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 0 [], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 0 [], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 0 [], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 0 [], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 0 [], point 24 [document.documentElement, -1] 
 FAIL Range 0 [], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -559,9 +555,7 @@ FAIL Range 0 [], point 58 [foreignTextNode, 36] assert_equals: selection.rangeCo
 PASS Range 0 [], point 59 [xmlDoc, -1] 
 FAIL Range 0 [], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 0 [], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 0 [], point 62 [xmlDoc, 5] 
 FAIL Range 0 [], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 0 [], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -587,12 +581,8 @@ FAIL Range 0 [], point 84 [doctype, -17] assert_throws: Must throw INVALID_NODE_
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 0 [], point 85 [doctype, 1] 
-FAIL Range 0 [], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 0 [], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 0 [], point 86 [foreignDoctype, 0] 
+PASS Range 0 [], point 87 [xmlDoctype, 0] 
 PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -620,18 +610,14 @@ FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 17 [detache
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 24 [document.documentElement, -1] 
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -702,9 +688,7 @@ FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 60 [xmlDoc,
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 62 [xmlDoc, 5] 
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -750,12 +734,8 @@ FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 85 [doctype, 1] 
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 86 [foreignDoctype, 0] 
+PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0], point 87 [xmlDoctype, 0] 
 PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -783,18 +763,14 @@ FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 17 [detache
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 24 [document.documentElement, -1] 
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -865,9 +841,7 @@ FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 60 [xmlDoc,
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 62 [xmlDoc, 5] 
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -913,12 +887,8 @@ FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 85 [doctype, 1] 
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 86 [foreignDoctype, 0] 
+PASS Range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1], point 87 [xmlDoctype, 0] 
 PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 0 [paras[0].firstChild, -1] 
 PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 1 [paras[0].firstChild, 0] 
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -946,18 +916,14 @@ FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 17 [detache
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 24 [document.documentElement, -1] 
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1028,9 +994,7 @@ FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 60 [xmlDoc,
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 62 [xmlDoc, 5] 
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1076,12 +1040,8 @@ FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 85 [doctype, 1] 
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 86 [foreignDoctype, 0] 
+PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 0 [paras[0].firstChild, -1] 
 PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 1 [paras[0].firstChild, 0] 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1109,18 +1069,14 @@ FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 17 [detache
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 24 [document.documentElement, -1] 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1191,9 +1147,7 @@ FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 60 [xmlDoc,
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 62 [xmlDoc, 5] 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1239,12 +1193,8 @@ FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 85 [doctype, 1] 
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 86 [foreignDoctype, 0] 
+PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9], point 87 [xmlDoctype, 0] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1269,15 +1219,11 @@ PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 15 [paras[1
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 24 [document.documentElement, -1] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1335,9 +1281,7 @@ FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 58 [foreign
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 59 [xmlDoc, -1] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 62 [xmlDoc, 5] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -1363,12 +1307,8 @@ FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 85 [doctype, 1] 
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 86 [foreignDoctype, 0] 
+PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 87 [xmlDoctype, 0] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1393,15 +1333,11 @@ PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 15 [paras[1
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 24 [document.documentElement, -1] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1459,9 +1395,7 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 58 [foreign
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 59 [xmlDoc, -1] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 62 [xmlDoc, 5] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -1487,12 +1421,8 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 85 [doctype, 1] 
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 86 [foreignDoctype, 0] 
+PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 87 [xmlDoctype, 0] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 0 [paras[0].firstChild, -1] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 1 [paras[0].firstChild, 0] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1517,15 +1447,11 @@ PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 15 [paras[1
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 24 [document.documentElement, -1] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1583,9 +1509,7 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 58 [foreign
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 59 [xmlDoc, -1] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 62 [xmlDoc, 5] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -1611,12 +1535,8 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 85 [doctype, 1] 
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 86 [foreignDoctype, 0] 
+PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 0 [paras[0].firstChild, -1] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 1 [paras[0].firstChild, 0] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1641,15 +1561,11 @@ PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 15 [paras[1
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 24 [document.documentElement, -1] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1707,9 +1623,7 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 58 [foreign
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 59 [xmlDoc, -1] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 62 [xmlDoc, 5] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -1735,12 +1649,8 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 84 [doctype
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 85 [doctype, 1] 
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 86 [foreignDoctype, 0] 
+PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 87 [xmlDoctype, 0] 
 PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1765,15 +1675,11 @@ PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 1
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 24 [document.documentElement, -1] 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1831,9 +1737,7 @@ FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 5
 PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 59 [xmlDoc, -1] 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 62 [xmlDoc, 5] 
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -1859,12 +1763,8 @@ FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 8
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 85 [doctype, 1] 
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 86 [foreignDoctype, 0] 
+PASS Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0], point 87 [xmlDoctype, 0] 
 PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -1889,15 +1789,11 @@ PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 24 [document.documentElement, -1] 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -1955,9 +1851,7 @@ FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 
 PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 59 [xmlDoc, -1] 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 62 [xmlDoc, 5] 
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -1983,12 +1877,8 @@ FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 85 [doctype, 1] 
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 86 [foreignDoctype, 0] 
+PASS Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1], point 87 [xmlDoctype, 0] 
 PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 0 [paras[0].firstChild, -1] 
 PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 1 [paras[0].firstChild, 0] 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2013,15 +1903,11 @@ PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 24 [document.documentElement, -1] 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2079,9 +1965,7 @@ FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 
 PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 59 [xmlDoc, -1] 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 62 [xmlDoc, 5] 
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -2107,12 +1991,8 @@ FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 85 [doctype, 1] 
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 86 [foreignDoctype, 0] 
+PASS Range 11 [detachedPara1.firstChild, 2, detachedPara1.firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2137,15 +2017,11 @@ PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 15
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 24 [document.documentElement, -1] 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2203,9 +2079,7 @@ FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 58
 PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 59 [xmlDoc, -1] 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 62 [xmlDoc, 5] 
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -2231,12 +2105,8 @@ FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 84
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 85 [doctype, 1] 
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 86 [foreignDoctype, 0] 
+PASS Range 12 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 0], point 87 [xmlDoctype, 0] 
 PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2261,15 +2131,11 @@ PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 15
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 24 [document.documentElement, -1] 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2327,9 +2193,7 @@ FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 58
 PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 59 [xmlDoc, -1] 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 62 [xmlDoc, 5] 
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -2355,12 +2219,8 @@ FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 84
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 85 [doctype, 1] 
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 86 [foreignDoctype, 0] 
+PASS Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1], point 87 [xmlDoctype, 0] 
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 0 [paras[0].firstChild, -1] 
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 1 [paras[0].firstChild, 0] 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2385,15 +2245,11 @@ PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 15
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 24 [document.documentElement, -1] 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2451,9 +2307,7 @@ FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 58
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 59 [xmlDoc, -1] 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 62 [xmlDoc, 5] 
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -2479,12 +2333,8 @@ FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 84
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 85 [doctype, 1] 
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 86 [foreignDoctype, 0] 
+PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2512,18 +2362,14 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 24 [document.documentElement, -1] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2594,9 +2440,7 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 62 [xmlDoc, 5] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2642,12 +2486,8 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 85 [doctype, 1] 
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 86 [foreignDoctype, 0] 
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 87 [xmlDoctype, 0] 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 0 [paras[0].firstChild, -1] 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 1 [paras[0].firstChild, 0] 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2672,15 +2512,11 @@ PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 24 [document.documentElement, -1] 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2738,9 +2574,7 @@ FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 59 [xmlDoc, -1] 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 62 [xmlDoc, 5] 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -2766,12 +2600,8 @@ FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 85 [doctype, 1] 
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 86 [foreignDoctype, 0] 
+PASS Range 16 [document.documentElement, 0, document.documentElement, 2], point 87 [xmlDoctype, 0] 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 0 [paras[0].firstChild, -1] 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 1 [paras[0].firstChild, 0] 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2796,15 +2626,11 @@ PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 24 [document.documentElement, -1] 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -2862,9 +2688,7 @@ FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 59 [xmlDoc, -1] 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 62 [xmlDoc, 5] 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -2890,12 +2714,8 @@ FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 85 [doctype, 1] 
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 86 [foreignDoctype, 0] 
+PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 87 [xmlDoctype, 0] 
 PASS Range 18 [document.head, 1, document.head, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 18 [document.head, 1, document.head, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -2923,18 +2743,14 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 17 [detachedPara1.firs
 "
 FAIL Range 18 [document.head, 1, document.head, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 18 [document.head, 1, document.head, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 18 [document.head, 1, document.head, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 18 [document.head, 1, document.head, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 18 [document.head, 1, document.head, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 18 [document.head, 1, document.head, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 18 [document.head, 1, document.head, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 18 [document.head, 1, document.head, 1], point 24 [document.documentElement, -1] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3005,9 +2821,7 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 60 [xmlDoc, 0] assert_
 "
 FAIL Range 18 [document.head, 1, document.head, 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 18 [document.head, 1, document.head, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 18 [document.head, 1, document.head, 1], point 62 [xmlDoc, 5] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 18 [document.head, 1, document.head, 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3053,12 +2867,8 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 84 [doctype, -17] asse
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 18 [document.head, 1, document.head, 1], point 85 [doctype, 1] 
-FAIL Range 18 [document.head, 1, document.head, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 18 [document.head, 1, document.head, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 18 [document.head, 1, document.head, 1], point 86 [foreignDoctype, 0] 
+PASS Range 18 [document.head, 1, document.head, 1], point 87 [xmlDoctype, 0] 
 PASS Range 19 [document.body, 0, document.body, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 19 [document.body, 0, document.body, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 19 [document.body, 0, document.body, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3083,15 +2893,11 @@ PASS Range 19 [document.body, 0, document.body, 1], point 15 [paras[1].firstChil
 FAIL Range 19 [document.body, 0, document.body, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 19 [document.body, 0, document.body, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 19 [document.body, 0, document.body, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 19 [document.body, 0, document.body, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 19 [document.body, 0, document.body, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 19 [document.body, 0, document.body, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 19 [document.body, 0, document.body, 1], point 24 [document.documentElement, -1] 
 FAIL Range 19 [document.body, 0, document.body, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3149,9 +2955,7 @@ FAIL Range 19 [document.body, 0, document.body, 1], point 58 [foreignTextNode, 3
 PASS Range 19 [document.body, 0, document.body, 1], point 59 [xmlDoc, -1] 
 FAIL Range 19 [document.body, 0, document.body, 1], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 19 [document.body, 0, document.body, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 19 [document.body, 0, document.body, 1], point 62 [xmlDoc, 5] 
 FAIL Range 19 [document.body, 0, document.body, 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 19 [document.body, 0, document.body, 1], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -3177,12 +2981,8 @@ FAIL Range 19 [document.body, 0, document.body, 1], point 84 [doctype, -17] asse
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 19 [document.body, 0, document.body, 1], point 85 [doctype, 1] 
-FAIL Range 19 [document.body, 0, document.body, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 19 [document.body, 0, document.body, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 19 [document.body, 0, document.body, 1], point 86 [foreignDoctype, 0] 
+PASS Range 19 [document.body, 0, document.body, 1], point 87 [xmlDoctype, 0] 
 PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3207,15 +3007,11 @@ PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], po
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 24 [document.documentElement, -1] 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3273,9 +3069,7 @@ FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], po
 PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 59 [xmlDoc, -1] 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 62 [xmlDoc, 5] 
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -3301,12 +3095,8 @@ FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], po
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 85 [doctype, 1] 
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 86 [foreignDoctype, 0] 
+PASS Range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1], point 87 [xmlDoctype, 0] 
 PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3331,15 +3121,11 @@ PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 15 [paras[1].first
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 24 [document.documentElement, -1] 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3397,9 +3183,7 @@ FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 58 [foreignTextNod
 PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 59 [xmlDoc, -1] 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 62 [xmlDoc, 5] 
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -3425,12 +3209,8 @@ FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 84 [doctype, -17] 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 85 [doctype, 1] 
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 86 [foreignDoctype, 0] 
+PASS Range 21 [foreignDoc.head, 1, foreignDoc.head, 1], point 87 [xmlDoctype, 0] 
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3455,15 +3235,11 @@ PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 15 [paras[1].first
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 24 [document.documentElement, -1] 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3521,9 +3297,7 @@ FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 58 [foreignTextNod
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 59 [xmlDoc, -1] 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 62 [xmlDoc, 5] 
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -3549,12 +3323,8 @@ FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 84 [doctype, -17] 
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 85 [doctype, 1] 
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 86 [foreignDoctype, 0] 
+PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 87 [xmlDoctype, 0] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3582,18 +3352,14 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], point 17 [detachedPara1.firstChild, 1]
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 23 [paras[0], 0, paras[0], 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 23 [paras[0], 0, paras[0], 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 24 [document.documentElement, -1] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3664,9 +3430,7 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], point 60 [xmlDoc, 0] assert_equals: fo
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 23 [paras[0], 0, paras[0], 0], point 62 [xmlDoc, 5] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3712,12 +3476,8 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], point 84 [doctype, -17] assert_throws:
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 23 [paras[0], 0, paras[0], 0], point 85 [doctype, 1] 
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 23 [paras[0], 0, paras[0], 0], point 86 [foreignDoctype, 0] 
+PASS Range 23 [paras[0], 0, paras[0], 0], point 87 [xmlDoctype, 0] 
 PASS Range 24 [paras[0], 0, paras[0], 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 24 [paras[0], 0, paras[0], 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3745,18 +3505,14 @@ FAIL Range 24 [paras[0], 0, paras[0], 1], point 17 [detachedPara1.firstChild, 1]
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 24 [paras[0], 0, paras[0], 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 24 [paras[0], 0, paras[0], 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 24 [paras[0], 0, paras[0], 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 24 [paras[0], 0, paras[0], 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 24 [paras[0], 0, paras[0], 1], point 24 [document.documentElement, -1] 
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3827,9 +3583,7 @@ FAIL Range 24 [paras[0], 0, paras[0], 1], point 60 [xmlDoc, 0] assert_equals: fo
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 24 [paras[0], 0, paras[0], 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 24 [paras[0], 0, paras[0], 1], point 62 [xmlDoc, 5] 
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 24 [paras[0], 0, paras[0], 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3875,12 +3629,8 @@ FAIL Range 24 [paras[0], 0, paras[0], 1], point 84 [doctype, -17] assert_throws:
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 24 [paras[0], 0, paras[0], 1], point 85 [doctype, 1] 
-FAIL Range 24 [paras[0], 0, paras[0], 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 24 [paras[0], 0, paras[0], 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 24 [paras[0], 0, paras[0], 1], point 86 [foreignDoctype, 0] 
+PASS Range 24 [paras[0], 0, paras[0], 1], point 87 [xmlDoctype, 0] 
 PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -3905,15 +3655,11 @@ PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 15 [paras[1].firstChil
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 24 [document.documentElement, -1] 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -3971,9 +3717,7 @@ FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 58 [foreignTextNode, 3
 PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 59 [xmlDoc, -1] 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 62 [xmlDoc, 5] 
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -3999,12 +3743,8 @@ FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 84 [doctype, -17] asse
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 85 [doctype, 1] 
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 25 [detachedPara1, 0, detachedPara1, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 86 [foreignDoctype, 0] 
+PASS Range 25 [detachedPara1, 0, detachedPara1, 0], point 87 [xmlDoctype, 0] 
 PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -4029,15 +3769,11 @@ PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 15 [paras[1].firstChil
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 17 [detachedPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 18 [detachedPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 20 [foreignPara1.firstChild, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 21 [foreignPara1.firstChild, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 22 [foreignPara1.firstChild, 8] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 24 [document.documentElement, -1] 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -4095,9 +3831,7 @@ FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 58 [foreignTextNode, 3
 PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 59 [xmlDoc, -1] 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 60 [xmlDoc, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 61 [xmlDoc, 1] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 62 [xmlDoc, 5] 
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 63 [xmlComment, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 64 [xmlComment, 4] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
 FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 65 [processingInstruction, 0] assert_equals: selection.rangeCount must equal 1 after collapse() expected 1 but got 0
@@ -4123,12 +3857,8 @@ FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 84 [doctype, -17] asse
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 85 [doctype, 1] 
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 26 [detachedPara1, 0, detachedPara1, 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 86 [foreignDoctype, 0] 
+PASS Range 26 [detachedPara1, 0, detachedPara1, 1], point 87 [xmlDoctype, 0] 
 PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 0 [paras[0].firstChild, -1] 
 PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -4153,15 +3883,11 @@ PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 15 [paras[
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 24 [document.documentElement, -1] 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -4219,9 +3945,7 @@ FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 58 [foreig
 PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 59 [xmlDoc, -1] 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 62 [xmlDoc, 5] 
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Element node <p id="c">Qrstuvwx</p>
@@ -4247,12 +3971,8 @@ FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 84 [doctyp
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 85 [doctype, 1] 
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 86 [foreignDoctype, 0] 
+PASS Range 27 [paras[0].firstChild, 0, paras[1].firstChild, 0], point 87 [xmlDoctype, 0] 
 PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 0 [paras[0].firstChild, -1] 
 PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 1 [paras[0].firstChild, 0] 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -4277,15 +3997,11 @@ PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 15 [paras[
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 24 [document.documentElement, -1] 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -4343,9 +4059,7 @@ FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 58 [foreig
 PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 59 [xmlDoc, -1] 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Element node <p id="c">Qrstuvwx</p>
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 62 [xmlDoc, 5] 
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Element node <p id="c">Qrstuvwx</p>
 FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Element node <p id="c">Qrstuvwx</p>
@@ -4371,12 +4085,8 @@ FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 84 [doctyp
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 85 [doctype, 1] 
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 86 [foreignDoctype, 0] 
+PASS Range 28 [paras[0].firstChild, 0, paras[1].firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 0 [paras[0].firstChild, -1] 
 PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
@@ -4401,15 +4111,11 @@ PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 15 [paras[1].firstChi
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 17 [detachedPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 18 [detachedPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Qrstuvwx"
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 19 [detachedPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 19 [detachedPara1.firstChild, 9] 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 20 [foreignPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 21 [foreignPara1.firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 22 [foreignPara1.firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Efghijkl" but got Text node "Qrstuvwx"
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 23 [foreignPara1.firstChild, 9] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 24 [document.documentElement, -1] 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
@@ -4467,9 +4173,7 @@ FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 58 [foreignTextNode, 
 PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 59 [xmlDoc, -1] 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 60 [xmlDoc, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 61 [xmlDoc, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 4 children but got Text node "Qrstuvwx"
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 62 [xmlDoc, 5] assert_throws: Must throw INDEX_SIZE_ERR when collapse()ing if the offset is negative or greater than the node's length function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 62 [xmlDoc, 5] 
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 63 [xmlComment, 0] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 64 [xmlComment, 4] assert_equals: focusNode must equal the node we collapse()d to expected Comment node <!--I maliciously created a comment that will break incautiou...--> but got Text node "Qrstuvwx"
 FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 65 [processingInstruction, 0] assert_equals: focusNode must equal the node we collapse()d to expected ProcessingInstruction node with target "somePI" and data "Did you know that \":syn sync fromstart\" is very useful wh..." but got Text node "Qrstuvwx"
@@ -4495,11 +4199,7 @@ FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 84 [doctype, -17] ass
             selection.collapse(point[0], point[1]);
         }" threw object "IndexSizeError: Failed to execute 'collapse' on 'Selection': -17 is not a valid offset." that is not a DOMException INVALID_NODE_TYPE_ERR: property "code" is equal to 1, expected 24
 PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 85 [doctype, 1] 
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 86 [foreignDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
-FAIL Range 29 [paras[0].firstChild, 3, paras[3], 1], point 87 [xmlDoctype, 0] assert_throws: Must throw INVALID_NODE_TYPE_ERR when collapse()ing if the node is a DocumentType function "function () {
-            selection.collapse(point[0], point[1]);
-        }" did not throw
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 86 [foreignDoctype, 0] 
+PASS Range 29 [paras[0].firstChild, 3, paras[3], 1], point 87 [xmlDoctype, 0] 
 Harness: the test ran to completion.
 

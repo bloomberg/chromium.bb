@@ -23,7 +23,7 @@
         fail("Image should be adjacent to the bold node.");
 
     // Now try inserting HTML over the image.
-    execSetSelectionCommand(image, 0, image, 1);
+    execSetSelectionCommand(image, 0, image, 0);
     document.execCommand("inserthtml", false, "<span id='red' style='color:red'>red text</span>");
 
     // Verify that the red text isn't in the bold tag.

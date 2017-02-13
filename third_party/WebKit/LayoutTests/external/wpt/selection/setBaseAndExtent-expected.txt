@@ -166,7 +166,7 @@ FAIL Range 56 [foreignDocfrag, 0, foreignDocfrag, 0] setBaseAndExtent() assert_e
 FAIL Reverse range 56 [foreignDocfrag, 0, foreignDocfrag, 0] setBaseAndExtent() assert_equals: anchorNode must equal the requested focus node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Range 57 [xmlDocfrag, 0, xmlDocfrag, 0] setBaseAndExtent() assert_equals: anchorNode must equal the requested anchor node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
 FAIL Reverse range 57 [xmlDocfrag, 0, xmlDocfrag, 0] setBaseAndExtent() assert_equals: anchorNode must equal the requested focus node expected DocumentFragment node with 0 children but got Text node "Qrstuvwx"
-FAIL setBaseAndExtent() with index larger than length assert_equals: focus offset, got an IndexSizeError exception expected "IndexSizeError" but got "Error"
+PASS setBaseAndExtent() with index larger than length 
 PASS setBaseAndExtent() with negative index 
 FAIL setBaseAndExtent() with null nodes assert_equals: focus node, got an TypeError exception expected "TypeError" but got "Error"
 PASS setBaseAndExtent() with too few params 
