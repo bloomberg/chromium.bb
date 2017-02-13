@@ -19,13 +19,4 @@ ScopedNavigationItemImplList CreateScopedNavigationItemImplList(
   return list;
 }
 
-NavigationItemList CreateNavigationItemList(
-    ScopedNavigationItemImplList& scoped_item_list) {
-  NavigationItemList list(scoped_item_list.size());
-  for (size_t index = 0; index < scoped_item_list.size(); ++index) {
-    list[index] = scoped_item_list[index].get();
-  }
-  return list;
-}
-
 }  // namespace web

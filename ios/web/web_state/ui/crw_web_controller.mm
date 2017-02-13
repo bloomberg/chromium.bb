@@ -2164,14 +2164,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self webWillFinishHistoryNavigationFromEntry:fromEntry];
       [self updateHTML5HistoryState];
     } else {
-      // TODO(crbug.com/691492): After discardNonCommittedItems, the item
-      // pointed by |fromEntry| may not be valid anymore.
-      // Set |fromEntry| to nil to avoid crash whan using the item.
-      // Remove when the fix is not needed anymore.
-      if ([fromEntry isEqual:sessionController.transientEntry] ||
-          [fromEntry isEqual:sessionController.pendingEntry]) {
-        fromEntry = nil;
-      }
       [sessionController discardNonCommittedItems];
       [sessionController setPendingItemIndex:index];
 
@@ -2409,10 +2401,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
-  // TODO(crbug.com/691492): Removing the DCHECK as |fromEntry| may be nil if
-  // the pending entry was discarded.
-  // Remove when the fix is not needed anymore.
-  // DCHECK(fromEntry);
+  DCHECK(fromEntry);
   [self updateDesktopUserAgentForEntry:self.currentSessionEntry
                              fromEntry:fromEntry];
   [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];

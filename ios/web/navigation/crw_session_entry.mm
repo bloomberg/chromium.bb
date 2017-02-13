@@ -21,21 +21,32 @@
 #endif
 
 @interface CRWSessionEntry () {
-  // The NavigationItem passed on initialization.
-  web::NavigationItemImpl* _item;
+  // The NavigationItemImpl corresponding to this CRWSessionEntry.
+  // TODO(stuartmorgan): Move ownership to NavigationManagerImpl.
+  std::unique_ptr<web::NavigationItemImpl> _navigationItem;
 }
 
 @end
 
 @implementation CRWSessionEntry
 
-- (instancetype)initWithNavigationItem:(web::NavigationItem*)item {
+- (instancetype)initWithNavigationItem:
+    (std::unique_ptr<web::NavigationItem>)item {
   self = [super init];
   if (self) {
-    DCHECK(item);
-    _item = static_cast<web::NavigationItemImpl*>(item);
+    _navigationItem.reset(
+        static_cast<web::NavigationItemImpl*>(item.release()));
   }
   return self;
+}
+
+// TODO(ios): Shall we overwrite EqualTo:?
+
+- (instancetype)copyWithZone:(NSZone*)zone {
+  CRWSessionEntry* copy = [[[self class] alloc] init];
+  copy->_navigationItem.reset(
+      new web::NavigationItemImpl(*_navigationItem.get()));
+  return copy;
 }
 
 - (NSString*)description {
@@ -43,24 +54,21 @@
       stringWithFormat:
           @"url:%@ originalurl:%@ title:%@ transition:%d displayState:%@ "
           @"desktopUA:%d",
-          base::SysUTF8ToNSString(_item->GetURL().spec()),
-          base::SysUTF8ToNSString(_item->GetOriginalRequestURL().spec()),
-          base::SysUTF16ToNSString(_item->GetTitle()),
-          _item->GetTransitionType(),
-          _item->GetPageDisplayState().GetDescription(),
-          _item->IsOverridingUserAgent()];
+          base::SysUTF8ToNSString(_navigationItem->GetURL().spec()),
+          base::SysUTF8ToNSString(
+              _navigationItem->GetOriginalRequestURL().spec()),
+          base::SysUTF16ToNSString(_navigationItem->GetTitle()),
+          _navigationItem->GetTransitionType(),
+          _navigationItem->GetPageDisplayState().GetDescription(),
+          _navigationItem->IsOverridingUserAgent()];
 }
 
 - (web::NavigationItem*)navigationItem {
-  return _item;
+  return _navigationItem.get();
 }
 
 - (web::NavigationItemImpl*)navigationItemImpl {
-  return _item;
-}
-
-- (BOOL)isEqual:(CRWSessionEntry*)object {
-  return _item == [object navigationItem];
+  return _navigationItem.get();
 }
 
 @end
