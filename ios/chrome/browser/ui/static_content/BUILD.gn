@@ -19,6 +19,7 @@ source_set("static_content") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "static_html_native_content_unittest.mm",

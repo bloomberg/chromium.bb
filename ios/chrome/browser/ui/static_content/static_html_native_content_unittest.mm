@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -16,6 +15,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface StaticHtmlNativeContentTestGenerator : NSObject<HtmlGenerator>
 @end
@@ -42,12 +45,11 @@ class StaticHtmlNativeContentTest : public PlatformTest {
 TEST_F(StaticHtmlNativeContentTest, BasicResourceTest) {
   GURL url("chrome://foo");
   id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  base::scoped_nsobject<StaticHtmlNativeContent> content(
-      [[StaticHtmlNativeContent alloc]
-          initWithResourcePathResource:@"about_credits.html"
-                                loader:loader
-                          browserState:chrome_browser_state_.get()
-                                   url:url]);
+  StaticHtmlNativeContent* content = [[StaticHtmlNativeContent alloc]
+      initWithResourcePathResource:@"about_credits.html"
+                            loader:loader
+                      browserState:chrome_browser_state_.get()
+                               url:url];
 
   ASSERT_EQ(url, [content url]);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
@@ -56,17 +58,16 @@ TEST_F(StaticHtmlNativeContentTest, BasicResourceTest) {
 TEST_F(StaticHtmlNativeContentTest, BasicInitTest) {
   GURL url("chrome://foo");
   id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  base::scoped_nsobject<StaticHtmlNativeContentTestGenerator> generator(
-      [[StaticHtmlNativeContentTestGenerator alloc] init]);
+  StaticHtmlNativeContentTestGenerator* generator =
+      [[StaticHtmlNativeContentTestGenerator alloc] init];
 
-  base::scoped_nsobject<StaticHtmlViewController> viewController(
-      [[StaticHtmlViewController alloc]
-          initWithGenerator:generator
-               browserState:chrome_browser_state_.get()]);
-  base::scoped_nsobject<StaticHtmlNativeContent> content(
+  StaticHtmlViewController* viewController = [[StaticHtmlViewController alloc]
+      initWithGenerator:generator
+           browserState:chrome_browser_state_.get()];
+  StaticHtmlNativeContent* content =
       [[StaticHtmlNativeContent alloc] initWithLoader:loader
                              staticHTMLViewController:viewController
-                                                  URL:url]);
+                                                  URL:url];
   ASSERT_EQ(url, [content url]);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
 }

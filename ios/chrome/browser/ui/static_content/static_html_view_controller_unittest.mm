@@ -7,8 +7,6 @@
 #include <memory>
 
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -28,6 +26,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Generator that returns the value of a localized identifier.
 @interface L10nHtmlGenerator : NSObject<HtmlGenerator> {
@@ -107,30 +109,26 @@ class StaticHtmlViewControllerTest : public PlatformTest {
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  // Private autorelease pool so objects are released as soon as possible.
-  base::mac::ScopedNSAutoreleasePool pool_;
   web::ScopedTestingWebClient web_client_;
 };
 
 // Tests the creation of a StaticHtmlViewController displaying a resource file.
 TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
-  base::scoped_nsobject<id> loader;
-  loader.reset([[LoadTestMockLoader alloc]
+  id loader = [[LoadTestMockLoader alloc]
       initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]]);
+                                    mockForProtocol:@protocol(UrlLoader)]];
 
   id<CRWNativeContentDelegate> delegate =
       [OCMockObject mockForProtocol:@protocol(CRWNativeContentDelegate)];
   GURL referrer_url("chrome://foo");
   web::Referrer referrer(referrer_url, web::ReferrerPolicyDefault);
-  base::scoped_nsobject<StaticHtmlViewController> content(
-      [[StaticHtmlViewController alloc]
-          initWithResource:@"terms_en.html"
-              browserState:chrome_browser_state_.get()]);
+  StaticHtmlViewController* content = [[StaticHtmlViewController alloc]
+      initWithResource:@"terms_en.html"
+          browserState:chrome_browser_state_.get()];
   [content setLoader:loader referrer:referrer];
   [content setDelegate:delegate];
   [[(OCMockObject*)delegate expect]
-       nativeContent:content.get()
+       nativeContent:content
       titleDidChange:[OCMArg checkWithBlock:^BOOL(id value) {
         isRunLoopDry = true;
         return [@"Google Chrome Terms of Service"
@@ -138,33 +136,30 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
       }]];
   [content triggerPendingLoad];
   DryRunLoop(false);
-  ASSERT_OCMOCK_VERIFY(loader.get());
+  ASSERT_OCMOCK_VERIFY(loader);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
-  base::scoped_nsobject<id> block(
-      [(id) ^ (const GURL& url, const web::Referrer& referrer,
-               ui::PageTransition transition, BOOL rendererInitiated) {
-        EXPECT_EQ(url, GURL());
-        EXPECT_EQ(referrer.url, referrer_url);
-        EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
-        EXPECT_TRUE(
-            PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-        EXPECT_TRUE(rendererInitiated);
-      } copy]);
+  id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
+                      ui::PageTransition transition, BOOL rendererInitiated) {
+    EXPECT_EQ(url, GURL());
+    EXPECT_EQ(referrer.url, referrer_url);
+    EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
+    EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
+    EXPECT_TRUE(rendererInitiated);
+  } copy];
 
   [loader onSelector:@selector(loadURL:referrer:transition:rendererInitiated:)
       callBlockExpectation:block];
 
   DryRunLoop(true);
-  ASSERT_OCMOCK_VERIFY(loader.get());
+  ASSERT_OCMOCK_VERIFY(loader);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 
 // Tests the creation of a StaticHtmlViewController displaying a local file.
 TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
-  base::scoped_nsobject<id> loader;
-  loader.reset([[LoadTestMockLoader alloc]
+  id loader = [[LoadTestMockLoader alloc]
       initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]]);
+                                    mockForProtocol:@protocol(UrlLoader)]];
 
   id<CRWNativeContentDelegate> delegate =
       [OCMockObject mockForProtocol:@protocol(CRWNativeContentDelegate)];
@@ -174,16 +169,15 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
       fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"terms_en.html"
                                                       ofType:nil
                                                  inDirectory:nil]];
-  base::scoped_nsobject<StaticHtmlViewController> content(
-      [[StaticHtmlViewController alloc]
-                  initWithFileURL:net::GURLWithNSURL(fileURL)
-          allowingReadAccessToURL:net::GURLWithNSURL(
-                                      [fileURL URLByDeletingLastPathComponent])
-                     browserState:chrome_browser_state_.get()]);
+  StaticHtmlViewController* content = [[StaticHtmlViewController alloc]
+              initWithFileURL:net::GURLWithNSURL(fileURL)
+      allowingReadAccessToURL:net::GURLWithNSURL(
+                                  [fileURL URLByDeletingLastPathComponent])
+                 browserState:chrome_browser_state_.get()];
   [content setLoader:loader referrer:referrer];
   [content setDelegate:delegate];
   [[(OCMockObject*)delegate expect]
-       nativeContent:content.get()
+       nativeContent:content
       titleDidChange:[OCMArg checkWithBlock:^BOOL(id value) {
         isRunLoopDry = true;
         return [@"Google Chrome Terms of Service"
@@ -191,46 +185,43 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
       }]];
   [content triggerPendingLoad];
   DryRunLoop(false);
-  ASSERT_OCMOCK_VERIFY(loader.get());
+  ASSERT_OCMOCK_VERIFY(loader);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
-  base::scoped_nsobject<id> block(
-      [(id) ^ (const GURL& url, const web::Referrer& referrer,
-               ui::PageTransition transition, BOOL rendererInitiated) {
-        EXPECT_EQ(url, GURL());
-        EXPECT_EQ(referrer.url, referrer_url);
-        EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
-        EXPECT_TRUE(
-            PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-        EXPECT_TRUE(rendererInitiated);
-      } copy]);
+  id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
+                      ui::PageTransition transition, BOOL rendererInitiated) {
+    EXPECT_EQ(url, GURL());
+    EXPECT_EQ(referrer.url, referrer_url);
+    EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
+    EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
+    EXPECT_TRUE(rendererInitiated);
+  } copy];
 
   [loader onSelector:@selector(loadURL:referrer:transition:rendererInitiated:)
       callBlockExpectation:block];
 
   DryRunLoop(true);
-  ASSERT_OCMOCK_VERIFY(loader.get());
+  ASSERT_OCMOCK_VERIFY(loader);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 
 // Tests that -[StaticHtmlViewController webView] returns a non-nil view.
 TEST_F(StaticHtmlViewControllerTest, WebViewNonNil) {
-  base::scoped_nsobject<L10nHtmlGenerator> generator(
-      [[L10nHtmlGenerator alloc] initWithMessageId:IDS_IOS_TOOLS_MENU]);
-  base::scoped_nsobject<StaticHtmlViewController> staticHtmlViewController(
+  L10nHtmlGenerator* generator =
+      [[L10nHtmlGenerator alloc] initWithMessageId:IDS_IOS_TOOLS_MENU];
+  StaticHtmlViewController* staticHtmlViewController =
       [[StaticHtmlViewController alloc]
           initWithGenerator:generator
-               browserState:chrome_browser_state_.get()]);
+               browserState:chrome_browser_state_.get()];
   EXPECT_TRUE([staticHtmlViewController webView]);
 }
 
 // Tests the generated HTML is localized.
 TEST_F(StaticHtmlViewControllerTest, L10NTest) {
-  base::scoped_nsobject<L10nHtmlGenerator> generator(
-      [[L10nHtmlGenerator alloc] initWithMessageId:IDS_IOS_TOOLS_MENU]);
-  base::scoped_nsobject<StaticHtmlViewController> content(
-      [[StaticHtmlViewController alloc]
-          initWithGenerator:generator
-               browserState:chrome_browser_state_.get()]);
+  L10nHtmlGenerator* generator =
+      [[L10nHtmlGenerator alloc] initWithMessageId:IDS_IOS_TOOLS_MENU];
+  StaticHtmlViewController* content = [[StaticHtmlViewController alloc]
+      initWithGenerator:generator
+           browserState:chrome_browser_state_.get()];
   id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
   [content setLoader:loader
             referrer:web::Referrer(GURL("chrome://foo"),
