@@ -4,7 +4,7 @@ Inspect Me
 == Incorrect fetchers
 
 ======== click ========
-== frameworkInternal
+== Framework
 [expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
     passive: false
@@ -19,7 +19,7 @@ Inspect Me
     }
 
 ======== customFirst ========
-== frameworkUser
+== FrameworkUser
 [expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:13
     useCapture: true
     passive: false
@@ -30,7 +30,7 @@ Inspect Me
     }
 
 ======== customSecond ========
-== frameworkUser
+== FrameworkUser
 [expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:18
     useCapture: false
     passive: false
@@ -42,7 +42,7 @@ Inspect Me
 == Exception in fetchers' getter
 
 ======== click ========
-== normal
+== Raw
 [expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
     passive: false

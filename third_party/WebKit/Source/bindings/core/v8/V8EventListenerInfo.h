@@ -19,14 +19,12 @@ class V8EventListenerInfo {
                       bool passive,
                       bool once,
                       v8::Local<v8::Object> handler,
-                      v8::MaybeLocal<v8::Function> removeFunction,
                       int backendNodeId)
       : eventType(eventType),
         useCapture(useCapture),
         passive(passive),
         once(once),
         handler(handler),
-        removeFunction(removeFunction),
         backendNodeId(backendNodeId) {}
 
   AtomicString eventType;
@@ -34,7 +32,6 @@ class V8EventListenerInfo {
   bool passive;
   bool once;
   v8::Local<v8::Object> handler;
-  v8::MaybeLocal<v8::Function> removeFunction;
   int backendNodeId;
 };
 

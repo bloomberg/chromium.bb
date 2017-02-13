@@ -8,7 +8,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "keydown"
 [page]         useCapture: false
 [page]     }
@@ -16,7 +15,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "keydown"
 [page]         useCapture: true
 [page]     }
@@ -26,7 +24,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: false
 [page]         passive: true
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "wheel"
 [page]         useCapture: false
 [page]     }
@@ -37,7 +34,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "keydown"
 [page]         useCapture: true
 [page]     }
@@ -48,7 +44,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "keydown"
 [page]         useCapture: true
 [page]     }
@@ -58,7 +53,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: true
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "keyup"
 [page]         useCapture: false
 [page]     }
@@ -68,7 +62,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "mousedown"
 [page]         useCapture: true
 [page]     }
@@ -78,7 +71,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "mousemove"
 [page]         useCapture: false
 [page]     }
@@ -89,7 +81,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onclick(event) { alert(1) }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "click"
 [page]         useCapture: false
 [page]     }
@@ -99,7 +90,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onmouseover(event) { listener2() }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "mouseover"
 [page]         useCapture: false
 [page]     }
@@ -110,7 +100,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onload(event) { runTest() }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "load"
 [page]         useCapture: false
 [page]     }
@@ -120,7 +109,6 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         once: false
 [page]         passive: false
-[page]         remove: function remove() { [Command Line API] }
 [page]         type: "popstate"
 [page]         useCapture: false
 [page]     }

@@ -3,7 +3,7 @@ Tests removing event listeners in the Elements sidebar panel.
 Inspect Me Inspect Sibling
 
 ======== click ========
-== normal
+== Raw
 [expanded] button#nodeRemoveevent-listener-sidebar-remove.html:9
     useCapture: false
     passive: false
@@ -11,7 +11,7 @@ Inspect Me Inspect Sibling
     handler: function f() {}
 
 ======== mouseover ========
-== normal
+== Raw
 [expanded] button#nodeRemoveevent-listener-sidebar-remove.html:9
     useCapture: false
     passive: false
@@ -20,7 +20,7 @@ Inspect Me Inspect Sibling
 Listeners after removal:
 
 ======== mouseover ========
-== normal
+== Raw
 [expanded] button#nodeRemoveevent-listener-sidebar-remove.html:9
     useCapture: false
     passive: false
@@ -29,7 +29,7 @@ Listeners after removal:
 Listeners for sibling node:
 
 ======== click ========
-== normal
+== Raw
 [expanded] button#node-siblingRemoveevent-listener-sidebar-remove.html:10
     useCapture: false
     passive: false
@@ -37,7 +37,7 @@ Listeners for sibling node:
     handler: function g() {}
 
 ======== mouseover ========
-== normal
+== Raw
 [expanded] button#node-siblingRemoveevent-listener-sidebar-remove.html:10
     useCapture: false
     passive: false

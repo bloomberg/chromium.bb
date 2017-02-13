@@ -345,7 +345,7 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callbac
             InspectorTest.addResult("======== " + eventType + " ========");
             var listenerItems = listenerTypes[i].children();
             for (var j = 0; j < listenerItems.length; ++j) {
-                InspectorTest.addResult("== " + listenerItems[j].eventListener().listenerType());
+                InspectorTest.addResult("== " + listenerItems[j].eventListener().origin());
                 InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
             }
         }

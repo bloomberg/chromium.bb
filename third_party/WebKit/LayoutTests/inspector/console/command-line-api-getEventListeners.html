@@ -81,12 +81,13 @@ function dumpObject(object, prefix)
 function runTestsInPage(getEventListeners)
 {
     output("- inner -");
-    var innerListeners = getEventListeners(document.getElementById("inner"));
+    var innerElement = document.getElementById("inner");
+    var innerListeners = getEventListeners(innerElement);
     dumpObject(innerListeners);
-    innerListeners.keydown[0].remove();
-    innerListeners.wheel[0].remove();
+    innerElement.removeEventListener("keydown", innerListeners.keydown[0].listener, innerListeners.keydown[0].useCapture);
+    innerElement.removeEventListener("wheel", innerListeners.wheel[0].listener, innerListeners.wheel[0].useCapture);
     output("- inner after a removal -");
-    dumpObject(getEventListeners(document.getElementById("inner")));
+    dumpObject(getEventListeners(innerElement));
     output("- outer -");
     dumpObject(getEventListeners(document.getElementById("outer")));
     output("- attribute event listeners -");
