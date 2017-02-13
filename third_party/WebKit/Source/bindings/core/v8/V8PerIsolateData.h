@@ -122,6 +122,8 @@ class CORE_EXPORT V8PerIsolateData {
   bool isReportingException() const { return m_isReportingException; }
   void setReportingException(bool value) { m_isReportingException = value; }
 
+  bool isUseCounterDisabled() const { return m_useCounterDisabled; }
+
   V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
   V8PrivateProperty* privateProperty() { return m_privateProperty.get(); }
 
@@ -205,8 +207,6 @@ class CORE_EXPORT V8PerIsolateData {
  private:
   explicit V8PerIsolateData(WebTaskRunner*);
   ~V8PerIsolateData();
-
-  static void useCounterCallback(v8::Isolate*, v8::Isolate::UseCounterFeature);
 
   typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>>
       V8FunctionTemplateMap;
