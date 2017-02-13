@@ -78,11 +78,6 @@ public class TileGroup implements MostVisitedSites.Observer {
      */
     public interface Observer {
         /**
-         * Called when the first data has been received and processed.
-         */
-        void onInitialTileDataLoaded();
-
-        /**
          * Called when any of the tile data has changed, such as an icon, url, or title.
          */
         void onTileDataChanged();
@@ -299,10 +294,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         if (oldTileCount != mTiles.length) mObserver.onTileCountChanged();
-        if (isInitialLoad) {
-            mObserver.onLoadTaskCompleted();
-            mObserver.onInitialTileDataLoaded();
-        }
+        if (isInitialLoad) mObserver.onLoadTaskCompleted();
         mObserver.onTileDataChanged();
     }
 

@@ -817,18 +817,16 @@ public class NewTabPageView
     // TileGroup.Observer interface.
 
     @Override
-    public void onInitialTileDataLoaded() {
-        // The page contents are initially hidden; otherwise they'll be drawn centered on the
-        // page before the most visited sites are available and then jump upwards to make space
-        // once the most visited sites are available.
-        onTileDataChanged();
-        mNewTabPageLayout.setVisibility(View.VISIBLE);
-    }
-
-    @Override
     public void onTileDataChanged() {
         mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted);
         mSnapshotTileGridChanged = true;
+
+        // The page contents are initially hidden; otherwise they'll be drawn centered on the page
+        // before the tiles are available and then jump upwards to make space once the tiles are
+        // available.
+        if (mNewTabPageLayout.getVisibility() != View.VISIBLE) {
+            mNewTabPageLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

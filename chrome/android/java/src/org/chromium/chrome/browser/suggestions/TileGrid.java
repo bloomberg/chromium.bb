@@ -42,11 +42,6 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     }
 
     @Override
-    public void onInitialTileDataLoaded() {
-        onTileDataChanged();
-    }
-
-    @Override
     public void onTileDataChanged() {
         notifyItemChanged(0);
         setVisible(mTileGroup.getTiles().length != 0);
