@@ -121,7 +121,6 @@ class SmoothnessToughWebGLCases(_Smoothness):
     return 'smoothness.tough_webgl_cases'
 
 
-@benchmark.Enabled('android')
 @benchmark.Disabled('android-webview')  # http://crbug.com/653933
 class SmoothnessMaps(perf_benchmark.PerfBenchmark):
   page_set = page_sets.MapsPageSet
