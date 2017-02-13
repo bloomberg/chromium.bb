@@ -402,6 +402,8 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (!source->GetStatus().is_success() ||
       source->GetResponseCode() != net::HTTP_OK) {
+    LOG(WARNING) << base::StringPrintf(
+        "WebAPK server returned response code %d.", source->GetResponseCode());
     OnFailure();
     return;
   }
@@ -411,6 +413,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::unique_ptr<webapk::WebApkResponse> response(new webapk::WebApkResponse);
   if (!response->ParseFromString(response_string)) {
+    LOG(WARNING) << "WebAPK server did not return proto.";
     OnFailure();
     return;
   }
@@ -424,6 +427,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   if (!signed_download_url.is_valid() || response->package_name().empty()) {
+    LOG(WARNING) << "WebAPK server returned incomplete proto.";
     OnFailure();
     return;
   }
