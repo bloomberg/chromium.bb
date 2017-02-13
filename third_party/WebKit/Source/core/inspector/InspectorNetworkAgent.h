@@ -256,7 +256,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   void clearPendingRequestData();
 
   Member<InspectedFrames> m_inspectedFrames;
-  String m_userAgentOverride;
   String m_hostId;
   Member<NetworkResourcesData> m_resourcesData;
 
