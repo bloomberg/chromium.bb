@@ -10,12 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "grit/components_scaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -884,6 +886,74 @@ TEST(CreditCardTest, ShouldUpdateExpiration) {
 
     EXPECT_EQ(test_case.should_update_expiration,
               card.ShouldUpdateExpiration(now));
+  }
+}
+
+// Test that credit card last used date suggestion can be generated correctly
+// in different variations.
+TEST(CreditCardTest, GetLastUsedDateForDisplay) {
+  const base::Time::Exploded kTestDateTimeExploded = {
+      2016, 12, 6, 10,  // Sat, Dec 10, 2016
+      15,   42, 7, 0    // 15:42:07.000
+  };
+  base::Time kArbitraryTime;
+  EXPECT_TRUE(
+      base::Time::FromLocalExploded(kTestDateTimeExploded, &kArbitraryTime));
+
+  // Test for added to chrome/chromium.
+  CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
+  credit_card0.set_use_count(1);
+  credit_card0.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(1));
+  test::SetCreditCardInfo(&credit_card0, "John Dillinger",
+                          "423456789012" /* Visa */, "01", "2021");
+
+  // Test for last used date.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2021");
+  credit_card1.set_use_count(10);
+  credit_card1.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(10));
+
+  // Test for last used more than one year ago.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
+  credit_card2.set_use_count(5);
+  credit_card2.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(366));
+  test::SetCreditCardInfo(&credit_card2, "Bonnie Parker",
+                          "518765432109" /* Mastercard */, "12", "2021");
+
+  static const struct {
+    const char* show_expiration_date;
+    const std::string& app_locale;
+    base::string16 added_to_autofill_date;
+    base::string16 last_used_date;
+    base::string16 last_used_year_ago;
+  } kTestCases[] = {
+      // only show last used date.
+      {"false", "en_US", ASCIIToUTF16("Added: Dec 09"),
+       ASCIIToUTF16("Last used: Nov 30"),
+       ASCIIToUTF16("Last used over a year ago")},
+      // show expiration date and last used date.
+      {"true", "en_US", ASCIIToUTF16("Exp: 01/21, added: Dec 09"),
+       ASCIIToUTF16("Exp: 04/21, last used: Nov 30"),
+       ASCIIToUTF16("Exp: 12/21, last used over a year ago")},
+  };
+
+  variations::testing::VariationParamsManager variation_params_;
+
+  for (const auto& test_case : kTestCases) {
+    variation_params_.SetVariationParamsWithFeatureAssociations(
+        kAutofillCreditCardLastUsedDateDisplay.name,
+        {{kAutofillCreditCardLastUsedDateShowExpirationDateKey,
+          test_case.show_expiration_date}},
+        {kAutofillCreditCardLastUsedDateDisplay.name});
+
+    EXPECT_EQ(test_case.added_to_autofill_date,
+              credit_card0.GetLastUsedDateForDisplay(test_case.app_locale));
+    EXPECT_EQ(test_case.last_used_date,
+              credit_card1.GetLastUsedDateForDisplay(test_case.app_locale));
+    EXPECT_EQ(test_case.last_used_year_ago,
+              credit_card2.GetLastUsedDateForDisplay(test_case.app_locale));
+    variation_params_.ClearAllVariationParams();
   }
 }
 

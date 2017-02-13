@@ -14369,6 +14369,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
+    <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY" desc="Name for the flag to enable display the last used date of a credit card in autofill.">
+      Display the last used date of a credit card in autofill.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY_DESCRIPTION" desc="Description for the flag to enable display the last used date of a credit card in autofill.">
+      If enabled, display the last used date of a credit card in autofill.
+    </message>
+
     <if expr="not is_android and _google_chrome">
       <message name="IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME" desc="Name for the flag to enable Google branding in the context menu.">
         Google branding in the context menu

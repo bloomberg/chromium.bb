@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
@@ -49,6 +51,9 @@ const base::char16 kMidlineEllipsis[] = { 0x0020, 0x0020,
 namespace {
 
 const base::char16 kCreditCardObfuscationSymbol = '*';
+// Time format pattern for short month name (3 digits) and day in month (2
+// digits), e.g. in en-US locale, it can be used to generate "Feb 02".
+const char kTimeFormatPatternNoYearShortMonthDate[] = "MMMdd";
 
 bool ConvertYear(const base::string16& year, int* num) {
   // If the |year| is empty, clear the stored value.
@@ -535,6 +540,55 @@ void CreditCard::operator=(const CreditCard& credit_card) {
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
+}
+
+base::string16 CreditCard::GetLastUsedDateForDisplay(
+    const std::string& app_locale) const {
+  bool show_expiration_date =
+      ShowExpirationDateInAutofillCreditCardLastUsedDate();
+
+  DCHECK(use_count() > 0);
+  // use_count() is initialized as 1 when the card is just added.
+  if (use_count() == 1) {
+    return show_expiration_date
+               ? l10n_util::GetStringFUTF16(
+                     IDS_AUTOFILL_CREDIT_CARD_EXP_AND_ADDED_DATE,
+                     GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR),
+                             app_locale),
+                     base::TimeFormatWithPattern(
+                         use_date(), kTimeFormatPatternNoYearShortMonthDate))
+               : l10n_util::GetStringFUTF16(
+                     IDS_AUTOFILL_CREDIT_CARD_ADDED_DATE,
+                     base::TimeFormatWithPattern(
+                         use_date(), kTimeFormatPatternNoYearShortMonthDate));
+  }
+
+  // use_count() > 1 when the card has been used in autofill.
+
+  // If the card was last used in autofill more than a year ago,
+  // display "last used > 1 year ago" without showing date detail.
+  if ((AutofillClock::Now() - use_date()).InDays() > 365) {
+    return show_expiration_date
+               ? l10n_util::GetStringFUTF16(
+                     IDS_AUTOFILL_CREDIT_CARD_EXP_AND_LAST_USED_YEAR_AGO,
+                     GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR),
+                             app_locale))
+               : l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_CREDIT_CARD_LAST_USED_YEAR_AGO);
+  }
+
+  // If the card was last used in autofill within a year, show date information.
+  return show_expiration_date
+             ? l10n_util::GetStringFUTF16(
+                   IDS_AUTOFILL_CREDIT_CARD_EXP_AND_LAST_USED_DATE,
+                   GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR),
+                           app_locale),
+                   base::TimeFormatWithPattern(
+                       use_date(), kTimeFormatPatternNoYearShortMonthDate))
+             : l10n_util::GetStringFUTF16(
+                   IDS_AUTOFILL_CREDIT_CARD_LAST_USED_DATE,
+                   base::TimeFormatWithPattern(
+                       use_date(), kTimeFormatPatternNoYearShortMonthDate));
 }
 
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,

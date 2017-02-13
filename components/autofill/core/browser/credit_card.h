@@ -174,6 +174,9 @@ class CreditCard : public AutofillDataModel {
   // Sets |number_| to |number| and computes the appropriate card |type_|.
   void SetNumber(const base::string16& number);
 
+  // Returns the date when the credit card was last used in autofill.
+  base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
+
   // Logs the number of days since the credit card was last used and records its
   // use.
   void RecordAndLogUse();

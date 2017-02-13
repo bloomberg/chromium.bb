@@ -17,8 +17,8 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -48,8 +48,7 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/variations/entropy_provider.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -153,9 +152,6 @@ class PersonalDataManagerTest : public testing::Test {
 
     test::DisableSystemServices(prefs_.get());
     ResetPersonalDataManager(USER_MODE_NORMAL);
-
-    // There are no field trials enabled by default.
-    field_trial_list_.reset();
 
     // Reset the deduping pref to its default value.
     personal_data_->pref_service_->SetInteger(
@@ -313,28 +309,6 @@ class PersonalDataManagerTest : public testing::Test {
                                             imported_credit_card);
   }
 
-  // Sets up the profile order field trial group and parameter. Sets up the
-  // suggestions limit parameter to |limit_param|.
-  void EnableAutofillProfileLimitFieldTrial(const std::string& limit_param) {
-    DCHECK(!limit_param.empty());
-
-    // Clear the existing |field_trial_list_| and variation parameters.
-    field_trial_list_.reset(NULL);
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
-    variations::testing::ClearAllVariationParams();
-
-    std::map<std::string, std::string> params;
-    params[kFrecencyFieldTrialLimitParam] = limit_param;
-    variations::AssociateVariationParams(kFrecencyFieldTrialName, "LimitToN",
-                                         params);
-
-    field_trial_ = base::FieldTrialList::CreateFieldTrial(
-        kFrecencyFieldTrialName, "LimitToN");
-    field_trial_->group();
-  }
-
   void SubmitFormAndExpectImportedCardWithData(const FormData& form,
                                                const char* exp_name,
                                                const char* exp_cc_num,
@@ -374,8 +348,7 @@ class PersonalDataManagerTest : public testing::Test {
   PersonalDataLoadedObserverMock personal_data_observer_;
   std::unique_ptr<PersonalDataManager> personal_data_;
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  scoped_refptr<base::FieldTrial> field_trial_;
+  variations::testing::VariationParamsManager variation_params_;
 };
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
@@ -3456,7 +3429,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
   EXPECT_EQ(3U, suggestions.size());
 
   // Verify that only two profiles are suggested.
-  EnableAutofillProfileLimitFieldTrial("2");
+  variation_params_.SetVariationParams(kFrecencyFieldTrialName,
+                                       {{kFrecencyFieldTrialLimitParam, "2"}});
 
   suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(NAME_FIRST), base::string16(), false,
@@ -3469,7 +3443,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
 // than three profiles.
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_LimitIsMoreThanProfileSuggestions) {
-  EnableAutofillProfileLimitFieldTrial("3");
+  variation_params_.SetVariationParams(kFrecencyFieldTrialName,
+                                       {{kFrecencyFieldTrialLimitParam, "3"}});
 
   // Set up 2 different profiles.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");

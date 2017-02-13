@@ -30,16 +30,20 @@ const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardPopupLayout{
     "AutofillCreditCardPopupLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillCreditCardLastUsedDateDisplay{
+    "AutofillCreditCardLastUsedDateDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
 const char kAutofillCreditCardPopupValueBoldKey[] = "is_value_bold";
 const char kAutofillCreditCardPopupIsValueAndLabelInSingleLineKey[] =
     "is_value_and_label_in_single_line";
-const char kAutofillPopupDropdownItemHeightKey[] =
-    "dropdown_item_height";
+const char kAutofillPopupDropdownItemHeightKey[] = "dropdown_item_height";
 const char kAutofillCreditCardPopupIsIconAtStartKey[] =
     "is_credit_card_icon_at_start";
 const char kAutofillPopupMarginKey[] = "margin";
+const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
+    "show_expiration_date";
 
 namespace {
 
@@ -79,6 +83,10 @@ bool IsAutofillCreditCardPopupLayoutExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardPopupLayout);
 }
 
+bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillCreditCardLastUsedDateDisplay);
+}
+
 // |GetCreditCardPopupParameterUintValue| returns 0 if experiment parameter is
 // not specified. 0 == |SK_ColorTRANSPARENT|.
 SkColor GetCreditCardPopupBackgroundColor() {
@@ -105,6 +113,13 @@ unsigned int GetPopupDropdownItemHeight() {
 bool IsIconInCreditCardPopupAtStart() {
   const std::string param_value = variations::GetVariationParamValueByFeature(
       kAutofillCreditCardPopupLayout, kAutofillCreditCardPopupIsIconAtStartKey);
+  return param_value == "true";
+}
+
+bool ShowExpirationDateInAutofillCreditCardLastUsedDate() {
+  const std::string param_value = variations::GetVariationParamValueByFeature(
+      kAutofillCreditCardLastUsedDateDisplay,
+      kAutofillCreditCardLastUsedDateShowExpirationDateKey);
   return param_value == "true";
 }
 

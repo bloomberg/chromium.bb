@@ -670,6 +670,17 @@ kAutofillCreditCardPopupLayoutFeatureVariations[] = {
      nullptr}};
 #endif  // OS_ANDROID
 
+const FeatureEntry::FeatureParam
+    kAutofillCreditCardLastUsedDateFeatureVariationExpDate[] = {
+        {"show_expiration_date", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillCreditCardLastUsedDateFeatureVariations[] = {
+        {"Display expiration date",
+         kAutofillCreditCardLastUsedDateFeatureVariationExpDate,
+         arraysize(kAutofillCreditCardLastUsedDateFeatureVariationExpDate),
+         nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2158,7 +2169,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
-
+    {"enable-autofill-credit-card-last-used-date-display",
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY,
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY_DESCRIPTION,
+     kOsAll, FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+                 autofill::kAutofillCreditCardLastUsedDateDisplay,
+                 kAutofillCreditCardLastUsedDateFeatureVariations,
+                 "AutofillCreditCardLastUsedDate")},
 #if defined(OS_WIN)
     {"windows10-custom-titlebar", IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_NAME,
      IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_DESCRIPTION, kOsWin,
