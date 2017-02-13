@@ -13,4 +13,5 @@ self.onmessage = e => {
       handle_message(e);
     }
   };
+if (self.opener) self.opener.postMessage('ready', '*');
 </script>

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js"></script>
-<script src="resources/test-helpers.js"></script>
+<title>Service Worker: Foreign Fetch CORS functionality</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script src="resources/foreign-fetch-helpers.js"></script>
 <body>
 <script>
@@ -12,7 +13,7 @@ var wrong_origin = 'https://example.com/';
 var test_header = 'X-ServiceWorker-ServerHeader';
 
 function url_to_fetch(scope) {
-  return host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+  return host_info.HTTPS_REMOTE_ORIGIN + new URL('resources/', location).pathname + scope;
 }
 
 function worker_for_response(response) {
@@ -76,7 +77,8 @@ function verify_cors_fetch_with_header_value(url, header_value) {
         return r.text();
       })
     .then(response_text => {
-        assert_true(response_text.startsWith('report('));
+        assert_true(response_text.startsWith('report('),
+            'Correct content via fetch');
         return self.caches.open(url);
       })
     .then(c => {
@@ -90,7 +92,8 @@ function verify_cors_fetch_with_header_value(url, header_value) {
         return r.text();
       })
     .then(response_text => {
-        assert_true(response_text.startsWith('report('));
+        assert_true(response_text.startsWith('report('),
+            'Correct content via cache');
         return self.caches.delete(url);
       })
     .then(() => new Promise(resolve => {
@@ -102,7 +105,8 @@ function verify_cors_fetch_with_header_value(url, header_value) {
         request.send();
       }))
     .then(xhr => {
-        assert_true(xhr.responseText.startsWith('report('));
+        assert_true(xhr.responseText.startsWith('report('),
+            'Correct content via xhr');
         assert_equals(xhr.getResponseHeader(test_header), header_value);
         var headers = xhr.getAllResponseHeaders().toLowerCase();
         if (header_value) {

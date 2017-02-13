@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js"></script>
-<script src="resources/test-helpers.js"></script>
+<title>Service Worker: basic Foreign Fetch functionality</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script src="resources/foreign-fetch-helpers.js"></script>
 <body>
 <script>
 var host_info = get_host_info();
+var resource_path = new URL('resources/', location).pathname;
 
 function worker_for_origins(origins) {
   var worker = 'foreign-fetch-worker.js?';
@@ -21,13 +23,11 @@ function worker_for_scopes(relative_scopes) {
 }
 
 function intercepted_url(scope) {
-  return host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' +
-         scope + '/intercept/foo?basic';
+  return host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope + '/intercept/foo?basic';
 }
 
 function non_intercepted_url(scope) {
-  return host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' +
-         scope + '/foo?basic';
+  return host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope + '/foo?basic';
 }
 
 promise_test(t => {
@@ -89,7 +89,7 @@ promise_test(t => {
 promise_test(t => {
     var scope = 'reply-to-message.html?onmessage';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => with_iframe(remote_url))
       .then(frame => new Promise(resolve => {
@@ -103,9 +103,9 @@ promise_test(t => {
   }, 'Service Worker does not intercept navigations.');
 
 promise_test(t => {
-    var scope = 'fetch-access-control.php?fallback&ACAOrigin=*';
+    var scope = 'fetch-access-control.py?fallback&ACAOrigin=*';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url))
       .then(response => response.text())
@@ -113,9 +113,9 @@ promise_test(t => {
   }, 'Service Worker that fallback to network should fallback to network.');
 
 promise_test(t => {
-    var scope = 'fetch-access-control.php?fetch&ACAOrigin=*';
+    var scope = 'fetch-access-control.py?fetch&ACAOrigin=*';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url))
       .then(response => response.text())
@@ -125,7 +125,7 @@ promise_test(t => {
 promise_test(t => {
     var scope = 'simple.txt?fallback';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url, {mode: 'no-cors'}))
       .then(response => assert_equals(response.type, 'opaque'))
@@ -135,7 +135,7 @@ promise_test(t => {
 promise_test(t => {
     var ff_scope = 'foreign-fetch/scope/controlled?basic';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + ff_scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + ff_scope;
     var scope = 'resources/simple.html?fetch';
     var worker = 'resources/empty-worker.js';
     return install_cross_origin_worker(t, worker_for_scopes(['']), ff_scope)
@@ -155,7 +155,7 @@ promise_test(t => {
 promise_test(t => {
     var ff_scope = 'foreign-fetch/scope/controlled?script';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + ff_scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + ff_scope;
     var scope = 'resources/simple.html?script';
     var worker = 'resources/empty-worker.js';
     return install_cross_origin_worker(t, worker_for_scopes(['']), ff_scope)
@@ -180,7 +180,7 @@ promise_test(t => {
 promise_test(t => {
     var scope = 'simple.txt?meta';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url, {mode: 'no-cors'}))
       .then(response => response.json())
@@ -203,36 +203,23 @@ promise_test(t => {
         });
   }, 'Referrer and origin are set correctly in ForeignFetchEvent.');
 
-function fetch_from_iframe(origin, url) {
-  return with_iframe(origin +
-      '/serviceworker/resources/foreign-fetch-helper-iframe.html')
-    .then(frame => new Promise((resolve) => {
-        var channel = new MessageChannel();
-        frame.contentWindow.postMessage({url: url,
-                                         port: channel.port1},
-                                        '*', [channel.port1]);
-        channel.port2.onmessage = reply => resolve(reply.data);
-      }));
-}
-
 promise_test(t => {
     var scope = 'simple.txt?basic_insecure';
     var remote_url =
-        host_info.AUTHENTICATED_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.AUTHENTICATED_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope,
                                        host_info.AUTHENTICATED_ORIGIN)
-      .then(() => fetch_from_iframe(host_info.HTTPS_REMOTE_ORIGIN, remote_url))
+      .then(() => fetch_from_different_origin(host_info.HTTPS_REMOTE_ORIGIN, remote_url))
       .then(response => assert_equals(response, 'Success: Foreign Fetch'))
-      .then(() => fetch_from_iframe(host_info.UNAUTHENTICATED_ORIGIN,
+      .then(() => fetch_from_different_origin(host_info.UNAUTHENTICATED_ORIGIN,
                                     remote_url))
-      .then(response => assert_equals(response,
-                                      'Error: TypeError: Failed to fetch'));
+      .then(response => assert_true(response.startsWith('Error: TypeError')));
   }, 'Service Worker does not intercept fetches from an insecure context.');
 
 promise_test(t => {
-    var scope = 'fetch-access-control.php?basic&ACAOrigin=*&ACAMethods=SPECIAL';
+    var scope = 'fetch-access-control.py?basic&ACAOrigin=*&ACAMethods=SPECIAL';
     var remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+        host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url, {method: 'SPECIAL'}))
       .then(response => response.text())
@@ -246,7 +233,7 @@ promise_test(t => {
 promise_test(t => {
   var scope = 'simple.txt?null';
   var remote_url =
-  host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+  host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
   return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
     .then(() => promise_rejects(t, new TypeError(), fetch(remote_url)));
 }, 'Foreign fetch rejects if resolved with a null response.');

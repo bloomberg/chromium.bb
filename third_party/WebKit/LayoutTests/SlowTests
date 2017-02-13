@@ -344,10 +344,7 @@ crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
 
 crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
 
-# Usually plenty fast, but sometimes very slow on windows.
-crbug.com/678498 [ Win ] http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
-crbug.com/678498 [ Win ] virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
-crbug.com/678498 [ Win ] virtual/service-worker-navigation-preload/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
-crbug.com/678496 [ Win ] http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
-crbug.com/678496 [ Win ] virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
-crbug.com/678496 [ Win ] virtual/service-worker-navigation-preload/http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
+# Foreign fetch tests make many requests, and create multiple browsing contexts,
+# which can be very slow.
+crbug.com/678498 external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Slow ]
+crbug.com/678496 external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Slow ]

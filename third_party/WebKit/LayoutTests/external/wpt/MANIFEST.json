@@ -12342,11 +12342,6 @@
      {}
     ]
    ],
-   "html/semantics/forms/form-submission-0/submit-entity-body-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/introduction-1/contains.json": [
     [
      {}
@@ -12463,11 +12458,6 @@
     ]
    ],
    "html/semantics/forms/the-input-element/valueMode-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-label-element/label-attributes-expected.txt": [
     [
      {}
     ]
@@ -14907,6 +14897,41 @@
      {}
     ]
    ],
+   "service-workers/service-worker/resources/foreign-fetch-cors-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-event-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-helper-iframe.html": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-helper-script.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-helper-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-helpers.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/foreign-fetch-worker.js": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/resources/frame-for-getregistrations.html": [
     [
      {}
@@ -14923,6 +14948,11 @@
     ]
    ],
    "service-workers/service-worker/resources/install-event-type-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/install-worker-helper.html": [
     [
      {}
     ]
@@ -15138,6 +15168,11 @@
     ]
    ],
    "service-workers/service-worker/resources/reject-install-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/reply-to-message.html": [
     [
      {}
     ]
@@ -30455,6 +30490,30 @@
      }
     ]
    ],
+   "service-workers/service-worker/foreign-fetch-basics.https.html": [
+    [
+     "/service-workers/service-worker/foreign-fetch-basics.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/foreign-fetch-cors.https.html": [
+    [
+     "/service-workers/service-worker/foreign-fetch-cors.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/foreign-fetch-event.https.html": [
+    [
+     "/service-workers/service-worker/foreign-fetch-event.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/foreign-fetch-workers.https.html": [
+    [
+     "/service-workers/service-worker/foreign-fetch-workers.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/getregistration.https.html": [
     [
      "/service-workers/service-worker/getregistration.https.html",
@@ -34591,7 +34650,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "3627cc58604c1dac4d80a81119a1ec865d71b576",
+   "2218448cc0bbce67ddc610f1025d3eac8c72474e",
    "support"
   ],
   "./README.md": [
@@ -37491,7 +37550,7 @@
    "testharness"
   ],
   "dom/nodes/Node-childNodes-expected.txt": [
-   "577855c6949ebc70ef6a849ad526a734042e119a",
+   "1e019a2f0efe24029bf1050d5e96659248b71a08",
    "support"
   ],
   "dom/nodes/Node-childNodes.html": [
@@ -48030,10 +48089,6 @@
    "92c8c30e186f0a94a962bb5c4be7acf0860b943e",
    "testharness"
   ],
-  "html/semantics/forms/form-submission-0/submit-entity-body-expected.txt": [
-   "40598e87f886906294a176573b4c22ea35cf574e",
-   "support"
-  ],
   "html/semantics/forms/form-submission-0/submit-entity-body.html": [
    "f73376af978f2fb89dcbd6e9092f113d90c7a3d6",
    "testharness"
@@ -48389,10 +48444,6 @@
   "html/semantics/forms/the-input-element/week.html": [
    "851b1b794f820b1fb9b7ee57fe39f8f2977b7fe6",
    "testharness"
-  ],
-  "html/semantics/forms/the-label-element/label-attributes-expected.txt": [
-   "97ad843a75ce3f3f9b917610a9ffed7dafb9f226",
-   "support"
   ],
   "html/semantics/forms/the-label-element/label-attributes.html": [
    "bb00ee78b9fa2343d85dcaa13376a832d376617a",
@@ -52039,7 +52090,7 @@
    "testharness"
   ],
   "selection/addRange-00-expected.txt": [
-   "67edff8d9542d5b9961bae7435b960d98ca5a64e",
+   "9b9f992e87e203b469e7b4b5394325d555b25f2c",
    "support"
   ],
   "selection/addRange-00.html": [
@@ -52047,7 +52098,7 @@
    "testharness"
   ],
   "selection/addRange-04-expected.txt": [
-   "f05966bba89babc8a150804e4a754566522b6826",
+   "3516afa2d2afca7a118527b9e9067c91c0c96706",
    "support"
   ],
   "selection/addRange-04.html": [
@@ -52055,7 +52106,7 @@
    "testharness"
   ],
   "selection/addRange-08-expected.txt": [
-   "83db5e9f0c6e61e61505811edde31ead87431307",
+   "e643c7d945d12761792a8c291e4b1ab007358978",
    "support"
   ],
   "selection/addRange-08.html": [
@@ -52063,7 +52114,7 @@
    "testharness"
   ],
   "selection/addRange-12-expected.txt": [
-   "c014d12e814743f36947486526fbb4e4ac9f29ec",
+   "fe251308c7f5b99a3a22a8c35b42940837585f94",
    "support"
   ],
   "selection/addRange-12.html": [
@@ -52071,7 +52122,7 @@
    "testharness"
   ],
   "selection/addRange-16-expected.txt": [
-   "daeb1430f615d79d7fd537197b66bdd53e5b0ff0",
+   "d228ef5d934830f94efe7ae1448411c9d6baa7bb",
    "support"
   ],
   "selection/addRange-16.html": [
@@ -52079,7 +52130,7 @@
    "testharness"
   ],
   "selection/addRange-20-expected.txt": [
-   "1ee92b07655fcaaf8e57ce470a1195d2dbfcd40e",
+   "5faa0f8f7dc09ac250ac02afe5fbfda25867d079",
    "support"
   ],
   "selection/addRange-20.html": [
@@ -52087,7 +52138,7 @@
    "testharness"
   ],
   "selection/addRange-24-expected.txt": [
-   "8b76b5cd328cc38982e877dd4148ecede0349aec",
+   "e9adff76e6ba6f119b896e2b0b5f82230755b96c",
    "support"
   ],
   "selection/addRange-24.html": [
@@ -52095,7 +52146,7 @@
    "testharness"
   ],
   "selection/addRange-28-expected.txt": [
-   "f5f25b0400d554dfce01e4ee270ac70c1c5be8a0",
+   "09d293430f2d6298fb3918337824e9503d09ce07",
    "support"
   ],
   "selection/addRange-28.html": [
@@ -52103,7 +52154,7 @@
    "testharness"
   ],
   "selection/addRange-32-expected.txt": [
-   "f449692cb0e4247a11ba29d7d33bad80acb03598",
+   "aaa694aeb16d10182af2a84b1db2f530ba5e55a6",
    "support"
   ],
   "selection/addRange-32.html": [
@@ -52111,7 +52162,7 @@
    "testharness"
   ],
   "selection/addRange-36-expected.txt": [
-   "e4159c7c0b991d97fde7e8aaef5b5cb3de496c30",
+   "5cc99c2c0bbb15ecf2f6d1402d4467c577f82538",
    "support"
   ],
   "selection/addRange-36.html": [
@@ -52119,7 +52170,7 @@
    "testharness"
   ],
   "selection/addRange-40-expected.txt": [
-   "826a8b3910aaeef3d7842e7f65d77797454c62c5",
+   "f98f04aa2196d8382ff4d0f9b58af6fe5913c055",
    "support"
   ],
   "selection/addRange-40.html": [
@@ -52127,7 +52178,7 @@
    "testharness"
   ],
   "selection/addRange-44-expected.txt": [
-   "62e794c2aee0b0d29fdfdbc468a611fc394dbdaf",
+   "e282a96eabba35226712b158a659417173de87ac",
    "support"
   ],
   "selection/addRange-44.html": [
@@ -52135,7 +52186,7 @@
    "testharness"
   ],
   "selection/addRange-48-expected.txt": [
-   "e484b6301e9c22c9ff488b262396f58cb364d036",
+   "677a89a721f24392acf417712b6b45c70439f5af",
    "support"
   ],
   "selection/addRange-48.html": [
@@ -52143,7 +52194,7 @@
    "testharness"
   ],
   "selection/addRange-52-expected.txt": [
-   "a693d009fbbe9dd1efb366df08621a061ac1d077",
+   "3e80c1898900ee18d12e74b2d64ff56f56e2ad47",
    "support"
   ],
   "selection/addRange-52.html": [
@@ -52151,7 +52202,7 @@
    "testharness"
   ],
   "selection/addRange-56-expected.txt": [
-   "b07be14d773735a2eb57be8b1af607afacea15fd",
+   "bd303ef859922d449562fbace376ee5653cce84d",
    "support"
   ],
   "selection/addRange-56.html": [
@@ -52163,7 +52214,7 @@
    "support"
   ],
   "selection/collapse-00-expected.txt": [
-   "8b4e75041f2b19203d0a8e91bd1ce664d1306c0f",
+   "ef38d258d6bf9550f91fa7123a31743d4e5b1e66",
    "support"
   ],
   "selection/collapse-00.html": [
@@ -52171,7 +52222,7 @@
    "testharness"
   ],
   "selection/collapse-30-expected.txt": [
-   "4de9bf6f3c50957f3c336b57534ac82deaf84767",
+   "48757a2117fc43f06db8dd9da497d09f9053546f",
    "support"
   ],
   "selection/collapse-30.html": [
@@ -52183,7 +52234,7 @@
    "support"
   ],
   "selection/collapseToStartEnd-expected.txt": [
-   "424a34f194b7649464b4d271206142df7da3bf4d",
+   "2aaccb3f3524f137ddd73d56aeb1aca14640c10a",
    "support"
   ],
   "selection/collapseToStartEnd.html": [
@@ -52207,7 +52258,7 @@
    "manual"
   ],
   "selection/extend-00-expected.txt": [
-   "d66939957d8f36c0d33c33ca07c39a6ed9710f1a",
+   "394fb85e6191d2c27cee440478486856c77764c2",
    "support"
   ],
   "selection/extend-00.html": [
@@ -52215,7 +52266,7 @@
    "testharness"
   ],
   "selection/extend-20-expected.txt": [
-   "8aaefb9260e65d8743e1d424fa0438715768e355",
+   "976b3c34f6f69b343dc93663c7ccad08b12225ae",
    "support"
   ],
   "selection/extend-20.html": [
@@ -52223,7 +52274,7 @@
    "testharness"
   ],
   "selection/extend-40-expected.txt": [
-   "4a0755f5c0d8af70327206382bb8c9ec99232e51",
+   "5c8577e59cd3604d78a2ba025c7bc4a880741c28",
    "support"
   ],
   "selection/extend-40.html": [
@@ -52267,7 +52318,7 @@
    "testharness"
   ],
   "selection/selectAllChildren-expected.txt": [
-   "1c0847ea872435a156964497a533eca4d1dad076",
+   "1bc19f352fbb4f5b32f6ad639a733577edfa7e2f",
    "support"
   ],
   "selection/selectAllChildren.html": [
@@ -52275,7 +52326,7 @@
    "testharness"
   ],
   "selection/setBaseAndExtent-expected.txt": [
-   "dacbe98c0b6760d76739a5c90b7403ffe0bf7652",
+   "7ee93ebe35799eb020254fe2cfb623ba361ac0e6",
    "support"
   ],
   "selection/setBaseAndExtent.html": [
@@ -52742,6 +52793,22 @@
    "9be9d969099e27be5edc15f6014ac2f06f81674c",
    "testharness"
   ],
+  "service-workers/service-worker/foreign-fetch-basics.https.html": [
+   "bdeacac856c837e86ae2870b465de63885c09169",
+   "testharness"
+  ],
+  "service-workers/service-worker/foreign-fetch-cors.https.html": [
+   "7a89ae20f4beafcdb7feba80f1a789f76cf0df93",
+   "testharness"
+  ],
+  "service-workers/service-worker/foreign-fetch-event.https.html": [
+   "8fbf910205f175a457846100deb34a01c02b00ab",
+   "testharness"
+  ],
+  "service-workers/service-worker/foreign-fetch-workers.https.html": [
+   "7d1ae10966dc452c0dd7c5e400eb88367733b03e",
+   "testharness"
+  ],
   "service-workers/service-worker/getregistration.https.html": [
    "989c30567eb1dd650dc7e2bf807e18961c991087",
    "testharness"
@@ -53027,7 +53094,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/fetch-access-control.py": [
-   "fb2235ce343b51e958f73f7fc8d7ab7dbcc8f71e",
+   "e612c0f7457c8d15ff7d0e2515d8e967a8bb81b5",
    "support"
   ],
   "service-workers/service-worker/resources/fetch-canvas-tainting-iframe.html": [
@@ -53154,12 +53221,40 @@
    "a557b92d3119f43bbbe10d46effc240d7f11c784",
    "support"
   ],
+  "service-workers/service-worker/resources/foreign-fetch-cors-worker.js": [
+   "bf9c10deec71cfedece0e2308cc611e1572ed91d",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-event-worker.js": [
+   "7e9998ebcf657391c041d2904c06048214602ac2",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-helper-iframe.html": [
+   "42af5ea03adf25de9d5237a75e913ac726d72c3b",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-helper-script.js": [
+   "4ec922814bbf72fe0bf65baa6c8457633dda4834",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-helper-worker.js": [
+   "6b1493c253a8d7808358f3a3da35dd665c5c25db",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-helpers.js": [
+   "06dd6cb0bc4bac15f2f7c62d7ee4952d7a0f487e",
+   "support"
+  ],
+  "service-workers/service-worker/resources/foreign-fetch-worker.js": [
+   "1464189c2e0ab1344227c69363aef9d44df98848",
+   "support"
+  ],
   "service-workers/service-worker/resources/frame-for-getregistrations.html": [
    "c5f88c11333ff1faba5d57812a36553d174ab711",
    "support"
   ],
   "service-workers/service-worker/resources/get-host-info.sub.js": [
-   "b9310fbd533b9382c3413bbcf2d49f778d4737dd",
+   "1f9283d0305ea68589fd1a1b9ad9ab3a53b99595",
    "support"
   ],
   "service-workers/service-worker/resources/indexeddb-worker.js": [
@@ -53168,6 +53263,10 @@
   ],
   "service-workers/service-worker/resources/install-event-type-worker.js": [
    "b6949fcd3d82a99595356448fce6ac830366200e",
+   "support"
+  ],
+  "service-workers/service-worker/resources/install-worker-helper.html": [
+   "02b60da0017cf05e3452ee1ca8dfd8b8e327e707",
    "support"
   ],
   "service-workers/service-worker/resources/interfaces-worker.sub.js": [
@@ -53340,6 +53439,10 @@
   ],
   "service-workers/service-worker/resources/reject-install-worker.js": [
    "856419e5aa34cb3654ce7baf2908781347fe2de7",
+   "support"
+  ],
+  "service-workers/service-worker/resources/reply-to-message.html": [
+   "7fb39d9609893a0fbcada161c92dc3df40721f90",
    "support"
   ],
   "service-workers/service-worker/resources/request-end-to-end-worker.js": [
@@ -56835,7 +56938,7 @@
    "testharness"
   ],
   "workers/WorkerGlobalScope_importScripts_NosniffErr.htm": [
-   "fc4957ca4ea20d0bce364d19bb0b7001e9a60142",
+   "c67d281e78f9672e5f25fdde6b978e0fb7bd806e",
    "testharness"
   ],
   "workers/WorkerGlobalScope_setInterval.htm": [
@@ -56947,7 +57050,7 @@
    "testharness"
   ],
   "workers/Worker_NosniffErr.htm": [
-   "93694174588914798b9462334f40a289daa4d879",
+   "d5fc247d31c39b62a833f41d477dfd77734bdede",
    "testharness"
   ],
   "workers/Worker_basic.htm": [
@@ -57727,7 +57830,7 @@
    "support"
   ],
   "workers/support/ImportScriptsNosniffErr.js": [
-   "4c31ea9c0553deeb2b89ddcf9a7008625474d324",
+   "7075f0f5d8e5dc82859d8b86b9dd64c4e207c475",
    "support"
   ],
   "workers/support/Timer.js": [

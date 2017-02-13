@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script src="resources/foreign-fetch-helpers.js"></script>
 <body>
 <script>
 var host_info = get_host_info();
 var ff_worker = 'foreign-fetch-worker.js?{}';
+var resource_path = new URL('resources/', location).pathname;
 
 promise_test(t => {
     var ff_scope = 'simple.txt?basic_sw';
@@ -27,8 +28,7 @@ promise_test(t => {
 
 promise_test(t => {
     let scope = 'simple.txt?basic_dedicated';
-    let remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    let remote_url = host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, ff_worker, scope)
       .then(() => new Promise(resolve => {
           let worker = new Worker('resources/foreign-fetch-helper-script.js');
@@ -43,8 +43,7 @@ promise_test(t => {
 
 promise_test(t => {
     let scope = 'simple.txt?basic_shared';
-    let remote_url =
-        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    let remote_url = host_info.HTTPS_REMOTE_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, ff_worker, scope)
       .then(() => new Promise(resolve => {
           let worker = new SharedWorker(
@@ -58,48 +57,32 @@ promise_test(t => {
       .then(response => assert_equals(response, 'Success: Foreign Fetch'));
   }, 'Foreign fetch can intercept fetches made from a shared worker');
 
-function fetch_from_cross_origin_worker(worker_type, origin, url) {
-  return with_iframe(origin +
-      '/serviceworker/resources/foreign-fetch-helper-iframe.html')
-    .then(frame => new Promise((resolve) => {
-        let channel = new MessageChannel();
-        frame.contentWindow.postMessage({url: url,
-                                         port: channel.port1,
-                                         worker: worker_type},
-                                        '*', [channel.port1]);
-        channel.port2.onmessage = reply => resolve(reply.data);
-      }));
-}
-
 promise_test(t => {
     var scope = 'simple.txt?basic_dedicated_insecure';
-    var remote_url =
-        host_info.AUTHENTICATED_ORIGIN + '/serviceworker/resources/' + scope;
+    var remote_url = host_info.AUTHENTICATED_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, ff_worker, scope,
                                        host_info.AUTHENTICATED_ORIGIN)
-      .then(() => fetch_from_cross_origin_worker('dedicated',
-          host_info.HTTPS_REMOTE_ORIGIN, remote_url))
+      .then(() => fetch_from_different_origin(
+          host_info.HTTPS_REMOTE_ORIGIN, remote_url, 'dedicated'))
       .then(response => assert_equals(response, 'Success: Foreign Fetch'))
-      .then(() => fetch_from_cross_origin_worker('dedicated',
-          host_info.UNAUTHENTICATED_ORIGIN, remote_url))
+      .then(() => fetch_from_different_origin(
+          host_info.UNAUTHENTICATED_ORIGIN, remote_url, 'dedicated'))
       .then(response => assert_equals(response,
                                       'Error: TypeError: Failed to fetch'));
   }, 'Fetches from an insecure dedicated worker aren\'t intercepted.');
 
 promise_test(t => {
     var scope = 'simple.txt?basic_shared_insecure';
-    var remote_url =
-        host_info.AUTHENTICATED_ORIGIN + '/serviceworker/resources/' + scope;
+    var remote_url = host_info.AUTHENTICATED_ORIGIN + resource_path + scope;
     return install_cross_origin_worker(t, ff_worker, scope,
                                        host_info.AUTHENTICATED_ORIGIN)
-      .then(() => fetch_from_cross_origin_worker('shared',
-          host_info.HTTPS_REMOTE_ORIGIN, remote_url))
+      .then(() => fetch_from_different_origin(
+          host_info.HTTPS_REMOTE_ORIGIN, remote_url, 'shared'))
       .then(response => assert_equals(response, 'Success: Foreign Fetch'))
-      .then(() => fetch_from_cross_origin_worker('shared',
-          host_info.UNAUTHENTICATED_ORIGIN, remote_url))
+      .then(() => fetch_from_different_origin(
+          host_info.UNAUTHENTICATED_ORIGIN, remote_url, 'shared'))
       .then(response => assert_equals(response,
                                       'Error: TypeError: Failed to fetch'));
   }, 'Fetches from an insecure shared worker aren\'t intercepted.');
-
 </script>
 </body>

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<script src="test-helpers.js"></script>
+<script src="test-helpers.sub.js"></script>
 <script>
 window.addEventListener('message', event => {
-    var port = event.ports[0];
     navigator.serviceWorker.getRegistration(event.data.options.scope)
       .then(r => {
           if (r) return r.unregister();
@@ -16,7 +15,7 @@ window.addEventListener('message', event => {
               if (worker.state === 'activated') resolve();
             });
         }))
-      .then(() => port.postMessage('success'))
-      .catch((e) => port.postMessage('failure:' + e));
+      .then(() => event.source.postMessage('success', '*'))
+      .catch((e) => event.source.postMessage('failure:' + e, '*'));
   });
 </script>
