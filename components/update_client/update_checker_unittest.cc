@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -81,13 +82,14 @@ class UpdateCheckerTest : public testing::Test {
 
  private:
   base::MessageLoopForIO loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
 };
 
-UpdateCheckerTest::UpdateCheckerTest() : post_interceptor_(NULL), error_(0) {
-}
+UpdateCheckerTest::UpdateCheckerTest()
+    : post_interceptor_(NULL), error_(0), scoped_task_scheduler_(&loop_) {}
 
 UpdateCheckerTest::~UpdateCheckerTest() {
 }

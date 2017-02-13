@@ -493,10 +493,6 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
     return net::OK;
   }
 
-  base::TaskRunner* GetTaskRunner() const override {
-    return base::ThreadTaskRunnerHandle::Get().get();
-  }
-
  private:
   ~URLRequestBigJob() override {}
 

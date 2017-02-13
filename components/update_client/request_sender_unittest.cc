@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/url_request_post_interceptor.h"
@@ -69,13 +70,17 @@ class RequestSenderTest : public testing::Test {
 
  private:
   base::MessageLoopForIO loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSenderTest);
 };
 
 RequestSenderTest::RequestSenderTest()
-    : post_interceptor_1_(nullptr), post_interceptor_2_(nullptr), error_(0) {}
+    : post_interceptor_1_(nullptr),
+      post_interceptor_2_(nullptr),
+      error_(0),
+      scoped_task_scheduler_(&loop_) {}
 
 RequestSenderTest::~RequestSenderTest() {}
 
