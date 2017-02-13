@@ -433,8 +433,7 @@ void Resource::finish(double loadFinishTime) {
 }
 
 AtomicString Resource::httpContentType() const {
-  return extractMIMETypeFromMediaType(
-      response().httpHeaderField(HTTPNames::Content_Type).lower());
+  return response().httpContentType();
 }
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const {

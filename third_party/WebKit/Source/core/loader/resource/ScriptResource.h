@@ -73,7 +73,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   const String& script();
 
-  bool mimeTypeAllowedByNosniff() const;
+  static bool mimeTypeAllowedByNosniff(const ResourceResponse&);
 
  private:
   class ScriptResourceFactory : public ResourceFactory {

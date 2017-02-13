@@ -27,6 +27,7 @@
 #include "platform/network/ResourceResponse.h"
 
 #include "platform/HTTPNames.h"
+#include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
@@ -536,6 +537,11 @@ bool ResourceResponse::isAttachment() const {
     value = value.left(loc);
   value = value.stripWhiteSpace();
   return equalIgnoringCase(value, attachmentString);
+}
+
+AtomicString ResourceResponse::httpContentType() const {
+  return extractMIMETypeFromMediaType(
+      httpHeaderField(HTTPNames::Content_Type).lower());
 }
 
 void ResourceResponse::setLastModifiedDate(time_t lastModifiedDate) {

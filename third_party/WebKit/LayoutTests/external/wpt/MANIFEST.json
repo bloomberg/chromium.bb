@@ -17032,6 +17032,11 @@
      {}
     ]
    ],
+   "workers/support/ImportScriptsNosniffErr.js": [
+    [
+     {}
+    ]
+   ],
    "workers/support/Timer.js": [
     [
      {}
@@ -17068,6 +17073,11 @@
     ]
    ],
    "workers/support/WorkerText.txt": [
+    [
+     {}
+    ]
+   ],
+   "workers/support/nosiniff-error-worker.py": [
     [
      {}
     ]
@@ -33591,6 +33601,12 @@
      {}
     ]
    ],
+   "workers/WorkerGlobalScope_importScripts_NosniffErr.htm": [
+    [
+     "/workers/WorkerGlobalScope_importScripts_NosniffErr.htm",
+     {}
+    ]
+   ],
    "workers/WorkerGlobalScope_setInterval.htm": [
     [
      "/workers/WorkerGlobalScope_setInterval.htm",
@@ -33750,6 +33766,12 @@
    "workers/Worker_ErrorEvent_type.htm": [
     [
      "/workers/Worker_ErrorEvent_type.htm",
+     {}
+    ]
+   ],
+   "workers/Worker_NosniffErr.htm": [
+    [
+     "/workers/Worker_NosniffErr.htm",
      {}
     ]
    ],
@@ -56812,6 +56834,10 @@
    "a5db00156a688f09871daae138f1de561c29ff62",
    "testharness"
   ],
+  "workers/WorkerGlobalScope_importScripts_NosniffErr.htm": [
+   "fc4957ca4ea20d0bce364d19bb0b7001e9a60142",
+   "testharness"
+  ],
   "workers/WorkerGlobalScope_setInterval.htm": [
    "30371bcd0af113ee5dc0a7c4a40a67b99efdfa78",
    "testharness"
@@ -56918,6 +56944,10 @@
   ],
   "workers/Worker_ErrorEvent_type.htm": [
    "aff9caff2241fd0c0dc39d7576d5e6ca373a4f42",
+   "testharness"
+  ],
+  "workers/Worker_NosniffErr.htm": [
+   "93694174588914798b9462334f40a289daa4d879",
    "testharness"
   ],
   "workers/Worker_basic.htm": [
@@ -57696,6 +57726,10 @@
    "fdce6cc29ec625b3b607008a0f4c39d31c1480fb",
    "support"
   ],
+  "workers/support/ImportScriptsNosniffErr.js": [
+   "4c31ea9c0553deeb2b89ddcf9a7008625474d324",
+   "support"
+  ],
   "workers/support/Timer.js": [
    "29ccfe8b74c9401d5910d7f52374d1acc767c9ad",
    "support"
@@ -57726,6 +57760,10 @@
   ],
   "workers/support/WorkerText.txt": [
    "b0e679dd7720701364abeaca6870d94db5d7ee74",
+   "support"
+  ],
+  "workers/support/nosiniff-error-worker.py": [
+   "aa81cbafc77ccc9407cba3ac0bd4498e5076bf2b",
    "support"
   ],
   "workers/support/sandboxed-tests.html": [

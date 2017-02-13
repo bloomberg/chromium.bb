@@ -154,6 +154,7 @@ class CORE_EXPORT WorkerScriptLoader final
   std::unique_ptr<Vector<char>> m_cachedMetadata;
   WebURLRequest::RequestContext m_requestContext;
   Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
+  Persistent<ExecutionContext> m_executionContext;
   WebAddressSpace m_responseAddressSpace;
   std::unique_ptr<Vector<String>> m_originTrialTokens;
   String m_referrerPolicy;

@@ -480,7 +480,7 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
     ScriptResource* resource =
         m_resource ? m_resource.get() : sourceCode.resource();
     if (resource) {
-      if (!resource->mimeTypeAllowedByNosniff()) {
+      if (!ScriptResource::mimeTypeAllowedByNosniff(resource->response())) {
         contextDocument->addConsoleMessage(ConsoleMessage::create(
             SecurityMessageSource, ErrorMessageLevel,
             "Refused to execute script from '" +

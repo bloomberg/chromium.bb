@@ -188,6 +188,8 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   bool isAttachment() const;
 
+  AtomicString httpContentType() const;
+
   // FIXME: These are used by PluginStream on some platforms. Calculations may
   // differ from just returning plain Last-Modified header.
   // Leaving it for now but this should go away in favor of generic solution.

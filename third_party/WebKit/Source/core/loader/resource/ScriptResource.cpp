@@ -100,10 +100,13 @@ void ScriptResource::destroyDecodedDataForFailedRevalidation() {
   m_script = AtomicString();
 }
 
-bool ScriptResource::mimeTypeAllowedByNosniff() const {
-  return parseContentTypeOptionsHeader(response().httpHeaderField(
+// static
+bool ScriptResource::mimeTypeAllowedByNosniff(
+    const ResourceResponse& response) {
+  return parseContentTypeOptionsHeader(response.httpHeaderField(
              HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff ||
-         MIMETypeRegistry::isSupportedJavaScriptMIMEType(httpContentType());
+         MIMETypeRegistry::isSupportedJavaScriptMIMEType(
+             response.httpContentType());
 }
 
 }  // namespace blink
