@@ -427,15 +427,24 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
 }
 
 void LayoutBoxModelObject::invalidateStickyConstraints() {
-  if (!layer())
-    return;
+  PaintLayer* enclosing = enclosingLayer();
+
+  if (PaintLayerScrollableArea* scrollableArea =
+          enclosing->getScrollableArea()) {
+    scrollableArea->invalidateAllStickyConstraints();
+    // If this object doesn't have a layer and its enclosing layer is a scroller
+    // then we don't need to invalidate the sticky constraints on the ancestor
+    // scroller because the enclosing scroller won't have changed size.
+    if (!layer())
+      return;
+  }
 
   // This intentionally uses the stale ancestor overflow layer compositing input
   // as if we have saved constraints for this layer they were saved in the
   // previous frame.
   DisableCompositingQueryAsserts disabler;
   if (const PaintLayer* ancestorOverflowLayer =
-          layer()->ancestorOverflowLayer())
+          enclosing->ancestorOverflowLayer())
     ancestorOverflowLayer->getScrollableArea()
         ->invalidateAllStickyConstraints();
 }

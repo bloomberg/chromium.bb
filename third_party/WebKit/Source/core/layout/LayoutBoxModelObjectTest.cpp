@@ -4,6 +4,8 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 
+#include "core/dom/DOMTokenList.h"
+#include "core/dom/DocumentLifecycle.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -276,6 +278,54 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
   EXPECT_EQ(
       IntRect(0, 50, 50, 50),
       enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
+}
+
+// Tests that when a non-layer changes size it invalidates the constraints for
+// sticky position elements within the same scroller.
+TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { overflow: auto; display: flex; width: 200px; }"
+      "#target { width: 50px; }"
+      "#sticky { position: sticky; top: 0; }"
+      ".container { width: 100px; margin-left: auto; margin-right: auto; }"
+      ".hide { display: none; }"
+      "</style>"
+      "<div id='scroller'>"
+      "  <div style='flex: 1'>"
+      "    <div class='container'><div id='sticky'></div>"
+      "  </div>"
+      "</div>"
+      "<div class='spacer' id='target'></div>"
+      "</div>");
+  LayoutBoxModelObject* scroller =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  LayoutBoxModelObject* sticky =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
+  LayoutBoxModelObject* target =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"));
+  EXPECT_TRUE(scrollableArea->stickyConstraintsMap().contains(sticky->layer()));
+  EXPECT_EQ(25.f,
+            getScrollContainerRelativeStickyBoxRect(
+                scrollableArea->stickyConstraintsMap().get(sticky->layer()))
+                .location()
+                .x());
+  toHTMLElement(target->node())->classList().add("hide", ASSERT_NO_EXCEPTION);
+  document().view()->updateLifecycleToLayoutClean();
+  // Layout should invalidate the sticky constraints of the sticky element and
+  // mark it as needing a compositing inputs update.
+  EXPECT_FALSE(
+      scrollableArea->stickyConstraintsMap().contains(sticky->layer()));
+  EXPECT_TRUE(sticky->layer()->needsCompositingInputsUpdate());
+
+  // After updating compositing inputs we should have the updated position.
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(50.f,
+            getScrollContainerRelativeStickyBoxRect(
+                scrollableArea->stickyConstraintsMap().get(sticky->layer()))
+                .location()
+                .x());
 }
 
 }  // namespace blink
