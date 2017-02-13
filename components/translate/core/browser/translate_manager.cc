@@ -585,6 +585,7 @@ void TranslateManager::InitTranslateEvent(const std::string& src_lang,
   translate_event_->Clear();
   translate_event_->set_source_language(src_lang);
   translate_event_->set_target_language(dst_lang);
+  translate_event_->set_country(prefs.GetCountry());
   translate_event_->set_accept_count(
       prefs.GetTranslationAcceptedCount(src_lang));
   translate_event_->set_decline_count(

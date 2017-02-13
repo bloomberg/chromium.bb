@@ -16,7 +16,7 @@ package metrics;
 // the Translate UI. Contains features used by Translate Ranker for
 // inference, information about the ranker model and its decision, as
 // well as user or automated feedback from the Translate UI.
-// Next tag: 14
+// Next tag: 15
 message TranslateEventProto {
   // Language strings are two or three letter codes, with sometimes an extra
   // suffix (for e.g. chinese zh-TW or zh-CN). See
@@ -26,6 +26,10 @@ message TranslateEventProto {
   optional string source_language = 1;
   // Target language of the translation.
   optional string target_language = 2;
+
+  // The country where the user is. 2-letter country code. This
+  // corresponds to the stored permanent country in VariationsService.
+  optional string country = 14;
 
   // The following counts are extracted from TranslatePrefs.
   // The number of times the user accepted a translation for the
