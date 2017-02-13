@@ -316,23 +316,25 @@ void BodyStreamBuffer::processData() {
       result = m_consumer->endRead(available);
     }
     switch (result) {
-      case BytesConsumer::Result::Ok: {
-        DCHECK(array);
-        // Clear m_streamNeedsMore in order to detect a pull call.
-        m_streamNeedsMore = false;
-        controller()->enqueue(array);
+      case BytesConsumer::Result::Ok:
+      case BytesConsumer::Result::Done:
+        if (array) {
+          // Clear m_streamNeedsMore in order to detect a pull call.
+          m_streamNeedsMore = false;
+          controller()->enqueue(array);
+        }
+        if (result == BytesConsumer::Result::Done) {
+          close();
+          return;
+        }
         // If m_streamNeedsMore is true, it means that pull is called and
         // the stream needs more data even if the desired size is not
         // positive.
         if (!m_streamNeedsMore)
           m_streamNeedsMore = controller()->desiredSize() > 0;
         break;
-      }
       case BytesConsumer::Result::ShouldWait:
         NOTREACHED();
-        return;
-      case BytesConsumer::Result::Done:
-        close();
         return;
       case BytesConsumer::Result::Error:
         error();

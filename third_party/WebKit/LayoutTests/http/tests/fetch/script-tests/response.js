@@ -490,6 +490,19 @@ promise_test(() => {
   }, 'Response constructed with a stream');
 
 promise_test(() => {
+    var response = new Response('helloworld');
+    return readableStreamToArray(response.body).then(chunks => {
+        const decoder = new TextDecoder('utf-8');
+        let r = '';
+        for (const chunk of chunks) {
+          r += decoder.decode(chunk, {stream: true});
+        }
+        r += decoder.decode();
+        assert_equals(r, 'helloworld');
+      });
+  }, 'Response constructed with a String / Read from body stream');
+
+promise_test(() => {
     var controller;
     var stream = new ReadableStream({start: c => controller = c});
     controller.enqueue(new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f]));
