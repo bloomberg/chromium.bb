@@ -339,7 +339,7 @@ def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
         solutions, target_os, target_os_only, git_cache_dir))
 
 
-def gclient_sync(with_branch_heads, shallow, break_repo_locks):
+def gclient_sync(with_branch_heads, shallow, revisions, break_repo_locks):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -353,6 +353,8 @@ def gclient_sync(with_branch_heads, shallow, break_repo_locks):
     args += ['--shallow']
   if break_repo_locks:
     args += ['--break_repo_locks']
+  for name, revision in sorted(revisions.iteritems()):
+    args.extend(['--revision', '%s@%s' % (name, revision)])
 
   try:
     call_gclient(*args, tries=1)
@@ -750,20 +752,6 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
     f.write(json.dumps(output, sort_keys=True))
 
 
-def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
-  """Ensure correct DEPS revisions, ignores solutions."""
-  for deps_name, deps_data in sorted(deps_url_mapping.items()):
-    if deps_name.strip('/') in solutions:
-      # This has already been forced to the correct solution by git_checkout().
-      continue
-    revision = get_target_revision(deps_name, deps_data.get('url', None),
-                                   revisions)
-    if not revision:
-      continue
-    git('fetch', 'origin', cwd=deps_name)
-    force_revision(deps_name, revision)
-
-
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, rietveld_server, gerrit_repo,
                     gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
@@ -806,21 +794,22 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Windows sometimes has trouble deleting files. This can make git commands
   # that rely on locks fail.
   break_repo_locks = True if sys.platform.startswith('win') else False
+  # We want to pass all non-solution revisions into the gclient sync call.
+  solution_dirs = {sln['name'] for sln in solutions}
+  gc_revisions = {
+      dirname: rev for dirname, rev in revisions.iteritems()
+      if dirname not in solution_dirs}
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
   gclient_output = gclient_sync(BRANCH_HEADS_REFSPEC in refs, shallow,
-                                break_repo_locks)
+                                gc_revisions, break_repo_locks)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
   if git('ls-files', '.DEPS.git', cwd=first_sln).strip():
     git('checkout', 'HEAD', '--', '.DEPS.git', cwd=first_sln)
 
-  # Finally, ensure that all DEPS are pinned to the correct revision.
-  dir_names = [sln['name'] for sln in solutions]
-  ensure_deps_revisions(gclient_output.get('solutions', {}),
-                        dir_names, revisions)
   # Apply the rest of the patch here (sans DEPS)
   if issue:
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,

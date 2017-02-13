@@ -22,7 +22,7 @@ DEFAULT_PARAMS = {
         'name': 'somename',
         'url': 'https://fake.com'
     }],
-    'revisions': [],
+    'revisions': {},
     'first_sln': 'somename',
     'target_os': None,
     'target_os_only': None,
@@ -122,11 +122,13 @@ class MockedGclientSync():
   def __init__(self, fake_filesystem):
     self.output = {}
     self.fake_filesystem = fake_filesystem
+    self.records = []
 
   def __call__(self, *args, **_):
     output_json_index = args.index('--output-json') + 1
     with self.fake_filesystem.open(args[output_json_index], 'w') as f:
       json.dump(self.output, f)
+    self.records.append(args)
 
 
 class FakeFile():
@@ -201,6 +203,20 @@ class BotUpdateUnittests(unittest.TestCase):
   def testBasicShallow(self):
     self.params['shallow'] = True
     bot_update.ensure_checkout(**self.params)
+    return self.call.records
+
+  def testBasicRevision(self):
+    self.params['revisions'] = {
+        'src': 'HEAD', 'src/v8': 'deadbeef', 'somename': 'DNE'}
+    bot_update.ensure_checkout(**self.params)
+    args = self.gclient.records[0]
+    idx_first_revision = args.index('--revision')
+    idx_second_revision = args.index(
+        '--revision', idx_first_revision+1)
+    with self.assertRaises(ValueError):
+      args.index('--revision', idx_second_revision+1)
+    self.assertEquals(args[idx_first_revision+1], 'src@HEAD')
+    self.assertEquals(args[idx_second_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
   def testBreakLocks(self):
