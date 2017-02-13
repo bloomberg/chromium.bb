@@ -30,8 +30,10 @@ application. This approach is otherwise similar to controlling the browser over
 a DevTools connection, but it provides more customization points, e.g., for
 networking and [mojo services](https://docs.google.com/document/d/1Fr6_DJH6OK9rG3-ibMvRPTNnHsAXPk0VzxxiuJDSK3M/edit#heading=h.qh0udvlk963d).
 
-Headless Shell is a sample application which demonstrates the use of the
-headless C++ API. To run it, first initialize a headless build configuration:
+[Headless Example](https://cs.chromium.org/chromium/src/headless/app/headless_example.cc)
+is a small sample application which demonstrates the use of the headless C++
+API. It loads a web page and outputs the resulting DOM. To run it, first
+initialize a headless build configuration:
 
 ```
 $ mkdir -p out/Debug
@@ -39,22 +41,26 @@ $ echo 'import("//build/args/headless.gn")' > out/Debug/args.gn
 $ gn gen out/Debug
 ```
 
-Then build the shell:
+Then build the example:
+
+```
+$ ninja -C out/Debug headless_example
+```
+
+After the build completes, the example can be run with the following command:
+
+```
+$ out/Debug/headless_example https://www.google.com
+```
+
+[Headless Shell](https://cs.chromium.org/chromium/src/headless/app/headless_shell.cc)
+is a more capable headless application. For instance, it supports remote
+debugging with the [DevTools](https://developer.chrome.com/devtools) protocol.
+To do this, start the application with an argument specifying the debugging
+port:
 
 ```
 $ ninja -C out/Debug headless_shell
-```
-
-After the build completes, Headless Shell can be run with the following command:
-
-```
-$ out/Debug/headless_shell https://www.google.com
-```
-
-To attach a [DevTools](https://developer.chrome.com/devtools) debugger to the
-shell, start it with an argument specifying the debugging port:
-
-```
 $ out/Debug/headless_shell --remote-debugging-port=9222 https://youtube.com
 ```
 

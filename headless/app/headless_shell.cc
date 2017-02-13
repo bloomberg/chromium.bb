@@ -261,14 +261,14 @@ void HeadlessShell::OnPageReady() {
 
 void HeadlessShell::FetchDom() {
   devtools_client_->GetRuntime()->Evaluate(
-      "document.body.innerHTML",
+      "document.body.outerHTML",
       base::Bind(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnDomFetched(
     std::unique_ptr<runtime::EvaluateResult> result) {
   if (result->HasExceptionDetails()) {
-    LOG(ERROR) << "Failed to evaluate document.body.innerHTML: "
+    LOG(ERROR) << "Failed to evaluate document.body.outerHTML: "
                << result->GetExceptionDetails()->GetText();
   } else {
     std::string dom;

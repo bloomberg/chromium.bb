@@ -323,6 +323,7 @@ group("headless_tests") {
 
   deps = [
     ":headless_browsertests",
+    ":headless_example",
     ":headless_unittests",
   ]
 }
@@ -458,4 +459,14 @@ process_version("version_header") {
     "//chrome/VERSION",
   ]
   output = "$target_gen_dir/public/version.h"
+}
+
+executable("headless_example") {
+  sources = [
+    "app/headless_example.cc",
+  ]
+
+  deps = [
+    "//headless:headless_shell_lib",
+  ]
 }

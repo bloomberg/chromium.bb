@@ -19,9 +19,9 @@ namespace headless {
 
 // An application which implements a simple headless browser.
 class HeadlessShell : public HeadlessWebContents::Observer,
-                      emulation::ExperimentalObserver,
-                      inspector::ExperimentalObserver,
-                      page::ExperimentalObserver {
+                      public emulation::ExperimentalObserver,
+                      public inspector::ExperimentalObserver,
+                      public page::ExperimentalObserver {
  public:
   HeadlessShell();
   ~HeadlessShell() override;
