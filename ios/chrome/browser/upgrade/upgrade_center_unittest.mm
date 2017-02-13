@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -30,7 +33,7 @@ class UpgradeCenterTest : public PlatformTest {
 @end
 
 @implementation FakeUpgradeCenterClient {
-  UpgradeCenterTest* test_;  // weak
+  UpgradeCenterTest* test_;
 }
 
 - (instancetype)initWithTest:(UpgradeCenterTest*)test {
@@ -51,8 +54,8 @@ namespace {
 
 TEST_F(UpgradeCenterTest, NoUpgrade) {
   EXPECT_EQ(count_, 0u);
-  base::scoped_nsobject<FakeUpgradeCenterClient> fake(
-      [[FakeUpgradeCenterClient alloc] initWithTest:this]);
+  FakeUpgradeCenterClient* fake =
+      [[FakeUpgradeCenterClient alloc] initWithTest:this];
   [[UpgradeCenter sharedInstance] registerClient:fake];
   EXPECT_EQ(count_, 0u);
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
@@ -60,8 +63,8 @@ TEST_F(UpgradeCenterTest, NoUpgrade) {
 
 TEST_F(UpgradeCenterTest, GoodUpgradeAfterRegistration) {
   EXPECT_EQ(count_, 0u);
-  base::scoped_nsobject<FakeUpgradeCenterClient> fake(
-      [[FakeUpgradeCenterClient alloc] initWithTest:this]);
+  FakeUpgradeCenterClient* fake =
+      [[FakeUpgradeCenterClient alloc] initWithTest:this];
   [[UpgradeCenter sharedInstance] registerClient:fake];
   EXPECT_EQ(count_, 0u);
 
@@ -79,16 +82,16 @@ TEST_F(UpgradeCenterTest, GoodUpgradeBeforeRegistration) {
   details.upgrade_url = GURL("http://foobar.org");
   [[UpgradeCenter sharedInstance] upgradeNotificationDidOccur:details];
   EXPECT_EQ(count_, 0u);
-  base::scoped_nsobject<FakeUpgradeCenterClient> fake(
-      [[FakeUpgradeCenterClient alloc] initWithTest:this]);
+  FakeUpgradeCenterClient* fake =
+      [[FakeUpgradeCenterClient alloc] initWithTest:this];
   [[UpgradeCenter sharedInstance] registerClient:fake];
   EXPECT_EQ(count_, 1u);
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
 };
 
 TEST_F(UpgradeCenterTest, NoRepeatedDisplay) {
-  base::scoped_nsobject<FakeUpgradeCenterClient> fake(
-      [[FakeUpgradeCenterClient alloc] initWithTest:this]);
+  FakeUpgradeCenterClient* fake =
+      [[FakeUpgradeCenterClient alloc] initWithTest:this];
   [[UpgradeCenter sharedInstance] registerClient:fake];
   EXPECT_EQ(count_, 0u);
 
@@ -112,8 +115,8 @@ TEST_F(UpgradeCenterTest, NoRepeatedDisplay) {
 };
 
 TEST_F(UpgradeCenterTest, NewVersionResetsInterval) {
-  base::scoped_nsobject<FakeUpgradeCenterClient> fake(
-      [[FakeUpgradeCenterClient alloc] initWithTest:this]);
+  FakeUpgradeCenterClient* fake =
+      [[FakeUpgradeCenterClient alloc] initWithTest:this];
   [[UpgradeCenter sharedInstance] registerClient:fake];
   EXPECT_EQ(count_, 0u);
 
