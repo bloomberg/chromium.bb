@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/process/memory.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,6 +29,34 @@
 #include "net/base/filename_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
+
+#if defined(OS_POSIX)
+#include <sys/wait.h>
+#endif
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+namespace {
+
+// Check CrashExitCodes.Renderer histogram for a single bucket entry and then
+// verify that the bucket entry contains a signal and the signal is |signal|.
+void VerifyRendererExitCodeIsSignal(
+    const base::HistogramTester& histogram_tester,
+    int signal) {
+  const auto buckets =
+      histogram_tester.GetAllSamples("CrashExitCodes.Renderer");
+  ASSERT_EQ(1UL, buckets.size());
+  EXPECT_EQ(1, buckets[0].count);
+  int32_t exit_code = buckets[0].min;
+  EXPECT_TRUE(WIFSIGNALED(exit_code));
+  EXPECT_EQ(signal, WTERMSIG(exit_code));
+}
+
+}  // namespace
+#endif  // OS_MACOSX || OS_LINUX
 
 class MetricsServiceBrowserTest : public InProcessBrowserTest {
  public:
@@ -79,6 +109,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
 #define MAYBE_CrashRenderers CrashRenderers
 #endif
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
+  base::HistogramTester histogram_tester;
   OpenTabs();
 
   // Kill the process for one of the tabs.
@@ -101,11 +132,70 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
 
   // Verify that the expected stability metrics were recorded.
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
+  // Expect four page loads:
+  // 1. title2.html
+  // 2. iframe.html
+  // 3. title1.html (iframed by iframe.html)
+  // 4. chrome://crash
   EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that
   // metrics::prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser
   // exits... it's not clear to me how to test that.
+
+#if defined(OS_WIN)
+  histogram_tester.ExpectUniqueSample(
+      "CrashExitCodes.Renderer",
+      std::abs(static_cast<int32_t>(STATUS_ACCESS_VIOLATION)), 1);
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  VerifyRendererExitCodeIsSignal(histogram_tester, SIGSEGV);
+#endif
+  histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
 }
 
+// OOM code only works on Windows.
+#if defined(OS_WIN) && !defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, OOMRenderers) {
+  base::HistogramTester histogram_tester;
+  OpenTabs();
+
+  // Kill the process for one of the tabs.
+  content::RenderProcessHostWatcher observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(content::kChromeUIMemoryExhaustURL));
+  observer.Wait();
+
+  // The MetricsService listens for the same notification, so the |observer|
+  // might finish waiting before the MetricsService has a chance to process the
+  // notification.  To avoid racing here, we repeatedly run the message loop
+  // until the MetricsService catches up.  This should happen "real soon now",
+  // since the notification is posted to all observers essentially
+  // simultaneously... so busy waiting here shouldn't be too bad.
+  const PrefService* prefs = g_browser_process->local_state();
+  while (!prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount)) {
+    content::RunAllPendingInMessageLoop();
+  }
+
+  // Verify that the expected stability metrics were recorded.
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
+  EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
+
+// On 64-bit, the Job object should terminate the renderer on an OOM.
+#if defined(ARCH_CPU_64_BITS)
+  const int expected_exit_code = sandbox::SBOX_FATAL_MEMORY_EXCEEDED;
+#else
+  const int expected_exit_code = base::win::kOomExceptionCode;
+#endif
+
+  // Exit codes are recorded after being passed through std::abs see
+  // MapCrashExitCodeForHistogram.
+  histogram_tester.ExpectUniqueSample("CrashExitCodes.Renderer",
+                                      std::abs(expected_exit_code), 1);
+
+  histogram_tester.ExpectUniqueSample("Tabs.SadTab.OomCreated", 1, 1);
+}
+#endif  // OS_WIN && !ADDRESS_SANITIZER
