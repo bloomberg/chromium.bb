@@ -677,10 +677,11 @@ TEST_F(StructTraitsTest, RenderPass) {
   background_filters.Append(FilterOperation::CreateSaturateFilter(4.f));
   background_filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
   background_filters.Append(FilterOperation::CreateSaturateFilter(2.f));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-                background_filters, has_transparent_background);
+                background_filters, color_space, has_transparent_background);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -729,6 +730,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
+  EXPECT_EQ(color_space, output->color_space);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(background_filters, output->background_filters);
@@ -788,10 +790,11 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   const gfx::Rect damage_rect(56, 123, 19, 43);
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSCRGBLinear();
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(id, output_rect, damage_rect, transform_to_root,
-                FilterOperations(), FilterOperations(),
+                FilterOperations(), FilterOperations(), color_space,
                 has_transparent_background);
 
   // Unlike the previous test, don't add any quads to the list; we need to
@@ -808,6 +811,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
+  EXPECT_EQ(color_space, output->color_space);
 }
 
 TEST_F(StructTraitsTest, ReturnedResource) {

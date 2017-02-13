@@ -19,7 +19,8 @@ bool StructTraits<cc::mojom::RenderPassDataView,
       !data.ReadDamageRect(&(*out)->damage_rect) ||
       !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target) ||
       !data.ReadFilters(&(*out)->filters) ||
-      !data.ReadBackgroundFilters(&(*out)->background_filters)) {
+      !data.ReadBackgroundFilters(&(*out)->background_filters) ||
+      !data.ReadColorSpace(&(*out)->color_space)) {
     return false;
   }
   (*out)->id = data.id();

@@ -882,7 +882,7 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
   // CopyTexImage2D fails when called on a texture having immutable storage.
   device_background_texture->Allocate(
       bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
-      BackbufferFormat(), current_frame()->device_color_space);
+      BackbufferFormat(), current_frame()->current_render_pass->color_space);
   {
     ResourceProvider::ScopedWriteLockGL lock(
         resource_provider_, device_background_texture->id(), false);
@@ -1034,7 +1034,7 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     // RGBA_8888 here is arbitrary and unused.
     Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
                            ResourceFormat::RGBA_8888,
-                           current_frame()->device_color_space);
+                           current_frame()->current_render_pass->color_space);
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
@@ -1309,7 +1309,7 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
                     tex_coord_precision, sampler_type, shader_blend_mode,
                     params->use_aa ? USE_AA : NO_AA, mask_mode,
                     mask_for_background, params->use_color_matrix),
-                current_frame()->device_color_space);
+                current_frame()->current_render_pass->color_space);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
@@ -2092,7 +2092,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // resource, quad->color_space, and quad->video_color_space. Remove two of
   // them.
   gfx::ColorSpace src_color_space = quad->video_color_space;
-  gfx::ColorSpace dst_color_space = current_frame()->device_color_space;
+  gfx::ColorSpace dst_color_space =
+      current_frame()->current_render_pass->color_space;
   if (!base::FeatureList::IsEnabled(media::kVideoColorManagement)) {
     if (!settings_->enable_color_correct_rendering)
       dst_color_space = gfx::ColorSpace();
@@ -3020,7 +3021,7 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key,
                                const gfx::ColorSpace& src_color_space) {
   gfx::ColorSpace dst_color_space;
   if (settings_->enable_color_correct_rendering)
-    dst_color_space = current_frame()->device_color_space;
+    dst_color_space = current_frame()->current_render_pass->color_space;
   SetUseProgram(program_key, src_color_space, dst_color_space);
 }
 
@@ -3297,7 +3298,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   *resource = overlay_resource_pool_->AcquireResource(
       gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,
-      current_frame()->device_color_space);
+      current_frame()->current_render_pass->color_space);
   *new_bounds =
       gfx::RectF(updated_dst_rect.x(), updated_dst_rect.y(),
                  (*resource)->size().width(), (*resource)->size().height());

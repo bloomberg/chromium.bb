@@ -38,6 +38,7 @@ void FakeOutputSurface::Reshape(const gfx::Size& size,
   } else {
     software_device()->Resize(size, device_scale_factor);
   }
+  last_reshape_color_space_ = color_space;
 }
 
 void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {

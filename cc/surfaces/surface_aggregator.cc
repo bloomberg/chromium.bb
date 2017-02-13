@@ -208,7 +208,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
                       source.transform_to_root_target, source.filters,
-                      source.background_filters,
+                      source.background_filters, output_color_space_,
                       source.has_transparent_background);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
@@ -475,7 +475,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
                       source.transform_to_root_target, source.filters,
-                      source.background_filters,
+                      source.background_filters, output_color_space_,
                       source.has_transparent_background);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
@@ -846,6 +846,11 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
     return;
   // Set the last drawn index as 0 to ensure full damage next time it's drawn.
   it->second = 0;
+}
+
+void SurfaceAggregator::SetOutputColorSpace(
+    const gfx::ColorSpace& output_color_space) {
+  output_color_space_ = output_color_space;
 }
 
 }  // namespace cc

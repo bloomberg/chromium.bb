@@ -98,6 +98,10 @@ class FakeOutputSurface : public OutputSurface {
     return last_swap_rect_;
   }
 
+  const gfx::ColorSpace& last_reshape_color_space() {
+    return last_reshape_color_space_;
+  }
+
  protected:
   explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);
   explicit FakeOutputSurface(
@@ -113,6 +117,7 @@ class FakeOutputSurface : public OutputSurface {
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
+  gfx::ColorSpace last_reshape_color_space_;
 
  private:
   void SwapBuffersAck();

@@ -159,6 +159,8 @@ void Display::Resize(const gfx::Size& size) {
 
 void Display::SetColorSpace(const gfx::ColorSpace& color_space) {
   device_color_space_ = color_space;
+  if (aggregator_)
+    aggregator_->SetOutputColorSpace(device_color_space_);
 }
 
 void Display::SetOutputIsSecure(bool secure) {
@@ -215,6 +217,7 @@ void Display::InitializeRenderer() {
   aggregator_.reset(new SurfaceAggregator(
       surface_manager_, resource_provider_.get(), output_partial_list));
   aggregator_->set_output_is_secure(output_is_secure_);
+  aggregator_->SetOutputColorSpace(device_color_space_);
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
@@ -314,7 +317,7 @@ bool Display::DrawAndSwap() {
 
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         device_color_space_, current_surface_size_);
+                         current_surface_size_);
   } else {
     TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }

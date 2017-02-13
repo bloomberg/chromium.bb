@@ -90,7 +90,8 @@ std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
-                    filters, background_filters, has_transparent_background);
+                    filters, background_filters, color_space,
+                    has_transparent_background);
   return copy_pass;
 }
 
@@ -102,7 +103,8 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
-                    filters, background_filters, has_transparent_background);
+                    filters, background_filters, color_space,
+                    has_transparent_background);
   for (auto* shared_quad_state : shared_quad_state_list) {
     SharedQuadState* copy_shared_quad_state =
         copy_pass->CreateAndAppendSharedQuadState();
@@ -164,6 +166,7 @@ void RenderPass::SetAll(int id,
                         const gfx::Transform& transform_to_root_target,
                         const FilterOperations& filters,
                         const FilterOperations& background_filters,
+                        const gfx::ColorSpace& color_space,
                         bool has_transparent_background) {
   DCHECK(id);
 
@@ -173,6 +176,7 @@ void RenderPass::SetAll(int id,
   this->transform_to_root_target = transform_to_root_target;
   this->filters = filters;
   this->background_filters = background_filters;
+  this->color_space = color_space;
   this->has_transparent_background = has_transparent_background;
 
   DCHECK(quad_list.empty());

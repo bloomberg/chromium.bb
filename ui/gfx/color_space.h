@@ -89,10 +89,10 @@ class GFX_EXPORT ColorSpace {
     // display.
     SMPTEST2084_NON_HDR,
 
-    // TODO(hubbe): Need to store an approximation of the gamma function(s).
-    CUSTOM,
     // Like LINEAR, but intended for HDR. (can go outside of 0-1)
     LINEAR_HDR,
+    // TODO(hubbe): Need to store an approximation of the gamma function(s).
+    CUSTOM,
     LAST = CUSTOM,
   };
 

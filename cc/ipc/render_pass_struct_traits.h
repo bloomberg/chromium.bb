@@ -9,6 +9,7 @@
 #include "cc/ipc/quads_struct_traits.h"
 #include "cc/ipc/render_pass.mojom-shared.h"
 #include "cc/quads/render_pass.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
@@ -44,6 +45,11 @@ struct StructTraits<cc::mojom::RenderPassDataView,
   static const cc::FilterOperations& background_filters(
       const std::unique_ptr<cc::RenderPass>& input) {
     return input->background_filters;
+  }
+
+  static const gfx::ColorSpace& color_space(
+      const std::unique_ptr<cc::RenderPass>& input) {
+    return input->color_space;
   }
 
   static bool has_transparent_background(

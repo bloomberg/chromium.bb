@@ -18,6 +18,7 @@
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "ui/gfx/color_space.h"
 
 namespace cc {
 
@@ -43,6 +44,10 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   }
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
+
+  // Set the color spaces for the created RenderPasses, which is propagated
+  // to the output surface.
+  void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
 
  private:
   struct ClipData {
@@ -125,6 +130,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
+  gfx::ColorSpace output_color_space_;
 
   using SurfaceToResourceChildIdMap =
       std::unordered_map<SurfaceId, int, SurfaceIdHash>;

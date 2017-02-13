@@ -66,8 +66,7 @@ class GLRendererTest : public testing::Test {
     return render_passes_in_draw_order_.back().get();
   }
   void DrawFrame(GLRenderer* renderer, const gfx::Size& viewport_size) {
-    renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, gfx::ColorSpace(),
-                        viewport_size);
+    renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size);
   }
 
   RenderPassList render_passes_in_draw_order_;
@@ -1560,7 +1559,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     renderer_->DrawFrame(&render_passes_in_draw_order_, device_scale_factor,
-                         gfx::ColorSpace(), viewport_size);
+                         viewport_size);
   }
 
   RendererSettings settings_;

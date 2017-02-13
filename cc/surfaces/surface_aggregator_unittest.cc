@@ -2086,6 +2086,36 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   factory2.EvictSurface();
 }
 
+// Ensure that the render passes have correct color spaces.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
+  test::Quad quads[][2] = {{test::Quad::SolidColorQuad(SK_ColorWHITE),
+                            test::Quad::SolidColorQuad(SK_ColorLTGRAY)},
+                           {test::Quad::SolidColorQuad(SK_ColorGRAY),
+                            test::Quad::SolidColorQuad(SK_ColorDKGRAY)}};
+  test::Pass passes[] = {test::Pass(quads[0], arraysize(quads[0]), 2),
+                         test::Pass(quads[1], arraysize(quads[1]), 1)};
+  gfx::ColorSpace color_space1 = gfx::ColorSpace::CreateXYZD50();
+  gfx::ColorSpace color_space2 = gfx::ColorSpace::CreateSRGB();
+
+  SubmitCompositorFrame(&factory_, passes, arraysize(passes),
+                        root_local_surface_id_);
+
+  SurfaceId surface_id(factory_.frame_sink_id(), root_local_surface_id_);
+
+  CompositorFrame aggregated_frame;
+  aggregator_.SetOutputColorSpace(color_space1);
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
+  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
+  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
+
+  aggregator_.SetOutputColorSpace(color_space2);
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
+  EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[0]->color_space);
+  EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[1]->color_space);
+}
+
 }  // namespace
 }  // namespace cc
 

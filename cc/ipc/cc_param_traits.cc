@@ -328,6 +328,7 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.transform_to_root_target);
   WriteParam(m, p.filters);
   WriteParam(m, p.background_filters);
+  WriteParam(m, p.color_space);
   WriteParam(m, p.has_transparent_background);
   WriteParam(m, base::checked_cast<uint32_t>(p.quad_list.size()));
 
@@ -437,6 +438,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   gfx::Transform transform_to_root_target;
   cc::FilterOperations filters;
   cc::FilterOperations background_filters;
+  gfx::ColorSpace color_space;
   bool has_transparent_background;
   uint32_t quad_list_size;
 
@@ -445,12 +447,13 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
       !ReadParam(m, iter, &transform_to_root_target) ||
       !ReadParam(m, iter, &filters) ||
       !ReadParam(m, iter, &background_filters) ||
+      !ReadParam(m, iter, &color_space) ||
       !ReadParam(m, iter, &has_transparent_background) ||
       !ReadParam(m, iter, &quad_list_size))
     return false;
 
   p->SetAll(id, output_rect, damage_rect, transform_to_root_target, filters,
-            background_filters, has_transparent_background);
+            background_filters, color_space, has_transparent_background);
 
   for (uint32_t i = 0; i < quad_list_size; ++i) {
     cc::DrawQuad::Material material;
@@ -536,6 +539,8 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   LogParam(p.filters, l);
   l->append(", ");
   LogParam(p.background_filters, l);
+  l->append(", ");
+  LogParam(p.color_space, l);
   l->append(", ");
   LogParam(p.has_transparent_background, l);
   l->append(", ");

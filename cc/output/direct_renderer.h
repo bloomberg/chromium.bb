@@ -55,7 +55,6 @@ class CC_EXPORT DirectRenderer {
   bool HasAllocatedResourcesForTesting(int render_pass_id) const;
   void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
-                 const gfx::ColorSpace& device_color_space,
                  const gfx::Size& device_viewport_size);
 
   // Public interface implemented by subclasses.
@@ -83,7 +82,6 @@ class CC_EXPORT DirectRenderer {
 
     gfx::Rect root_damage_rect;
     gfx::Size device_viewport_size;
-    gfx::ColorSpace device_color_space;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;

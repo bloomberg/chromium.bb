@@ -209,7 +209,6 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
-                               const gfx::ColorSpace& device_color_space,
                                const gfx::Size& device_viewport_size) {
   DCHECK(visible_);
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
@@ -246,7 +245,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       overlay_processor_->GetAndResetOverlayDamage());
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
-  current_frame()->device_color_space = device_color_space;
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper
@@ -256,12 +254,12 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   bool use_stencil = overdraw_feedback_;
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
-      device_color_space != reshape_device_color_space_ ||
+      root_render_pass->color_space != reshape_device_color_space_ ||
       frame_has_alpha != reshape_has_alpha_ ||
       use_stencil != reshape_use_stencil_) {
     reshape_surface_size_ = device_viewport_size;
     reshape_device_scale_factor_ = device_scale_factor;
-    reshape_device_color_space_ = device_color_space;
+    reshape_device_color_space_ = root_render_pass->color_space;
     reshape_has_alpha_ =
         current_frame()->root_render_pass->has_transparent_background;
     reshape_use_stencil_ = overdraw_feedback_;
@@ -600,9 +598,9 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   size.Enlarge(enlarge_pass_texture_amount_.width(),
                enlarge_pass_texture_amount_.height());
   if (!texture->id()) {
-    texture->Allocate(size,
-                      ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-                      BackbufferFormat(), current_frame()->device_color_space);
+    texture->Allocate(
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
+        BackbufferFormat(), current_frame()->current_render_pass->color_space);
   }
   DCHECK(texture->id());
 

@@ -75,6 +75,7 @@ class CCParamTraitsTest : public testing::Test {
                   b->background_filters.at(i).image_filter()->countInputs());
       }
     }
+    EXPECT_EQ(a->color_space, b->color_space);
     EXPECT_EQ(a->has_transparent_background, b->has_transparent_background);
   }
 
@@ -278,9 +279,9 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   ResourceId arbitrary_resourceid3 = 23;
   ResourceId arbitrary_resourceid4 = 16;
   SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
-  YUVVideoDrawQuad::ColorSpace arbitrary_color_space =
+  gfx::ColorSpace arbitrary_color_space = gfx::ColorSpace::CreateREC601();
+  YUVVideoDrawQuad::ColorSpace arbitrary_video_color_space =
       YUVVideoDrawQuad::REC_601;
-  gfx::ColorSpace arbitrary_video_color_space = gfx::ColorSpace::CreateREC601();
 
   int child_id = 30;
   int root_id = 14;
@@ -298,16 +299,19 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   std::unique_ptr<RenderPass> child_pass_in = RenderPass::Create();
   child_pass_in->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
                         arbitrary_matrix2, arbitrary_filters1,
-                        arbitrary_filters2, arbitrary_bool2);
+                        arbitrary_filters2, arbitrary_color_space,
+                        arbitrary_bool2);
 
   std::unique_ptr<RenderPass> child_pass_cmp = RenderPass::Create();
   child_pass_cmp->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
                          arbitrary_matrix2, arbitrary_filters1,
-                         arbitrary_filters2, arbitrary_bool2);
+                         arbitrary_filters2, arbitrary_color_space,
+                         arbitrary_bool2);
 
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
-                  arbitrary_filters2, arbitrary_filters1, arbitrary_bool1);
+                  arbitrary_filters2, arbitrary_filters1, arbitrary_color_space,
+                  arbitrary_bool1);
 
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_size1, arbitrary_rect1,
@@ -316,7 +320,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
   std::unique_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
-                   arbitrary_filters2, arbitrary_filters1, arbitrary_bool1);
+                   arbitrary_filters2, arbitrary_filters1,
+                   arbitrary_color_space, arbitrary_bool1);
 
   SharedQuadState* shared_state1_cmp =
       pass_cmp->CreateAndAppendSharedQuadState();
@@ -412,7 +417,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       arbitrary_rect1_inside_rect1, arbitrary_bool1, arbitrary_rectf1,
       arbitrary_rectf2, arbitrary_size1, arbitrary_size2, arbitrary_resourceid1,
       arbitrary_resourceid2, arbitrary_resourceid3, arbitrary_resourceid4,
-      arbitrary_color_space, arbitrary_video_color_space, arbitrary_float1,
+      arbitrary_video_color_space, arbitrary_color_space, arbitrary_float1,
       arbitrary_float2, arbitrary_int);
   pass_cmp->CopyFromAndAppendDrawQuad(yuvvideo_in,
                                       yuvvideo_in->shared_quad_state);
@@ -493,7 +498,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(1, gfx::Rect(100, 100), gfx::Rect(), gfx::Transform(),
-                  FilterOperations(), FilterOperations(), false);
+                  FilterOperations(), FilterOperations(),
+                  gfx::ColorSpace::CreateSRGB(), false);
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();

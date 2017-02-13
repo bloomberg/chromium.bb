@@ -1424,7 +1424,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   void DrawFrame(RenderPassList* pass_list, const gfx::Size& viewport_size) {
-    renderer_->DrawFrame(pass_list, 1.f, gfx::ColorSpace(), viewport_size);
+    renderer_->DrawFrame(pass_list, 1.f, viewport_size);
   }
   void SwapBuffers() {
     renderer_->SwapBuffers(std::vector<ui::LatencyInfo>());

@@ -179,9 +179,12 @@ TEST_F(DisplayTest, DisplayDamaged) {
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
   SetUpDisplay(settings, nullptr);
+  gfx::ColorSpace color_space_1 = gfx::ColorSpace::CreateXYZD50();
+  gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
   StubDisplayClient client;
   display_->Initialize(&client, &manager_);
+  display_->SetColorSpace(color_space_1);
 
   LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
@@ -213,7 +216,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   EXPECT_FALSE(scheduler_->swapped);
   EXPECT_EQ(0u, output_surface_->num_sent_frames());
+  EXPECT_EQ(gfx::ColorSpace(), output_surface_->last_reshape_color_space());
   display_->DrawAndSwap();
+  EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
   EXPECT_TRUE(scheduler_->swapped);
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
   EXPECT_EQ(gfx::Size(100, 100),
@@ -235,7 +240,10 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_FALSE(scheduler_->has_new_root_surface);
 
     scheduler_->swapped = false;
+    EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
+    display_->SetColorSpace(color_space_2);
     display_->DrawAndSwap();
+    EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped);
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),

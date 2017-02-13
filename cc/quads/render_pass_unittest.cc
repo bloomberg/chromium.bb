@@ -28,6 +28,7 @@ struct RenderPassSize {
   gfx::Transform transform_to_root_target;
   FilterOperations filters;
   FilterOperations background_filters;
+  gfx::ColorSpace color_space;
   bool has_transparent_background;
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_callbacks;
   QuadList quad_list;
@@ -76,11 +77,12 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   filters.Append(FilterOperation::CreateOpacityFilter(0.5));
   FilterOperations background_filters;
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   bool has_transparent_background = true;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               background_filters, has_transparent_background);
+               background_filters, color_space, has_transparent_background);
   pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
@@ -124,11 +126,12 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   filters.Append(FilterOperation::CreateOpacityFilter(0.5));
   FilterOperations background_filters;
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   bool has_transparent_background = true;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               background_filters, has_transparent_background);
+               background_filters, color_space, has_transparent_background);
 
   // Two quads using one shared state.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
@@ -174,12 +177,13 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   contrib_filters.Append(FilterOperation::CreateSepiaFilter(0.5));
   FilterOperations contrib_background_filters;
   contrib_background_filters.Append(FilterOperation::CreateSaturateFilter(1));
+  gfx::ColorSpace contrib_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool contrib_has_transparent_background = true;
 
   std::unique_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id, contrib_output_rect, contrib_damage_rect,
                   contrib_transform_to_root, contrib_filters,
-                  contrib_background_filters,
+                  contrib_background_filters, contrib_color_space,
                   contrib_has_transparent_background);
 
   SharedQuadState* contrib_shared_state =
@@ -222,11 +226,12 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   filters.Append(FilterOperation::CreateOpacityFilter(0.5));
   FilterOperations background_filters;
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool has_transparent_background = true;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               background_filters, has_transparent_background);
+               background_filters, color_space, has_transparent_background);
 
   // A shared state with a quad.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
