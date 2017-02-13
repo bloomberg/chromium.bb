@@ -160,8 +160,9 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
 
   switch (identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
-      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_INTERNAL_PAGE,
-                                       IDS_WEBSITE_SETTINGS_INTERNAL_PAGE);
+      // Internal pages have their own UI implementations which should never
+      // call this function.
+      NOTREACHED();
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
