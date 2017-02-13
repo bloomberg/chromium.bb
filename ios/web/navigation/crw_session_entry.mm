@@ -59,4 +59,8 @@
   return _item;
 }
 
+- (BOOL)isEqual:(CRWSessionEntry*)object {
+  return _item == [object navigationItem];
+}
+
 @end
