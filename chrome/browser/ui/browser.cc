@@ -510,8 +510,17 @@ Browser::~Browser() {
   // because the InstantController destructor depends on this profile.
   instant_controller_.reset();
 
+  // The system incognito profile should not try be destroyed using
+  // ProfileDestroyer::DestroyProfileWhenAppropriate(). This profile can be
+  // used, at least, by the user manager window. This window is not a browser,
+  // therefore, BrowserList::IsIncognitoSessionActiveForProfile(profile_)
+  // returns false, while the user manager window is still opened.
+  // This cannot be fixed in ProfileDestroyer::DestroyProfileWhenAppropriate(),
+  // because the ProfileManager needs to be able to destroy all profiles when
+  // it is destroyed. See crbug.com/527035
   if (profile_->IsOffTheRecord() &&
-      !BrowserList::IsIncognitoSessionActiveForProfile(profile_)) {
+      !BrowserList::IsIncognitoSessionActiveForProfile(profile_) &&
+      !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {
 // ChromeOS handles guest data independently.
 #if !defined(OS_CHROMEOS)
