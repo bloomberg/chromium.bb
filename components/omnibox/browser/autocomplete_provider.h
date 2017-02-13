@@ -34,6 +34,13 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // below may have some utility, nothing compares with first-hand
 // investigation and experience.
 //
+// ZERO SUGGEST (empty) input type:
+// --------------------------------------------------------------------|-----
+// Clipboard URL                                                       |  800
+// Physical Web (zero suggest)                                         |  700--
+// Zero Suggest (most visited, Android only)                           |  600--
+// Zero Suggest (default, may be overridden by server)                 |  100
+//
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
@@ -43,15 +50,16 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (what you typed)                            | 1300
 // HistoryURL (what you typed, some inexact matches)                   | 1200++
 // Keyword (substituting, exact match)                                 | 1100
-// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050*
 // HistoryURL (some inexact matches)                                   |  900++
-// BookmarkProvider (prefix match in bookmark title)                   |  900+-
+// BookmarkProvider (prefix match in bookmark title or URL)            |  900+-
 // Built-in                                                            |  860++
 // Search Primary Provider (navigational suggestion)                   |  800++
+// Physical Web (prefix match in page title or URL)                    |  700--
 // Search Primary Provider (suggestion)                                |  600++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
-// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
 //
@@ -66,11 +74,11 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Built-in                                                            |  860++
 // Search Primary Provider (what you typed)                            |  850
 // Search Primary Provider (navigational suggestion)                   |  800++
-// Search Primary Provider (past query in history)                     |  750--
+// Search Primary Provider (past query in history)                     |  750*
 // Keyword (inexact match)                                             |  700
 // Search Primary Provider (suggestion)                                |  300++
 // Search Secondary Provider (what you typed)                          |  250
-// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
 //
@@ -81,14 +89,15 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Keyword (substituting, exact match)                                 | 1450
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050*
 // HistoryURL (inexact match)                                          |  900++
-// BookmarkProvider (prefix match in bookmark title)                   |  900+-
+// BookmarkProvider (prefix match in bookmark title or URL)            |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
+// Physical Web (prefix match in page title or URL)                    |  700--
 // Search Primary Provider (suggestion)                                |  600++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
-// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
 //
@@ -105,7 +114,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 //
 // The value column gives the ranking returned from the various providers.
 // ++: a series of matches with relevance from n up to (n + max_matches).
-// --: relevance score falls off over time (discounted 50 points @ 15 minutes,
+// --: a series of matches with relevance from n down to (n - max_matches).
+// *:  relevance score falls off over time (discounted 50 points @ 15 minutes,
 //     450 points @ two weeks)
 // **: relevance score falls off over two days (discounted 99 points after two
 //     days).
