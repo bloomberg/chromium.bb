@@ -41,8 +41,14 @@ void ColumnBalancer::traverseLines(const LayoutBlockFlow& blockFlow) {
        line = line->nextRootBox()) {
     LayoutUnit lineTopInFlowThread =
         m_flowThreadOffset + line->lineTopWithLeading();
-    if (lineTopInFlowThread < logicalTopInFlowThread())
-      continue;
+    if (lineTopInFlowThread < logicalTopInFlowThread()) {
+      // If the line is fully about the flow thread portion range we're working
+      // with, we can skip it. If its logical top is outside the range, but its
+      // logical bottom protrudes into the range, we need to examine it.
+      LayoutUnit lineBottom = line->lineBottomWithLeading();
+      if (m_flowThreadOffset + lineBottom <= logicalTopInFlowThread())
+        continue;
+    }
     if (lineTopInFlowThread >= logicalBottomInFlowThread())
       break;
     examineLine(*line);
@@ -233,6 +239,8 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line) {
   LayoutUnit lineTopInFlowThread = flowThreadOffset() + lineTop;
   LayoutUnit minimumLogialHeight =
       columnLogicalHeightRequirementForLine(line.block().styleRef(), line);
+  if (lineTopInFlowThread < LayoutUnit())
+    minimumLogialHeight += lineTopInFlowThread;
   m_tallestUnbreakableLogicalHeight =
       std::max(m_tallestUnbreakableLogicalHeight, minimumLogialHeight);
   ASSERT(
