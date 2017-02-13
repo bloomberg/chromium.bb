@@ -5,21 +5,16 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.StrictMode;
 import android.provider.Settings;
-import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -144,25 +139,6 @@ public class ChromeWebApkHost {
     }
 
     /**
-     * Show dialog warning user that "installation from unknown sources" is required by the WebAPK
-     * experiment if the user enabled "Improved Add to Home screen" via chrome://flags.
-     */
-    public static void launchWebApkRequirementsDialogIfNeeded(Context context) {
-        // Show dialog on Canary & Dev. Installation via "unknown sources" is disabled via
-        // variations on other channels.
-        if (!ChromeVersionInfo.isCanaryBuild() && !ChromeVersionInfo.isDevBuild()) return;
-
-        // Update cached state. {@link #isEnabled()} and {@link #canUseGooglePlayToInstallWebApk()}
-        // need the state to be up to date.
-        cacheEnabledStateForNextLaunch();
-
-        if (isEnabled() && !canUseGooglePlayToInstallWebApk()
-                && !installingFromUnknownSourcesAllowed()) {
-            showUnknownSourcesNeededDialog(context);
-        }
-    }
-
-    /**
      * Once native is loaded we can consult the command-line (set via about:flags) and also finch
      * state to see if we should enable WebAPKs.
      */
@@ -191,31 +167,6 @@ public class ChromeWebApkHost {
         } catch (Settings.SettingNotFoundException e) {
             return false;
         }
-    }
-
-    /**
-     * Show dialog warning user that "installation from unknown sources" is required by the WebAPK
-     * experiment.
-     */
-    private static void showUnknownSourcesNeededDialog(final Context context) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.webapk_unknown_sources_dialog_title);
-        builder.setMessage(R.string.webapk_unknown_sources_dialog_message);
-        builder.setPositiveButton(R.string.webapk_unknown_sources_settings_button,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        // Open Android Security settings.
-                        Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-                        context.startActivity(intent);
-                    }
-                });
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {}
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
     private static native boolean nativeCanUseGooglePlayToInstallWebApk();
