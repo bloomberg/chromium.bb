@@ -207,16 +207,10 @@ static_library("headless_lib") {
               "lib/browser/headless_devtools_manager_delegate.h",
               "lib/browser/headless_platform_event_source.cc",
               "lib/browser/headless_platform_event_source.h",
-              "lib/browser/headless_screen.cc",
-              "lib/browser/headless_screen.h",
               "lib/browser/headless_url_request_context_getter.cc",
               "lib/browser/headless_url_request_context_getter.h",
               "lib/browser/headless_web_contents_impl.cc",
               "lib/browser/headless_web_contents_impl.h",
-              "lib/browser/headless_window_parenting_client.cc",
-              "lib/browser/headless_window_parenting_client.h",
-              "lib/browser/headless_window_tree_host.cc",
-              "lib/browser/headless_window_tree_host.h",
               "lib/headless_content_client.cc",
               "lib/headless_content_client.h",
               "lib/headless_content_main_delegate.cc",
@@ -264,6 +258,18 @@ static_library("headless_lib") {
               "public/util/user_agent.cc",
               "public/util/user_agent.h",
             ]
+
+  if (use_aura) {
+    sources += [
+      "lib/browser/headless_browser_impl_aura.cc",
+      "lib/browser/headless_screen.cc",
+      "lib/browser/headless_screen.h",
+      "lib/browser/headless_window_parenting_client.cc",
+      "lib/browser/headless_window_parenting_client.h",
+      "lib/browser/headless_window_tree_host.cc",
+      "lib/browser/headless_window_tree_host.h",
+    ]
+  }
 
   deps = [
     ":gen_devtools_client_api",

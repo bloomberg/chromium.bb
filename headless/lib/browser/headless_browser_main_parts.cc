@@ -8,22 +8,8 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_devtools.h"
 #include "headless/lib/browser/headless_screen.h"
-#include "ui/aura/env.h"
-#include "ui/display/screen.h"
 
 namespace headless {
-
-namespace {
-
-void PlatformInitialize(const gfx::Size& screen_size) {
-  HeadlessScreen* screen = HeadlessScreen::Create(screen_size);
-  display::Screen::SetScreenInstance(screen);
-}
-
-void PlatformExit() {
-}
-
-}  // namespace
 
 HeadlessBrowserMainParts::HeadlessBrowserMainParts(HeadlessBrowserImpl* browser)
     : browser_(browser)
@@ -36,7 +22,7 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
     StartLocalDevToolsHttpHandler(browser_->options());
     devtools_http_handler_started_ = true;
   }
-  PlatformInitialize(browser_->options()->window_size);
+  browser_->PlatformInitialize();
 }
 
 void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
@@ -44,7 +30,6 @@ void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
     StopLocalDevToolsHttpHandler();
     devtools_http_handler_started_ = false;
   }
-  PlatformExit();
 }
 
 }  // namespace headless

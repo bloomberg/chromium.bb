@@ -12,41 +12,18 @@
 #include "ui/display/screen_base.h"
 
 namespace gfx {
-class Insets;
 class Rect;
-class Transform;
-}
-
-namespace aura {
-class Window;
-class WindowTreeHost;
 }
 
 namespace headless {
 
-class HeadlessScreen : public display::ScreenBase, public aura::WindowObserver {
+class HeadlessScreen : public display::ScreenBase {
  public:
   // Creates a display::Screen of the specified size (physical pixels).
   static HeadlessScreen* Create(const gfx::Size& size);
   ~HeadlessScreen() override;
 
-  aura::WindowTreeHost* CreateHostForPrimaryDisplay();
-
-  void SetDeviceScaleFactor(float device_scale_fator);
-  void SetDisplayRotation(display::Display::Rotation rotation);
-  void SetUIScale(float ui_scale);
-  void SetWorkAreaInsets(const gfx::Insets& insets);
-
  protected:
-  gfx::Transform GetRotationTransform() const;
-  gfx::Transform GetUIScaleTransform() const;
-
-  // WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-  void OnWindowDestroying(aura::Window* window) override;
-
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
@@ -55,9 +32,6 @@ class HeadlessScreen : public display::ScreenBase, public aura::WindowObserver {
 
  private:
   explicit HeadlessScreen(const gfx::Rect& screen_bounds);
-
-  aura::WindowTreeHost* host_;
-  float ui_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessScreen);
 };

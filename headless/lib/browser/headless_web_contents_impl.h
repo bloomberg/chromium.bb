@@ -15,10 +15,6 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
-namespace aura {
-class Window;
-}
-
 namespace content {
 class DevToolsAgentHost;
 class WebContents;
@@ -42,8 +38,7 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
   static HeadlessWebContentsImpl* From(HeadlessWebContents* web_contents);
 
   static std::unique_ptr<HeadlessWebContentsImpl> Create(
-      HeadlessWebContents::Builder* builder,
-      aura::Window* parent_window);
+      HeadlessWebContents::Builder* builder);
 
   // Takes ownership of |web_contents|.
   static std::unique_ptr<HeadlessWebContentsImpl> CreateFromWebContents(
@@ -85,8 +80,7 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
   HeadlessWebContentsImpl(content::WebContents* web_contents,
                           HeadlessBrowserContextImpl* browser_context);
 
-  void InitializeScreen(aura::Window* parent_window,
-                        const gfx::Size& initial_size);
+  void InitializeScreen(const gfx::Size& initial_size);
 
   using MojoService = HeadlessWebContents::Builder::MojoService;
 

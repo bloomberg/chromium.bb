@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "headless/lib/browser/headless_window_tree_host.h"
+#include "ui/aura/window.h"
 
 #include "ui/gfx/icc_profile.h"
 
@@ -15,8 +16,13 @@ HeadlessWindowTreeHost::HeadlessWindowTreeHost(const gfx::Rect& bounds)
 }
 
 HeadlessWindowTreeHost::~HeadlessWindowTreeHost() {
+  window_parenting_client_.reset();
   DestroyCompositor();
   DestroyDispatcher();
+}
+
+void HeadlessWindowTreeHost::SetParentWindow(gfx::NativeWindow window) {
+  window_parenting_client_.reset(new HeadlessWindowParentingClient(window));
 }
 
 bool HeadlessWindowTreeHost::CanDispatchEvent(const ui::PlatformEvent& event) {

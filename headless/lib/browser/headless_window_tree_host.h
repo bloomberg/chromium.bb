@@ -5,7 +5,10 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_WINDOW_TREE_HOST_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_WINDOW_TREE_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "headless/lib/browser/headless_window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
@@ -17,6 +20,8 @@ class HeadlessWindowTreeHost : public aura::WindowTreeHost,
  public:
   explicit HeadlessWindowTreeHost(const gfx::Rect& bounds);
   ~HeadlessWindowTreeHost() override;
+
+  void SetParentWindow(gfx::NativeWindow window);
 
   // ui::PlatformEventDispatcher:
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
@@ -39,6 +44,7 @@ class HeadlessWindowTreeHost : public aura::WindowTreeHost,
 
  private:
   gfx::Rect bounds_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWindowTreeHost);
 };

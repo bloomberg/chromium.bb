@@ -18,8 +18,6 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/lib/browser/headless_window_parenting_client.h"
-#include "headless/lib/browser/headless_window_tree_host.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -121,17 +119,7 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 }
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
-  DCHECK(aura::Env::GetInstance());
-  ui::DeviceDataManager::CreateInstance();
-
-  window_tree_host_.reset(
-      new HeadlessWindowTreeHost(gfx::Rect(options()->window_size)));
-  window_tree_host_->InitHost();
-  window_tree_host_->window()->Show();
-
-  window_parenting_client_.reset(
-      new HeadlessWindowParentingClient(window_tree_host_->window()));
-
+  PlatformCreateWindow();
   on_start_callback_.Run(this);
   on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();
 }
@@ -177,10 +165,6 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetDefaultBrowserContext() {
 base::WeakPtr<HeadlessBrowserImpl> HeadlessBrowserImpl::GetWeakPtr() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-aura::WindowTreeHost* HeadlessBrowserImpl::window_tree_host() const {
-  return window_tree_host_.get();
 }
 
 HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevToolsAgentHostId(
