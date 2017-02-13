@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/popup_message.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -237,9 +236,8 @@ UserView::~UserView() {
 }
 
 TrayUser::TestState UserView::GetStateForTest() const {
-  if (add_menu_option_.get()) {
+  if (add_menu_option_)
     return add_user_enabled_ ? TrayUser::ACTIVE : TrayUser::ACTIVE_BUT_DISABLED;
-  }
 
   if (!is_user_card_button_)
     return TrayUser::SHOWN;
@@ -278,7 +276,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
       // closed.
       owner_->system_tray()->CloseSystemBubble();
     }
-  } else if (add_menu_option_.get() &&
+  } else if (add_menu_option_ &&
              sender->GetWidget() == add_menu_option_.get()) {
     RemoveAddUserMenuOption();
     // Let the user add another account to the session.
@@ -325,7 +323,7 @@ void UserView::AddUserCard(LoginStatus login) {
 }
 
 void UserView::ToggleAddUserMenuOption() {
-  if (add_menu_option_.get()) {
+  if (add_menu_option_) {
     RemoveAddUserMenuOption();
     return;
   }
@@ -398,13 +396,12 @@ void UserView::ToggleAddUserMenuOption() {
 }
 
 void UserView::RemoveAddUserMenuOption() {
-  if (!add_menu_option_.get())
+  if (!add_menu_option_)
     return;
   focus_manager_->RemoveFocusChangeListener(this);
   focus_manager_ = nullptr;
   if (user_card_view_->GetFocusManager())
     user_card_view_->GetFocusManager()->ClearFocus();
-  popup_message_.reset();
   add_menu_option_.reset();
 }
 

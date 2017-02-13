@@ -27,7 +27,6 @@ class FocusManager;
 namespace ash {
 
 enum class LoginStatus;
-class PopupMessage;
 class SystemTrayItem;
 
 namespace tray {
@@ -80,7 +79,6 @@ class UserView : public views::View,
   bool is_user_card_button_;
 
   views::View* logout_button_;
-  std::unique_ptr<PopupMessage> popup_message_;
   std::unique_ptr<views::Widget> add_menu_option_;
 
   // False when the add user panel is visible but not activatable.
