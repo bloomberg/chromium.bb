@@ -45,7 +45,24 @@ DEFAULT_EXCLUDE_FOLDERS = [
 ]
 
 MAC_EXCLUDE_FOLDERS = [
-'Contents/Developer/Platforms/iPhoneOS.platform',
+# The only thing we need in iPhoneOS.platform on mac is:
+#  \Developer\Library\Xcode\PrivatePlugins
+#  \Info.Plist.
+#  This is the cleanest way to get these.
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks',
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/GPUTools',
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/'
+    'GPUToolsPlatform',
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/'
+    'PrivateFrameworks',
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr',
+'Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs',
+'Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport',
+'Contents/Developer/Platforms/iPhoneOS.platform/Library',
+'Contents/Developer/Platforms/iPhoneOS.platform/usr',
+
+# iPhoneSimulator has a similar requirement, but the bulk of the binary size is
+# in \Developer\SDKs, so only excluding that here.
 'Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs',
 ]
 
