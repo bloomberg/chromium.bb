@@ -39,7 +39,7 @@ namespace {
 // A lazily created thread local storage for quick access to a thread's message
 // loop, if one exists.
 base::ThreadLocalPointer<MessageLoop>* GetTLSMessageLoop() {
-  static auto lazy_tls_ptr = new base::ThreadLocalPointer<MessageLoop>();
+  static auto* lazy_tls_ptr = new base::ThreadLocalPointer<MessageLoop>();
   return lazy_tls_ptr;
 }
 MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;

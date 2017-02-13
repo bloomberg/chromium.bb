@@ -118,7 +118,7 @@ bool WorkerPool::PostTaskAndReply(const tracked_objects::Location& from_here,
 // static
 const scoped_refptr<TaskRunner>&
 WorkerPool::GetTaskRunner(bool tasks_are_slow) {
-  static auto task_runner_holder = new TaskRunnerHolder();
+  static auto* task_runner_holder = new TaskRunnerHolder();
   return task_runner_holder->taskrunners_[tasks_are_slow];
 }
 

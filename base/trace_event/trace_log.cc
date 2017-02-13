@@ -89,7 +89,7 @@ const int kThreadFlushTimeoutMs = 3000;
 
 // List of TraceEventFilter objects from the most recent tracing session.
 std::vector<std::unique_ptr<TraceEventFilter>>& GetCategoryGroupFilters() {
-  static auto filters = new std::vector<std::unique_ptr<TraceEventFilter>>();
+  static auto* filters = new std::vector<std::unique_ptr<TraceEventFilter>>();
   return *filters;
 }
 
@@ -1219,7 +1219,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     // call (if any), but don't bother if the new name is empty. Note this will
     // not detect a thread name change within the same char* buffer address: we
     // favor common case performance over corner case correctness.
-    static auto current_thread_name = new ThreadLocalPointer<const char>();
+    static auto* current_thread_name = new ThreadLocalPointer<const char>();
     if (new_name != current_thread_name->Get() && new_name && *new_name) {
       current_thread_name->Set(new_name);
 
