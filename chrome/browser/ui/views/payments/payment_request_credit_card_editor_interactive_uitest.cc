@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
+#include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/payment_request.h"
@@ -79,6 +80,25 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   autofill::PersonalDataManager* personal_data_manager =
       GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  OpenCreditCardEditorScreen();
+
+  // Setting empty data and unfocusing a required textfield will make it
+  // invalid.
+  SetEditorTextfieldValue(base::ASCIIToUTF16(""),
+                          autofill::CREDIT_CARD_NAME_FULL);
+
+  ValidatingTextfield* textfield =
+      static_cast<ValidatingTextfield*>(dialog_view()->GetViewByID(
+          static_cast<int>(autofill::CREDIT_CARD_NAME_FULL)));
+  EXPECT_TRUE(textfield);
+  EXPECT_TRUE(textfield->invalid());
 }
 
 }  // namespace payments

@@ -33,13 +33,13 @@ std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NAME_FULL,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD),
-       EditorField::LengthHint::HINT_LONG},
+       EditorField::LengthHint::HINT_LONG, true},
       {autofill::CREDIT_CARD_NUMBER,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
-       EditorField::LengthHint::HINT_LONG},
+       EditorField::LengthHint::HINT_LONG, true},
       {autofill::CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
-       EditorField::LengthHint::HINT_SHORT}};
+       EditorField::LengthHint::HINT_SHORT, true}};
 }
 
 bool CreditCardEditorViewController::ValidateModelAndSave() {
@@ -79,10 +79,15 @@ CreditCardEditorViewController::ValidationDelegate::~ValidationDelegate() {}
 
 bool CreditCardEditorViewController::ValidationDelegate::ValidateTextfield(
     views::Textfield* textfield) {
-  base::string16 error_message;
-  // TODO(mathp): Display |error_message| around |textfield|.
-  return autofill::IsValidForType(textfield->text(), field_.type,
-                                  &error_message);
+  if (!textfield->text().empty()) {
+    base::string16 error_message;
+    // TODO(mathp): Display |error_message| around |textfield|.
+    return autofill::IsValidForType(textfield->text(), field_.type,
+                                    &error_message);
+  }
+
+  // TODO(mathp): Display "required" error if applicable.
+  return !field_.required;
 }
 
 }  // namespace payments

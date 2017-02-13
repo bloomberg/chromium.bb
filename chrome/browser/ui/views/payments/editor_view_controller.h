@@ -34,12 +34,21 @@ struct EditorField {
 
   EditorField(autofill::ServerFieldType type,
               const base::string16& label,
-              LengthHint length_hint)
-      : type(type), label(label), length_hint(length_hint) {}
+              LengthHint length_hint,
+              bool required)
+      : type(type),
+        label(label),
+        length_hint(length_hint),
+        required(required) {}
 
+  // Data type in the field.
   const autofill::ServerFieldType type;
+  // Label to be shown alongside the field.
   const base::string16 label;
+  // Hint about the length of this field's contents.
   LengthHint length_hint;
+  // Whether the field is required.
+  bool required;
 };
 
 // The PaymentRequestSheetController subtype for the editor screens of the

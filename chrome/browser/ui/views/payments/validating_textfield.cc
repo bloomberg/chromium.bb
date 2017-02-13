@@ -17,9 +17,9 @@ ValidatingTextfield::~ValidatingTextfield() {}
 void ValidatingTextfield::OnBlur() {
   Textfield::OnBlur();
 
-  // The first validation of non-empty data should be on a blur. The subsequent
-  // validations will occur when the contents changes.
-  if (!was_validated_ && !text().empty()) {
+  // The first validation should be on a blur. The subsequent validations will
+  // occur when the content changes.
+  if (!was_validated_) {
     was_validated_ = true;
     Validate();
   }
