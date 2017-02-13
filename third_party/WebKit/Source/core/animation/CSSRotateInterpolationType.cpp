@@ -12,20 +12,57 @@
 
 namespace blink {
 
+class OptionalRotation {
+ public:
+  OptionalRotation() : m_isNone(true) {}
+
+  explicit OptionalRotation(Rotation rotation)
+      : m_rotation(rotation), m_isNone(false) {}
+
+  bool isNone() const { return m_isNone; }
+  const Rotation& rotation() const {
+    DCHECK(!m_isNone);
+    return m_rotation;
+  }
+
+  static OptionalRotation add(const OptionalRotation& a,
+                              const OptionalRotation& b) {
+    if (a.isNone())
+      return b;
+    if (b.isNone())
+      return a;
+    return OptionalRotation(Rotation::add(a.rotation(), b.rotation()));
+  }
+  static OptionalRotation slerp(const OptionalRotation& from,
+                                const OptionalRotation& to,
+                                double progress) {
+    if (from.isNone() && to.isNone())
+      return OptionalRotation();
+
+    return OptionalRotation(
+        Rotation::slerp(from.isNone() ? Rotation() : from.rotation(),
+                        to.isNone() ? Rotation() : to.rotation(), progress));
+  }
+
+ private:
+  Rotation m_rotation;
+  bool m_isNone;
+};
+
 class CSSRotateNonInterpolableValue : public NonInterpolableValue {
  public:
   static PassRefPtr<CSSRotateNonInterpolableValue> create(
-      const Rotation& rotation) {
+      const OptionalRotation& rotation) {
     return adoptRef(new CSSRotateNonInterpolableValue(
-        true, rotation, Rotation(), false, false));
+        true, rotation, OptionalRotation(), false, false));
   }
 
   static PassRefPtr<CSSRotateNonInterpolableValue> create(
       const CSSRotateNonInterpolableValue& start,
       const CSSRotateNonInterpolableValue& end) {
     return adoptRef(new CSSRotateNonInterpolableValue(
-        false, start.rotation(), end.rotation(), start.isAdditive(),
-        end.isAdditive()));
+        false, start.optionalRotation(), end.optionalRotation(),
+        start.isAdditive(), end.isAdditive()));
   }
 
   PassRefPtr<CSSRotateNonInterpolableValue> composite(
@@ -35,17 +72,20 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
     if (other.m_isSingle) {
       DCHECK_EQ(otherProgress, 0);
       DCHECK(other.isAdditive());
-      return create(Rotation::add(rotation(), other.rotation()));
+      return create(
+          OptionalRotation::add(optionalRotation(), other.optionalRotation()));
     }
 
     DCHECK(other.m_isStartAdditive || other.m_isEndAdditive);
-    Rotation start = other.m_isStartAdditive
-                         ? Rotation::add(rotation(), other.m_start)
-                         : other.m_start;
-    Rotation end = other.m_isEndAdditive
-                       ? Rotation::add(rotation(), other.m_end)
-                       : other.m_end;
-    return create(Rotation::slerp(start, end, otherProgress));
+    OptionalRotation start =
+        other.m_isStartAdditive
+            ? OptionalRotation::add(optionalRotation(), other.m_start)
+            : other.m_start;
+    OptionalRotation end =
+        other.m_isEndAdditive
+            ? OptionalRotation::add(optionalRotation(), other.m_end)
+            : other.m_end;
+    return create(OptionalRotation::slerp(start, end, otherProgress));
   }
 
   void setSingleAdditive() {
@@ -53,22 +93,22 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
     m_isStartAdditive = true;
   }
 
-  Rotation slerpedRotation(double progress) const {
+  OptionalRotation slerpedRotation(double progress) const {
     DCHECK(!m_isStartAdditive && !m_isEndAdditive);
     DCHECK(!m_isSingle || progress == 0);
     if (progress == 0)
       return m_start;
     if (progress == 1)
       return m_end;
-    return Rotation::slerp(m_start, m_end, progress);
+    return OptionalRotation::slerp(m_start, m_end, progress);
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
   CSSRotateNonInterpolableValue(bool isSingle,
-                                const Rotation& start,
-                                const Rotation& end,
+                                const OptionalRotation& start,
+                                const OptionalRotation& end,
                                 bool isStartAdditive,
                                 bool isEndAdditive)
       : m_isSingle(isSingle),
@@ -77,7 +117,7 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
         m_isStartAdditive(isStartAdditive),
         m_isEndAdditive(isEndAdditive) {}
 
-  const Rotation& rotation() const {
+  const OptionalRotation& optionalRotation() const {
     DCHECK(m_isSingle);
     return m_start;
   }
@@ -87,8 +127,8 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
   }
 
   bool m_isSingle;
-  Rotation m_start;
-  Rotation m_end;
+  OptionalRotation m_start;
+  OptionalRotation m_end;
   bool m_isStartAdditive;
   bool m_isEndAdditive;
 };
@@ -98,13 +138,14 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSRotateNonInterpolableValue);
 
 namespace {
 
-Rotation getRotation(const ComputedStyle& style) {
+OptionalRotation getRotation(const ComputedStyle& style) {
   if (!style.rotate())
-    return Rotation(FloatPoint3D(0, 0, 1), 0);
-  return Rotation(style.rotate()->axis(), style.rotate()->angle());
+    return OptionalRotation();
+  return OptionalRotation(
+      Rotation(style.rotate()->axis(), style.rotate()->angle()));
 }
 
-InterpolationValue convertRotation(const Rotation& rotation) {
+InterpolationValue convertRotation(const OptionalRotation& rotation) {
   return InterpolationValue(InterpolableNumber::create(0),
                             CSSRotateNonInterpolableValue::create(rotation));
 }
@@ -112,23 +153,27 @@ InterpolationValue convertRotation(const Rotation& rotation) {
 class InheritedRotationChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedRotationChecker> create(
-      const Rotation& inheritedRotation) {
+      const OptionalRotation& inheritedRotation) {
     return WTF::wrapUnique(new InheritedRotationChecker(inheritedRotation));
   }
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    Rotation inheritedRotation =
+    OptionalRotation inheritedRotation =
         getRotation(*environment.state().parentStyle());
-    return m_inheritedRotation.axis == inheritedRotation.axis &&
-           m_inheritedRotation.angle == inheritedRotation.angle;
+    if (m_inheritedRotation.isNone() || inheritedRotation.isNone())
+      return inheritedRotation.isNone() == inheritedRotation.isNone();
+    return m_inheritedRotation.rotation().axis ==
+               inheritedRotation.rotation().axis &&
+           m_inheritedRotation.rotation().angle ==
+               inheritedRotation.rotation().angle;
   }
 
  private:
-  InheritedRotationChecker(const Rotation& inheritedRotation)
+  InheritedRotationChecker(const OptionalRotation& inheritedRotation)
       : m_inheritedRotation(inheritedRotation) {}
 
-  const Rotation m_inheritedRotation;
+  const OptionalRotation m_inheritedRotation;
 };
 
 }  // namespace
@@ -136,19 +181,19 @@ class InheritedRotationChecker : public InterpolationType::ConversionChecker {
 InterpolationValue CSSRotateInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers&) const {
-  return convertRotation(Rotation());
+  return convertRotation(OptionalRotation(Rotation()));
 }
 
 InterpolationValue CSSRotateInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return convertRotation(getRotation(ComputedStyle::initialStyle()));
+  return convertRotation(OptionalRotation());
 }
 
 InterpolationValue CSSRotateInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  Rotation inheritedRotation = getRotation(*state.parentStyle());
+  OptionalRotation inheritedRotation = getRotation(*state.parentStyle());
   conversionCheckers.push_back(
       InheritedRotationChecker::create(inheritedRotation));
   return convertRotation(inheritedRotation);
@@ -158,7 +203,12 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  return convertRotation(StyleBuilderConverter::convertRotation(value));
+  if (!value.isBaseValueList()) {
+    return convertRotation(OptionalRotation());
+  }
+
+  return convertRotation(
+      OptionalRotation(StyleBuilderConverter::convertRotation(value)));
 }
 
 void CSSRotateInterpolationType::additiveKeyframeHook(
@@ -205,9 +255,13 @@ void CSSRotateInterpolationType::applyStandardPropertyValue(
   double progress = toInterpolableNumber(interpolableValue).value();
   const CSSRotateNonInterpolableValue& nonInterpolableValue =
       toCSSRotateNonInterpolableValue(*untypedNonInterpolableValue);
-  Rotation rotation = nonInterpolableValue.slerpedRotation(progress);
-  state.style()->setRotate(
-      RotateTransformOperation::create(rotation, TransformOperation::Rotate3D));
+  OptionalRotation rotation = nonInterpolableValue.slerpedRotation(progress);
+  if (rotation.isNone()) {
+    state.style()->setRotate(nullptr);
+    return;
+  }
+  state.style()->setRotate(RotateTransformOperation::create(
+      rotation.rotation(), TransformOperation::Rotate3D));
 }
 
 }  // namespace blink
