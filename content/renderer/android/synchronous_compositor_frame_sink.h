@@ -18,17 +18,18 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/managed_memory_policy.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
 class SkCanvas;
 
 namespace cc {
+class BeginFrameSource;
+class CompositorFrameSinkSupport;
 class ContextProvider;
 class Display;
-class SurfaceFactory;
 class SurfaceIdAllocator;
 class SurfaceManager;
 }
@@ -64,7 +65,7 @@ class SynchronousCompositorFrameSinkClient {
 // to a fixed thread when BindToClient is called.
 class SynchronousCompositorFrameSink
     : NON_EXPORTED_BASE(public cc::CompositorFrameSink),
-      public cc::SurfaceFactoryClient {
+      public cc::CompositorFrameSinkSupportClient {
  public:
   SynchronousCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -92,9 +93,11 @@ class SynchronousCompositorFrameSink
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
 
-  // SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  // CompositorFrameSinkSupportClient implementation.
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface() override;
 
  private:
   class SoftwareOutputSurface;
@@ -149,8 +152,9 @@ class SynchronousCompositorFrameSink
   cc::LocalSurfaceId child_local_surface_id_;
   cc::LocalSurfaceId root_local_surface_id_;
   // Uses surface_manager_.
-  std::unique_ptr<cc::SurfaceFactory> root_factory_;
-  std::unique_ptr<cc::SurfaceFactory> child_factory_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> root_support_;
+  // Uses surface_manager_.
+  std::unique_ptr<cc::CompositorFrameSinkSupport> child_support_;
   StubDisplayClient display_client_;
   // Uses surface_manager_.
   std::unique_ptr<cc::Display> display_;
