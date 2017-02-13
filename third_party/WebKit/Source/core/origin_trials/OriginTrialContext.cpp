@@ -201,7 +201,7 @@ void OriginTrialContext::initializePendingFeatures() {
     if (m_installedTrials.contains(enabledTrial))
       continue;
     installPendingConditionalFeature(enabledTrial, scriptState);
-    m_installedTrials.add(enabledTrial);
+    m_installedTrials.insert(enabledTrial);
   }
 }
 

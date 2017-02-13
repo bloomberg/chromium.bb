@@ -261,6 +261,8 @@ class LinkedHashSet {
   // and a bool that is true if an new entry was added.
   template <typename IncomingValueType>
   AddResult add(IncomingValueType&&);
+  template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
 
   // Same as add() except that the return value is an
   // iterator. Useful in cases where it's needed to have the
@@ -816,6 +818,17 @@ LinkedHashSet<Value, HashFunctions, Traits, Allocator>::add(
     IncomingValueType&& value) {
   return m_impl.template add<NodeHashFunctions>(
       std::forward<IncomingValueType>(value), &m_anchor);
+}
+
+template <typename Value,
+          typename HashFunctions,
+          typename Traits,
+          typename Allocator>
+template <typename IncomingValueType>
+typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult
+LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
+    IncomingValueType&& value) {
+  return add(value);
 }
 
 template <typename T, typename U, typename V, typename W>

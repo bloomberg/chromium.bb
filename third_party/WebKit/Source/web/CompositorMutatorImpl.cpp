@@ -79,7 +79,7 @@ void CompositorMutatorImpl::registerCompositorAnimator(
   TRACE_EVENT0("compositor-worker",
                "CompositorMutatorImpl::registerCompositorAnimator");
   DCHECK(!m_animators.contains(animator));
-  m_animators.add(animator);
+  m_animators.insert(animator);
   setNeedsMutate();
 }
 

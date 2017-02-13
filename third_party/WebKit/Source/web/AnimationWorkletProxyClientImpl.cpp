@@ -35,7 +35,7 @@ bool AnimationWorkletProxyClientImpl::mutate(
 void AnimationWorkletProxyClientImpl::registerCompositorProxy(
     CompositorProxy* proxy) {
   DCHECK(!isMainThread());
-  m_proxies.add(proxy);
+  m_proxies.insert(proxy);
 }
 
 void AnimationWorkletProxyClientImpl::unregisterCompositorProxy(

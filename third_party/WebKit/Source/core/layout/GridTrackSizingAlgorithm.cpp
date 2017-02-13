@@ -1127,7 +1127,7 @@ void GridTrackSizingAlgorithm::resolveIntrinsicTrackSizes() {
       GridIterator iterator(m_grid, m_direction, trackIndex);
       GridTrack& track = tracks(m_direction)[trackIndex];
       while (LayoutBox* gridItem = iterator.nextGridItem()) {
-        if (itemsSet.add(gridItem).isNewEntry) {
+        if (itemsSet.insert(gridItem).isNewEntry) {
           const GridSpan& span = m_grid.gridItemSpan(*gridItem, m_direction);
           if (span.integerSpan() == 1) {
             sizeTrackToFitNonSpanningItem(span, *gridItem, track);
@@ -1249,7 +1249,7 @@ double GridTrackSizingAlgorithm::computeFlexFactorUnitSize(
       flexFactorSum -= flexFactor;
       if (!additionalTracksToTreatAsInflexible)
         additionalTracksToTreatAsInflexible = WTF::makeUnique<TrackIndexSet>();
-      additionalTracksToTreatAsInflexible->add(index);
+      additionalTracksToTreatAsInflexible->insert(index);
       validFlexFactorUnit = false;
     }
   }

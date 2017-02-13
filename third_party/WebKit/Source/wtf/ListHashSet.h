@@ -189,6 +189,8 @@ class ListHashSet
   // bool that is true if an new entry was added.
   template <typename IncomingValueType>
   AddResult add(IncomingValueType&&);
+  template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
 
   // Same as add() except that the return value is an iterator. Useful in
   // cases where it's needed to have the same return value as find() and where
@@ -927,6 +929,13 @@ ListHashSet<T, inlineCapacity, U, V>::add(IncomingValueType&& value) {
   if (result.isNewEntry)
     appendNode(*result.storedValue);
   return AddResult(*result.storedValue, result.isNewEntry);
+}
+
+template <typename T, size_t inlineCapacity, typename U, typename V>
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult
+ListHashSet<T, inlineCapacity, U, V>::insert(IncomingValueType&& value) {
+  return add(value);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

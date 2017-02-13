@@ -204,7 +204,7 @@ ScrollbarPart ScrollbarThemeMac::invalidateOnThumbPositionChange(
 }
 
 void ScrollbarThemeMac::registerScrollbar(ScrollbarThemeClient& scrollbar) {
-  scrollbarSet().add(&scrollbar);
+  scrollbarSet().insert(&scrollbar);
 
   bool isHorizontal = scrollbar.orientation() == HorizontalScrollbar;
   RetainPtr<ScrollbarPainter> scrollbarPainter(

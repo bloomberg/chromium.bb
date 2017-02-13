@@ -2422,11 +2422,11 @@ TEST(HeapTest, HeapCollectionTypes) {
       memberPrimitive->insert(two, 3);
       memberPrimitive->insert(three, 4);
       memberPrimitive->insert(four, 1);
-      set2->add(one);
-      set2->add(two);
-      set2->add(three);
-      set2->add(four);
-      set->add(oneB);
+      set2->insert(one);
+      set2->insert(two);
+      set2->insert(three);
+      set2->insert(four);
+      set->insert(oneB);
       set3->add(oneB);
       set3->add(oneB);
       vector->push_back(oneB);
@@ -2783,15 +2783,15 @@ TEST(HeapTest, PersistentSet) {
   Persistent<IntWrapper> six(IntWrapper::create(6));
   {
     PersistentSet set;
-    set.add(one);
-    set.add(two);
+    set.insert(one);
+    set.insert(two);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set.contains(one));
     EXPECT_TRUE(set.contains(one2));
     EXPECT_TRUE(set.contains(two));
 
-    set.add(three);
-    set.add(four);
+    set.insert(three);
+    set.insert(four);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set.contains(one));
     EXPECT_TRUE(set.contains(two));
@@ -2809,8 +2809,8 @@ TEST(HeapTest, PersistentSet) {
     PersistentSet set1;
     PersistentSet set2;
 
-    set1.add(one);
-    set2.add(two);
+    set1.insert(one);
+    set2.insert(two);
     set1.swap(set2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set1.contains(two));
@@ -2834,15 +2834,15 @@ TEST(HeapTest, CrossThreadPersistentSet) {
   CrossThreadPersistent<IntWrapper> six(IntWrapper::create(6));
   {
     CrossThreadPersistentSet set;
-    set.add(one);
-    set.add(two);
+    set.insert(one);
+    set.insert(two);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set.contains(one));
     EXPECT_TRUE(set.contains(one2));
     EXPECT_TRUE(set.contains(two));
 
-    set.add(three);
-    set.add(four);
+    set.insert(three);
+    set.insert(four);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set.contains(one));
     EXPECT_TRUE(set.contains(two));
@@ -2860,8 +2860,8 @@ TEST(HeapTest, CrossThreadPersistentSet) {
     CrossThreadPersistentSet set1;
     CrossThreadPersistentSet set2;
 
-    set1.add(one);
-    set2.add(two);
+    set1.insert(one);
+    set2.insert(two);
     set1.swap(set2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(set1.contains(two));
@@ -2951,10 +2951,10 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     strongWeak->insert(two, IntWrapper::create(1));
     weakWeak->insert(two, IntWrapper::create(42));
     weakWeak->insert(IntWrapper::create(42), two);
-    weakSet->add(IntWrapper::create(0));
-    weakSet->add(two);
-    weakSet->add(keepNumbersAlive[0]);
-    weakSet->add(keepNumbersAlive[1]);
+    weakSet->insert(IntWrapper::create(0));
+    weakSet->insert(two);
+    weakSet->insert(keepNumbersAlive[0]);
+    weakSet->insert(keepNumbersAlive[1]);
     weakCountedSet->add(IntWrapper::create(0));
     weakCountedSet->add(two);
     weakCountedSet->add(two);
@@ -3301,14 +3301,14 @@ void weakPairsHelper() {
 
   Persistent<IntWrapper> two = IntWrapper::create(2);
 
-  weakStrong->add(PairWeakStrong(IntWrapper::create(1), &*two));
-  weakStrong->add(PairWeakStrong(&*two, &*two));
-  strongWeak->add(PairStrongWeak(&*two, IntWrapper::create(1)));
-  strongWeak->add(PairStrongWeak(&*two, &*two));
-  weakUnwrapped->add(PairWeakUnwrapped(IntWrapper::create(1), 2));
-  weakUnwrapped->add(PairWeakUnwrapped(&*two, 2));
-  unwrappedWeak->add(PairUnwrappedWeak(2, IntWrapper::create(1)));
-  unwrappedWeak->add(PairUnwrappedWeak(2, &*two));
+  weakStrong->insert(PairWeakStrong(IntWrapper::create(1), &*two));
+  weakStrong->insert(PairWeakStrong(&*two, &*two));
+  strongWeak->insert(PairStrongWeak(&*two, IntWrapper::create(1)));
+  strongWeak->insert(PairStrongWeak(&*two, &*two));
+  weakUnwrapped->insert(PairWeakUnwrapped(IntWrapper::create(1), 2));
+  weakUnwrapped->insert(PairWeakUnwrapped(&*two, 2));
+  unwrappedWeak->insert(PairUnwrappedWeak(2, IntWrapper::create(1)));
+  unwrappedWeak->insert(PairUnwrappedWeak(2, &*two));
 
   checkPairSets<WSSet, SWSet, WUSet, UWSet>(
       weakStrong, strongWeak, weakUnwrapped, unwrappedWeak, true, two);
@@ -3396,7 +3396,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         weakStrong->insert(wrapped, wrapped2);
         strongWeak->insert(wrapped2, wrapped);
         weakWeak->insert(wrapped, wrapped2);
-        weakSet->add(wrapped);
+        weakSet->insert(wrapped);
         weakOrderedSet->add(wrapped);
       }
 
@@ -3513,7 +3513,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
             weakStrong->insert(wrapped, wrapped);
             strongWeak->insert(wrapped, wrapped);
             weakWeak->insert(wrapped, wrapped);
-            weakSet->add(wrapped);
+            weakSet->insert(wrapped);
             weakOrderedSet->add(wrapped);
           }
         }
@@ -3867,7 +3867,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     pVec.push_back(two);
     pVec.push_back(three);
 
-    pSet.add(four);
+    pSet.insert(four);
     pListSet.add(eight);
     pLinkedSet.add(nine);
     pMap.insert(five, six);
@@ -3974,7 +3974,7 @@ TEST(HeapTest, GarbageCollectedMixin) {
   EXPECT_EQ(2, UseMixin::s_traceCount);
 
   PersistentHeapHashSet<WeakMember<Mixin>> weakMap;
-  weakMap.add(UseMixin::create());
+  weakMap.insert(UseMixin::create());
   preciselyCollectGarbage();
   EXPECT_EQ(0u, weakMap.size());
 }
@@ -3991,7 +3991,7 @@ TEST(HeapTest, CollectionNesting2) {
   HeapHashMap<void*, IntSet>::iterator it = map->find(key);
   EXPECT_EQ(0u, map->get(key).size());
 
-  it->value.add(IntWrapper::create(42));
+  it->value.insert(IntWrapper::create(42));
   EXPECT_EQ(1u, map->get(key).size());
 
   Persistent<HeapHashMap<void*, IntSet>> keepAlive(map);
@@ -4637,11 +4637,11 @@ void setWithCustomWeaknessHandling() {
   {
     Set set2;
     Set* set3 = new Set();
-    set2.add(
+    set2.insert(
         PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)));
-    set3->add(
+    set3->insert(
         PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)));
-    set1->add(
+    set1->insert(
         PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)));
     conservativelyCollectGarbage();
     // The first set is pointed to from a persistent, so it's referenced, but
@@ -4666,15 +4666,15 @@ void setWithCustomWeaknessHandling() {
   }
   preciselyCollectGarbage();
   EXPECT_EQ(0u, set1->size());
-  set1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt));
+  set1->insert(PairWithWeakHandling(IntWrapper::create(103), livingInt));
   // This one gets zapped at GC time because nothing holds the 103 alive.
-  set1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103)));
-  set1->add(PairWithWeakHandling(
+  set1->insert(PairWithWeakHandling(livingInt, IntWrapper::create(103)));
+  set1->insert(PairWithWeakHandling(
       IntWrapper::create(103),
       IntWrapper::create(103)));  // This one gets zapped too.
-  set1->add(PairWithWeakHandling(livingInt, livingInt));
+  set1->insert(PairWithWeakHandling(livingInt, livingInt));
   // This one is identical to the previous and doesn't add anything.
-  set1->add(PairWithWeakHandling(livingInt, livingInt));
+  set1->insert(PairWithWeakHandling(livingInt, livingInt));
   EXPECT_EQ(4u, set1->size());
   preciselyCollectGarbage();
   EXPECT_EQ(2u, set1->size());
@@ -4949,8 +4949,8 @@ TEST(HeapTest, RemoveEmptySets) {
   map->insert(OffHeapInt::create(1), WeakSet());
   {
     WeakSet& set = map->begin()->value;
-    set.add(IntWrapper::create(103));  // Weak set can't hold this long.
-    set.add(livingInt);  // This prevents the set from being emptied.
+    set.insert(IntWrapper::create(103));  // Weak set can't hold this long.
+    set.insert(livingInt);  // This prevents the set from being emptied.
     EXPECT_EQ(2u, set.size());
   }
 
@@ -5121,10 +5121,10 @@ TEST(HeapTest, Ephemeron) {
   pairWeakMap2->insert(PairWithWeakHandling(pw2, pw1), pw2);
   pairWeakMap2->insert(PairWithWeakHandling(pw2, pw2), pw2);
 
-  set->add(wp1);
-  set->add(wp2);
-  set->add(pw1);
-  set->add(pw2);
+  set->insert(wp1);
+  set->insert(wp2);
+  set->insert(pw1);
+  set->insert(pw2);
 
   preciselyCollectGarbage();
 
@@ -6235,7 +6235,7 @@ class ThreadedClearOnShutdownTester::HeapObject final
     // object. Done while terminating the test thread, so
     // verify that this brings about the release of the
     // persistent also.
-    heapObjectSet().add(create(false));
+    heapObjectSet().insert(create(false));
   }
 
   DEFINE_INLINE_TRACE() {}
@@ -6269,7 +6269,7 @@ ThreadedClearOnShutdownTester::heapObjectSet() {
 void ThreadedClearOnShutdownTester::runWhileAttached() {
   EXPECT_EQ(42, threadSpecificIntWrapper().value());
   // Creates a thread-specific singleton to a weakly held object.
-  weakHeapObjectSet().add(HeapObject::create(true));
+  weakHeapObjectSet().insert(HeapObject::create(true));
 }
 
 }  // namespace
