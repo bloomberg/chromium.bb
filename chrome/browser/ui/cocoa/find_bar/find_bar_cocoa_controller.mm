@@ -41,7 +41,7 @@ const float kFindBarOpenDuration = 0.2;
 const float kFindBarCloseDuration = 0.15;
 const float kFindBarMoveDuration = 0.15;
 const float kRightEdgeOffset = 25;
-
+const int kMaxCharacters = 4000;
 
 @interface FindBarCocoaController (PrivateMethods) <NSAnimationDelegate>
 // Returns the appropriate frame for a hidden find bar.
@@ -228,6 +228,10 @@ const float kRightEdgeOffset = 25;
     return;
   FindTabHelper* findTabHelper = FindTabHelper::FromWebContents(webContents);
 
+  // The find bar stops functioning if too many characters are used.
+  if ([[findText_ stringValue] length] > kMaxCharacters)
+    [findText_ setStringValue:[[findText_ stringValue]
+                                  substringToIndex:kMaxCharacters]];
   NSString* findText = [findText_ stringValue];
   if (![self isOffTheRecordProfile]) {
     base::AutoReset<BOOL> suppressReset(&suppressPboardUpdateActions_, YES);
