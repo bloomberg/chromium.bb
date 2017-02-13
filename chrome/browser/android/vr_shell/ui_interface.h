@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"

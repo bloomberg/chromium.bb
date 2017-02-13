@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 
+#include <memory>
+
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host.h"

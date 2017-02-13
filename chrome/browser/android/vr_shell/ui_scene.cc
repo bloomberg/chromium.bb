@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 
+#include <string>
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
@@ -294,7 +297,7 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
     ParseEndpointToFloats(property, *from_dict, &from);
   }
 
-  int64_t start = time_in_micro + (long)(start_time_ms * 1000.0);
+  int64_t start = time_in_micro + (start_time_ms * 1000.0);
   int64_t duration = duration_ms * 1000.0;
 
   ContentRectangle* element = GetUiElementById(element_id);

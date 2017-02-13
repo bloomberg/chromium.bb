@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_GL_UTIL_H_
 
 #include <array>
+#include <string>
 
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gl/gl_bindings.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -31,8 +33,8 @@ VrShellDelegate::~VrShellDelegate() {
 
 VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
     JNIEnv* env, jobject jdelegate) {
-  long native_delegate = Java_VrShellDelegate_getNativePointer(env, jdelegate);
-  return reinterpret_cast<VrShellDelegate*>(native_delegate);
+  return reinterpret_cast<VrShellDelegate*>(
+      Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
 
 void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,

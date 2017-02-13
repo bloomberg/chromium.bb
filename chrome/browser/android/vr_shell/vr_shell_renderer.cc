@@ -300,7 +300,8 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   glUniform1i(tex_uniform_handle_, 0);
-  glUniform4fv(copy_rect_uniform_handle_, 1, (float*)(&copy_rect));
+  glUniform4fv(copy_rect_uniform_handle_, 1,
+               reinterpret_cast<const float*>(&copy_rect));
   glUniform1f(opacity_handle_, opacity);
 
   glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
@@ -522,7 +523,7 @@ void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
 
   // Draw the grid.
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        (float*)grid_lines_.data());
+                        reinterpret_cast<float*>(grid_lines_.data()));
   glEnableVertexAttribArray(position_handle_);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

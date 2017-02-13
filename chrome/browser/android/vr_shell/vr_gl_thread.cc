@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 
+#include <utility>
+
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"

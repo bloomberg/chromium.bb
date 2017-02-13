@@ -4,7 +4,9 @@
 
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 
+#include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/time/time.h"

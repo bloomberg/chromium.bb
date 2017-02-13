@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"

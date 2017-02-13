@@ -23,7 +23,7 @@ namespace vr_shell {
 // for transforms, so successive transforms need to be left-multiplied.
 
 void SetIdentityM(gvr::Mat4f& mat) {
-  float* m = (float*)mat.m;
+  float* m = reinterpret_cast<float*>(mat.m);
   for (int i = 0; i < 16; i++) {
     m[i] = 0;
   }

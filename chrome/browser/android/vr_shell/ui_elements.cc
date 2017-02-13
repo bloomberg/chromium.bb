@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
@@ -137,7 +139,7 @@ void ContentRectangle::Animate(int64_t time) {
         continue;
       }
       double value = animation.easing->CalculateValue(
-          (double)(time - animation.start) / (double)animation.duration);
+          static_cast<double>(time - animation.start) / animation.duration);
       values[i] =
           animation.from[i] + (value * (animation.to[i] - animation.from[i]));
     }

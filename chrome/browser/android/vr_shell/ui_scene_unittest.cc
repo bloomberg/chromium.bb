@@ -6,6 +6,7 @@
 
 #define _USE_MATH_DEFINES  // For M_PI in MSVC.
 #include <cmath>
+#include <utility>
 #include <vector>
 
 #include "base/values.h"
