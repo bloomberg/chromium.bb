@@ -646,7 +646,7 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
   }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetSubrectImageDecode - "
                  "read pixels");
     bool result = decoded_draw_image.image()->readPixels(
         subrect_info, subrect_pixels->data(), subrect_info.minRowBytes(),
