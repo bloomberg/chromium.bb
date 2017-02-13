@@ -16,7 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -261,13 +261,11 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
   if (path.empty())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ArcAppIcon::ReadOnFileThread,
-          scale_factor,
-          path,
-          prefs->MaybeGetIconPathForDefaultApp(app_id_, scale_factor)),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&ArcAppIcon::ReadOnFileThread, scale_factor, path,
+                 prefs->MaybeGetIconPathForDefaultApp(app_id_, scale_factor)),
       base::Bind(&ArcAppIcon::OnIconRead, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -287,7 +285,6 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
     ui::ScaleFactor scale_factor,
     const base::FilePath& path,
     const base::FilePath& default_app_path) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!path.empty());
 
   base::FilePath path_to_read;
