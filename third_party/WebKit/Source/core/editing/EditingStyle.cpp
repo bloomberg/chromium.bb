@@ -139,14 +139,6 @@ static inline bool isEditingProperty(int id) {
   return allEditingProperties().contains(static_cast<CSSPropertyID>(id));
 }
 
-static MutableStylePropertySet* editingStyleFromComputedStyle(
-    CSSComputedStyleDeclaration* style,
-    EditingPropertiesType type = OnlyInheritableEditingProperties) {
-  if (!style)
-    return MutableStylePropertySet::create(HTMLQuirksMode);
-  return copyEditingProperties(style, type);
-}
-
 static CSSComputedStyleDeclaration* ensureComputedStyle(
     const Position& position) {
   Element* elem = associatedElementOf(position);
@@ -472,7 +464,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude) {
   m_mutableStyle =
       propertiesToInclude == AllProperties && computedStyleAtPosition
           ? computedStyleAtPosition->copyProperties()
-          : editingStyleFromComputedStyle(computedStyleAtPosition);
+          : copyEditingProperties(computedStyleAtPosition);
 
   if (propertiesToInclude == EditingPropertiesInEffect) {
     if (const CSSValue* value =
@@ -691,10 +683,10 @@ void EditingStyle::removeBlockProperties() {
 void EditingStyle::removeStyleAddedByElement(Element* element) {
   if (!element || !element->parentNode())
     return;
-  MutableStylePropertySet* parentStyle = editingStyleFromComputedStyle(
+  MutableStylePropertySet* parentStyle = copyEditingProperties(
       CSSComputedStyleDeclaration::create(element->parentNode()),
       AllEditingProperties);
-  MutableStylePropertySet* nodeStyle = editingStyleFromComputedStyle(
+  MutableStylePropertySet* nodeStyle = copyEditingProperties(
       CSSComputedStyleDeclaration::create(element), AllEditingProperties);
   nodeStyle->removeEquivalentProperties(parentStyle);
   m_mutableStyle->removeEquivalentProperties(nodeStyle);
@@ -704,10 +696,10 @@ void EditingStyle::removeStyleConflictingWithStyleOfElement(Element* element) {
   if (!element || !element->parentNode() || !m_mutableStyle)
     return;
 
-  MutableStylePropertySet* parentStyle = editingStyleFromComputedStyle(
+  MutableStylePropertySet* parentStyle = copyEditingProperties(
       CSSComputedStyleDeclaration::create(element->parentNode()),
       AllEditingProperties);
-  MutableStylePropertySet* nodeStyle = editingStyleFromComputedStyle(
+  MutableStylePropertySet* nodeStyle = copyEditingProperties(
       CSSComputedStyleDeclaration::create(element), AllEditingProperties);
   nodeStyle->removeEquivalentProperties(parentStyle);
 
