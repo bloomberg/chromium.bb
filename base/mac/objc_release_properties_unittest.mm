@@ -1,12 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
+#include "base/mac/objc_release_properties.h"
 
-#import "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#import <objc/runtime.h>
 
 // "When I'm alone, I count myself."
 //   --Count von Count, http://www.youtube.com/watch?v=FKzszqa9WA4
@@ -25,25 +26,18 @@ struct NumberHolder {
     short sixteen;
     char eight;
   } what;
-  enum {
-    SIXTY_FOUR,
-    THIRTY_TWO,
-    SIXTEEN,
-    EIGHT
-  } how;
+  enum { SIXTY_FOUR, THIRTY_TWO, SIXTEEN, EIGHT } how;
 };
 
 }  // namespace
 
-@interface PropertyReleaser_CountVonCount : NSObject<NSCopying>
-
-typedef PropertyReleaser_CountVonCount CountVonCount;
+@interface CountVonCount : NSObject<NSCopying>
 
 + (CountVonCount*)countVonCount;
 
-@end  // @interface PropertyReleaser_CountVonCount
+@end  // @interface CountVonCount
 
-@implementation PropertyReleaser_CountVonCount
+@implementation CountVonCount
 
 + (CountVonCount*)countVonCount {
   return [[[CountVonCount alloc] init] autorelease];
@@ -63,9 +57,9 @@ typedef PropertyReleaser_CountVonCount CountVonCount;
   return [[CountVonCount allocWithZone:zone] init];
 }
 
-@end  // @implementation PropertyReleaser_CountVonCount
+@end  // @implementation CountVonCount
 
-@interface PropertyReleaser_ObjCPropertyTestBase : NSObject {
+@interface ObjCPropertyTestBase : NSObject {
  @private
   CountVonCount* baseCvcRetain_;
   CountVonCount* baseCvcCopy_;
@@ -77,11 +71,7 @@ typedef PropertyReleaser_CountVonCount CountVonCount;
   double baseDouble_;
   void* basePointer_;
   NumberHolder baseStruct_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_ObjCPropertyTestBase_;
 }
-
-typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
 
 @property(retain, nonatomic) CountVonCount* baseCvcRetain;
 @property(copy, nonatomic) CountVonCount* baseCvcCopy;
@@ -89,6 +79,7 @@ typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
 @property(retain, nonatomic) CountVonCount* baseCvcNil;
 @property(retain, nonatomic, getter=baseCustom, setter=setBaseCustom:)
     CountVonCount* baseCvcCustom;
+@property(readonly, retain, nonatomic) CountVonCount* baseCvcReadOnly;
 @property(retain, nonatomic) CountVonCount* baseCvcDynamic;
 @property(assign, nonatomic) int baseInt;
 @property(assign, nonatomic) double baseDouble;
@@ -99,29 +90,23 @@ typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
 
 @end  // @interface ObjCPropertyTestBase
 
-@implementation PropertyReleaser_ObjCPropertyTestBase
+@implementation ObjCPropertyTestBase
 
 @synthesize baseCvcRetain = baseCvcRetain_;
 @synthesize baseCvcCopy = baseCvcCopy_;
 @synthesize baseCvcAssign = baseCvcAssign_;
 @synthesize baseCvcNil = baseCvcNil_;
 @synthesize baseCvcCustom = baseCvcCustom_;
+@synthesize baseCvcReadOnly = baseCvcReadOnly_;
 @dynamic baseCvcDynamic;
 @synthesize baseInt = baseInt_;
 @synthesize baseDouble = baseDouble_;
 @synthesize basePointer = basePointer_;
 @synthesize baseStruct = baseStruct_;
 
-- (id)init {
-  if ((self = [super init])) {
-    propertyReleaser_ObjCPropertyTestBase_.Init(
-        self, [ObjCPropertyTestBase class]);
-  }
-  return self;
-}
-
 - (void)dealloc {
   [baseCvcNotProperty_ release];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 
@@ -132,9 +117,16 @@ typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
   }
 }
 
+- (void)setBaseCvcReadOnlyProperty:(CountVonCount*)cvc {
+  if (cvc != baseCvcReadOnly_) {
+    [baseCvcReadOnly_ release];
+    baseCvcReadOnly_ = [cvc retain];
+  }
+}
+
 @end  // @implementation ObjCPropertyTestBase
 
-@protocol PropertyReleaser_ObjCPropertyTestProtocol
+@protocol ObjCPropertyTestProtocol
 
 @property(retain, nonatomic) CountVonCount* protoCvcRetain;
 @property(copy, nonatomic) CountVonCount* protoCvcCopy;
@@ -148,10 +140,14 @@ typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
 @property(assign, nonatomic) void* protoPointer;
 @property(assign, nonatomic) NumberHolder protoStruct;
 
-@end  // @protocol PropertyReleaser_ObjCPropertyTestProtocol
+@end  // @protocol ObjCPropertyTestProtocol
 
-@interface PropertyReleaser_ObjCPropertyTestDerived
-    : ObjCPropertyTestBase<PropertyReleaser_ObjCPropertyTestProtocol> {
+// @protocol(NSObject) declares some (copy, readonly) properties (superclass,
+// description, debugDescription, and hash), but we're not expected to release
+// them. The current implementation only releases properties backed by instance
+// variables, and this makes sure that doesn't change in a breaking way.
+@interface ObjCPropertyTestDerived
+    : ObjCPropertyTestBase<ObjCPropertyTestProtocol, NSObject> {
  @private
   CountVonCount* derivedCvcRetain_;
   CountVonCount* derivedCvcCopy_;
@@ -173,11 +169,7 @@ typedef PropertyReleaser_ObjCPropertyTestBase ObjCPropertyTestBase;
   double protoDouble_;
   void* protoPointer_;
   NumberHolder protoStruct_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_ObjCPropertyTestDerived_;
 }
-
-typedef PropertyReleaser_ObjCPropertyTestDerived ObjCPropertyTestDerived;
 
 @property(retain, nonatomic) CountVonCount* derivedCvcRetain;
 @property(copy, nonatomic) CountVonCount* derivedCvcCopy;
@@ -195,7 +187,7 @@ typedef PropertyReleaser_ObjCPropertyTestDerived ObjCPropertyTestDerived;
 
 @end  // @interface ObjCPropertyTestDerived
 
-@implementation PropertyReleaser_ObjCPropertyTestDerived
+@implementation ObjCPropertyTestDerived
 
 @synthesize derivedCvcRetain = derivedCvcRetain_;
 @synthesize derivedCvcCopy = derivedCvcCopy_;
@@ -219,15 +211,22 @@ typedef PropertyReleaser_ObjCPropertyTestDerived ObjCPropertyTestDerived;
 @synthesize protoPointer = protoPointer_;
 @synthesize protoStruct = protoStruct_;
 
-- (id)init {
-  if ((self = [super init])) {
-    propertyReleaser_ObjCPropertyTestDerived_.Init(
-        self, [ObjCPropertyTestDerived class]);
++ (BOOL)resolveInstanceMethod:(SEL)sel {
+  static const std::vector<SEL> dynamicMethods {
+    @selector(baseCvcDynamic), @selector(derivedCvcDynamic),
+        @selector(protoCvcDynamic),
+  };
+  if (std::find(dynamicMethods.begin(), dynamicMethods.end(), sel) ==
+      dynamicMethods.end()) {
+    return NO;
   }
-  return self;
+  id (*imp)() = []() -> id { return nil; };
+  class_addMethod([self class], sel, reinterpret_cast<IMP>(imp), "@@:");
+  return YES;
 }
 
 - (void)dealloc {
+  base::mac::ReleaseProperties(self);
   [derivedCvcNotProperty_ release];
   [super dealloc];
 }
@@ -241,9 +240,21 @@ typedef PropertyReleaser_ObjCPropertyTestDerived ObjCPropertyTestDerived;
 
 @end  // @implementation ObjCPropertyTestDerived
 
+@interface ObjcPropertyTestEmpty : NSObject
+@end
+
+@implementation ObjcPropertyTestEmpty
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
+}
+
+@end  // @implementation ObjcPropertyTestEmpty
+
 namespace {
 
-TEST(ObjCPropertyReleaserTest, SesameStreet) {
+TEST(ObjCReleasePropertiesTest, SesameStreet) {
   ObjCPropertyTestDerived* test_object = [[ObjCPropertyTestDerived alloc] init];
 
   // Assure a clean slate.
@@ -264,10 +275,11 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
     test_object.baseCvcCopy = [CountVonCount countVonCount];
     test_object.baseCvcAssign = baseAssign;
     test_object.baseCvcCustom = [CountVonCount countVonCount];
+    [test_object setBaseCvcReadOnlyProperty:[CountVonCount countVonCount]];
     [test_object setBaseCvcNotProperty:[CountVonCount countVonCount]];
 
-    // That added 4 objects, plus 1 more that was copied.
-    EXPECT_EQ(8, ah_ah_ah);
+    // That added 5 objects, plus 1 more that was copied.
+    EXPECT_EQ(9, ah_ah_ah);
 
     test_object.derivedCvcRetain = [CountVonCount countVonCount];
     test_object.derivedCvcCopy = [CountVonCount countVonCount];
@@ -276,7 +288,7 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
     [test_object setDerivedCvcNotProperty:[CountVonCount countVonCount]];
 
     // That added 4 objects, plus 1 more that was copied.
-    EXPECT_EQ(13, ah_ah_ah);
+    EXPECT_EQ(14, ah_ah_ah);
 
     test_object.protoCvcRetain = [CountVonCount countVonCount];
     test_object.protoCvcCopy = [CountVonCount countVonCount];
@@ -284,14 +296,14 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
     test_object.protoCvcCustom = [CountVonCount countVonCount];
 
     // That added 3 objects, plus 1 more that was copied.
-    EXPECT_EQ(17, ah_ah_ah);
+    EXPECT_EQ(18, ah_ah_ah);
   }
 
   // Now that the autorelease pool has been popped, the 3 objects that were
   // copied when placed into the test object will have been deallocated.
-  EXPECT_EQ(14, ah_ah_ah);
+  EXPECT_EQ(15, ah_ah_ah);
 
-  // Make sure that the setters work and have the expected semantics.
+  // Make sure that the setters wo/rk and have the expected semantics.
   test_object.baseCvcRetain = nil;
   test_object.baseCvcCopy = nil;
   test_object.baseCvcAssign = nil;
@@ -307,9 +319,10 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
 
   // The CountVonCounts marked "retain" and "copy" should have been
   // deallocated. Those marked assign should not have been. The only ones that
-  // should exist now are the ones marked "assign" and the ones held in
-  // non-property instance variables.
-  EXPECT_EQ(5, ah_ah_ah);
+  // should exist now are the ones marked "assign", the ones held in
+  // non-property instance variables, and the ones held in properties marked
+  // readonly.
+  EXPECT_EQ(6, ah_ah_ah);
 
   {
     base::mac::ScopedNSAutoreleasePool pool;
@@ -329,20 +342,20 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
     test_object.protoCvcCustom = [CountVonCount countVonCount];
 
     // 9 more CountVonCounts, 3 of which were copied.
-    EXPECT_EQ(17, ah_ah_ah);
+    EXPECT_EQ(18, ah_ah_ah);
   }
 
   // Now that the autorelease pool has been popped, the 3 copies are gone.
-  EXPECT_EQ(14, ah_ah_ah);
+  EXPECT_EQ(15, ah_ah_ah);
 
   // Releasing the test object should get rid of everything that it owns.
   [test_object release];
 
-  // The property releaser should have released all of the CountVonCounts
-  // associated with properties marked "retain" or "copy". The -dealloc
-  // methods in each should have released the single non-property objects in
-  // each. Only the CountVonCounts assigned to the properties marked "assign"
-  // should remain.
+  // base::mac::ReleaseProperties(self) should have released all of the
+  // CountVonCounts associated with properties marked "retain" or "copy". The
+  // -dealloc methods in each should have released the single non-property
+  // objects in each. Only the CountVonCounts assigned to the properties marked
+  // "assign" should remain.
   EXPECT_EQ(3, ah_ah_ah);
 
   [baseAssign release];
@@ -351,6 +364,12 @@ TEST(ObjCPropertyReleaserTest, SesameStreet) {
 
   // Zero! Zero counts! Ah, ah, ah.
   EXPECT_EQ(0, ah_ah_ah);
+}
+
+TEST(ObjCReleasePropertiesTest, EmptyObject) {
+  // Test that ReleaseProperties doesn't do anything unexpected to a class
+  // with no properties.
+  [[[ObjcPropertyTestEmpty alloc] init] release];
 }
 
 }  // namespace
