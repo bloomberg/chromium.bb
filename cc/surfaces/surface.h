@@ -101,12 +101,14 @@ class CC_SURFACES_EXPORT Surface {
     return destruction_dependencies_.size();
   }
 
-  const std::vector<SurfaceId>& active_referenced_surfaces() const {
-    return active_referenced_surfaces_;
+  const std::vector<SurfaceId>* active_referenced_surfaces() const {
+    return active_frame_ ? &active_frame_->metadata.referenced_surfaces
+                         : nullptr;
   }
 
-  const std::vector<SurfaceId>& pending_referenced_surfaces() const {
-    return pending_referenced_surfaces_;
+  const std::vector<SurfaceId>* pending_referenced_surfaces() const {
+    return pending_frame_ ? &pending_frame_->metadata.referenced_surfaces
+                          : nullptr;
   }
 
   const SurfaceDependencies& blocking_surfaces_for_testing() const {
@@ -143,20 +145,6 @@ class CC_SURFACES_EXPORT Surface {
   // This surface may have multiple BeginFrameSources if it is
   // on multiple Displays.
   std::set<BeginFrameSource*> begin_frame_sources_;
-
-  // The set of SurfaceIds referenced by the active CompositorFrame.
-  // TODO(fsamuel): It seems unnecessary to copy this vector over
-  // from CompostiorFrameMetadata to store locally here. We can simply
-  // provide an accessor to the referenced surfaces directly from
-  // CompositorFrameMetadata.
-  std::vector<SurfaceId> active_referenced_surfaces_;
-
-  // The set of SurfaceIds referenced by the pending CompositorFrame.
-  // TODO(fsamuel): It seems unnecessary to copy this vector over
-  // from CompostiorFrameMetadata to store locally here. We can simply
-  // provide an accessor to the referenced surfaces directly from
-  // CompositorFrameMetadata.
-  std::vector<SurfaceId> pending_referenced_surfaces_;
 
   SurfaceDependencies blocking_surfaces_;
   base::ObserverList<PendingFrameObserver, true> observers_;

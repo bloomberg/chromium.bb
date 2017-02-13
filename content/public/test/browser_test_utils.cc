@@ -1167,13 +1167,18 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
 // should probably merge these.
 namespace {
 
-bool ContainsSurfaceId(cc::SurfaceId container_surface_id,
+bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id,
                        RenderWidgetHostViewChildFrame* target_view) {
   if (!container_surface_id.is_valid())
     return false;
-  for (cc::SurfaceId id : GetSurfaceManager()
-                              ->GetSurfaceForId(container_surface_id)
-                              ->active_referenced_surfaces()) {
+
+  cc::Surface* container_surface =
+      GetSurfaceManager()->GetSurfaceForId(container_surface_id);
+  if (!container_surface || !container_surface->active_referenced_surfaces())
+    return false;
+
+  for (const cc::SurfaceId& id :
+       *container_surface->active_referenced_surfaces()) {
     if (id == target_view->SurfaceIdForTesting() ||
         ContainsSurfaceId(id, target_view))
       return true;

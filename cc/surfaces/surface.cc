@@ -65,7 +65,6 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
 
   if (!blocking_surfaces_.empty()) {
     pending_frame_ = std::move(frame);
-    pending_referenced_surfaces_ = pending_frame_->metadata.referenced_surfaces;
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
     factory_->manager()->RequestSurfaceResolution(this);
@@ -151,7 +150,6 @@ void Surface::ActivatePendingFrame() {
   DCHECK(pending_frame_);
   ActivateFrame(std::move(pending_frame_.value()));
   pending_frame_.reset();
-  pending_referenced_surfaces_.clear();
 }
 
 // A frame is activated if all its Surface ID dependences are active or a
@@ -175,8 +173,6 @@ void Surface::ActivateFrame(CompositorFrame frame) {
 
   if (previous_frame)
     UnrefFrameResources(*previous_frame);
-
-  active_referenced_surfaces_ = active_frame_->metadata.referenced_surfaces;
 
   for (auto& observer : observers_)
     observer.OnSurfaceActivated(this);

@@ -321,7 +321,10 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
 
     // TODO(fsamuel): We should probably keep alive pending referenced surfaces
     // too.
-    for (const SurfaceId& id : surf->active_referenced_surfaces()) {
+    if (!surf->active_referenced_surfaces())
+      continue;
+
+    for (const SurfaceId& id : *surf->active_referenced_surfaces()) {
       if (live_surfaces_set.count(id))
         continue;
 

@@ -83,18 +83,10 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     // frame if any.
     SurfaceId current_surface_id(frame_sink_id_, local_surface_id);
     Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id);
-    // TODO(fsamuel): This is pretty inefficent. We copy over referenced
-    // surfaces. Then we pass them into the ReferencedSurfaceTracker to copy
-    // them again into a set. ReferencedSurfaceTracker should just take in two
-    // vectors, one for pending referenced surfaces and one for active
-    // referenced surfaces.
-    std::vector<SurfaceId> referenced_surfaces =
-        surface->active_referenced_surfaces();
 
-    referenced_surfaces.insert(referenced_surfaces.end(),
-                               surface->pending_referenced_surfaces().begin(),
-                               surface->pending_referenced_surfaces().end());
-    reference_tracker_.UpdateReferences(local_surface_id, referenced_surfaces);
+    reference_tracker_.UpdateReferences(local_surface_id,
+                                        surface->active_referenced_surfaces(),
+                                        surface->pending_referenced_surfaces());
 
     UpdateSurfaceReferences(last_surface_id, local_surface_id);
   }

@@ -319,12 +319,17 @@ void SurfaceHitTestReadyNotifier::WaitForSurfaceReady() {
 }
 
 bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
-    cc::SurfaceId container_surface_id) {
+    const cc::SurfaceId& container_surface_id) {
   if (!container_surface_id.is_valid())
     return false;
-  for (cc::SurfaceId id :
-       surface_manager_->GetSurfaceForId(container_surface_id)
-           ->active_referenced_surfaces()) {
+
+  cc::Surface* container_surface =
+      surface_manager_->GetSurfaceForId(container_surface_id);
+  if (!container_surface || !container_surface->active_referenced_surfaces())
+    return false;
+
+  for (const cc::SurfaceId& id :
+       *container_surface->active_referenced_surfaces()) {
     if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
       return true;
   }
