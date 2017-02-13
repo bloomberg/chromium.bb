@@ -76,10 +76,6 @@ suite('Metrics', function() {
       assertEquals(1, histogram[HistoryPageViewHistogram.SYNCED_TABS]);
       app.selectedPage_ = 'history';
       assertEquals(2, histogram[HistoryPageViewHistogram.HISTORY]);
-      app.fire('change-query', {range: HistoryRange.WEEK});
-      assertEquals(1, histogram[HistoryPageViewHistogram.GROUPED_WEEK]);
-      app.fire('change-query', {range: HistoryRange.MONTH});
-      assertEquals(1, histogram[HistoryPageViewHistogram.GROUPED_MONTH]);
     });
   });
 

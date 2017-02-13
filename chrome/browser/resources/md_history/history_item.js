@@ -100,13 +100,6 @@ cr.define('md_history', function() {
         reflectToAttribute: true,
       },
 
-      // True if the item is being displayed embedded in another element and
-      // should not manage its own borders or size.
-      embedded: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
-
       /** @type {Element} */
       lastFocused: {
         type: Object,

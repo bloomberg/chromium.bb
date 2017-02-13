@@ -83,20 +83,6 @@ TEST_F('MaterialHistoryDrawerTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialHistoryGroupedListTest() {}
-
-MaterialHistoryGroupedListTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
-
-  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
-    'history_grouped_list_test.js',
-  ]),
-};
-
-TEST_F('MaterialHistoryGroupedListTest', 'All', function() {
-  mocha.run();
-});
-
 function MaterialHistoryItemTest() {}
 
 MaterialHistoryItemTest.prototype = {
@@ -173,12 +159,7 @@ function MaterialHistoryRoutingWithQueryParamTest() {}
 MaterialHistoryRoutingWithQueryParamTest.prototype = {
   __proto__: MaterialHistoryRoutingTest.prototype,
 
-  browsePreload: 'chrome://history/history/week?q=query&offset=5',
-
-  commandLineSwitches:
-      MaterialHistoryBrowserTest.prototype.commandLineSwitches.concat([
-        {switchName: 'enable-grouped-history'}
-      ]),
+  browsePreload: 'chrome://history/?q=query',
 
   /** @override */
   setUp: function() {

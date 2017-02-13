@@ -33,8 +33,8 @@ var UMA_MAX_SUBSET_BUCKET_VALUE = 100;
  */
 var HistoryPageViewHistogram = {
   HISTORY: 0,
-  GROUPED_WEEK: 1,
-  GROUPED_MONTH: 2,
+  DEPRECATED_GROUPED_WEEK: 1,
+  DEPRECATED_GROUPED_MONTH: 2,
   SYNCED_TABS: 3,
   SIGNIN_PROMO: 4,
   END: 5,  // Should always be last.
@@ -62,13 +62,4 @@ var SyncedTabsHistogram = {
   HAS_FOREIGN_DATA: 9,
   HIDE_FOR_NOW: 10,
   LIMIT: 11  // Should always be the last one.
-};
-
-/**
- * @enum {number}
- */
-var HistoryRange = {
-  ALL_TIME: 0,
-  WEEK: 1,
-  MONTH: 2,
 };

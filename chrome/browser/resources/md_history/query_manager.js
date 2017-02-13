@@ -17,16 +17,7 @@ Polymer({
           // A query is initiated by page load.
           querying: true,
           queryingDisabled: false,
-          _range: HistoryRange.ALL_TIME,
           searchTerm: '',
-          groupedOffset: 0,
-
-          set range(val) {
-            this._range = Number(val);
-          },
-          get range() {
-            return this._range;
-          },
         };
       },
     },
@@ -79,15 +70,12 @@ Polymer({
       lastVisitTime = lastVisit ? Math.floor(lastVisit.time) : 0;
     }
 
-    var maxResults =
-        this.queryState.range == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
-
     chrome.send('queryHistory', [
       queryState.searchTerm,
-      queryState.groupedOffset,
-      queryState.range,
+      0,  // No grouped offset.
+      0,  // Disable grouping.
       lastVisitTime,
-      maxResults,
+      RESULTS_PER_PAGE,
     ]);
   },
 
@@ -96,28 +84,8 @@ Polymer({
    * @private
    */
   onChangeQuery_: function(e) {
-    var changes =
-        /** @type {{range: ?HistoryRange, offset: ?number, search: ?string}} */
-        (e.detail);
+    var changes = /** @type {{search: ?string}} */ (e.detail);
     var needsUpdate = false;
-
-    if (changes.range != null && changes.range != this.queryState.range) {
-      this.set('queryState.range', changes.range);
-      needsUpdate = true;
-
-      // Reset back to page 0 of the results, unless changing to a specific
-      // page.
-      if (!changes.offset)
-        this.set('queryState.groupedOffset', 0);
-
-      this.fire('history-view-changed');
-    }
-
-    if (changes.offset != null &&
-        changes.offset != this.queryState.groupedOffset) {
-      this.set('queryState.groupedOffset', changes.offset);
-      needsUpdate = true;
-    }
 
     if (changes.search != null &&
         changes.search != this.queryState.searchTerm) {

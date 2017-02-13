@@ -9,10 +9,8 @@
 
 // Types:
 /**
- * @typedef {{groupedOffset: number,
- *            incremental: boolean,
+ * @typedef {{incremental: boolean,
  *            querying: boolean,
- *            range: HistoryRange,
  *            searchTerm: string}}
  */
 var QueryState;

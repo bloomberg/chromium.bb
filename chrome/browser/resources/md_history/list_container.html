@@ -7,8 +7,7 @@
 <link rel="import" href="chrome://history/history_list.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
-<!-- Lazy loaded: cr-dialog, cr-action-menu, history-grouped-list, paper-button.
-  -->
+<!-- Lazy loaded: cr-dialog, cr-action-menu, paper-button. -->
 
 <dom-module id="history-list-container">
   <template>
@@ -19,8 +18,7 @@
         overflow: hidden;
       }
 
-      #content,
-      #content > * {
+      history-list {
         height: 100%;
       }
 
@@ -28,21 +26,10 @@
         white-space: pre-wrap;
       }
     </style>
-    <iron-pages id="content"
-        attr-for-selected="id"
-        selected="[[selectedPage_]]">
-      <history-list id="infinite-list"
-          querying="[[queryState.querying]]"
-          searched-term="[[queryResult.info.term]]">
-      </history-list>
-      <template is="dom-if" if="[[grouped]]">
-        <history-grouped-list id="grouped-list"
-            range="[[queryState.range]]"
-            query-interval="[[queryResult.info.queryInterval]]"
-            searched-term="[[queryResult.info.term]]">
-        </history-grouped-list>
-      </template>
-    </iron-pages>
+    <history-list id="infinite-list"
+        querying="[[queryState.querying]]"
+        searched-term="[[queryResult.info.term]]">
+    </history-list>
 
     <template is="cr-lazy-render" id="dialog">
       <dialog is="cr-dialog">

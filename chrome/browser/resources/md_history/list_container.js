@@ -6,15 +6,6 @@ Polymer({
   is: 'history-list-container',
 
   properties: {
-    // The path of the currently selected page.
-    selectedPage_: {
-      type: String,
-      computed: 'computeSelectedPage_(queryState.range)',
-    },
-
-    // Whether domain-grouped history is enabled.
-    grouped: Boolean,
-
     /** @type {!QueryState} */
     queryState: Object,
 
@@ -54,14 +45,7 @@ Polymer({
     }
 
     var list = /** @type {HistoryListBehavior} */ this.getSelectedList_();
-    // It is possible for results to arrive for the grouped list before the lazy
-    // load has finished and the <history-grouped-list> element exists. In this
-    // case, add the items to a property on the unresolved element which can be
-    // read when it upgrades and is attached.
-    if (Polymer.isInstance(list))
-      list.addNewResults(results, this.queryState.incremental, info.finished);
-    else
-      list.initialData = results;
+    list.addNewResults(results, this.queryState.incremental, info.finished);
   },
 
   historyDeleted: function() {
@@ -105,15 +89,6 @@ Polymer({
 
     // TODO(dbeam): remove focus flicker caused by showModal() + focus().
     this.$$('.action-button').focus();
-  },
-
-  /**
-   * @param {HistoryRange} range
-   * @return {string}
-   * @private
-   */
-  computeSelectedPage_: function(range) {
-    return range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
   },
 
   /**
@@ -233,7 +208,7 @@ Polymer({
    * @private
    */
   getSelectedList_: function() {
-    return this.$$('#' + this.selectedPage_);
+    return this.$['infinite-list'];
   },
 
   /** @private */

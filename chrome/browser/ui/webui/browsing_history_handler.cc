@@ -522,6 +522,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
       "queryEndTime",
       GetRelativeDateLocalized(clock_.get(), query_results_info->end_time));
 
+  // TODO(calamity): Clean up grouped-specific fields once grouped history is
+  // removed.
   results_info.SetString(
       "queryStartMonth",
       base::TimeFormatMonthAndYear(query_results_info->start_time));

@@ -24,17 +24,6 @@
       'includes': ['../../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
-      'target_name': 'grouped_list',
-      'dependencies': [
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-collapse/compiled_resources2.gyp:iron-collapse-extracted',
-        'constants',
-        'history_item',
-        'history_list_behavior',
-        '../history/compiled_resources2.gyp:externs',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'history_item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
@@ -100,7 +89,6 @@
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-announcer/compiled_resources2.gyp:iron-a11y-announcer-extracted',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
         'externs',
-        'grouped_list',
         'history_list',
         'history_list_behavior',
         '../history/compiled_resources2.gyp:externs',
