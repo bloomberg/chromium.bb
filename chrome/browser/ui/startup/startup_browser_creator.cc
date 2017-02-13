@@ -33,6 +33,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -673,8 +674,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     base::FilePath output_file(
         command_line.GetSwitchValuePath(switches::kDumpBrowserHistograms));
     if (!output_file.empty()) {
-      BrowserThread::PostBlockingPoolTask(
+      base::PostTaskWithTraits(
           FROM_HERE,
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
           base::Bind(&DumpBrowserHistograms, output_file));
     }
     silent_launch = true;
