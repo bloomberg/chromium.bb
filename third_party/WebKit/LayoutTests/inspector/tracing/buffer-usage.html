@@ -39,6 +39,11 @@ function test()
             InspectorTest.addResult("TimelineControllerClient.loadingProgress");
         },
 
+        processingStarted: function()
+        {
+            InspectorTest.addResult("TimelineControllerClient.processingStarted");
+        },
+
         loadingComplete: function()
         {
             InspectorTest.addResult("TimelineControllerClient.loadingComplete");

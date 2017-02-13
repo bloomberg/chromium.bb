@@ -4,5 +4,6 @@ TimelineControllerClient.recordingStarted
 TimelineControllerClient.recordingProgress
 TimelineControllerClient.loadingStarted
 TimelineControllerClient.loadingProgress
+TimelineControllerClient.processingStarted
 TimelineControllerClient.loadingComplete
 

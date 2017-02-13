@@ -6,7 +6,10 @@
 
 function test()
 {
-    InspectorTest.TestTimelineLoaderClient = function() {}
+    InspectorTest.TestTimelineLoaderClient = function(callback)
+    {
+        this._callback = callback;
+    }
 
     InspectorTest.TestTimelineLoaderClient.prototype = {
         loadingStarted: function()
@@ -19,11 +22,17 @@ function test()
             InspectorTest.addResult("TimelineLoaderClient.loadingProgress()");
         },
 
+        processingStarted: function()
+        {
+            InspectorTest.addResult("TimelineLoaderClient.processingStarted()");
+        },
+
         loadingComplete: function(model, storage)
         {
             this.model = model;
             this.storage = storage;
             InspectorTest.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
+            this._callback();
         },
     }
 
@@ -42,20 +51,22 @@ function test()
         }
 
         InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLoaderClient();
+        var delegate = new InspectorTest.TestTimelineLoaderClient(onTimelineLoaded);
         Timeline.TimelineLoader.loadFromFile({}, delegate);
-
-        var saver = new Timeline.TracingTimelineSaver();
-        var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
-        var storage = delegate.storage;
-        stream.open("", storage.writeToStream.bind(storage, stream, saver));
+        function onTimelineLoaded()
+        {
+            var saver = new Timeline.TracingTimelineSaver();
+            var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
+            var storage = delegate.storage;
+            stream.open("", storage.writeToStream.bind(storage, stream, saver));
+        };
     }
 
     function runTestOnMalformedInput(input, callback)
     {
         function createFileReader(file, delegate)
         {
-            return new InspectorTest.FakeFileReader(input, delegate, checkLoadedData);
+            return new InspectorTest.FakeFileReader(input, delegate, () => {});
         }
 
         function checkLoadedData(data)
@@ -66,7 +77,7 @@ function test()
         }
 
         InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLoaderClient();
+        var delegate = new InspectorTest.TestTimelineLoaderClient(checkLoadedData);
         Timeline.TimelineLoader.loadFromFile({}, delegate);
     }
 

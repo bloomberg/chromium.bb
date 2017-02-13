@@ -10,13 +10,26 @@ function test()
     var timeline = UI.panels.timeline;
     var overviewPane = timeline._overviewPane;
 
-    InspectorTest.loadTimeline(InspectorTest.timelineData());
+    InspectorTest.loadTimeline(InspectorTest.timelineData()).then(onTimelineLoaded);
 
-    overviewPane._update();
-    InspectorTest.addResult("OverviewPane:");
-    overviewPane._overviewCalculator.setDisplayWidth(450);
-    dumpDividers(overviewPane._overviewCalculator);
-    InspectorTest.addResult("");
+    function onTimelineLoaded()
+    {
+        overviewPane._update();
+        InspectorTest.addResult("OverviewPane:");
+        overviewPane._overviewCalculator.setDisplayWidth(450);
+        dumpDividers(overviewPane._overviewCalculator);
+        InspectorTest.addResult("");
+
+        dumpFlameChartRecordsCountForRange(0, 1);
+        dumpFlameChartRecordsCountForRange(0.25, 0.75);
+        dumpFlameChartRecordsCountForRange(0.33, 0.66);
+
+        overviewPane._overviewGrid.setWindow(0.1, 0.9);
+
+        InspectorTest.addResult("--------------------------------------------------------");
+        InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
+        InspectorTest.completeTest();
+    }
 
     function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
     {
@@ -36,16 +49,6 @@ function test()
             dividers[i] -= calculator.zeroTime();
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
     }
-
-    dumpFlameChartRecordsCountForRange(0, 1);
-    dumpFlameChartRecordsCountForRange(0.25, 0.75);
-    dumpFlameChartRecordsCountForRange(0.33, 0.66);
-
-    overviewPane._overviewGrid.setWindow(0.1, 0.9);
-
-    InspectorTest.addResult("--------------------------------------------------------");
-    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    InspectorTest.completeTest();
 }
 
 </script>

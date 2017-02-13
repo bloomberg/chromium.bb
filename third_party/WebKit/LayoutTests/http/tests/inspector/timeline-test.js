@@ -99,7 +99,7 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
 
     function onPageActionsDone()
     {
-        InspectorTest.addSniffer(UI.panels.timeline, "loadingComplete", callback)
+        InspectorTest.runWhenTimelineIsReady(callback);
         timelineController.stopRecording();
     }
 }
@@ -136,6 +136,11 @@ InspectorTest.timelineController = function()
     return new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, UI.panels.timeline);
 }
 
+InspectorTest.runWhenTimelineIsReady = function(callback)
+{
+    InspectorTest.addSniffer(UI.panels.timeline, "loadingComplete", () => callback());
+}
+
 InspectorTest.startTimeline = function(callback)
 {
     var panel = UI.panels.timeline;
@@ -145,13 +150,8 @@ InspectorTest.startTimeline = function(callback)
 
 InspectorTest.stopTimeline = function(callback)
 {
-    var panel = UI.panels.timeline;
-    function didStop()
-    {
-        InspectorTest.deprecatedRunAfterPendingDispatches(callback);
-    }
-    InspectorTest.addSniffer(panel, "loadingComplete", didStop);
-    panel._toggleRecording();
+    InspectorTest.runWhenTimelineIsReady(callback);
+    UI.panels.timeline._toggleRecording();
 };
 
 InspectorTest.evaluateWithTimeline = function(actions, doneCallback)
@@ -420,7 +420,9 @@ InspectorTest.loadTimeline = function(timelineData)
     }
 
     InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
+    var promise = new Promise(fulfill => InspectorTest.runWhenTimelineIsReady(fulfill));
     timeline._loadFromFile({});
+    return promise;
 }
 
 };

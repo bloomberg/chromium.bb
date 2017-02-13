@@ -19,9 +19,7 @@ function test()
     }
 
     timeline.requestWindowTimes = requestWindowTimesHook;
-    InspectorTest.loadTimeline(InspectorTest.timelineData());
-
-    InspectorTest.completeTest();
+    InspectorTest.loadTimeline(InspectorTest.timelineData()).then(() => InspectorTest.completeTest());
 }
 
 </script>
