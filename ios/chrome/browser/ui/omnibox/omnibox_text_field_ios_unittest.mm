@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
@@ -16,6 +15,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A category for making existing methods visible for use in these tests.
 @interface OmniboxTextFieldIOS (VisibleForTesting)
@@ -31,7 +34,7 @@ class OmniboxTextFieldIOSTest : public PlatformTest {
     // This rect is fairly arbitrary. The text field just needs a non-zero width
     // so that the pre-edit label's text alignment can be tested.
     CGRect rect = CGRectMake(0, 0, 100, 20);
-    textfield_.reset([[OmniboxTextFieldIOS alloc] initWithFrame:rect]);
+    textfield_ = [[OmniboxTextFieldIOS alloc] initWithFrame:rect];
     [[[UIApplication sharedApplication] keyWindow] addSubview:textfield_];
   };
 
@@ -116,7 +119,7 @@ class OmniboxTextFieldIOSTest : public PlatformTest {
     [textfield_ resignFirstResponder];
   }
 
-  base::scoped_nsobject<OmniboxTextFieldIOS> textfield_;
+  OmniboxTextFieldIOS* textfield_;
 };
 
 TEST_F(OmniboxTextFieldIOSTest, BecomeFirstResponderAddsCopyURLMenuItem) {

@@ -110,6 +110,7 @@ source_set("omnibox_internal") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "omnibox_text_field_ios_unittest.mm",
