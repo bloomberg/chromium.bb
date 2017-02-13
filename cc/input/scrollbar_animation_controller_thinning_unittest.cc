@@ -946,5 +946,31 @@ TEST_F(ScrollbarAnimationControllerThinningTest,
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
 }
 
+// Ensure we have a delay fadeout animation after mouse leave without a mouse
+// move.
+TEST_F(ScrollbarAnimationControllerThinningTest, MouseLeaveFadeOut) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move mouse near scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 1);
+
+  // Scroll to make the scrollbars visible.
+  scrollbar_controller_->DidScrollBegin();
+  scrollbar_controller_->DidScrollUpdate(false);
+  scrollbar_controller_->DidScrollEnd();
+
+  // Should not have delay fadeout animation.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
+
+  // Mouse leave.
+  scrollbar_controller_->DidMouseLeave();
+
+  // An animation should have been enqueued.
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+}
+
 }  // namespace
 }  // namespace cc

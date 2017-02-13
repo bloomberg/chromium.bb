@@ -125,6 +125,11 @@ void ScrollbarAnimationController::DidMouseLeave() {
 
   vertical_controller_->DidMouseLeave();
   horizontal_controller_->DidMouseLeave();
+
+  if (ScrollbarsHidden() || Captured())
+    return;
+
+  PostDelayedAnimationTask(false);
 }
 
 void ScrollbarAnimationController::DidMouseMoveNear(
