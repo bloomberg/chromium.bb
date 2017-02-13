@@ -60,6 +60,18 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
   ExceptionState& m_exceptionState;
 };
 
+using InstallTemplateFunction =
+    void (*)(v8::Isolate* isolate,
+             const DOMWrapperWorld& world,
+             v8::Local<v8::FunctionTemplate> interfaceTemplate);
+
+using InstallRuntimeEnabledFunction =
+    void (*)(v8::Isolate* isolate,
+             const DOMWrapperWorld& world,
+             v8::Local<v8::Object> instance,
+             v8::Local<v8::Object> prototype,
+             v8::Local<v8::Function> interface);
+
 }  // namespace blink
 
 #endif  // GeneratedCodeHelper_h

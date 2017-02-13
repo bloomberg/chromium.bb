@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/V8DOMConfiguration.h"
 
-#include "bindings/core/v8/GeneratedCodeHelper.h"  // just for DCHECK
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
