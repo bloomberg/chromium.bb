@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printer_pref_manager.h"
+#include "chrome/browser/chromeos/printing/printers_manager.h"
 
 #include <memory>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,7 +42,7 @@ const char kLexJson[] = R"json({
       } )json";
 
 // Helper class to record observed events.
-class LoggingObserver : public PrinterPrefManager::Observer {
+class LoggingObserver : public PrintersManager::Observer {
  public:
   void OnPrinterAdded(const Printer& printer) override {
     last_added_ = printer;
@@ -83,9 +83,9 @@ class LoggingObserver : public PrinterPrefManager::Observer {
 
 }  // namespace
 
-class PrinterPrefManagerTest : public testing::Test {
+class PrintersManagerTest : public testing::Test {
  protected:
-  PrinterPrefManagerTest() : profile_(base::MakeUnique<TestingProfile>()) {
+  PrintersManagerTest() : profile_(base::MakeUnique<TestingProfile>()) {
     thread_bundle_ = base::MakeUnique<content::TestBrowserThreadBundle>();
 
     auto sync_bridge = base::MakeUnique<PrintersSyncBridge>(
@@ -94,13 +94,13 @@ class PrinterPrefManagerTest : public testing::Test {
         base::BindRepeating(
             base::IgnoreResult(&base::debug::DumpWithoutCrashing)));
 
-    manager_ = base::MakeUnique<PrinterPrefManager>(profile_.get(),
-                                                    std::move(sync_bridge));
+    manager_ = base::MakeUnique<PrintersManager>(profile_.get(),
+                                                 std::move(sync_bridge));
 
     base::RunLoop().RunUntilIdle();
   }
 
-  ~PrinterPrefManagerTest() override {
+  ~PrintersManagerTest() override {
     manager_.reset();
 
     // Explicitly release the profile before the thread_bundle.  Otherwise, the
@@ -110,13 +110,13 @@ class PrinterPrefManagerTest : public testing::Test {
   }
 
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<PrinterPrefManager> manager_;
+  std::unique_ptr<PrintersManager> manager_;
 
  private:
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 };
 
-TEST_F(PrinterPrefManagerTest, AddPrinter) {
+TEST_F(PrintersManagerTest, AddPrinter) {
   LoggingObserver observer;
   manager_->AddObserver(&observer);
   manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
@@ -130,7 +130,7 @@ TEST_F(PrinterPrefManagerTest, AddPrinter) {
   EXPECT_FALSE(observer.UpdateCalled());
 }
 
-TEST_F(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
+TEST_F(PrintersManagerTest, UpdatePrinterAssignsId) {
   manager_->RegisterPrinter(base::MakeUnique<Printer>());
 
   auto printers = manager_->GetPrinters();
@@ -138,7 +138,7 @@ TEST_F(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
   EXPECT_FALSE(printers[0]->id().empty());
 }
 
-TEST_F(PrinterPrefManagerTest, UpdatePrinter) {
+TEST_F(PrintersManagerTest, UpdatePrinter) {
   manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
   auto updated_printer = base::MakeUnique<Printer>(kPrinterId);
   updated_printer->set_uri(kUri);
@@ -157,7 +157,7 @@ TEST_F(PrinterPrefManagerTest, UpdatePrinter) {
   EXPECT_FALSE(observer.AddCalled());
 }
 
-TEST_F(PrinterPrefManagerTest, RemovePrinter) {
+TEST_F(PrintersManagerTest, RemovePrinter) {
   manager_->RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
   manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
   manager_->RegisterPrinter(base::MakeUnique<Printer>());
@@ -172,7 +172,7 @@ TEST_F(PrinterPrefManagerTest, RemovePrinter) {
 
 // Tests for policy printers
 
-TEST_F(PrinterPrefManagerTest, RecommendedPrinters) {
+TEST_F(PrintersManagerTest, RecommendedPrinters) {
   std::string first_printer =
       R"json({
       "display_name": "Color Laser",
@@ -205,7 +205,7 @@ TEST_F(PrinterPrefManagerTest, RecommendedPrinters) {
   EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1]->source());
 }
 
-TEST_F(PrinterPrefManagerTest, GetRecommendedPrinter) {
+TEST_F(PrintersManagerTest, GetRecommendedPrinter) {
   std::string printer = kLexJson;
   auto value = base::MakeUnique<base::ListValue>();
   value->AppendString(printer);

@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/fake_printer_discoverer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
-#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -134,7 +134,7 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   CHECK(args->GetString(0, &callback_id));
 
   std::vector<std::unique_ptr<Printer>> printers =
-      PrinterPrefManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
+      PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
 
   base::ListValue* printers_list = new base::ListValue;
   for (const std::unique_ptr<Printer>& printer : printers) {
@@ -157,7 +157,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
 
   std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
   printer->set_display_name(printer_name);
-  PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+  PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
       std::move(printer));
 }
 
@@ -166,7 +166,7 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   std::string printer_name;
   CHECK(args->GetString(0, &printer_id));
   CHECK(args->GetString(1, &printer_name));
-  PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RemovePrinter(
+  PrintersManagerFactory::GetForBrowserContext(profile_)->RemovePrinter(
       printer_id);
 
   chromeos::DebugDaemonClient* client =
@@ -258,7 +258,7 @@ void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
   std::string printer_name = printer->display_name();
   bool success = (result_code == 0);
   if (success) {
-    PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+    PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
         std::move(printer));
   }
   CallJavascriptFunction(

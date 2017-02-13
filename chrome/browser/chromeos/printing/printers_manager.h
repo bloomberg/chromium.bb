@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_PREF_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_PREF_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -26,7 +26,10 @@ class PrefRegistrySyncable;
 
 namespace chromeos {
 
-class PrinterPrefManager : public KeyedService {
+// Manages printer information.  Provides an interface to a user's printers and
+// printers provided by policy.  User printers are backed by the
+// PrintersSyncBridge.
+class PrintersManager : public KeyedService {
  public:
   class Observer {
    public:
@@ -35,9 +38,9 @@ class PrinterPrefManager : public KeyedService {
     virtual void OnPrinterRemoved(const Printer& printer) = 0;
   };
 
-  PrinterPrefManager(Profile* profile,
-                     std::unique_ptr<PrintersSyncBridge> sync_bridge);
-  ~PrinterPrefManager() override;
+  PrintersManager(Profile* profile,
+                  std::unique_ptr<PrintersSyncBridge> sync_bridge);
+  ~PrintersManager() override;
 
   // Register the printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -63,11 +66,11 @@ class PrinterPrefManager : public KeyedService {
   // live on the same thread (UI) as this object.  OnPrinter* methods are
   // invoked inline so calling RegisterPrinter in response to OnPrinterAdded is
   // forbidden.
-  void AddObserver(PrinterPrefManager::Observer* observer);
+  void AddObserver(PrintersManager::Observer* observer);
 
   // Remove |observer| so that it no longer receives notifications.  After the
   // completion of this method, the |observer| can be safely destroyed.
-  void RemoveObserver(PrinterPrefManager::Observer* observer);
+  void RemoveObserver(PrintersManager::Observer* observer);
 
   // Returns a ModelTypeSyncBridge for the sync client.
   PrintersSyncBridge* GetSyncBridge();
@@ -90,9 +93,9 @@ class PrinterPrefManager : public KeyedService {
 
   base::ObserverList<Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrinterPrefManager);
+  DISALLOW_COPY_AND_ASSIGN(PrintersManager);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_PREF_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MANAGER_H_

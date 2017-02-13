@@ -104,8 +104,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/printing/printer_pref_manager.h"
-#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/chromeos/printing/printers_manager.h"
+#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
@@ -453,7 +453,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ->AsWeakPtr();
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
-      return chromeos::PrinterPrefManagerFactory::GetForBrowserContext(profile_)
+      return chromeos::PrintersManagerFactory::GetForBrowserContext(profile_)
           ->GetSyncBridge()
           ->AsWeakPtr();
 #endif
