@@ -914,8 +914,8 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
   EXPECT_FALSE(extendable_message_event_callback());
   version_->event_dispatcher()->DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEvent::New(),
-      base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished, version_,
-                 request_id));
+      version_->CreateSimpleEventCallback(request_id));
+
   base::RunLoop().RunUntilIdle();
   // The renderer should have received an ExtendableMessageEvent request.
   EXPECT_TRUE(extendable_message_event_callback());

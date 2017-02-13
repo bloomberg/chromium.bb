@@ -125,8 +125,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   service_worker->event_dispatcher()->DispatchPushEvent(
-      payload, base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished,
-                          service_worker, request_id));
+      payload, service_worker->CreateSimpleEventCallback(request_id));
 }
 
 // static

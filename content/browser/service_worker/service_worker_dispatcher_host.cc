@@ -1240,12 +1240,8 @@ void ServiceWorkerDispatcherHost::
       event->source.service_worker_info.url = GURL();
   }
 
-  // |event_dispatcher| is owned by |worker|, once |worker| got destroyed, the
-  // bound function will never be called, so it is safe to use
-  // base::Unretained() here.
   worker->event_dispatcher()->DispatchExtendableMessageEvent(
-      std::move(event), base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished,
-                                   base::Unretained(worker.get()), request_id));
+      std::move(event), worker->CreateSimpleEventCallback(request_id));
 }
 
 template <typename SourceInfo>

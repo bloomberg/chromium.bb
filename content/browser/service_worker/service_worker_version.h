@@ -73,6 +73,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public EmbeddedWorkerInstance::Listener {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
+  using SimpleEventCallback =
+      base::Callback<void(ServiceWorkerStatusCode, base::Time)>;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -275,6 +277,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // was not found or the worker already terminated.
   bool FinishExternalRequest(const std::string& request_uuid);
 
+  // Creates a callback that is to be used for marking simple events dispatched
+  // through the ServiceWorkerEventDispatcher as finished for the |request_id|.
+  SimpleEventCallback CreateSimpleEventCallback(int request_id);
+
   // This must be called when the worker is running.
   mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
     DCHECK(event_dispatcher_.is_bound());
@@ -423,13 +429,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeDelta remaining_timeout() const {
     return max_request_expiration_time_ - tick_clock_->NowTicks();
   }
-
-  // Callback function for simple events dispatched through mojo interface
-  // mojom::ServiceWorkerEventDispatcher, once all simple events got dispatched
-  // through mojo, OnSimpleEventResponse function could be removed.
-  void OnSimpleEventFinished(int request_id,
-                             ServiceWorkerStatusCode status,
-                             base::Time dispatch_event_time);
 
   // Returns the Navigation Preload support status of the service worker.
   //  - Origin Trial: Have an effective token.
@@ -684,6 +683,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorkerInternal();
 
   void DidSkipWaiting(int request_id);
+
+  // Callback function for simple events dispatched through mojo interface
+  // mojom::ServiceWorkerEventDispatcher. Use CreateSimpleEventCallback() to
+  // create a callback for a given |request_id|.
+  void OnSimpleEventFinished(int request_id,
+                             ServiceWorkerStatusCode status,
+                             base::Time dispatch_event_time);
 
   void OnGetClientFinished(int request_id,
                            const ServiceWorkerClientInfo& client_info);
