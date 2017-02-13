@@ -248,7 +248,9 @@ public class SuggestionsSection extends InnerNode {
 
         // When the ActionItem stops being dismissable, it is possible that it was being interacted
         // with. We need to reset the view's related property changes.
-        mMoreButton.notifyItemChanged(0, NewTabPageRecyclerView.RESET_FOR_DISMISS_CALLBACK);
+        if (mMoreButton.isVisible()) {
+            mMoreButton.notifyItemChanged(0, NewTabPageRecyclerView.RESET_FOR_DISMISS_CALLBACK);
+        }
     }
 
     @Override

@@ -40,6 +40,7 @@ public abstract class ChildNode implements TreeNode {
 
     protected void notifyItemRangeChanged(
             int index, int count, @Nullable PartialBindCallback callback) {
+        assert isRangeValid(index, count);
         if (mParent != null) mParent.onItemRangeChanged(this, index, count, callback);
     }
 
@@ -50,10 +51,12 @@ public abstract class ChildNode implements TreeNode {
     protected void notifyItemRangeInserted(int index, int count) {
         mNumItems += count;
         assert mNumItems == getItemCountForDebugging();
+        assert isRangeValid(index, count);
         if (mParent != null) mParent.onItemRangeInserted(this, index, count);
     }
 
     protected void notifyItemRangeRemoved(int index, int count) {
+        assert isRangeValid(index, count);
         mNumItems -= count;
         assert mNumItems == getItemCountForDebugging();
         if (mParent != null) mParent.onItemRangeRemoved(this, index, count);
@@ -76,9 +79,15 @@ public abstract class ChildNode implements TreeNode {
     }
 
     protected void checkIndex(int position) {
-        if (position < 0 || position >= getItemCount()) {
+        if (!isRangeValid(position, 1)) {
             throw new IndexOutOfBoundsException(position + "/" + getItemCount());
         }
+    }
+
+    private boolean isRangeValid(int index, int count) {
+        // Uses |mNumItems| to be able to call the method when checking deletion range, as we still
+        // have the previous number of items.
+        return index >= 0 && index + count <= mNumItems;
     }
 
     /**
