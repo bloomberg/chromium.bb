@@ -510,7 +510,7 @@ void GaiaScreenHandler::DoAdAuth(
     const authpolicy::ActiveDirectoryAccountData& account_data) {
   switch (error) {
     case authpolicy::ERROR_NONE: {
-      DCHECK(!account_data.has_account_id() &&
+      DCHECK(account_data.has_account_id() &&
              !account_data.account_id().empty());
       const AccountId account_id(GetAccountId(
           username, account_data.account_id(), AccountType::ACTIVE_DIRECTORY));
