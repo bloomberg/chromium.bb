@@ -252,6 +252,7 @@ public class FindToolbar extends LinearLayout
                 } else {
                     clearResults();
                     mFindInPageBridge.stopFinding(true);
+                    setPrevNextEnabled(false);
                 }
 
                 if (!mCurrentTab.isIncognito()) {
@@ -588,8 +589,12 @@ public class FindToolbar extends LinearLayout
             model.removeObserver(mTabModelObserver);
         }
 
-        mCurrentTab.getTabWebContentsDelegateAndroid().setFindResultListener(null);
-        mCurrentTab.getTabWebContentsDelegateAndroid().setFindMatchRectsListener(null);
+        TabWebContentsDelegateAndroid delegate = mCurrentTab.getTabWebContentsDelegateAndroid();
+        if (delegate != null) {
+            delegate.setFindResultListener(null);
+            delegate.setFindMatchRectsListener(null);
+        }
+
         mCurrentTab.removeObserver(mTabObserver);
 
         UiUtils.hideKeyboard(mFindQuery);
