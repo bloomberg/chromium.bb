@@ -187,6 +187,7 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
 }
 
 void RunChildProcessIfNeeded(int argc, const char** argv) {
+  base::CommandLine::Init(argc, argv);
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kProcessType))
     return;
