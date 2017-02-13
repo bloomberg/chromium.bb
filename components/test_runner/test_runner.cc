@@ -1680,8 +1680,6 @@ void TestRunner::Reset() {
   test_repaint_ = false;
   sweep_horizontally_ = false;
   midi_accessor_result_ = midi::mojom::Result::OK;
-  has_custom_text_output_ = false;
-  custom_text_output_.clear();
 
   http_headers_to_clear_.clear();
 
@@ -1721,16 +1719,17 @@ void TestRunner::setShouldDumpAsMarkup(bool value) {
 }
 
 bool TestRunner::shouldDumpAsCustomText() const {
-  return has_custom_text_output_;
+  return layout_test_runtime_flags_.has_custom_text_output();
 }
 
 std::string TestRunner::customDumpText() const {
-  return custom_text_output_;
+  return layout_test_runtime_flags_.custom_text_output();
 }
 
 void TestRunner::setCustomTextOutput(const std::string& text) {
-  custom_text_output_ = text;
-  has_custom_text_output_ = true;
+  layout_test_runtime_flags_.set_custom_text_output(text);
+  layout_test_runtime_flags_.set_has_custom_text_output(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 bool TestRunner::ShouldGeneratePixelResults() {

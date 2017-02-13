@@ -183,6 +183,12 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // etc.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_javascript_dialogs)
 
+  // True if the test called testRunner.setCustomTextOutput.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(has_custom_text_output)
+
+  // Contains text passed by the test to testRunner.setCustomTextOutput.
+  DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(custom_text_output)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

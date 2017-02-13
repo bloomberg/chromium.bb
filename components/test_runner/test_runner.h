@@ -610,9 +610,6 @@ class TestRunner : public WebTestRunner {
   // startSession() result of MockWebMIDIAccessor for testing.
   midi::mojom::Result midi_accessor_result_;
 
-  bool has_custom_text_output_;
-  std::string custom_text_output_;
-
   std::set<std::string> http_headers_to_clear_;
 
   // WAV audio data is stored here.
