@@ -4996,6 +4996,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
     self.WriteServiceHandlerArgGetCode(func, f)
+    func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -5005,6 +5006,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
     self.WriteImmediateServiceHandlerArgGetCode(func, f)
+    func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -5014,6 +5016,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes the service implementation for a command."""
     self.WritePassthroughServiceFunctionHeader(func, f)
     self.WriteBucketServiceHandlerArgGetCode(func, f)
+    func.WritePassthroughHandlerValidation(f)
     self.WritePassthroughServiceFunctionDoerCall(func, f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -8586,6 +8589,10 @@ class Argument(object):
     """Writes the validation code for an argument."""
     pass
 
+  def WritePassthroughValidationCode(self, f, func):
+    """Writes the passthrough validation code for an argument."""
+    pass
+
   def WriteClientSideValidationCode(self, f, func):
     """Writes the validation code for an argument."""
     pass
@@ -8870,6 +8877,14 @@ class ImmediatePointerArgument(Argument):
     if self.optional:
       return
     f.write("  if (%s == NULL) {\n" % self.name)
+    f.write("    return error::kOutOfBounds;\n")
+    f.write("  }\n")
+
+  def WritePassthroughValidationCode(self, f, func):
+    """Overridden from Argument."""
+    if self.optional:
+      return
+    f.write("  if (%s == nullptr) {\n" % self.name)
     f.write("    return error::kOutOfBounds;\n")
     f.write("  }\n")
 
@@ -9501,6 +9516,11 @@ class Function(object):
     for arg in self.GetOriginalArgs():
       arg.WriteValidationCode(f, self)
     self.WriteValidationCode(f)
+
+  def WritePassthroughHandlerValidation(self, f):
+    """Writes validation code for the function."""
+    for arg in self.GetOriginalArgs():
+      arg.WritePassthroughValidationCode(f, self)
 
   def WriteHandlerImplementation(self, f):
     """Writes the handler implementation for this command."""

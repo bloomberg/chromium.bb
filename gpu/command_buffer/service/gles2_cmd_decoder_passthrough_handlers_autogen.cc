@@ -315,6 +315,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoClearBufferfv(buffer, drawbuffers, value);
   if (error != error::kNoError) {
     return error;
@@ -339,6 +342,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferivImmediate(
   }
   volatile const GLint* value = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoClearBufferiv(buffer, drawbuffers, value);
   if (error != error::kNoError) {
     return error;
@@ -363,6 +369,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferuivImmediate(
   }
   volatile const GLuint* value = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoClearBufferuiv(buffer, drawbuffers, value);
   if (error != error::kNoError) {
     return error;
@@ -549,6 +558,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteBuffersImmediate(
   }
   volatile const GLuint* buffers = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (buffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteBuffers(n, buffers);
   if (error != error::kNoError) {
     return error;
@@ -570,6 +582,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteFramebuffersImmediate(
   volatile const GLuint* framebuffers =
       GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                  immediate_data_size);
+  if (framebuffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteFramebuffers(n, framebuffers);
   if (error != error::kNoError) {
     return error;
@@ -604,6 +619,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteRenderbuffersImmediate(
   volatile const GLuint* renderbuffers =
       GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                  immediate_data_size);
+  if (renderbuffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteRenderbuffers(n, renderbuffers);
   if (error != error::kNoError) {
     return error;
@@ -624,6 +642,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteSamplersImmediate(
   }
   volatile const GLuint* samplers = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (samplers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteSamplers(n, samplers);
   if (error != error::kNoError) {
     return error;
@@ -670,6 +691,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteTexturesImmediate(
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (textures == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteTextures(n, textures);
   if (error != error::kNoError) {
     return error;
@@ -692,6 +716,9 @@ GLES2DecoderPassthroughImpl::HandleDeleteTransformFeedbacksImmediate(
   }
   volatile const GLuint* ids = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (ids == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteTransformFeedbacks(n, ids);
   if (error != error::kNoError) {
     return error;
@@ -907,6 +934,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenBuffersImmediate(
   }
   volatile GLuint* buffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (buffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenBuffers(n, buffers);
   if (error != error::kNoError) {
     return error;
@@ -940,6 +970,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenFramebuffersImmediate(
   }
   volatile GLuint* framebuffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (framebuffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenFramebuffers(n, framebuffers);
   if (error != error::kNoError) {
     return error;
@@ -960,6 +993,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenRenderbuffersImmediate(
   }
   volatile GLuint* renderbuffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (renderbuffers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenRenderbuffers(n, renderbuffers);
   if (error != error::kNoError) {
     return error;
@@ -979,6 +1015,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenSamplersImmediate(
   }
   volatile GLuint* samplers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (samplers == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenSamplers(n, samplers);
   if (error != error::kNoError) {
     return error;
@@ -998,6 +1037,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenTexturesImmediate(
   }
   volatile GLuint* textures =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (textures == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenTextures(n, textures);
   if (error != error::kNoError) {
     return error;
@@ -1018,6 +1060,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenTransformFeedbacksImmediate(
   }
   volatile GLuint* ids =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (ids == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenTransformFeedbacks(n, ids);
   if (error != error::kNoError) {
     return error;
@@ -1701,6 +1746,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleInvalidateFramebufferImmediate(
   volatile const GLenum* attachments =
       GetImmediateDataAs<volatile const GLenum*>(c, data_size,
                                                  immediate_data_size);
+  if (attachments == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoInvalidateFramebuffer(target, count, attachments);
   if (error != error::kNoError) {
     return error;
@@ -1733,6 +1781,9 @@ GLES2DecoderPassthroughImpl::HandleInvalidateSubFramebufferImmediate(
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
+  if (attachments == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoInvalidateSubFramebuffer(target, count, attachments, x,
                                                   y, width, height);
   if (error != error::kNoError) {
@@ -2077,6 +2128,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterfvImmediate(
   }
   volatile const GLfloat* params = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (params == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoSamplerParameterfv(sampler, pname, params);
   if (error != error::kNoError) {
     return error;
@@ -2116,6 +2170,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterivImmediate(
   }
   volatile const GLint* params = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (params == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoSamplerParameteriv(sampler, pname, params);
   if (error != error::kNoError) {
     return error;
@@ -2289,6 +2346,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexParameterfvImmediate(
   }
   volatile const GLfloat* params = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (params == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoTexParameterfv(target, pname, params);
   if (error != error::kNoError) {
     return error;
@@ -2328,6 +2388,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexParameterivImmediate(
   }
   volatile const GLint* params = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (params == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoTexParameteriv(target, pname, params);
   if (error != error::kNoError) {
     return error;
@@ -2416,6 +2479,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1fvImmediate(
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform1fv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2454,6 +2520,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1ivImmediate(
   }
   volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform1iv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2492,6 +2561,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1uivImmediate(
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform1uiv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2531,6 +2603,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2fvImmediate(
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform2fv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2570,6 +2645,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2ivImmediate(
   }
   volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform2iv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2609,6 +2687,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2uivImmediate(
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform2uiv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2649,6 +2730,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3fvImmediate(
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform3fv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2689,6 +2773,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3ivImmediate(
   }
   volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform3iv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2729,6 +2816,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3uivImmediate(
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform3uiv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2770,6 +2860,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4fvImmediate(
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform4fv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2811,6 +2904,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4ivImmediate(
   }
   volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform4iv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2852,6 +2948,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4uivImmediate(
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (v == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniform4uiv(location, count, v);
   if (error != error::kNoError) {
     return error;
@@ -2878,6 +2977,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix2fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -2904,6 +3006,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x3fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix2x3fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -2930,6 +3035,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x4fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix2x4fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -2956,6 +3064,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix3fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -2982,6 +3093,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x2fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix3x2fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -3008,6 +3122,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x4fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix3x4fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -3034,6 +3151,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix4fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -3060,6 +3180,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x2fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix4x2fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -3086,6 +3209,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x3fvImmediate(
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (value == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix4x3fv(location, count, transpose, value);
   if (error != error::kNoError) {
     return error;
@@ -3149,6 +3275,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib1fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttrib1fv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3187,6 +3316,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib2fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttrib2fv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3226,6 +3358,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib3fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttrib3fv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3266,6 +3401,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib4fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttrib4fv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3306,6 +3444,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ivImmediate(
   }
   volatile const GLint* values = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttribI4iv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3346,6 +3487,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4uivImmediate(
   }
   volatile const GLuint* values = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (values == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoVertexAttribI4uiv(indx, values);
   if (error != error::kNoError) {
     return error;
@@ -3488,6 +3632,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenQueriesEXTImmediate(
   }
   volatile GLuint* queries =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (queries == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenQueriesEXT(n, queries);
   if (error != error::kNoError) {
     return error;
@@ -3508,6 +3655,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteQueriesEXTImmediate(
   }
   volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (queries == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteQueriesEXT(n, queries);
   if (error != error::kNoError) {
     return error;
@@ -3562,6 +3712,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenVertexArraysOESImmediate(
   }
   volatile GLuint* arrays =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  if (arrays == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoGenVertexArraysOES(n, arrays);
   if (error != error::kNoError) {
     return error;
@@ -3582,6 +3735,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteVertexArraysOESImmediate(
   }
   volatile const GLuint* arrays = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (arrays == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDeleteVertexArraysOES(n, arrays);
   if (error != error::kNoError) {
     return error;
@@ -3760,6 +3916,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleProduceTextureCHROMIUMImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, data_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoProduceTextureCHROMIUM(target, mailbox);
   if (error != error::kNoError) {
     return error;
@@ -3786,6 +3945,9 @@ GLES2DecoderPassthroughImpl::HandleProduceTextureDirectCHROMIUMImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, data_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoProduceTextureDirectCHROMIUM(texture, target, mailbox);
   if (error != error::kNoError) {
     return error;
@@ -3808,6 +3970,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleConsumeTextureCHROMIUMImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, data_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoConsumeTextureCHROMIUM(target, mailbox);
   if (error != error::kNoError) {
     return error;
@@ -3833,6 +3998,9 @@ GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, data_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error =
       DoCreateAndConsumeTextureINTERNAL(target, texture, mailbox);
   if (error != error::kNoError) {
@@ -3900,6 +4068,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDiscardFramebufferEXTImmediate(
   volatile const GLenum* attachments =
       GetImmediateDataAs<volatile const GLenum*>(c, data_size,
                                                  immediate_data_size);
+  if (attachments == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDiscardFramebufferEXT(target, count, attachments);
   if (error != error::kNoError) {
     return error;
@@ -3938,6 +4109,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawBuffersEXTImmediate(
   }
   volatile const GLenum* bufs = GetImmediateDataAs<volatile const GLenum*>(
       c, data_size, immediate_data_size);
+  if (bufs == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoDrawBuffersEXT(count, bufs);
   if (error != error::kNoError) {
     return error;
@@ -3963,6 +4137,9 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerInUseQueryCHROMIUMImmediate(
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
+  if (textures == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoScheduleCALayerInUseQueryCHROMIUM(count, textures);
   if (error != error::kNoError) {
     return error;
@@ -4019,6 +4196,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleMatrixLoadfCHROMIUMImmediate(
   }
   volatile const GLfloat* m = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (m == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoMatrixLoadfCHROMIUM(matrixMode, m);
   if (error != error::kNoError) {
     return error;
@@ -4130,6 +4310,9 @@ error::Error GLES2DecoderPassthroughImpl::
   volatile const GLfloat* transform =
       GetImmediateDataAs<volatile const GLfloat*>(c, data_size,
                                                   immediate_data_size);
+  if (transform == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
       location, transpose, transform);
   if (error != error::kNoError) {
@@ -4175,6 +4358,9 @@ GLES2DecoderPassthroughImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
   }
   volatile const GLint* rects = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  if (rects == nullptr) {
+    return error::kOutOfBounds;
+  }
   error::Error error = DoSwapBuffersWithBoundsCHROMIUM(count, rects);
   if (error != error::kNoError) {
     return error;
