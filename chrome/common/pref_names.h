@@ -878,6 +878,19 @@ extern const char kGoogleDSEGeolocationSetting[];
 
 extern const char kWebShareVisitedTargets[];
 
+#if defined(OS_WIN)
+extern const char kIOSPromotionEligible[];
+extern const char kIOSPromotionDone[];
+extern const char kNumberSavePasswordsBubbleIOSPromoShown[];
+extern const char kSavePasswordsBubbleIOSPromoDismissed[];
+extern const char kNumberBookmarksBubbleIOSPromoShown[];
+extern const char kBookmarksBubbleIOSPromoDismissed[];
+extern const char kNumberBookmarksFootNoteIOSPromoShown[];
+extern const char kBookmarksFootNoteIOSPromoDismissed[];
+extern const char kNumberHistoryPageIOSPromoShown[];
+extern const char kHistoryPageIOSPromoDismissed[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

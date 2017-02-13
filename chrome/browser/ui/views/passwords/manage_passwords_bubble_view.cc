@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
@@ -36,6 +35,10 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_view.h"
+#endif
 
 int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
 
@@ -824,10 +827,12 @@ void ManagePasswordsBubbleView::CreateChild() {
   } else if (model_.state() ==
              password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     AddChildView(new SignInPromoView(this));
+#if defined(OS_WIN)
   } else if (model_.state() ==
              password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
     AddChildView(new DesktopIOSPromotionView(
         desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE));
+#endif
   } else {
     AddChildView(new ManageView(this));
   }

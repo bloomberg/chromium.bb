@@ -2386,4 +2386,51 @@ const char kGoogleDSEGeolocationSetting[] = "google_dse_geolocation_setting";
 // value.
 const char kWebShareVisitedTargets[] = "profile.web_share.visited_targets";
 
+#if defined(OS_WIN)
+// True if the user is eligible to recieve "desktop to iOS" promotion.
+const char kIOSPromotionEligible[] = "ios.desktoptomobileeligible";
+
+// True if the "desktop to iOS" promotion was successful, i.e. user installed
+// the application and signed in after seeing the promotion and receiving the
+// SMS.
+const char kIOSPromotionDone[] = "ios.desktop_ios_promo_done";
+
+// Number of times user has seen the "desktop to iOS" save passwords bubble
+// promotion.
+const char kNumberSavePasswordsBubbleIOSPromoShown[] =
+    "savepasswords_bubble_ios_promo_shown_count";
+
+// True if the user has dismissed the "desktop to iOS" save passwords bubble
+// promotion.
+const char kSavePasswordsBubbleIOSPromoDismissed[] =
+    "savepasswords_bubble_ios_promo_dismissed";
+
+// Number of times the user has seen the "desktop to iOS" bookmarks bubble
+// promotion.
+const char kNumberBookmarksBubbleIOSPromoShown[] =
+    "bookmarks_bubble_ios_promo_shown_count";
+
+// True if the user has dismissed the "desktop to iOS" bookmarks bubble
+// promotion.
+const char kBookmarksBubbleIOSPromoDismissed[] =
+    "bookmarks_bubble_ios_promo_dismissed";
+
+// Number of times user has seen the "desktop to iOS" bookmarks foot note
+// promotion.
+const char kNumberBookmarksFootNoteIOSPromoShown[] =
+    "bookmarks_footnote_ios_promo_shown_count";
+
+// True if the user has dismissed the "desktop to iOS" bookmarks foot note
+// promotion.
+const char kBookmarksFootNoteIOSPromoDismissed[] =
+    "bookmarks_footnote_ios_promo_dismissed";
+
+// Number of times user has seen the "desktop to iOS" history page promotion.
+const char kNumberHistoryPageIOSPromoShown[] =
+    "history_page_ios_promo_shown_count";
+
+// True if the user has dismissed the "desktop to iOS" history page promotion.
+const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
+#endif
+
 }  // namespace prefs

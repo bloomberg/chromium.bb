@@ -239,6 +239,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -429,6 +430,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if defined(OS_WIN)
   app_metro_launch::RegisterPrefs(registry);
   component_updater::RegisterPrefsForSwReporter(registry);
+  desktop_ios_promotion::RegisterLocalPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
 #endif
 
@@ -597,6 +599,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_WIN)
   component_updater::RegisterProfilePrefsForSwReporter(registry);
+  desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
 #endif
 
