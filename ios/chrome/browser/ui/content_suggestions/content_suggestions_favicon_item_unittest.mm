@@ -72,4 +72,24 @@ TEST(ContentSuggestionsFaviconItemTest, AddAFavicon) {
   EXPECT_TRUE([title2 isEqualToString:faviconInternalCell2.titleLabel.text]);
 }
 
+// Tests that adding nil favicon does nothing.
+TEST(ContentSuggestionsFaviconItemTest, AddNilFavicon) {
+  ContentSuggestionsFaviconItem* item =
+      [[ContentSuggestionsFaviconItem alloc] initWithType:0];
+  UIImage* image = [[UIImage alloc] init];
+  NSString* title = @"testTitle1";
+  UIImage* nilImage = nil;
+  NSString* nilTitle = nil;
+  [item addFavicon:nilImage withTitle:title];
+  [item addFavicon:image withTitle:nilTitle];
+
+  ContentSuggestionsFaviconCell* cell = [[[item cellClass] alloc] init];
+
+  [item configureCell:cell];
+
+  EXPECT_EQ(0,
+            [cell.collectionView.dataSource collectionView:cell.collectionView
+                                    numberOfItemsInSection:0]);
+}
+
 }  // namespace

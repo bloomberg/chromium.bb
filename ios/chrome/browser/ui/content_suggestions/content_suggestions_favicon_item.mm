@@ -50,6 +50,9 @@ const CGFloat kInternalLeadingSpacing = 16;
 }
 
 - (void)addFavicon:(UIImage*)favicon withTitle:(NSString*)title {
+  if (!favicon || !title)
+    return;
+
   [_faviconImages addObject:favicon];
   [_faviconTitles addObject:title];
 }

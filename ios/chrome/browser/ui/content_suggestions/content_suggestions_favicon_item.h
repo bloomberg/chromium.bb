@@ -13,7 +13,7 @@
 @protocol ContentSuggestionsFaviconCellDelegate
 
 // Opens the favicon associated with the |indexPath| of the internal cell.
-- (void)openFaviconAtIndexPath:(NSIndexPath*)innerIndexPath;
+- (void)openFaviconAtIndexPath:(nonnull NSIndexPath*)innerIndexPath;
 
 @end
 
@@ -22,10 +22,11 @@
 // this item. The collection view scrolls horizontally.
 @interface ContentSuggestionsFaviconItem : CollectionViewItem
 
-@property(nonatomic, weak) id<ContentSuggestionsFaviconCellDelegate> delegate;
+@property(nonatomic, weak, nullable) id<ContentSuggestionsFaviconCellDelegate>
+    delegate;
 
 // Adds a favicon with a |favicon| image and a |title| to this item.
-- (void)addFavicon:(UIImage*)favicon withTitle:(NSString*)title;
+- (void)addFavicon:(nonnull UIImage*)favicon withTitle:(nonnull NSString*)title;
 
 @end
 
@@ -33,9 +34,10 @@
 @interface ContentSuggestionsFaviconCell : MDCCollectionViewCell
 
 // The inner collection view, used to display the favicons.
-@property(nonatomic, strong) UICollectionView* collectionView;
+@property(nonatomic, strong, nullable) UICollectionView* collectionView;
 
-@property(nonatomic, weak) id<ContentSuggestionsFaviconCellDelegate> delegate;
+@property(nonatomic, weak, nullable) id<ContentSuggestionsFaviconCellDelegate>
+    delegate;
 
 @end
 
