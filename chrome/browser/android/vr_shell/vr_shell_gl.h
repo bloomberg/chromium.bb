@@ -73,6 +73,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void OnResume();
 
   void SetWebVrMode(bool enabled);
+  void CreateContentSurface();
   void ContentBoundsChanged(int width, int height);
   void ContentPhysicalBoundsChanged(int width, int height);
   void UIBoundsChanged(int width, int height);
@@ -114,7 +115,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
                           int pixel_y);
   void SendGesture(InputTarget input_target,
                    std::unique_ptr<blink::WebInputEvent> event);
-
+  void CreateUiSurface();
   void OnUIFrameAvailable();
   void OnContentFrameAvailable();
   bool GetPixelEncodedFrameIndex(uint16_t* frame_index);

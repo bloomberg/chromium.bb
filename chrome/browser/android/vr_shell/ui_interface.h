@@ -31,7 +31,7 @@ class UiInterface {
     WEB_VR
   };
 
-  explicit UiInterface(Mode initial_mode, bool fullscreen);
+  explicit UiInterface(Mode initial_mode);
   virtual ~UiInterface();
 
   // Set HTML UI state or pass events.

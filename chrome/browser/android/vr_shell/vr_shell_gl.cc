@@ -242,30 +242,38 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   content_texture_id_ = textures[1];
   ui_surface_texture_ = gl::SurfaceTexture::Create(ui_texture_id_);
   content_surface_texture_ = gl::SurfaceTexture::Create(content_texture_id_);
-  ui_surface_.reset(new gl::ScopedJavaSurface(ui_surface_texture_.get()));
-  content_surface_.reset(new gl::ScopedJavaSurface(
-      content_surface_texture_.get()));
+  CreateUiSurface();
+  CreateContentSurface();
   ui_surface_texture_->SetFrameAvailableCallback(base::Bind(
-        &VrShellGl::OnUIFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+      &VrShellGl::OnUIFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   content_surface_texture_->SetFrameAvailableCallback(base::Bind(
         &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_physical_size_.width, content_tex_physical_size_.height);
   ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width,
                                             ui_tex_physical_size_.height);
-
-  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VrShell::SurfacesChanged, weak_vr_shell_,
-      content_surface_->j_surface().obj(),
-      ui_surface_->j_surface().obj()));
-
   InitializeRenderer();
 
   vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
   OnVSync();
 
   ready_to_draw_ = true;
+}
+
+void VrShellGl::CreateContentSurface() {
+  content_surface_ =
+      base::MakeUnique<gl::ScopedJavaSurface>(content_surface_texture_.get());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_,
+                            content_surface_->j_surface().obj()));
+}
+
+void VrShellGl::CreateUiSurface() {
+  ui_surface_ =
+      base::MakeUnique<gl::ScopedJavaSurface>(ui_surface_texture_.get());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::UiSurfaceChanged, weak_vr_shell_,
+                            ui_surface_->j_surface().obj()));
 }
 
 void VrShellGl::OnUIFrameAvailable() {

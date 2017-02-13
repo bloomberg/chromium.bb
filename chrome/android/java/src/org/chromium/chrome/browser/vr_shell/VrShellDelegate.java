@@ -287,11 +287,11 @@ public class VrShellDelegate {
         }
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
         // entered without any current tabs.
-        if (tab == null || tab.getContentViewCore() == null) {
+        if (tab == null) {
             return false;
         }
-        // For now we don't handle native pages. crbug.com/661609
-        if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+        // For now we don't handle sad tab page. crbug.com/661609
+        if (tab.isShowingSadTab()) {
             return false;
         }
         // crbug.com/667781

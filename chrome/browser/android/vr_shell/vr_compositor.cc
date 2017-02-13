@@ -4,7 +4,10 @@
 
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 
+#include <utility>
+
 #include "cc/layers/layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -20,8 +23,7 @@ VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
 }
 
 VrCompositor::~VrCompositor() {
-  if (layer_)
-    RestoreLayer();
+  RestoreLayer();
 }
 
 void VrCompositor::UpdateLayerTreeHost() {}
@@ -29,8 +31,13 @@ void VrCompositor::UpdateLayerTreeHost() {}
 void VrCompositor::OnSwapBuffersCompleted(int pending_swap_buffers) {}
 
 void VrCompositor::SetLayer(content::WebContents* web_contents) {
-  if (layer_)
-    RestoreLayer();
+  RestoreLayer();
+  if (!web_contents) {
+    scoped_refptr<cc::SolidColorLayer> layer = cc::SolidColorLayer::Create();
+    layer->SetBackgroundColor(SK_ColorTRANSPARENT);
+    compositor_->SetRootLayer(std::move(layer));
+    return;
+  }
   ui::ViewAndroid* view_android = web_contents->GetNativeView();
 
   // When we pass the layer for the ContentViewCore to the compositor it may be
@@ -48,10 +55,13 @@ void VrCompositor::SetLayer(content::WebContents* web_contents) {
 }
 
 void VrCompositor::RestoreLayer() {
+  if (!layer_)
+    return;
   layer_->SetBackgroundColor(background_color_);
   if (layer_parent_) {
     layer_parent_->AddChild(layer_);
   }
+  layer_ = nullptr;
 }
 
 void VrCompositor::SurfaceDestroyed() {
@@ -63,7 +73,6 @@ void VrCompositor::SetWindowBounds(gfx::Size size) {
 }
 
 void VrCompositor::SurfaceChanged(jobject surface) {
-  DCHECK(surface);
   compositor_->SetSurface(surface);
 }
 

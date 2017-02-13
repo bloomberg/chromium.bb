@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.os.StrictMode;
 import android.view.MotionEvent;
@@ -25,6 +26,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -39,6 +41,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -78,17 +81,17 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private final View.OnTouchListener mTouchListener;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
 
-
     private long mNativeVrShell;
 
     private FrameLayout mUiCVCContainer;
+    private FrameLayout mRenderToSurfaceLayout;
+    private Surface mSurface;
     private View mPresentationView;
 
     // The tab that holds the main ContentViewCore.
     private Tab mTab;
+    private NativePage mNativePage;
 
-    // The ContentViewCore for the main content rect in VR.
-    private ContentViewCore mContentCVC;
     private WindowAndroid mOriginalWindowAndroid;
     private VrWindowAndroid mContentVrWindowAndroid;
 
@@ -159,17 +162,44 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
-                if (tab.getNativePage() != null || tab.isShowingSadTab()) {
-                    // For now we don't handle native pages. crbug.com/661609.
+                if (mNativeVrShell == 0) return;
+                if (tab.isShowingSadTab()) {
+                    // For now we don't support the sad tab page. crbug.com/661609.
                     forceExitVr();
+                    return;
+                }
+                if (mNativePage != null) {
+                    UiUtils.removeViewFromParent(mNativePage.getView());
+                    mNativePage = null;
+                    if (tab.getNativePage() == null) {
+                        nativeRestoreContentSurface(mNativeVrShell);
+                        mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
+                        mSurface = null;
+                    }
+                }
+                if (tab.getNativePage() != null) {
+                    mRenderToSurfaceLayout.setVisibility(View.VISIBLE);
+                    mNativePage = tab.getNativePage();
+                    if (mSurface == null) mSurface = nativeTakeContentSurface(mNativeVrShell);
+                    mRenderToSurfaceLayout.addView(mNativePage.getView(),
+                            new FrameLayout.LayoutParams(
+                                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                    mNativePage.getView().invalidate();
+                }
+                setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+                if (tab.getNativePage() == null && mTab.getContentViewCore() != null) {
+                    mTab.getContentViewCore().onAttachedToWindow();
+                    mTab.getContentViewCore().getContainerView().requestFocus();
+                    nativeSwapContents(mNativeVrShell, mTab.getContentViewCore().getWebContents());
+                } else {
+                    nativeSwapContents(mNativeVrShell, null);
                 }
             }
 
             @Override
             public void onWebContentsSwapped(
                     Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
-                setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+                onContentChanged(tab);
             }
 
             @Override
@@ -204,13 +234,27 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 return false;
             }
         };
+
+        mRenderToSurfaceLayout = new FrameLayout(mActivity) {
+            @Override
+            protected void dispatchDraw(Canvas canvas) {
+                if (mSurface == null) return;
+                final Canvas surfaceCanvas = mSurface.lockCanvas(null);
+                super.dispatchDraw(surfaceCanvas);
+                mSurface.unlockCanvasAndPost(surfaceCanvas);
+            }
+
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent event) {
+                return true;
+            }
+        };
+        mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
+        addView(mRenderToSurfaceLayout);
     }
 
     @Override
     public void initializeNative(Tab currentTab, boolean forWebVR) {
-        assert currentTab.getContentViewCore() != null;
-        mTab = currentTab;
-        mContentCVC = mTab.getContentViewCore();
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
 
         mUiVrWindowAndroid = new VrWindowAndroid(mActivity, mUiVirtualDisplay);
@@ -220,8 +264,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mUiCVC.initialize(ViewAndroidDelegate.createBasicDelegate(uiContentView),
                 uiContentView, mUiContents, mUiVrWindowAndroid);
 
-        mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
-                mContentVrWindowAndroid.getNativePointer(), mUiContents,
+        mNativeVrShell = nativeInit(mUiContents, mContentVrWindowAndroid.getNativePointer(),
                 mUiVrWindowAndroid.getNativePointer(), forWebVR, mDelegate,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering);
 
@@ -235,6 +278,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
         }
 
+        swapToForegroundTab();
+        createTabList();
+        mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
+        createTabModelSelectorTabObserver();
+
         nativeLoadUIContent(mNativeVrShell);
 
         mPresentationView.setOnTouchListener(mTouchListener);
@@ -247,13 +295,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mUiCVC.setBottomControlsHeight(0);
         mUiCVC.setTopControlsHeight(0, false);
         mUiVrWindowAndroid.onVisibilityChanged(true);
-
-        initializeTabForVR();
-        mTab.addObserver(mTabObserver);
-        mTab.updateFullscreenEnabledState();
-        createTabList();
-        mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
-        createTabModelSelectorTabObserver();
     }
 
     private void createTabList() {
@@ -280,24 +321,22 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             forceExitVr();
             return;
         }
-        mTab.removeObserver(mTabObserver);
-        restoreTabFromVR();
-        mTab.updateFullscreenEnabledState();
+        if (mTab != null) {
+            mTab.removeObserver(mTabObserver);
+            restoreTabFromVR();
+            mTab.updateFullscreenEnabledState();
+        }
 
         mTab = tab;
-        mContentCVC = mTab.getContentViewCore();
         initializeTabForVR();
-        nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
-        setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
         mTab.addObserver(mTabObserver);
         mTab.updateFullscreenEnabledState();
+        mTabObserver.onContentChanged(mTab);
     }
 
     private void initializeTabForVR() {
-        mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
+        mOriginalWindowAndroid = mTab.getWindowAndroid();
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
-        mContentCVC.onAttachedToWindow();
-        mContentCVC.getContainerView().requestFocus();
 
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
@@ -340,14 +379,35 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mLastContentWidth = width;
         mLastContentHeight = height;
         mLastContentDpr = dpr;
+
+        if (mNativePage != null) {
+            // Native pages don't listen to our DPR changes, so to get them to render at the correct
+            // size we need to make them larger.
+            DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
+            float dip = primaryDisplay.getDipScale();
+            width *= (dip / dpr);
+            height *= (dip / dpr);
+        }
+
         int surfaceWidth = (int) Math.ceil(width * dpr);
         int surfaceHeight = (int) Math.ceil(height * dpr);
 
         Point size = new Point(surfaceWidth, surfaceHeight);
         mContentVirtualDisplay.update(size, size, dpr, null, null, null);
-        mContentCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
-        mContentCVC.onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
+        if (mTab != null && mTab.getContentViewCore() != null) {
+            mTab.getContentViewCore().onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
+            mTab.getContentViewCore().onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
+        }
+        mRenderToSurfaceLayout.setLayoutParams(
+                new FrameLayout.LayoutParams(surfaceWidth, surfaceHeight));
         nativeContentPhysicalBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
+    }
+
+    @CalledByNative
+    public void contentSurfaceChanged() {
+        if (mSurface != null || mNativePage == null) return;
+        mSurface = nativeTakeContentSurface(mNativeVrShell);
+        mNativePage.getView().invalidate();
     }
 
     @Override
@@ -473,9 +533,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         };
     }
 
-    private native long nativeInit(WebContents contentWebContents,
-            long nativeContentWindowAndroid, WebContents uiWebContents, long nativeUiWindowAndroid,
-            boolean forWebVR, VrShellDelegate delegate, long gvrApi, boolean reprojectedRendering);
+    private native long nativeInit(WebContents uiWebContents, long nativeContentWindowAndroid,
+            long nativeUiWindowAndroid, boolean forWebVR, VrShellDelegate delegate, long gvrApi,
+            boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, WebContents webContents);
     private native void nativeLoadUIContent(long nativeVrShell);
@@ -494,4 +554,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeOnTabUpdated(long nativeVrShell, boolean incognito, int id,
             String title);
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
+    private native Surface nativeTakeContentSurface(long nativeVrShell);
+    private native void nativeRestoreContentSurface(long nativeVrShell);
 }

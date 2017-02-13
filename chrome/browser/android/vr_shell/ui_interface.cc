@@ -14,10 +14,9 @@
 
 namespace vr_shell {
 
-UiInterface::UiInterface(Mode initial_mode, bool fullscreen)
+UiInterface::UiInterface(Mode initial_mode)
     : omnibox_(base::MakeUnique<VrOmnibox>(this)) {
   SetMode(initial_mode);
-  SetFullscreen(fullscreen);
 }
 
 UiInterface::~UiInterface() {}

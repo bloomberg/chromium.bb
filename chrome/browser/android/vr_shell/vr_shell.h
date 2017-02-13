@@ -65,7 +65,6 @@ class VrMetricsHelper;
 class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  public:
   VrShell(JNIEnv* env, jobject obj,
-          content::WebContents* main_contents,
           ui::WindowAndroid* content_window,
           content::WebContents* ui_contents,
           ui::WindowAndroid* ui_window,
@@ -103,6 +102,11 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void OnTabRemoved(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     jboolean incognito, jint id);
+  base::android::ScopedJavaGlobalRef<jobject> TakeContentSurface(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void RestoreContentSurface(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
 
   void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something
@@ -117,7 +121,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   UiInterface* GetUiInterface();
   void OnDomContentsLoaded();
 
-  void SurfacesChanged(jobject content_surface, jobject ui_surface);
+  void UiSurfaceChanged(jobject surface);
+  void ContentSurfaceChanged(jobject surface);
   void GvrDelegateReady();
   void AppButtonPressed();
 
@@ -158,6 +163,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   ~VrShell() override;
   void PostToGlThreadWhenReady(const base::Closure& task);
   void SetContentPaused(bool paused);
+  void SetUiState();
 
   // content::WebContentsObserver implementation.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -189,7 +195,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   bool content_paused_ = false;
   bool webvr_mode_ = false;
 
-  content::WebContents* main_contents_;
+  content::WebContents* main_contents_ = nullptr;
+  ui::WindowAndroid* content_window_;
   std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* ui_contents_;
   std::unique_ptr<VrCompositor> ui_compositor_;
@@ -206,6 +213,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
   bool reprojected_rendering_;
+
+  jobject content_surface_ = nullptr;
 
   // TODO(mthiesse): Remove the need for this to be stored here.
   // crbug.com/674594
