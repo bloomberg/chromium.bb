@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,10 +38,11 @@ class SettingsResetPromptConfigTest : public ::testing::Test {
                                                               params, features);
   }
 
-  void SetDefaultFeatureParams() {
-    Parameters default_params = {
-        {"domain_hashes", base::StringPrintf("{\"%s\": \"1\"}", kDomainHash)}};
-    SetFeatureParams(default_params);
+  Parameters GetDefaultFeatureParams() {
+    return {
+        {"domain_hashes", base::StringPrintf("{\"%s\": \"1\"}", kDomainHash)},
+        {"delay_before_prompt_seconds", "42"},
+        {"use_modal_dialog", "true"}};
   }
 
   variations::testing::VariationParamsManager params_manager_;
@@ -50,77 +52,97 @@ class SettingsResetPromptConfigTest : public ::testing::Test {
 TEST_F(SettingsResetPromptConfigTest, IsPromptEnabled) {
   EXPECT_FALSE(SettingsResetPromptConfig::IsPromptEnabled());
 
-  SetDefaultFeatureParams();
+  SetFeatureParams(GetDefaultFeatureParams());
   EXPECT_TRUE(SettingsResetPromptConfig::IsPromptEnabled());
 }
 
 TEST_F(SettingsResetPromptConfigTest, Create) {
-  // Should return nullptr when feature is not enabled.
+  ASSERT_FALSE(SettingsResetPromptConfig::IsPromptEnabled());
+
+  // |Create()| should return nullptr when feature is not enabled.
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
+  // |Create()| should return false when feature is enabled, but parameters are
+  // |missing.
   scoped_feature_list_.InitAndEnableFeature(kSettingsResetPrompt);
-
-  // Check cases where |Create()| should return nullptr because of bad
-  // domain_hashes parameter.
-
-  // Parameter is missing.
+  ASSERT_TRUE(SettingsResetPromptConfig::IsPromptEnabled());
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
   SetFeatureParams(Parameters());
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
+  // |Create()| should return a config when parameters are all present.
+  // Individual parameters are tested separately.
+  SetFeatureParams(GetDefaultFeatureParams());
+  EXPECT_TRUE(SettingsResetPromptConfig::Create());
+}
+
+TEST_F(SettingsResetPromptConfigTest, DomainHashesParam) {
+  Parameters params = GetDefaultFeatureParams();
+
+  // First, test bad values for the "domain_hashes" parameter.
+
+  // Parameter is missing.
+  ASSERT_EQ(params.erase("domain_hashes"), 1U);
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
   // Parameter is an empty string.
-  SetFeatureParams(Parameters({{"domain_hashes", ""}}));
+  params["domain_hashes"] = "";
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Invalid JSON.
-  SetFeatureParams(Parameters({{"domain_hashes", "bad json"}}));
+  params["domain_hashes"] = "bad json";
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Parameter is not a JSON dictionary.
-  SetFeatureParams(Parameters({{"domain_hashes", "[3]"}}));
+  params["domain_hashes"] = "[3]";
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Bad dictionary key.
-  SetFeatureParams(Parameters({{"domain_hashes", "\"bad key\": \"1\""}}));
+  params["domain_hashes"] = "\"bad key\": \"1\"";
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Dictionary key is too short.
-  SetFeatureParams(Parameters({{"domain_hashes", "\"1234abc\": \"1\""}}));
+  params["domain_hashes"] = "\"1234abc\": \"1\"";
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Dictionary key has correct length, but is not a hex string.
   std::string non_hex_key(64, 'x');
-  SetFeatureParams(
-      Parameters({{"domain_hashes", base::StringPrintf("{\"%s\": \"1\"}",
-                                                       non_hex_key.c_str())}}));
+  params["domain_hashes"] =
+      base::StringPrintf("{\"%s\": \"1\"}", non_hex_key.c_str());
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Correct key but non-integer value.
-  SetFeatureParams(Parameters(
-      {{"domain_hashes",
-        base::StringPrintf("{\"%s\": \"not integer\"}", kDomainHash)}}));
+  params["domain_hashes"] =
+      base::StringPrintf("{\"%s\": \"not integer\"}", kDomainHash);
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Correct key but integer value that is too big.
   std::string too_big_int(99, '1');
-  SetFeatureParams(Parameters(
-      {{"domain_hashes", base::StringPrintf("{\"%s\": \"%s\"}", kDomainHash,
-                                            too_big_int.c_str())}}));
+  params["domain_hashes"] =
+      base::StringPrintf("{\"%s\": \"%s\"}", kDomainHash, too_big_int.c_str());
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Correct key but negative integer value.
-  SetFeatureParams(
-      Parameters({{"domain_hashes",
-                   base::StringPrintf("{\"%s\": \"-2\"}", kDomainHash)}}));
+  params["domain_hashes"] = base::StringPrintf("{\"%s\": \"-2\"}", kDomainHash);
+  SetFeatureParams(params);
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
 
   // Should return non-nullptr with a correct set of parameters.
-  SetDefaultFeatureParams();
+  SetFeatureParams(GetDefaultFeatureParams());
   EXPECT_TRUE(SettingsResetPromptConfig::Create());
 }
 
 TEST_F(SettingsResetPromptConfigTest, UrlToResetDomainId) {
-  SetDefaultFeatureParams();
+  SetFeatureParams(GetDefaultFeatureParams());
   auto config = SettingsResetPromptConfig::Create();
   ASSERT_TRUE(config);
 
@@ -164,12 +186,12 @@ TEST_F(SettingsResetPromptConfigTest, UrlToResetDomainIdTLDs) {
   const char kTLDHash5[] =
       "bffd48c8162466106a84f42945bfbbcfe501c9f0931219e02ce46e275f05ba51";
 
-  SetFeatureParams(Parameters(
-      {{"domain_hashes",
-        base::StringPrintf(
-            "{\"%s\": \"1\", \"%s\": \"2\", \"%s\": \"3\", \"%s\": \"4\", "
-            "\"%s\": \"5\"}",
-            kTLDHash1, kTLDHash2, kTLDHash3, kTLDHash4, kTLDHash5)}}));
+  Parameters params = GetDefaultFeatureParams();
+  params["domain_hashes"] = base::StringPrintf(
+      "{\"%s\": \"1\", \"%s\": \"2\", \"%s\": \"3\", \"%s\": \"4\", "
+      "\"%s\": \"5\"}",
+      kTLDHash1, kTLDHash2, kTLDHash3, kTLDHash4, kTLDHash5);
+  SetFeatureParams(params);
   auto config = SettingsResetPromptConfig::Create();
   ASSERT_TRUE(config);
 
@@ -184,6 +206,88 @@ TEST_F(SettingsResetPromptConfigTest, UrlToResetDomainIdTLDs) {
   EXPECT_LT(config->UrlToResetDomainId(GURL("http://uk")), 0);
   EXPECT_LT(config->UrlToResetDomainId(GURL("http://com.br")), 0);
   EXPECT_LT(config->UrlToResetDomainId(GURL("http://appspot.com")), 0);
+}
+
+TEST_F(SettingsResetPromptConfigTest, DelayBeforePromptSecondsParam) {
+  constexpr char kDelayParam[] = "delay_before_prompt_seconds";
+
+  Parameters params = GetDefaultFeatureParams();
+
+  // Missing parameter.
+  ASSERT_EQ(params.erase(kDelayParam), 1U);
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Empty parameter.
+  params[kDelayParam] = "";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Bad parameter value.
+  params[kDelayParam] = "not-a-number";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Negative parameter value.
+  params[kDelayParam] = "-3";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Correct parameter value.
+  params[kDelayParam] = "12";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_EQ(config->delay_before_prompt(), base::TimeDelta::FromSeconds(12));
+  }
+
+  // Correct edge case parameter value.
+  params["delay_before_prompt_seconds"] = "0";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_EQ(config->delay_before_prompt(), base::TimeDelta::FromSeconds(0));
+  }
+}
+
+TEST_F(SettingsResetPromptConfigTest, UseModalDialogParam) {
+  constexpr char kModalParam[] = "use_modal_dialog";
+
+  Parameters params = GetDefaultFeatureParams();
+
+  // Missing parameter.
+  ASSERT_EQ(params.erase(kModalParam), 1U);
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Empty parameter.
+  params[kModalParam] = "";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Bad parameter value.
+  params[kModalParam] = "not-a-boolean-value";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Correct parameter value.
+  params[kModalParam] = "true";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_TRUE(config->use_modal_dialog());
+  }
+
+  params[kModalParam] = "false";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_FALSE(config->use_modal_dialog());
+  }
 }
 
 }  // namespace safe_browsing

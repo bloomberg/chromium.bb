@@ -13,6 +13,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 
 class GURL;
 
@@ -40,6 +41,11 @@ class SettingsResetPromptConfig {
   // for and can be used for metrics reporting.
   virtual int UrlToResetDomainId(const GURL& url) const;
 
+  // The delay before showing the reset prompt after Chrome startup.
+  base::TimeDelta delay_before_prompt() const;
+  // Whether the prompt dialog should be modal.
+  bool use_modal_dialog() const;
+
   // TODO(alito): parameterize the set of things that we want to reset
   // for so that we can control it from the finch config. For example,
   // with functions like HomepageResetAllowed() etc.
@@ -58,6 +64,10 @@ class SettingsResetPromptConfig {
 
   // Map of 32 byte SHA256 hashes to integer domain IDs.
   std::unordered_map<SHA256Hash, int, SHA256HashHasher> domain_hashes_;
+
+  // Other feature parameters.
+  base::TimeDelta delay_before_prompt_;
+  bool use_modal_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptConfig);
 };

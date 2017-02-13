@@ -8,13 +8,13 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/url_formatter/url_fixer.h"
-#include "components/variations/variations_associated_data.h"
 #include "crypto/sha2.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -24,7 +24,6 @@ namespace safe_browsing {
 namespace {
 
 constexpr char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
-constexpr char kDomainHashesParamName[] = "domain_hashes";
 
 }  // namespace.
 
@@ -102,6 +101,14 @@ int SettingsResetPromptConfig::UrlToResetDomainId(const GURL& url) const {
   return -1;
 }
 
+base::TimeDelta SettingsResetPromptConfig::delay_before_prompt() const {
+  return delay_before_prompt_;
+}
+
+bool SettingsResetPromptConfig::use_modal_dialog() const {
+  return use_modal_dialog_;
+}
+
 // Implements the hash function for SHA256Hash objects. Simply uses the
 // first bytes of the SHA256 hash as its own hash.
 size_t SettingsResetPromptConfig::SHA256HashHasher::operator()(
@@ -123,6 +130,8 @@ enum SettingsResetPromptConfig::ConfigError : int {
   CONFIG_ERROR_BAD_DOMAIN_HASH = 4,
   CONFIG_ERROR_BAD_DOMAIN_ID = 5,
   CONFIG_ERROR_DUPLICATE_DOMAIN_HASH = 6,
+  CONFIG_ERROR_BAD_DELAY_BEFORE_PROMPT_SECONDS_PARAM = 7,
+  CONFIG_ERROR_BAD_USE_MODAL_DIALOG_PARAM = 8,
   CONFIG_ERROR_MAX
 };
 
@@ -130,12 +139,48 @@ bool SettingsResetPromptConfig::Init() {
   if (!IsPromptEnabled())
     return false;
 
-  std::string domain_hashes_json = variations::GetVariationParamValueByFeature(
-      kSettingsResetPrompt, kDomainHashesParamName);
+  // Parse the domain_hashes feature parameter.
+  std::string domain_hashes_json = base::GetFieldTrialParamValueByFeature(
+      kSettingsResetPrompt, "domain_hashes");
   ConfigError error = ParseDomainHashes(domain_hashes_json);
-  UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError", error,
+  if (error != CONFIG_ERROR_OK) {
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError", error,
+                              CONFIG_ERROR_MAX);
+    return false;
+  }
+
+  // Get the delay_before_prompt feature parameter.
+  int delay_before_prompt_seconds = base::GetFieldTrialParamByFeatureAsInt(
+      kSettingsResetPrompt, "delay_before_prompt_seconds", -1);
+  if (delay_before_prompt_seconds < 0) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SettingsResetPrompt.ConfigError",
+        CONFIG_ERROR_BAD_DELAY_BEFORE_PROMPT_SECONDS_PARAM, CONFIG_ERROR_MAX);
+    return false;
+  }
+  delay_before_prompt_ =
+      base::TimeDelta::FromSeconds(delay_before_prompt_seconds);
+
+  // Get the use_modal_dialog feature parameter. Since
+  // |GetFieldTrialParamByFeatureAsBool| always returns true or false and
+  // ignores any errors that are encountered, the parsing from string to bool is
+  // done explicitly here.
+  std::string use_modal_dialog_string = base::GetFieldTrialParamValueByFeature(
+      kSettingsResetPrompt, "use_modal_dialog");
+  if (use_modal_dialog_string == "true") {
+    use_modal_dialog_ = true;
+  } else if (use_modal_dialog_string == "false") {
+    use_modal_dialog_ = false;
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError",
+                              CONFIG_ERROR_BAD_USE_MODAL_DIALOG_PARAM,
+                              CONFIG_ERROR_MAX);
+    return false;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError", CONFIG_ERROR_OK,
                             CONFIG_ERROR_MAX);
-  return error == CONFIG_ERROR_OK;
+  return true;
 }
 
 SettingsResetPromptConfig::ConfigError
