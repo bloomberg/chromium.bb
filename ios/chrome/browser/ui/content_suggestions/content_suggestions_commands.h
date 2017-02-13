@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 
+class GURL;
+
 // Commands protocol for the ContentSuggestionsViewController.
 @protocol ContentSuggestionsCommands
 
@@ -16,6 +18,8 @@
 - (void)openFirstPageOfReadingList;
 // Opens the favicon associated with the cell with the |index|.
 - (void)openFaviconAtIndex:(NSInteger)index;
+// Opens the |URL|.
+- (void)openURL:(const GURL&)url;
 
 @end
 

@@ -12,13 +12,13 @@
 
 namespace {
 const CGFloat kImageSize = 100;
+const CGFloat kStandardSpacing = 8;
 }
 
 @interface ContentSuggestionsArticleItem ()
 
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, copy) NSString* subtitle;
-@property(nonatomic, strong) UIImage* image;
 
 @end
 
@@ -27,17 +27,20 @@ const CGFloat kImageSize = 100;
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
 @synthesize image = _image;
+@synthesize articleURL = _articleURL;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
                     subtitle:(NSString*)subtitle
-                       image:(UIImage*)image {
+                       image:(UIImage*)image
+                         url:(const GURL&)url {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [ContentSuggestionsArticleCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
     _image = image;
+    _articleURL = url;
   }
   return self;
 }
@@ -63,34 +66,41 @@ const CGFloat kImageSize = 100;
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    UIView* imageContainer = [[UIView alloc] initWithFrame:CGRectZero];
 
     _subtitleLabel.numberOfLines = 0;
+    _imageView.contentMode = UIViewContentModeScaleAspectFit;
 
-    imageContainer.translatesAutoresizingMaskIntoConstraints = NO;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [imageContainer addSubview:_imageView];
-    [self.contentView addSubview:imageContainer];
+    [self.contentView addSubview:_imageView];
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_subtitleLabel];
 
-    ApplyVisualConstraintsWithMetrics(
+    [NSLayoutConstraint activateConstraints:@[
+      [self.contentView.bottomAnchor
+          constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
+                                      constant:kStandardSpacing],
+      [self.contentView.bottomAnchor
+          constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
+                                      constant:kStandardSpacing],
+      [_imageView.widthAnchor constraintLessThanOrEqualToConstant:kImageSize],
+      [_imageView.heightAnchor constraintLessThanOrEqualToConstant:kImageSize]
+    ]];
+
+    ApplyVisualConstraints(
         @[
-          @"H:|-[title]-[imageContainer(imageSize)]-|",
-          @"H:|[image(imageSize)]", @"H:|-[text]-[imageContainer]",
-          @"V:|[image(imageSize)]", @"V:|-[title]-[text]-|",
-          @"V:|-[imageContainer(>=imageSize)]-|"
+          @"H:|-[title]-[image]-|",
+          @"H:|-[text]-[image]",
+          @"V:|-[title]-[text]-|",
+          @"V:|-[image]",
         ],
         @{
           @"image" : _imageView,
-          @"imageContainer" : imageContainer,
           @"title" : _titleLabel,
           @"text" : _subtitleLabel
-        },
-        @{ @"imageSize" : @(kImageSize) });
+        });
   }
   return self;
 }

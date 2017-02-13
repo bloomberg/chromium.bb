@@ -162,7 +162,7 @@ char kAssociatedProtocolNameKey;
       return [self longLongDescriptionAtIndex:index];
     // Add cases as needed here.
     default:
-      return [NSString stringWithFormat:@"<Unknown Type:%c>", *type];
+      return [NSString stringWithFormat:@"<Unknown Type:%s>", type];
   }
 }
 

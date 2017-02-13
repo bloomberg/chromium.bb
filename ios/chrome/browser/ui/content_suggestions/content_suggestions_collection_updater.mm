@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,7 +69,7 @@
   ContentSuggestionsFaviconItem* faviconItem =
       [[ContentSuggestionsFaviconItem alloc] initWithType:ItemTypeFavicon];
   for (NSInteger i = 0; i < 6; i++) {
-    [faviconItem addFavicon:[UIImage imageNamed:@"bookmark_gray_star"]
+    [faviconItem addFavicon:[UIImage imageNamed:@"bookmark_gray_star_large"]
                   withTitle:@"Super website! Incredible!"];
   }
   faviconItem.delegate = _collectionViewController;
@@ -89,8 +90,8 @@
                               title:@"Title of an Article"
                            subtitle:@"This is the subtitle of an article, can "
                                     @"spawn on multiple lines"
-                              image:[UIImage
-                                        imageNamed:@"distillation_success"]]
+                              image:[UIImage imageNamed:@"distillation_success"]
+                                url:GURL()]
         toSectionWithIdentifier:sectionIdentifier];
 
     // Expandable Item.

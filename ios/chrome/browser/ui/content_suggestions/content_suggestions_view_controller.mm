@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item_actions.h"
@@ -69,8 +71,15 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeStack) {
-    [self.suggestionCommandHandler openReadingList];
+  switch (item.type) {
+    case ItemTypeStack:
+      [self.suggestionCommandHandler openReadingList];
+      break;
+    case ItemTypeArticle:
+      [self openArticle:item];
+      break;
+    default:
+      break;
   }
 }
 
@@ -168,6 +177,12 @@ const NSTimeInterval kAnimationDuration = 0.35;
                    [self.collectionView.collectionViewLayout invalidateLayout];
                  }];
   }
+}
+
+- (void)openArticle:(CollectionViewItem*)item {
+  ContentSuggestionsArticleItem* article =
+      base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(item);
+  [self.suggestionCommandHandler openURL:article.articleURL];
 }
 
 @end

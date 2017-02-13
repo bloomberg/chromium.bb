@@ -84,4 +84,7 @@
 - (void)openFaviconAtIndex:(NSInteger)index {
 }
 
+- (void)openURL:(const GURL&)url {
+}
+
 @end

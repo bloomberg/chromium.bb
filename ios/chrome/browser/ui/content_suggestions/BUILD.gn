@@ -36,6 +36,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
+    "//url",
   ]
   public_deps = [
     "//ios/third_party/material_components_ios",
@@ -58,5 +59,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/collection_view",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//url",
   ]
 }
