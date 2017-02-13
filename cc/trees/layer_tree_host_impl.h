@@ -794,6 +794,8 @@ class CC_EXPORT LayerTreeHostImpl
   std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>
       scrollbar_animation_controllers_;
 
+  ScrollbarAnimationController* captured_scrollbar_animation_controller_;
+
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
   std::unique_ptr<SynchronousTaskGraphRunner>

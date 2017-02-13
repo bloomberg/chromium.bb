@@ -11717,6 +11717,16 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
       scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
+
+  // Capture scrollbar_1, then move mouse to scrollbar_2's layer, should post an
+  // event to fade out scrollbar_1.
+  animation_task_ = base::Closure();
+
+  host_impl_->MouseDown();
+  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  host_impl_->MouseUp();
+
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
 }
 
 TEST_F(LayerTreeHostImplTest,

@@ -247,6 +247,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
       mutator_host_(std::move(mutator_host)),
+      captured_scrollbar_animation_controller_(nullptr),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       task_graph_runner_(task_graph_runner),
@@ -3237,15 +3238,17 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 void LayerTreeHostImpl::MouseDown() {
   ScrollbarAnimationController* animation_controller =
       ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
-  if (animation_controller)
+  if (animation_controller) {
     animation_controller->DidMouseDown();
+    captured_scrollbar_animation_controller_ = animation_controller;
+  }
 }
 
 void LayerTreeHostImpl::MouseUp() {
-  ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
-  if (animation_controller)
-    animation_controller->DidMouseUp();
+  if (captured_scrollbar_animation_controller_) {
+    captured_scrollbar_animation_controller_->DidMouseUp();
+    captured_scrollbar_animation_controller_ = nullptr;
+  }
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
