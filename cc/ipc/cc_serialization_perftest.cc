@@ -286,8 +286,16 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100_4000) {
                          UseSingleSharedQuadState::YES);
 }
 
+// Done for https://crbug.com/691730. Test is too slow as is.
+#if defined(OS_ANDROID)
+#define MAYBE_DelegatedFrame_ManyQuads_10_100000 \
+  DISABLED_DelegatedFrame_ManyQuads_10_100000
+#else
+#define MAYBE_DelegatedFrame_ManyQuads_10_100000 \
+  DelegatedFrame_ManyQuads_10_100000
+#endif
 // Test for compositor frames with 10 render pass and each with 100000 quads.
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_10_100000) {
+TEST_F(CCSerializationPerfTest, MAYBE_DelegatedFrame_ManyQuads_10_100000) {
   // One shared quad state for all quads in one render pass.
   RunCompositorFrameTest("DelegatedFrame_ManyQuads_10_100000", 100000, 10,
                          UseSingleSharedQuadState::YES);
