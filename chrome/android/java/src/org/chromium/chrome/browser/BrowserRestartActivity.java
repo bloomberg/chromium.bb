@@ -8,10 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Process;
-import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -28,58 +25,40 @@ import org.chromium.chrome.browser.util.IntentUtils;
  * AlarmManager, which requires a minimum alarm duration of 5 seconds: https://crbug.com/515919.
  */
 public class BrowserRestartActivity extends Activity {
-    public static final String ACTION_START_WATCHDOG =
-            "org.chromium.chrome.browser.BrowserRestartActivity.start_watchdog";
-    public static final String ACTION_KILL_PROCESS =
-            "org.chromium.chrome.browser.BrowserRestartActivity.kill_process";
-
     public static final String EXTRA_MAIN_PID =
             "org.chromium.chrome.browser.BrowserRestartActivity.main_pid";
     public static final String EXTRA_RESTART =
             "org.chromium.chrome.browser.BrowserRestartActivity.restart";
 
-    private static final String TAG = "BrowserRestartActivity";
-
-    // The amount of time to wait for Chrome to destroy all the activities of the main process
-    // before this Activity forcefully kills it.
-    private static final long WATCHDOG_DELAY_MS = 1000;
+    /**
+     * Creates an Intent to start the {@link BrowserRestartActivity}.  Must only be called by the
+     * {@link org.chromium.chrome.browser.init.ChromeLifetimeController}.
+     * @param context       Context to use when constructing the Intent.
+     * @param restartChrome Whether or not to restart Chrome after killing the process.
+     * @return Intent that can be used to restart Chrome.
+     */
+    public static Intent createIntent(Context context, boolean restartChrome) {
+        Intent intent = new Intent();
+        intent.setClassName(context.getPackageName(), BrowserRestartActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(BrowserRestartActivity.EXTRA_MAIN_PID, Process.myPid());
+        intent.putExtra(BrowserRestartActivity.EXTRA_RESTART, restartChrome);
+        return intent;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handleIntent(getIntent());
-    }
 
-    @Override
-    public void onNewIntent(Intent intent) {
-        handleIntent(intent);
-    }
-
-    private void handleIntent(final Intent intent) {
-        if (TextUtils.equals(ACTION_START_WATCHDOG, intent.getAction())) {
-            // Kick off a timer to kill the process after a delay.
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    destroyProcess(intent);
-                }
-            }, WATCHDOG_DELAY_MS);
-        } else if (TextUtils.equals(ACTION_KILL_PROCESS, intent.getAction())) {
-            destroyProcess(intent);
-        } else {
-            assert false;
-        }
-    }
-
-    private void destroyProcess(Intent intent) {
         // Kill the main Chrome process.
+        Intent intent = getIntent();
         int mainBrowserPid = IntentUtils.safeGetIntExtra(
                 intent, BrowserRestartActivity.EXTRA_MAIN_PID, -1);
         assert mainBrowserPid != -1;
+        assert mainBrowserPid != Process.myPid();
         Process.killProcess(mainBrowserPid);
 
-        // Fire an Intent to restart Chrome.
+        // Fire an Intent to restart Chrome, if necessary.
         boolean restart = IntentUtils.safeGetBooleanExtra(
                 intent, BrowserRestartActivity.EXTRA_RESTART, false);
         if (restart) {
