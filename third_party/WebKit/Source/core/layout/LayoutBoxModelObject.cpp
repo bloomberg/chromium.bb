@@ -1176,6 +1176,7 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(
 
   LayoutUnit x = borderLeft() + paddingLeft();
   LayoutUnit maxX = width - borderRight() - paddingRight();
+  LayoutUnit caretWidth = frameView()->caretWidth();
 
   switch (alignment) {
     case AlignLeft:
@@ -1190,12 +1191,12 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(
         x -= textIndentOffset / 2;
       break;
     case AlignRight:
-      x = maxX - caretWidth();
+      x = maxX - caretWidth;
       if (!currentStyle.isLeftToRightDirection())
         x -= textIndentOffset;
       break;
   }
-  x = std::min(x, (maxX - caretWidth()).clampNegativeToZero());
+  x = std::min(x, (maxX - caretWidth).clampNegativeToZero());
 
   const Font& font = style()->font();
   const SimpleFontData* fontData = font.primaryFont();
@@ -1211,8 +1212,8 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(
       height;
   LayoutUnit y = paddingTop() + borderTop() + (verticalSpace / 2);
   return currentStyle.isHorizontalWritingMode()
-             ? LayoutRect(x, y, caretWidth(), height)
-             : LayoutRect(y, x, height, caretWidth());
+             ? LayoutRect(x, y, caretWidth, height)
+             : LayoutRect(y, x, height, caretWidth);
 }
 
 const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(

@@ -835,6 +835,8 @@ class CORE_EXPORT FrameView final
   // our scrollbars (see: computeScrollbarExistence).
   void visualViewportScrollbarsChanged();
 
+  LayoutUnit caretWidth() const;
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);

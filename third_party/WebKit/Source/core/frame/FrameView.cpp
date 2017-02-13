@@ -5174,4 +5174,8 @@ void FrameView::setAnimationHost(
   m_animationHost = std::move(host);
 }
 
+LayoutUnit FrameView::caretWidth() const {
+  return LayoutUnit(getHostWindow()->windowToViewportScalar(1));
+}
+
 }  // namespace blink

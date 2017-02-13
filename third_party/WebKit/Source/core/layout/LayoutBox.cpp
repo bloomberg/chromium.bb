@@ -4550,13 +4550,13 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box,
   // They never refer to children.
   // FIXME: Paint the carets inside empty blocks differently than the carets
   // before/after elements.
-
-  LayoutRect rect(location(), LayoutSize(caretWidth(), size().height()));
+  LayoutUnit caretWidth = frameView()->caretWidth();
+  LayoutRect rect(location(), LayoutSize(caretWidth, size().height()));
   bool ltr =
       box ? box->isLeftToRightDirection() : style()->isLeftToRightDirection();
 
   if ((!caretOffset) ^ ltr)
-    rect.move(LayoutSize(size().width() - caretWidth(), LayoutUnit()));
+    rect.move(LayoutSize(size().width() - caretWidth, LayoutUnit()));
 
   if (box) {
     RootInlineBox& rootBox = box->root();

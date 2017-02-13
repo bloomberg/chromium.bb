@@ -28,6 +28,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/frame/FrameView.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
@@ -111,12 +112,12 @@ LayoutRect LayoutSVGInlineText::localCaretRect(InlineBox* box,
   if (static_cast<unsigned>(caretOffset) < textBox->start() + textBox->len()) {
     LayoutRect rect = textBox->localSelectionRect(caretOffset, caretOffset + 1);
     LayoutUnit x = box->isLeftToRightDirection() ? rect.x() : rect.maxX();
-    return LayoutRect(x, rect.y(), caretWidth(), rect.height());
+    return LayoutRect(x, rect.y(), frameView()->caretWidth(), rect.height());
   }
 
   LayoutRect rect = textBox->localSelectionRect(caretOffset - 1, caretOffset);
   LayoutUnit x = box->isLeftToRightDirection() ? rect.maxX() : rect.x();
-  return LayoutRect(x, rect.y(), caretWidth(), rect.height());
+  return LayoutRect(x, rect.y(), frameView()->caretWidth(), rect.height());
 }
 
 FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const {

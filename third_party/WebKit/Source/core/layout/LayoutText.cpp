@@ -763,11 +763,12 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   // Go ahead and round left to snap it to the nearest pixel.
   LayoutUnit left = box->positionForOffset(caretOffset);
+  LayoutUnit caretWidth = frameView()->caretWidth();
 
   // Distribute the caret's width to either side of the offset.
-  LayoutUnit caretWidthLeftOfOffset = caretWidth() / 2;
+  LayoutUnit caretWidthLeftOfOffset = caretWidth / 2;
   left -= caretWidthLeftOfOffset;
-  LayoutUnit caretWidthRightOfOffset = caretWidth() - caretWidthLeftOfOffset;
+  LayoutUnit caretWidthRightOfOffset = caretWidth - caretWidthLeftOfOffset;
 
   left = LayoutUnit(left.round());
 
@@ -817,7 +818,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   if (rightAligned) {
     left = std::max(left, leftEdge);
-    left = std::min(left, rootRight - caretWidth());
+    left = std::min(left, rootRight - caretWidth);
   } else {
     left = std::min(left, rightEdge - caretWidthRightOfOffset);
     left = std::max(left, rootLeft);
@@ -825,8 +826,8 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   return LayoutRect(
       style()->isHorizontalWritingMode()
-          ? IntRect(left.toInt(), top, caretWidth().toInt(), height)
-          : IntRect(top, left.toInt(), height, caretWidth().toInt()));
+          ? IntRect(left.toInt(), top, caretWidth.toInt(), height)
+          : IntRect(top, left.toInt(), height, caretWidth.toInt()));
 }
 
 ALWAYS_INLINE float LayoutText::widthFromFont(

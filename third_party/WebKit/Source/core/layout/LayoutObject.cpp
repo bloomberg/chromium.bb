@@ -28,6 +28,9 @@
 
 #include "core/layout/LayoutObject.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "core/animation/ElementAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -85,8 +88,6 @@
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <memory>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -98,11 +99,6 @@ namespace {
 static bool gModifyLayoutTreeStructureAnyState = false;
 
 }  // namespace
-
-const LayoutUnit& caretWidth() {
-  static LayoutUnit gCaretWidth(1);
-  return gCaretWidth;
-}
 
 #if DCHECK_IS_ON()
 

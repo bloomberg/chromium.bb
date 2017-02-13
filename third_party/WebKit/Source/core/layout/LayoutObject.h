@@ -84,8 +84,6 @@ enum MarkingBehavior {
 
 enum ScheduleRelayoutBehavior { ScheduleRelayout, DontScheduleRelayout };
 
-const LayoutUnit& caretWidth();
-
 struct AnnotatedRegionValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   bool operator==(const AnnotatedRegionValue& o) const {
