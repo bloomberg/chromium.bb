@@ -17,9 +17,7 @@
 
     var sampleRate = 44100;
 
-    // The long render length (20 seconds) is to make sure the |onstatechange|
-    // event gets fired to start the source, which can take quite a bit of time.
-    var renderLength = 20;
+    var renderLength = 1;
     
     var context = new OfflineAudioContext(1, sampleRate * renderLength, sampleRate);
     var osc = context.createOscillator();

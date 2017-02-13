@@ -12,29 +12,20 @@ function runLateStartTest(audit, context, node) {
 
   node.connect(context.destination);
 
-  // Task: define |onstatechange| and start rendering.
+  // Task: schedule a suspend and start rendering.
   audit.defineTask('test-late-start', function (done) {
-
-    // Trigger playback at 0 second. The assumptions are:
-    //
-    // 1) The specified timing of start() call is already passed in terms of
-    // the context time. So the argument |0| will be clamped to the current
-    // context time.
-    // 2) The |onstatechange| event will be fired later than the 0 second
-    // context time.
-    //
+    // The node's start time will be clamped to the render quantum boundary
+    // >0.1 sec. Thus the rendered buffer will have non-zero frames.
     // See issue: crbug.com/462167
-    context.onstatechange = function () {
-      if (context.state === 'running') {
-        node.start(0);
-      }
-    };
+    context.suspend(0.1).then(() => {
+      node.start(0);
+      context.resume();
+    });
 
     // Start rendering and verify result: this verifies if 1) the rendered
     // buffer contains at least one non-zero value and 2) the non-zero value is
     // found later than the first output sample.
     context.startRendering().then(function (buffer) {
-
       var nonZeroValueIndex = -1;
       var channelData = buffer.getChannelData(0);
       for (var i = 0; i < channelData.length; i++) {
@@ -44,13 +35,14 @@ function runLateStartTest(audit, context, node) {
         }
       }
 
-      if (nonZeroValueIndex === -1) {
-        testFailed('The rendered buffer was all zeros.');
-      } else if (nonZeroValueIndex === 0) {
-        testFailed('The first sample was non-zero value. It should be zero.');
-      } else {
-        testPassed('The rendered buffer contains non-zero values after the first sample.');
-      }
+      var success =
+          Should('The index of first non-zero value',nonZeroValueIndex)
+              .notBeEqualTo(-1);
+      success = Should('The first sample value', channelData[0])
+          .beEqualTo(0) && success;
+      Should('The rendered buffer', success)
+          .summarize('contains non-zero values after the first sample',
+                     'was all zeros or has non-zero first sample.');
 
       done();
     });
