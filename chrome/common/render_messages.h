@@ -28,7 +28,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/features/features.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
+#include "third_party/WebKit/public/web/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
@@ -157,7 +157,7 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
 
 // Updates the window features of the render view.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
-                    blink::WebWindowFeatures /* window_features */)
+                    blink::mojom::WindowFeatures /* window_features */)
 
 // Responds to the request for a thumbnail.
 // Thumbnail data will be empty is a thumbnail could not be produced.

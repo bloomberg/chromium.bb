@@ -15,11 +15,8 @@
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "extensions/features/features.h"
+#include "third_party/WebKit/public/web/window_features.mojom.h"
 #include "url/gurl.h"
-
-namespace blink {
-struct WebWindowFeatures;
-}
 
 namespace web_cache {
 class WebCacheImpl;
@@ -55,7 +52,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
                                     bool animate);
 #endif
   void OnGetWebApplicationInfo();
-  void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
+  void OnSetWindowFeatures(const blink::mojom::WindowFeatures& window_features);
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);

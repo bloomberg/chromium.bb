@@ -756,7 +756,6 @@ source_set("shared_typemap_traits") {
   visibility = [ ":*" ]
   sources = [
     "web/ConsoleMessageStructTraits.cpp",
-    "web/WindowFeaturesStructTraits.cpp",
   ]
   deps = [
     ":mojo_bindings_shared__generator",

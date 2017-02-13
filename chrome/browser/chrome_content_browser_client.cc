@@ -380,7 +380,6 @@
 #endif
 
 using base::FileDescriptor;
-using blink::WebWindowFeatures;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::BrowsingDataFilterBuilder;
@@ -2319,7 +2318,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const content::Referrer& referrer,
     const std::string& frame_name,
     WindowOpenDisposition disposition,
-    const WebWindowFeatures& features,
+    const blink::mojom::WindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,

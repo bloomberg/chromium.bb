@@ -71,6 +71,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -1452,7 +1453,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
     params->target_url = request.url();
     params->referrer = GetReferrerFromRequest(creator, request);
   }
-  params->features = features;
+  params->features = ConvertWebWindowFeaturesToMojoWindowFeatures(features);
 
   // We preserve this information before sending the message since |params| is
   // moved on send.

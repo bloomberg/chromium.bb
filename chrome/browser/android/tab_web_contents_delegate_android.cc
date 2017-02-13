@@ -42,7 +42,6 @@
 #include "content/public/common/file_chooser_params.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -331,7 +330,7 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
     if (popup_blocker_helper->MaybeBlockPopup(nav_params,
-                                              blink::WebWindowFeatures())) {
+                                              blink::mojom::WindowFeatures())) {
       return nullptr;
     }
   }

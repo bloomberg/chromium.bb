@@ -204,7 +204,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
@@ -241,7 +240,6 @@ using content::WebContents;
 using extensions::Extension;
 using ui::WebDialogDelegate;
 using web_modal::WebContentsModalDialogManager;
-using blink::WebWindowFeatures;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1414,8 +1412,8 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
         !params.user_gesture &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePopupBlocking)) {
-      if (popup_blocker_helper->MaybeBlockPopup(nav_params,
-                                                WebWindowFeatures())) {
+      if (popup_blocker_helper->MaybeBlockPopup(
+              nav_params, blink::mojom::WindowFeatures())) {
         return NULL;
       }
     }

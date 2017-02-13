@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "url/gurl.h"
 
 BlockedWindowParams::BlockedWindowParams(
@@ -17,7 +16,7 @@ BlockedWindowParams::BlockedWindowParams(
     const content::Referrer& referrer,
     const std::string& frame_name,
     WindowOpenDisposition disposition,
-    const blink::WebWindowFeatures& features,
+    const blink::mojom::WindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed,
     int render_process_id,
@@ -30,8 +29,7 @@ BlockedWindowParams::BlockedWindowParams(
       user_gesture_(user_gesture),
       opener_suppressed_(opener_suppressed),
       render_process_id_(render_process_id),
-      opener_render_frame_id_(opener_render_frame_id) {
-}
+      opener_render_frame_id_(opener_render_frame_id) {}
 
 BlockedWindowParams::BlockedWindowParams(const BlockedWindowParams& other) =
     default;
@@ -55,13 +53,13 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
   nav_params.user_gesture = user_gesture_;
   nav_params.created_with_opener = !opener_suppressed_;
   nav_params.window_bounds = web_contents->GetContainerBounds();
-  if (features_.xSet)
+  if (features_.has_x)
     nav_params.window_bounds.set_x(features_.x);
-  if (features_.ySet)
+  if (features_.has_y)
     nav_params.window_bounds.set_y(features_.y);
-  if (features_.widthSet)
+  if (features_.has_width)
     nav_params.window_bounds.set_width(features_.width);
-  if (features_.heightSet)
+  if (features_.has_height)
     nav_params.window_bounds.set_height(features_.height);
 
   nav_params.disposition = disposition_;

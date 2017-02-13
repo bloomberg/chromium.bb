@@ -23,7 +23,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
+#include "third_party/WebKit/public/web/window_features.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -252,20 +252,20 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(presentation_receiver)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebWindowFeatures)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)
   IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(xSet)
+  IPC_STRUCT_TRAITS_MEMBER(has_x)
   IPC_STRUCT_TRAITS_MEMBER(y)
-  IPC_STRUCT_TRAITS_MEMBER(ySet)
+  IPC_STRUCT_TRAITS_MEMBER(has_y)
   IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(widthSet)
+  IPC_STRUCT_TRAITS_MEMBER(has_width)
   IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(heightSet)
-  IPC_STRUCT_TRAITS_MEMBER(menuBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(statusBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(toolBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(locationBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(scrollbarsVisible)
+  IPC_STRUCT_TRAITS_MEMBER(has_height)
+  IPC_STRUCT_TRAITS_MEMBER(menu_bar_visible)
+  IPC_STRUCT_TRAITS_MEMBER(status_bar_visible)
+  IPC_STRUCT_TRAITS_MEMBER(tool_bar_visible)
+  IPC_STRUCT_TRAITS_MEMBER(location_bar_visible)
+  IPC_STRUCT_TRAITS_MEMBER(scrollbars_visible)
   IPC_STRUCT_TRAITS_MEMBER(resizable)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen)
   IPC_STRUCT_TRAITS_MEMBER(dialog)

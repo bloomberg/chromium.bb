@@ -33,6 +33,7 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/web/window_features.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -50,10 +51,6 @@ namespace base {
 class CommandLine;
 class FilePath;
 class SchedulerWorkerPoolParams;
-}
-
-namespace blink {
-struct WebWindowFeatures;
 }
 
 namespace gfx {
@@ -512,7 +509,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const Referrer& referrer,
       const std::string& frame_name,
       WindowOpenDisposition disposition,
-      const blink::WebWindowFeatures& features,
+      const blink::mojom::WindowFeatures& features,
       bool user_gesture,
       bool opener_suppressed,
       ResourceContext* context,
