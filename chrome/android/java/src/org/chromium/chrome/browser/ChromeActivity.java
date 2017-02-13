@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
@@ -1091,7 +1092,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     ApiCompatibilityUtils.getColor(getResources(),
                             R.color.resizing_background_color)));
         } else {
-            removeWindowBackground();
+            // Post the removeWindowBackground() call as a separate task, as doing it synchronously
+            // here can cause redrawing glitches. See crbug.com/686662 for an example problem.
+            Handler handler = new Handler();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    removeWindowBackground();
+                }
+            });
         }
 
         mRemoveWindowBackgroundDone = true;
