@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/gcapi/google_update_util.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/variations/variations_experiment_util.h"
 
 namespace {
@@ -38,10 +38,8 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   const bool system_level = shell_mode == GCAPI_INVOKED_UAC_ELEVATION;
 
   base::string16 original_labels;
-  if (!GoogleUpdateSettings::ReadExperimentLabels(system_level,
-                                                  &original_labels)) {
+  if (!gcapi_internals::ReadExperimentLabels(system_level, &original_labels))
     return false;
-  }
 
   // Split the original labels by the label separator.
   std::vector<base::string16> entries = base::SplitString(
@@ -65,8 +63,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   new_labels.append(
       gcapi_internals::GetGCAPIExperimentLabel(brand_code, label));
 
-  return GoogleUpdateSettings::SetExperimentLabels(system_level,
-                                                   new_labels);
+  return gcapi_internals::SetExperimentLabels(system_level, new_labels);
 }
 
 }  // namespace

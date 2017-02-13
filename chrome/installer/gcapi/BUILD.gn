@@ -21,7 +21,6 @@ shared_library("gcapi") {
     ":gcapi_dll_version",
     ":lib",
     "//base",
-    "//chrome/install_static:install_static_util",
   ]
 }
 
@@ -47,6 +46,8 @@ source_set("lib") {
     "gcapi_omaha_experiment.h",
     "gcapi_reactivation.cc",
     "gcapi_reactivation.h",
+    "google_update_util.cc",
+    "google_update_util.h",
   ]
 
   deps = [
