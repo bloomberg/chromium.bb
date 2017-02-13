@@ -301,6 +301,10 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));
     bb_view_->set_owned_by_client();
+    // Real bookmark bars get a BookmarkBarViewBackground. Set an opaque
+    // background here just to avoid triggering subpixel rendering issues.
+    bb_view_->set_background(
+        views::Background::CreateSolidBackground(SK_ColorWHITE));
     bb_view_->SetPageNavigator(&navigator_);
 
     AddTestData(CreateBigMenu());

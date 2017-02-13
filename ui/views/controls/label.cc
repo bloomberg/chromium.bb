@@ -30,6 +30,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
@@ -450,8 +451,30 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
 
 void Label::PaintText(gfx::Canvas* canvas) {
   MaybeBuildRenderTextLines();
+
   for (size_t i = 0; i < lines_.size(); ++i)
     lines_[i]->Draw(canvas);
+
+#if DCHECK_IS_ON()
+  // Attempt to ensure that if we're using subpixel rendering, we're painting
+  // to an opaque background. What we don't want to find is an ancestor in the
+  // hierarchy that paints to a non-opaque layer.
+  if (lines_.empty() || lines_[0]->subpixel_rendering_suppressed())
+    return;
+
+  for (View* view = this; view; view = view->parent()) {
+    if (view->background() &&
+        SkColorGetA(view->background()->get_color()) == SK_AlphaOPAQUE)
+      break;
+
+    if (view->layer()) {
+      DCHECK(view->layer()->fills_bounds_opaquely())
+          << " Ancestor view has a non-opaque layer: " << view->GetClassName()
+          << " with ID " << view->id();
+      break;
+    }
+  }
+#endif
 }
 
 void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -964,7 +987,8 @@ void Label::RecalculateColors() {
 void Label::ApplyTextColors() const {
   SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
   bool subpixel_rendering_suppressed =
-      SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_;
+      SkColorGetA(background_color_) != SK_AlphaOPAQUE ||
+      !subpixel_rendering_enabled_;
   for (size_t i = 0; i < lines_.size(); ++i) {
     lines_[i]->SetColor(color);
     lines_[i]->set_selection_color(actual_selection_text_color_);
