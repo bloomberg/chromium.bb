@@ -646,15 +646,15 @@ class SpdyFramerTest
     switch (std::get<0>(param)) {
       case DECODER_SELF:
         FLAGS_use_nested_spdy_framer_decoder = false;
-        FLAGS_use_http2_frame_decoder_adapter = false;
+        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
         break;
       case DECODER_NESTED:
         FLAGS_use_nested_spdy_framer_decoder = true;
-        FLAGS_use_http2_frame_decoder_adapter = false;
+        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
         break;
       case DECODER_HTTP2:
         FLAGS_use_nested_spdy_framer_decoder = false;
-        FLAGS_use_http2_frame_decoder_adapter = true;
+        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
         break;
     }
     switch (std::get<1>(param)) {
