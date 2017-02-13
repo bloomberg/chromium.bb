@@ -294,7 +294,7 @@ Polymer({
 
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.DISABLED_BY_ADMIN:
-        return 'cr:domain';
+        return 'cr20:domain';
       case UpdateStatus.FAILED:
         return 'settings:error';
       case UpdateStatus.UPDATED:

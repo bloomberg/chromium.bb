@@ -129,7 +129,8 @@
       <div id="leftSpacer">
         <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
         <template is="dom-if" if="[[showMenu]]" restamp>
-          <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_"
+          <paper-icon-button id="menuButton" icon="cr20:menu"
+              on-tap="onMenuTap_"
               title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]"
               aria-label$="[[menuLabel]]">
           </paper-icon-button>

@@ -9,6 +9,10 @@
 <dom-module id="cr-policy-pref-indicator">
   <link rel="import" type="css" href="cr_policy_indicator.css">
   <style>
+    :host {
+      display: flex;  /* Position independantly from the line-height. */
+    }
+
     paper-tooltip {
       --paper-tooltip: var(--cr-policy-tooltip);
     }

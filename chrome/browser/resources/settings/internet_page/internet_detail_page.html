@@ -138,7 +138,7 @@
     <!-- Disabled by policy / Shared messages. -->
     <div class="settings-box continuation"
         hidden$="[[!connectNotAllowed_(networkProperties, globalPolicy)]]">
-      <iron-icon class="policy" icon="cr:domain"></iron-icon>
+      <iron-icon class="policy" icon="cr20:domain"></iron-icon>
       <div>$i18n{networkConnectNotAllowed}</div>
     </div>
     <div class="settings-box continuation"
@@ -253,7 +253,7 @@
                 network-properties="[[networkProperties]]">
             </network-apnlist>
           </template>
-          
+
           <!-- IP Config, Nameservers, Proxy -->
           <template is="dom-if"
               if="[[isRememberedOrConnected_(networkProperties)]]">

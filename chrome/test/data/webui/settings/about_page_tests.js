@@ -241,7 +241,7 @@ cr.define('settings_about_page', function() {
 
         fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
         assertEquals(null, icon.src);
-        assertEquals('cr:domain', icon.icon);
+        assertEquals('cr20:domain', icon.icon);
         assertEquals(0, statusMessageEl.textContent.trim().length);
 
         fireStatusChanged(UpdateStatus.FAILED);

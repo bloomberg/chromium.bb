@@ -54,20 +54,20 @@ var CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.NONE:
         return icon;
       case CrPolicyIndicatorType.PRIMARY_USER:
-        icon = 'group';
+        icon = 'cr:group';
         break;
       case CrPolicyIndicatorType.OWNER:
-        icon = 'person';
+        icon = 'cr:person';
         break;
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
       case CrPolicyIndicatorType.RECOMMENDED:
-        icon = 'domain';
+        icon = 'cr20:domain';
         break;
       default:
         assertNotReached();
     }
-    return 'cr:' + icon;
+    return icon;
   },
 
   /**

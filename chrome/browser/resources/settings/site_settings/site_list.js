@@ -11,7 +11,7 @@ var iconControlledBy = {
   'extension': 'cr:extension',
   'HostedApp': 'cr:extension',
   'platform_app': 'cr:extension',
-  'policy' : 'cr:domain',
+  'policy' : 'cr20:domain',
 };
 
 /**
