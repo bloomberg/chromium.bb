@@ -1085,6 +1085,7 @@ source_set("unit_tests") {
     "events/EventPathTest.cpp",
     "events/EventTargetTest.cpp",
     "events/PointerEventFactoryTest.cpp",
+    "events/TouchEventTest.cpp",
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
     "frame/FeaturePolicyInFrameTest.cpp",
