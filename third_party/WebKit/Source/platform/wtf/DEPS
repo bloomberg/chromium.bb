@@ -20,6 +20,8 @@ include_rules = [
     "+base/time/time.h",
     "+base/tuple.h",
     "+build",
-    # Allow redirection to platform/wtf. See crbug.com/691465.
+    # To avoid recursive dependency, we impose a blanket ban on using other
+    # platform files. Think carefully if you want to relax this restriction.
+    "-platform",
     "+platform/wtf",
 ]
