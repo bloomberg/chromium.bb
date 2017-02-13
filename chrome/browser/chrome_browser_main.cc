@@ -472,19 +472,14 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 #endif  // defined(OS_MACOSX)
 
 void RegisterComponentsForUpdate() {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
+  const auto cus = g_browser_process->component_updater();
 
-  // Registration can be before or after cus->Start() so it is ok to post
-  // a task to the UI thread to do registration once you done the necessary
-  // file IO to know you existing component version.
-#if !defined(OS_ANDROID)
-#if !defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kImprovedRecoveryComponent))
     RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
   else
     RegisterRecoveryComponent(cus, g_browser_process->local_state());
-#endif  // !defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
 #if !defined(OS_CHROMEOS)
   RegisterSwiftShaderComponent(cus);

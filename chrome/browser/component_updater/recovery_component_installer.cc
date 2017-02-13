@@ -44,6 +44,9 @@ using content::BrowserThread;
 
 namespace component_updater {
 
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
 namespace {
 
 // CRX hash. The extension id is: npdjjkjlcidkjlamlmmdelcjbcpdjocm.
@@ -88,14 +91,12 @@ void RecordRecoveryComponentUMAEvent(RecoveryComponentEvent event) {
   UMA_HISTOGRAM_ENUMERATION("RecoveryComponent.Event", event, RCE_COUNT);
 }
 
-#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
 // Checks if elevated recovery simulation switch was present on the command
 // line. This is for testing purpose.
 bool SimulatingElevatedRecovery() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSimulateElevatedRecovery);
 }
-#endif  // !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
 
 std::vector<std::string> GetRecoveryInstallArguments(
     const base::DictionaryValue& manifest,
@@ -137,7 +138,6 @@ base::CommandLine BuildRecoveryInstallCommandLine(
   return command_line;
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 std::unique_ptr<base::DictionaryValue> ReadManifest(
     const base::FilePath& manifest) {
   JSONFileValueDeserializer deserializer(manifest);
@@ -243,7 +243,6 @@ void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
                      .MayBlock(),
       base::Bind(&DoElevatedInstallRecoveryComponent, installer_path));
 }
-#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -332,7 +331,6 @@ void RecoveryComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Recovery component update error: " << error;
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 void WaitForInstallToComplete(base::Process process,
                               const base::FilePath& installer_folder,
                               PrefService* prefs) {
@@ -387,13 +385,6 @@ bool RecoveryComponentInstaller::RunInstallCommand(
   // install later.
   return true;
 }
-#else
-bool RecoveryComponentInstaller::RunInstallCommand(
-    const base::CommandLine& cmdline,
-    const base::FilePath&) const {
-  return base::LaunchProcess(cmdline, base::LaunchOptions()).IsValid();
-}
-#endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX)
 // Sets the POSIX executable permissions on a file
@@ -491,9 +482,13 @@ bool RecoveryComponentInstaller::Uninstall() {
   return false;
 }
 
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
                                PrefService* prefs) {
-#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   if (SimulatingElevatedRecovery()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -508,7 +503,8 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
       FROM_HERE,
       base::Bind(&RecoveryRegisterHelper, cus, prefs),
       base::TimeDelta::FromSeconds(6));
-#endif  // !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#endif
+#endif
 }
 
 void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
@@ -521,10 +517,13 @@ void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
 void AcceptedElevatedRecoveryInstall(PrefService* prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+#if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_WIN) || defined(OS_MACOSX)
   ElevatedInstallRecoveryComponent(
       prefs->GetFilePath(prefs::kRecoveryComponentUnpackPath));
-#endif  // OS_WIN
+#endif
+#endif
+
   prefs->SetBoolean(prefs::kRecoveryComponentNeedsElevation, false);
 }
 
