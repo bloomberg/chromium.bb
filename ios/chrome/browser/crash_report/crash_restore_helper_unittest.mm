@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -19,6 +18,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using testing::Return;
 
@@ -35,15 +38,15 @@ class CrashRestoreHelperTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
     otr_chrome_browser_state_ =
         chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-    helper_.reset([[CrashRestoreHelper alloc]
-        initWithBrowserState:chrome_browser_state_.get()]);
+    helper_ = [[CrashRestoreHelper alloc]
+        initWithBrowserState:chrome_browser_state_.get()];
   }
 
  protected:
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ios::ChromeBrowserState* otr_chrome_browser_state_;
-  base::scoped_nsobject<CrashRestoreHelper> helper_;
+  CrashRestoreHelper* helper_;
 };
 
 TEST_F(CrashRestoreHelperTest, MoveAsideTest) {
