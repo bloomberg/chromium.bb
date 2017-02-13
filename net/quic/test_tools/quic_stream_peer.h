@@ -8,7 +8,6 @@
 #include <cstdint>
 
 #include "base/macros.h"
-#include "base/strings/string_piece.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream_sequencer.h"
 
