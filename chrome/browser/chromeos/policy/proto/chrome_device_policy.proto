@@ -760,12 +760,12 @@ message LoginAppsProto {
   repeated string login_apps = 1;
 }
 
-// A list of allowed locales on the login page.
+// A list of allowed locales on the login screen.
 message LoginScreenLocalesProto {
   repeated string login_screen_locales = 1;
 }
 
-// A list of allowed input methods on the login page.
+// A list of allowed input methods on the login screen.
 message LoginScreenInputMethodsProto {
   repeated string login_screen_input_methods = 1;
 }
