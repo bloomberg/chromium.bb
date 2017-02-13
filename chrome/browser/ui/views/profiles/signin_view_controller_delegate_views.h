@@ -77,11 +77,6 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   views::WebView* content_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
   ui::ModalType dialog_modal_type_;
-
-  // wait_for_size_ stores whether the dialog should only be shown after its
-  // content's size has been laid out and measured so that the constrained
-  // window is sized to the content.
-  bool wait_for_size_;
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);

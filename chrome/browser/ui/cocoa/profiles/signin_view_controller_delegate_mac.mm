@@ -59,7 +59,6 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
     bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller, web_contents.get()),
       web_contents_(std::move(web_contents)),
-      wait_for_size_(wait_for_size),
       browser_(browser),
       dialog_modal_type_(dialog_modal_type),
       window_frame_(frame) {
@@ -67,7 +66,7 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
 
-  if (!wait_for_size_)
+  if (!wait_for_size)
     DisplayModal();
 }
 
@@ -168,16 +167,15 @@ void SigninViewControllerDelegateMac::PerformClose() {
 }
 
 void SigninViewControllerDelegateMac::ResizeNativeView(int height) {
-  if (wait_for_size_) {
-    [window_.get().contentView
-        setFrameSize:NSMakeSize(kModalDialogWidth,
-                                height)];
+  if (!window_) {
     window_frame_.size = NSMakeSize(kModalDialogWidth, height);
     DisplayModal();
   }
 }
 
 void SigninViewControllerDelegateMac::DisplayModal() {
+  DCHECK(!window_);
+
   content::WebContents* host_web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 

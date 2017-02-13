@@ -49,7 +49,6 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
       content_view_(content_view.release()),
       modal_signin_widget_(nullptr),
       dialog_modal_type_(dialog_modal_type),
-      wait_for_size_(wait_for_size),
       browser_(browser) {
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
@@ -57,7 +56,7 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
   DCHECK(dialog_modal_type == ui::MODAL_TYPE_CHILD ||
          dialog_modal_type == ui::MODAL_TYPE_WINDOW)
       << "Unsupported dialog modal type " << dialog_modal_type;
-  if (!wait_for_size_)
+  if (!wait_for_size)
     DisplayModal();
 }
 
@@ -107,7 +106,7 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
       gfx::Size(kModalDialogWidth, std::min(height, max_height)));
   content_view_->Layout();
 
-  if (wait_for_size_) {
+  if (!modal_signin_widget_) {
     // The modal wasn't displayed yet so just show it with the already resized
     // view.
     DisplayModal();
@@ -115,6 +114,8 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
+  DCHECK(!modal_signin_widget_);
+
   content::WebContents* host_web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
