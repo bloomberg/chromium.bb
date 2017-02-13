@@ -25,7 +25,6 @@ include_rules = [
   "+ppapi/features",
   "+services/service_manager/public/cpp",
   "+skia/ext/image_operations.h",
-  "+storage/browser/fileapi",
   "+third_party/leveldatabase",
   "+third_party/re2",
   "+third_party/WebKit/public/platform",

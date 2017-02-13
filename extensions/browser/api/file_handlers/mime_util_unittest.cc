@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
+#include "extensions/browser/api/file_handlers/mime_util.h"
 
 #include <memory>
 #include <string>
@@ -11,11 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/extensions_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -48,36 +49,33 @@ storage::FileSystemURL CreateNativeLocalFileSystemURL(
 
 }  // namespace
 
-class FileHandlersMimeUtilTest : public testing::Test {
+class FileHandlersMimeUtilTest : public ExtensionsTest {
  protected:
   FileHandlersMimeUtilTest() {}
   ~FileHandlersMimeUtilTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_system_context_ =
-        content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
+    file_system_context_ = content::CreateFileSystemContextForTesting(
+        NULL, browser_context()->GetPath());
 
     EXPECT_TRUE(base::CreateTemporaryFile(&html_mime_file_path_));
     const std::string kSampleContent = "<html><body></body></html>";
-    EXPECT_TRUE(base::WriteFile(
-        html_mime_file_path_, kSampleContent.c_str(), kSampleContent.size()));
+    EXPECT_TRUE(base::WriteFile(html_mime_file_path_, kSampleContent.c_str(),
+                                kSampleContent.size()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  ExtensionsAPIClient extensions_api_client_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  base::ScopedTempDir data_dir_;
   base::FilePath html_mime_file_path_;
 };
 
 TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
-    GetMimeTypeForLocalPath(
-        &profile_,
-        base::FilePath::FromUTF8Unsafe(kJPEGExtensionFilePath),
-        base::Bind(&OnMimeTypeResult, &result));
+    GetMimeTypeForLocalPath(browser_context(), base::FilePath::FromUTF8Unsafe(
+                                                   kJPEGExtensionFilePath),
+                            base::Bind(&OnMimeTypeResult, &result));
     content::RunAllBlockingPoolTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
@@ -85,7 +83,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
     GetMimeTypeForLocalPath(
-        &profile_,
+        browser_context(),
         base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath),
         base::Bind(&OnMimeTypeResult, &result));
     content::RunAllBlockingPoolTasksUntilIdle();
@@ -94,8 +92,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
 
   {
     std::string result;
-    GetMimeTypeForLocalPath(&profile_,
-                            html_mime_file_path_,
+    GetMimeTypeForLocalPath(browser_context(), html_mime_file_path_,
                             base::Bind(&OnMimeTypeResult, &result));
     content::RunAllBlockingPoolTasksUntilIdle();
     EXPECT_EQ("text/html", result);
@@ -103,7 +100,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
 }
 
 TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
-  MimeTypeCollector collector(&profile_);
+  MimeTypeCollector collector(browser_context());
 
   std::vector<storage::FileSystemURL> urls;
   urls.push_back(CreateNativeLocalFileSystemURL(
@@ -126,7 +123,7 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
 }
 
 TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
-  MimeTypeCollector collector(&profile_);
+  MimeTypeCollector collector(browser_context());
 
   std::vector<base::FilePath> local_paths;
   local_paths.push_back(base::FilePath::FromUTF8Unsafe(kJPEGExtensionFilePath));

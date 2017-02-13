@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -102,7 +102,7 @@ class WritableFileChecker
  public:
   WritableFileChecker(
       const std::vector<base::FilePath>& paths,
-      Profile* profile,
+      content::BrowserContext* context,
       const std::set<base::FilePath>& directory_paths,
       const base::Closure& on_success,
       const base::Callback<void(const base::FilePath&)>& on_failure);
@@ -128,9 +128,9 @@ class WritableFileChecker
   void OnPrepareFileDone(const base::FilePath& path, bool success);
 
   const std::vector<base::FilePath> paths_;
-  Profile* profile_;
+  content::BrowserContext* context_;
   const std::set<base::FilePath> directory_paths_;
-  int outstanding_tasks_;
+  size_t outstanding_tasks_;
   base::FilePath error_path_;
   base::Closure on_success_;
   base::Callback<void(const base::FilePath&)> on_failure_;
@@ -138,12 +138,12 @@ class WritableFileChecker
 
 WritableFileChecker::WritableFileChecker(
     const std::vector<base::FilePath>& paths,
-    Profile* profile,
+    content::BrowserContext* context,
     const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure)
     : paths_(paths),
-      profile_(profile),
+      context_(context),
       directory_paths_(directory_paths),
       outstanding_tasks_(1),
       on_success_(on_success),
@@ -156,16 +156,14 @@ void WritableFileChecker::Check() {
 #if defined(OS_CHROMEOS)
     NonNativeFileSystemDelegate* delegate =
         ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
-    if (delegate && delegate->IsUnderNonNativeLocalPath(profile_, path)) {
+    if (delegate && delegate->IsUnderNonNativeLocalPath(context_, path)) {
       if (is_directory) {
         delegate->IsNonNativeLocalPathDirectory(
-            profile_,
-            path,
+            context_, path,
             base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
       } else {
         delegate->PrepareNonNativeLocalFileForWritableApp(
-            profile_,
-            path,
+            context_, path,
             base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
       }
       continue;
@@ -259,7 +257,7 @@ bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
          FileHandlerCanHandleFileWithExtension(handler, entry.path);
 }
 
-GrantedFileEntry CreateFileEntry(Profile* profile,
+GrantedFileEntry CreateFileEntry(content::BrowserContext* context,
                                  const Extension* extension,
                                  int renderer_id,
                                  const base::FilePath& path,
@@ -291,12 +289,12 @@ GrantedFileEntry CreateFileEntry(Profile* profile,
 
 void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
-    Profile* profile,
+    content::BrowserContext* context,
     const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure) {
   scoped_refptr<WritableFileChecker> checker(new WritableFileChecker(
-      paths, profile, directory_paths, on_success, on_failure));
+      paths, context, directory_paths, on_success, on_failure));
   checker->Check();
 }
 

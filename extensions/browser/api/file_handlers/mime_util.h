@@ -4,8 +4,8 @@
 //
 // This file provides MIME related utilities.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
-#define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_API_FILE_HANDLERS_MIME_UTIL_H_
+#define EXTENSIONS_BROWSER_API_FILE_HANDLERS_MIME_UTIL_H_
 
 #include <stddef.h>
 
@@ -17,7 +17,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace base {
 class FilePath;
@@ -33,7 +35,7 @@ namespace app_file_handler_util {
 // Gets a MIME type for a local path and returns it with |callback|. If not
 // found, then the MIME type is an empty string.
 void GetMimeTypeForLocalPath(
-    Profile* profile,
+    content::BrowserContext* context,
     const base::FilePath& local_path,
     const base::Callback<void(const std::string&)>& callback);
 
@@ -46,7 +48,7 @@ class MimeTypeCollector {
   typedef base::Callback<void(std::unique_ptr<std::vector<std::string>>)>
       CompletionCallback;
 
-  explicit MimeTypeCollector(Profile* profile);
+  explicit MimeTypeCollector(content::BrowserContext* context);
   virtual ~MimeTypeCollector();
 
   // Collects all mime types asynchronously for a vector of URLs and upon
@@ -63,7 +65,7 @@ class MimeTypeCollector {
   // Called, when the |index|-th input file (or URL) got processed.
   void OnMimeTypeCollected(size_t index, const std::string& mime_type);
 
-  Profile* profile_;
+  content::BrowserContext* context_;
   std::unique_ptr<std::vector<std::string>> result_;
   size_t left_;
   CompletionCallback callback_;
@@ -75,4 +77,4 @@ class MimeTypeCollector {
 }  // namespace app_file_handler_util
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_API_FILE_HANDLERS_MIME_UTIL_H_
