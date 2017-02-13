@@ -88,7 +88,6 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
 }
 
-#if defined(OS_CHROMEOS)
 // Tests if special hardware keys like brightness and volume are consumed as
 // expected by the shell.
 TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
@@ -171,7 +170,6 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   UnblockUserSession();
   EXPECT_FALSE(session_state_delegate->IsScreenLocked());
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace test
 }  // namespace ash

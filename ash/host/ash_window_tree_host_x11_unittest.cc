@@ -62,39 +62,26 @@ class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-#if defined(OS_CHROMEOS)
     // Fake a ChromeOS running env.
     const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
     base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-#endif
   }
 
   void TearDown() override {
     aura::test::AuraTestBase::TearDown();
 
-#if defined(OS_CHROMEOS)
     // Revert the CrOS testing env otherwise the following non-CrOS aura
     // tests will fail.
-    // Fake a ChromeOS running env.
     const char* kLsbRelease = "";
     base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-#endif
   }
 };
-
-// Fails on ChromeOS valgrind bot. http://crbug.com/499997
-#if defined(OS_CHROMEOS)
-#define MAYBE_DispatchTouchEventToOneRootWindow \
-  DISABLED_DispatchTouchEventToOneRootWindow
-#else
-#define MAYBE_DispatchTouchEventToOneRootWindow \
-  DispatchTouchEventToOneRootWindow
-#endif
 
 // Send X touch events to one WindowTreeHost. The WindowTreeHost's
 // delegate will get corresponding ui::TouchEvent if the touch events
 // are targeting this WindowTreeHost.
-TEST_F(AshWindowTreeHostX11Test, MAYBE_DispatchTouchEventToOneRootWindow) {
+// Fails on ChromeOS valgrind bot. http://crbug.com/499997
+TEST_F(AshWindowTreeHostX11Test, DISABLED_DispatchTouchEventToOneRootWindow) {
   std::unique_ptr<aura::WindowTreeHostX11> window_tree_host(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host->InitHost();

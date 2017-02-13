@@ -18,7 +18,6 @@ namespace {
 
 // Returns true if |key_code| is a key usually handled directly by the shell.
 bool IsSystemKey(ui::KeyboardCode key_code) {
-#if defined(OS_CHROMEOS)
   switch (key_code) {
     case ui::VKEY_MEDIA_LAUNCH_APP2:  // Fullscreen button.
     case ui::VKEY_MEDIA_LAUNCH_APP1:  // Overview button.
@@ -34,8 +33,6 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
     default:
       return false;
   }
-#endif  // defined(OS_CHROMEOS)
-  return false;
 }
 
 }  // namespace

@@ -127,8 +127,6 @@ void HandleToggleWallpaperMode() {
   }
 }
 
-#if defined(OS_CHROMEOS)
-
 void HandleToggleTouchpad() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchpad"));
   ash::WmShell::Get()->delegate()->ToggleTouchpad();
@@ -149,8 +147,6 @@ void HandleToggleTouchView() {
   controller->EnableMaximizeModeWindowManager(
       !controller->IsMaximizeModeWindowManagerEnabled());
 }
-
-#endif  // defined(OS_CHROMEOS)
 
 void HandleTriggerCrash() {
   CHECK(false) << "Intentional crash via debug accelerator.";
@@ -182,7 +178,15 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     return;
 
   switch (action) {
-#if defined(OS_CHROMEOS)
+    case DEBUG_PRINT_LAYER_HIERARCHY:
+      HandlePrintLayerHierarchy();
+      break;
+    case DEBUG_PRINT_VIEW_HIERARCHY:
+      HandlePrintViewHierarchy();
+      break;
+    case DEBUG_PRINT_WINDOW_HIERARCHY:
+      HandlePrintWindowHierarchy();
+      break;
     case DEBUG_SHOW_TOAST:
       WmShell::Get()->toast_manager()->Show(
           ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
@@ -197,18 +201,8 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     case DEBUG_TOGGLE_TOUCH_VIEW:
       HandleToggleTouchView();
       break;
-#endif
     case DEBUG_TOGGLE_WALLPAPER_MODE:
       HandleToggleWallpaperMode();
-      break;
-    case DEBUG_PRINT_LAYER_HIERARCHY:
-      HandlePrintLayerHierarchy();
-      break;
-    case DEBUG_PRINT_VIEW_HIERARCHY:
-      HandlePrintViewHierarchy();
-      break;
-    case DEBUG_PRINT_WINDOW_HIERARCHY:
-      HandlePrintWindowHierarchy();
       break;
     case DEBUG_TRIGGER_CRASH:
       HandleTriggerCrash();

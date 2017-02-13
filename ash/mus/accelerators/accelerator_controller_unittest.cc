@@ -842,7 +842,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE)));
 
-#if defined(OS_CHROMEOS)
   // The "Take Screenshot", "Take Partial Screenshot", volume, brightness, and
   // keyboard brightness accelerators are only defined on ChromeOS.
   // TODO: needs ScreenShotDelegate converted: http://crbug.com/612331.
@@ -932,9 +931,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
     EXPECT_EQ(alt_brightness_up, delegate->last_accelerator());
   }
-#endif
 
-#if !defined(OS_WIN)
   // Exit
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
   ASSERT_TRUE(ewh);
@@ -949,7 +946,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
   Reset(ewh);
-#endif
 
   // New tab
   EXPECT_TRUE(
@@ -973,7 +969,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(
       ProcessInController(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
 
-#if defined(OS_CHROMEOS)
   // Open file manager
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
@@ -982,7 +977,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // TODO(derat): Reenable this once user sessions work in mash.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_L, ui::EF_COMMAND_DOWN)));
-#endif
 }
 
 // TODO: fails in mash, http://crbug.com/632180.
@@ -1027,7 +1021,6 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAcceleratorsToggleAppList) {
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
-#if defined(OS_CHROMEOS)
   // The press of VKEY_BROWSER_SEARCH should toggle the AppList
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
@@ -1035,7 +1028,6 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(ProcessInController(
       ReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
-#endif
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
@@ -1090,13 +1082,11 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
 }
 
 TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
-#if defined(OS_CHROMEOS)
   // Power key is reserved on chromeos.
   EXPECT_TRUE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
   EXPECT_FALSE(GetController()->IsPreferred(
       ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
-#endif
   // ALT+Tab are not reserved but preferred.
   EXPECT_FALSE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
@@ -1155,14 +1145,12 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ASSERT_TRUE(w1_state->IsFullscreen());
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-#if defined(OS_CHROMEOS)
   // Power key (reserved) should always be handled.
   LockStateController::TestApi test_api(
       Shell::GetInstance()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
-#endif
 
   // A fullscreen window can consume ALT-TAB (preferred).
   ASSERT_EQ(w1, wm::GetActiveWindow());
@@ -1200,14 +1188,12 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   }
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-#if defined(OS_CHROMEOS)
   // Power key (reserved) should always be handled.
   LockStateController::TestApi test_api(
       Shell::GetInstance()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
-#endif
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
   ASSERT_EQ(w1, wm::GetActiveWindow());
@@ -1218,7 +1204,6 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
 }
 */
 
-#if defined(OS_CHROMEOS)
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::set<AcceleratorAction> all_actions;
   for (size_t i = 0; i < kAcceleratorDataLength; ++i)
@@ -1322,7 +1307,6 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
   }
 }
-#endif
 
 // TODO: reenable. Disabled because shelf asynchronously created:
 // http://crbug.com/632192.
@@ -1358,7 +1342,6 @@ TEST_F(AcceleratorControllerTest, DISABLED_DisallowedWithNoWindow) {
   }
 }
 
-#if defined(OS_CHROMEOS)
 namespace {
 
 // defines a class to test the behavior of deprecated accelerators.
@@ -1469,6 +1452,5 @@ TEST_F(DeprecatedAcceleratorTester, DISABLED_TestNewAccelerators) {
     ResetStateIfNeeded();
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

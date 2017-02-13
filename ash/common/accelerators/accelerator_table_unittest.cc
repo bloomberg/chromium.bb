@@ -74,8 +74,6 @@ TEST(AcceleratorTableTest, CheckDuplicatedRepeatableActions) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-
 TEST(AcceleratorTableTest, CheckDeprecatedAccelerators) {
   std::set<AcceleratorData, Cmp> deprecated_actions;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
@@ -102,7 +100,5 @@ TEST(AcceleratorTableTest, CheckDeprecatedAccelerators) {
                                  base::CompareCase::SENSITIVE));
   }
 }
-
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

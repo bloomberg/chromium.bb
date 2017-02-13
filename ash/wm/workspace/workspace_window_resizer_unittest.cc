@@ -1627,7 +1627,6 @@ TEST_P(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   EXPECT_EQ("100,350 100x150", window4_->bounds().ToString());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_P(WorkspaceWindowResizerTest, DontExceedMinHeight) {
   UpdateDisplay("600x500");
   aura::Window* root = Shell::GetPrimaryRootWindow();
@@ -1656,7 +1655,6 @@ TEST_P(WorkspaceWindowResizerTest, DontExceedMinHeight) {
   EXPECT_EQ("100,351 100x99", window3_->bounds().ToString());
   EXPECT_EQ("100,450 100x50", window4_->bounds().ToString());
 }
-#endif  // defined(OS_CHROMEOS)
 
 TEST_P(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   UpdateDisplay("600x800");
@@ -1711,7 +1709,6 @@ TEST_P(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   EXPECT_EQ("249,100 101x100", window3_->bounds().ToString());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
   UpdateDisplay("400x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
@@ -1738,7 +1735,6 @@ TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
   EXPECT_EQ("202,100 99x100", window2_->bounds().ToString());
   EXPECT_EQ("301,100 99x100", window3_->bounds().ToString());
 }
-#endif  // defined(OS_CHROMEOS)
 
 TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
   UpdateDisplay("400x800");

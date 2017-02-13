@@ -27,7 +27,6 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      CYCLE_BACKWARD_MRU},
     {true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, TOGGLE_OVERVIEW},
-#if defined(OS_CHROMEOS)
     {true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, TOGGLE_APP_LIST},
     {true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
@@ -97,16 +96,8 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP},
     {true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER},
     {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME},
-#else
-    // This key has been deprecated on CrOS. It is instead included below in the
-    // |kDeprecatedAccelerators|, and above in the CrOS accelerators as
-    // Search+Esc.
-    {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
-#endif  // defined(OS_CHROMEOS)
     {true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE},
-#if !defined(OS_WIN)
     {true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT},
-#endif
     {true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
      NEW_INCOGNITO_WINDOW},
     {true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW},
@@ -139,15 +130,11 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_F14, ui::EF_NONE, SHOW_KEYBOARD_OVERLAY},
     {true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_MESSAGE_CENTER_BUBBLE},
-#if defined(OS_CHROMEOS)
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SHOW_STYLUS_TOOLS},
-#endif
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_SYSTEM_TRAY_BUBBLE},
-#if defined(OS_CHROMEOS)
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_IME_MENU_BUBBLE},
-#endif
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
     {true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1},
     {true, ui::VKEY_3, ui::EF_ALT_DOWN, LAUNCH_APP_2},
@@ -205,8 +192,6 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 //      don't disable a deprecated accelerator abruptly).
 // 5- Don't forget to update the keyboard overlay. Find 'shortcut' in the file
 //    keyboard_overlay_data.js.
-#if defined(OS_CHROMEOS)
-
 const AcceleratorData kDeprecatedAccelerators[] = {
     {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
     {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER}};
@@ -227,10 +212,7 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
 const size_t kDeprecatedAcceleratorsDataLength =
     arraysize(kDeprecatedAcceleratorsData);
 
-#endif  // defined(OS_CHROMEOS)
-
 const AcceleratorData kDebugAcceleratorData[] = {
-#if defined(OS_CHROMEOS)
     {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},
     {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
     {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
@@ -238,7 +220,6 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_T, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_SCREEN},
     {true, ui::VKEY_T, kDebugModifier, DEBUG_TOGGLE_TOUCH_VIEW},
-#endif  // defined(OS_CHROMEOS)
     {true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      DEBUG_TOGGLE_WALLPAPER_MODE},
     {true, ui::VKEY_L, kDebugModifier, DEBUG_PRINT_LAYER_HIERARCHY},
@@ -254,7 +235,6 @@ const AcceleratorData kDebugAcceleratorData[] = {
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
 
 const AcceleratorData kDeveloperAcceleratorData[] = {
-#if defined(OS_CHROMEOS)
     // Extra shortcut for debug build to control magnifier on Linux desktop.
     {true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
      MAGNIFY_SCREEN_ZOOM_OUT},
@@ -275,7 +255,6 @@ const AcceleratorData kDeveloperAcceleratorData[] = {
     {true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI},
     // Extra shortcut for display swapping as Alt-F4 is taken on Linux desktop.
     {true, ui::VKEY_S, kDebugModifier, SWAP_PRIMARY_DISPLAY},
-#endif  // defined(OS_CHROMEOS)
     // Extra shortcut to rotate/scale up/down the screen on Linux desktop.
     {true, ui::VKEY_R, kDebugModifier, ROTATE_SCREEN},
     // For testing on systems where Alt-Tab is already mapped.
@@ -299,36 +278,17 @@ const AcceleratorAction kPreferredActions[] = {
 const size_t kPreferredActionsLength = arraysize(kPreferredActions);
 
 const AcceleratorAction kReservedActions[] = {
-#if defined(OS_CHROMEOS)
     POWER_PRESSED, POWER_RELEASED, SUSPEND,
-#else
-    DUMMY_FOR_RESERVED,
-#endif
 };
 
 const size_t kReservedActionsLength = arraysize(kReservedActions);
 
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
     DEBUG_PRINT_LAYER_HIERARCHY,
     DEBUG_PRINT_VIEW_HIERARCHY,
     DEBUG_PRINT_WINDOW_HIERARCHY,
-    MAGNIFY_SCREEN_ZOOM_IN,   // Control+F7
-    MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
-    NEXT_IME,
-    PREVIOUS_IME,
-    PRINT_UI_HIERARCHIES,
-    ROTATE_SCREEN,
-    SCALE_UI_UP,
-    SCALE_UI_DOWN,
-    SCALE_UI_RESET,
-    SHOW_SYSTEM_TRAY_BUBBLE,
-    SWITCH_IME,  // Switch to another IME depending on the accelerator.
-    TAKE_WINDOW_SCREENSHOT,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-#if defined(OS_CHROMEOS)
-    BRIGHTNESS_DOWN,
-    BRIGHTNESS_UP,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEBUG_TOGGLE_TOUCH_VIEW,
@@ -336,38 +296,57 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
+    MAGNIFY_SCREEN_ZOOM_IN,   // Control+F7
+    MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
+    NEXT_IME,
+    PREVIOUS_IME,
+    PRINT_UI_HIERARCHIES,
+    ROTATE_SCREEN,
+    SCALE_UI_DOWN,
+    SCALE_UI_RESET,
+    SCALE_UI_UP,
     SHOW_IME_MENU_BUBBLE,
+    SHOW_SYSTEM_TRAY_BUBBLE,
+    SWITCH_IME,  // Switch to another IME depending on the accelerator.
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+    TAKE_WINDOW_SCREENSHOT,
     TOGGLE_CAPS_LOCK,
     TOGGLE_HIGH_CONTRAST,
-    TOGGLE_SPOKEN_FEEDBACK,
     TOGGLE_MIRROR_MODE,
+    TOGGLE_SPOKEN_FEEDBACK,
     TOGGLE_WIFI,
     TOUCH_HUD_CLEAR,
     VOLUME_DOWN,
     VOLUME_MUTE,
     VOLUME_UP,
-#endif
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if !defined(NDEBUG)
     POWER_PRESSED,
     POWER_RELEASED,
-#endif  // defined(OS_CHROMEOS)
+#endif  // !defined(NDEBUG)
 };
 
 const size_t kActionsAllowedAtLoginOrLockScreenLength =
     arraysize(kActionsAllowedAtLoginOrLockScreen);
 
 const AcceleratorAction kActionsAllowedAtLockScreen[] = {
-    EXIT,
-#if defined(OS_CHROMEOS)
-    SUSPEND,
-#endif  // defined(OS_CHROMEOS)
+    EXIT, SUSPEND,
 };
 
 const size_t kActionsAllowedAtLockScreenLength =
     arraysize(kActionsAllowedAtLockScreen);
 
 const AcceleratorAction kActionsAllowedAtModalWindow[] = {
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
+    DEBUG_TOGGLE_TOUCH_PAD,
+    DEBUG_TOGGLE_TOUCH_SCREEN,
+    DEV_ADD_REMOVE_DISPLAY,
+    DISABLE_CAPS_LOCK,
     EXIT,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
+    LOCK_SCREEN,
     MAGNIFY_SCREEN_ZOOM_IN,
     MAGNIFY_SCREEN_ZOOM_OUT,
     MEDIA_NEXT_TRACK,
@@ -375,32 +354,22 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     MEDIA_PREV_TRACK,
     NEXT_IME,
     OPEN_FEEDBACK_PAGE,
+    POWER_PRESSED,
+    POWER_RELEASED,
     PREVIOUS_IME,
     PRINT_UI_HIERARCHIES,
     ROTATE_SCREEN,
-    SCALE_UI_UP,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
-    SHOW_KEYBOARD_OVERLAY,
-    SWITCH_IME,
-    TAKE_WINDOW_SCREENSHOT,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-#if defined(OS_CHROMEOS)
-    BRIGHTNESS_DOWN,
-    BRIGHTNESS_UP,
-    DEBUG_TOGGLE_TOUCH_PAD,
-    DEBUG_TOGGLE_TOUCH_SCREEN,
-    DEV_ADD_REMOVE_DISPLAY,
-    DISABLE_CAPS_LOCK,
-    KEYBOARD_BRIGHTNESS_DOWN,
-    KEYBOARD_BRIGHTNESS_UP,
-    LOCK_SCREEN,
-    POWER_PRESSED,
-    POWER_RELEASED,
+    SCALE_UI_UP,
     SHOW_IME_MENU_BUBBLE,
+    SHOW_KEYBOARD_OVERLAY,
     SUSPEND,
     SWAP_PRIMARY_DISPLAY,
+    SWITCH_IME,
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+    TAKE_WINDOW_SCREENSHOT,
     TOGGLE_CAPS_LOCK,
     TOGGLE_HIGH_CONTRAST,
     TOGGLE_MIRROR_MODE,
@@ -409,61 +378,57 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     VOLUME_DOWN,
     VOLUME_MUTE,
     VOLUME_UP,
-#endif
 };
 
 const size_t kActionsAllowedAtModalWindowLength =
     arraysize(kActionsAllowedAtModalWindow);
 
 const AcceleratorAction kRepeatableActions[] = {
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
     FOCUS_NEXT_PANE,
     FOCUS_PREVIOUS_PANE,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
     MAGNIFY_SCREEN_ZOOM_IN,
     MAGNIFY_SCREEN_ZOOM_OUT,
     MEDIA_NEXT_TRACK,
     MEDIA_PREV_TRACK,
     RESTORE_TAB,
-#if defined(OS_CHROMEOS)
-    BRIGHTNESS_DOWN,
-    BRIGHTNESS_UP,
-    KEYBOARD_BRIGHTNESS_DOWN,
-    KEYBOARD_BRIGHTNESS_UP,
     VOLUME_DOWN,
     VOLUME_UP,
-#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kRepeatableActionsLength = arraysize(kRepeatableActions);
 
 const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
     DEBUG_PRINT_LAYER_HIERARCHY,
     DEBUG_PRINT_VIEW_HIERARCHY,
     DEBUG_PRINT_WINDOW_HIERARCHY,
+    DEBUG_TOGGLE_TOUCH_PAD,
+    DEBUG_TOGGLE_TOUCH_SCREEN,
+    DEV_ADD_REMOVE_DISPLAY,
+    DISABLE_CAPS_LOCK,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
     MAGNIFY_SCREEN_ZOOM_IN,   // Control+F7
     MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
     MEDIA_NEXT_TRACK,
     MEDIA_PLAY_PAUSE,
     MEDIA_PREV_TRACK,
     NEXT_IME,
+    POWER_PRESSED,
+    POWER_RELEASED,
     PREVIOUS_IME,
     PRINT_UI_HIERARCHIES,
     ROTATE_SCREEN,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
     SCALE_UI_UP,
-    SWITCH_IME,  // Switch to another IME depending on the accelerator.
-#if defined(OS_CHROMEOS)
-    BRIGHTNESS_DOWN,
-    BRIGHTNESS_UP,
-    DEV_ADD_REMOVE_DISPLAY,
-    DEBUG_TOGGLE_TOUCH_PAD,
-    DEBUG_TOGGLE_TOUCH_SCREEN,
-    DISABLE_CAPS_LOCK,
-    KEYBOARD_BRIGHTNESS_DOWN,
-    KEYBOARD_BRIGHTNESS_UP,
-    POWER_PRESSED,
-    POWER_RELEASED,
     SWAP_PRIMARY_DISPLAY,
+    SWITCH_IME,  // Switch to another IME depending on the accelerator.
     TOGGLE_CAPS_LOCK,
     TOGGLE_HIGH_CONTRAST,
     TOGGLE_MIRROR_MODE,
@@ -473,21 +438,18 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     VOLUME_DOWN,
     VOLUME_MUTE,
     VOLUME_UP,
-#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kActionsAllowedInAppModeOrPinnedModeLength =
     arraysize(kActionsAllowedInAppModeOrPinnedMode);
 
 const AcceleratorAction kActionsAllowedInPinnedMode[] = {
-    TAKE_WINDOW_SCREENSHOT,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-    UNPIN,
-#if defined(OS_CHROMEOS)
     LOCK_SCREEN,
     SUSPEND,
-#endif
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+    TAKE_WINDOW_SCREENSHOT,
+    UNPIN,
 };
 
 const size_t kActionsAllowedInPinnedModeLength =
@@ -509,17 +471,6 @@ const AcceleratorAction kActionsNeedingWindow[] = {
 const size_t kActionsNeedingWindowLength = arraysize(kActionsNeedingWindow);
 
 const AcceleratorAction kActionsKeepingMenuOpen[] = {
-    MEDIA_NEXT_TRACK,
-    MEDIA_PLAY_PAUSE,
-    MEDIA_PREV_TRACK,
-    NEXT_IME,
-    PREVIOUS_IME,
-    PRINT_UI_HIERARCHIES,
-    SWITCH_IME,
-    TAKE_WINDOW_SCREENSHOT,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-#if defined(OS_CHROMEOS)
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
     DEBUG_TOGGLE_TOUCH_PAD,
@@ -527,6 +478,16 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
+    MEDIA_NEXT_TRACK,
+    MEDIA_PLAY_PAUSE,
+    MEDIA_PREV_TRACK,
+    NEXT_IME,
+    PREVIOUS_IME,
+    PRINT_UI_HIERARCHIES,
+    SWITCH_IME,
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+    TAKE_WINDOW_SCREENSHOT,
     TOGGLE_APP_LIST,
     TOGGLE_CAPS_LOCK,
     TOGGLE_HIGH_CONTRAST,
@@ -535,7 +496,6 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     VOLUME_DOWN,
     VOLUME_MUTE,
     VOLUME_UP,
-#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kActionsKeepingMenuOpenLength = arraysize(kActionsKeepingMenuOpen);

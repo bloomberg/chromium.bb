@@ -387,13 +387,6 @@ Press Ctrl+Alt+Z to disable.
         DISMISS
       </message>
 
-      <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
-        Press Ctrl+Shift+Q twice to quit.
-      </message>
-      <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT_ACCESSIBLE" desc="The message used by accessibility to indicate the content of the popup when the user preses the exit shortcut.">
-        Press Control Shift Q twice to quit.
-      </message>
-
       <message name="IDS_ASH_CONTROL_KEY" desc="Name of [Ctrl] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         ctrl
       </message>
