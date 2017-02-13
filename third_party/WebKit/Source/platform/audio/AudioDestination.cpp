@@ -34,6 +34,7 @@
 #include "platform/audio/PushPullFIFO.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAudioLatencyHint.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/PtrUtil.h"
 
@@ -50,18 +51,18 @@ const size_t kFIFOSize = 8192;
 std::unique_ptr<AudioDestination> AudioDestination::create(
     AudioIOCallback& callback,
     unsigned numberOfOutputChannels,
-    float sampleRate,
+    const WebAudioLatencyHint& latencyHint,
     PassRefPtr<SecurityOrigin> securityOrigin) {
-  return WTF::wrapUnique(new AudioDestination(
-      callback, numberOfOutputChannels, sampleRate, std::move(securityOrigin)));
+  return WTF::wrapUnique(new AudioDestination(callback, numberOfOutputChannels,
+                                              latencyHint,
+                                              std::move(securityOrigin)));
 }
 
 AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    unsigned numberOfOutputChannels,
-                                   float sampleRate,
+                                   const WebAudioLatencyHint& latencyHint,
                                    PassRefPtr<SecurityOrigin> securityOrigin)
     : m_numberOfOutputChannels(numberOfOutputChannels),
-      m_sampleRate(sampleRate),
       m_isPlaying(false),
       m_callback(callback),
       m_outputBus(AudioBus::create(numberOfOutputChannels,
@@ -70,23 +71,23 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
       m_renderBus(AudioBus::create(numberOfOutputChannels,
                                    AudioUtilities::kRenderQuantumFrames)),
       m_framesElapsed(0) {
-  // Calculate the optimum buffer size first.
-  if (calculateBufferSize()) {
-    // Create WebAudioDevice. blink::WebAudioDevice is designed to support the
-    // local input (e.g. loopback from OS audio system), but Chromium's media
-    // renderer does not support it currently. Thus, we use zero for the number
-    // of input channels.
-    m_webAudioDevice = WTF::wrapUnique(Platform::current()->createAudioDevice(
-        m_callbackBufferSize, 0, numberOfOutputChannels, sampleRate, this,
-        String(), std::move(securityOrigin)));
-    DCHECK(m_webAudioDevice);
+  // Create WebAudioDevice. blink::WebAudioDevice is designed to support the
+  // local input (e.g. loopback from OS audio system), but Chromium's media
+  // renderer does not support it currently. Thus, we use zero for the number
+  // of input channels.
+  m_webAudioDevice = WTF::wrapUnique(Platform::current()->createAudioDevice(
+      0, numberOfOutputChannels, latencyHint, this, String(),
+      std::move(securityOrigin)));
+  DCHECK(m_webAudioDevice);
 
-    // Create a FIFO.
-    m_fifo =
-        WTF::wrapUnique(new PushPullFIFO(numberOfOutputChannels, kFIFOSize));
-  } else {
+  m_callbackBufferSize = m_webAudioDevice->framesPerBuffer();
+
+  if (!checkBufferSize()) {
     NOTREACHED();
   }
+
+  // Create a FIFO.
+  m_fifo = WTF::wrapUnique(new PushPullFIFO(numberOfOutputChannels, kFIFOSize));
 }
 
 AudioDestination::~AudioDestination() {
@@ -103,7 +104,8 @@ void AudioDestination::render(const WebVector<float*>& destinationData,
 
   m_framesElapsed -= std::min(m_framesElapsed, priorFramesSkipped);
   double outputPosition =
-      m_framesElapsed / static_cast<double>(m_sampleRate) - delay;
+      m_framesElapsed / static_cast<double>(m_webAudioDevice->sampleRate()) -
+      delay;
   m_outputPosition.position = outputPosition;
   m_outputPosition.timestamp = delayTimestamp;
   m_outputPositionReceivedTimestamp = base::TimeTicks::Now();
@@ -176,31 +178,7 @@ unsigned long AudioDestination::maxChannelCount() {
       Platform::current()->audioHardwareOutputChannels());
 }
 
-bool AudioDestination::calculateBufferSize() {
-  // Use the optimal buffer size recommended by the audio backend.
-  size_t recommendedHardwareBufferSize = hardwareBufferSize();
-  m_callbackBufferSize = recommendedHardwareBufferSize;
-
-#if OS(ANDROID)
-  // The optimum low-latency hardware buffer size is usually too small on
-  // Android for WebAudio to render without glitching. So, if it is small, use a
-  // larger size. If it was already large, use the requested size.
-  //
-  // Since WebAudio renders in 128-frame blocks, the small buffer sizes (144 for
-  // a Galaxy Nexus), cause significant processing jitter. Sometimes multiple
-  // blocks will processed, but other times will not be since the FIFO can
-  // satisfy the request. By using a larger callbackBufferSize, we smooth out
-  // the jitter.
-  const size_t kSmallBufferSize = 1024;
-  const size_t kDefaultCallbackBufferSize = 2048;
-
-  if (m_callbackBufferSize <= kSmallBufferSize)
-    m_callbackBufferSize = kDefaultCallbackBufferSize;
-
-  LOG(INFO) << "audioHardwareBufferSize = " << recommendedHardwareBufferSize;
-  LOG(INFO) << "callbackBufferSize      = " << m_callbackBufferSize;
-#endif
-
+bool AudioDestination::checkBufferSize() {
   // Histogram for audioHardwareBufferSize
   DEFINE_STATIC_LOCAL(SparseHistogram, hardwareBufferSizeHistogram,
                       ("WebAudio.AudioDestination.HardwareBufferSize"));
@@ -212,7 +190,7 @@ bool AudioDestination::calculateBufferSize() {
                       ("WebAudio.AudioDestination.CallbackBufferSize"));
 
   // Record the sizes if we successfully created an output device.
-  hardwareBufferSizeHistogram.sample(recommendedHardwareBufferSize);
+  hardwareBufferSizeHistogram.sample(hardwareBufferSize());
   callbackBufferSizeHistogram.sample(m_callbackBufferSize);
 
   // Check if the requested buffer size is too large.

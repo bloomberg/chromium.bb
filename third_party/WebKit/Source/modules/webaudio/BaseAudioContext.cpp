@@ -53,7 +53,6 @@
 #include "modules/webaudio/ChannelSplitterNode.h"
 #include "modules/webaudio/ConstantSourceNode.h"
 #include "modules/webaudio/ConvolverNode.h"
-#include "modules/webaudio/DefaultAudioDestinationNode.h"
 #include "modules/webaudio/DelayNode.h"
 #include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/GainNode.h"
@@ -80,9 +79,11 @@
 
 namespace blink {
 
-BaseAudioContext* BaseAudioContext::create(Document& document,
-                                           ExceptionState& exceptionState) {
-  return AudioContext::create(document, exceptionState);
+BaseAudioContext* BaseAudioContext::create(
+    Document& document,
+    const AudioContextOptions& contextOptions,
+    ExceptionState& exceptionState) {
+  return AudioContext::create(document, contextOptions, exceptionState);
 }
 
 // FIXME(dominicc): Devolve these constructors to AudioContext
@@ -112,10 +113,6 @@ BaseAudioContext::BaseAudioContext(Document* document)
     m_autoplayStatus = AutoplayStatus::AutoplayStatusFailed;
     m_userGestureRequired = true;
   }
-
-  m_destinationNode = DefaultAudioDestinationNode::create(this);
-
-  initialize();
 }
 
 // Constructor for offline (non-realtime) rendering.

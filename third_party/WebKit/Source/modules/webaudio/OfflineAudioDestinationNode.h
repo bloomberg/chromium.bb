@@ -63,7 +63,11 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // called.
   size_t callbackBufferSize() const override;
 
-  float sampleRate() const override { return m_renderTarget->sampleRate(); }
+  double sampleRate() const override { return m_renderTarget->sampleRate(); }
+  int framesPerBuffer() const override {
+    NOTREACHED();
+    return 0;
+  }
 
   size_t renderQuantumFrames() const {
     return AudioUtilities::kRenderQuantumFrames;

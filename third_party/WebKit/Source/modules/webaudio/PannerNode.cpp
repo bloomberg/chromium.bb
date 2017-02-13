@@ -252,7 +252,7 @@ void PannerHandler::initialize() {
   if (isInitialized())
     return;
 
-  m_panner = Panner::create(m_panningModel, sampleRate(),
+  m_panner = Panner::create(m_panningModel, context()->sampleRate(),
                             listener()->hrtfDatabaseLoader());
   listener()->addPanner(*this);
 
@@ -318,8 +318,8 @@ bool PannerHandler::setPanningModel(unsigned model) {
   if (!m_panner.get() || model != m_panningModel) {
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);
-    m_panner =
-        Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
+    m_panner = Panner::create(model, context()->sampleRate(),
+                              listener()->hrtfDatabaseLoader());
     m_panningModel = model;
   }
   return true;

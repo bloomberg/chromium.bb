@@ -6,8 +6,9 @@
 
 namespace test_runner {
 
-MockWebAudioDevice::MockWebAudioDevice(double sample_rate)
-    : sample_rate_(sample_rate) {}
+MockWebAudioDevice::MockWebAudioDevice(double sample_rate,
+                                       int frames_per_buffer)
+    : sample_rate_(sample_rate), frames_per_buffer_(frames_per_buffer) {}
 
 MockWebAudioDevice::~MockWebAudioDevice() {}
 
@@ -17,6 +18,10 @@ void MockWebAudioDevice::stop() {}
 
 double MockWebAudioDevice::sampleRate() {
   return sample_rate_;
+}
+
+int MockWebAudioDevice::framesPerBuffer() {
+  return frames_per_buffer_;
 }
 
 }  // namespace test_runner

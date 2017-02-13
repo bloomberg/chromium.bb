@@ -10,31 +10,41 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
+#include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/origin.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 class SilentSinkSuspender;
 }
 
 namespace content {
-class RendererWebAudioDeviceImpl
-    : public blink::WebAudioDevice,
-      public media::AudioRendererSink::RenderCallback {
+class CONTENT_EXPORT RendererWebAudioDeviceImpl
+    : NON_EXPORTED_BASE(public blink::WebAudioDevice),
+      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
  public:
-  RendererWebAudioDeviceImpl(const media::AudioParameters& params,
-                             blink::WebAudioDevice::RenderCallback* callback,
-                             int session_id,
-                             const url::Origin& security_origin);
   ~RendererWebAudioDeviceImpl() override;
+
+  static RendererWebAudioDeviceImpl* Create(
+      media::ChannelLayout layout,
+      const blink::WebAudioLatencyHint& latency_hint,
+      blink::WebAudioDevice::RenderCallback* callback,
+      int session_id,
+      const url::Origin& security_origin);
 
   // blink::WebAudioDevice implementation.
   void start() override;
   void stop() override;
   double sampleRate() override;
+  int framesPerBuffer() override;
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(base::TimeDelta delay,
@@ -44,8 +54,34 @@ class RendererWebAudioDeviceImpl
 
   void OnRenderError() override;
 
+  void SetMediaTaskRunnerForTesting(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
+
+ protected:
+  // Callback to get output device params (for tests).
+  using OutputDeviceParamsCallback = base::Callback<media::AudioParameters(
+      int frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin)>;
+
+  // Callback get render frame ID for current context (for tests).
+  using RenderFrameIdCallback = base::Callback<int()>;
+
+  RendererWebAudioDeviceImpl(media::ChannelLayout layout,
+                             const blink::WebAudioLatencyHint& latency_hint,
+                             blink::WebAudioDevice::RenderCallback* callback,
+                             int session_id,
+                             const url::Origin& security_origin,
+                             const OutputDeviceParamsCallback& device_params_cb,
+                             const RenderFrameIdCallback& render_frame_id_cb);
+
  private:
-  const media::AudioParameters params_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& GetMediaTaskRunner();
+
+  media::AudioParameters sink_params_;
+
+  const blink::WebAudioLatencyHint latency_hint_;
 
   // Weak reference to the callback into WebKit code.
   blink::WebAudioDevice::RenderCallback* const client_callback_;
@@ -65,6 +101,12 @@ class RendererWebAudioDeviceImpl
 
   // Used to suspend |sink_| usage when silence has been detected for too long.
   std::unique_ptr<media::SilentSinkSuspender> webaudio_suspender_;
+
+  // Render frame routing ID for the current context.
+  int frame_id_;
+
+  // Allow unit tests to set a custom MediaThreadTaskRunner.
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };

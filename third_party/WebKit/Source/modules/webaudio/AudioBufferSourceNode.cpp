@@ -562,7 +562,7 @@ double AudioBufferSourceHandler::computePlaybackRate() {
   if (buffer()) {
     // Use doubles to compute this to full accuracy.
     sampleRateFactor =
-        buffer()->sampleRate() / static_cast<double>(sampleRate());
+        buffer()->sampleRate() / static_cast<double>(context()->sampleRate());
   }
 
   // Use finalValue() to incorporate changes of AudioParamTimeline and

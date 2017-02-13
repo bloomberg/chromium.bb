@@ -42,6 +42,7 @@ namespace blink {
 
 class PushPullFIFO;
 class SecurityOrigin;
+class WebAudioLatencyHint;
 
 // The AudioDestination class is an audio sink interface between the media
 // renderer and the Blink's WebAudio module. It has a FIFO to adapt the
@@ -54,14 +55,14 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
  public:
   AudioDestination(AudioIOCallback&,
                    unsigned numberOfOutputChannels,
-                   float sampleRate,
+                   const WebAudioLatencyHint&,
                    PassRefPtr<SecurityOrigin>);
   ~AudioDestination() override;
 
   static std::unique_ptr<AudioDestination> create(
       AudioIOCallback&,
       unsigned numberOfOutputChannels,
-      float sampleRate,
+      const WebAudioLatencyHint&,
       PassRefPtr<SecurityOrigin>);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
@@ -76,8 +77,13 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   virtual void stop();
 
   size_t callbackBufferSize() const { return m_callbackBufferSize; }
-  float sampleRate() const { return m_sampleRate; }
   bool isPlaying() { return m_isPlaying; }
+
+  double sampleRate() const { return m_webAudioDevice->sampleRate(); }
+
+  // Returns the audio buffer size in frames used by the underlying audio
+  // hardware.
+  int framesPerBuffer() const { return m_webAudioDevice->framesPerBuffer(); }
 
   // The information from the actual audio hardware. (via Platform::current)
   static float hardwareSampleRate();
@@ -87,7 +93,6 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   std::unique_ptr<WebAudioDevice> m_webAudioDevice;
   unsigned m_numberOfOutputChannels;
   size_t m_callbackBufferSize;
-  float m_sampleRate;
   bool m_isPlaying;
 
   // The render callback function of WebAudio engine. (i.e. DestinationNode)
@@ -107,9 +112,8 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   AudioIOPosition m_outputPosition;
   base::TimeTicks m_outputPositionReceivedTimestamp;
 
-  // Calculate the optimum buffer size for a given platform. Return false if the
-  // buffer size calculation fails.
-  bool calculateBufferSize();
+  // Check if the buffer size chosen by the WebAudioDevice is too large.
+  bool checkBufferSize();
 
   size_t hardwareBufferSize();
 };

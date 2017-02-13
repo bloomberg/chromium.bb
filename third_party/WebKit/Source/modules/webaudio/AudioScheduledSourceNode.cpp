@@ -61,7 +61,7 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
   if (quantumFrameSize != AudioUtilities::kRenderQuantumFrames)
     return;
 
-  double sampleRate = this->sampleRate();
+  double sampleRate = context()->sampleRate();
 
   // quantumStartFrame     : Start frame of the current time quantum.
   // quantumEndFrame       : End frame of the current time quantum.

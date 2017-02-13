@@ -26,18 +26,22 @@
 #ifndef DefaultAudioDestinationNode_h
 #define DefaultAudioDestinationNode_h
 
+#include <memory>
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "platform/audio/AudioDestination.h"
-#include <memory>
+#include "public/platform/WebAudioLatencyHint.h"
 
 namespace blink {
 
 class BaseAudioContext;
 class ExceptionState;
+class WebAudioLatencyHint;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
  public:
-  static PassRefPtr<DefaultAudioDestinationHandler> create(AudioNode&);
+  static PassRefPtr<DefaultAudioDestinationHandler> create(
+      AudioNode&,
+      const WebAudioLatencyHint&);
   ~DefaultAudioDestinationHandler() override;
 
   // AudioHandler
@@ -52,24 +56,30 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   unsigned long maxChannelCount() const override;
   // Returns the rendering callback buffer size.
   size_t callbackBufferSize() const override;
+  double sampleRate() const override;
+  int framesPerBuffer() const override;
 
  private:
-  explicit DefaultAudioDestinationHandler(AudioNode&);
+  explicit DefaultAudioDestinationHandler(AudioNode&,
+                                          const WebAudioLatencyHint&);
   void createDestination();
 
   std::unique_ptr<AudioDestination> m_destination;
   String m_inputDeviceId;
   unsigned m_numberOfInputChannels;
+  const WebAudioLatencyHint m_latencyHint;
 };
 
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
  public:
-  static DefaultAudioDestinationNode* create(BaseAudioContext*);
+  static DefaultAudioDestinationNode* create(BaseAudioContext*,
+                                             const WebAudioLatencyHint&);
 
   size_t callbackBufferSize() const { return handler().callbackBufferSize(); };
 
  private:
-  explicit DefaultAudioDestinationNode(BaseAudioContext&);
+  explicit DefaultAudioDestinationNode(BaseAudioContext&,
+                                       const WebAudioLatencyHint&);
 };
 
 }  // namespace blink

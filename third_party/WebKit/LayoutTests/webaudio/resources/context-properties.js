@@ -39,9 +39,6 @@ let BaseAudioContextOwnProperties = [
   'createMediaElementSource',
   'createMediaStreamDestination',
   'createMediaStreamSource',
-
-  // TODO(hongchan): Not implemented yet.
-  // 'baseLatency'
 ];
 
 
@@ -49,7 +46,8 @@ let AudioContextOwnProperties = [
   'close',
   'constructor',
   'suspend',
-  'getOutputTimestamp'
+  'getOutputTimestamp',
+  'baseLatency',
 
   // TODO(hongchan): Not implemented yet.
   // 'outputLatency',

@@ -31,9 +31,12 @@
 
 namespace blink {
 
-DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioNode& node)
-    : AudioDestinationHandler(node, AudioDestination::hardwareSampleRate()),
-      m_numberOfInputChannels(0) {
+DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
+    AudioNode& node,
+    const WebAudioLatencyHint& latencyHint)
+    : AudioDestinationHandler(node),
+      m_numberOfInputChannels(0),
+      m_latencyHint(latencyHint) {
   // Node-specific default mixing rules.
   m_channelCount = 2;
   setInternalChannelCountMode(Explicit);
@@ -41,8 +44,9 @@ DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioNode& node)
 }
 
 PassRefPtr<DefaultAudioDestinationHandler>
-DefaultAudioDestinationHandler::create(AudioNode& node) {
-  return adoptRef(new DefaultAudioDestinationHandler(node));
+DefaultAudioDestinationHandler::create(AudioNode& node,
+                                       const WebAudioLatencyHint& latencyHint) {
+  return adoptRef(new DefaultAudioDestinationHandler(node, latencyHint));
 }
 
 DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler() {
@@ -75,12 +79,8 @@ void DefaultAudioDestinationHandler::uninitialize() {
 }
 
 void DefaultAudioDestinationHandler::createDestination() {
-  float hardwareSampleRate = AudioDestination::hardwareSampleRate();
-  VLOG(1) << ">>>> hardwareSampleRate = " << hardwareSampleRate;
-
-  m_destination =
-      AudioDestination::create(*this, channelCount(), hardwareSampleRate,
-                               context()->getSecurityOrigin());
+  m_destination = AudioDestination::create(*this, channelCount(), m_latencyHint,
+                                           context()->getSecurityOrigin());
 }
 
 void DefaultAudioDestinationHandler::startRendering() {
@@ -137,17 +137,27 @@ void DefaultAudioDestinationHandler::setChannelCount(
   }
 }
 
+double DefaultAudioDestinationHandler::sampleRate() const {
+  return m_destination ? m_destination->sampleRate() : 0;
+}
+
+int DefaultAudioDestinationHandler::framesPerBuffer() const {
+  return m_destination ? m_destination->framesPerBuffer() : 0;
+}
+
 // ----------------------------------------------------------------
 
 DefaultAudioDestinationNode::DefaultAudioDestinationNode(
-    BaseAudioContext& context)
+    BaseAudioContext& context,
+    const WebAudioLatencyHint& latencyHint)
     : AudioDestinationNode(context) {
-  setHandler(DefaultAudioDestinationHandler::create(*this));
+  setHandler(DefaultAudioDestinationHandler::create(*this, latencyHint));
 }
 
 DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(
-    BaseAudioContext* context) {
-  return new DefaultAudioDestinationNode(*context);
+    BaseAudioContext* context,
+    const WebAudioLatencyHint& latencyHint) {
+  return new DefaultAudioDestinationNode(*context, latencyHint);
 }
 
 }  // namespace blink

@@ -172,8 +172,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // The argument must be less than numberOfOutputs().
   AudioNodeOutput& output(unsigned);
 
-  virtual float sampleRate() const { return m_sampleRate; }
-
   // processIfNecessary() is called by our output(s) when the rendering graph
   // needs this AudioNode to process.  This method ensures that the AudioNode
   // will only process once per rendering time quantum even if it's called
@@ -272,7 +270,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // See http://crbug.com/404527 for the detail.
   UntracedMember<BaseAudioContext> m_context;
 
-  float m_sampleRate;
   Vector<std::unique_ptr<AudioNodeInput>> m_inputs;
   Vector<std::unique_ptr<AudioNodeOutput>> m_outputs;
 

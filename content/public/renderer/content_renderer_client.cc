@@ -68,9 +68,7 @@ ContentRendererClient::OverrideCreateMIDIAccessor(
   return nullptr;
 }
 
-blink::WebAudioDevice*
-ContentRendererClient::OverrideCreateAudioDevice(
-    double sample_rate) {
+blink::WebAudioDevice* ContentRendererClient::OverrideCreateAudioDevice() {
   return nullptr;
 }
 

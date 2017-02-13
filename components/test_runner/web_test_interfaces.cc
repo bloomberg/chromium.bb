@@ -78,8 +78,9 @@ WebMIDIAccessor* WebTestInterfaces::CreateMIDIAccessor(
   return new MockWebMIDIAccessor(client, interfaces_.get());
 }
 
-WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate) {
-  return new MockWebAudioDevice(sample_rate);
+WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate,
+                                                     int frames_per_buffer) {
+  return new MockWebAudioDevice(sample_rate, frames_per_buffer);
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(

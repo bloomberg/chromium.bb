@@ -158,7 +158,7 @@ double ConvolverHandler::tailTime() const {
   if (tryLocker.locked())
     return m_reverb
                ? m_reverb->impulseResponseLength() /
-                     static_cast<double>(sampleRate())
+                     static_cast<double>(context()->sampleRate())
                : 0;
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.
@@ -169,7 +169,8 @@ double ConvolverHandler::latencyTime() const {
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked())
     return m_reverb
-               ? m_reverb->latencyFrames() / static_cast<double>(sampleRate())
+               ? m_reverb->latencyFrames() /
+                     static_cast<double>(context()->sampleRate())
                : 0;
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.

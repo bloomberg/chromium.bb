@@ -60,7 +60,8 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   blink::WebMIDIAccessor* CreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client);
 
-  blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
+  blink::WebAudioDevice* CreateAudioDevice(double sample_rate,
+                                           int frames_per_buffer);
 
   TestInterfaces* GetTestInterfaces();
 

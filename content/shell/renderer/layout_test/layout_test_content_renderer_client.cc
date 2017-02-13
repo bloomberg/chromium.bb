@@ -194,12 +194,10 @@ LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
   return interfaces->CreateMIDIAccessor(client);
 }
 
-WebAudioDevice*
-LayoutTestContentRendererClient::OverrideCreateAudioDevice(
-    double sample_rate) {
+WebAudioDevice* LayoutTestContentRendererClient::OverrideCreateAudioDevice() {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateAudioDevice(sample_rate);
+  return interfaces->CreateAudioDevice(44100, 128);
 }
 
 WebClipboard* LayoutTestContentRendererClient::OverrideWebClipboard() {

@@ -59,6 +59,7 @@ class WebAudioDevice {
   virtual void start() = 0;
   virtual void stop() = 0;
   virtual double sampleRate() = 0;
+  virtual int framesPerBuffer() = 0;
 };
 
 }  // namespace blink

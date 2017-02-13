@@ -99,8 +99,8 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels,
     m_sourceNumberOfChannels = numberOfChannels;
     m_sourceSampleRate = sourceSampleRate;
 
-    if (sourceSampleRate != sampleRate()) {
-      double scaleFactor = sourceSampleRate / sampleRate();
+    if (sourceSampleRate != context()->sampleRate()) {
+      double scaleFactor = sourceSampleRate / context()->sampleRate();
       m_multiChannelResampler =
           WTF::makeUnique<MultiChannelResampler>(scaleFactor, numberOfChannels);
     } else {
@@ -177,12 +177,12 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames) {
     // Grab data from the provider so that the element continues to make
     // progress, even if we're going to output silence anyway.
     if (m_multiChannelResampler.get()) {
-      DCHECK_NE(m_sourceSampleRate, sampleRate());
+      DCHECK_NE(m_sourceSampleRate, context()->sampleRate());
       m_multiChannelResampler->process(&provider, outputBus, numberOfFrames);
     } else {
       // Bypass the resampler completely if the source is at the context's
       // sample-rate.
-      DCHECK_EQ(m_sourceSampleRate, sampleRate());
+      DCHECK_EQ(m_sourceSampleRate, context()->sampleRate());
       provider.provideInput(outputBus, numberOfFrames);
     }
     // Output silence if we don't have access to the element.

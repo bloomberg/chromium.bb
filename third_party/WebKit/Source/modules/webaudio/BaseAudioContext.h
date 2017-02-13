@@ -52,6 +52,7 @@ class AnalyserNode;
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBufferSourceNode;
+class AudioContextOptions;
 class AudioListener;
 class BaseAudioContextTest;
 class BiquadFilterNode;
@@ -101,7 +102,9 @@ class MODULES_EXPORT BaseAudioContext
   enum AudioContextState { Suspended, Running, Closed };
 
   // Create an AudioContext for rendering to the audio hardware.
-  static BaseAudioContext* create(Document&, ExceptionState&);
+  static BaseAudioContext* create(Document&,
+                                  const AudioContextOptions&,
+                                  ExceptionState&);
 
   ~BaseAudioContext() override;
 
@@ -138,7 +141,15 @@ class MODULES_EXPORT BaseAudioContext
   }
 
   float sampleRate() const {
-    return m_destinationNode ? m_destinationNode->handler().sampleRate() : 0;
+    return m_destinationNode
+               ? m_destinationNode->audioDestinationHandler().sampleRate()
+               : closedContextSampleRate();
+  }
+
+  float framesPerBuffer() const {
+    return m_destinationNode
+               ? m_destinationNode->audioDestinationHandler().framesPerBuffer()
+               : 0;
   }
 
   size_t callbackBufferSize() const {

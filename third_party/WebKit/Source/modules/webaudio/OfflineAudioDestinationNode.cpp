@@ -44,7 +44,7 @@ namespace blink {
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     AudioNode& node,
     AudioBuffer* renderTarget)
-    : AudioDestinationHandler(node, renderTarget->sampleRate()),
+    : AudioDestinationHandler(node),
       m_renderTarget(renderTarget),
       m_renderThread(WTF::wrapUnique(
           Platform::current()->createThread("offline audio renderer"))),

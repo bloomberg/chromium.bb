@@ -20,6 +20,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/ArrayBufferOrArrayBufferViewOrUSVString.h",
   "$bindings_modules_v8_output_dir/ArrayBufferViewOrBlobOrStringOrFormData.cpp",
   "$bindings_modules_v8_output_dir/ArrayBufferViewOrBlobOrStringOrFormData.h",
+  "$bindings_modules_v8_output_dir/AudioContextLatencyCategoryOrDouble.cpp",
+  "$bindings_modules_v8_output_dir/AudioContextLatencyCategoryOrDouble.h",
   "$bindings_modules_v8_output_dir/BooleanOrConstrainBooleanParameters.cpp",
   "$bindings_modules_v8_output_dir/BooleanOrConstrainBooleanParameters.h",
   "$bindings_modules_v8_output_dir/BooleanOrMediaTrackConstraints.cpp",

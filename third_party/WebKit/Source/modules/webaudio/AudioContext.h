@@ -7,23 +7,28 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/webaudio/AudioContextOptions.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class AudioContextOptions;
 class AudioTimestamp;
 class Document;
 class ExceptionState;
 class ScriptState;
+class WebAudioLatencyHint;
 
 // This is an BaseAudioContext which actually plays sound, unlike an
 // OfflineAudioContext which renders sound into a buffer.
-class AudioContext : public BaseAudioContext {
+class MODULES_EXPORT AudioContext : public BaseAudioContext {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioContext* create(Document&, ExceptionState&);
+  static AudioContext* create(Document&,
+                              const AudioContextOptions&,
+                              ExceptionState&);
 
   ~AudioContext() override;
   DECLARE_VIRTUAL_TRACE();
@@ -37,9 +42,10 @@ class AudioContext : public BaseAudioContext {
   bool hasRealtimeConstraint() final { return true; }
 
   void getOutputTimestamp(ScriptState*, AudioTimestamp&);
+  double baseLatency() const;
 
  protected:
-  AudioContext(Document&);
+  AudioContext(Document&, const WebAudioLatencyHint&);
 
   void didClose() final;
 

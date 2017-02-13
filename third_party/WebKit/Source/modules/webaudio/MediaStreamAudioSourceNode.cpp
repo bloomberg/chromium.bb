@@ -69,11 +69,11 @@ MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler() {
 void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels,
                                               float sourceSampleRate) {
   if (numberOfChannels != m_sourceNumberOfChannels ||
-      sourceSampleRate != sampleRate()) {
+      sourceSampleRate != context()->sampleRate()) {
     // The sample-rate must be equal to the context's sample-rate.
     if (!numberOfChannels ||
         numberOfChannels > BaseAudioContext::maxNumberOfChannels() ||
-        sourceSampleRate != sampleRate()) {
+        sourceSampleRate != context()->sampleRate()) {
       // process() will generate silence for these uninitialized values.
       DLOG(ERROR) << "setFormat(" << numberOfChannels << ", "
                   << sourceSampleRate << ") - unhandled format change";

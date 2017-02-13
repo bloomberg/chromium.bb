@@ -39,7 +39,7 @@ class BaseAudioContext;
 
 class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
  public:
-  AudioDestinationHandler(AudioNode&, float sampleRate);
+  AudioDestinationHandler(AudioNode&);
   ~AudioDestinationHandler() override;
 
   // AudioHandler
@@ -68,6 +68,10 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
 
   // Returns the rendering callback buffer size.
   virtual size_t callbackBufferSize() const = 0;
+  virtual double sampleRate() const = 0;
+
+  // Returns the audio buffer size in frames used by the AudioContext.
+  virtual int framesPerBuffer() const = 0;
 
  protected:
   // LocalAudioInputProvider allows us to expose an AudioSourceProvider for

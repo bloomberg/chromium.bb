@@ -68,14 +68,11 @@ audit.define('test', function(task, should) {
       'Connecting a node to a different context')
       .throw('InvalidAccessError');
 
+  // 3-arg AudioContext doesn't create an offline context anymore.
   should(
       () => context3 = new AudioContext(1, 44100, 44100),
       'context3 = new AudioContext(1, 44100, 44100)')
-      .notThrow();
-  should(
-      context3 instanceof OfflineAudioContext,
-      'context3 instanceof OfflineAudioContext')
-      .beFalse();
+      .throw('TypeError');
 
   // Ensure it is an EventTarget
   should(audioNode instanceof EventTarget, 'AudioNode is an EventTarget')
@@ -85,7 +82,6 @@ audit.define('test', function(task, should) {
 });
 
 audit.run();
-
 </script>
 
 </body>

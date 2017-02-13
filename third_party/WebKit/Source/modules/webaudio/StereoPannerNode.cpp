@@ -85,7 +85,7 @@ void StereoPannerHandler::initialize() {
   if (isInitialized())
     return;
 
-  m_stereoPanner = StereoPanner::create(sampleRate());
+  m_stereoPanner = StereoPanner::create(context()->sampleRate());
 
   AudioHandler::initialize();
 }

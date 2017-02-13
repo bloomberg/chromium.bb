@@ -137,6 +137,30 @@
         .then(task.done.bind(task));
     });
 
+    // Task: test online context (4).
+    audit.define('test-online-context-4', function (task, should) {
+      task.describe("Test closed online context 4");
+      // Create a context and verify that its sampleRate and baseLatency return
+      // valid values whether it's open or closed.
+      should(() => context = new AudioContext(),
+          "context = new AudioContext()")
+        .notThrow();
+      should(context.sampleRate, "context.sampleRate")
+        .beGreaterThan("0");
+      should(context.sampleRate, "context.baseLatency")
+        .beGreaterThan("0");
+
+      should(context.close(), "context.close()")
+        .beResolved()
+        .then(() => {
+          should(context.sampleRate, "context.sampleRate")
+            .beGreaterThan("0");
+          should(context.sampleRate, "context.baseLatency")
+            .beGreaterThan("0");
+        })
+      .then(task.done.bind(task));
+    });
+
     // Task: test offline context (1).
     audit.define('test-offline-context-1', function (task, should) {
       task.describe("Test offline context");

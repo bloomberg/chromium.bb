@@ -86,6 +86,7 @@
 #include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
@@ -141,6 +142,7 @@
 
 using blink::Platform;
 using blink::WebAudioDevice;
+using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
@@ -659,16 +661,15 @@ WebDatabaseObserver* RendererBlinkPlatformImpl::databaseObserver() {
 }
 
 WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
-    size_t buffer_size,
     unsigned input_channels,
     unsigned channels,
-    double sample_rate,
+    const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
     const blink::WebString& input_device_id,
     const blink::WebSecurityOrigin& security_origin) {
   // Use a mock for testing.
   blink::WebAudioDevice* mock_device =
-      GetContentClient()->renderer()->OverrideCreateAudioDevice(sample_rate);
+      GetContentClient()->renderer()->OverrideCreateAudioDevice();
   if (mock_device)
     return mock_device;
 
@@ -702,9 +703,9 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
       layout = media::CHANNEL_LAYOUT_7_1;
       break;
     default:
-      // If the layout is not supported (more than 9 channels), falls back to
-      // discrete mode.
-      layout = media::CHANNEL_LAYOUT_DISCRETE;
+      // TODO need to also pass 'channels' into RendererWebAudioDeviceImpl for
+      // CHANNEL_LAYOUT_DISCRETE
+      NOTREACHED();
   }
 
   int session_id = 0;
@@ -716,15 +717,9 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
     input_channels = 0;
   }
 
-  // For CHANNEL_LAYOUT_DISCRETE, pass the explicit channel count along with
-  // the channel layout when creating an |AudioParameters| object.
-  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                layout, static_cast<int>(sample_rate), 16,
-                                buffer_size);
-  params.set_channels_for_discrete(channels);
-
-  return new RendererWebAudioDeviceImpl(
-      params, callback, session_id, static_cast<url::Origin>(security_origin));
+  return RendererWebAudioDeviceImpl::Create(
+      layout, latency_hint, callback, session_id,
+      static_cast<url::Origin>(security_origin));
 }
 
 bool RendererBlinkPlatformImpl::loadAudioResource(

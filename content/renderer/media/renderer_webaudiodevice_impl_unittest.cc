@@ -1,0 +1,195 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/renderer/media/renderer_webaudiodevice_impl.h"
+
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
+#include "content/renderer/media/audio_device_factory.h"
+#include "media/base/audio_capturer_source.h"
+#include "media/base/mock_audio_renderer_sink.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+
+namespace content {
+
+namespace {
+
+const int kHardwareSampleRate = 44100;
+const int kHardwareBufferSize = 128;
+const int kRenderFrameId = 100;
+
+int MockFrameIdFromCurrentContext() {
+  return kRenderFrameId;
+}
+
+media::AudioParameters MockGetOutputDeviceParameters(
+    int frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
+  return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO,
+                                kHardwareSampleRate, 16, kHardwareBufferSize);
+}
+
+class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
+ public:
+  RendererWebAudioDeviceImplUnderTest(
+      media::ChannelLayout layout,
+      const blink::WebAudioLatencyHint& latency_hint,
+      blink::WebAudioDevice::RenderCallback* callback,
+      int session_id,
+      const url::Origin& security_origin)
+      : RendererWebAudioDeviceImpl(layout,
+                                   latency_hint,
+                                   callback,
+                                   session_id,
+                                   security_origin,
+                                   base::Bind(&MockGetOutputDeviceParameters),
+                                   base::Bind(&MockFrameIdFromCurrentContext)) {
+  }
+};
+
+}  // namespace
+
+class RendererWebAudioDeviceImplTest
+    : public blink::WebAudioDevice::RenderCallback,
+      public AudioDeviceFactory,
+      public testing::Test {
+ protected:
+  RendererWebAudioDeviceImplTest() {}
+
+  void SetupDevice(blink::WebAudioLatencyHint latencyHint) {
+    webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
+        media::CHANNEL_LAYOUT_MONO, latencyHint, this, 0, url::Origin()));
+    webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
+  }
+
+  MOCK_METHOD1(CreateAudioCapturerSource,
+               scoped_refptr<media::AudioCapturerSource>(int));
+  MOCK_METHOD4(CreateFinalAudioRendererSink,
+               scoped_refptr<media::AudioRendererSink>(int,
+                                                       int,
+                                                       const std::string&,
+                                                       const url::Origin&));
+  MOCK_METHOD5(
+      CreateSwitchableAudioRendererSink,
+      scoped_refptr<media::SwitchableAudioRendererSink>(SourceType,
+                                                        int,
+                                                        int,
+                                                        const std::string&,
+                                                        const url::Origin&));
+
+  scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
+      SourceType source_type,
+      int render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) {
+    scoped_refptr<media::MockAudioRendererSink> mock_sink =
+        new media::MockAudioRendererSink(
+            device_id, media::OUTPUT_DEVICE_STATUS_OK,
+            MockGetOutputDeviceParameters(render_frame_id, session_id,
+                                          device_id, security_origin));
+
+    EXPECT_CALL(*mock_sink.get(), Start());
+    EXPECT_CALL(*mock_sink.get(), Play());
+    EXPECT_CALL(*mock_sink.get(), Stop());
+
+    return mock_sink;
+  }
+
+  void TearDown() override { webaudio_device_.reset(); }
+
+  std::unique_ptr<RendererWebAudioDeviceImpl> webaudio_device_;
+  base::MessageLoop message_loop_;
+};
+
+TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
+  blink::WebAudioLatencyHint interactiveLatencyHint(
+      blink::WebAudioLatencyHint::kCategoryInteractive);
+  int interactiveBufferSize =
+      media::AudioLatency::GetInteractiveBufferSize(kHardwareBufferSize);
+  SetupDevice(interactiveLatencyHint);
+
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), interactiveBufferSize);
+
+  blink::WebAudioLatencyHint balancedLatencyHint(
+      blink::WebAudioLatencyHint::kCategoryBalanced);
+  int balancedBufferSize = media::AudioLatency::GetRtcBufferSize(
+      kHardwareSampleRate, kHardwareBufferSize);
+  SetupDevice(balancedLatencyHint);
+
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), balancedBufferSize);
+
+  blink::WebAudioLatencyHint playbackLatencyHint(
+      blink::WebAudioLatencyHint::kCategoryPlayback);
+  int playbackBufferSize =
+      media::AudioLatency::GetHighLatencyBufferSize(kHardwareSampleRate, 0);
+  SetupDevice(playbackLatencyHint);
+
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+
+  webaudio_device_->start();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+
+  webaudio_device_->stop();
+  EXPECT_EQ(webaudio_device_->sampleRate(), kHardwareSampleRate);
+  EXPECT_EQ(webaudio_device_->framesPerBuffer(), playbackBufferSize);
+
+#if !defined(OS_ANDROID)
+  EXPECT_GE(playbackBufferSize, balancedBufferSize);
+  EXPECT_GE(balancedBufferSize, interactiveBufferSize);
+#endif
+}
+
+}  // namespace content

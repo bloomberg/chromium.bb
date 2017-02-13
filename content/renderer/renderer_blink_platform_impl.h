@@ -137,10 +137,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebDatabaseObserver* databaseObserver() override;
 
   blink::WebAudioDevice* createAudioDevice(
-      size_t buffer_size,
       unsigned input_channels,
       unsigned channels,
-      double sample_rate,
+      const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
       const blink::WebString& input_device_id,
       const blink::WebSecurityOrigin& security_origin) override;

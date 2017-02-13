@@ -45,7 +45,6 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
       m_nodeType(NodeTypeUnknown),
       m_node(&node),
       m_context(node.context()),
-      m_sampleRate(sampleRate),
       m_lastProcessingTime(-1),
       m_lastNonSilentTime(-1),
       m_connectionRefCount(0),
@@ -323,10 +322,11 @@ void AudioHandler::processIfNecessary(size_t framesToProcess) {
     pullInputs(framesToProcess);
 
     bool silentInputs = inputsAreSilent();
-    if (!silentInputs)
+    if (!silentInputs) {
       m_lastNonSilentTime =
           (context()->currentSampleFrame() + framesToProcess) /
-          static_cast<double>(m_sampleRate);
+          static_cast<double>(context()->sampleRate());
+    }
 
     if (silentInputs && propagatesSilence()) {
       silenceOutputs();
