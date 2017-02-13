@@ -156,12 +156,6 @@ class DOMDataStore {
     m_wrapperMap->markWrapper(scriptWrappable);
   }
 
-  // Dissociates a wrapper, if any, from |scriptWrappable|.
-  void unsetWrapperIfAny(ScriptWrappable* scriptWrappable) {
-    DCHECK(!m_isMainWorld);
-    m_wrapperMap->removeIfAny(scriptWrappable);
-  }
-
   bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue,
                           ScriptWrappable* object) {
     if (m_isMainWorld)
@@ -219,16 +213,18 @@ class DOMDataStore {
 template <>
 inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(
     v8::Isolate*,
-    v8::Global<v8::Object>,
+    v8::Global<v8::Object> value,
     ScriptWrappable*) {
-  WrapperTypeInfo::wrapperDestroyed();
+  toWrapperTypeInfo(value)->wrapperDestroyed();
 }
 
 template <>
 inline void
 DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(
-    const v8::WeakCallbackInfo<WeakCallbackDataType>&) {
-  WrapperTypeInfo::wrapperDestroyed();
+    const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
+  auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(
+      data.GetInternalField(v8DOMWrapperTypeIndex));
+  wrapperTypeInfo->wrapperDestroyed();
 }
 
 }  // namespace blink

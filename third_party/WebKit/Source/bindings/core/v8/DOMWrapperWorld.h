@@ -43,7 +43,6 @@
 namespace blink {
 
 class DOMDataStore;
-class DOMObjectHolderBase;
 
 enum WorldIdConstants {
   MainWorldId = 0,
@@ -54,6 +53,8 @@ enum WorldIdConstants {
   WorkerWorldId,
   TestingWorldId,
 };
+
+class DOMObjectHolderBase;
 
 // This class represent a collection of DOM wrappers for a specific world.
 class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
@@ -113,6 +114,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   int worldId() const { return m_worldId; }
   DOMDataStore& domDataStore() const { return *m_domDataStore; }
 
+ public:
   template <typename T>
   void registerDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
 
@@ -123,29 +125,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
       const v8::WeakCallbackInfo<DOMObjectHolderBase>&);
   void registerDOMObjectHolderInternal(std::unique_ptr<DOMObjectHolderBase>);
   void unregisterDOMObjectHolder(DOMObjectHolderBase*);
-
-  // Dissociates all wrappers in all worlds associated with |scriptWrappable|.
-  //
-  // Do not use this function except for DOMWindow.  Only DOMWindow needs to
-  // dissociate wrappers from the ScriptWrappable because of the following two
-  // reasons.
-  //
-  // Reason 1) Case of the main world
-  // A DOMWindow may be collected by Blink GC *before* V8 GC collects the
-  // wrapper because the wrapper object associated with a DOMWindow is a global
-  // proxy object, which remains after navigations.  We don't want V8 GC
-  // to reset the weak persistent handle within the DOMWindow *after* Blink GC
-  // collects the DOMWindow because it's use-after-free.  Thus, we need to
-  // dissociate the wrapper in advance.
-  //
-  // Reason 2) Case of isolated worlds
-  // As same, a DOMWindow may be collected before the wrapper gets collected.
-  // A DOMWrapperMap supports mapping from ScriptWrappable* to v8::Global<T>,
-  // and we don't want to leave an entry of an already-dead DOMWindow* to the
-  // persistent handle for the global proxy object, especially considering that
-  // the address to the already-dead DOMWindow* may be re-used.
-  friend class DOMWindow;
-  static void dissociateDOMWindowWrappersInAllWorlds(ScriptWrappable*);
 
   static unsigned isolatedWorldCount;
 

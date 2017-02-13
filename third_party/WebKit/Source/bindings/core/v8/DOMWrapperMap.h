@@ -79,11 +79,12 @@ class DOMWrapperMap {
     return true;
   }
 
-  void removeIfAny(KeyType* key) {
+  void clear() { m_map.Clear(); }
+
+  void removeAndDispose(KeyType* key) {
+    ASSERT(containsKey(key));
     m_map.Remove(key);
   }
-
-  void clear() { m_map.Clear(); }
 
   void markWrapper(KeyType* object) {
     m_map.RegisterExternallyReferencedObject(object);

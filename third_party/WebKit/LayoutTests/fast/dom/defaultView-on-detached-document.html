@@ -40,7 +40,7 @@ function runTest()
 function finishTest()
 {
     shouldBeTrue("testFrameUnloaded");
-    shouldBeNull("cachedDocument.defaultView");
+    shouldBeUndefined("cachedDocument.defaultView");
     finishJSTest();
 }
 </script>

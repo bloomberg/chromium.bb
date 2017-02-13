@@ -30,13 +30,19 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 
-#include <memory>
-
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptFunction.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8Window.h"
+#include "bindings/core/v8/WindowProxy.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/ExecutionContext.h"
 #include "wtf/HashTraits.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 
 namespace blink {
 
@@ -307,18 +313,6 @@ void DOMWrapperWorld::weakCallbackForDOMObjectHolder(
     const v8::WeakCallbackInfo<DOMObjectHolderBase>& data) {
   DOMObjectHolderBase* holderBase = data.GetParameter();
   holderBase->world()->unregisterDOMObjectHolder(holderBase);
-}
-
-void DOMWrapperWorld::dissociateDOMWindowWrappersInAllWorlds(
-    ScriptWrappable* scriptWrappable) {
-  DCHECK(scriptWrappable);
-  DCHECK(isMainThread());
-
-  scriptWrappable->unsetWrapperIfAny();
-
-  for (auto& world : isolatedWorldMap().values()) {
-    world->domDataStore().unsetWrapperIfAny(scriptWrappable);
-  }
 }
 
 }  // namespace blink

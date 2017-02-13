@@ -128,14 +128,6 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
     return true;
   }
 
-  // Dissociates the wrapper, if any, from this instance.
-  void unsetWrapperIfAny() {
-    if (containsWrapper()) {
-      m_mainWorldWrapper.Reset();
-      WrapperTypeInfo::wrapperDestroyed();
-    }
-  }
-
   bool isEqualTo(const v8::Local<v8::Object>& other) const {
     return m_mainWorldWrapper == other;
   }

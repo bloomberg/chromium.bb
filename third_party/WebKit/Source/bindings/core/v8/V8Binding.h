@@ -202,6 +202,22 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl) {
   v8SetReturnValue(callbackInfo, wrapper);
 }
 
+// Special versions for DOMWindow and EventTarget
+
+template <typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
+                             DOMWindow* impl) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
+                             EventTarget* impl) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
+}
+
 template <typename CallbackInfo, typename T>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
                              PassRefPtr<T> impl) {
@@ -222,6 +238,46 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
   v8::Local<v8::Object> wrapper =
       impl->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
   v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template <typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
+                                         Node* impl) {
+  // Since EventTarget has a special version of ToV8 and V8EventTarget.h
+  // defines its own v8SetReturnValue family, which are slow, we need to
+  // override them with optimized versions for Node and its subclasses.
+  // Without this overload, v8SetReturnValueForMainWorld for Node would be
+  // very slow.
+  //
+  // class hierarchy:
+  //     ScriptWrappable <-- EventTarget <--+-- Node <-- ...
+  //                                        +-- Window
+  // overloads:
+  //     v8SetReturnValueForMainWorld(ScriptWrappable*)
+  //         Optimized and very fast.
+  //     v8SetReturnValueForMainWorld(EventTarget*)
+  //         Uses custom toV8 function and slow.
+  //     v8SetReturnValueForMainWorld(Node*)
+  //         Optimized and very fast.
+  //     v8SetReturnValueForMainWorld(Window*)
+  //         Uses custom toV8 function and slow.
+  v8SetReturnValueForMainWorld(callbackInfo, ScriptWrappable::fromNode(impl));
+}
+
+// Special versions for DOMWindow and EventTarget
+
+template <typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
+                                         DOMWindow* impl) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
+                                         EventTarget* impl) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
 }
 
 template <typename CallbackInfo, typename T>
@@ -260,6 +316,24 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
   v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(
       callbackInfo.GetIsolate(), callbackInfo.Holder());
   v8SetReturnValue(callbackInfo, wrapper);
+}
+
+// Special versions for DOMWindow and EventTarget
+
+template <typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
+                                 DOMWindow* impl,
+                                 const ScriptWrappable*) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
+                                 EventTarget* impl,
+                                 const ScriptWrappable*) {
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
+                                      callbackInfo.GetIsolate()));
 }
 
 template <typename CallbackInfo, typename T, typename Wrappable>

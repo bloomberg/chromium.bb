@@ -204,18 +204,6 @@ void WindowProxy::setupWindowPrototypeChain() {
   //   object is created together with a new v8::Context, but the global proxy
   //   object doesn't change.
   // [3] WindowProperties is a named properties object of Window interface.
-  //
-  // Note that the wrapper object of a DOMWindow is the global proxy object, not
-  // the global object, although both of them have the internal field which
-  // points to the DOMWindow.  Since the global proxy object remains the same
-  // while navigations, the management of the wrapper association for DOMWindow
-  // is special compared to other objects.  See DOMWindow::~DOMWindow for the
-  // need of dissociation of the wrappers from DOMWindow instance.
-  //
-  //   global proxy object <====> DOMWindow instance
-  //                               ^
-  //                               |
-  //   global object       --------+
 
   DOMWindow* window = m_frame->domWindow();
   const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
@@ -224,10 +212,7 @@ void WindowProxy::setupWindowPrototypeChain() {
   // The global proxy object.  Note this is not the global object.
   v8::Local<v8::Object> globalProxy = context->Global();
   CHECK(m_globalProxy == globalProxy);
-  v8::Local<v8::Object> associatedWrapper =
-      V8DOMWrapper::associateObjectWithWrapper(
-          m_isolate, window, wrapperTypeInfo, globalProxy);
-  CHECK(globalProxy == associatedWrapper);
+  V8DOMWrapper::setNativeInfo(m_isolate, globalProxy, wrapperTypeInfo, window);
   // Mark the handle to be traced by Oilpan, since the global proxy has a
   // reference to the DOMWindow.
   m_globalProxy.get().SetWrapperClassId(wrapperTypeInfo->wrapperClassId);
@@ -235,8 +220,8 @@ void WindowProxy::setupWindowPrototypeChain() {
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> windowWrapper =
       globalProxy->GetPrototype().As<v8::Object>();
-  V8DOMWrapper::setNativeInfo(m_isolate, windowWrapper, wrapperTypeInfo,
-                              window);
+  windowWrapper = V8DOMWrapper::associateObjectWithWrapper(
+      m_isolate, window, wrapperTypeInfo, windowWrapper);
 
   // The prototype object of Window interface.
   v8::Local<v8::Object> windowPrototype =

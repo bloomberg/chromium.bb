@@ -22,7 +22,9 @@
 
 namespace blink {
 
+class DOMWindow;
 class Dictionary;
+class EventTarget;
 
 // ScriptWrappable
 
@@ -53,6 +55,15 @@ inline v8::Local<v8::Value> ToV8(Node* impl,
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
 }
+
+// Special versions for DOMWindow and EventTarget
+
+CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
+                                      v8::Local<v8::Object> creationContext,
+                                      v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
+                                      v8::Local<v8::Object> creationContext,
+                                      v8::Isolate*);
 
 // Primitives
 

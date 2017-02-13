@@ -117,7 +117,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(
     const WrapperTypeInfo* wrapperTypeInfo,
     v8::Local<v8::Object> wrapper) {
   if (DOMDataStore::setWrapper(isolate, impl, wrapperTypeInfo, wrapper)) {
-    WrapperTypeInfo::wrapperCreated();
+    wrapperTypeInfo->wrapperCreated();
     setNativeInfo(isolate, wrapper, wrapperTypeInfo, impl);
     ASSERT(hasInternalFieldsSet(wrapper));
   }
@@ -131,7 +131,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(
     const WrapperTypeInfo* wrapperTypeInfo,
     v8::Local<v8::Object> wrapper) {
   if (DOMDataStore::setWrapper(isolate, node, wrapperTypeInfo, wrapper)) {
-    WrapperTypeInfo::wrapperCreated();
+    wrapperTypeInfo->wrapperCreated();
     setNativeInfo(isolate, wrapper, wrapperTypeInfo,
                   ScriptWrappable::fromNode(node));
     ASSERT(hasInternalFieldsSet(wrapper));

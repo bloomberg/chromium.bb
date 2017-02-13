@@ -5,7 +5,6 @@
 #include "core/frame/DOMWindow.h"
 
 #include <memory>
-#include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
@@ -35,34 +34,23 @@ DOMWindow::DOMWindow(Frame& frame) : m_frame(frame), m_windowIsClosing(false) {}
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
   DCHECK(!m_frame);
-
-  // Because the wrapper object of a DOMWindow is the global proxy object which
-  // may live much longer than the DOMWindow, we need to dissociate all wrappers
-  // for this instance.
-  DOMWrapperWorld::dissociateDOMWindowWrappersInAllWorlds(this);
 }
 
-v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate* isolate,
+v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*,
                                       v8::Local<v8::Object> creationContext) {
-  // Notice that we explicitly ignore |creationContext| because the DOMWindow
-  // has its own creation context.
-
-  Frame* frame = this->frame();
-  CHECK(frame);
-
-  v8::Local<v8::Object> globalProxy =
-      frame->windowProxy(DOMWrapperWorld::current(isolate))
-      ->globalIfNotDetached();
-  CHECK(!globalProxy.IsEmpty());
-
-  return globalProxy;
+  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
+                "wrappers must be created at WindowProxy::createContext() and "
+                "setupWindowPrototypeChain().";
+  return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> DOMWindow::associateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  NOTREACHED();
+  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
+                "wrappers must be created at WindowProxy::createContext() and "
+                "setupWindowPrototypeChain().";
   return v8::Local<v8::Object>();
 }
 

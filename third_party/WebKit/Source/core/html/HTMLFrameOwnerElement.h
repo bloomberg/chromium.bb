@@ -23,7 +23,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
 #include "platform/heap/Handle.h"
