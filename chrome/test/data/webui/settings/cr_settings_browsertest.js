@@ -271,6 +271,35 @@ TEST_F('CrSettingsPeoplePageSetupPinDialogTest', 'Test', function() {
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/people_page/
+ * fingerprint_dialog_progress_arc.html.
+ *
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsFingerprintProgressArcTest() {}
+
+CrSettingsFingerprintProgressArcTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/people_page/fingerprint_progress_arc.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'fingerprint_progress_arc_browsertest_chromeos.js',
+  ]),
+};
+
+TEST_F('CrSettingsFingerprintProgressArcTest', 'FingerprintProgressArcTest',
+    function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/people_page/change_picture.html.
  * This is ChromeOS only.
  * @constructor

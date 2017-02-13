@@ -70,6 +70,12 @@
         <structure name="IDR_OPTIONS_FINGERPRINT_LIST_HTML"
                    file="settings/people_page/fingerprint_list.html"
                    type="chrome_html" />
+        <structure name="IDR_OPTIONS_FINGERPRINT_PROGRESS_ARC_JS"
+                   file="settings/people_page/fingerprint_progress_arc.js"
+                   type="chrome_html" />
+        <structure name="IDR_OPTIONS_FINGERPRINT_PROGRESS_ARC_HTML"
+                   file="settings/people_page/fingerprint_progress_arc.html"
+                   type="chrome_html" />
         <structure name="IDR_OPTIONS_LOCK_SCREEN_JS"
                    file="settings/people_page/lock_screen.js"
                    type="chrome_html" />
