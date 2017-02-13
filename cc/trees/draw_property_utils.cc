@@ -358,7 +358,7 @@ void CalculateClipRects(const std::vector<LayerImpl*>& visible_layer_list,
                         const PropertyTrees* property_trees,
                         bool non_root_surfaces_enabled) {
   const ClipTree& clip_tree = property_trees->clip_tree;
-  for (auto& layer : visible_layer_list) {
+  for (auto* layer : visible_layer_list) {
     const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
     bool layer_needs_clip_rect =
         non_root_surfaces_enabled
@@ -414,7 +414,7 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
   const EffectTree& effect_tree = property_trees->effect_tree;
   const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipTree& clip_tree = property_trees->clip_tree;
-  for (auto& layer : visible_layer_list) {
+  for (auto* layer : visible_layer_list) {
     gfx::Size layer_bounds = layer->bounds();
 
     int effect_ancestor_with_copy_request =
@@ -1229,7 +1229,7 @@ gfx::Rect ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,
 
 void VerifyVisibleRectsCalculations(const LayerImplList& layer_list,
                                     const PropertyTrees* property_trees) {
-  for (auto layer : layer_list) {
+  for (auto* layer : layer_list) {
     gfx::Rect visible_rect_dynamic =
         ComputeLayerVisibleRectDynamic(property_trees, layer);
     DCHECK(layer->visible_layer_rect() == visible_rect_dynamic)
