@@ -35,7 +35,7 @@ void ArcAudioBridge::OnInstanceReady() {
 }
 
 void ArcAudioBridge::ShowVolumeControls() {
-  VLOG(2) << "ArcAudioBridge::ShowVolumeControls";
+  DVLOG(2) << "ArcAudioBridge::ShowVolumeControls";
   ash::TrayAudio::ShowPopUpVolumeView();
 }
 
@@ -54,8 +54,8 @@ void ArcAudioBridge::OnAudioNodesChanged() {
       (input_device &&
        input_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_MIC);
 
-  VLOG(1) << "HEADPHONE " << headphone_inserted << " MICROPHONE "
-          << microphone_inserted;
+  DVLOG(1) << "HEADPHONE " << headphone_inserted << " MICROPHONE "
+           << microphone_inserted;
   SendSwitchState(headphone_inserted, microphone_inserted);
 }
 
@@ -83,7 +83,7 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
         (1 << static_cast<uint32_t>(mojom::AudioSwitch::SW_MICROPHONE_INSERT));
   }
 
-  VLOG(1) << "Send switch state " << switch_state;
+  DVLOG(1) << "Send switch state " << switch_state;
   mojom::AudioInstance* audio_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->audio(), NotifySwitchState);
   if (audio_instance)
