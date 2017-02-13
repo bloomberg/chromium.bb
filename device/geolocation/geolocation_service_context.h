@@ -5,8 +5,10 @@
 #ifndef DEVICE_GEOLOCATION_GEOLOCATION_SERVICE_CONTEXT_H_
 #define DEVICE_GEOLOCATION_GEOLOCATION_SERVICE_CONTEXT_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
 
@@ -41,7 +43,7 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationServiceContext {
   void ClearOverride();
 
  private:
-  ScopedVector<GeolocationServiceImpl> services_;
+  std::vector<std::unique_ptr<GeolocationServiceImpl>> services_;
 
   std::unique_ptr<Geoposition> geoposition_override_;
 
