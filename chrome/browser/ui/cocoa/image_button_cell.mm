@@ -17,14 +17,58 @@
 // slightly lighter color. We do this by just reducing the alpha.
 const CGFloat kImageNoFocusAlpha = 0.65;
 
+const CGFloat kHoverAnimationDuration = 0.2;  // seconds
+
+namespace {
+
+NSRect CenterImageInFrame(NSImage* image, NSRect frame) {
+  NSRect rect;
+  rect.size = [image size];
+  rect.origin.x =
+      frame.origin.x + std::round((NSWidth(frame) - NSWidth(rect)) / 2.0);
+  rect.origin.y =
+      frame.origin.y + std::round((NSHeight(frame) - NSHeight(rect)) / 2.0);
+  return rect;
+}
+}
+
 @interface ImageButtonCell (Private)
 - (void)sharedInit;
 - (image_button_cell::ButtonState)currentButtonState;
 - (NSImage*)imageForID:(NSInteger)imageID
            controlView:(NSView*)controlView;
+- (void)animationDidProgress;
 @end
 
-@implementation ImageButtonCell
+@interface HoverAnimation : NSAnimation
+- (id)initWithOwner:(ImageButtonCell*)owner;
+- (void)setCurrentProgress:(NSAnimationProgress)progress;
+@end
+
+@implementation HoverAnimation {
+  ImageButtonCell* owner_;
+}
+
+- (id)initWithOwner:(ImageButtonCell*)owner {
+  if ((self = [super initWithDuration:kHoverAnimationDuration
+                       animationCurve:NSAnimationEaseInOut])) {
+    [self setAnimationBlockingMode:NSAnimationNonblocking];
+    owner_ = owner;
+  }
+  return self;
+}
+
+- (void)setCurrentProgress:(NSAnimationProgress)progress {
+  [super setCurrentProgress:progress];
+  [owner_ animationDidProgress];
+}
+
+@end
+
+@implementation ImageButtonCell {
+  NSAnimation* hoverAnimation_;
+  image_button_cell::ButtonState oldState_;
+}
 
 @synthesize isMouseInside = isMouseInside_;
 
@@ -50,6 +94,13 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   // We need to set this so that we can override |-mouseEntered:| and
   // |-mouseExited:| to change the button image on hover states.
   [self setShowsBorderOnlyWhileMouseInside:YES];
+
+  hoverAnimation_ = [[HoverAnimation alloc] initWithOwner:self];
+}
+
+- (void)dealloc {
+  [hoverAnimation_ release];
+  [super dealloc];
 }
 
 - (NSImage*)imageForState:(image_button_cell::ButtonState)state
@@ -65,6 +116,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
                         [[controlView window] isKeyWindow];
   CGFloat alpha = [self imageAlphaForWindowState:[controlView window]];
   NSImage* image = [self imageForState:state view:controlView];
+  NSImage* oldImage = nil;
+  CGFloat oldAlpha = 0.0;
 
   if (!windowHasFocus) {
     NSImage* defaultImage = [self
@@ -84,19 +137,33 @@ const CGFloat kImageNoFocusAlpha = 0.65;
     }
   }
 
-  NSRect imageRect;
-  imageRect.size = [image size];
-  imageRect.origin.x = cellFrame.origin.x +
-    roundf((NSWidth(cellFrame) - NSWidth(imageRect)) / 2.0);
-  imageRect.origin.y = cellFrame.origin.y +
-    roundf((NSHeight(cellFrame) - NSHeight(imageRect)) / 2.0);
+  if ([hoverAnimation_ isAnimating]) {
+    oldImage = [self imageForState:oldState_ view:controlView];
+    oldAlpha = 1.0 - [hoverAnimation_ currentValue] * alpha;
+    alpha *= [hoverAnimation_ currentValue];
+  }
+
+  NSRect imageRect = CenterImageInFrame(image, cellFrame);
+  NSCompositingOperation op = [[controlView window] hasDarkTheme]
+                                  ? NSCompositePlusLighter
+                                  : NSCompositePlusDarker;
+
+  if (oldImage) {
+    NSRect oldImageRect = CenterImageInFrame(oldImage, cellFrame);
+    [oldImage drawInRect:oldImageRect
+                fromRect:NSZeroRect
+               operation:op
+                fraction:oldAlpha
+          respectFlipped:YES
+                   hints:nil];
+  }
 
   [image drawInRect:imageRect
-           fromRect:NSZeroRect
-          operation:NSCompositeSourceOver
-           fraction:alpha
-     respectFlipped:YES
-              hints:nil];
+            fromRect:NSZeroRect
+           operation:op
+            fraction:alpha
+      respectFlipped:YES
+               hints:nil];
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -160,9 +227,17 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   return themeProvider->GetNSImageNamed(imageID);
 }
 
+- (void)animationDidProgress {
+  NSView<ImageButton>* control =
+      static_cast<NSView<ImageButton>*>([self controlView]);
+  [control setNeedsDisplay:YES];
+}
+
 - (void)setIsMouseInside:(BOOL)isMouseInside {
   if (isMouseInside_ != isMouseInside) {
+    oldState_ = [self currentButtonState];
     isMouseInside_ = isMouseInside;
+    [hoverAnimation_ startAnimation];
     NSView<ImageButton>* control =
         static_cast<NSView<ImageButton>*>([self controlView]);
     if ([control respondsToSelector:@selector(mouseInsideStateDidChange:)]) {
