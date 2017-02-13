@@ -26,6 +26,7 @@ source_set("promos") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "signin_promo_view_controller_unittest.mm",

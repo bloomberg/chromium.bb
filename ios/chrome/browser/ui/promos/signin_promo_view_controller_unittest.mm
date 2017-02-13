@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
@@ -24,6 +23,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface SigninPromoViewController (ExposedForTesting)
 @property(nonatomic, readonly) UIView* accountsContainer;
@@ -71,7 +74,7 @@ class SigninPromoViewControllerTest : public BlockCleanupTest {
  public:
   ~SigninPromoViewControllerTest() override {}
 
-  SigninPromoViewController* controller() { return controller_.get(); }
+  SigninPromoViewController* controller() { return controller_; }
 
   void SetUp() override {
     BlockCleanupTest::SetUp();
@@ -84,8 +87,8 @@ class SigninPromoViewControllerTest : public BlockCleanupTest {
     chrome_browser_state_ = builder.Build();
     ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
         ->AddIdentities(@[ @"foo", @"bar" ]);
-    controller_.reset([[FakeVersionSigninPromoViewController alloc]
-        initWithBrowserState:chrome_browser_state_.get()]);
+    controller_ = [[FakeVersionSigninPromoViewController alloc]
+        initWithBrowserState:chrome_browser_state_.get()];
   }
 
   void TearDown() override {
@@ -117,7 +120,7 @@ class SigninPromoViewControllerTest : public BlockCleanupTest {
  protected:
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<SigninPromoViewController> controller_;
+  SigninPromoViewController* controller_;
 };
 
 TEST_F(SigninPromoViewControllerTest, TestConstructorDestructor) {
