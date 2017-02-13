@@ -17,6 +17,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_stack_trace.h"
 #include "net/quic/platform/api/quic_text_utils.h"
+#include "net/quic/platform/api/quic_url.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -27,7 +28,6 @@
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "third_party/boringssl/src/include/openssl/x509.h"
-#include "url/gurl.h"
 
 using base::StringPiece;
 using std::string;
@@ -353,10 +353,10 @@ ssize_t QuicTestClient::SendMessage(const SpdyHeaderBlock& headers,
 
   // If we're not connected, try to find an sni hostname.
   if (!connected()) {
-    GURL url(SpdyUtils::GetUrlFromHeaderBlock(headers));
+    QuicUrl url(SpdyUtils::GetUrlFromHeaderBlock(headers));
     if (override_sni_set_) {
-      client_->set_server_id(QuicServerId(override_sni_, url.EffectiveIntPort(),
-                                          PRIVACY_MODE_DISABLED));
+      client_->set_server_id(
+          QuicServerId(override_sni_, url.port(), PRIVACY_MODE_DISABLED));
     }
   }
 

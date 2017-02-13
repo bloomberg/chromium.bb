@@ -57,11 +57,11 @@
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
+#include "net/quic/platform/api/quic_url.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
-#include "url/gurl.h"
 
 using base::StringPiece;
 using net::CertVerifier;
@@ -71,6 +71,7 @@ using net::MultiLogCTVerifier;
 using net::ProofVerifier;
 using net::ProofVerifierChromium;
 using net::QuicTextUtils;
+using net::QuicUrl;
 using net::SpdyHeaderBlock;
 using net::TransportSecurityState;
 using std::cout;
@@ -223,14 +224,14 @@ int main(int argc, char* argv[]) {
   // Determine IP address to connect to from supplied hostname.
   net::QuicIpAddress ip_addr;
 
-  GURL url(urls[0]);
+  QuicUrl url(urls[0], "https");
   string host = FLAGS_host;
   if (host.empty()) {
     host = url.host();
   }
   int port = FLAGS_port;
   if (port == 0) {
-    port = url.EffectiveIntPort();
+    port = url.port();
   }
   if (!ip_addr.FromString(host)) {
     net::AddressList addresses;
@@ -249,7 +250,7 @@ int main(int argc, char* argv[]) {
 
   // Build the client, and try to connect.
   net::EpollServer epoll_server;
-  net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
+  net::QuicServerId server_id(url.host(), url.port(),
                               net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::AllSupportedVersions();
   if (FLAGS_quic_version != -1) {
@@ -304,8 +305,8 @@ int main(int argc, char* argv[]) {
   SpdyHeaderBlock header_block;
   header_block[":method"] = body.empty() ? "GET" : "POST";
   header_block[":scheme"] = url.scheme();
-  header_block[":authority"] = url.host();
-  header_block[":path"] = url.path();
+  header_block[":authority"] = url.HostPort();
+  header_block[":path"] = url.PathParamsQuery();
 
   // Append any additional headers supplied on the command line.
   for (StringPiece sp : QuicTextUtils::Split(FLAGS_headers, ';')) {

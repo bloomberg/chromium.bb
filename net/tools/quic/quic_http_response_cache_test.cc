@@ -177,7 +177,7 @@ TEST_F(QuicHttpResponseCacheTest, AddSimpleResponseWithServerPushResources) {
   for (int i = 0; i < NumResources; ++i) {
     string path = "/server_push_src" + QuicTextUtils::Uint64ToString(i);
     string url = scheme + "://" + request_host + path;
-    GURL resource_url(url);
+    QuicUrl resource_url(url);
     string body = QuicStrCat("This is server push response body for ", path);
     SpdyHeaderBlock response_headers;
     response_headers[":version"] = "HTTP/1.1";
@@ -196,7 +196,8 @@ TEST_F(QuicHttpResponseCacheTest, AddSimpleResponseWithServerPushResources) {
   ASSERT_EQ(kNumResources, resources.size());
   for (const auto& push_resource : push_resources) {
     ServerPushInfo resource = resources.front();
-    EXPECT_EQ(resource.request_url.spec(), push_resource.request_url.spec());
+    EXPECT_EQ(resource.request_url.ToString(),
+              push_resource.request_url.ToString());
     EXPECT_EQ(resource.priority, push_resource.priority);
     resources.pop_front();
   }
@@ -213,7 +214,7 @@ TEST_F(QuicHttpResponseCacheTest, GetServerPushResourcesAndPushResponses) {
   for (int i = 0; i < NumResources; ++i) {
     string path = "/server_push_src" + QuicTextUtils::Uint64ToString(i);
     string url = scheme + "://" + request_host + path;
-    GURL resource_url(url);
+    QuicUrl resource_url(url);
     string body = "This is server push response body for " + path;
     SpdyHeaderBlock response_headers;
     response_headers[":version"] = "HTTP/1.1";
@@ -231,7 +232,7 @@ TEST_F(QuicHttpResponseCacheTest, GetServerPushResourcesAndPushResponses) {
   ASSERT_EQ(kNumResources, resources.size());
   int i = 0;
   for (const auto& push_resource : push_resources) {
-    GURL url = resources.front().request_url;
+    QuicUrl url = resources.front().request_url;
     string host = url.host();
     string path = url.path();
     const QuicHttpResponseCache::Response* response =

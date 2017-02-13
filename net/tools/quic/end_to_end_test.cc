@@ -2638,7 +2638,7 @@ class EndToEndTestServerPush : public EndToEndTest {
     std::list<QuicHttpResponseCache::ServerPushInfo> push_resources;
     for (size_t i = 0; i < num_resources; ++i) {
       string url = push_urls[i];
-      GURL resource_url(url);
+      QuicUrl resource_url(url);
       string body =
           use_large_response
               ? large_resource

@@ -18,8 +18,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_mutex.h"
+#include "net/quic/platform/api/quic_url.h"
 #include "net/spdy/spdy_framer.h"
-#include "url/gurl.h"
 
 namespace net {
 
@@ -31,12 +31,12 @@ class QuicHttpResponseCache {
   // A ServerPushInfo contains path of the push request and everything needed in
   // comprising a response for the push request.
   struct ServerPushInfo {
-    ServerPushInfo(GURL request_url,
+    ServerPushInfo(QuicUrl request_url,
                    SpdyHeaderBlock headers,
                    SpdyPriority priority,
                    std::string body);
     ServerPushInfo(const ServerPushInfo& other);
-    GURL request_url;
+    QuicUrl request_url;
     SpdyHeaderBlock headers;
     SpdyPriority priority;
     std::string body;

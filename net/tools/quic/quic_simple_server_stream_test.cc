@@ -26,7 +26,6 @@
 #include "net/tools/quic/quic_simple_server_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 using base::StringPiece;
 using std::string;
@@ -433,9 +432,8 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
   string host = "www.google.com";
   string request_path = "/foo";
   string body = "Yummm";
-  string url = host + "/bar";
   QuicHttpResponseCache::ServerPushInfo push_info(
-      GURL(url), SpdyHeaderBlock(), kDefaultPriority, "Push body");
+      QuicUrl(host, "/bar"), SpdyHeaderBlock(), kDefaultPriority, "Push body");
   std::list<QuicHttpResponseCache::ServerPushInfo> push_resources;
   push_resources.push_back(push_info);
   response_cache_.AddSimpleResponseWithServerPushResources(

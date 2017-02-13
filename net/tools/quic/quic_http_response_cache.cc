@@ -24,7 +24,7 @@ using std::string;
 namespace net {
 
 QuicHttpResponseCache::ServerPushInfo::ServerPushInfo(
-    GURL request_url,
+    QuicUrl request_url,
     SpdyHeaderBlock headers,
     net::SpdyPriority priority,
     string body)
@@ -270,7 +270,7 @@ void QuicHttpResponseCache::InitializeFromDirectory(
   for (const auto& resource_file : resource_files) {
     std::list<ServerPushInfo> push_resources;
     for (const auto& push_url : resource_file->push_urls()) {
-      GURL url(push_url);
+      QuicUrl url(push_url);
       const Response* response = GetResponse(url.host(), url.path());
       if (!response) {
         QUIC_BUG << "Push URL '" << push_url << "' not found.";
@@ -345,7 +345,8 @@ void QuicHttpResponseCache::MaybeAddServerPushResources(
     }
 
     QUIC_DVLOG(1) << "Add request-resource association: request url "
-                  << request_url << " push url " << push_resource.request_url
+                  << request_url << " push url "
+                  << push_resource.request_url.ToString()
                   << " response headers "
                   << push_resource.headers.DebugString();
     {
@@ -380,7 +381,8 @@ bool QuicHttpResponseCache::PushResourceExistsInCache(
       server_push_resources_.equal_range(original_request_url);
   for (auto it = resource_range.first; it != resource_range.second; ++it) {
     ServerPushInfo push_resource = it->second;
-    if (push_resource.request_url.spec() == resource.request_url.spec()) {
+    if (push_resource.request_url.ToString() ==
+        resource.request_url.ToString()) {
       return true;
     }
   }

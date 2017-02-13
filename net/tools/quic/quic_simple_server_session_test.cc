@@ -473,7 +473,7 @@ class QuicSimpleServerSessionServerPushTest
       string path =
           partial_push_resource_path + QuicTextUtils::Uint64ToString(i);
       string url = scheme + "://" + resource_host + path;
-      GURL resource_url = GURL(url);
+      QuicUrl resource_url = QuicUrl(url);
       string body(body_size, 'a');
       response_cache_.AddSimpleResponse(resource_host, path, 200, body);
       push_resources.push_back(QuicHttpResponseCache::ServerPushInfo(

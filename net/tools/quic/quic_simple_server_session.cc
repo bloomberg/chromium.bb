@@ -13,7 +13,6 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
-#include "url/gurl.h"
 
 using std::string;
 
@@ -154,7 +153,7 @@ SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
     string request_url,
     QuicHttpResponseCache::ServerPushInfo resource,
     const SpdyHeaderBlock& original_request_headers) {
-  GURL push_request_url = resource.request_url;
+  QuicUrl push_request_url = resource.request_url;
   string path = push_request_url.path();
 
   SpdyHeaderBlock spdy_headers = original_request_headers.Clone();
