@@ -42,10 +42,10 @@ void BarcodeDetectionImpl::Create(
 }
 
 BarcodeDetectionImplMac::BarcodeDetectionImplMac() {
-  NSDictionary* const options = @{CIDetectorAccuracy : CIDetectorAccuracyHigh};
+  NSDictionary* const opts = @{CIDetectorAccuracy : CIDetectorAccuracyHigh};
   detector_.reset([[CIDetector detectorOfType:CIDetectorTypeQRCode
                                       context:nil
-                                      options:options] retain]);
+                                      options:opts] retain]);
 }
 
 BarcodeDetectionImplMac::~BarcodeDetectionImplMac() {}
