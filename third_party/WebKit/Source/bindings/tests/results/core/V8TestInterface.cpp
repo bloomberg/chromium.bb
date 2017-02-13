@@ -2965,7 +2965,8 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
   }
 }
 
-InstallTemplateFunction V8TestInterface::installV8TestInterfaceTemplateFunction = (InstallTemplateFunction)&V8TestInterface::installV8TestInterfaceTemplate;
+InstallTemplateFunction V8TestInterface::installV8TestInterfaceTemplateFunction =
+    &V8TestInterface::installV8TestInterfaceTemplate;
 
 void V8TestInterface::updateWrapperTypeInfo(
     InstallTemplateFunction installTemplateFunction,

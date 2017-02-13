@@ -921,10 +921,12 @@ V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), pro
 {% block partial_interface %}
 {% if has_partial_interface %}
 {% if needs_runtime_enabled_installer %}
-InstallRuntimeEnabledFunction {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction = (InstallRuntimeEnabledFunction)&{{v8_class}}::installRuntimeEnabledFeatures;
+InstallRuntimeEnabledFunction {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction =
+    &{{v8_class}}::installRuntimeEnabledFeatures;
 {% endif %}
 
-InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction = (InstallTemplateFunction)&{{v8_class}}::install{{v8_class}}Template;
+InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction =
+    &{{v8_class}}::install{{v8_class}}Template;
 
 void {{v8_class}}::updateWrapperTypeInfo(
     InstallTemplateFunction installTemplateFunction,

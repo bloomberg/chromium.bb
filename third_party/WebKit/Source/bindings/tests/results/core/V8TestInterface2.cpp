@@ -662,7 +662,8 @@ TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::
   return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-InstallTemplateFunction V8TestInterface2::installV8TestInterface2TemplateFunction = (InstallTemplateFunction)&V8TestInterface2::installV8TestInterface2Template;
+InstallTemplateFunction V8TestInterface2::installV8TestInterface2TemplateFunction =
+    &V8TestInterface2::installV8TestInterface2Template;
 
 void V8TestInterface2::updateWrapperTypeInfo(
     InstallTemplateFunction installTemplateFunction,
