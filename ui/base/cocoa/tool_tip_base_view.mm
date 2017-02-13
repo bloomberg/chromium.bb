@@ -131,10 +131,11 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 - (void)_sendToolTipMouseExited {
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
+  NSTimeInterval eventTime = [[NSApp currentEvent] timestamp];
   NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
                                               location:NSZeroPoint
                                          modifierFlags:0
-                                             timestamp:0
+                                             timestamp:eventTime
                                           windowNumber:windowNumber
                                                context:NULL
                                            eventNumber:0
@@ -147,10 +148,11 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 - (void)_sendToolTipMouseEntered {
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
+  NSTimeInterval eventTime = [[NSApp currentEvent] timestamp];
   NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
                                               location:NSZeroPoint
                                          modifierFlags:0
-                                             timestamp:0
+                                             timestamp:eventTime
                                           windowNumber:windowNumber
                                                context:NULL
                                            eventNumber:0

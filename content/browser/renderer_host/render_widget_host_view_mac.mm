@@ -1166,10 +1166,11 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   // in the pipeline. Find a way to use the mouse location from the event that
   // dismissed the context menu.
   NSPoint location = [window mouseLocationOutsideOfEventStream];
+  NSTimeInterval event_time = [[NSApp currentEvent] timestamp];
   NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
                                       location:location
                                  modifierFlags:0
-                                     timestamp:0
+                                     timestamp:event_time
                                   windowNumber:window_number()
                                        context:nil
                                    eventNumber:0
