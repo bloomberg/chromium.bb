@@ -291,14 +291,6 @@ IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_FetchEventResponse,
                     content::ServiceWorkerFetchEventResult,
                     content::ServiceWorkerResponse,
                     base::Time /* dispatch_event_time */)
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NotificationClickEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult,
-                    base::Time /* dispatch_event_time */)
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NotificationCloseEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult,
-                    base::Time /* dispatch_event_time */)
 
 // Responds to a Ping from the browser.
 // Routed to the target ServiceWorkerVersion.
@@ -522,16 +514,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_NotificationClickEvent,
-                     int /* request_id */,
-                     std::string /* notification_id */,
-                     content::PlatformNotificationData /* notification_data */,
-                     int /* action_index */,
-                     base::NullableString16 /* notification reply */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationCloseEvent,
-                     int /* request_id */,
-                     std::string /* notification_id */,
-                     content::PlatformNotificationData /* notification_data */)
 
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)

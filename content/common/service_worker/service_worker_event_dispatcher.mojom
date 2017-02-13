@@ -13,6 +13,9 @@ import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_
 import "url/mojo/origin.mojom";
 
 [Native]
+struct PlatformNotificationData;
+
+[Native]
 struct PushEventPayload;
 
 [Native]
@@ -41,6 +44,16 @@ interface ServiceWorkerEventDispatcher {
   // browser process.
   DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request,
                      FetchEventPreloadHandle? preload_handle)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchNotificationClickEvent(string notification_id,
+                                 PlatformNotificationData notification_data,
+                                 int32 action_index,
+                                 mojo.common.mojom.String16? reply)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchNotificationCloseEvent(string notification_id,
+                                 PlatformNotificationData notification_data)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchPushEvent(PushEventPayload payload)

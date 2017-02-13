@@ -208,6 +208,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
   using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
   using PaymentRequestEventCallbacksMap =
       IDMap<std::unique_ptr<const PaymentRequestEventCallback>>;
+  using NotificationClickEventCallbacksMap =
+      IDMap<std::unique_ptr<const DispatchNotificationClickEventCallback>>;
+  using NotificationCloseEventCallbacksMap =
+      IDMap<std::unique_ptr<const DispatchNotificationCloseEventCallback>>;
   using PushEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchPushEventCallback>>;
   using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
@@ -244,6 +248,12 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Payment Request Events.
   PaymentRequestEventCallbacksMap payment_request_event_callbacks;
+
+  // Pending callbacks for Notification Click Events.
+  NotificationClickEventCallbacksMap notification_click_event_callbacks;
+
+  // Pending callbacks for Notification Close Events.
+  NotificationCloseEventCallbacksMap notification_close_event_callbacks;
 
   // Pending callbacks for Push Events.
   PushEventCallbacksMap push_event_callbacks;
@@ -411,10 +421,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerContextClient, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
-                        OnNotificationClickEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationCloseEvent,
-                        OnNotificationCloseEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -578,6 +584,8 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
 
   // Aborts all the pending events callbacks.
   AbortPendingEventCallbacks(context_->sync_event_callbacks);
+  AbortPendingEventCallbacks(context_->notification_click_event_callbacks);
+  AbortPendingEventCallbacks(context_->notification_close_event_callbacks);
   AbortPendingEventCallbacks(context_->push_event_callbacks);
   AbortPendingEventCallbacks(context_->fetch_event_callbacks);
   AbortPendingEventCallbacks(context_->message_event_callbacks);
@@ -722,18 +730,28 @@ void ServiceWorkerContextClient::didHandleNotificationClickEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_NotificationClickEventFinished(
-      GetRoutingID(), request_id, result,
-      base::Time::FromDoubleT(event_dispatch_time)));
+  const DispatchNotificationClickEventCallback* callback =
+      context_->notification_click_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
+
+  context_->notification_click_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::didHandleNotificationCloseEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_NotificationCloseEventFinished(
-      GetRoutingID(), request_id, result,
-      base::Time::FromDoubleT(event_dispatch_time)));
+  const DispatchNotificationCloseEventCallback* callback =
+      context_->notification_close_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
+
+  context_->notification_close_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::didHandlePushEvent(
@@ -743,9 +761,7 @@ void ServiceWorkerContextClient::didHandlePushEvent(
   const DispatchPushEventCallback* callback =
       context_->push_event_callbacks.Lookup(request_id);
   DCHECK(callback);
-  callback->Run(result == blink::WebServiceWorkerEventResultCompleted
-                    ? SERVICE_WORKER_OK
-                    : SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+  callback->Run(EventResultToStatus(result),
                 base::Time::FromDoubleT(event_dispatch_time));
   context_->push_event_callbacks.Remove(request_id);
 }
@@ -1029,26 +1045,37 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   }
 }
 
-void ServiceWorkerContextClient::OnNotificationClickEvent(
-    int request_id,
+void ServiceWorkerContextClient::DispatchNotificationClickEvent(
     const std::string& notification_id,
     const PlatformNotificationData& notification_data,
     int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<base::string16>& reply,
+    const DispatchNotificationClickEventCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnNotificationClickEvent");
+               "ServiceWorkerContextClient::DispatchNotificationClickEvent");
+
+  int request_id = context_->notification_click_event_callbacks.Add(
+      base::MakeUnique<DispatchNotificationClickEventCallback>(callback));
+
+  blink::WebString web_reply;
+  if (reply)
+    web_reply = blink::WebString::fromUTF16(reply.value());
+
   proxy_->dispatchNotificationClickEvent(
       request_id, blink::WebString::fromUTF8(notification_id),
-      ToWebNotificationData(notification_data), action_index,
-      blink::WebString::fromUTF16(reply));
+      ToWebNotificationData(notification_data), action_index, web_reply);
 }
 
-void ServiceWorkerContextClient::OnNotificationCloseEvent(
-    int request_id,
+void ServiceWorkerContextClient::DispatchNotificationCloseEvent(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data) {
+    const PlatformNotificationData& notification_data,
+    const DispatchNotificationCloseEventCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnNotificationCloseEvent");
+               "ServiceWorkerContextClient::DispatchNotificationCloseEvent");
+
+  int request_id = context_->notification_close_event_callbacks.Add(
+      base::MakeUnique<DispatchNotificationCloseEventCallback>(callback));
+
   proxy_->dispatchNotificationCloseEvent(
       request_id, blink::WebString::fromUTF8(notification_id),
       ToWebNotificationData(notification_data));

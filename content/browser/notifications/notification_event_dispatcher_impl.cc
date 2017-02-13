@@ -5,12 +5,12 @@
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -208,12 +208,15 @@ void DispatchNotificationClickEventOnWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK, callback);
-  service_worker->DispatchSimpleEvent<
-      ServiceWorkerHostMsg_NotificationClickEventFinished>(
-      request_id,
-      ServiceWorkerMsg_NotificationClickEvent(
-          request_id, notification_database_data.notification_id,
-          notification_database_data.notification_data, action_index, reply));
+
+  base::Optional<base::string16> optional_reply;
+  if (!reply.is_null())
+    optional_reply = reply.string();
+
+  service_worker->event_dispatcher()->DispatchNotificationClickEvent(
+      notification_database_data.notification_id,
+      notification_database_data.notification_data, action_index,
+      optional_reply, service_worker->CreateSimpleEventCallback(request_id));
 }
 
 // Dispatches the notification click event on the |service_worker_registration|.
@@ -277,11 +280,11 @@ void DispatchNotificationCloseEventOnWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE, callback);
-  service_worker->DispatchSimpleEvent<
-      ServiceWorkerHostMsg_NotificationCloseEventFinished>(
-      request_id, ServiceWorkerMsg_NotificationCloseEvent(
-                      request_id, notification_database_data.notification_id,
-                      notification_database_data.notification_data));
+
+  service_worker->event_dispatcher()->DispatchNotificationCloseEvent(
+      notification_database_data.notification_id,
+      notification_database_data.notification_data,
+      service_worker->CreateSimpleEventCallback(request_id));
 }
 
 // Actually dispatches the notification close event on the service worker

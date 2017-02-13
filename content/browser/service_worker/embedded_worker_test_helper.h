@@ -43,6 +43,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
 struct EmbeddedWorkerStartParams;
+struct PlatformNotificationData;
 struct PushEventPayload;
 struct ServiceWorkerFetchRequest;
 
@@ -193,6 +194,18 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                             const ServiceWorkerFetchRequest& request,
                             mojom::FetchEventPreloadHandlePtr preload_handle,
                             const FetchCallback& callback);
+  virtual void OnNotificationClickEvent(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      int action_index,
+      const base::Optional<base::string16>& reply,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationClickEventCallback& callback);
+  virtual void OnNotificationCloseEvent(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationCloseEventCallback& callback);
   virtual void OnPushEvent(
       const PushEventPayload& payload,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
@@ -237,6 +250,18 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                         const ServiceWorkerFetchRequest& request,
                         mojom::FetchEventPreloadHandlePtr preload_handle,
                         const FetchCallback& callback);
+  void OnNotificationClickEventStub(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      int action_index,
+      const base::Optional<base::string16>& reply,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationClickEventCallback& callback);
+  void OnNotificationCloseEventStub(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchNotificationCloseEventCallback& callback);
   void OnPushEventStub(
       const PushEventPayload& payload,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&

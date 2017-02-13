@@ -159,6 +159,28 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                               std::move(preload_handle), callback);
   }
 
+  void DispatchNotificationClickEvent(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      int action_index,
+      const base::Optional<base::string16>& reply,
+      const DispatchNotificationClickEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnNotificationClickEventStub(notification_id, notification_data,
+                                          action_index, reply, callback);
+  }
+
+  void DispatchNotificationCloseEvent(
+      const std::string& notification_id,
+      const PlatformNotificationData& notification_data,
+      const DispatchNotificationCloseEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnNotificationCloseEventStub(notification_id, notification_data,
+                                          callback);
+  }
+
   void DispatchPushEvent(const PushEventPayload& payload,
                          const DispatchPushEventCallback& callback) override {
     if (!helper_)
@@ -384,6 +406,24 @@ void EmbeddedWorkerTestHelper::OnPushEvent(
   callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
+void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
+    const std::string& notification_id,
+    const PlatformNotificationData& notification_data,
+    int action_index,
+    const base::Optional<base::string16>& reply,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchNotificationClickEventCallback& callback) {
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
+void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
+    const std::string& notification_id,
+    const PlatformNotificationData& notification_data,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchNotificationCloseEventCallback& callback) {
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
 void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
     payments::mojom::PaymentAppRequestPtr app_request,
     const mojom::ServiceWorkerEventDispatcher::
@@ -538,6 +578,30 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
       base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
                  thread_id_embedded_worker_id_map_[thread_id], fetch_event_id,
                  request, base::Passed(&preload_handle), callback));
+}
+
+void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
+    const std::string& notification_id,
+    const PlatformNotificationData& notification_data,
+    int action_index,
+    const base::Optional<base::string16>& reply,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchNotificationClickEventCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnNotificationClickEvent,
+                            AsWeakPtr(), notification_id, notification_data,
+                            action_index, reply, callback));
+}
+
+void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
+    const std::string& notification_id,
+    const PlatformNotificationData& notification_data,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchNotificationCloseEventCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnNotificationCloseEvent,
+                 AsWeakPtr(), notification_id, notification_data, callback));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(
