@@ -200,20 +200,6 @@ static INLINE int aom_read_tree_bits_(aom_reader *r, const aom_tree_index *tree,
   return -i;
 }
 
-static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
-                                 const aom_prob *probs ACCT_STR_PARAM) {
-  int ret;
-#if CONFIG_DAALA_EC
-  ret = daala_read_tree_bits(r, tree, probs);
-#else
-  ret = aom_read_tree_bits(r, tree, probs, NULL);
-#endif
-#if CONFIG_ACCOUNTING
-  if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
-#endif
-  return ret;
-}
-
 #if CONFIG_EC_MULTISYMBOL
 static INLINE int aom_read_cdf_(aom_reader *r, const aom_cdf_prob *cdf,
                                 int nsymbs ACCT_STR_PARAM) {
@@ -261,7 +247,40 @@ static INLINE int aom_read_cdf_unscaled_(aom_reader *r, const aom_cdf_prob *cdf,
   return ret;
 }
 #endif
+
+static INLINE int aom_read_tree_as_cdf(aom_reader *r,
+                                       const aom_tree_index *tree,
+                                       const aom_prob *probs) {
+  aom_tree_index i = 0;
+  do {
+    aom_cdf_prob cdf[16];
+    aom_tree_index index[16];
+    int path[16];
+    int dist[16];
+    int nsymbs;
+    int symb;
+    nsymbs = tree_to_cdf(tree, probs, i, cdf, index, path, dist);
+    symb = aom_read_cdf(r, cdf, nsymbs, NULL);
+    OD_ASSERT(symb >= 0 && symb < nsymbs);
+    i = index[symb];
+  } while (i > 0);
+  return -i;
+}
 #endif  // CONFIG_EC_MULTISYMBOL
+
+static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
+                                 const aom_prob *probs ACCT_STR_PARAM) {
+  int ret;
+#if CONFIG_EC_MULTISYMBOL
+  ret = aom_read_tree_as_cdf(r, tree, probs);
+#else
+  ret = aom_read_tree_bits(r, tree, probs, NULL);
+#endif
+#if CONFIG_ACCOUNTING
+  if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
+#endif
+  return ret;
+}
 
 #ifdef __cplusplus
 }  // extern "C"
