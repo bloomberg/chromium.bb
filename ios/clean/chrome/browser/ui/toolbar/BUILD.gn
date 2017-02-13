@@ -23,6 +23,11 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
+    "toolbar_button+factory.h",
+    "toolbar_button+factory.mm",
+    "toolbar_button.h",
+    "toolbar_button.mm",
+    "toolbar_component_options.h",
     "toolbar_view_controller.h",
     "toolbar_view_controller.mm",
   ]

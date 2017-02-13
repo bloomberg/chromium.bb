@@ -8,13 +8,13 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "ios/clean/chrome/browser/ui/actions/navigation_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
-#import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,16 +27,19 @@ CGFloat kVerticalMargin = 5.0f;
 
 @interface ToolbarViewController ()<ToolsMenuActions>
 @property(nonatomic, weak) UITextField* omnibox;
-@property(nonatomic, strong) UIButton* backButton;
-@property(nonatomic, strong) UIButton* forwardButton;
-@property(nonatomic, strong) UIButton* tabSwitcherButton;
-@property(nonatomic, strong) UIButton* toolsMenuButton;
-@property(nonatomic, strong) UIButton* shareButton;
-@property(nonatomic, strong) UIButton* reloadButton;
+@property(nonatomic, strong) UIStackView* stackView;
+@property(nonatomic, strong) ToolbarButton* backButton;
+@property(nonatomic, strong) ToolbarButton* forwardButton;
+@property(nonatomic, strong) ToolbarButton* tabSwitcherButton;
+@property(nonatomic, strong) ToolbarButton* toolsMenuButton;
+@property(nonatomic, strong) ToolbarButton* shareButton;
+@property(nonatomic, strong) ToolbarButton* reloadButton;
+@property(nonatomic, strong) ToolbarButton* stopButton;
 @end
 
 @implementation ToolbarViewController
 @synthesize toolbarCommandHandler = _toolbarCommandHandler;
+@synthesize stackView = _stackView;
 @synthesize omnibox = _omnibox;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
@@ -44,14 +47,14 @@ CGFloat kVerticalMargin = 5.0f;
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize shareButton = _shareButton;
 @synthesize reloadButton = _reloadButton;
+@synthesize stopButton = _stopButton;
 
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
 
   [self setUpToolbarButtons];
-  [self setUpRegularWidthToolbarButtons];
 
-  // Placeholder omnibox.
+  // PLACEHOLDER: Omnibox could have some "Toolbar component" traits if needed.
   UITextField* omnibox = [[UITextField alloc] initWithFrame:CGRectZero];
   omnibox.translatesAutoresizingMaskIntoConstraints = NO;
   omnibox.backgroundColor = [UIColor whiteColor];
@@ -59,116 +62,101 @@ CGFloat kVerticalMargin = 5.0f;
   self.omnibox = omnibox;
 
   // Stack view to contain toolbar items.
-  UIStackView* toolbarItems = [[UIStackView alloc] initWithArrangedSubviews:@[
-    self.backButton, self.forwardButton, self.reloadButton, omnibox,
-    self.shareButton, self.tabSwitcherButton, self.toolsMenuButton
+  self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
+    self.backButton, self.forwardButton, self.reloadButton, self.stopButton,
+    omnibox, self.shareButton, self.tabSwitcherButton, self.toolsMenuButton
   ]];
-  [self hideButtonsForSize:self.view.bounds.size];
-  toolbarItems.translatesAutoresizingMaskIntoConstraints = NO;
-  toolbarItems.spacing = 16.0;
-  toolbarItems.distribution = UIStackViewDistributionFillProportionally;
-  [self.view addSubview:toolbarItems];
+  self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.stackView.spacing = 16.0;
+  self.stackView.distribution = UIStackViewDistributionFillProportionally;
+  [self.view addSubview:self.stackView];
 
   // Set constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [toolbarItems.topAnchor constraintEqualToAnchor:self.view.topAnchor
-                                           constant:kVerticalMargin],
-    [toolbarItems.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
-                                              constant:-kVerticalMargin],
-    [toolbarItems.leadingAnchor
+    [self.stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor
+                                             constant:kVerticalMargin],
+    [self.stackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
+                                                constant:-kVerticalMargin],
+    [self.stackView.leadingAnchor
         constraintEqualToAnchor:self.view.layoutMarginsGuide.leadingAnchor],
-    [toolbarItems.trailingAnchor
+    [self.stackView.trailingAnchor
         constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
   ]];
 }
 
-#pragma mark - UIContentContainer
-
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  [self hideButtonsForSize:size];
-}
-
-#pragma mark - View Setup
-
-// Hide buttons for different Size Classes.
-- (void)hideButtonsForSize:(CGSize)size {
-  // PLACEHOLDER: Create a method that checks the Class Size using CGSize and
-  // device as parameters. This could take place in a subclass of UIButton.
-  if (size.width <= 670.0) {
-    self.shareButton.hidden = YES;
-    self.reloadButton.hidden = YES;
-  } else {
-    self.shareButton.hidden = NO;
-    self.reloadButton.hidden = NO;
-  }
-}
+#pragma mark - Components Setup
 
 - (void)setUpToolbarButtons {
-  // Back button
-  self.backButton = [self
-      buttonWithImageForNormalState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_BACK, YES)
-                   highlightedState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_BACK_PRESSED, YES)
-                      disabledState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_BACK_DISABLED,
-                                        YES)
-                             action:@selector(goBack:)];
+  // Back button.
+  self.backButton = [ToolbarButton backToolbarButton];
+  self.backButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
+                                   ToolbarComponentVisibilityRegularWidth;
+  [self.backButton addTarget:nil
+                      action:@selector(goBack:)
+            forControlEvents:UIControlEventTouchUpInside];
 
-  // Forward button
-  self.forwardButton = [self
-      buttonWithImageForNormalState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_FORWARD, YES)
-                   highlightedState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_FORWARD_PRESSED,
-                                        YES)
-                      disabledState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_FORWARD_DISABLED,
-                                        YES)
-                             action:@selector(goForward:)];
+  // Forward button.
+  self.forwardButton = [ToolbarButton forwardToolbarButton];
+  self.forwardButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
+                                      ToolbarComponentVisibilityRegularWidth;
+  [self.forwardButton addTarget:nil
+                         action:@selector(goForward:)
+               forControlEvents:UIControlEventTouchUpInside];
 
   // Tab switcher button.
-  self.tabSwitcherButton =
-      [self buttonWithImageForNormalState:
-                [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
-                         highlightedState:nil
-                            disabledState:nil
-                                   action:@selector(toggleTabStrip:)];
+  self.tabSwitcherButton = [ToolbarButton tabSwitcherToolbarButton];
+  self.tabSwitcherButton.visibilityMask =
+      ToolbarComponentVisibilityCompactWidth |
+      ToolbarComponentVisibilityRegularWidth;
+  [self.tabSwitcherButton addTarget:nil
+                             action:@selector(toggleTabStrip:)
+                   forControlEvents:UIControlEventTouchUpInside];
 
   // Tools menu button.
-  self.toolsMenuButton = [self
-      buttonWithImageForNormalState:[UIImage imageNamed:@"tabswitcher_menu"]
-                   highlightedState:nil
-                      disabledState:nil
-                             action:@selector(showToolsMenu:)];
-  [self.toolsMenuButton
-      setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
-}
+  self.toolsMenuButton = [ToolbarButton toolsMenuToolbarButton];
+  self.toolsMenuButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
+                                        ToolbarComponentVisibilityRegularWidth;
+  [self.toolsMenuButton addTarget:nil
+                           action:@selector(showToolsMenu:)
+                 forControlEvents:UIControlEventTouchUpInside];
 
-- (void)setUpRegularWidthToolbarButtons {
   // Share button.
-  self.shareButton = [self
-      buttonWithImageForNormalState:NativeImage(IDR_IOS_TOOLBAR_LIGHT_SHARE)
-                   highlightedState:NativeImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_SHARE_PRESSED)
-                      disabledState:NativeImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_SHARE_DISABLED)
-                             action:@selector(showShareMenu:)];
+  self.shareButton = [ToolbarButton shareToolbarButton];
+  self.shareButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
+  [self.shareButton addTarget:nil
+                       action:@selector(showShareMenu:)
+             forControlEvents:UIControlEventTouchUpInside];
 
   // Reload button.
-  self.reloadButton = [self
-      buttonWithImageForNormalState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_RELOAD, YES)
-                   highlightedState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_RELOAD_PRESSED,
-                                        YES)
-                      disabledState:NativeReversableImage(
-                                        IDR_IOS_TOOLBAR_LIGHT_RELOAD_DISABLED,
-                                        YES)
-                             action:@selector(reload:)];
+  self.reloadButton = [ToolbarButton reloadToolbarButton];
+  self.reloadButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
+  [self.reloadButton addTarget:nil
+                        action:@selector(reload:)
+              forControlEvents:UIControlEventTouchUpInside];
+
+  // Stop button.
+  // PLACEHOLDER: The stop Button state Mask is not being set and will not be
+  // shown on any SizeClass. We will hook this to a WebState later on.
+  self.stopButton = [ToolbarButton stopToolbarButton];
+  self.stopButton.visibilityMask = ToolbarComponentVisibilityNone;
+  [self.stopButton addTarget:nil
+                      action:@selector(stop:)
+            forControlEvents:UIControlEventTouchUpInside];
+}
+
+#pragma mark - Trait Collection Changes
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (self.traitCollection.horizontalSizeClass !=
+      previousTraitCollection.horizontalSizeClass) {
+    for (UIView* view in self.stackView.arrangedSubviews) {
+      if ([view isKindOfClass:[ToolbarButton class]]) {
+        ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);
+        [button updateHiddenInCurrentSizeClass];
+      }
+    }
+  }
 }
 
 #pragma mark - Public API
@@ -195,26 +183,19 @@ CGFloat kVerticalMargin = 5.0f;
 }
 
 #pragma mark - Helper Methods
-// Constructor for a Toolbar button.
-- (UIButton*)buttonWithImageForNormalState:(UIImage*)normalImage
-                          highlightedState:(UIImage*)highlightedImage
-                             disabledState:(UIImage*)disabledImage
-                                    action:(SEL)actionSelector {
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
-  [button setImage:normalImage forState:UIControlStateNormal];
-  [button setImage:highlightedImage forState:UIControlStateHighlighted];
-  [button setImage:disabledImage forState:UIControlStateDisabled];
-  [button addTarget:nil
-                action:actionSelector
-      forControlEvents:UIControlEventTouchUpInside];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
 
-  [button
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-  [button setContentHuggingPriority:UILayoutPriorityRequired
-                            forAxis:UILayoutConstraintAxisHorizontal];
-  return button;
+// PLACEHOLDER: We are not sure yet how WebState changes will affect Toolbar
+// Buttons, but the VC will eventually set the flag on the ToolbarButton
+// indicating it could or not it should be hidden. Once this is done we will
+// update all the ToolbarButtons visibility.
+// Updates all Buttons visibility to match any recent WebState change.
+- (void)updateAllButtonsVisibility {
+  for (UIView* view in self.stackView.arrangedSubviews) {
+    if ([view isKindOfClass:[ToolbarButton class]]) {
+      ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);
+      [button setHiddenForCurrentStateAndSizeClass];
+    }
+  }
 }
 
 @end
