@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//headless/headless.gni")
+import("//build/util/process_version.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -273,6 +274,7 @@ static_library("headless_lib") {
 
   deps = [
     ":gen_devtools_client_api",
+    ":version_header",
     "//base",
     "//components/security_state/content",
     "//components/security_state/core",
@@ -447,4 +449,13 @@ executable("headless_shell") {
   ]
 
   configs += [ ":headless_implementation" ]
+}
+
+process_version("version_header") {
+  template_file = "public/version.h.in"
+  sources = [
+    "//build/util/LASTCHANGE",
+    "//chrome/VERSION",
+  ]
+  output = "$target_gen_dir/public/version.h"
 }
