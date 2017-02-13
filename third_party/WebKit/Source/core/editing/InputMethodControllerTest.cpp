@@ -1034,7 +1034,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
   // Delete the existing composition.
   document().setTitle(emptyString);
   controller().setComposition("", underlines, 0, 0);
-  EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
+  EXPECT_STREQ("beforeinput.data:;input.data:;compositionend.data:;",
                document().title().utf8().data());
 }
 
@@ -1088,7 +1088,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("", underlines, 1);
-  EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
+  EXPECT_STREQ("beforeinput.data:;input.data:;compositionend.data:;",
                document().title().utf8().data());
 }
 

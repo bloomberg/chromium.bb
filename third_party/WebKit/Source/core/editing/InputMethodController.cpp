@@ -81,21 +81,19 @@ bool needsIncrementalInsertion(const LocalFrame& frame, const String& newText) {
   return true;
 }
 
-DispatchEventResult dispatchBeforeInputFromComposition(
-    EventTarget* target,
-    InputEvent::InputType inputType,
-    const String& data,
-    InputEvent::EventCancelable cancelable) {
+void dispatchBeforeInputFromComposition(EventTarget* target,
+                                        InputEvent::InputType inputType,
+                                        const String& data) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
-    return DispatchEventResult::NotCanceled;
+    return;
   if (!target)
-    return DispatchEventResult::NotCanceled;
+    return;
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      inputType, data, cancelable, InputEvent::EventIsComposing::IsComposing,
-      nullptr);
-  return target->dispatchEvent(beforeInputEvent);
+      inputType, data, InputEvent::NotCancelable,
+      InputEvent::EventIsComposing::IsComposing, nullptr);
+  target->dispatchEvent(beforeInputEvent);
 }
 
 // Used to insert/replace text during composition update and confirm
@@ -127,21 +125,8 @@ void insertTextDuringCompositionWithEvents(
   if (!target)
     return;
 
-  // TODO(chongz): Fire 'beforeinput' for the composed text being
-  // replaced/deleted.
-
-  // Only the last confirmed text is cancelable.
-  InputEvent::EventCancelable beforeInputCancelable =
-      (compositionType ==
-       TypingCommand::TextCompositionType::TextCompositionUpdate)
-          ? InputEvent::EventCancelable::NotCancelable
-          : InputEvent::EventCancelable::IsCancelable;
-  DispatchEventResult result = dispatchBeforeInputFromComposition(
-      target, InputEvent::InputType::InsertText, text, beforeInputCancelable);
-
-  if (beforeInputCancelable == InputEvent::EventCancelable::IsCancelable &&
-      result != DispatchEventResult::NotCanceled)
-    return;
+  dispatchBeforeInputFromComposition(
+      target, InputEvent::InputType::InsertCompositionText, text);
 
   // 'beforeinput' event handler may destroy document.
   if (!frame.document())
@@ -343,12 +328,6 @@ bool InputMethodController::replaceComposition(const String& text) {
   if (!isAvailable())
     return false;
 
-  // If text is empty, then delete the old composition here. If text is
-  // non-empty, InsertTextCommand::input will delete the old composition with
-  // an optimized replace operation.
-  if (text.isEmpty())
-    TypingCommand::deleteSelection(document(), 0);
-
   clear();
 
   insertTextDuringCompositionWithEvents(
@@ -462,12 +441,6 @@ void InputMethodController::cancelComposition() {
 
   clear();
 
-  // TODO(chongz): Figure out which InputType should we use here.
-  dispatchBeforeInputFromComposition(
-      document().focusedElement(),
-      InputEvent::InputType::DeleteComposedCharacterBackward, nullAtom,
-      InputEvent::EventCancelable::NotCancelable);
-  dispatchCompositionUpdateEvent(frame(), emptyString);
   insertTextDuringCompositionWithEvents(
       frame(), emptyString, 0,
       TypingCommand::TextCompositionType::TextCompositionCancel);

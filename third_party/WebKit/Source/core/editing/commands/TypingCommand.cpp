@@ -453,19 +453,18 @@ void TypingCommand::doApply(EditingState* editingState) {
 InputEvent::InputType TypingCommand::inputType() const {
   using InputType = InputEvent::InputType;
 
+  if (m_compositionType != TextCompositionNone)
+    return InputType::InsertCompositionText;
+
   switch (m_commandType) {
     // TODO(chongz): |DeleteSelection| is used by IME but we don't have
     // direction info.
     case DeleteSelection:
       return InputType::DeleteContentBackward;
     case DeleteKey:
-      if (m_compositionType != TextCompositionNone)
-        return InputType::DeleteComposedCharacterBackward;
       return deletionInputTypeFromTextGranularity(DeleteDirection::Backward,
                                                   m_granularity);
     case ForwardDeleteKey:
-      if (m_compositionType != TextCompositionNone)
-        return InputType::DeleteComposedCharacterForward;
       return deletionInputTypeFromTextGranularity(DeleteDirection::Forward,
                                                   m_granularity);
     case InsertText:

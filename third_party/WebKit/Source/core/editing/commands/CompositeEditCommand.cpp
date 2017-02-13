@@ -99,8 +99,7 @@ bool CompositeEditCommand::apply() {
       case InputEvent::InputType::InsertFromPaste:
       case InputEvent::InputType::InsertFromDrop:
       case InputEvent::InputType::InsertReplacementText:
-      case InputEvent::InputType::DeleteComposedCharacterForward:
-      case InputEvent::InputType::DeleteComposedCharacterBackward:
+      case InputEvent::InputType::InsertCompositionText:
       case InputEvent::InputType::DeleteWordBackward:
       case InputEvent::InputType::DeleteWordForward:
       case InputEvent::InputType::DeleteLineBackward:
