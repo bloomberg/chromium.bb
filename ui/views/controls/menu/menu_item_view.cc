@@ -435,11 +435,11 @@ const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() const {
 }
 
 MenuController* MenuItemView::GetMenuController() {
-  return GetRootMenuItem()->controller_.get();
+  return GetRootMenuItem()->controller_;
 }
 
 const MenuController* MenuItemView::GetMenuController() const {
-  return GetRootMenuItem()->controller_.get();
+  return GetRootMenuItem()->controller_;
 }
 
 MenuDelegate* MenuItemView::GetDelegate() {
