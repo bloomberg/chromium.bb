@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_METRICS_H_
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_METRICS_H_
 
+namespace base {
+class TimeDelta;
+}
+
 namespace webapk {
 
 // Keep these enums up to date with tools/metrics/histograms/histograms.xml.
@@ -52,6 +56,7 @@ enum UserAction {
   USER_ACTION_MAX,
 };
 
+void TrackInstallDuration(base::TimeDelta delta);
 void TrackInstallEvent(InstallEvent event);
 void TrackInstallSource(InstallSource event);
 void TrackInstallInfoBarShown(InfoBarShown event);
