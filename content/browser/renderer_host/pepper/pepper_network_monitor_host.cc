@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -85,9 +86,9 @@ void PepperNetworkMonitorHost::GetAndSendNetworkList() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Call GetNetworkList() on a thread that allows blocking IO.
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&GetNetworkList),
       base::Bind(&PepperNetworkMonitorHost::SendNetworkList,
                  weak_factory_.GetWeakPtr()));
