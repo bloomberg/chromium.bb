@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_async_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
@@ -417,6 +418,10 @@ class JsToCppTest : public testing::Test {
   base::ShadowingAtExitManager at_exit_;
   base::MessageLoop loop;
   base::RunLoop run_loop_;
+
+  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
+  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
+  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler;
 
   DISALLOW_COPY_AND_ASSIGN(JsToCppTest);
 };

@@ -23,6 +23,7 @@ group("tests") {
 test("mojo_js_integration_tests") {
   deps = [
     ":js_to_cpp_bindings",
+    "//base/test:test_support",
     "//gin:gin_test",
     "//mojo/common",
     "//mojo/edk/js",
