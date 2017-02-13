@@ -296,8 +296,14 @@ public class NewTabPageView
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
         final TextView searchBoxTextView = (TextView) mSearchBoxView
                 .findViewById(R.id.search_box_text);
-        String hintText = getResources().getString(R.string.search_or_type_url);
 
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
+            // Not using the relative version of this call because we only want to clear
+            // the drawables.
+            searchBoxTextView.setCompoundDrawables(null, null, null, null);
+        }
+
+        String hintText = getResources().getString(R.string.search_or_type_url);
         if (!DeviceFormFactor.isTablet(getContext()) || mManager.isFakeOmniboxTextEnabledTablet()) {
             searchBoxTextView.setHint(hintText);
         } else {

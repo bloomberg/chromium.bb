@@ -1882,6 +1882,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-condensed-layout", IDS_FLAGS_NTP_CONDENSED_LAYOUT_NAME,
      IDS_FLAGS_NTP_CONDENSED_LAYOUT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},
+    {"ntp-google-g-in-omnibox", IDS_FLAGS_NTP_GOOGLE_G_IN_OMNIBOX_NAME,
+     IDS_FLAGS_NTP_GOOGLE_G_IN_OMNIBOX_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::NTPShowGoogleGInOmniboxFeature)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264) && \
     !defined(MEDIA_DISABLE_FFMPEG)

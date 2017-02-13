@@ -277,7 +277,7 @@ public class LocationBarTablet extends LocationBarLayout {
         if (showSaveOfflineButton) mSaveOfflineButton.setEnabled(isSaveOfflineButtonEnabled());
 
         if (!mShouldShowButtonsWhenUnfocused) {
-            updateMicButtonVisiblity(mUrlFocusChangePercent);
+            updateMicButtonVisibility(mUrlFocusChangePercent);
         } else {
             mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
         }

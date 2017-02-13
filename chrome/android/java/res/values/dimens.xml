@@ -224,7 +224,7 @@
     <dimen name="webapp_splash_large_title_margin_bottom">16dp</dimen>
 
     <dimen name="webapk_badge_icon_size">24dp</dimen>
-    
+
     <!-- Toolbar dimensions -->
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>
     <dimen name="toolbar_tab_count_text_size_2_digit">10dp</dimen>
@@ -234,6 +234,10 @@
     <dimen name="toolbar_button_width">48dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
+    <dimen name="location_bar_google_g_width">24dp</dimen>
+    <dimen name="location_bar_google_g_margin">8dp</dimen>
+    <!-- location_bar_google_g_width + 2 * location_bar_google_g_margin -->
+    <dimen name="location_bar_google_g_container_width">40dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_incognito_badge_padding">7dp</dimen>

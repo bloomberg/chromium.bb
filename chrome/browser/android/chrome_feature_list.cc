@@ -57,6 +57,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPCondensedLayoutFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
+    &NTPShowGoogleGInOmniboxFeature,
     &kNTPSuggestionsStandaloneUIFeature,
     &kPhysicalWebFeature,
     &kSpecialLocaleFeature,
@@ -138,6 +139,9 @@ const base::Feature kNTPCondensedLayoutFeature{
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature NTPShowGoogleGInOmniboxFeature{
+    "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPSuggestionsStandaloneUIFeature{
     "NTPSuggestionsStandaloneUI", base::FEATURE_DISABLED_BY_DEFAULT};

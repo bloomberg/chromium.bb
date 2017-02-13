@@ -407,15 +407,6 @@ public class LocationBarLayout extends FrameLayout
     public static final int BUTTON_TYPE_NAVIGATION_ICON = 2;
 
     /**
-     * @param outRect Populated with a {@link Rect} that represents the {@link Tab} specific content
-     *                of this {@link LocationBar}.
-     */
-    public void getContentRect(Rect outRect) {
-        outRect.set(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(),
-                getHeight() - getPaddingBottom());
-    }
-
-    /**
      * A widget for showing a list of omnibox suggestions.
      */
     @VisibleForTesting
@@ -2314,7 +2305,7 @@ public class LocationBarLayout extends FrameLayout
      * Updates the display of the mic button.
      * @param urlFocusChangePercent The completeion percentage of the URL focus change animation.
      */
-    protected void updateMicButtonVisiblity(float urlFocusChangePercent) {
+    protected void updateMicButtonVisibility(float urlFocusChangePercent) {
         boolean visible = !shouldShowDeleteButton();
         boolean showMicButton = mVoiceSearchEnabled && visible
                 && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress
