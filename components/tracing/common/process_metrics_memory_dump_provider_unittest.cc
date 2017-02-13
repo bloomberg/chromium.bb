@@ -288,7 +288,8 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
   ASSERT_EQ(0, result);
   std::string name = basename(full_path);
 
-  bool found_components_unittests = false;
+  uint64_t components_unittests_resident_pages = 0;
+  bool found_appkit = false;
   for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
     EXPECT_NE(0u, region.start_address);
     EXPECT_NE(0u, region.size_in_bytes);
@@ -298,10 +299,19 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
         VMRegion::kProtectionFlagsRead | VMRegion::kProtectionFlagsExec;
     if (region.mapped_file.find(name) != std::string::npos &&
         region.protection_flags == required_protection_flags) {
-      found_components_unittests = true;
+      components_unittests_resident_pages +=
+          region.byte_stats_private_dirty_resident +
+          region.byte_stats_shared_dirty_resident +
+          region.byte_stats_private_clean_resident +
+          region.byte_stats_shared_clean_resident;
+    }
+
+    if (region.mapped_file.find("AppKit") != std::string::npos) {
+      found_appkit = true;
     }
   }
-  EXPECT_TRUE(found_components_unittests);
+  EXPECT_GT(components_unittests_resident_pages, 0u);
+  EXPECT_TRUE(found_appkit);
 }
 #endif  // defined(OS_MACOSX)
 
