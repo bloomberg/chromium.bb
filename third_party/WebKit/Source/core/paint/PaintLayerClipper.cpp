@@ -438,6 +438,9 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   DCHECK(m_geometryMapper);
   LayoutRect source(LayoutRect::infiniteIntRect());
   const auto* properties = m_layer.layoutObject()->paintProperties();
+  // TODO(chrishtr): fix the underlying bug that causes this situation.
+  if (!properties)
+    return ClipRect(source);
   DCHECK(properties && properties->localBorderBoxProperties());
 
   PropertyTreeState propertyTreeState = *properties->localBorderBoxProperties();
