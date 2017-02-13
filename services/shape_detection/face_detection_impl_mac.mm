@@ -4,8 +4,6 @@
 
 #include "services/shape_detection/face_detection_impl_mac.h"
 
-#import <QuartzCore/QuartzCore.h>
-
 #include "base/mac/scoped_cftyperef.h"
 #include "media/capture/video/scoped_result_callback.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -39,10 +37,12 @@ void FaceDetectionProviderImpl::CreateFaceDetection(
 
 FaceDetectionImplMac::FaceDetectionImplMac(
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
-  NSDictionary* const opts = @{CIDetectorAccuracy : CIDetectorAccuracyHigh};
+  NSString* const accuracy =
+      options->fast_mode ? CIDetectorAccuracyHigh : CIDetectorAccuracyLow;
+  NSDictionary* const detector_options = @{CIDetectorAccuracy : accuracy};
   detector_.reset([[CIDetector detectorOfType:CIDetectorTypeFace
                                       context:nil
-                                      options:opts] retain]);
+                                      options:detector_options] retain]);
 }
 
 FaceDetectionImplMac::~FaceDetectionImplMac() {}

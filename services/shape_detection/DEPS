@@ -1,3 +1,5 @@
 include_rules = [
   "+media/capture/video/scoped_result_callback.h",
+  "+third_party/skia/include",
+  "+ui/gfx/codec"
 ]

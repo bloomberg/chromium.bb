@@ -1258,6 +1258,18 @@ COMMON_GTESTS = {
     ],
     'test': 'gles2_conform_test',
   },
+  'service_unittests': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall and optional tryservers.
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'os_types': ['mac'],
+      },
+    ],
+    'args': [
+      '--gtest_filter=*Detection*'
+    ]
+  },
   'swiftshader_unittests': {
     'tester_configs': [
       {
