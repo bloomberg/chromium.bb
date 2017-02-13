@@ -765,15 +765,33 @@
     "box-sizing",
     {
       name: "break-after",
+      // Storage for this property also covers these legacy properties:
+      // page-break-after, -webkit-column-break-after
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: [
+        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
+      ],
       type_name: "EBreakBetween",
     },
     {
       name: "break-before",
+      // Storage for this property also covers these legacy properties:
+      // page-break-before, -webkit-column-break-before
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: [
+        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
+      ],
       type_name: "EBreakBetween",
     },
     {
       name: "break-inside",
-      type_name: "EBreakInside",
+      // Storage for this property also covers these legacy properties:
+      // page-break-inside, -webkit-column-break-inside
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: ["auto", "avoid", "avoid-column", "avoid-page"],
     },
     {
       name: "buffered-rendering",

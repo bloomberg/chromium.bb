@@ -371,9 +371,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
   m_nonInheritedData.m_hasViewportUnits =
       other.m_nonInheritedData.m_hasViewportUnits;
-  m_nonInheritedData.m_breakBefore = other.m_nonInheritedData.m_breakBefore;
-  m_nonInheritedData.m_breakAfter = other.m_nonInheritedData.m_breakAfter;
-  m_nonInheritedData.m_breakInside = other.m_nonInheritedData.m_breakInside;
   m_nonInheritedData.m_hasRemUnits = other.m_nonInheritedData.m_hasRemUnits;
 
   // Correctly set during selector matching:

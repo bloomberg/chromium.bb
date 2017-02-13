@@ -233,11 +233,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return m_effectiveDisplay == other.m_effectiveDisplay &&
              m_originalDisplay == other.m_originalDisplay &&
              m_verticalAlign == other.m_verticalAlign &&
-             m_position == other.m_position &&
-             // hasViewportUnits
-             m_breakBefore == other.m_breakBefore &&
-             m_breakAfter == other.m_breakAfter &&
-             m_breakInside == other.m_breakInside;
+             m_position == other.m_position;
+      // Differences in the following fields do not cause inequality:
+      // hasViewportUnits
       // styleType
       // pseudoBits
       // explicitInheritance
@@ -266,10 +264,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     mutable unsigned m_hasViewportUnits : 1;
 
     // 32 bits
-
-    unsigned m_breakBefore : 4;  // EBreakBetween
-    unsigned m_breakAfter : 4;   // EBreakBetween
-    unsigned m_breakInside : 2;  // EBreakInside
 
     unsigned m_styleType : 6;  // PseudoId
     unsigned m_pseudoBits : 8;
@@ -312,12 +306,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_position = initialPosition();
-    m_nonInheritedData.m_breakBefore =
-        static_cast<unsigned>(initialBreakBefore());
-    m_nonInheritedData.m_breakAfter =
-        static_cast<unsigned>(initialBreakAfter());
-    m_nonInheritedData.m_breakInside =
-        static_cast<unsigned>(initialBreakInside());
     m_nonInheritedData.m_styleType = PseudoIdNone;
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_explicitInheritance = false;
@@ -764,36 +752,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   EBoxSizing boxSizing() const { return m_box->boxSizing(); }
   void setBoxSizing(EBoxSizing s) {
     SET_VAR(m_box, m_boxSizing, static_cast<unsigned>(s));
-  }
-
-  // Page break properties.
-  // break-after (shorthand for page-break-after and -webkit-column-break-after)
-  static EBreakBetween initialBreakAfter() { return EBreakBetween::kAuto; }
-  EBreakBetween breakAfter() const {
-    return static_cast<EBreakBetween>(m_nonInheritedData.m_breakAfter);
-  }
-  void setBreakAfter(EBreakBetween b) {
-    m_nonInheritedData.m_breakAfter = static_cast<unsigned>(b);
-  }
-
-  // break-before (shorthand for page-break-before and
-  // -webkit-column-break-before)
-  static EBreakBetween initialBreakBefore() { return EBreakBetween::kAuto; }
-  EBreakBetween breakBefore() const {
-    return static_cast<EBreakBetween>(m_nonInheritedData.m_breakBefore);
-  }
-  void setBreakBefore(EBreakBetween b) {
-    m_nonInheritedData.m_breakBefore = static_cast<unsigned>(b);
-  }
-
-  // break-inside (shorthand for page-break-inside and
-  // -webkit-column-break-inside)
-  static EBreakInside initialBreakInside() { return EBreakInside::kAuto; }
-  EBreakInside breakInside() const {
-    return static_cast<EBreakInside>(m_nonInheritedData.m_breakInside);
-  }
-  void setBreakInside(EBreakInside b) {
-    m_nonInheritedData.m_breakInside = static_cast<unsigned>(b);
   }
 
   // clip
