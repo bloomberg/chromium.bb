@@ -50,9 +50,10 @@
 }
 
 - (void)presentationTransitionWillBegin {
-  self.presentedView.layer.borderWidth = 1.0;
-  self.presentedView.layer.shadowRadius = 1.0;
-  self.presentedView.layer.borderColor = [UIColor blackColor].CGColor;
+  self.presentedView.layer.shadowRadius = 5.0f;
+  self.presentedView.layer.shadowOpacity = 0.4f;
+  self.presentedView.layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
+  self.presentedView.layer.cornerRadius = 2.0f;
 
   self.dismissRecognizer =
       [[UITapGestureRecognizer alloc] initWithTarget:self

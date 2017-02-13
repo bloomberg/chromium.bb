@@ -31,6 +31,8 @@ source_set("tools_ui") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//ios/clean/chrome/browser/ui/actions",
+    "//ios/third_party/material_roboto_font_loader_ios",
   ]
 }
