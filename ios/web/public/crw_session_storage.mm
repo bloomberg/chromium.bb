@@ -107,7 +107,6 @@ NSString* const kWindowNameKey = @"windowName";
                forKey:kCertificatePolicyManagerKey];
   if (_userData)
     _userData->Encode(coder);
-  // rendererInitiated is deliberately not preserved, as upstream.
 }
 
 @end

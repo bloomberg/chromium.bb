@@ -12,6 +12,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_item_storage_test_util.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,25 +20,6 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
-
-namespace {
-
-// Checks equality between item1 and item2.
-BOOL ItemStoragesAreEqual(CRWNavigationItemStorage* item1,
-                          CRWNavigationItemStorage* item2) {
-  return item1.virtualURL == item2.virtualURL &&
-         item1.referrer.url == item2.referrer.url &&
-         item1.referrer.policy == item2.referrer.policy &&
-         item1.timestamp == item2.timestamp && item1.title == item2.title &&
-         item1.displayState == item2.displayState &&
-         item1.shouldSkipRepostFormConfirmation ==
-             item2.shouldSkipRepostFormConfirmation &&
-         item1.overridingUserAgent == item2.overridingUserAgent &&
-         [item1.POSTData isEqualToData:item2.POSTData] &&
-         [item1.HTTPRequestHeaders
-             isEqualToDictionary:item2.HTTPRequestHeaders];
-}
-}  // namespace
 
 class CRWNavigationItemStorageTest : public PlatformTest {
  protected:
@@ -104,7 +86,7 @@ TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
   // Create a CRWNavigationItemStorage and verify that it is equivalent.
   base::scoped_nsobject<CRWNavigationItemStorage> new_storage(
       [[CRWNavigationItemStorage alloc] initWithCoder:unarchiver]);
-  EXPECT_TRUE(ItemStoragesAreEqual(item_storage(), new_storage.get()));
+  EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), new_storage.get()));
 }
 
 // Tests that unarchiving CRWNavigationItemStorage data results in an equivalent
@@ -112,5 +94,5 @@ TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
 TEST_F(CRWNavigationItemStorageTest, EncodeDecode) {
   NSData* data = [NSKeyedArchiver archivedDataWithRootObject:item_storage()];
   id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-  EXPECT_TRUE(ItemStoragesAreEqual(item_storage(), decoded));
+  EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), decoded));
 }
