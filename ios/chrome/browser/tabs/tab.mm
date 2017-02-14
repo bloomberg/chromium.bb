@@ -125,7 +125,6 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/favicon_status.h"
@@ -316,11 +315,11 @@ enum class RendererTerminationTabState {
   std::unique_ptr<TabInfoBarObserver> tabInfoBarObserver_;
 }
 
-// Returns the current sessionEntry for the sesionController associated with
+// Returns the current NavigationItem for the sesionController associated with
 // this tab. Don't use this to get the underlying NavigationItem; instead
 // go through the NavigationManager.
 // This is nil if there's no NavigationManager.
-@property(nonatomic, readonly) CRWSessionEntry* currentSessionEntry;
+@property(nonatomic, readonly) web::NavigationItem* currentNavigationItem;
 
 // Returns the tab's reader mode controller. May contain nil if the feature is
 // disabled.
@@ -354,10 +353,6 @@ enum class RendererTerminationTabState {
 
 // Initialize the Native App Launcher controller.
 - (void)initNativeAppNavigationController;
-
-// YES if toEntry is behind fromEntry in the current history stack.
-- (BOOL)navigationIsBackwards:(const CRWSessionEntry*)fromEntry
-                      toEntry:(const CRWSessionEntry*)toEntry;
 
 // Opens a link in an external app. Returns YES iff |url| is launched in an
 // external app.
@@ -750,7 +745,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (const GURL&)url {
   // See note in header; this method should be removed.
-  web::NavigationItem* item = [[self currentSessionEntry] navigationItem];
+  web::NavigationItem* item = [self currentNavigationItem];
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -1007,7 +1002,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)addCurrentEntryToHistoryDB {
-  DCHECK(self.currentSessionEntry);
+  DCHECK(self.currentNavigationItem);
   // If incognito, don't update history.
   if (browserState_->IsOffTheRecord())
     return;
@@ -1131,7 +1126,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   self.isVoiceSearchResultsTab = NO;
 
   [[OmniboxGeolocationController sharedInstance]
-      addLocationToNavigationItem:self.currentSessionEntry.navigationItem
+      addLocationToNavigationItem:self.currentNavigationItem
                      browserState:browserState_];
 }
 
@@ -1237,10 +1232,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self.webController dismissModals];
 }
 
-- (CRWSessionEntry*)currentSessionEntry {
+- (web::NavigationItem*)currentNavigationItem {
   if (![self navigationManager])
     return nil;
-  return [[self navigationManager]->GetSessionController() currentEntry];
+  return [[self navigationManager]->GetSessionController() currentItem];
 }
 
 - (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager {
@@ -1286,15 +1281,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self.navigationManager && self.navigationManager->CanGoForward();
 }
 
-- (void)goToEntry:(CRWSessionEntry*)entry {
-  DCHECK(entry);
+- (void)goToItem:(const web::NavigationItem*)item {
+  DCHECK(item);
 
   if (self.navigationManager) {
     CRWSessionController* sessionController =
         self.navigationManager->GetSessionController();
-    DCHECK([sessionController.entries containsObject:entry]);
-    NSUInteger index = [sessionController.entries indexOfObject:entry];
-    self.navigationManager->GoToIndex(index);
+    NSInteger itemIndex = [sessionController indexOfItem:item];
+    DCHECK_NE(itemIndex, NSNotFound);
+    self.navigationManager->GoToIndex(itemIndex);
   }
 }
 
@@ -1519,7 +1514,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (BOOL)useDesktopUserAgent {
-  web::NavigationItem* currentItem = self.currentSessionEntry.navigationItem;
+  web::NavigationItem* currentItem = self.currentNavigationItem;
   return currentItem && currentItem->IsOverridingUserAgent();
 }
 
@@ -1544,19 +1539,19 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   DCHECK([self navigationManager]);
   CRWSessionController* sessionController =
       [self navigationManager]->GetSessionController();
-  CRWSessionEntry* lastUserEntry = [sessionController lastUserEntry];
-  if (!lastUserEntry)
+  web::NavigationItem* lastUserItem = [sessionController lastUserItem];
+  if (!lastUserItem)
     return;
 
   // |originalUrl| will be empty if a page was open by DOM.
-  GURL reloadURL(lastUserEntry.navigationItem->GetOriginalRequestURL());
+  GURL reloadURL(lastUserItem->GetOriginalRequestURL());
   if (reloadURL.is_empty()) {
     DCHECK(sessionController.openedByDOM);
-    reloadURL = [lastUserEntry navigationItem]->GetVirtualURL();
+    reloadURL = lastUserItem->GetVirtualURL();
   }
 
   web::NavigationManager::WebLoadParams params(reloadURL);
-  params.referrer = lastUserEntry.navigationItem->GetReferrer();
+  params.referrer = lastUserItem->GetReferrer();
   params.transition_type = transition;
   if (self.navigationManager)
     self.navigationManager->LoadURLWithParams(params);
@@ -1740,8 +1735,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 
   bool wasPost = false;
-  if (self.currentSessionEntry)
-    wasPost = self.currentSessionEntry.navigationItem->HasPostData();
+  if (self.currentNavigationItem)
+    wasPost = self.currentNavigationItem->HasPostData();
   GURL lastCommittedURL = self.webState->GetLastCommittedURL();
   if (loadSuccess)
     [autoReloadBridge_ loadFinishedForURL:lastCommittedURL wasPost:wasPost];
@@ -2190,16 +2185,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self updateFullscreenWithToolbarVisible:YES];
   [self.webController wasHidden];
   [inputAccessoryViewController_ wasHidden];
-}
-
-- (BOOL)navigationIsBackwards:(const CRWSessionEntry*)fromEntry
-                      toEntry:(const CRWSessionEntry*)toEntry {
-  DCHECK([self navigationManager]);
-  NSArray* entries = [self navigationManager]->GetSessionController().entries;
-  NSInteger fromIndex = [entries indexOfObject:fromEntry];
-  NSInteger toIndex = [entries indexOfObject:toEntry];
-  return (fromIndex != NSNotFound && toIndex != NSNotFound &&
-          fromIndex > toIndex);
 }
 
 @end

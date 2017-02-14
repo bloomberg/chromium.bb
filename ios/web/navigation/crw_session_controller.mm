@@ -686,7 +686,7 @@
     _useDesktopUserAgentForNextPendingItem = YES;
 }
 
-- (NSInteger)indexOfItem:(web::NavigationItem*)item {
+- (NSInteger)indexOfItem:(const web::NavigationItem*)item {
   web::NavigationItemList items = self.items;
   for (NSInteger i = 0; i < static_cast<NSInteger>(items.size()); ++i) {
     if (items[i] == item)

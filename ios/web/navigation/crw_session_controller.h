@@ -158,7 +158,7 @@ struct Referrer;
 - (void)useDesktopUserAgentForNextPendingItem;
 
 // Returns the index of |item| in |items|.
-- (NSInteger)indexOfItem:(web::NavigationItem*)item;
+- (NSInteger)indexOfItem:(const web::NavigationItem*)item;
 
 @end
 

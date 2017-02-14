@@ -19,7 +19,6 @@
 @class AutoReloadBridge;
 @class CastController;
 @protocol CRWNativeContentProvider;
-@class CRWSessionEntry;
 @class CRWWebController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
@@ -57,6 +56,7 @@ struct SessionTab;
 }
 
 namespace web {
+class NavigationItem;
 class NavigationManagerImpl;
 struct Referrer;
 class WebState;
@@ -246,8 +246,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
             (const std::vector<sessions::SerializedNavigationEntry>&)navigations
                          currentIndex:(NSInteger)currentIndex;
 
-// Navigate forwards or backwards to |entry|.
-- (void)goToEntry:(CRWSessionEntry*)entry;
+// Navigate forwards or backwards to |item|.
+- (void)goToItem:(const web::NavigationItem*)item;
 - (void)reload;
 
 // Navigates forwards or backwards.

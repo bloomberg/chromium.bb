@@ -3378,7 +3378,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)navigateToSelectedEntry:(id)sender {
   DCHECK([sender isKindOfClass:[TabHistoryCell class]]);
   TabHistoryCell* selectedCell = (TabHistoryCell*)sender;
-  [[_model currentTab] goToEntry:selectedCell.entry];
+  [[_model currentTab] goToItem:selectedCell.entry.navigationItem];
   [_toolbarController dismissTabHistoryPopup];
 }
 

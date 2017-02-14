@@ -8,6 +8,7 @@
 #include "ios/net/request_tracker.h"
 
 namespace web {
+class NavigationItem;
 class WebStateImpl;
 }
 
@@ -16,7 +17,7 @@ class WebStateImpl;
 
 - (OpenInController*)openInController;
 - (void)closeThisTab;
-- (CRWSessionEntry*)currentSessionEntry;
+- (web::NavigationItem*)currentNavigationItem;
 - (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager;
 - (void)setShouldObserveFaviconChanges:(BOOL)shouldObserveFaviconChanges;
 
