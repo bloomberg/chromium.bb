@@ -20,4 +20,8 @@ interface ChildMemoryCoordinator {
   // Called when the central memory coodinator changes the state for child
   // processes.
   OnStateChange(MemoryState state);
+
+  // Requests the child process to purge memory (e.g. by dropping caches that
+  // can be easily rebuilt).
+  PurgeMemory();
 };

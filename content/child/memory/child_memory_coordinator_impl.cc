@@ -59,6 +59,8 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 }
 
 void ChildMemoryCoordinatorImpl::PurgeMemory() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "ChildMemoryCoordinatorImpl::PurgeMemory");
   // TODO(bashi): Remove Notify() call when all clients implement
   // OnPurgeMemory();
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
