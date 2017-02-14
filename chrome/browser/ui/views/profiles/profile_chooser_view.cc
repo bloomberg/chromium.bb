@@ -472,11 +472,11 @@ class EditableProfilePhoto : public views::LabelButton {
       gfx::Point center_point = bounds.CenterPoint() + badge_offset_vector;
 
       // Paint the circular background.
-      cc::PaintFlags paint;
-      paint.setAntiAlias(true);
-      paint.setColor(GetNativeTheme()->GetSystemColor(
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_BubbleBackground));
-      canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, paint);
+      canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, flags);
 
       gfx::VectorIconId icon_id;
       int icon_size;
@@ -489,10 +489,10 @@ class EditableProfilePhoto : public views::LabelButton {
         icon_color = gfx::kChromeIconGrey;
       } else {
         // Paint the light blue circle.
-        paint.setColor(SkColorSetRGB(0xaf, 0xd9, 0xfc));
+        flags.setColor(SkColorSetRGB(0xaf, 0xd9, 0xfc));
         canvas->DrawCircle(
             center_point, GetProfileBadgeSize() / 2 - kProfileBadgeWhitePadding,
-            paint);
+            flags);
 
         icon_id = profile_->IsChild()
             ? gfx::VectorIconId::ACCOUNT_CHILD

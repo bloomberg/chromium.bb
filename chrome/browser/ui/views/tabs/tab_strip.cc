@@ -402,18 +402,18 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     canvas->sk_canvas()->clipPath(fill, SkClipOp::kDifference, true);
   // Now draw the stroke and shadow; the stroke will always be visible, while
   // the shadow will be affected by the clip we set above.
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
   const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
   const float alpha = SkColorGetA(stroke_color);
   const SkAlpha shadow_alpha =
       base::saturated_cast<SkAlpha>(std::round(2.1875f * alpha));
-  paint.setLooper(
+  flags.setLooper(
       CreateShadowDrawLooper(SkColorSetA(stroke_color, shadow_alpha)));
   const SkAlpha path_alpha = static_cast<SkAlpha>(
       std::round((pressed ? 0.875f : 0.609375f) * alpha));
-  paint.setColor(SkColorSetA(stroke_color, path_alpha));
-  canvas->DrawPath(stroke, paint);
+  flags.setColor(SkColorSetA(stroke_color, path_alpha));
+  canvas->DrawPath(stroke, flags);
 }
 
 bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
@@ -472,8 +472,8 @@ void NewTabButton::PaintFill(bool pressed,
                              gfx::Canvas* canvas) const {
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->UndoDeviceScaleFactor();
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
 
   // For unpressed buttons, draw the fill and its shadow.
   if (!pressed) {
@@ -502,26 +502,26 @@ void NewTabButton::PaintFill(bool pressed,
       const bool succeeded =
           canvas->InitPaintFlagsForTiling(*tp->GetImageSkiaNamed(bg_id), x,
                                           GetNewTabButtonTopOffset() + offset_y,
-                                          x_scale * scale, scale, 0, 0, &paint);
+                                          x_scale * scale, scale, 0, 0, &flags);
       DCHECK(succeeded);
     } else {
-      paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
+      flags.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
     }
     const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
     const SkAlpha alpha = static_cast<SkAlpha>(
         std::round(SkColorGetA(stroke_color) * 0.59375f));
-    cc::PaintFlags shadow_paint = paint;
-    shadow_paint.setLooper(
+    cc::PaintFlags shadow_flags = flags;
+    shadow_flags.setLooper(
         CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
-    canvas->DrawPath(fill, shadow_paint);
+    canvas->DrawPath(fill, shadow_flags);
   }
 
   // Draw a white highlight on hover.
   const SkAlpha hover_alpha = static_cast<SkAlpha>(
       hover_animation().CurrentValueBetween(0x00, 0x4D));
   if (hover_alpha != SK_AlphaTRANSPARENT) {
-    paint.setColor(SkColorSetA(SK_ColorWHITE, hover_alpha));
-    canvas->DrawPath(fill, paint);
+    flags.setColor(SkColorSetA(SK_ColorWHITE, hover_alpha));
+    canvas->DrawPath(fill, flags);
   }
 
   // Most states' opacities are adjusted using an opacity recorder in
@@ -529,8 +529,8 @@ void NewTabButton::PaintFill(bool pressed,
   // instead rendered using a dark overlay here.  Avoiding the use of the
   // opacity recorder keeps the stroke more visible in this state.
   if (pressed) {
-    paint.setColor(SkColorSetA(SK_ColorBLACK, 0x14));
-    canvas->DrawPath(fill, paint);
+    flags.setColor(SkColorSetA(SK_ColorBLACK, 0x14));
+    canvas->DrawPath(fill, flags);
   }
 }
 

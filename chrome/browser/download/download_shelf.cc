@@ -29,7 +29,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -75,16 +74,16 @@ void DownloadShelf::PaintDownloadProgress(
     const base::TimeDelta& progress_time,
     int percent_done) {
   // Draw background (light blue circle).
-  cc::PaintFlags bg_paint;
-  bg_paint.setStyle(cc::PaintFlags::kFill_Style);
+  cc::PaintFlags bg_flags;
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
   SkColor indicator_color =
       theme_provider.GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
-  bg_paint.setColor(SkColorSetA(indicator_color, 0x33));
-  bg_paint.setAntiAlias(true);
+  bg_flags.setColor(SkColorSetA(indicator_color, 0x33));
+  bg_flags.setAntiAlias(true);
   const SkScalar kCenterPoint = kProgressIndicatorSize / 2.f;
   SkPath bg;
   bg.addCircle(kCenterPoint, kCenterPoint, kCenterPoint);
-  canvas->DrawPath(bg, bg_paint);
+  canvas->DrawPath(bg, bg_flags);
 
   // Calculate progress.
   SkScalar sweep_angle = 0.f;
@@ -104,12 +103,12 @@ void DownloadShelf::PaintDownloadProgress(
   progress.addArc(
       SkRect::MakeLTRB(0, 0, kProgressIndicatorSize, kProgressIndicatorSize),
       start_pos, sweep_angle);
-  cc::PaintFlags progress_paint;
-  progress_paint.setColor(indicator_color);
-  progress_paint.setStyle(cc::PaintFlags::kStroke_Style);
-  progress_paint.setStrokeWidth(1.7f);
-  progress_paint.setAntiAlias(true);
-  canvas->DrawPath(progress, progress_paint);
+  cc::PaintFlags progress_flags;
+  progress_flags.setColor(indicator_color);
+  progress_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  progress_flags.setStrokeWidth(1.7f);
+  progress_flags.setAntiAlias(true);
+  canvas->DrawPath(progress, progress_flags);
 }
 
 // static

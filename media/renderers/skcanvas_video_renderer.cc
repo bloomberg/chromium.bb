@@ -340,11 +340,11 @@ SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {
 void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                                   cc::PaintCanvas* canvas,
                                   const gfx::RectF& dest_rect,
-                                  cc::PaintFlags& paint,
+                                  cc::PaintFlags& flags,
                                   VideoRotation video_rotation,
                                   const Context3D& context_3d) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (paint.getAlpha() == 0) {
+  if (flags.getAlpha() == 0) {
     return;
   }
 
@@ -358,7 +358,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
         video_frame->format() == media::PIXEL_FORMAT_Y16 ||
         video_frame->HasTextures())) {
     cc::PaintFlags black_with_alpha_flags;
-    black_with_alpha_flags.setAlpha(paint.getAlpha());
+    black_with_alpha_flags.setAlpha(flags.getAlpha());
     canvas->drawRect(dest, black_with_alpha_flags);
     canvas->flush();
     return;
@@ -369,9 +369,9 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     return;
 
   cc::PaintFlags video_flags;
-  video_flags.setAlpha(paint.getAlpha());
-  video_flags.setBlendMode(paint.getBlendMode());
-  video_flags.setFilterQuality(paint.getFilterQuality());
+  video_flags.setAlpha(flags.getAlpha());
+  video_flags.setBlendMode(flags.getBlendMode());
+  video_flags.setFilterQuality(flags.getFilterQuality());
 
   const bool need_rotation = video_rotation != VIDEO_ROTATION_0;
   const bool need_scaling =

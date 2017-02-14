@@ -139,7 +139,7 @@ class SkPictureSerializer {
   // in the given directory.
   void Serialize(const cc::Layer* root_layer) {
     for (auto* layer : *root_layer->layer_tree_host()) {
-      sk_sp<SkPicture> picture = cc::ToSkPicture(layer->GetPicture());
+      sk_sp<SkPicture> picture = layer->GetPicture();
       if (!picture)
         continue;
 

@@ -730,11 +730,11 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   // Draw the icon image.
   int icon_x = progress_x + DownloadShelf::kFiletypeIconOffset;
   int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
-  cc::PaintFlags paint;
+  cc::PaintFlags flags;
   // Use an alpha to make the image look disabled.
   if (!enabled())
-    paint.setAlpha(120);
-  canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, paint);
+    flags.setAlpha(120);
+  canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, flags);
 }
 
 void DownloadItemView::OnFocus() {

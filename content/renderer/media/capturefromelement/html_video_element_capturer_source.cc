@@ -134,11 +134,11 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const blink::WebSize resolution = web_media_player_->naturalSize();
 
   cc::PaintCanvas* canvas = surface_->getCanvas();
-  cc::PaintFlags paint;
-  paint.setBlendMode(SkBlendMode::kSrc);
-  paint.setFilterQuality(kLow_SkFilterQuality);
+  cc::PaintFlags flags;
+  flags.setBlendMode(SkBlendMode::kSrc);
+  flags.setFilterQuality(kLow_SkFilterQuality);
   web_media_player_->paint(
-      canvas, blink::WebRect(0, 0, resolution.width, resolution.height), paint);
+      canvas, blink::WebRect(0, 0, resolution.width, resolution.height), flags);
   DCHECK_NE(kUnknown_SkColorType, canvas->imageInfo().colorType());
   DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
   DCHECK_EQ(canvas->imageInfo().height(), resolution.height);

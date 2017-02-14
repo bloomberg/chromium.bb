@@ -442,7 +442,7 @@ bool WebMediaPlayerMS::didLoadingProgress() {
 
 void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
                              const blink::WebRect& rect,
-                             cc::PaintFlags& paint) {
+                             cc::PaintFlags& flags) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -460,8 +460,8 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
     DCHECK(context_3d.gl);
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(frame, canvas, dest_rect, paint,
-                        video_rotation_, context_3d);
+  video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
+                        context_3d);
 }
 
 bool WebMediaPlayerMS::hasSingleSecurityOrigin() const {

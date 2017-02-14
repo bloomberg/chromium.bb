@@ -305,17 +305,17 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
 
   SetButtonImagesForFrame();
   // TODO(benwells): different look for inactive by default.
-  cc::PaintFlags paint;
-  paint.setAntiAlias(false);
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setColor(CurrentFrameColor());
+  cc::PaintFlags flags;
+  flags.setAntiAlias(false);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(CurrentFrameColor());
   gfx::Path path;
   path.moveTo(0, 0);
   path.lineTo(width(), 0);
   path.lineTo(width(), kCaptionHeight);
   path.lineTo(0, kCaptionHeight);
   path.close();
-  canvas->DrawPath(path, paint);
+  canvas->DrawPath(path, flags);
 }
 
 const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }

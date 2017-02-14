@@ -35,7 +35,6 @@
 #include "net/url_request/url_request.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -184,12 +183,12 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
     SkIntToScalar(bounds.bottom())
   };
 
-  cc::PaintFlags border_paint;
-  border_paint.setAntiAlias(true);
-  border_paint.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
+  cc::PaintFlags border_flags;
+  border_flags.setAntiAlias(true);
+  border_flags.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
 
   canvas->sk_canvas()->drawRoundRect(border_rect, SkIntToScalar(2),
-                                     SkIntToScalar(2), border_paint);
+                                     SkIntToScalar(2), border_flags);
 
   SkRect inner_rect = {
     border_rect.fLeft + SkDoubleToScalar(0.5),
@@ -198,11 +197,11 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
     border_rect.fBottom - SkDoubleToScalar(0.5),
   };
 
-  cc::PaintFlags inner_paint;
-  inner_paint.setAntiAlias(true);
-  inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
+  cc::PaintFlags inner_flags;
+  inner_flags.setAntiAlias(true);
+  inner_flags.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
   canvas->sk_canvas()->drawRoundRect(inner_rect, SkDoubleToScalar(1.5),
-                                     SkDoubleToScalar(1.5), inner_paint);
+                                     SkDoubleToScalar(1.5), inner_flags);
 }
 
 }  // namespace

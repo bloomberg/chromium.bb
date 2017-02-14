@@ -111,12 +111,12 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
 #endif
 
     // Draw a rounded rect of the given |color|.
-    cc::PaintFlags background_paint;
-    background_paint.setAntiAlias(true);
-    background_paint.setColor(color_);
+    cc::PaintFlags background_flags;
+    background_flags.setAntiAlias(true);
+    background_flags.setColor(color_);
 
     gfx::Rect icon_rect(icon_inset, icon_inset, icon_size, icon_size);
-    canvas->DrawRoundRect(icon_rect, border_radius, background_paint);
+    canvas->DrawRoundRect(icon_rect, border_radius, background_flags);
 
     // The text rect's size needs to be odd to center the text correctly.
     gfx::Rect text_rect(icon_inset, icon_inset, icon_size + 1, icon_size + 1);

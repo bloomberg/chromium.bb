@@ -75,10 +75,10 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
   if (menu_background.corner_radius > 0) {
-    cc::PaintFlags paint;
-    paint.setStyle(cc::PaintFlags::kFill_Style);
-    paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    paint.setColor(GetSystemColor(kColorId_MenuBackgroundColor));
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    flags.setColor(GetSystemColor(kColorId_MenuBackgroundColor));
 
     gfx::Path path;
     SkRect rect = SkRect::MakeWH(SkIntToScalar(size.width()),
@@ -88,7 +88,7 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
                          radius, radius, radius, radius};
     path.addRoundRect(rect, radii);
 
-    canvas->drawPath(path, paint);
+    canvas->drawPath(path, flags);
   } else {
     canvas->drawColor(GetSystemColor(kColorId_MenuBackgroundColor),
                       SkBlendMode::kSrc);
@@ -101,17 +101,17 @@ void NativeThemeGtk2::PaintMenuItemBackground(
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
   SkColor color;
-  cc::PaintFlags paint;
+  cc::PaintFlags flags;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
       color = GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor);
-      paint.setColor(color);
+      flags.setColor(color);
       break;
     case NativeTheme::kHovered:
       color =
           GetSystemColor(NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-      paint.setColor(color);
+      flags.setColor(color);
       break;
     default:
       NOTREACHED() << "Invalid state " << state;
@@ -119,10 +119,10 @@ void NativeThemeGtk2::PaintMenuItemBackground(
   }
   if (menu_item.corner_radius > 0) {
     const SkScalar radius = SkIntToScalar(menu_item.corner_radius);
-    canvas->drawRoundRect(gfx::RectToSkRect(rect), radius, radius, paint);
+    canvas->drawRoundRect(gfx::RectToSkRect(rect), radius, radius, flags);
     return;
   }
-  canvas->drawRect(gfx::RectToSkRect(rect), paint);
+  canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }
 
 SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {

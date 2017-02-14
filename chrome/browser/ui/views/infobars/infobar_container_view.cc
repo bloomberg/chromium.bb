@@ -37,22 +37,22 @@ class ContentShadow : public views::View {
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     // The first shader (small shadow) blurs from 0 to kSmallShadowHeight.
-    cc::PaintFlags paint;
-    paint.setShader(gfx::CreateGradientShader(
+    cc::PaintFlags flags;
+    flags.setShader(gfx::CreateGradientShader(
         0, kSmallShadowHeight, SkColorSetA(SK_ColorBLACK, kSmallShadowAlpha),
         SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
     gfx::Rect small_shadow_bounds = GetLocalBounds();
     small_shadow_bounds.set_height(kSmallShadowHeight);
-    canvas->DrawRect(small_shadow_bounds, paint);
+    canvas->DrawRect(small_shadow_bounds, flags);
 
     // The second shader (large shadow) is solid from 0 to kSmallShadowHeight
     // (blending with the first shader) and then blurs from kSmallShadowHeight
     // to kLargeShadowHeight.
-    paint.setShader(gfx::CreateGradientShader(
+    flags.setShader(gfx::CreateGradientShader(
         kSmallShadowHeight, height(),
         SkColorSetA(SK_ColorBLACK, kLargeShadowAlpha),
         SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
-    canvas->DrawRect(GetLocalBounds(), paint);
+    canvas->DrawRect(GetLocalBounds(), flags);
   }
 
  private:

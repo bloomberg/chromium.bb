@@ -217,13 +217,13 @@ void DrawHighlight(gfx::Canvas* canvas,
                    SkScalar radius,
                    SkColor color) {
   const SkColor colors[2] = { color, SkColorSetA(color, 0) };
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
-  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeRadial(
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeRadial(
       p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode)));
   canvas->sk_canvas()->drawRect(
       SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
-      paint);
+      flags);
 }
 
 // Returns whether the favicon for the given URL should be colored according to
@@ -1286,8 +1286,8 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
                                         int fill_id,
                                         int y_offset) {
   gfx::Path fill;
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
 
   // Draw the fill.
   {
@@ -1307,11 +1307,11 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
                                   GetMirroredX() + background_offset_.x(),
                                   y_offset, 0, 0, width(), height());
       } else {
-        paint.setColor(
+        flags.setColor(
             is_active ? toolbar_color
                       : tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
         fill_canvas->DrawRect(
-            gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), paint);
+            gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), flags);
       }
 
       if (!is_active && hover_controller_.ShouldDraw()) {
@@ -1340,8 +1340,8 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
       stroke_canvas->ClipRect(
           gfx::RectF(width() * scale, height() * scale - 1));
     }
-    paint.setColor(controller_->GetToolbarTopSeparatorColor());
-    stroke_canvas->DrawPath(stroke, paint);
+    flags.setColor(controller_->GetToolbarTopSeparatorColor());
+    stroke_canvas->DrawPath(stroke, flags);
   }
 }
 
@@ -1358,12 +1358,12 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     gfx::Canvas icon_canvas(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                             canvas->image_scale(), false);
     icon_canvas.DrawImageInt(favicon_, 0, 0);
-    cc::PaintFlags clear_paint;
-    clear_paint.setAntiAlias(true);
-    clear_paint.setBlendMode(SkBlendMode::kClear);
+    cc::PaintFlags clear_flags;
+    clear_flags.setAntiAlias(true);
+    clear_flags.setBlendMode(SkBlendMode::kClear);
     const int circle_x = base::i18n::IsRTL() ? 0 : gfx::kFaviconSize;
     icon_canvas.DrawCircle(gfx::PointF(circle_x, gfx::kFaviconSize),
-                           kIndicatorCropRadius, clear_paint);
+                           kIndicatorCropRadius, clear_flags);
     canvas->DrawImageInt(gfx::ImageSkia(icon_canvas.ExtractImageRep()), 0, 0,
                          favicon_draw_bounds.width(),
                          favicon_draw_bounds.height(), favicon_draw_bounds.x(),
@@ -1373,16 +1373,16 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
 
   // Draws the actual pinned tab title changed indicator.
   const int kIndicatorRadius = 3;
-  cc::PaintFlags indicator_paint;
-  indicator_paint.setColor(GetNativeTheme()->GetSystemColor(
+  cc::PaintFlags indicator_flags;
+  indicator_flags.setColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor));
-  indicator_paint.setAntiAlias(true);
+  indicator_flags.setAntiAlias(true);
   const int indicator_x = GetMirroredXWithWidthInView(
       favicon_bounds_.right() - kIndicatorRadius, kIndicatorRadius * 2);
   const int indicator_y = favicon_bounds_.bottom() - kIndicatorRadius;
   canvas->DrawCircle(gfx::Point(indicator_x + kIndicatorRadius,
                                 indicator_y + kIndicatorRadius),
-                     kIndicatorRadius, indicator_paint);
+                     kIndicatorRadius, indicator_flags);
 }
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {

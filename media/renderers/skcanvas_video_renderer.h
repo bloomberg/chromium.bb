@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -45,7 +46,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
              cc::PaintCanvas* canvas,
              const gfx::RectF& dest_rect,
-             SkPaint& paint,
+             cc::PaintFlags& flags,
              VideoRotation video_rotation,
              const Context3D& context_3d);
 

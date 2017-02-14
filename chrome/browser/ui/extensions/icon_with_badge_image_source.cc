@@ -13,7 +13,6 @@
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/grit/theme_resources.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -148,20 +147,20 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
                      ? (size().width() - badge_width) / 2
                      : size().width() - badge_width,
                  size().height() - kBadgeHeight, badge_width, kBadgeHeight);
-  cc::PaintFlags rect_paint;
-  rect_paint.setStyle(cc::PaintFlags::kFill_Style);
-  rect_paint.setAntiAlias(true);
-  rect_paint.setColor(background_color);
+  cc::PaintFlags rect_flags;
+  rect_flags.setStyle(cc::PaintFlags::kFill_Style);
+  rect_flags.setAntiAlias(true);
+  rect_flags.setColor(background_color);
 
   // Clear part of the background icon.
   gfx::Rect cutout_rect(rect);
   cutout_rect.Inset(-1, -1);
-  cc::PaintFlags cutout_paint = rect_paint;
-  cutout_paint.setBlendMode(SkBlendMode::kClear);
-  canvas->DrawRoundRect(cutout_rect, 2, cutout_paint);
+  cc::PaintFlags cutout_flags = rect_flags;
+  cutout_flags.setBlendMode(SkBlendMode::kClear);
+  canvas->DrawRoundRect(cutout_rect, 2, cutout_flags);
 
   // Paint the backdrop.
-  canvas->DrawRoundRect(rect, 1, rect_paint);
+  canvas->DrawRoundRect(rect, 1, rect_flags);
 
   // Paint the text.
   rect.Inset(std::max(kPadding, (rect.width() - text_width) / 2),
@@ -175,14 +174,14 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
   int major_radius = std::ceil(size().width() / 5.0);
   int minor_radius = std::ceil(major_radius / 2.0);
   gfx::Point center_point(major_radius + 1, size().height() - (major_radius)-1);
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setColor(SK_ColorTRANSPARENT);
-  paint.setBlendMode(SkBlendMode::kSrc);
-  canvas->DrawCircle(center_point, major_radius, paint);
-  paint.setColor(decoration_color);
-  canvas->DrawCircle(center_point, minor_radius, paint);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorTRANSPARENT);
+  flags.setBlendMode(SkBlendMode::kSrc);
+  canvas->DrawCircle(center_point, major_radius, flags);
+  flags.setColor(decoration_color);
+  canvas->DrawCircle(center_point, minor_radius, flags);
 }
 
 void IconWithBadgeImageSource::PaintBlockedActionDecoration(

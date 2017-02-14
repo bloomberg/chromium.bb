@@ -189,21 +189,21 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
                  SkFloatToScalar(x + border_size - 0.5f),   // right
                  SkFloatToScalar(y + border_size - 0.5f));  // bottom
 
-    cc::PaintFlags paint;
-    paint.setColor(border_color);
-    paint.setStyle(cc::PaintFlags::kStroke_Style);
-    paint.setStrokeWidth(SkIntToScalar(1));
+    cc::PaintFlags flags;
+    flags.setColor(border_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(SkIntToScalar(1));
 
-    canvas->DrawPath(path, paint);
+    canvas->DrawPath(path, flags);
   } else if (border_ == BORDER_ETCHED) {
     // Give the avatar an etched look by drawing a highlight on the bottom and
     // right edges.
     SkColor shadow_color = SkColorSetARGB(83, 0, 0, 0);
     SkColor highlight_color = SkColorSetARGB(96, 255, 255, 255);
 
-    cc::PaintFlags paint;
-    paint.setStyle(cc::PaintFlags::kStroke_Style);
-    paint.setStrokeWidth(SkIntToScalar(1));
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(SkIntToScalar(1));
 
     SkPath path;
 
@@ -218,8 +218,8 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
     // Draw right to the top-right, stopping within the last pixel.
     path.rLineTo(SkFloatToScalar(width_ - 0.5f), SkIntToScalar(0));
 
-    paint.setColor(shadow_color);
-    canvas->DrawPath(path, paint);
+    flags.setColor(shadow_color);
+    canvas->DrawPath(path, flags);
 
     path.reset();
 
@@ -233,8 +233,8 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
     // Draw up to the top-right.
     path.rLineTo(SkIntToScalar(0), SkFloatToScalar(-height_ + 1.5f));
 
-    paint.setColor(highlight_color);
-    canvas->DrawPath(path, paint);
+    flags.setColor(highlight_color);
+    canvas->DrawPath(path, flags);
   }
 }
 

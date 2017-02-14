@@ -254,10 +254,10 @@ void GestureNavSimple::Affordance::OnPaintLayer(
   float progress = (1 - abort_progress_) * drag_progress_;
 
   // Draw the ripple.
-  cc::PaintFlags ripple_paint;
-  ripple_paint.setAntiAlias(true);
-  ripple_paint.setStyle(cc::PaintFlags::kFill_Style);
-  ripple_paint.setColor(kRippleColor);
+  cc::PaintFlags ripple_flags;
+  ripple_flags.setAntiAlias(true);
+  ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
+  ripple_flags.setColor(kRippleColor);
   float ripple_radius;
   if (state_ == State::COMPLETING) {
     ripple_radius =
@@ -267,18 +267,18 @@ void GestureNavSimple::Affordance::OnPaintLayer(
     ripple_radius =
         kBackgroundRadius + progress * (kMaxRippleRadius - kBackgroundRadius);
   }
-  canvas->DrawCircle(center_point, ripple_radius, ripple_paint);
+  canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
 
   // Draw the arrow background circle with the shadow.
-  cc::PaintFlags bg_paint;
-  bg_paint.setAntiAlias(true);
-  bg_paint.setStyle(cc::PaintFlags::kFill_Style);
-  bg_paint.setColor(kBackgroundColor);
+  cc::PaintFlags bg_flags;
+  bg_flags.setAntiAlias(true);
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+  bg_flags.setColor(kBackgroundColor);
   gfx::ShadowValues shadow;
   shadow.emplace_back(gfx::Vector2d(0, kBgShadowOffsetY), kBgShadowBlurRadius,
                       kBgShadowColor);
-  bg_paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
-  canvas->DrawCircle(center_point, kBackgroundRadius, bg_paint);
+  bg_flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
+  canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
 
   // Draw the arrow.
   float arrow_x = center_point.x() - kArrowSize / 2.f;
