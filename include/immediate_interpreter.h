@@ -756,6 +756,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Distance [mm] a finger must move after fingers change to count as real
   // motion
   DoubleProperty change_move_distance_;
+  // Speed [mm/s] a finger must move to lock on to that finger
+  DoubleProperty move_lock_speed_;
+  // Distance [mm] a finger must move to report that movement
+  DoubleProperty move_report_distance_;
   // Time [s] to block movement after number or identify of fingers change
   DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture
@@ -818,6 +822,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty thumb_click_prevention_timeout_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   DoubleProperty two_finger_scroll_distance_thresh_;
+  // Consider move if there is no scroll and one finger moves at least this
+  // distance [mm]
+  DoubleProperty two_finger_move_distance_thresh_;
   // Maximum distance [mm] between the outermost fingers while performing a
   // three-finger gesture.
   DoubleProperty three_finger_close_distance_thresh_;
@@ -830,11 +837,14 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimum distance [mm] one of the four fingers must move to perform a
   // four finger swipe gesture.
   DoubleProperty four_finger_swipe_distance_thresh_;
+  // Minimum ratio between least and most moving finger to perform a
+  // three finger swipe gesture.
+  DoubleProperty three_finger_swipe_distance_ratio_;
+  // Minimum ratio between least and most moving finger to perform a
+  // four finger swipe gesture.
+  DoubleProperty four_finger_swipe_distance_ratio_;
   // If three-finger swipe should be enabled
   BoolProperty three_finger_swipe_enable_;
-  // During a scroll one finger determines scroll speed and direction.
-  // Maximum distance [mm] the other finger can move in opposite direction
-  DoubleProperty scroll_stationary_finger_max_distance_;
   // Height [mm] of the bottom zone
   DoubleProperty bottom_zone_size_;
   // Time [s] to after button down to evaluate number of fingers for a click

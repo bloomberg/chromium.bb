@@ -619,7 +619,7 @@ TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
     {0, 0, 0, 0, 20, 0, 40, 85, 1, 0},
     {0, 0, 0, 0, 20, 0, 60, 83, 2, 0},
 
-    {0, 0, 0, 0, 20, 0, 40, 85, 1, 0},
+    {0, 0, 0, 0, 20, 0, 40, 77, 1, 0},
     {0, 0, 0, 0, 20, 0, 60, 75, 2, 0},
 
   };
@@ -1096,7 +1096,7 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
   TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   const float kX = 7;
-  float dx = 5;
+  float dx = 7;
   const float kRestY = hwprops.bottom - 7;
   const float kMoveY = kRestY - 10;
 
@@ -1769,13 +1769,13 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {S,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
     {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kTpC,true},
     {C,{0.02,0,1,1,&fs[4],0,0,0,0},-1,MkSet(95),0,0,kSTB,false},
-    {C,{0.13,0,1,1,&fs[5],0,0,0,0},-1,MkSet(95),kBL,0,kDrg,false},
-    {C,{0.14,0,1,1,&fs[6],0,0,0,0},-1,MkSet(95),0,0,kDrg,false},
-    {C,{0.15,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
-    {C,{0.16,0,1,1,&fs[7],0,0,0,0},-1,MkSet(96),0,0,kDRt,false},
-    {C,{0.17,0,1,1,&fs[8],0,0,0,0},-1,MkSet(96),0,0,kDrg,false},
-    {C,{0.18,0,1,1,&fs[9],0,0,0,0},-1,MkSet(96),0,0,kDrg,false},
-    {C,{0.19,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
+    {C,{0.08,0,1,1,&fs[5],0,0,0,0},-1,MkSet(95),kBL,0,kDrg,false},
+    {C,{0.09,0,1,1,&fs[6],0,0,0,0},-1,MkSet(95),0,0,kDrg,false},
+    {C,{0.10,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
+    {C,{0.11,0,1,1,&fs[7],0,0,0,0},-1,MkSet(96),0,0,kDRt,false},
+    {C,{0.12,0,1,1,&fs[8],0,0,0,0},-1,MkSet(96),0,0,kDrg,false},
+    {C,{0.13,0,1,1,&fs[9],0,0,0,0},-1,MkSet(96),0,0,kDrg,false},
+    {C,{0.14,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
     {C,{0.99,0,0,0,NULL,0,0,0,0},.99,MkSet(),0,kBL,kIdl,false},
     // 1-finger long press
     {S,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
@@ -1883,11 +1883,11 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {S,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
     {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kTpC,true},
     {C,{0.02,0,1,1,&fs[4],0,0,0,0},-1,MkSet(95),0,0,kSTB,false},
-    {C,{0.13,0,1,1,&fs[5],0,0,0,0},-1,MkSet(95),kBL,0,kDrg,false},
-    {C,{0.14,0,1,1,&fs[6],0,0,0,0},-1,MkSet(95),0,0,kDrg,false},
-    {C,{0.15,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
-    {C,{0.16,0,2,2,&fs[10],0,0,0,0},-1,MkSet(97,98),0,0,kDRt,false},
-    {C,{0.17,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,kBL,kTpC,true},
+    {C,{0.10,0,1,1,&fs[5],0,0,0,0},-1,MkSet(95),kBL,0,kDrg,false},
+    {C,{0.11,0,1,1,&fs[6],0,0,0,0},-1,MkSet(95),0,0,kDrg,false},
+    {C,{0.12,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
+    {C,{0.13,0,2,2,&fs[10],0,0,0,0},-1,MkSet(97,98),0,0,kDRt,false},
+    {C,{0.14,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,kBL,kTpC,true},
     {C,{0.99,0,0,0,NULL,0,0,0,0},.99,MkSet(),kBR,kBR,kIdl,false},
     // slow double tap
     {D,{ 0.00, 0, 1, 1, &fs[0],0,0,0,0}, -1, MkSet(91),   0,   0, kFTB, false },
@@ -2300,13 +2300,13 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
     {S,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
     {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kTpC,true},
     {C,{0.02,0,1,1,&fs[1],0,0,0,0},-1,MkSet(92),0,0,kSTB,false},
-    {C,{0.13,0,1,1,&fs[2],0,0,0,0},-1,MkSet(92),kBL,0,kDrg,false},
-    {C,{0.14,0,1,1,&fs[3],0,0,0,0},-1,MkSet(92),0,0,kDrg,false},
-    {C,{0.15,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
-    {C,{0.16,0,1,1,&fs[4],0,0,0,0},-1,MkSet(93),0,0,kDRt,false},
-    {C,{0.17,0,1,1,&fs[5],0,0,0,0},-1,MkSet(93),0,0,kDrg,false},
-    {C,{0.18,0,1,1,&fs[6],0,0,0,0},-1,MkSet(93),0,0,kDrg,false},
-    {C,{0.19,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
+    {C,{0.08,0,1,1,&fs[2],0,0,0,0},-1,MkSet(92),kBL,0,kDrg,false},
+    {C,{0.09,0,1,1,&fs[3],0,0,0,0},-1,MkSet(92),0,0,kDrg,false},
+    {C,{0.10,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
+    {C,{0.11,0,1,1,&fs[4],0,0,0,0},-1,MkSet(93),0,0,kDRt,false},
+    {C,{0.12,0,1,1,&fs[5],0,0,0,0},-1,MkSet(93),0,0,kDrg,false},
+    {C,{0.13,0,1,1,&fs[6],0,0,0,0},-1,MkSet(93),0,0,kDrg,false},
+    {C,{0.14,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kDRl,true},
     {C,{0.99,0,0,0,NULL,0,0,0,0},.99,MkSet(),0,kBL,kIdl,false}
   };
 
@@ -3442,7 +3442,6 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
 
   // SemiMt-specific properties
   ii.tapping_finger_min_separation_.val_ = 0.0;
-  ii.scroll_stationary_finger_max_distance_.val_ = 20.0;
 
   ii.tap_enable_.val_ = 1;
   TestInterpreterWrapper wrapper(&ii, &hwprops);
