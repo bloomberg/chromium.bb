@@ -5811,7 +5811,10 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       }
     }
 #else
-    if (tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
+    if (tx_size < TX_32X32 &&
+        ((!cm->seg.enabled && cm->base_qindex > 0) ||
+         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+        !mbmi->skip &&
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       if (is_inter) {
         ++td->counts->inter_ext_tx[tx_size][mbmi->tx_type];
