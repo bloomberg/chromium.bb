@@ -1295,6 +1295,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Returns: true if glEnable/glDisable should actually be called.
   bool SetCapabilityState(GLenum cap, bool enabled);
 
+  // Infer color encoding from internalformat
+  static GLint GetColorEncodingFromInternalFormat(GLenum internalformat);
+
   // Check that the currently bound read framebuffer's color image
   // isn't the target texture of the glCopyTex{Sub}Image{2D|3D}.
   bool FormsTextureCopyingFeedbackLoop(
@@ -4418,6 +4421,19 @@ bool GLES2DecoderImpl::CheckBoundFramebufferValid(const char* func_name) {
   return valid;
 }
 
+GLint GLES2DecoderImpl::GetColorEncodingFromInternalFormat(
+    GLenum internalformat) {
+  switch (internalformat) {
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8:
+    case GL_SRGB8_ALPHA8:
+      return GL_SRGB;
+    default:
+      return GL_LINEAR;
+  }
+}
+
 bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
     TextureRef* texture, GLint level, GLint layer) {
   Framebuffer* framebuffer = GetBoundReadFramebuffer();
@@ -6218,8 +6234,8 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   bool enable_srgb = 0;
   if (target == GL_TEXTURE_2D) {
     tex->GetLevelType(target, tex->base_level(), &type, &internal_format);
-    enable_srgb = GLES2Util::GetColorEncodingFromInternalFormat(
-                      internal_format) == GL_SRGB;
+    enable_srgb =
+        GetColorEncodingFromInternalFormat(internal_format) == GL_SRGB;
   }
   if (enable_srgb && feature_info_->feature_flags().desktop_srgb_support) {
     state_.EnableDisableFramebufferSRGB(enable_srgb);
@@ -8039,8 +8055,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   GLenum src_internal_format = GetBoundReadFramebufferInternalFormat();
   GLenum src_type = GetBoundReadFramebufferTextureType();
 
-  bool read_buffer_has_srgb = GLES2Util::GetColorEncodingFromInternalFormat(
-                                  src_internal_format) == GL_SRGB;
+  bool read_buffer_has_srgb =
+      GetColorEncodingFromInternalFormat(src_internal_format) == GL_SRGB;
   bool draw_buffers_has_srgb = false;
   if ((mask & GL_COLOR_BUFFER_BIT) != 0) {
     bool is_src_signed_int =
@@ -8072,7 +8088,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       if (!src_internal_format) {
         read_framebuffer_miss_image = true;
       }
-      if (GLES2Util::GetColorEncodingFromInternalFormat(dst_format) == GL_SRGB)
+      if (GetColorEncodingFromInternalFormat(dst_format) == GL_SRGB)
         draw_buffers_has_srgb = true;
       if (read_buffer_samples > 0 &&
           (src_sized_format !=
@@ -13952,16 +13968,15 @@ bool GLES2DecoderImpl::ValidateCopyTexFormatHelper(
     return false;
   }
   if (feature_info_->IsWebGL2OrES3Context()) {
-    GLint color_encoding =
-        GLES2Util::GetColorEncodingFromInternalFormat(read_format);
+    GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
     bool float_mismatch = feature_info_->ext_color_buffer_float_available() ?
         (GLES2Util::IsIntegerFormat(internal_format) !=
          GLES2Util::IsIntegerFormat(read_format)) :
         GLES2Util::IsFloatFormat(internal_format);
-    if (color_encoding !=
-            GLES2Util::GetColorEncodingFromInternalFormat(internal_format) ||
-        float_mismatch || (GLES2Util::IsSignedIntegerFormat(internal_format) !=
-                           GLES2Util::IsSignedIntegerFormat(read_format)) ||
+    if (color_encoding != GetColorEncodingFromInternalFormat(internal_format) ||
+        float_mismatch ||
+        (GLES2Util::IsSignedIntegerFormat(internal_format) !=
+         GLES2Util::IsSignedIntegerFormat(read_format)) ||
         (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
          GLES2Util::IsUnsignedIntegerFormat(read_format))) {
       *output_error_msg = std::string("incompatible format");
@@ -16460,10 +16475,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   if (feature_info_->feature_flags().desktop_srgb_support) {
     bool enable_framebuffer_srgb =
-        GLES2Util::GetColorEncodingFromInternalFormat(source_internal_format) ==
-            GL_SRGB ||
-        GLES2Util::GetColorEncodingFromInternalFormat(internal_format) ==
-            GL_SRGB;
+        GetColorEncodingFromInternalFormat(source_internal_format) == GL_SRGB ||
+        GetColorEncodingFromInternalFormat(internal_format) == GL_SRGB;
     state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
 
@@ -16709,17 +16722,6 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     return;
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
-  // although opposite in Android.
-  // TODO(dshwang): After Mesa fixes this issue, remove this hack.
-  // https://bugs.freedesktop.org/show_bug.cgi?id=98478, crbug.com/535198.
-  if (Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format, false) &&
-      method == DIRECT_COPY) {
-    method = DIRECT_DRAW;
-  }
-#endif
-
   // Draw to a fbo attaching level 0 of an intermediate texture,
   // then copy from the fbo to dest texture level with glCopyTexImage2D.
   // For WebGL 1.0 or OpenGL ES 2.0, DIRECT_DRAW path isn't available for
@@ -16740,10 +16742,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
 
   if (feature_info_->feature_flags().desktop_srgb_support) {
     bool enable_framebuffer_srgb =
-        GLES2Util::GetColorEncodingFromInternalFormat(source_internal_format) ==
-            GL_SRGB ||
-        GLES2Util::GetColorEncodingFromInternalFormat(dest_internal_format) ==
-            GL_SRGB;
+        GetColorEncodingFromInternalFormat(source_internal_format) == GL_SRGB ||
+        GetColorEncodingFromInternalFormat(dest_internal_format) == GL_SRGB;
     state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
 
