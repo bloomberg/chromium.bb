@@ -78,6 +78,12 @@ function (get_asm_obj_format out_format)
     else ()
       message(FATAL_ERROR "Unknown obj format: ${AOM_TARGET_SYSTEM}")
     endif ()
+  elseif ("${AOM_TARGET_CPU}" STREQUAL "x86")
+    if ("${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
+      set(objformat "win32")
+    else ()
+      message(FATAL_ERROR "Unknown obj format: ${AOM_TARGET_SYSTEM}")
+    endif ()
   else ()
     message(FATAL_ERROR
             "Unknown obj format: ${AOM_TARGET_CPU}-${AOM_TARGET_SYSTEM}")
@@ -132,4 +138,8 @@ function (add_asm_library lib_name asm_sources dependent_target)
   target_sources(${lib_name} PUBLIC ${dummy_c_file})
 
   target_link_libraries(${dependent_target} PRIVATE ${lib_name})
+
+  # Add the new lib target to the global list of aom library targets.
+  list(APPEND AOM_LIB_TARGETS ${lib_name})
+  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
 endfunction ()

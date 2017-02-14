@@ -403,12 +403,12 @@ set(AOM_DSP_INTRIN_SSSE3
 set(AOM_DSP_ASM_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm"
-    "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
     "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.asm"
     "${AOM_ROOT}/aom_dsp/x86/sad_ssse3.asm")
 
 set(AOM_DSP_ASM_SSSE3_X86_64
     "${AOM_ROOT}/aom_dsp/x86/avg_ssse3_x86_64.asm"
+    "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3_x86_64.asm"
     "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm"
     "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
@@ -420,7 +420,7 @@ set(AOM_DSP_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
-set(AOM_DSP_AVX_ASM "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
+set(AOM_DSP_AVX_ASM_X86_64 "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 set(AOM_DSP_AVX2_INTRIN
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
@@ -460,7 +460,7 @@ set(AOM_AV1_ENCODER_SSE2_INTRIN
     "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c")
 
-set(AOM_AV1_ENCODER_SSSE3_ASM
+set(AOM_AV1_ENCODER_SSSE3_ASM_X86_64
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
 
 set(AOM_AV1_ENCODER_SSSE3_INTRIN
@@ -817,9 +817,10 @@ endif ()
 if (HAVE_SSSE3)
   if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
     list(APPEND AOM_DSP_ASM_SSSE3 ${AOM_DSP_ASM_SSSE3_X86_64})
+    add_asm_library("aom_av1_encoder_ssse3"
+                    "AOM_AV1_ENCODER_SSSE3_ASM_X86_64" "aom")
   endif ()
   add_asm_library("aom_dsp_ssse3" "AOM_DSP_ASM_SSSE3" "aom")
-  add_asm_library("aom_av1_encoder_ssse3" "AOM_AV1_ENCODER_SSSE3_ASM" "aom")
   require_flag_nomsvc("-mssse3" NO)
   add_intrinsics_object_library("-mssse3" "ssse3" "aom_dsp"
                                 "AOM_DSP_INTRIN_SSSE3")
@@ -842,8 +843,8 @@ if (HAVE_SSE4_1)
   endif ()
 endif ()
 
-if (HAVE_AVX)
-  add_asm_library("aom_dsp_avx" "AOM_DSP_AVX_ASM" "aom")
+if (HAVE_AVX AND "${AOM_TARGET_CPU}" STREQUAL "x86_64")
+  add_asm_library("aom_dsp_avx" "AOM_DSP_AVX_ASM_X86_64" "aom")
 endif ()
 if (HAVE_AVX2)
   require_flag_nomsvc("-mavx2" NO)

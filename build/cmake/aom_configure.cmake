@@ -16,11 +16,19 @@ include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 
 # Detect target CPU.
 if (NOT AOM_TARGET_CPU)
-  # TODO(tomfinegan): This will not work for a cross compile. Target CPU and
-  # system will have to come from a toolchain file or the cmake command line.
-  set(AOM_TARGET_CPU ${CMAKE_SYSTEM_PROCESSOR})
-  if (AOM_TARGET_CPU STREQUAL "AMD64")
-    set(AOM_TARGET_CPU "x86_64")
+  if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR
+      "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    if (${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+      set(AOM_TARGET_CPU "x86")
+    elseif (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+      set(AOM_TARGET_CPU "x86_64")
+    else ()
+      message(FATAL_ERROR
+              "--- Unexpected pointer size (${CMAKE_SIZEOF_VOID_P}) for\n"
+              "      CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}\n"
+              "      CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}\n"
+              "      CMAKE_GENERATOR=${CMAKE_GENERATOR}\n")
+    endif ()
   endif ()
   set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
   if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
