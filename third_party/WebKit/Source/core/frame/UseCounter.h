@@ -1462,6 +1462,8 @@ class CORE_EXPORT UseCounter {
     V8FileReaderSync_Constructor = 1812,
     UncancellableTouchEventPreventDefaulted = 1813,
     UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted = 1814,
+    V8HTMLVideoElement_Poster_AttributeGetter = 1815,
+    V8HTMLVideoElement_Poster_AttributeSetter = 1816,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
