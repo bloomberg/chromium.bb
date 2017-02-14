@@ -70,7 +70,6 @@ static const char* kResourceTypeStrings[] = {
   "ping",
   "script",
   "object",
-  "csp_report",
   "other",
 };
 
@@ -91,7 +90,6 @@ static ResourceType kResourceTypeValues[] = {
   content::RESOURCE_TYPE_PING,
   content::RESOURCE_TYPE_SERVICE_WORKER,
   content::RESOURCE_TYPE_PLUGIN_RESOURCE,
-  content::RESOURCE_TYPE_CSP_REPORT,
   content::RESOURCE_TYPE_LAST_TYPE,  // represents "other"
 };
 
