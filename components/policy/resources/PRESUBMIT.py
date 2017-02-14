@@ -90,7 +90,9 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
 
   error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
                    'to src/tools/metrics/histograms/histograms.xml. '
-                   'Please update both files.')
+                   'Please update both files. To regenerate the policy part '
+                   'of histograms.xml, run:\n'
+                   'python tools/metrics/histograms/update_policies.py')
   results = []
   for policy in policies:
     if policy['id'] not in policy_ids:

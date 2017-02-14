@@ -141,7 +141,7 @@
 #   because doing so would break the deployed wire format!
 #   For your editing convenience: highest ID currently used: 365
 #   And don't forget to also update the EnterprisePolicies enum of
-#   histograms.xml.
+#   histograms.xml (run tools/metrics/histograms/update_policies.py).
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
