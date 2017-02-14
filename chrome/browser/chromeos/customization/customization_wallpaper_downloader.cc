@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"

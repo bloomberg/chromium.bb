@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/net/chrome_cookie_store_ios_client.h"
 
 #include "base/logging.h"
+#include "base/threading/sequenced_worker_pool.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_change_listening.h"
 #include "ios/web/public/web_thread.h"
 

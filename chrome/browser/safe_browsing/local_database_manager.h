@@ -33,6 +33,10 @@
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }

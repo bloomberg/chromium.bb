@@ -25,6 +25,7 @@ namespace base {
 class Clock;
 class FilePath;
 class SingleThreadTaskRunner;
+class TaskRunner;
 class ThreadChecker;
 class TickClock;
 class Time;

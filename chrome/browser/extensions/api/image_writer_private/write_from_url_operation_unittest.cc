@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
+
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
-#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/test_url_request_interceptor.h"

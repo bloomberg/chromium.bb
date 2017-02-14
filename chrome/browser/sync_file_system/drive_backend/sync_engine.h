@@ -27,6 +27,7 @@ class OAuth2TokenService;
 
 namespace base {
 class SequencedTaskRunner;
+class SequencedWorkerPool;
 }
 
 namespace drive {

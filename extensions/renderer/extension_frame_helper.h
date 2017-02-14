@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/console_message_level.h"

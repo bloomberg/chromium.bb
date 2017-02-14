@@ -32,6 +32,7 @@
 #include "ash/shell_init_params.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/packed_ct_ev_whitelist/packed_ct_ev_whitelist.h"

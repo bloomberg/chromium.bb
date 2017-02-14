@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/core/service_access_type.h"

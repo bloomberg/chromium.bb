@@ -19,6 +19,8 @@
 #include "url/gurl.h"
 
 namespace base {
+class TaskRunner;
+class SequencedWorkerPool;
 class Value;
 }
 

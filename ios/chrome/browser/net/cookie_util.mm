@@ -12,6 +12,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/net/cookies/cookie_store_ios_persistent.h"
 #include "ios/web/public/web_thread.h"

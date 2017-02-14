@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/supports_user_data.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"

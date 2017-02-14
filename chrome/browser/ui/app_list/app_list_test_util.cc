@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 
 #include "base/files/file_path.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "extensions/browser/extension_registry.h"

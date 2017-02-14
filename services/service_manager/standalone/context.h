@@ -16,6 +16,7 @@
 #include "services/tracing/public/cpp/provider.h"
 
 namespace base {
+class SequencedWorkerPool;
 class Value;
 }
 

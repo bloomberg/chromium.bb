@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/keyed_service/core/service_access_type.h"

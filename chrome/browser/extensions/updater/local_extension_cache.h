@@ -18,6 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace extensions {
 
 // Cache .crx files in some local dir for future use. Cache keeps only latest

@@ -21,6 +21,7 @@
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"

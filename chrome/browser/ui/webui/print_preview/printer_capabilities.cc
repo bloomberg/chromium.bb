@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/crash_keys.h"

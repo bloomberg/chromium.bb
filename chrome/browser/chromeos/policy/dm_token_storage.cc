@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 
 #include "base/bind.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
