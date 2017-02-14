@@ -96,7 +96,7 @@ TEST_F(QuicHttpResponseCacheTest, AddResponse) {
 TEST_F(QuicHttpResponseCacheTest, ReadsCacheDir) {
   cache_.InitializeFromDirectory(CacheDirectory());
   const QuicHttpResponseCache::Response* response =
-      cache_.GetResponse("www.example.com", "/index.html");
+      cache_.GetResponse("test.example.com", "/index.html");
   ASSERT_TRUE(response);
   ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
@@ -108,21 +108,21 @@ TEST_F(QuicHttpResponseCacheTest, ReadsCacheDir) {
 TEST_F(QuicHttpResponseCacheTest, ReadsCacheDirWithServerPushResource) {
   cache_.InitializeFromDirectory(CacheDirectory() + "_with_push");
   std::list<ServerPushInfo> resources =
-      cache_.GetServerPushResources("www.example.com/");
+      cache_.GetServerPushResources("test.example.com/");
   ASSERT_EQ(1UL, resources.size());
 }
 
 TEST_F(QuicHttpResponseCacheTest, ReadsCacheDirWithServerPushResources) {
   cache_.InitializeFromDirectory(CacheDirectory() + "_with_push");
   std::list<ServerPushInfo> resources =
-      cache_.GetServerPushResources("www.example.com/index2.html");
+      cache_.GetServerPushResources("test.example.com/index2.html");
   ASSERT_EQ(2UL, resources.size());
 }
 
 TEST_F(QuicHttpResponseCacheTest, UsesOriginalUrl) {
   cache_.InitializeFromDirectory(CacheDirectory());
   const QuicHttpResponseCache::Response* response =
-      cache_.GetResponse("www.example.com", "/site_map.html");
+      cache_.GetResponse("test.example.com", "/site_map.html");
   ASSERT_TRUE(response);
   ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
