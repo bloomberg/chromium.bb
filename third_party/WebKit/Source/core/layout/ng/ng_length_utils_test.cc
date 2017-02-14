@@ -35,7 +35,7 @@ class NGLengthUtilsTest : public ::testing::Test {
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetIsFixedSizeInline(fixed_inline)
         .SetIsFixedSizeBlock(fixed_block)
-        .ToConstraintSpace();
+        .ToConstraintSpace(kHorizontalTopBottom);
   }
 
   LayoutUnit ResolveInlineLength(

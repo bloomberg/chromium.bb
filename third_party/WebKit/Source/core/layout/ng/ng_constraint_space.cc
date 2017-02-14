@@ -100,7 +100,7 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
           box.sizesLogicalWidthToFitContent(box.styleRef().logicalWidth()))
       .SetIsNewFormattingContext(is_new_fc)
       .SetTextDirection(box.styleRef().direction())
-      .ToConstraintSpace();
+      .ToConstraintSpace(writing_mode);
 }
 
 void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {

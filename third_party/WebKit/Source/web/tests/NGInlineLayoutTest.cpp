@@ -26,7 +26,8 @@ class NGInlineLayoutTest : public SimTest {
         .SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetPercentageResolutionSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetTextDirection(blockFlow->style()->direction())
-        .ToConstraintSpace();
+        .ToConstraintSpace(
+            FromPlatformWritingMode(blockFlow->style()->getWritingMode()));
   }
 };
 

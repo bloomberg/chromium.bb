@@ -34,9 +34,8 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetTextDirection(direction)
-      .SetWritingMode(writing_mode)
       .SetIsShrinkToFit(shrink_to_fit)
-      .ToConstraintSpace();
+      .ToConstraintSpace(writing_mode);
 }
 
 typedef bool TestParamLayoutNG;

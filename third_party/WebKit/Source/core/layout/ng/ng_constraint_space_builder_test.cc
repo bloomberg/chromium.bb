@@ -33,12 +33,12 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
   NGConstraintSpaceBuilder vertical_builder(
-      horizontal_builder.ToConstraintSpace());
+      horizontal_builder.ToConstraintSpace(kHorizontalTopBottom));
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  vertical_builder.SetWritingMode(kVerticalLeftRight);
-  NGConstraintSpace* space = vertical_builder.ToConstraintSpace();
+  NGConstraintSpace* space =
+      vertical_builder.ToConstraintSpace(kVerticalLeftRight);
 
   EXPECT_EQ(space->AvailableSize().inline_size, icb_size.height);
   EXPECT_EQ(space->PercentageResolutionSize().inline_size, icb_size.height);
@@ -57,12 +57,12 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
   NGConstraintSpaceBuilder vertical_builder(
-      horizontal_builder.ToConstraintSpace());
+      horizontal_builder.ToConstraintSpace(kVerticalLeftRight));
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  vertical_builder.SetWritingMode(kHorizontalTopBottom);
-  NGConstraintSpace* space = vertical_builder.ToConstraintSpace();
+  NGConstraintSpace* space =
+      vertical_builder.ToConstraintSpace(kHorizontalTopBottom);
 
   EXPECT_EQ(space->AvailableSize().inline_size, icb_size.width);
   EXPECT_EQ(space->PercentageResolutionSize().inline_size, icb_size.width);

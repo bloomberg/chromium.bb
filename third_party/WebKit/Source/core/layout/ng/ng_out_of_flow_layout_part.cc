@@ -59,7 +59,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   space_builder.SetPercentageResolutionSize(space_size);
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetTextDirection(container_style_.direction());
-  container_space_ = space_builder.ToConstraintSpace();
+  container_space_ = space_builder.ToConstraintSpace(writing_mode);
 }
 
 void NGOutOfFlowLayoutPart::Run() {
@@ -178,7 +178,8 @@ RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::GenerateFragment(
     builder.SetIsFixedSizeBlock(true);
   builder.SetIsFixedSizeInline(true);
   builder.SetIsNewFormattingContext(true);
-  NGConstraintSpace* space = builder.ToConstraintSpace();
+  NGConstraintSpace* space =
+      builder.ToConstraintSpace(container_space_->WritingMode());
 
   return descendant.Layout(space);
 }

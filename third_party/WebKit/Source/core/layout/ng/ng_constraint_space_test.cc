@@ -23,7 +23,7 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
       .SetIsFixedSizeInline(true)
       .SetIsInlineDirectionTriggersScrollbar(true)
       .SetFragmentationType(NGFragmentationType::kFragmentColumn)
-      .ToConstraintSpace();
+      .ToConstraintSpace(writing_mode);
 }
 
 static String OpportunityToString(const NGLayoutOpportunity& opportunity) {

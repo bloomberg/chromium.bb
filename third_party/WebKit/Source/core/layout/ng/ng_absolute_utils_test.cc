@@ -27,18 +27,14 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     builder.SetAvailableSize(container_size_);
-    ltr_space_ = builder.SetWritingMode(kHorizontalTopBottom)
-                     .SetTextDirection(TextDirection::kLtr)
-                     .ToConstraintSpace();
-    rtl_space_ = builder.SetWritingMode(kHorizontalTopBottom)
-                     .SetTextDirection(TextDirection::kRtl)
-                     .ToConstraintSpace();
-    vertical_lr_space_ = builder.SetWritingMode(kVerticalLeftRight)
-                             .SetTextDirection(TextDirection::kLtr)
-                             .ToConstraintSpace();
-    vertical_rl_space_ = builder.SetWritingMode(kVerticalLeftRight)
-                             .SetTextDirection(TextDirection::kLtr)
-                             .ToConstraintSpace();
+    ltr_space_ = builder.SetTextDirection(TextDirection::kLtr)
+                     .ToConstraintSpace(kHorizontalTopBottom);
+    rtl_space_ = builder.SetTextDirection(TextDirection::kRtl)
+                     .ToConstraintSpace(kHorizontalTopBottom);
+    vertical_lr_space_ = builder.SetTextDirection(TextDirection::kLtr)
+                             .ToConstraintSpace(kVerticalLeftRight);
+    vertical_rl_space_ = builder.SetTextDirection(TextDirection::kLtr)
+                             .ToConstraintSpace(kVerticalRightLeft);
   }
 
   void SetHorizontalStyle(LayoutUnit left,

@@ -66,7 +66,8 @@ class NGInlineNodeTest : public ::testing::Test {
   void CreateLine(NGInlineNode* node,
                   Vector<RefPtr<const NGPhysicalTextFragment>>* fragments_out) {
     NGConstraintSpace* constraint_space =
-        NGConstraintSpaceBuilder(kHorizontalTopBottom).ToConstraintSpace();
+        NGConstraintSpaceBuilder(kHorizontalTopBottom)
+            .ToConstraintSpace(kHorizontalTopBottom);
     NGLineBuilder line_builder(node, constraint_space);
 
     NGTextLayoutAlgorithm algorithm(node, constraint_space);

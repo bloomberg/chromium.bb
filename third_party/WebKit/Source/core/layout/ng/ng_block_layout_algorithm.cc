@@ -755,20 +755,22 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   DCHECK(current_child_);
   if (current_child_->Type() == NGLayoutInputNode::kLegacyInline) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
-    return space_builder_->ToConstraintSpace();
+    return space_builder_->ToConstraintSpace(
+        FromPlatformWritingMode(Style().getWritingMode()));
     // Calculate margins in parent's writing mode.
   }
-  curr_child_margins_ = CalculateMargins(*space_builder_->ToConstraintSpace(),
-                                         CurrentChildStyle());
+  curr_child_margins_ =
+      CalculateMargins(*space_builder_->ToConstraintSpace(
+                           FromPlatformWritingMode(Style().getWritingMode())),
+                       CurrentChildStyle());
 
   const ComputedStyle& current_child_style = CurrentChildStyle();
+
   bool is_new_bfc = IsNewFormattingContextForInFlowBlockLevelChild(
       ConstraintSpace(), current_child_style);
   space_builder_->SetIsNewFormattingContext(is_new_bfc)
       .SetIsShrinkToFit(
           ShouldShrinkToFit(ConstraintSpace(), CurrentChildStyle()))
-      .SetWritingMode(
-          FromPlatformWritingMode(current_child_style.getWritingMode()))
       .SetTextDirection(current_child_style.direction());
   LayoutUnit space_available = SpaceAvailableForCurrentChild();
   space_builder_->SetFragmentainerSpaceAvailable(space_available);
@@ -813,7 +815,8 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
 
   space_builder_->SetBfcOffset(curr_bfc_offset_);
 
-  return space_builder_->ToConstraintSpace();
+  return space_builder_->ToConstraintSpace(
+      FromPlatformWritingMode(current_child_style.getWritingMode()));
 }
 
 }  // namespace blink

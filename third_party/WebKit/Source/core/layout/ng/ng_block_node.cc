@@ -118,7 +118,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
       NGConstraintSpaceBuilder(
           FromPlatformWritingMode(Style().getWritingMode()))
           .SetTextDirection(Style().direction())
-          .ToConstraintSpace();
+          .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(layout_box_, &Style(), FirstChild(),
@@ -141,7 +141,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .SetTextDirection(Style().direction())
           .SetAvailableSize({LayoutUnit::max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .ToConstraintSpace();
+          .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
   physical_fragment = Layout(constraint_space);
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().getWritingMode()),

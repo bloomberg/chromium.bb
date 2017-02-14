@@ -15,7 +15,6 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       initial_containing_block_size_(
           parent_space->InitialContainingBlockSize()),
       fragmentainer_space_available_(NGSizeIndefinite),
-      writing_mode_(parent_space->WritingMode()),
       parent_writing_mode_(parent_space->WritingMode()),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
@@ -31,8 +30,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
     : initial_containing_block_size_{NGSizeIndefinite, NGSizeIndefinite},
       fragmentainer_space_available_(NGSizeIndefinite),
-      writing_mode_(writing_mode),
-      parent_writing_mode_(writing_mode_),
+      parent_writing_mode_(writing_mode),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
       is_shrink_to_fit_(false),
@@ -119,18 +117,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsNewFormattingContext(
   return *this;
 }
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetWritingMode(
-    NGWritingMode writing_mode) {
-  writing_mode_ = writing_mode;
-  return *this;
-}
-
-NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
-
+NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
+    NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = (parent_writing_mode_ == kHorizontalTopBottom) ==
-                             (writing_mode_ == kHorizontalTopBottom);
+                             (out_writing_mode == kHorizontalTopBottom);
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
@@ -144,7 +136,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   if (available_size.inline_size == NGSizeIndefinite) {
     DCHECK(!is_in_parallel_flow);
-    if (writing_mode_ == kHorizontalTopBottom) {
+    if (out_writing_mode == kHorizontalTopBottom) {
       available_size.inline_size = initial_containing_block_size_.width;
     } else {
       available_size.inline_size = initial_containing_block_size_.height;
@@ -152,7 +144,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
   }
   if (percentage_resolution_size.inline_size == NGSizeIndefinite) {
     DCHECK(!is_in_parallel_flow);
-    if (writing_mode_ == kHorizontalTopBottom) {
+    if (out_writing_mode == kHorizontalTopBottom) {
       percentage_resolution_size.inline_size =
           initial_containing_block_size_.width;
     } else {
@@ -169,7 +161,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
 
   if (is_in_parallel_flow) {
     return new NGConstraintSpace(
-        static_cast<NGWritingMode>(writing_mode_),
+        static_cast<NGWritingMode>(out_writing_mode),
         static_cast<TextDirection>(text_direction_), available_size,
         percentage_resolution_size, initial_containing_block_size_,
         fragmentainer_space_available_, is_fixed_size_inline_,
@@ -180,11 +172,10 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         margin_strut, bfc_offset, exclusions);
   }
   return new NGConstraintSpace(
-      static_cast<NGWritingMode>(writing_mode_),
-      static_cast<TextDirection>(text_direction_), available_size,
-      percentage_resolution_size, initial_containing_block_size_,
-      fragmentainer_space_available_, is_fixed_size_block_,
-      is_fixed_size_inline_, is_shrink_to_fit_,
+      out_writing_mode, static_cast<TextDirection>(text_direction_),
+      available_size, percentage_resolution_size,
+      initial_containing_block_size_, fragmentainer_space_available_,
+      is_fixed_size_block_, is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
