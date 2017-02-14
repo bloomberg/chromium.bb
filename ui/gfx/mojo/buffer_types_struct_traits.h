@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_
-#define UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_
+#ifndef UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
+#define UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
@@ -276,4 +276,4 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 
 }  // namespace mojo
 
-#endif  // UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_
+#endif  // UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
