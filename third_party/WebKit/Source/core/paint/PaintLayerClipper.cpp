@@ -281,17 +281,25 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
     ClipRect& backgroundRect,
     ClipRect& foregroundRect,
     const LayoutPoint* offsetFromRoot) const {
-  backgroundRect = clipRectWithGeometryMapper(context, false);
-  applyOverflowClipToBackgroundRectWithGeometryMapper(context, backgroundRect);
+  const auto* properties = m_layer.layoutObject()->paintProperties();
+  // TODO(chrishtr): fix the underlying bug that causes this situation.
+  if (!properties) {
+    backgroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+    foregroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+  } else {
+    backgroundRect = clipRectWithGeometryMapper(context, false);
+    applyOverflowClipToBackgroundRectWithGeometryMapper(context,
+                                                        backgroundRect);
 
-  backgroundRect.move(
-      context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
-  backgroundRect.intersect(paintDirtyRect);
+    backgroundRect.move(
+        context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
+    backgroundRect.intersect(paintDirtyRect);
 
-  foregroundRect.move(
-      context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
-  foregroundRect = clipRectWithGeometryMapper(context, true);
-  foregroundRect.intersect(paintDirtyRect);
+    foregroundRect.move(
+        context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
+    foregroundRect = clipRectWithGeometryMapper(context, true);
+    foregroundRect.intersect(paintDirtyRect);
+  }
   LayoutPoint offset;
   if (offsetFromRoot)
     offset = *offsetFromRoot;
@@ -439,8 +447,6 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   LayoutRect source(LayoutRect::infiniteIntRect());
   const auto* properties = m_layer.layoutObject()->paintProperties();
   // TODO(chrishtr): fix the underlying bug that causes this situation.
-  if (!properties)
-    return ClipRect(source);
   DCHECK(properties && properties->localBorderBoxProperties());
 
   PropertyTreeState propertyTreeState = *properties->localBorderBoxProperties();
