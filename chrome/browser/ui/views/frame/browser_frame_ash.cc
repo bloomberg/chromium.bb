@@ -178,9 +178,10 @@ BrowserFrameAsh::~BrowserFrameAsh() {
 // BrowserFrameAsh, private:
 
 void BrowserFrameAsh::SetWindowAutoManaged() {
-  if (!browser_view_->browser()->is_type_popup() ||
-      browser_view_->browser()->is_app()) {
-    ash::wm::GetWindowState(GetNativeWindow())->
-        set_window_position_managed(true);
+  // For browser window in Chrome OS, we should only enable the auto window
+  // management logic for tabbed browser.
+  if (!browser_view_->browser()->is_type_popup()) {
+    ash::wm::GetWindowState(GetNativeWindow())
+        ->set_window_position_managed(true);
   }
 }

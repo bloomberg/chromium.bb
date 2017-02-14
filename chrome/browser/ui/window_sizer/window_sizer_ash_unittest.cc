@@ -42,7 +42,7 @@ std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
   std::unique_ptr<Browser> browser =
       chrome::CreateBrowserWithAuraTestWindowForParams(base::WrapUnique(window),
                                                        params);
-  if (browser->is_type_tabbed() || browser->is_app()) {
+  if (!browser->is_type_popup()) {
     ash::wm::GetWindowState(browser->window()->GetNativeWindow())
         ->set_window_position_managed(true);
   }
