@@ -6,7 +6,9 @@
 
 // This file includes a sample and a template for text-coded traffic_annotation.
 // For more description on each field, please refer to:
-// (tools/traffic_annotation/traffic_annotation.proto)
+// tools/traffic_annotation/traffic_annotation.proto
+// and
+// out/Debug/gen/components/policy/proto/cloud_policy.proto
 // For more information on policies, please refer to:
 // http://dev.chromium.org/administrators/policy-list-3
 
@@ -14,7 +16,7 @@ void network_traffic_annotation_sample() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("spellcheck_lookup", R"(
         semantics {
-          sender: "spellcheck"
+          sender: "Online Spellcheck"
           description:
             "Google Chrome can provide smarter spell-checking by sending "
             "text you type into the browser to Google's servers, allowing "
@@ -47,23 +49,24 @@ void network_traffic_annotation_sample() {
 
 void network_traffic_annotation_template() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("", R"(
+      net::DefineNetworkTrafficAnnotation("...", R"(
         semantics {
-          sender: ""
-          description: ""
-          trigger: ""
-          data: ""
+          sender: "..."
+          description: "..."
+          trigger: "..."
+          data: "..."
           destination: WEBSITE/GOOGLE_OWNED_SERVICE/OTHER
         }
         policy {
           cookies_allowed: false/true
-          cookies_store: ""
-          setting: ""
+          cookies_store: "..."
+          setting: "..."
           policy {
             [POLICY_NAME] {
                 policy_options {mode: MANDATORY/RECOMMENDED/UNSET}
                 value: ...
             }
           }
+          policy_exception_justification = "..."
         })");
 }
