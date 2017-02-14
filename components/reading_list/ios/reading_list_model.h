@@ -90,7 +90,7 @@ class ReadingListModel : public base::NonThreadSafe {
 
   // Adds |url| at the top of the unread entries, and removes entries with the
   // same |url| from everywhere else if they exist. The entry title will be a
-  // trimmed copy of |title.
+  // trimmed copy of |title|.
   // The addition may be asynchronous, and the data will be available only once
   // the observers are notified.
   virtual const ReadingListEntry& AddEntry(
