@@ -6,6 +6,10 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Chromium code relies on NSRegularExpression class to match regular
 // expressions.  Any subtle changes in behavior can lead to hard to diagnose
 // problems.  This files tests how NSRegularExpression handles various regular
