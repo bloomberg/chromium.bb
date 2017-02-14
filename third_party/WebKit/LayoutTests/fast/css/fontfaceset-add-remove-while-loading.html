@@ -1,69 +1,83 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
-<script>
-description('Tests that FontFaceSet is correctly updated when added or removed a FontFace while loading.');
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
 
-window.jsTestIsAsync = true;
+<script>
 
 function loadingDonePromise() {
-    return new Promise(function(resolve) {
-        function handler(e) {
-            document.fonts.removeEventListener('loadingdone', handler);
-            resolve(e);
-        };
-        document.fonts.addEventListener('loadingdone', handler);
-    });
+  return new Promise(function(resolve) {
+    function handler(e) {
+      document.fonts.removeEventListener('loadingdone', handler);
+      resolve(e);
+    };
+    document.fonts.addEventListener('loadingdone', handler);
+  });
 }
 
-Promise.resolve().then(function() {
-    face1 = new FontFace('face1', 'url(../../resources/Ahem.ttf)', {});
-    shouldBeEqualToString('face1.status', 'unloaded');
+promise_test(() => {
+  let face = new FontFace('face1', 'url(../../resources/Ahem.ttf)', {});
+  assert_equals(face.status, 'unloaded');
 
-    face1.load();
-    shouldBeEqualToString('face1.status', 'loading');
-    shouldBeEqualToString('document.fonts.status', 'loaded');
+  let faceLoaded = face.load();
+  assert_equals(face.status, 'loading');
+  assert_equals(document.fonts.status, 'loaded')
 
-    document.fonts.add(face1);
-    shouldBeEqualToString('document.fonts.status', 'loading');
-    return document.fonts.ready;
-}).then(function() {
-    shouldBeEqualToString('face1.status', 'loaded');
-    shouldBeEqualToString('document.fonts.status', 'loaded');
+  let loadingDone = loadingDonePromise();
+  document.fonts.add(face);
+  assert_equals(document.fonts.status, 'loading');
 
-    face2 = new FontFace('face2', 'url(../../resources/Ahem.ttf)', {});
-    shouldBeEqualToString('face2.status', 'unloaded');
+  return Promise.all(
+      [faceLoaded, loadingDone, document.fonts.ready]).then(() => {
+    assert_equals(document.fonts.status, 'loaded');
+    assert_equals(face.status, 'loaded');
+  });
+}, 'document.fonts.add() called while a FontFace is loading.');
 
-    document.fonts.add(face2);
-    var face2loaded = face2.load()
-    shouldBeEqualToString('document.fonts.status', 'loading');
+promise_test(() => {
+  assert_equals(document.fonts.status, 'loaded');
 
-    var loadingdone = loadingDonePromise();
-    document.fonts.delete(face2);
-    shouldBeEqualToString('document.fonts.status', 'loading');
-    shouldBeEqualToString('face2.status', 'loading');
+  let face = new FontFace('face2', 'url(../../resources/Ahem.ttf)', {});
+  assert_equals(face.status, 'unloaded');
 
-    return Promise.all([face2loaded, loadingdone]);
-}).then(function() {
-    shouldBeEqualToString('face2.status', 'loaded');
-    shouldBeEqualToString('document.fonts.status', 'loaded');
+  document.fonts.add(face);
+  let faceLoaded = face.load();
+  assert_equals(document.fonts.status, 'loading');
 
-    face3 = new FontFace('face3', 'url(../../resources/Ahem.ttf)', {});
-    shouldBeEqualToString('face3.status', 'unloaded');
+  let loadingDone = loadingDonePromise();
+  document.fonts.delete(face);
 
-    document.fonts.add(face3);
-    face3.load();
-    shouldBeEqualToString('document.fonts.status', 'loading');
+  // Deleting a font from the document should not change its or the document's
+  // loading status until the loadingdone event is fired.
+  assert_equals(document.fonts.status, 'loading');
+  assert_equals(face.status, 'loading');
 
-    document.fonts.clear();
-    shouldBeEqualToString('document.fonts.status', 'loading');
-    shouldBeEqualToString('face3.status', 'loading');
-    return document.fonts.ready;
-}).then(function() {
-    shouldBeEqualToString('document.fonts.status', 'loaded');
-    finishJSTest();
-}).catch(function (err) {
-    testFailed('Unexpected rejection: ' + err);
-    finishJSTest();
-});
+  return Promise.all(
+      [faceLoaded, loadingDone, document.fonts.ready]).then(() => {
+    assert_equals(document.fonts.status, 'loaded');
+    assert_equals(face.status, 'loaded');
+  });
+}, 'document.fonts.delete() called while a FontFace is loading.');
+
+promise_test(() => {
+  assert_equals(document.fonts.status, 'loaded');
+
+  let face = new FontFace('face3', 'url(../../resources/Ahem.ttf)', {});
+  assert_equals(face.status, 'unloaded');
+
+  document.fonts.add(face);
+  let faceLoaded = face.load();
+  assert_equals(document.fonts.status, 'loading');
+
+  let loadingDone = loadingDonePromise();
+  document.fonts.clear();
+  assert_equals(document.fonts.status, 'loading');
+  assert_equals(face.status, 'loading');
+
+  return Promise.all(
+      [faceLoaded, loadingDone, document.fonts.ready]).then(() => {
+    assert_equals(document.fonts.status, 'loaded');
+    assert_equals(face.status, 'loaded');
+  });
+}, 'document.fonts.clear() called while a FontFace is loading.');
 
 </script>

@@ -1,36 +1,27 @@
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+
 <style>
 @font-face {
   font-family: 'ahem';
   src: url(../../resources/Ahem.ttf);
 }
 </style>
+
 <script>
-description('Checks that adding CSS in callback of fonts.loadFont() does not cause a crash.');
 
-window.jsTestIsAsync = true;
-
-function addCss() {
-    var cssText = "@font-face { font-family: 'Courier New'; src: local('Courier New') }";
-    var cssNode = document.createElement('style');
+promise_test(() => {
+  return document.fonts.load("12px ahem").then(() => {
+    let cssText = "@font-face { font-family: 'Courier New'; src: local('Courier New') }";
+    let cssNode = document.createElement('style');
     cssNode.type = 'text/css';
-    var head = document.getElementsByTagName('head')[0];
+    let head = document.getElementsByTagName('head')[0];
     head.appendChild(cssNode);
-    var cssTextNode = document.createTextNode(cssText);
+    let cssTextNode = document.createTextNode(cssText);
     cssNode.appendChild(cssTextNode);
-    finishJSTest();
-}
 
-if (document.fonts)
-    document.fonts.load("12px ahem").then(addCss);
-else {
-    testFailed('document.fonts does not exist');
-    finishJSTest();
-}
+  });
+}, 'Checks that adding CSS in callback of fonts.loadFont() does not ' +
+    'cause a crash.');
+
 </script>
-</head>
-<body>
-</body>
-</html>

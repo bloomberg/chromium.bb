@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
 <script>
-description('Tests FontFaceSet#check() returns true for platform fonts');
 
-shouldBeTrue("document.fonts.check('10px Arial');");
-shouldBeFalse("document.fonts.check('10px Nonexistent');");
-shouldBeTrue("document.fonts.check('10px sans-serif');");
-shouldBeTrue("document.fonts.check('10px Nonexistent, monospace');");
-shouldBeFalse("document.fonts.check('10px Nonexistent1, Nonexistent2');");
+test(() => {
+  assert_true(document.fonts.check('10px Arial'));
+  assert_false(document.fonts.check('10px Nonexistent'));
+  assert_true(document.fonts.check('10px sans-serif'));
+  assert_true(document.fonts.check('10px Nonexistent, monospace'));
+  assert_false(document.fonts.check('10px Nonexistent1, Nonexistent2'));
+}, 'Tests FontFaceSet#check() returns true for platform fonts');
+
 </script>
