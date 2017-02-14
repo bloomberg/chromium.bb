@@ -22,7 +22,7 @@ class WPTGitHub(object):
         assert self.user and self.token
 
     def auth_token(self):
-        return base64.encodestring('{}:{}'.format(self.user, self.token)).strip()
+        return base64.b64encode('{}:{}'.format(self.user, self.token))
 
     def request(self, path, method, body=None):
         assert path.startswith('/')
