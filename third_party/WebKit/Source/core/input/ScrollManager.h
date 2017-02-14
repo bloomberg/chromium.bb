@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/page/EventWithHitTestResults.h"
-#include "platform/PlatformEvent.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Visitor.h"

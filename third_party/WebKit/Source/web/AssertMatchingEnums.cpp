@@ -66,7 +66,6 @@
 #include "platform/Cursor.h"
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
-#include "platform/PlatformEvent.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/mediastream/MediaStreamSource.h"
@@ -555,30 +554,6 @@ STATIC_ASSERT_ENUM(WebIconURL::TypeInvalid, InvalidIcon);
 STATIC_ASSERT_ENUM(WebIconURL::TypeFavicon, Favicon);
 STATIC_ASSERT_ENUM(WebIconURL::TypeTouch, TouchIcon);
 STATIC_ASSERT_ENUM(WebIconURL::TypeTouchPrecomposed, TouchPrecomposedIcon);
-
-STATIC_ASSERT_ENUM(WebInputEvent::ShiftKey, PlatformEvent::ShiftKey);
-STATIC_ASSERT_ENUM(WebInputEvent::ControlKey, PlatformEvent::CtrlKey);
-STATIC_ASSERT_ENUM(WebInputEvent::AltKey, PlatformEvent::AltKey);
-STATIC_ASSERT_ENUM(WebInputEvent::MetaKey, PlatformEvent::MetaKey);
-STATIC_ASSERT_ENUM(WebInputEvent::AltGrKey, PlatformEvent::AltGrKey);
-STATIC_ASSERT_ENUM(WebInputEvent::FnKey, PlatformEvent::FnKey);
-STATIC_ASSERT_ENUM(WebInputEvent::SymbolKey, PlatformEvent::SymbolKey);
-STATIC_ASSERT_ENUM(WebInputEvent::IsKeyPad, PlatformEvent::IsKeyPad);
-STATIC_ASSERT_ENUM(WebInputEvent::IsAutoRepeat, PlatformEvent::IsAutoRepeat);
-STATIC_ASSERT_ENUM(WebInputEvent::IsLeft, PlatformEvent::IsLeft);
-STATIC_ASSERT_ENUM(WebInputEvent::IsRight, PlatformEvent::IsRight);
-STATIC_ASSERT_ENUM(WebInputEvent::IsTouchAccessibility,
-                   PlatformEvent::IsTouchAccessibility);
-STATIC_ASSERT_ENUM(WebInputEvent::IsComposing, PlatformEvent::IsComposing);
-STATIC_ASSERT_ENUM(WebInputEvent::LeftButtonDown,
-                   PlatformEvent::LeftButtonDown);
-STATIC_ASSERT_ENUM(WebInputEvent::MiddleButtonDown,
-                   PlatformEvent::MiddleButtonDown);
-STATIC_ASSERT_ENUM(WebInputEvent::RightButtonDown,
-                   PlatformEvent::RightButtonDown);
-STATIC_ASSERT_ENUM(WebInputEvent::CapsLockOn, PlatformEvent::CapsLockOn);
-STATIC_ASSERT_ENUM(WebInputEvent::NumLockOn, PlatformEvent::NumLockOn);
-STATIC_ASSERT_ENUM(WebInputEvent::ScrollLockOn, PlatformEvent::ScrollLockOn);
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveNothing,
                    HTMLMediaElement::kHaveNothing);

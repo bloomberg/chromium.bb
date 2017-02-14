@@ -35,7 +35,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/PlatformEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -56,13 +55,13 @@ enum Modifiers {
 unsigned GetEventModifiers(int modifiers) {
   unsigned platformModifiers = 0;
   if (modifiers & AltKey)
-    platformModifiers |= blink::PlatformEvent::AltKey;
+    platformModifiers |= blink::WebInputEvent::AltKey;
   if (modifiers & CtrlKey)
-    platformModifiers |= blink::PlatformEvent::CtrlKey;
+    platformModifiers |= blink::WebInputEvent::ControlKey;
   if (modifiers & MetaKey)
-    platformModifiers |= blink::PlatformEvent::MetaKey;
+    platformModifiers |= blink::WebInputEvent::MetaKey;
   if (modifiers & ShiftKey)
-    platformModifiers |= blink::PlatformEvent::ShiftKey;
+    platformModifiers |= blink::WebInputEvent::ShiftKey;
   return platformModifiers;
 }
 

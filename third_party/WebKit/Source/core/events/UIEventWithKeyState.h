@@ -27,17 +27,16 @@
 #include "core/CoreExport.h"
 #include "core/events/EventModifierInit.h"
 #include "core/events/UIEvent.h"
-#include "platform/PlatformEvent.h"
 #include "public/platform/WebInputEvent.h"
 
 namespace blink {
 
 class CORE_EXPORT UIEventWithKeyState : public UIEvent {
  public:
-  bool ctrlKey() const { return m_modifiers & PlatformEvent::CtrlKey; }
-  bool shiftKey() const { return m_modifiers & PlatformEvent::ShiftKey; }
-  bool altKey() const { return m_modifiers & PlatformEvent::AltKey; }
-  bool metaKey() const { return m_modifiers & PlatformEvent::MetaKey; }
+  bool ctrlKey() const { return m_modifiers & WebInputEvent::ControlKey; }
+  bool shiftKey() const { return m_modifiers & WebInputEvent::ShiftKey; }
+  bool altKey() const { return m_modifiers & WebInputEvent::AltKey; }
+  bool metaKey() const { return m_modifiers & WebInputEvent::MetaKey; }
 
   // We ignore the new tab modifiers (ctrl or meta, depending on OS) set by
   // JavaScript when processing events.  However, scripts running in isolated
@@ -55,15 +54,13 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                                             bool altKey,
                                             bool metaKey);
 
-  static void setFromPlatformModifiers(EventModifierInit&,
-                                       const PlatformEvent::Modifiers);
   static void setFromWebInputEventModifiers(EventModifierInit&,
                                             WebInputEvent::Modifiers);
 
   bool getModifierState(const String& keyIdentifier) const;
 
-  PlatformEvent::Modifiers modifiers() const {
-    return static_cast<PlatformEvent::Modifiers>(m_modifiers);
+  WebInputEvent::Modifiers modifiers() const {
+    return static_cast<WebInputEvent::Modifiers>(m_modifiers);
   }
 
  protected:
@@ -74,7 +71,7 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                       bool cancelable,
                       AbstractView*,
                       int detail,
-                      PlatformEvent::Modifiers,
+                      WebInputEvent::Modifiers,
                       TimeTicks platformTimeStamp,
                       InputDeviceCapabilities* sourceCapabilities = nullptr);
   UIEventWithKeyState(const AtomicString& type,

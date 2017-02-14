@@ -82,7 +82,7 @@ GestureEvent::GestureEvent(const AtomicString& eventType,
           true,
           view,
           0,
-          static_cast<PlatformEvent::Modifiers>(event.modifiers()),
+          static_cast<WebInputEvent::Modifiers>(event.modifiers()),
           TimeTicks::FromSeconds(event.timeStampSeconds()),
           nullptr),
       m_nativeEvent(event) {}

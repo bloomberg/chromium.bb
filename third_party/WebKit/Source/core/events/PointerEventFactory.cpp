@@ -234,8 +234,8 @@ PointerEvent* PointerEventFactory::create(
   AtomicString pointerEventName =
       pointerEventNameForMouseEventName(mouseEventName);
 
-  unsigned buttons = MouseEvent::platformModifiersToButtons(
-      static_cast<PlatformEvent::Modifiers>(mouseEvent.modifiers()));
+  unsigned buttons = MouseEvent::webInputEventModifiersToButtons(
+      static_cast<WebInputEvent::Modifiers>(mouseEvent.modifiers()));
   PointerEventInit pointerEventInit;
 
   setIdTypeButtons(pointerEventInit, mouseEvent, buttons);

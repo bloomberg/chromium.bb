@@ -80,7 +80,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   int keyCode()
       const;  // key code for keydown and keyup, character for keypress
   int charCode() const;  // character code for keypress, 0 for keydown and keyup
-  bool repeat() const { return modifiers() & PlatformEvent::IsAutoRepeat; }
+  bool repeat() const { return modifiers() & WebInputEvent::IsAutoRepeat; }
 
   const AtomicString& interfaceName() const override;
   bool isKeyboardEvent() const override;

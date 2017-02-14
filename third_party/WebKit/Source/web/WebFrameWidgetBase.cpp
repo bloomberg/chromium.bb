@@ -141,7 +141,7 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
   WebMouseEvent fakeMouseMove(WebInputEvent::MouseMove, pointInRootFrame,
                               WebFloatPoint(screenPoint.x, screenPoint.y),
                               WebPointerProperties::Button::Left, 0,
-                              PlatformEvent::NoModifiers,
+                              WebInputEvent::NoModifiers,
                               TimeTicks::Now().InSeconds());
   fakeMouseMove.setFrameScale(1);
   toCoreFrame(localRoot())

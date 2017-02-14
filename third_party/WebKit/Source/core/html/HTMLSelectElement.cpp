@@ -1286,8 +1286,8 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event) {
         !isSpatialNavigationEnabled(document().frame()))
       return;
 
-    int ignoreModifiers = PlatformEvent::ShiftKey | PlatformEvent::CtrlKey |
-                          PlatformEvent::AltKey | PlatformEvent::MetaKey;
+    int ignoreModifiers = WebInputEvent::ShiftKey | WebInputEvent::ControlKey |
+                          WebInputEvent::AltKey | WebInputEvent::MetaKey;
     if (keyEvent->modifiers() & ignoreModifiers)
       return;
 

@@ -1895,7 +1895,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
       WebFloatPoint(locationInRootFrame.x(), locationInRootFrame.y()),
       WebFloatPoint(globalPosition.x(), globalPosition.y()),
       WebPointerProperties::Button::NoButton, /* clickCount */ 0,
-      PlatformEvent::NoModifiers, TimeTicks::Now().InSeconds());
+      WebInputEvent::NoModifiers, TimeTicks::Now().InSeconds());
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

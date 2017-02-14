@@ -22,7 +22,6 @@
 #define EventWithHitTestResults_h
 
 #include "core/layout/HitTestResult.h"
-#include "platform/PlatformEvent.h"
 #include "public/platform/WebGestureEvent.h"
 #include "public/platform/WebMouseEvent.h"
 

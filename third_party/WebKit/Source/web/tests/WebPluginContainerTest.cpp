@@ -38,7 +38,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
-#include "platform/PlatformEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"

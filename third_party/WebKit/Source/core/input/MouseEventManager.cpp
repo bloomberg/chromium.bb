@@ -895,8 +895,8 @@ WebInputEventResult MouseEventManager::dispatchDragEvent(
   DragEvent* me = DragEvent::create(
       eventType, true, cancelable, m_frame->document()->domWindow(), 0,
       event.globalX, event.globalY, position.x(), position.y(), movement.x(),
-      movement.y(), static_cast<PlatformEvent::Modifiers>(event.modifiers()), 0,
-      MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr,
+      movement.y(), static_cast<WebInputEvent::Modifiers>(event.modifiers()), 0,
+      MouseEvent::webInputEventModifiersToButtons(event.modifiers()), nullptr,
       TimeTicks::FromSeconds(event.timeStampSeconds()), dataTransfer,
       event.fromTouch() ? MouseEvent::FromTouch
                         : MouseEvent::RealOrIndistinguishable);

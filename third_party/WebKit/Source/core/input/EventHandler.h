@@ -264,8 +264,6 @@ class CORE_EXPORT EventHandler final
       bool onlyUpdateScrollbars = false,
       bool forceLeave = false);
 
-  HitTestRequest::HitTestRequestType getHitTypeForGestureType(
-      PlatformEvent::EventType);
   void applyTouchAdjustment(WebGestureEvent*, HitTestResult*);
   WebInputEventResult handleGestureTapDown(
       const GestureEventWithHitTestResults&);

@@ -155,7 +155,7 @@ WebInputEventResult GestureManager::handleGestureTap(
         WebInputEvent::MouseMove, gestureEvent,
         WebPointerProperties::Button::NoButton,
         /* clickCount */ 0,
-        static_cast<PlatformEvent::Modifiers>(
+        static_cast<WebInputEvent::Modifiers>(
             modifiers | WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
         gestureEvent.timeStampSeconds());
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
@@ -197,7 +197,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   WebMouseEvent fakeMouseDown(
       WebInputEvent::MouseDown, gestureEvent,
       WebPointerProperties::Button::Left, gestureEvent.tapCount(),
-      static_cast<PlatformEvent::Modifiers>(
+      static_cast<WebInputEvent::Modifiers>(
           modifiers | WebInputEvent::Modifiers::LeftButtonDown |
           WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
       gestureEvent.timeStampSeconds());
@@ -248,7 +248,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   WebMouseEvent fakeMouseUp(
       WebInputEvent::MouseUp, gestureEvent, WebPointerProperties::Button::Left,
       gestureEvent.tapCount(),
-      static_cast<PlatformEvent::Modifiers>(
+      static_cast<WebInputEvent::Modifiers>(
           modifiers | WebInputEvent::Modifiers::IsCompatibilityEventForTouch),
       gestureEvent.timeStampSeconds());
   WebInputEventResult mouseUpEventResult =
@@ -370,7 +370,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
         WebInputEvent::MouseMove, gestureEvent,
         WebPointerProperties::Button::NoButton,
         /* clickCount */ 0,
-        static_cast<PlatformEvent::Modifiers>(
+        static_cast<WebInputEvent::Modifiers>(
             modifiers | WebInputEvent::IsCompatibilityEventForTouch),
         gestureEvent.timeStampSeconds());
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
@@ -386,8 +386,8 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
   WebMouseEvent mouseEvent(
       eventType, gestureEvent, WebPointerProperties::Button::Right,
       /* clickCount */ 1,
-      static_cast<PlatformEvent::Modifiers>(
-          modifiers | PlatformEvent::Modifiers::RightButtonDown |
+      static_cast<WebInputEvent::Modifiers>(
+          modifiers | WebInputEvent::Modifiers::RightButtonDown |
           WebInputEvent::IsCompatibilityEventForTouch),
       gestureEvent.timeStampSeconds());
 

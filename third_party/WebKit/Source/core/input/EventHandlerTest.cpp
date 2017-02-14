@@ -290,7 +290,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
   WebMouseEvent mouseDownEvent(
       WebMouseEvent::MouseDown, WebFloatPoint(0, 0), WebFloatPoint(100, 200),
       WebPointerProperties::Button::Right, 1,
-      PlatformEvent::Modifiers::RightButtonDown, TimeTicks::Now().InSeconds());
+      WebInputEvent::Modifiers::RightButtonDown, TimeTicks::Now().InSeconds());
   mouseDownEvent.setFrameScale(1);
   EXPECT_EQ(
       WebInputEventResult::HandledApplication,
@@ -405,14 +405,14 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
   WebMouseEvent mouseDownEvent(
       WebInputEvent::MouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
       WebPointerProperties::Button::Left, 1,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
   mouseDownEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
   WebMouseEvent mouseMoveEvent(
       WebInputEvent::MouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
       WebPointerProperties::Button::Left, 1,
-      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
+      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
   mouseMoveEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<WebMouseEvent>());
@@ -425,8 +425,8 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
 
   WebMouseEvent mouseUpEvent(
       WebInputEvent::MouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
-      WebPointerProperties::Button::Left, 1,
-      static_cast<PlatformEvent::Modifiers>(0), TimeTicks::Now().InSeconds());
+      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
   mouseUpEvent.setFrameScale(1);
   document().frame()->eventHandler().dragSourceEndedAt(mouseUpEvent,
                                                        DragOperationNone);

@@ -51,7 +51,7 @@ class PointerEventFactoryTest : public ::testing::Test {
       int rawId,
       int uniqueId,
       bool isPrimary,
-      PlatformEvent::Modifiers = PlatformEvent::NoModifiers,
+      WebInputEvent::Modifiers = WebInputEvent::NoModifiers,
       size_t coalescedEventCount = 0);
   void createAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
 
@@ -70,7 +70,7 @@ class PointerEventFactoryTest : public ::testing::Test {
    public:
     WebMouseEventBuilder(WebPointerProperties::PointerType,
                          int,
-                         PlatformEvent::Modifiers);
+                         WebInputEvent::Modifiers);
   };
 };
 
@@ -92,7 +92,7 @@ PointerEventFactoryTest::WebTouchPointBuilder::WebTouchPointBuilder(
 PointerEventFactoryTest::WebMouseEventBuilder::WebMouseEventBuilder(
     WebPointerProperties::PointerType pointerTypeParam,
     int idParam,
-    PlatformEvent::Modifiers modifiersParam) {
+    WebInputEvent::Modifiers modifiersParam) {
   pointerType = pointerTypeParam;
   id = idParam;
   m_modifiers = modifiersParam;
@@ -159,7 +159,7 @@ PointerEvent* PointerEventFactoryTest::createAndCheckMouseEvent(
     int rawId,
     int uniqueId,
     bool isPrimary,
-    PlatformEvent::Modifiers modifiers,
+    WebInputEvent::Modifiers modifiers,
     size_t coalescedEventCount) {
   Vector<WebMouseEvent> coalescedEvents;
   for (size_t i = 0; i < coalescedEventCount; i++) {
@@ -194,7 +194,7 @@ TEST_F(PointerEventFactoryTest, MousePointer) {
       WebPointerProperties::PointerType::Mouse, 0, m_expectedMouseId, true);
   PointerEvent* pointerEvent2 = createAndCheckMouseEvent(
       WebPointerProperties::PointerType::Mouse, 0, m_expectedMouseId, true,
-      PlatformEvent::LeftButtonDown);
+      WebInputEvent::LeftButtonDown);
 
   createAndCheckPointerTransitionEvent(pointerEvent1,
                                        EventTypeNames::pointerout);
@@ -445,7 +445,7 @@ TEST_F(PointerEventFactoryTest, OutOfRange) {
 
 TEST_F(PointerEventFactoryTest, CoalescedEvents) {
   createAndCheckMouseEvent(WebPointerProperties::PointerType::Mouse, 0,
-                           m_expectedMouseId, true, PlatformEvent::NoModifiers,
+                           m_expectedMouseId, true, WebInputEvent::NoModifiers,
                            4);
   createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0,
                            m_mappedIdStart, true, WebTouchPoint::StateMoved, 3);

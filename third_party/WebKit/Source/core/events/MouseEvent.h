@@ -69,7 +69,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   ~MouseEvent() override;
 
-  static unsigned short platformModifiersToButtons(unsigned modifiers);
+  static unsigned short webInputEventModifiersToButtons(unsigned modifiers);
 
   void initMouseEvent(ScriptState*,
                       const AtomicString& type,
@@ -202,7 +202,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              int windowY,
              int movementX,
              int movementY,
-             PlatformEvent::Modifiers,
+             WebInputEvent::Modifiers,
              short button,
              unsigned short buttons,
              EventTarget* relatedTarget,
@@ -227,7 +227,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               int screenY,
                               int clientX,
                               int clientY,
-                              PlatformEvent::Modifiers,
+                              WebInputEvent::Modifiers,
                               short button,
                               EventTarget* relatedTarget,
                               InputDeviceCapabilities* sourceCapabilities,

@@ -58,13 +58,13 @@ WebFocusType focusDirectionForKey(KeyboardEvent* event) {
 }
 
 bool mapKeyCodeForScroll(int keyCode,
-                         PlatformEvent::Modifiers modifiers,
+                         WebInputEvent::Modifiers modifiers,
                          ScrollDirection* scrollDirection,
                          ScrollGranularity* scrollGranularity) {
-  if (modifiers & PlatformEvent::ShiftKey || modifiers & PlatformEvent::MetaKey)
+  if (modifiers & WebInputEvent::ShiftKey || modifiers & WebInputEvent::MetaKey)
     return false;
 
-  if (modifiers & PlatformEvent::AltKey) {
+  if (modifiers & WebInputEvent::AltKey) {
     // Alt-Up/Down should behave like PageUp/Down on Mac.  (Note that Alt-keys
     // on other platforms are suppressed due to isSystemKey being set.)
     if (keyCode == VKEY_UP)
@@ -75,7 +75,7 @@ bool mapKeyCodeForScroll(int keyCode,
       return false;
   }
 
-  if (modifiers & PlatformEvent::CtrlKey) {
+  if (modifiers & WebInputEvent::ControlKey) {
     // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
     // key combinations which affect scrolling.
     if (keyCode != VKEY_HOME && keyCode != VKEY_END)

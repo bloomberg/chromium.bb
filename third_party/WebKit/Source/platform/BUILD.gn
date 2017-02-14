@@ -261,7 +261,6 @@ component("platform") {
     "PartitionAllocMemoryDumpProvider.cpp",
     "PartitionAllocMemoryDumpProvider.h",
     "PasteMode.h",
-    "PlatformEvent.h",
     "PlatformInstrumentation.cpp",
     "PlatformInstrumentation.h",
     "PlatformResourceLoader.cpp",

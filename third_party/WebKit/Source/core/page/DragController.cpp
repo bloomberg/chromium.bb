@@ -125,7 +125,7 @@ static WebMouseEvent createMouseEvent(DragData* dragData) {
       WebFloatPoint(dragData->globalPosition().x(),
                     dragData->globalPosition().y()),
       WebPointerProperties::Button::Left, 0,
-      static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
+      static_cast<WebInputEvent::Modifiers>(dragData->modifiers()),
       TimeTicks::Now().InSeconds());
   // TODO(dtapuska): Really we should chnage DragData to store the viewport
   // coordinates and scale.
@@ -1223,9 +1223,9 @@ bool DragController::isCopyKeyDown(DragData* dragData) {
   int modifiers = dragData->modifiers();
 
 #if OS(MACOSX)
-  return modifiers & PlatformEvent::AltKey;
+  return modifiers & WebInputEvent::AltKey;
 #else
-  return modifiers & PlatformEvent::CtrlKey;
+  return modifiers & WebInputEvent::ControlKey;
 #endif
 }
 

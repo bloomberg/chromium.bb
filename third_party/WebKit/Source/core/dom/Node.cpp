@@ -2137,7 +2137,7 @@ void Node::createAndDispatchPointerEvent(const AtomicString& mouseEventName,
   pointerEventInit.setPointerType("mouse");
   pointerEventInit.setIsPrimary(true);
   pointerEventInit.setButtons(
-      MouseEvent::platformModifiersToButtons(mouseEvent.modifiers()));
+      MouseEvent::webInputEventModifiersToButtons(mouseEvent.modifiers()));
 
   pointerEventInit.setBubbles(true);
   pointerEventInit.setCancelable(true);

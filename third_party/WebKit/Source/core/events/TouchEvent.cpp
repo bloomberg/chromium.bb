@@ -217,7 +217,7 @@ TouchEvent::TouchEvent(const WebTouchEvent& event,
           event.isCancelable(),
           view,
           0,
-          static_cast<PlatformEvent::Modifiers>(event.modifiers()),
+          static_cast<WebInputEvent::Modifiers>(event.modifiers()),
           TimeTicks::FromSeconds(event.timeStampSeconds()),
           view ? view->getInputDeviceCapabilities()->firesTouchEvents(true)
                : nullptr),
