@@ -89,6 +89,7 @@ static NSString* gSearchTerm;
 }
 
 @synthesize delegate = _delegate;
+@synthesize findInPageModel = _findInPageModel;
 
 + (void)setSearchTerm:(NSString*)string {
   gSearchTerm = [string copy];
@@ -102,9 +103,11 @@ static NSString* gSearchTerm;
               delegate:(id<FindInPageControllerDelegate>)delegate {
   self = [super init];
   if (self) {
+    _findInPageModel = [[FindInPageModel alloc] init];
     _findInPageJsManager = base::mac::ObjCCastStrict<JsFindinpageManager>(
         [webState->GetJSInjectionReceiver()
             instanceOfClass:[JsFindinpageManager class]]);
+    _findInPageJsManager.findInPageModel = _findInPageModel;
     _delegate = delegate;
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
@@ -126,10 +129,6 @@ static NSString* gSearchTerm;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (FindInPageModel*)findInPageModel {
-  return [_findInPageJsManager findInPageModel];
 }
 
 - (BOOL)canFindInPage {

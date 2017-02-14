@@ -80,12 +80,6 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 @implementation JsFindinpageManager
 @synthesize findInPageModel = _findInPageModel;
 
-- (FindInPageModel*)findInPageModel {
-  if (!_findInPageModel)
-    _findInPageModel = [[FindInPageModel alloc] init];
-  return _findInPageModel;
-}
-
 - (void)setWidth:(CGFloat)width height:(CGFloat)height {
   NSString* javaScript =
       [NSString stringWithFormat:kFindInPageInit, width, height];

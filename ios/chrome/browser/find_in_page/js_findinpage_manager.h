@@ -26,8 +26,8 @@ extern FindInPageEntry FindInPageEntryZero;
 // Manager for the injection of the Find In Page JavaScript.
 @interface JsFindinpageManager : CRWJSInjectionManager
 
-// Find In Page model. TODO(justincohen) consider using find_tab_helper.cc.
-@property(strong, nonatomic, readonly) FindInPageModel* findInPageModel;
+// Find In Page model.
+@property(nonatomic, readwrite, strong) FindInPageModel* findInPageModel;
 
 // Sets the width and height of the window.
 - (void)setWidth:(CGFloat)width height:(CGFloat)height;
