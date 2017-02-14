@@ -6928,6 +6928,11 @@
      {}
     ]
    ],
+   "dom/events/EventListener-invoke-legacy-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "dom/events/EventTarget-dispatchEvent-expected.txt": [
     [
      {}
@@ -16564,6 +16569,16 @@
     ]
    ],
    "magnetometer/idlharness.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "media-capabilities/README.md": [
+    [
+     {}
+    ]
+   ],
+   "media-capabilities/idlharness-expected.txt": [
     [
      {}
     ]
@@ -36386,6 +36401,18 @@
      {}
     ]
    ],
+   "media-capabilities/idlharness.html": [
+    [
+     "/media-capabilities/idlharness.html",
+     {}
+    ]
+   ],
+   "media-capabilities/query.html": [
+    [
+     "/media-capabilities/query.html",
+     {}
+    ]
+   ],
    "mediacapture-streams/GUM-api.https.html": [
     [
      "/mediacapture-streams/GUM-api.https.html",
@@ -51154,7 +51181,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "6db134bdf1361e81f850170299bf848735e15247",
+   "90cf1a8bd5dcd433e78ffb409f1850ed5307ebb7",
    "support"
   ],
   "./README.md": [
@@ -53307,6 +53334,10 @@
   ],
   "dom/events/EventListener-incumbent-global-subsubframe.sub.html": [
    "35ffc948502021b3367ae759b5f5ac362fd7acaa",
+   "support"
+  ],
+  "dom/events/EventListener-invoke-legacy-expected.txt": [
+   "1f3f82bd8ce8c74e0ad975685ffcf6e009c27580",
    "support"
   ],
   "dom/events/EventListener-invoke-legacy.html": [
@@ -67761,6 +67792,22 @@
    "0a9194605503377bad3f8e66dd60959d2ac5c909",
    "testharness"
   ],
+  "media-capabilities/README.md": [
+   "7d6ceec9a74d5485a6f7d51504f22e5eaf81bfee",
+   "support"
+  ],
+  "media-capabilities/idlharness-expected.txt": [
+   "3ee114ccca363fd6cf18401641ed8df71ee39578",
+   "support"
+  ],
+  "media-capabilities/idlharness.html": [
+   "4ee7d3eb90c352a0888468578e49bbd49f91b789",
+   "testharness"
+  ],
+  "media-capabilities/query.html": [
+   "11afd4ba4eb40a5ff89c06ecf375eb16df65faaa",
+   "testharness"
+  ],
   "media/2048x1360-random.jpg": [
    "386650e2315d8803062400c64f012cfc501d12c3",
    "support"
@@ -77050,7 +77097,7 @@
    "support"
   ],
   "selection/collapse-00-expected.txt": [
-   "8a233522c7ea61dcb8373fc8e2b8b4bb75511d52",
+   "bc604b7719aa782d0333936bc4aa772c4f1b7db3",
    "support"
   ],
   "selection/collapse-00.html": [
@@ -77058,7 +77105,7 @@
    "testharness"
   ],
   "selection/collapse-30-expected.txt": [
-   "67efde4acadf0d8a3d52880407002f2e595e9367",
+   "cda82deabe9e964369d5edd7085176e945b8a620",
    "support"
   ],
   "selection/collapse-30.html": [
@@ -77070,7 +77117,7 @@
    "support"
   ],
   "selection/collapseToStartEnd-expected.txt": [
-   "efa79d6607dc4eb4958a9369de5403293045b6a6",
+   "2aaccb3f3524f137ddd73d56aeb1aca14640c10a",
    "support"
   ],
   "selection/collapseToStartEnd.html": [

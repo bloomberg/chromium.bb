@@ -3825,6 +3825,16 @@ interface Magnetometer : Sensor
     getter y
     getter z
     method constructor
+interface MediaCapabilities
+    attribute @@toStringTag
+    method constructor
+    method query
+interface MediaDecodingAbility
+    attribute @@toStringTag
+    getter powerEfficient
+    getter smooth
+    getter supported
+    method constructor
 interface MediaDeviceInfo
     attribute @@toStringTag
     getter deviceId
@@ -4222,6 +4232,7 @@ interface Navigator
     getter language
     getter languages
     getter maxTouchPoints
+    getter mediaCapabilities
     getter mediaDevices
     getter mediaSession
     getter mimeTypes

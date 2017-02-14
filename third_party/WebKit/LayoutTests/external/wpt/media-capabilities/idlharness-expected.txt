@@ -1,0 +1,25 @@
+CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'query' on 'MediaCapabilities': Illegal invocation
+This is a testharness.js-based test.
+PASS Navigator interface: attribute mediaCapabilities 
+PASS Navigator must be primary interface of navigator 
+PASS Stringification of navigator 
+PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type (0) 
+PASS WorkerNavigator interface: existence and properties of interface object 
+PASS MediaDecodingAbility interface: existence and properties of interface object 
+PASS MediaDecodingAbility interface object length 
+PASS MediaDecodingAbility interface object name 
+FAIL MediaDecodingAbility interface: existence and properties of interface prototype object assert_equals: class string of MediaDecodingAbility.prototype expected "[object MediaDecodingAbilityPrototype]" but got "[object MediaDecodingAbility]"
+PASS MediaDecodingAbility interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaDecodingAbility interface: attribute supported 
+PASS MediaDecodingAbility interface: attribute smooth 
+PASS MediaDecodingAbility interface: attribute powerEfficient 
+PASS MediaCapabilities interface: existence and properties of interface object 
+PASS MediaCapabilities interface object length 
+PASS MediaCapabilities interface object name 
+FAIL MediaCapabilities interface: existence and properties of interface prototype object assert_equals: class string of MediaCapabilities.prototype expected "[object MediaCapabilitiesPrototype]" but got "[object MediaCapabilities]"
+PASS MediaCapabilities interface: existence and properties of interface prototype object's "constructor" property 
+FAIL MediaCapabilities interface: operation query(MediaConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+Harness: the test ran to completion.
+

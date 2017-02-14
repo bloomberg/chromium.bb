@@ -507,6 +507,10 @@
       name: "LoadingWithMojo",
     },
     {
+      name: "MediaCapabilities",
+      status: "test",
+    },
+    {
       name: "MediaCapture",
     },
     {
