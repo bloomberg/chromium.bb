@@ -6,11 +6,14 @@
 #define COMPONENTS_METRICS_METRICS_UPLOAD_SCHEDULER_H_
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_scheduler.h"
 
 namespace metrics {
+
+extern const base::Feature kUploadSchedulerFeature;
 
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsUploadScheduler : public MetricsScheduler {
@@ -25,7 +28,8 @@ class MetricsUploadScheduler : public MetricsScheduler {
   void UploadFinished(bool server_is_healthy);
 
   // Callback from MetricsService when an upload is cancelled.
-  void UploadCancelled();
+  // Also stops the scheduler.
+  void StopAndUploadCancelled();
 
   // Callback from MetricsService when an upload is cancelled because it would
   // be over the allowed data usage cap.
@@ -42,8 +46,14 @@ class MetricsUploadScheduler : public MetricsScheduler {
   // upload has been done yet.
   base::TimeTicks last_upload_finish_time_;
 
-  // Time to wait for the next upload attempt.
-  base::TimeDelta upload_interval_;
+  // Time to wait between uploads on success.
+  const base::TimeDelta unsent_logs_interval_;
+
+  // Initial time to wait between upload retry attempts.
+  const base::TimeDelta initial_backoff_interval_;
+
+  // Time to wait for the next upload attempt if the next one fails.
+  base::TimeDelta backoff_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsUploadScheduler);
 };

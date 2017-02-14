@@ -164,13 +164,6 @@
 
 namespace metrics {
 
-// This feature moves the upload schedule to a seperate schedule from the
-// log rotation schedule.  This may change upload timing slightly, but
-// would allow some compartmentalization of uploader logic to allow more
-// code reuse between different metrics services.
-const base::Feature kUploadSchedulerFeature{"UMAUploadScheduler",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 // This drops records if the number of events (user action and omnibox) exceeds
@@ -900,8 +893,7 @@ void MetricsService::SendNextLog() {
     DCHECK_EQ(SENDING_LOGS, state_);
   if (!reporting_active()) {
     if (upload_scheduler_) {
-      upload_scheduler_->Stop();
-      upload_scheduler_->UploadCancelled();
+      upload_scheduler_->StopAndUploadCancelled();
     } else {
       scheduler_->Stop();
       scheduler_->UploadCancelled();

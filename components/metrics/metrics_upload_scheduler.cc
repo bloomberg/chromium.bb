@@ -6,18 +6,23 @@
 
 #include <stdint.h>
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_scheduler.h"
 
 namespace metrics {
 
-namespace {
+// This feature moves the upload schedule to a seperate schedule from the
+// log rotation schedule.  This may change upload timing slightly, but
+// would allow some compartmentalization of uploader logic to allow more
+// code reuse between different metrics services.
+const base::Feature kUploadSchedulerFeature{"UMAUploadScheduler",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// The delay, in seconds, between uploading when there are queued logs from
-// previous sessions to send. Sending in a burst is better on a mobile device,
-// since keeping the radio on is very expensive, so prefer to keep this short.
-const int kUnsentLogsIntervalSeconds = 3;
+namespace {
 
 // When uploading metrics to the server fails, we progressively wait longer and
 // longer before sending the next log. This backoff process helps reduce load
@@ -46,13 +51,34 @@ base::TimeDelta BackOffUploadInterval(base::TimeDelta interval) {
   return interval;
 }
 
+// Gets a time interval in seconds from a variations parameter.
+base::TimeDelta GetTimeParameterSeconds(const std::string& param_name,
+                                        int default_seconds) {
+  int seconds = base::GetFieldTrialParamByFeatureAsInt(
+      kUploadSchedulerFeature, param_name, default_seconds);
+  return base::TimeDelta::FromSeconds(seconds);
+}
+
+// Time delay after a log is uploaded successfully before attempting another.
+// On mobile, keeping the radio on is very expensive, so prefer to keep this
+// short and send in bursts.
+base::TimeDelta GetUnsentLogsInterval() {
+  return GetTimeParameterSeconds("UnsentLogsIntervalSeconds", 3);
+}
+
+// Inital time delay after a log uploaded fails before retrying it.
+base::TimeDelta GetInitialBackoffInterval() {
+  return GetTimeParameterSeconds("InitialBackoffIntervalSeconds", 15);
+}
+
 }  // namespace
 
 MetricsUploadScheduler::MetricsUploadScheduler(
     const base::Closure& upload_callback)
     : MetricsScheduler(upload_callback),
-      upload_interval_(
-          base::TimeDelta::FromSeconds(kUnsentLogsIntervalSeconds)) {}
+      unsent_logs_interval_(GetUnsentLogsInterval()),
+      initial_backoff_interval_(GetInitialBackoffInterval()),
+      backoff_interval_(initial_backoff_interval_) {}
 
 MetricsUploadScheduler::~MetricsUploadScheduler() {}
 
@@ -61,15 +87,17 @@ void MetricsUploadScheduler::UploadFinished(bool server_is_healthy) {
   // (unless there are more logs to send, in which case the next upload should
   // happen sooner).
   if (!server_is_healthy) {
-    upload_interval_ = BackOffUploadInterval(upload_interval_);
+    TaskDone(backoff_interval_);
+    backoff_interval_ = BackOffUploadInterval(backoff_interval_);
   } else {
-    upload_interval_ = base::TimeDelta::FromSeconds(kUnsentLogsIntervalSeconds);
+    backoff_interval_ = initial_backoff_interval_;
+    TaskDone(unsent_logs_interval_);
   }
-  TaskDone(upload_interval_);
 }
 
-void MetricsUploadScheduler::UploadCancelled() {
-  TaskDone(upload_interval_);
+void MetricsUploadScheduler::StopAndUploadCancelled() {
+  Stop();
+  TaskDone(unsent_logs_interval_);
 }
 
 void MetricsUploadScheduler::UploadOverDataUsageCap() {
