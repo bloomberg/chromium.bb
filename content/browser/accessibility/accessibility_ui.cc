@@ -81,9 +81,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
   target_data->SetString(kNameField, net::EscapeForHTML(name));
   target_data->SetInteger(kPidField, base::GetProcId(handle));
   target_data->SetString(kFaviconUrlField, favicon_url.spec());
-  target_data->SetBoolean(
-      kAccessibilityModeField,
-      0 != (accessibility_mode & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS));
+  target_data->SetInteger(kAccessibilityModeField, accessibility_mode);
   return target_data;
 }
 
@@ -221,9 +219,11 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK_EQ(2U, args->GetSize());
+  int mode;
+  CHECK_EQ(3U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
+  CHECK(args->GetInteger(2, &mode));
   CHECK(base::StringToInt(process_id_str, &process_id));
   CHECK(base::StringToInt(route_id_str, &route_id));
 
@@ -232,18 +232,11 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
     return;
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode mode = web_contents->GetAccessibilityMode();
-  // Note: this is slightly confusing, because:
-  // - Turning a11y ON for given web content will always turn it on, however
-  // - Turning a11y OFF for given web content will revert it to the
-  //   global state (not necessarily off)
-  // TODO(aleventhal): clear this up through chrome:/accessibility UI update
-  if ((mode & ACCESSIBILITY_MODE_COMPLETE) != ACCESSIBILITY_MODE_COMPLETE) {
-    web_contents->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
-  } else {
-    web_contents->SetAccessibilityMode(
-        BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
-  }
+  AccessibilityMode current_mode = web_contents->GetAccessibilityMode();
+  // Flip the bits represented by |mode|. See accessibility_mode_enums.h for
+  // values.
+  current_mode ^= mode;
+  web_contents->SetAccessibilityMode(current_mode);
 }
 
 void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {

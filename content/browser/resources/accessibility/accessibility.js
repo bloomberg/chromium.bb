@@ -5,6 +5,14 @@
 cr.define('accessibility', function() {
   'use strict';
 
+  // Note: keep these values in sync with the values in
+  // content/common/accessibility_mode_enums.h
+  const MODE_FLAG_NATIVE_APIS = 1 << 0;
+  const MODE_FLAG_WEB_CONTENTS = 1 << 1;
+  const MODE_FLAG_INLINE_TEXT_BOXES = 1 << 2;
+  const MODE_FLAG_SCREEN_READER = 1 << 3;
+  const MODE_FLAG_HTML = 1 << 4;
+
   function requestData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'targets-data.json', false);
@@ -16,23 +24,10 @@ cr.define('accessibility', function() {
     return [];
   }
 
-  // TODO(aboxhall): add a mechanism to request individual and global a11y
-  // mode, xhr them on toggle... or just re-requestData and be smarter about
-  // ID-ing rows?
-
-  function toggleAccessibility(data, element) {
+  function toggleAccessibility(data, element, mode) {
     chrome.send('toggleAccessibility',
-                [String(data.processId), String(data.routeId)]);
-    var a11y_was_on = (element.textContent.match(/on/) != null);
-    element.textContent = ' accessibility ' + (a11y_was_on ? ' off' : ' on');
-    var row = element.parentElement;
-    if (a11y_was_on) {
-      while (row.lastChild != element)
-        row.removeChild(row.lastChild);
-    } else {
-      row.appendChild(document.createTextNode(' | '));
-      row.appendChild(createShowAccessibilityTreeElement(data, row, false));
-    }
+                [String(data.processId), String(data.routeId), mode]);
+    document.location.reload();
   }
 
   function requestAccessibilityTree(data, element) {
@@ -68,7 +63,7 @@ cr.define('accessibility', function() {
     }
     $(name).addEventListener('change', function() {
       chrome.send('setGlobalFlag', [name, $(name).checked]);
-      document.location.reload(); // FIXME see TODO above
+      document.location.reload();
     });
   }
 
@@ -94,24 +89,30 @@ cr.define('accessibility', function() {
         return;
       }
     }
+
+    var siteInfo = document.createElement('div');
     var properties = ['favicon_url', 'name', 'url'];
     for (var j = 0; j < properties.length; j++)
-      row.appendChild(formatValue(data, properties[j]));
+      siteInfo.appendChild(formatValue(data, properties[j]));
+    row.appendChild(siteInfo);
 
-    row.appendChild(createToggleAccessibilityElement(data));
-    if (data['a11y_mode']) {
-      row.appendChild(document.createTextNode(' | '));
-      if ('tree' in data) {
-        row.appendChild(createShowAccessibilityTreeElement(data, row, true));
-        row.appendChild(document.createTextNode(' | '));
-        row.appendChild(createHideAccessibilityTreeElement(row.id));
-        row.appendChild(createAccessibilityTreeElement(data));
-      }
-      else {
-        row.appendChild(createShowAccessibilityTreeElement(data, row, false));
-        if ('error' in data)
-          row.appendChild(createErrorMessageElement(data, row));
-      }
+    row.appendChild(createModeElement(MODE_FLAG_NATIVE_APIS, data))
+    row.appendChild(createModeElement(MODE_FLAG_WEB_CONTENTS, data))
+    row.appendChild(createModeElement(MODE_FLAG_INLINE_TEXT_BOXES, data))
+    row.appendChild(createModeElement(MODE_FLAG_SCREEN_READER, data))
+    row.appendChild(createModeElement(MODE_FLAG_HTML, data))
+
+    row.appendChild(document.createTextNode(' | '));
+
+    if ('tree' in data) {
+      row.appendChild(createShowAccessibilityTreeElement(data, row, true));
+      row.appendChild(createHideAccessibilityTreeElement(row.id));
+      row.appendChild(createAccessibilityTreeElement(data));
+    }
+    else {
+      row.appendChild(createShowAccessibilityTreeElement(data, row, false));
+      if ('error' in data)
+        row.appendChild(createErrorMessageElement(data, row));
     }
   }
 
@@ -136,14 +137,32 @@ cr.define('accessibility', function() {
     return span;
   }
 
-  function createToggleAccessibilityElement(data) {
+  function getNameForAccessibilityMode(mode) {
+    switch (mode) {
+      case MODE_FLAG_NATIVE_APIS:
+        return "native"
+      case MODE_FLAG_WEB_CONTENTS:
+        return "web"
+      case MODE_FLAG_INLINE_TEXT_BOXES:
+        return "inline text"
+      case MODE_FLAG_SCREEN_READER:
+        return "screen reader"
+      case MODE_FLAG_HTML:
+        return "html"
+    }
+    return "unknown"
+  }
+
+  function createModeElement(mode, data) {
+    var currentMode = data['a11y_mode'];
     var link = document.createElement('a', 'action-link');
     link.setAttribute('role', 'button');
-    var full_a11y_on = data['a11y_mode'];
-    link.textContent = 'accessibility ' + (full_a11y_on ? 'on' : 'off');
-    link.setAttribute('aria-pressed', (full_a11y_on ? 'true' : 'false'));
+
+    var stateText = ((currentMode & mode) != 0) ? 'true' : 'false';
+    link.textContent = getNameForAccessibilityMode(mode) + ": " + stateText;
+    link.setAttribute('aria-pressed', stateText);
     link.addEventListener('click',
-                          toggleAccessibility.bind(this, data, link));
+                          toggleAccessibility.bind(this, data, link, mode));
     return link;
   }
 

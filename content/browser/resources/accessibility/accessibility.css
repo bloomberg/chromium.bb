@@ -57,6 +57,10 @@ p {
   color: #696969;
 }
 
+a {
+  margin: 10px 20px;
+}
+
 label {
   margin: 0 0 2px 0;
   padding: 0;
