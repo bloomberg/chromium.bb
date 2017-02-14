@@ -20,11 +20,8 @@
 
 // https://html.spec.whatwg.org/#the-object-element
 
-// TODO(foolip): HTMLObjectElement should not have
-// [Custom=LegacyCallAsFunction]. https://crbug.com/663662
 // TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
 [
-    Custom=LegacyCallAsFunction,
     OverrideBuiltins,
 ] interface HTMLObjectElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute DOMString data;

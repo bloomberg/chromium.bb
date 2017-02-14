@@ -160,8 +160,6 @@ class CORE_EXPORT UseCounter {
     DOMNodeInsertedIntoDocumentEvent = 147,
     DOMCharacterDataModifiedEvent = 148,
     DocumentAllLegacyCall = 150,
-    HTMLEmbedElementLegacyCall = 152,
-    HTMLObjectElementLegacyCall = 153,
     GetMatchedCSSRules = 155,
     PrefixedAudioDecodedByteCount = 164,
     PrefixedVideoDecodedByteCount = 165,

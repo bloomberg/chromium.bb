@@ -382,13 +382,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::VRDeprecatedGetPose:
       return replacedBy("VRDisplay.getPose()", "VRDisplay.getFrameData()");
 
-    case UseCounter::HTMLEmbedElementLegacyCall:
-      return willBeRemoved("HTMLEmbedElement legacy caller", M58,
-                           "5715026367217664");
-
-    case UseCounter::HTMLObjectElementLegacyCall:
-      return willBeRemoved("HTMLObjectElement legacy caller", M58,
-                           "5715026367217664");
     case UseCounter::
         ServiceWorkerRespondToNavigationRequestWithRedirectedResponse:
       return String::format(
