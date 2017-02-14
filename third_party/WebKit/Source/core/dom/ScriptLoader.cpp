@@ -220,14 +220,20 @@ bool ScriptLoader::isScriptTypeSupported(
                                       supportLegacyTypes);
 }
 
-// http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
+// https://html.spec.whatwg.org/#prepare-a-script
 bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
                                  LegacyTypeSupport supportLegacyTypes) {
+  // 1. "If the script element is marked as having "already started", then
+  //     abort these steps at this point. The script is not executed."
   if (m_alreadyStarted)
     return false;
 
   ScriptLoaderClient* client = this->client();
 
+  // 2. "If the element has its "parser-inserted" flag set, then
+  //     set was-parser-inserted to true and unset the element's
+  //     "parser-inserted" flag.
+  //     Otherwise, set was-parser-inserted to false."
   bool wasParserInserted;
   if (m_parserInserted) {
     wasParserInserted = true;
@@ -236,44 +242,75 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     wasParserInserted = false;
   }
 
+  // 3. "If was-parser-inserted is true and the element does not have an
+  //     async attribute, then set the element's "non-blocking" flag to true."
   if (wasParserInserted && !client->asyncAttributeValue())
     m_nonBlocking = true;
 
+  // 4. "If the element has no src attribute, and its child nodes, if any,
+  //     consist only of comment nodes and empty Text nodes,
+  //     then abort these steps at this point. The script is not executed."
   // FIXME: HTML5 spec says we should check that all children are either
   // comments or empty text nodes.
   if (!client->hasSourceAttribute() && !m_element->hasChildren())
     return false;
 
+  // 5. "If the element is not connected, then abort these steps.
+  //     The script is not executed."
   if (!m_element->isConnected())
     return false;
 
+  // 6.
+  // TODO(hiroshige): Annotate and/or cleanup this step.
   if (!isScriptTypeSupported(supportLegacyTypes))
     return false;
 
+  // 7. "If was-parser-inserted is true,
+  //     then flag the element as "parser-inserted" again,
+  //     and set the element's "non-blocking" flag to false."
   if (wasParserInserted) {
     m_parserInserted = true;
     m_nonBlocking = false;
   }
 
+  // 8. "Set the element's "already started" flag."
   m_alreadyStarted = true;
 
+  // 9. "If the element is flagged as "parser-inserted", but the element's
+  // node document is not the Document of the parser that created the element,
+  // then abort these steps."
   // FIXME: If script is parser inserted, verify it's still in the original
   // document.
   Document& elementDocument = m_element->document();
   Document* contextDocument = elementDocument.contextDocument();
-
-  if (!contextDocument || !contextDocument->allowExecutingScripts(m_element))
+  if (!contextDocument)
     return false;
 
+  // 10. "If scripting is disabled for the script element, then abort these
+  //      steps at this point. The script is not executed."
+  if (!contextDocument->allowExecutingScripts(m_element))
+    return false;
+
+  // 13.
   if (!isScriptForEventSupported())
     return false;
 
+  // 14. "If the script element has a charset attribute,
+  //      then let encoding be the result of
+  //      getting an encoding from the value of the charset attribute."
+  //     "If the script element does not have a charset attribute,
+  //      or if getting an encoding failed, let encoding
+  //      be the same as the encoding of the script element's node document."
+  // TODO(hiroshige): Should we handle failure in getting an encoding?
   String encoding;
   if (!client->charsetAttributeValue().isEmpty())
     encoding = client->charsetAttributeValue();
   else
     encoding = elementDocument.characterSet();
 
+  // Steps 15--20 are handled in fetchScript().
+
+  // 21. "If the element has a src content attribute, run these substeps:"
   if (client->hasSourceAttribute()) {
     FetchRequest::DeferOption defer = FetchRequest::NoDefer;
     if (!m_parserInserted || client->asyncAttributeValue() ||
@@ -286,6 +323,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
       return false;
   }
 
+  // [Intervention]
   // Since the asynchronous, low priority fetch for doc.written blocked
   // script is not for execution, return early from here. Watch for its
   // completion to be able to remove it from the memory cache.
@@ -296,26 +334,109 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     return true;
   }
 
+  // 23. "Then, follow the first of the following options that describes the
+  //      situation:"
+
+  // Three flags are used to instruct the caller of prepareScript() to execute
+  // a part of Step 23, when |m_willBeParserExecuted| is true:
+  // - |m_willBeParserExecuted|
+  // - |m_willExecuteWhenDocumentFinishedParsing|
+  // - |m_readyToBeParserExecuted|
+  // TODO(hiroshige): Clean up the dependency.
+
+  // 1st Clause:
+  // - "If the script's type is "classic", and
+  //    the element has a src attribute, and the element has a defer attribute,
+  //    and the element has been flagged as "parser-inserted",
+  //    and the element does not have an async attribute"
+  // TODO(hiroshige): Check the script's type and implement "module" case.
   if (client->hasSourceAttribute() && client->deferAttributeValue() &&
       m_parserInserted && !client->asyncAttributeValue()) {
+    // This clause is implemented by the caller-side of prepareScript():
+    // - HTMLParserScriptRunner::requestDeferredScript(), and
+    // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
     m_willExecuteWhenDocumentFinishedParsing = true;
     m_willBeParserExecuted = true;
-  } else if (client->hasSourceAttribute() && m_parserInserted &&
-             !client->asyncAttributeValue()) {
+
+    return true;
+  }
+
+  // 2nd Clause:
+  // - "If the script's type is "classic",
+  //    and the element has a src attribute,
+  //    and the element has been flagged as "parser-inserted",
+  //    and the element does not have an async attribute"
+  // TODO(hiroshige): Check the script's type.
+  if (client->hasSourceAttribute() && m_parserInserted &&
+      !client->asyncAttributeValue()) {
+    // This clause is implemented by the caller-side of prepareScript():
+    // - HTMLParserScriptRunner::requestParsingBlockingScript()
+    // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
     m_willBeParserExecuted = true;
-  } else if (!client->hasSourceAttribute() && m_parserInserted &&
-             !elementDocument.isScriptExecutionReady()) {
+
+    return true;
+  }
+
+  // 5th Clause:
+  // TODO(hiroshige): Reorder the clauses to match the spec.
+  // - "If the element does not have a src attribute,
+  //    and the element has been flagged as "parser-inserted",
+  //    and either the parser that created the script is an XML parser
+  //      or it's an HTML parser whose script nesting level is not greater than
+  //      one,
+  //    and the Document of the HTML parser or XML parser that created
+  //      the script element has a style sheet that is blocking scripts"
+  // The last part "... has a style sheet that is blocking scripts"
+  // is implemented in Document::isScriptExecutionReady().
+  // Part of the condition check is done in
+  // HTMLParserScriptRunner::processScriptElementInternal().
+  // TODO(hiroshige): Clean up the split condition check.
+  if (!client->hasSourceAttribute() && m_parserInserted &&
+      !elementDocument.isScriptExecutionReady()) {
+    // The former part of this clause is
+    // implemented by the caller-side of prepareScript():
+    // - HTMLParserScriptRunner::requestParsingBlockingScript()
+    // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
     m_willBeParserExecuted = true;
+    // "Set the element's "ready to be parser-executed" flag."
     m_readyToBeParserExecuted = true;
-  } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() &&
-             !m_nonBlocking) {
+
+    return true;
+  }
+
+  // 3rd Clause:
+  // - "If the script's type is "classic",
+  //    and the element has a src attribute,
+  //    and the element does not have an async attribute,
+  //    and the element does not have the "non-blocking" flag set"
+  // TODO(hiroshige): Check the script's type and implement "module" case.
+  if (client->hasSourceAttribute() && !client->asyncAttributeValue() &&
+      !m_nonBlocking) {
+    // "Add the element to the end of the list of scripts that will execute
+    // in order as soon as possible associated with the node document of the
+    // script element at the time the prepare a script algorithm started."
     m_pendingScript = PendingScript::create(m_element, m_resource.get());
     m_asyncExecType = ScriptRunner::InOrder;
+    // TODO(hiroshige): Here |contextDocument| is used as "node document"
+    // while Step 14 uses |elementDocument| as "node document". Fix this.
     contextDocument->scriptRunner()->queueScriptForExecution(this,
                                                              m_asyncExecType);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     m_pendingScript->watchForLoad(this);
-  } else if (client->hasSourceAttribute()) {
+    // The part "When the script is ready..." is implemented in
+    // ScriptRunner::notifyScriptReady().
+    // TODO(hiroshige): Annotate it.
+
+    return true;
+  }
+
+  // 4th Clause:
+  // - "If the script's type is "classic", and the element has a src attribute"
+  // TODO(hiroshige): Check the script's type and implement "module" case.
+  if (client->hasSourceAttribute()) {
+    // "The element must be added to the set of scripts that will execute
+    //  as soon as possible of the node document of the script element at the
+    //  time the prepare a script algorithm started."
     m_pendingScript = PendingScript::create(m_element, m_resource.get());
     m_asyncExecType = ScriptRunner::Async;
     LocalFrame* frame = m_element->document().frame();
@@ -326,28 +447,43 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
             m_pendingScript.get(), ScriptStreamer::Async, frame->settings(),
             scriptState, frame->frameScheduler()->loadingTaskRunner());
     }
+    // TODO(hiroshige): Here |contextDocument| is used as "node document"
+    // while Step 14 uses |elementDocument| as "node document". Fix this.
     contextDocument->scriptRunner()->queueScriptForExecution(this,
                                                              m_asyncExecType);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     m_pendingScript->watchForLoad(this);
-  } else {
-    // Reset line numbering for nested writes.
-    TextPosition position = elementDocument.isInDocumentWrite()
-                                ? TextPosition()
-                                : scriptStartPosition;
-    KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted)
-                         ? elementDocument.url()
-                         : KURL();
-    if (!executeScript(
-            ScriptSourceCode(scriptContent(), scriptURL, position))) {
-      dispatchErrorEvent();
-      return false;
-    }
+    // The part "When the script is ready..." is implemented in
+    // ScriptRunner::notifyScriptReady().
+    // TODO(hiroshige): Annotate it.
+
+    return true;
+  }
+
+  // 6th Clause:
+  // - "Otherwise"
+  // "Immediately execute the script block,
+  //  even if other scripts are already executing."
+  // Note: this block is also duplicated in
+  // HTMLParserScriptRunner::processScriptElementInternal().
+  // TODO(hiroshige): Merge the duplicated code.
+
+  // Reset line numbering for nested writes.
+  TextPosition position = elementDocument.isInDocumentWrite()
+                              ? TextPosition()
+                              : scriptStartPosition;
+  KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted)
+                       ? elementDocument.url()
+                       : KURL();
+  if (!executeScript(ScriptSourceCode(scriptContent(), scriptURL, position))) {
+    dispatchErrorEvent();
+    return false;
   }
 
   return true;
 }
 
+// Steps 15--21 of https://html.spec.whatwg.org/#prepare-a-script
 bool ScriptLoader::fetchScript(const String& sourceUrl,
                                const String& encoding,
                                FetchRequest::DeferOption defer) {
@@ -632,16 +768,30 @@ bool ScriptLoader::ignoresLoadRequest() const {
          !element() || !element()->isConnected();
 }
 
+// Step 13 of https://html.spec.whatwg.org/#prepare-a-script
 bool ScriptLoader::isScriptForEventSupported() const {
+  // 1. "Let for be the value of the for attribute."
   String eventAttribute = client()->eventAttributeValue();
+  // 2. "Let event be the value of the event attribute."
   String forAttribute = client()->forAttributeValue();
+
+  // "If the script element has an event attribute and a for attribute, and
+  //  the script's type is "classic", then run these substeps:"
+  // TODO(hiroshige): Check the script's type.
   if (eventAttribute.isNull() || forAttribute.isNull())
     return true;
 
+  // 3. "Strip leading and trailing ASCII whitespace from event and for."
   forAttribute = forAttribute.stripWhiteSpace();
+  // 4. "If for is not an ASCII case-insensitive match for the string
+  //     "window",
+  //     then abort these steps at this point. The script is not executed."
   if (!equalIgnoringCase(forAttribute, "window"))
     return false;
   eventAttribute = eventAttribute.stripWhiteSpace();
+  // 5. "If event is not an ASCII case-insensitive match for either the
+  //     string "onload" or the string "onload()",
+  //     then abort these steps at this point. The script is not executed.
   return equalIgnoringCase(eventAttribute, "onload") ||
          equalIgnoringCase(eventAttribute, "onload()");
 }

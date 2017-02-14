@@ -438,7 +438,11 @@ bool HTMLParserScriptRunner::executeScriptsWaitingForParsing() {
   return true;
 }
 
+// 2nd Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
 void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
+  // "The element is the pending parsing-blocking script of the Document of
+  //  the parser that created the element.
+  //  (There can only be one such script per Document at a time.)"
   if (!requestPendingScript(m_parserBlockingScript.get(), element))
     return;
 
@@ -462,6 +466,7 @@ void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
   }
 }
 
+// 1st Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
 void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
   PendingScript* pendingScript = PendingScript::create(nullptr, nullptr);
   if (!requestPendingScript(pendingScript, element))
@@ -478,6 +483,10 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
   }
 
   DCHECK(pendingScript->resource());
+
+  // "Add the element to the end of the list of scripts that will execute
+  //  when the document has finished parsing associated with the Document
+  //  of the parser that created the element."
   m_scriptsToExecuteAfterParsing.append(pendingScript);
 }
 
@@ -525,16 +534,28 @@ void HTMLParserScriptRunner::processScriptElementInternal(
 
     scriptLoader->prepareScript(scriptStartPosition);
 
+    // A part of Step 23 of https://html.spec.whatwg.org/#prepare-a-script:
     if (!scriptLoader->willBeParserExecuted())
       return;
 
     if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
+      // 1st Clause of Step 23.
       requestDeferredScript(script);
     } else if (scriptLoader->readyToBeParserExecuted()) {
+      // 5th Clause of Step 23.
+      // "If ... it's an HTML parser
+      //  whose script nesting level is not greater than one"
       if (m_reentryPermit->scriptNestingLevel() == 1u) {
+        // "The element is the pending parsing-blocking script of the
+        //  Document of the parser that created the element.
+        //  (There can only be one such script per Document at a time.)"
         m_parserBlockingScript->setElement(script);
         m_parserBlockingScript->setStartingPosition(scriptStartPosition);
       } else {
+        // 6th Clause of Step 23.
+        // "Immediately execute the script block,
+        //  even if other scripts are already executing."
+        // TODO(hiroshige): Merge the block into ScriptLoader::prepareScript().
         DCHECK_GT(m_reentryPermit->scriptNestingLevel(), 1u);
         m_parserBlockingScript->dispose();
         ScriptSourceCode sourceCode(script->textContent(),
@@ -543,6 +564,7 @@ void HTMLParserScriptRunner::processScriptElementInternal(
         doExecuteScript(script, sourceCode, scriptStartPosition);
       }
     } else {
+      // 2nd Clause of Step 23.
       requestParsingBlockingScript(script);
     }
   }

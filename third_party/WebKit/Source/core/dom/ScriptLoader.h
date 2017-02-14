@@ -64,6 +64,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
       const String& languageAttributeValue,
       LegacyTypeSupport supportLegacyTypes);
 
+  // https://html.spec.whatwg.org/#prepare-a-script
   bool prepareScript(
       const TextPosition& scriptStartPosition = TextPosition::minimumPosition(),
       LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
