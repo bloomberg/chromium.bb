@@ -39,7 +39,7 @@ void AssociatedBindingBase::set_connection_error_with_reason_handler(
 }
 
 void AssociatedBindingBase::FlushForTesting() {
-  endpoint_client_->control_message_proxy()->FlushForTesting();
+  endpoint_client_->FlushForTesting();
 }
 
 void AssociatedBindingBase::BindImpl(
@@ -49,11 +49,7 @@ void AssociatedBindingBase::BindImpl(
     bool expect_sync_requests,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     uint32_t interface_version) {
-  DCHECK(handle.is_local())
-      << "The AssociatedInterfaceRequest is supposed to be used at the "
-      << "other side of the message pipe.";
-
-  if (!handle.is_valid() || !handle.is_local()) {
+  if (!handle.is_valid()) {
     endpoint_client_.reset();
     return;
   }

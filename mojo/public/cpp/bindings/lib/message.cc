@@ -180,10 +180,9 @@ void Message::SerializeAssociatedEndpointHandles(
   for (size_t i = 0; i < size; ++i) {
     ScopedInterfaceEndpointHandle& handle = associated_endpoint_handles_[i];
 
-    DCHECK(handle.is_valid());
-    DCHECK(!handle.is_local());
-    DCHECK_EQ(group_controller, handle.group_controller());
-    data->storage()[i] = handle.release();
+    DCHECK(handle.pending_association());
+    data->storage()[i] =
+        group_controller->AssociateInterface(std::move(handle));
   }
   associated_endpoint_handles_.clear();
 }

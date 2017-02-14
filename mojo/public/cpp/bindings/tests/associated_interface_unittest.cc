@@ -106,12 +106,13 @@ class AssociatedInterfaceTest : public testing::Test {
   template <typename T>
   AssociatedInterfacePtrInfo<T> EmulatePassingAssociatedPtrInfo(
       AssociatedInterfacePtrInfo<T> ptr_info,
+      scoped_refptr<MultiplexRouter> source,
       scoped_refptr<MultiplexRouter> target) {
     ScopedInterfaceEndpointHandle handle = ptr_info.PassHandle();
-    CHECK(!handle.is_local());
-    return AssociatedInterfacePtrInfo<T>(
-        target->CreateLocalEndpointHandle(handle.release()),
-        ptr_info.version());
+    CHECK(handle.pending_association());
+    auto id = source->AssociateInterface(std::move(handle));
+    return AssociatedInterfacePtrInfo<T>(target->CreateLocalEndpointHandle(id),
+                                         ptr_info.version());
   }
 
   void CreateRouterPair(scoped_refptr<MultiplexRouter>* router0,
@@ -130,10 +131,11 @@ class AssociatedInterfaceTest : public testing::Test {
       IntegerSenderAssociatedPtrInfo* ptr_info0,
       scoped_refptr<MultiplexRouter> router1,
       IntegerSenderAssociatedRequest* request1) {
-    router1->CreateAssociatedGroup()->CreateAssociatedInterface(
-        AssociatedGroup::WILL_PASS_PTR, ptr_info0, request1);
-    *ptr_info0 =
-        EmulatePassingAssociatedPtrInfo(std::move(*ptr_info0), router0);
+    AssociatedGroup dummy_group;
+    dummy_group.CreateAssociatedInterface(AssociatedGroup::WILL_PASS_PTR,
+                                          ptr_info0, request1);
+    *ptr_info0 = EmulatePassingAssociatedPtrInfo(std::move(*ptr_info0), router1,
+                                                 router0);
   }
 
   void CreateIntegerSender(IntegerSenderAssociatedPtrInfo* ptr_info,
@@ -950,6 +952,30 @@ TEST_F(AssociatedInterfaceTest, AssociatedBindingConnectionErrorWithReason) {
   run_loop.Run();
 }
 
+TEST_F(AssociatedInterfaceTest,
+       PendingAssociatedBindingConnectionErrorWithReason) {
+  // Test that AssociatedBinding is notified with connection error when the
+  // interface hasn't associated with a message pipe and the peer is closed.
+
+  AssociatedGroup dummy_group;
+  IntegerSenderAssociatedPtr ptr;
+  IntegerSenderImpl impl(MakeRequest(&ptr, &dummy_group));
+
+  base::RunLoop run_loop;
+  impl.binding()->set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(123u, custom_reason);
+        EXPECT_EQ("farewell", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  ptr.ResetWithReason(123u, "farewell");
+
+  run_loop.Run();
+}
+
 TEST_F(AssociatedInterfaceTest, AssociatedPtrConnectionErrorWithReason) {
   AssociatedInterfaceRequest<IntegerSender> request;
   IntegerSenderAssociatedPtrInfo ptr_info;
@@ -970,6 +996,29 @@ TEST_F(AssociatedInterfaceTest, AssociatedPtrConnectionErrorWithReason) {
       run_loop.QuitClosure()));
 
   impl.binding()->CloseWithReason(456u, "farewell");
+
+  run_loop.Run();
+}
+
+TEST_F(AssociatedInterfaceTest, PendingAssociatedPtrConnectionErrorWithReason) {
+  // Test that AssociatedInterfacePtr is notified with connection error when the
+  // interface hasn't associated with a message pipe and the peer is closed.
+
+  AssociatedGroup dummy_group;
+  IntegerSenderAssociatedPtr ptr;
+  auto request = MakeRequest(&ptr, &dummy_group);
+
+  base::RunLoop run_loop;
+  ptr.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(456u, custom_reason);
+        EXPECT_EQ("farewell", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  request.ResetWithReason(456u, "farewell");
 
   run_loop.Run();
 }

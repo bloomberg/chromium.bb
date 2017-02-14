@@ -74,12 +74,7 @@ class AssociatedInterfacePtr {
                 base::ThreadTaskRunnerHandle::Get()) {
     reset();
 
-    bool is_local = info.handle().is_local();
-
-    DCHECK(is_local) << "The AssociatedInterfacePtrInfo is supposed to be used "
-                        "at the other side of the message pipe.";
-
-    if (info.is_valid() && is_local)
+    if (info.is_valid())
       internal_state_.Bind(std::move(info), std::move(runner));
   }
 
@@ -93,9 +88,6 @@ class AssociatedInterfacePtr {
 
   // Returns the version number of the interface that the remote side supports.
   uint32_t version() const { return internal_state_.version(); }
-
-  // Returns the internal interface ID of this associated interface.
-  uint32_t interface_id() const { return internal_state_.interface_id(); }
 
   // Queries the max version that the remote side supports. On completion, the
   // result will be returned as the input of |callback|. The version number of
@@ -229,35 +221,6 @@ AssociatedInterfaceRequest<Interface> MakeRequest(
   return request;
 }
 
-// Creates an associated interface proxy in its own AssociatedGroup.
-template <typename Interface>
-AssociatedInterfaceRequest<Interface> MakeRequestForTesting(
-    AssociatedInterfacePtr<Interface>* ptr,
-    scoped_refptr<base::SingleThreadTaskRunner> runner =
-        base::ThreadTaskRunnerHandle::Get()) {
-  MessagePipe pipe;
-  using internal::MultiplexRouter;
-  scoped_refptr<MultiplexRouter> router0 = new MultiplexRouter(
-      std::move(pipe.handle0), MultiplexRouter::MULTI_INTERFACE, true, runner);
-  scoped_refptr<MultiplexRouter> router1 = new MultiplexRouter(
-      std::move(pipe.handle1), MultiplexRouter::MULTI_INTERFACE, false, runner);
-
-  AssociatedInterfacePtrInfo<Interface> ptr_info;
-  AssociatedInterfaceRequest<Interface> request;
-  router1->CreateAssociatedGroup()->CreateAssociatedInterface(
-      AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
-
-  // Emulate passing |ptr_info| across a pipe.
-  ScopedInterfaceEndpointHandle handle = ptr_info.PassHandle();
-  DCHECK(!handle.is_local());
-  ptr->Bind(AssociatedInterfacePtrInfo<Interface>(
-                router0->CreateLocalEndpointHandle(handle.release()),
-                ptr_info.version()),
-            std::move(runner));
-
-  return request;
-}
-
 // Like |GetProxy|, but the interface is never associated with any other
 // interface. The returned request can be bound directly to the corresponding
 // associated interface implementation, without first passing it through a
@@ -284,8 +247,10 @@ AssociatedInterfaceRequest<Interface> GetIsolatedProxy(
                                     true, base::ThreadTaskRunnerHandle::Get());
 
   ScopedInterfaceEndpointHandle endpoint0, endpoint1;
-  router0->CreateEndpointHandlePair(&endpoint0, &endpoint1);
-  endpoint1 = router1->CreateLocalEndpointHandle(endpoint1.release());
+  ScopedInterfaceEndpointHandle::CreatePairPendingAssociation(&endpoint0,
+                                                              &endpoint1);
+  InterfaceId id = router1->AssociateInterface(std::move(endpoint0));
+  endpoint0 = router0->CreateLocalEndpointHandle(id);
 
   ptr->Bind(AssociatedInterfacePtrInfo<Interface>(std::move(endpoint0),
                                                   Interface::Version_));
@@ -293,6 +258,15 @@ AssociatedInterfaceRequest<Interface> GetIsolatedProxy(
   AssociatedInterfaceRequest<Interface> request;
   request.Bind(std::move(endpoint1));
   return request;
+}
+
+// Creates an associated interface proxy in its own AssociatedGroup.
+// TODO(yzshen): Rename GetIsolatedProxy() to MakeIsolatedRequest(), and change
+// all callsites of this function to directly use that.
+template <typename Interface>
+AssociatedInterfaceRequest<Interface> MakeRequestForTesting(
+    AssociatedInterfacePtr<Interface>* ptr) {
+  return GetIsolatedProxy(ptr);
 }
 
 }  // namespace mojo

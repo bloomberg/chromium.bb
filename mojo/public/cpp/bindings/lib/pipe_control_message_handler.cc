@@ -81,11 +81,6 @@ bool PipeControlMessageHandler::RunOrClosePipe(Message* message) {
     }
     return delegate_->OnPeerAssociatedEndpointClosed(event->id, reason);
   }
-  if (params_ptr->input->is_associated_endpoint_closed_before_sent_event()) {
-    return delegate_->OnAssociatedEndpointClosedBeforeSent(
-        params_ptr->input->get_associated_endpoint_closed_before_sent_event()
-            ->id);
-  }
 
   DVLOG(1) << "Unsupported command in a RunOrClosePipe message pipe control "
            << "message. Closing the pipe.";

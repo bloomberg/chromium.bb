@@ -399,7 +399,8 @@ ChannelMojo::CreateThreadSafeChannel() {
       task_runner_, base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr,
                                weak_factory_.GetWeakPtr()),
       base::Bind(&ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      *bootstrap_->GetAssociatedGroup());
 }
 
 void ChannelMojo::OnPeerPidReceived(int32_t peer_pid) {

@@ -48,20 +48,6 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(
   ALLOW_UNUSED_LOCAL(ok);
 }
 
-void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
-  DCHECK(!IsMasterInterfaceId(id));
-
-  auto event = pipe_control::AssociatedEndpointClosedBeforeSentEvent::New();
-  event->id = id;
-
-  auto input = pipe_control::RunOrClosePipeInput::New();
-  input->set_associated_endpoint_closed_before_sent_event(std::move(event));
-
-  Message message(ConstructRunOrClosePipeMessage(std::move(input)));
-  bool ok = receiver_->Accept(&message);
-  ALLOW_UNUSED_LOCAL(ok);
-}
-
 // static
 Message PipeControlMessageProxy::ConstructPeerEndpointClosedMessage(
     InterfaceId id,

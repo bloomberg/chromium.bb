@@ -36,7 +36,7 @@ struct Serializer<AssociatedInterfacePtrInfoDataView<Base>,
   static void Serialize(AssociatedInterfacePtrInfo<T>& input,
                         AssociatedInterface_Data* output,
                         SerializationContext* context) {
-    DCHECK(!input.handle().is_valid() || !input.handle().is_local());
+    DCHECK(!input.handle().is_valid() || input.handle().pending_association());
     if (input.handle().is_valid()) {
       // Set to the index of the element pushed to the back of the vector.
       output->handle.value =
@@ -79,7 +79,7 @@ struct Serializer<AssociatedInterfaceRequestDataView<Base>,
   static void Serialize(AssociatedInterfaceRequest<T>& input,
                         AssociatedEndpointHandle_Data* output,
                         SerializationContext* context) {
-    DCHECK(!input.handle().is_valid() || !input.handle().is_local());
+    DCHECK(!input.handle().is_valid() || input.handle().pending_association());
     if (input.handle().is_valid()) {
       // Set to the index of the element pushed to the back of the vector.
       output->value =

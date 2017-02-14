@@ -19,7 +19,6 @@ class PipeControlMessageHandlerDelegate {
   virtual bool OnPeerAssociatedEndpointClosed(
       InterfaceId id,
       const base::Optional<DisconnectReason>& reason) = 0;
-  virtual bool OnAssociatedEndpointClosedBeforeSent(InterfaceId id) = 0;
 
  protected:
   virtual ~PipeControlMessageHandlerDelegate() {}

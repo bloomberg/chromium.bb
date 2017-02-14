@@ -86,12 +86,9 @@ class InterfaceRequest {
     if (!handle_.is_valid())
       return;
 
-    base::Optional<DisconnectReason> reason;
-    reason.emplace(custom_reason, description);
-
     Message message =
         PipeControlMessageProxy::ConstructPeerEndpointClosedMessage(
-            kMasterInterfaceId, reason);
+            kMasterInterfaceId, DisconnectReason(custom_reason, description));
     MojoResult result = WriteMessageNew(
         handle_.get(), message.TakeMojoMessage(), MOJO_WRITE_MESSAGE_FLAG_NONE);
     DCHECK_EQ(MOJO_RESULT_OK, result);

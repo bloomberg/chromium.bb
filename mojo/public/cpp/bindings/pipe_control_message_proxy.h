@@ -28,7 +28,6 @@ class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageProxy {
 
   void NotifyPeerEndpointClosed(InterfaceId id,
                                 const base::Optional<DisconnectReason>& reason);
-  void NotifyEndpointClosedBeforeSent(InterfaceId id);
 
   static Message ConstructPeerEndpointClosedMessage(
       InterfaceId id,

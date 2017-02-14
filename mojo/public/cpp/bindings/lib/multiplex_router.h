@@ -86,14 +86,12 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // The following public methods are safe to call from any threads.
 
   // AssociatedGroupController implementation:
-  void CreateEndpointHandlePair(
-      ScopedInterfaceEndpointHandle* local_endpoint,
-      ScopedInterfaceEndpointHandle* remote_endpoint) override;
+  InterfaceId AssociateInterface(
+      ScopedInterfaceEndpointHandle handle_to_send) override;
   ScopedInterfaceEndpointHandle CreateLocalEndpointHandle(
       InterfaceId id) override;
   void CloseEndpointHandle(
       InterfaceId id,
-      bool is_local,
       const base::Optional<DisconnectReason>& reason) override;
   InterfaceEndpointController* AttachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle,
@@ -166,7 +164,6 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   bool OnPeerAssociatedEndpointClosed(
       InterfaceId id,
       const base::Optional<DisconnectReason>& reason) override;
-  bool OnAssociatedEndpointClosedBeforeSent(InterfaceId id) override;
 
   void OnPipeConnectionError();
 

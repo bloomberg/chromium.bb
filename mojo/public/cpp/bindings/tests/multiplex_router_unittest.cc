@@ -37,22 +37,15 @@ class MultiplexRouterTest : public testing::Test {
     router1_ = new MultiplexRouter(std::move(pipe.handle1),
                                    MultiplexRouter::MULTI_INTERFACE, true,
                                    base::ThreadTaskRunnerHandle::Get());
-    router0_->CreateEndpointHandlePair(&endpoint0_, &endpoint1_);
-    endpoint1_ =
-        EmulatePassingEndpointHandle(std::move(endpoint1_), router1_.get());
+    ScopedInterfaceEndpointHandle::CreatePairPendingAssociation(&endpoint0_,
+                                                                &endpoint1_);
+    auto id = router0_->AssociateInterface(std::move(endpoint1_));
+    endpoint1_ = router1_->CreateLocalEndpointHandle(id);
   }
 
   void TearDown() override {}
 
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
-
-  ScopedInterfaceEndpointHandle EmulatePassingEndpointHandle(
-      ScopedInterfaceEndpointHandle handle,
-      MultiplexRouter* target) {
-    CHECK(!handle.is_local());
-
-    return target->CreateLocalEndpointHandle(handle.release());
-  }
 
  protected:
   scoped_refptr<MultiplexRouter> router0_;

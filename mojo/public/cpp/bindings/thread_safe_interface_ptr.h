@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -37,13 +38,15 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
   // Any message sent through this forwarding interface will dispatch its reply,
   // if any, back to the thread which called the corresponding interface method.
   ThreadSafeForwarder(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const ForwardMessageCallback& forward,
-      const ForwardMessageWithResponderCallback& forward_with_responder)
+      const ForwardMessageWithResponderCallback& forward_with_responder,
+      const AssociatedGroup& associated_group)
       : proxy_(this),
         task_runner_(task_runner),
         forward_(forward),
-        forward_with_responder_(forward_with_responder) {}
+        forward_with_responder_(forward_with_responder),
+        associated_group_(associated_group) {}
 
   ~ThreadSafeForwarder() override {}
 
@@ -52,6 +55,19 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
  private:
   // MessageReceiverWithResponder implementation:
   bool Accept(Message* message) override {
+    if (!message->associated_endpoint_handles()->empty()) {
+      // If this DCHECK fails, it is likely because:
+      // - This is a non-associated interface pointer setup using
+      //     PtrWrapper::BindOnTaskRunner(
+      //         InterfacePtrInfo<InterfaceType> ptr_info);
+      //   Please see the TODO in that method.
+      // - This is an associated interface which hasn't been associated with a
+      //   message pipe. In other words, the corresponding
+      //   AssociatedInterfaceRequest hasn't been sent.
+      DCHECK(associated_group_.GetController());
+      message->SerializeAssociatedEndpointHandles(
+          associated_group_.GetController());
+    }
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(forward_, base::Passed(message)));
     return true;
@@ -59,6 +75,12 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
 
   bool AcceptWithResponder(Message* message,
                            MessageReceiver* response_receiver) override {
+    if (!message->associated_endpoint_handles()->empty()) {
+      // Please see comment for the DCHECK in the previous method.
+      DCHECK(associated_group_.GetController());
+      message->SerializeAssociatedEndpointHandles(
+          associated_group_.GetController());
+    }
     auto responder = base::MakeUnique<ForwardToCallingThread>(
         base::WrapUnique(response_receiver));
     task_runner_->PostTask(
@@ -97,9 +119,10 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
   };
 
   ProxyType proxy_;
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const ForwardMessageCallback forward_;
   const ForwardMessageWithResponderCallback forward_with_responder_;
+  AssociatedGroup associated_group_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadSafeForwarder);
 };
@@ -158,13 +181,27 @@ class ThreadSafeInterfacePtrBase
     explicit PtrWrapper(InterfacePtrType ptr)
         : PtrWrapper(base::ThreadTaskRunnerHandle::Get()) {
       ptr_ = std::move(ptr);
+      associated_group_ = *ptr_.internal_state()->associated_group();
     }
 
     explicit PtrWrapper(
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
         : task_runner_(task_runner) {}
 
-    void BindOnTaskRunner(PtrInfoType ptr_info) {
+    void BindOnTaskRunner(AssociatedInterfacePtrInfo<InterfaceType> ptr_info) {
+      associated_group_ = AssociatedGroup(ptr_info.handle());
+      task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
+                                                   base::Passed(&ptr_info)));
+    }
+
+    void BindOnTaskRunner(InterfacePtrInfo<InterfaceType> ptr_info) {
+      // TODO(yzhsen): At the momment we don't have a group controller
+      // available. That means the user won't be able to pass associated
+      // endpoints on this interface (at least not immediately). In order to fix
+      // this, we need to create a MultiplexRouter immediately and bind it to
+      // the interface pointer on the |task_runner_|. Therefore, MultiplexRouter
+      // should be able to be created on a thread different than the one that it
+      // is supposed to listen on. crbug.com/682334
       task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
                                                    base::Passed(&ptr_info)));
     }
@@ -172,7 +209,8 @@ class ThreadSafeInterfacePtrBase
     std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
       return base::MakeUnique<ThreadSafeForwarder<InterfaceType>>(
           task_runner_, base::Bind(&PtrWrapper::Accept, this),
-          base::Bind(&PtrWrapper::AcceptWithResponder, this));
+          base::Bind(&PtrWrapper::AcceptWithResponder, this),
+          associated_group_);
     }
 
    private:
@@ -208,7 +246,8 @@ class ThreadSafeInterfacePtrBase
     }
 
     InterfacePtrType ptr_;
-    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+    const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    AssociatedGroup associated_group_;
 
     DISALLOW_COPY_AND_ASSIGN(PtrWrapper);
   };

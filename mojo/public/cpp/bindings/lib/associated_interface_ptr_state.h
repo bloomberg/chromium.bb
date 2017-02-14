@@ -23,8 +23,6 @@
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
-#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -48,15 +46,10 @@ class AssociatedInterfacePtrState {
 
   uint32_t version() const { return version_; }
 
-  uint32_t interface_id() const {
-    DCHECK(is_bound());
-    return endpoint_client_->interface_id();
-  }
-
   void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     // It is safe to capture |this| because the callback won't be run after this
     // object goes away.
-    endpoint_client_->control_message_proxy()->QueryVersion(
+    endpoint_client_->QueryVersion(
         base::Bind(&AssociatedInterfacePtrState::OnQueryVersion,
                    base::Unretained(this), callback));
   }
@@ -66,12 +59,10 @@ class AssociatedInterfacePtrState {
       return;
 
     version_ = version;
-    endpoint_client_->control_message_proxy()->RequireVersion(version);
+    endpoint_client_->RequireVersion(version);
   }
 
-  void FlushForTesting() {
-    endpoint_client_->control_message_proxy()->FlushForTesting();
-  }
+  void FlushForTesting() { endpoint_client_->FlushForTesting(); }
 
   void CloseWithReason(uint32_t custom_reason, const std::string& description) {
     endpoint_client_->CloseWithReason(custom_reason, description);

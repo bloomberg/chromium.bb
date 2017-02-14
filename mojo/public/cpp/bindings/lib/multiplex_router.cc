@@ -141,7 +141,6 @@ class MultiplexRouter::InterfaceEndpoint
 
   bool SendMessage(Message* message) override {
     DCHECK(task_runner_->BelongsToCurrentThread());
-    message->SerializeAssociatedEndpointHandles(router_);
     message->set_interface_id(id_);
     return router_->connector_.Accept(message);
   }
@@ -400,8 +399,7 @@ MultiplexRouter::~MultiplexRouter() {
 
     if (!endpoint->closed()) {
       // This happens when a NotifyPeerEndpointClosed message been received, but
-      // (1) the interface ID hasn't been used to create local endpoint handle;
-      // and (2) a NotifyEndpointClosedBeforeSent hasn't been received.
+      // the interface ID hasn't been used to create local endpoint handle.
       DCHECK(!endpoint->client());
       DCHECK(endpoint->peer_closed());
       UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
@@ -422,27 +420,43 @@ void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   connector_.SetWatcherHeapProfilerTag(name);
 }
 
-void MultiplexRouter::CreateEndpointHandlePair(
-    ScopedInterfaceEndpointHandle* local_endpoint,
-    ScopedInterfaceEndpointHandle* remote_endpoint) {
-  MayAutoLock locker(lock_.get());
+InterfaceId MultiplexRouter::AssociateInterface(
+    ScopedInterfaceEndpointHandle handle_to_send) {
+  if (!handle_to_send.pending_association())
+    return kInvalidInterfaceId;
+
   uint32_t id = 0;
-  do {
-    if (next_interface_id_value_ >= kInterfaceIdNamespaceMask)
-      next_interface_id_value_ = 1;
-    id = next_interface_id_value_++;
-    if (set_interface_id_namespace_bit_)
-      id |= kInterfaceIdNamespaceMask;
-  } while (base::ContainsKey(endpoints_, id));
+  {
+    MayAutoLock locker(lock_.get());
+    do {
+      if (next_interface_id_value_ >= kInterfaceIdNamespaceMask)
+        next_interface_id_value_ = 1;
+      id = next_interface_id_value_++;
+      if (set_interface_id_namespace_bit_)
+        id |= kInterfaceIdNamespaceMask;
+    } while (base::ContainsKey(endpoints_, id));
 
-  InterfaceEndpoint* endpoint = new InterfaceEndpoint(this, id);
-  endpoints_[id] = endpoint;
-  if (encountered_error_)
-    UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
+    InterfaceEndpoint* endpoint = new InterfaceEndpoint(this, id);
+    endpoints_[id] = endpoint;
+    if (encountered_error_)
+      UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
+    endpoint->set_handle_created();
+  }
 
-  endpoint->set_handle_created();
-  *local_endpoint = CreateScopedInterfaceEndpointHandle(id, true);
-  *remote_endpoint = CreateScopedInterfaceEndpointHandle(id, false);
+  if (!NotifyAssociation(&handle_to_send, id)) {
+    // The peer handle of |handle_to_send|, which is supposed to join this
+    // associated group, has been closed.
+    {
+      MayAutoLock locker(lock_.get());
+      InterfaceEndpoint* endpoint = FindEndpoint(id);
+      if (endpoint)
+        UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
+    }
+
+    control_message_proxy_.NotifyPeerEndpointClosed(
+        id, handle_to_send.disconnect_reason());
+  }
+  return id;
 }
 
 ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
@@ -469,29 +483,16 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
   }
 
   endpoint->set_handle_created();
-  return CreateScopedInterfaceEndpointHandle(id, true);
+  return CreateScopedInterfaceEndpointHandle(id);
 }
 
 void MultiplexRouter::CloseEndpointHandle(
     InterfaceId id,
-    bool is_local,
     const base::Optional<DisconnectReason>& reason) {
   if (!IsValidInterfaceId(id))
     return;
 
   MayAutoLock locker(lock_.get());
-
-  if (!is_local) {
-    DCHECK(base::ContainsKey(endpoints_, id));
-    DCHECK(!IsMasterInterfaceId(id));
-
-    // We will receive a NotifyPeerEndpointClosed message from the other side.
-    MayAutoUnlock unlocker(lock_.get());
-    control_message_proxy_.NotifyEndpointClosedBeforeSent(id);
-
-    return;
-  }
-
   DCHECK(base::ContainsKey(endpoints_, id));
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   DCHECK(!endpoint->client());
@@ -677,22 +678,6 @@ bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
 
   // No need to trigger a ProcessTasks() because it is already on the stack.
 
-  return true;
-}
-
-bool MultiplexRouter::OnAssociatedEndpointClosedBeforeSent(InterfaceId id) {
-  if (IsMasterInterfaceId(id))
-    return false;
-
-  {
-    MayAutoLock locker(lock_.get());
-
-    InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, nullptr);
-    DCHECK(!endpoint->closed());
-    UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
-  }
-
-  control_message_proxy_.NotifyPeerEndpointClosed(id, base::nullopt);
   return true;
 }
 

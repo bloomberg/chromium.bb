@@ -18,23 +18,25 @@
 
 namespace mojo {
 
-class AssociatedGroup;
 class InterfaceEndpointClient;
 class InterfaceEndpointController;
 
-// An internal interface used to manage endpoints within an associated group.
+// An internal interface used to manage endpoints within an associated group,
+// which corresponds to one end of a message pipe.
 class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
     : public base::RefCountedThreadSafe<AssociatedGroupController> {
  public:
-  // Creates a pair of interface endpoint handles. The method generates a new
-  // interface ID and assigns it to the two handles. |local_endpoint| is used
-  // locally; while |remote_endpoint| is sent over the message pipe.
-  virtual void CreateEndpointHandlePair(
-      ScopedInterfaceEndpointHandle* local_endpoint,
-      ScopedInterfaceEndpointHandle* remote_endpoint) = 0;
+  // Associates an interface with this AssociatedGroupController's message pipe.
+  // It takes ownership of |handle_to_send| and returns an interface ID that
+  // could be sent by any endpoints within the same associated group.
+  // If |handle_to_send| is not in pending association state, it returns
+  // kInvalidInterfaceId. Otherwise, the peer handle of |handle_to_send| joins
+  // the associated group and is no longer pending.
+  virtual InterfaceId AssociateInterface(
+      ScopedInterfaceEndpointHandle handle_to_send) = 0;
 
   // Creates an interface endpoint handle from a given interface ID. The handle
-  // is used locally.
+  // joins this associated group.
   // Typically, this method is used to (1) create an endpoint handle for the
   // master interface; or (2) create an endpoint handle on receiving an
   // interface ID from the message pipe.
@@ -47,7 +49,6 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
   // Closes an interface endpoint handle.
   virtual void CloseEndpointHandle(
       InterfaceId id,
-      bool is_local,
       const base::Optional<DisconnectReason>& reason) = 0;
 
   // Attaches a client to the specified endpoint to send and receive messages.
@@ -68,16 +69,21 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
   // and notifies all interfaces running on this pipe.
   virtual void RaiseError() = 0;
 
-  std::unique_ptr<AssociatedGroup> CreateAssociatedGroup();
-
  protected:
   friend class base::RefCountedThreadSafe<AssociatedGroupController>;
 
-  // Creates a new ScopedInterfaceEndpointHandle associated with this
-  // controller.
+  // Creates a new ScopedInterfaceEndpointHandle within this associated group.
   ScopedInterfaceEndpointHandle CreateScopedInterfaceEndpointHandle(
-      InterfaceId id,
-      bool is_local);
+      InterfaceId id);
+
+  // Notifies that the interface represented by |handle_to_send| and its peer
+  // has been associated with this AssociatedGroupController's message pipe, and
+  // |handle_to_send|'s peer has joined this associated group. (Note: it is the
+  // peer who has joined the associated group; |handle_to_send| will be sent to
+  // the remote side.)
+  // Returns false if |handle_to_send|'s peer has closed.
+  bool NotifyAssociation(ScopedInterfaceEndpointHandle* handle_to_send,
+                         InterfaceId id);
 
   virtual ~AssociatedGroupController();
 };
