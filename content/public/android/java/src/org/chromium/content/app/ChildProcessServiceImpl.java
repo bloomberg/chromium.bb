@@ -87,7 +87,8 @@ public class ChildProcessServiceImpl {
 
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
-    ChildProcessServiceImpl() {
+    @UsedByReflection("WebApkSandboxedProcessService")
+    public ChildProcessServiceImpl() {
         KillChildUncaughtExceptionHandler.maybeInstallHandler();
     }
 
