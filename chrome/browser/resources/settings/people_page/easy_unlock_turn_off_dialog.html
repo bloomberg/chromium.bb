@@ -12,20 +12,20 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title">[[getTitleText_(state_)]]</div>
+      <div class="title">[[getTitleText_(status_)]]</div>
       <div class="body">
-        [[getDescriptionText_(state_)]]
+        [[getDescriptionText_(status_)]]
       </div>
-      <div class="button-container" hidden="[[isButtonBarHidden_(state_)]]">
-        <paper-spinner active="[[isSpinnerActive_(state_)]]">
+      <div class="button-container" hidden="[[isButtonBarHidden_(status_)]]">
+        <paper-spinner active="[[isSpinnerActive_(status_)]]">
         </paper-spinner>
         <paper-button class="cancel-button" on-tap="onCancelTap_"
-            hidden="[[isCancelButtonHidden_(state_)]]">
+            hidden="[[isCancelButtonHidden_(status_)]]">
           $i18n{cancel}
         </paper-button>
         <paper-button id="turnOff" class="action-button" on-tap="onTurnOffTap_"
-            disabled="[[!isTurnOffButtonEnabled_(state_)]]">
-          [[getTurnOffButtonText_(state_)]]
+            disabled="[[!isTurnOffButtonEnabled_(status_)]]">
+          [[getTurnOffButtonText_(status_)]]
         </paper-button>
       </div>
     </dialog>

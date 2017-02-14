@@ -193,8 +193,32 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
         turnOffDialog = page.$$('#easyUnlockTurnOffDialog');
         assertTrue(!!turnOffDialog);
 
+        // Verify that elements on the turn off dialog are hidden or active
+        // according to the easy unlock turn off status.
+        var turnOffDialogButtonContainer =
+            turnOffDialog.$$('.button-container');
+        var turnOffDialogButtonSpinner = turnOffDialog.$$('paper-spinner');
         var turnOffDialogConfirmButton = turnOffDialog.$$('#turnOff');
+        var turnOffDialogCancelButton = turnOffDialog.$$('.cancel-button');
+        assertTrue(!!turnOffDialogButtonContainer);
+        assertTrue(!!turnOffDialogButtonSpinner);
         assertTrue(!!turnOffDialogConfirmButton);
+        assertTrue(!!turnOffDialogCancelButton);
+
+        cr.webUIListenerCallback('easy-unlock-turn-off-flow-status', 'offline');
+        expectTrue(turnOffDialogButtonContainer.hidden);
+        expectFalse(turnOffDialogButtonSpinner.active);
+
+        cr.webUIListenerCallback('easy-unlock-turn-off-flow-status', 'pending');
+        expectFalse(turnOffDialogButtonContainer.hidden);
+        expectTrue(turnOffDialogButtonSpinner.active);
+
+        cr.webUIListenerCallback('easy-unlock-turn-off-flow-status',
+            'server-error');
+        expectFalse(turnOffDialogButtonContainer.hidden);
+        expectTrue(turnOffDialogCancelButton.hidden);
+
+        cr.webUIListenerCallback('easy-unlock-turn-off-flow-status', 'idle');
         expectFalse(turnOffDialogConfirmButton.hidden);
 
         MockInteractions.tap(turnOffDialogConfirmButton);
