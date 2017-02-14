@@ -126,6 +126,12 @@ public class ChromeFileProvider extends FileProvider {
     }
 
     @Override
+    public String getType(Uri uri) {
+        Uri fileUri = getFileUriWhenReady(uri);
+        return fileUri != null ? super.getType(fileUri) : null;
+    }
+
+    @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         if (uri != null && uri.getPath().contains(BLOCKED_FILE_PREFIX)) {
             synchronized (sLock) {
