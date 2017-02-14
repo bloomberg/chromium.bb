@@ -9,11 +9,8 @@
 
 namespace image_fetcher {
 
-// Metadata for a URL request.
 struct RequestMetadata {
   std::string mime_type;
-  // HTTP response code.
-  int response_code;
 };
 
 bool operator==(const RequestMetadata& lhs, const RequestMetadata& rhs);
