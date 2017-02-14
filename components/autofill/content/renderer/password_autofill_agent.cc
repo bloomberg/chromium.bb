@@ -576,7 +576,6 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
   // PasswordAutofillAgent is guaranteed to outlive |render_frame|.
   render_frame->GetInterfaceRegistry()->AddInterface(
       base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
-  GetPasswordManagerDriver()->PasswordAutofillAgentConstructed();
 }
 
 PasswordAutofillAgent::~PasswordAutofillAgent() {

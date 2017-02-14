@@ -82,8 +82,6 @@ class FakeContentPasswordManagerDriver
     return called_record_save_progress_;
   }
 
-  bool called_agent_constructed() const { return called_agent_constructed_; }
-
   bool called_save_generation_field() const {
     return called_save_generation_field_;
   }
@@ -142,8 +140,6 @@ class FakeContentPasswordManagerDriver
   void ShowNotSecureWarning(base::i18n::TextDirection text_direction,
                             const gfx::RectF& bounds) override;
 
-  void PasswordAutofillAgentConstructed() override;
-
   void RecordSavePasswordProgress(const std::string& log) override;
 
   void SaveGenerationFieldDetectedByClassifier(
@@ -172,8 +168,6 @@ class FakeContentPasswordManagerDriver
   base::Optional<std::vector<autofill::PasswordForm>> password_forms_rendered_;
   // Records whether RecordSavePasswordProgress() gets called.
   bool called_record_save_progress_ = false;
-  // Records whether PasswordAutofillAgentConstructed() gets called.
-  bool called_agent_constructed_ = false;
   // Records whether SaveGenerationFieldDetectedByClassifier() gets called.
   bool called_save_generation_field_ = false;
   // Records data received via SaveGenerationFieldDetectedByClassifier() call.

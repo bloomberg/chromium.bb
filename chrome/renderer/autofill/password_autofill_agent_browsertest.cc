@@ -1299,13 +1299,6 @@ TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Deactivated) {
   EXPECT_FALSE(fake_driver_.called_record_save_progress());
 }
 
-// Test that the agent sends an IPC call to get the current activity state of
-// password saving logging soon after construction.
-TEST_F(PasswordAutofillAgentTest, SendsLoggingStateUpdatePingOnConstruction) {
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_agent_constructed());
-}
-
 // Tests that one user click on a username field is sufficient to bring up a
 // credential suggestion popup, and the user can autocomplete the password by
 // selecting the credential from the popup.

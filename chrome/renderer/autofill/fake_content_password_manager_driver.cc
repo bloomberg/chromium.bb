@@ -64,10 +64,6 @@ void FakeContentPasswordManagerDriver::ShowNotSecureWarning(
   called_show_not_secure_warning_ = true;
 }
 
-void FakeContentPasswordManagerDriver::PasswordAutofillAgentConstructed() {
-  called_agent_constructed_ = true;
-}
-
 void FakeContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   called_record_save_progress_ = true;

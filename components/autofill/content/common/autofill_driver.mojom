@@ -61,11 +61,6 @@ interface AutofillDriver {
 // There is one instance of this interface per render frame host in the browser
 // process.
 interface PasswordManagerDriver {
-  // A ping to the browser that PasswordAutofillAgent was constructed. As a
-  // consequence, the browser sends SetLoggingState with the current
-  // state of the logging activity.
-  PasswordAutofillAgentConstructed();
-
   // Notification that password forms have been seen that are candidates for
   // filling/submitting by the password manager.
   PasswordFormsParsed(array<PasswordForm> forms);

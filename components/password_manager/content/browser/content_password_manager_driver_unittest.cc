@@ -131,16 +131,14 @@ class ContentPasswordManagerDriverTest
   FakePasswordAutofillAgent fake_agent_;
 };
 
-TEST_P(ContentPasswordManagerDriverTest,
-       AnswerToNotificationsAboutLoggingState) {
+TEST_P(ContentPasswordManagerDriverTest, SendLoggingStateInCtor) {
   const bool should_allow_logging = GetParam();
+  EXPECT_CALL(log_manager_, IsLoggingActive())
+      .WillRepeatedly(Return(should_allow_logging));
   std::unique_ptr<ContentPasswordManagerDriver> driver(
       new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
                                        &autofill_client_));
 
-  EXPECT_CALL(log_manager_, IsLoggingActive())
-      .WillRepeatedly(Return(should_allow_logging));
-  driver->SendLoggingAvailability();
   if (should_allow_logging) {
     bool logging_activated = false;
     EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_activated));
@@ -152,20 +150,22 @@ TEST_P(ContentPasswordManagerDriverTest,
   }
 }
 
-TEST_P(ContentPasswordManagerDriverTest, AnswerToIPCPingsAboutLoggingState) {
+TEST_P(ContentPasswordManagerDriverTest, SendLoggingStateAfterLogManagerReady) {
   const bool should_allow_logging = GetParam();
+  EXPECT_CALL(password_manager_client_, GetLogManager())
+      .WillOnce(Return(nullptr));
   std::unique_ptr<ContentPasswordManagerDriver> driver(
       new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
                                        &autofill_client_));
+  // Because log manager is not ready yet, should have no logging state sent.
+  EXPECT_FALSE(WasLoggingActivationMessageSent(nullptr));
 
+  // Log manager is ready, send logging state actually.
+  EXPECT_CALL(password_manager_client_, GetLogManager())
+      .WillOnce(Return(&log_manager_));
   EXPECT_CALL(log_manager_, IsLoggingActive())
       .WillRepeatedly(Return(should_allow_logging));
   driver->SendLoggingAvailability();
-  WasLoggingActivationMessageSent(nullptr);
-
-  // Ping the driver for logging activity update.
-  driver->PasswordAutofillAgentConstructed();
-
   bool logging_activated = false;
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_activated));
   EXPECT_EQ(should_allow_logging, logging_activated);
