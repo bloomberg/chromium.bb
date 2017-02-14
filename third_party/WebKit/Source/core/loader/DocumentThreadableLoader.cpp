@@ -112,6 +112,8 @@ bool IsNoCORSAllowedContext(
     case WebURLRequest::RequestContextFavicon:
     case WebURLRequest::RequestContextImage:
     case WebURLRequest::RequestContextScript:
+    case WebURLRequest::RequestContextWorker:
+    case WebURLRequest::RequestContextSharedWorker:
       return true;
     case WebURLRequest::RequestContextPlugin:
       return skipServiceWorker == WebURLRequest::SkipServiceWorker::All;

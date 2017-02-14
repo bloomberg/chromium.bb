@@ -178,8 +178,13 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   m_mainScriptLoader->setRequestContext(
       WebURLRequest::RequestContextSharedWorker);
   m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
+
+  CrossOriginRequestPolicy crossOriginRequestPolicy =
+      (static_cast<KURL>(m_url)).protocolIsData() ? AllowCrossOriginRequests
+                                                  : DenyCrossOriginRequests;
+
   m_mainScriptLoader->loadAsynchronously(
-      *m_loadingDocument.get(), m_url, DenyCrossOriginRequests,
+      *m_loadingDocument.get(), m_url, crossOriginRequestPolicy,
       m_creationAddressSpace,
       bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse,
            WTF::unretained(this)),

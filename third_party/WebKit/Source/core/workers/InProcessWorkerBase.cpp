@@ -50,9 +50,13 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context,
   if (scriptURL.isEmpty())
     return false;
 
+  CrossOriginRequestPolicy crossOriginRequestPolicy =
+      scriptURL.protocolIsData() ? AllowCrossOriginRequests
+                                 : DenyCrossOriginRequests;
+
   m_scriptLoader = WorkerScriptLoader::create();
   m_scriptLoader->loadAsynchronously(
-      *context, scriptURL, DenyCrossOriginRequests,
+      *context, scriptURL, crossOriginRequestPolicy,
       context->securityContext().addressSpace(),
       WTF::bind(&InProcessWorkerBase::onResponse, wrapPersistent(this)),
       WTF::bind(&InProcessWorkerBase::onFinished, wrapPersistent(this)));
