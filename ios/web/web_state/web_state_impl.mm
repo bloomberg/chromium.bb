@@ -463,7 +463,7 @@ void WebStateImpl::ClearTransientContentView() {
     // Don't access |interstitial| after calling |DontProceed()|, as it triggers
     // deletion.
     for (auto& observer : observers_)
-      observer.InsterstitialDismissed();
+      observer.InterstitialDismissed();
   }
   [web_controller_ clearTransientContentView];
 }

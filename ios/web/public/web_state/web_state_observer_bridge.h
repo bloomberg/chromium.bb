@@ -99,7 +99,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
       const LoadCommittedDetails& load_details) override;
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
-  void InsterstitialDismissed() override;
+  void InterstitialDismissed() override;
   void UrlHashChanged() override;
   void HistoryStateChanged() override;
   void LoadProgressChanged(double progress) override;

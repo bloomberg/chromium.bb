@@ -85,8 +85,7 @@ TEST_F(WebStateObserverBridgeTest, PageLoaded) {
 TEST_F(WebStateObserverBridgeTest, InterstitialDismissed) {
   ASSERT_FALSE([observer_ dismissInterstitialInfo]);
 
-  // TODO(crbug.com/687735): Fix this method name.
-  bridge_->InsterstitialDismissed();
+  bridge_->InterstitialDismissed();
   ASSERT_TRUE([observer_ dismissInterstitialInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ dismissInterstitialInfo]->web_state);
 }

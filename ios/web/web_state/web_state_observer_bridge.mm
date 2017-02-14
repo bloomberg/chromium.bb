@@ -61,7 +61,7 @@ void WebStateObserverBridge::PageLoaded(
   }
 }
 
-void WebStateObserverBridge::InsterstitialDismissed() {
+void WebStateObserverBridge::InterstitialDismissed() {
   SEL selector = @selector(webStateDidDismissInterstitial:);
   if ([observer_ respondsToSelector:selector])
     [observer_ webStateDidDismissInterstitial:web_state()];

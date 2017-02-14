@@ -58,7 +58,7 @@ class WebStateObserver {
   virtual void PageLoaded(PageLoadCompletionStatus load_completion_status) {}
 
   // Called when the interstitial is dismissed by the user.
-  virtual void InsterstitialDismissed() {}
+  virtual void InterstitialDismissed() {}
 
   // Called on URL hash change events.
   virtual void UrlHashChanged() {}
