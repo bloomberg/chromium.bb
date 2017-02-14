@@ -13,8 +13,8 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/internal/criwv_web_main_delegate.h"
 #import "ios/web_view/public/criwv_delegate.h"
-#import "ios/web_view/public/criwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_web_view.h"
+#import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -48,8 +48,8 @@ CRIWV* g_criwv = nil;
 }
 
 + (CWVWebView*)webViewWithFrame:(CGRect)frame {
-  CRIWVWebViewConfiguration* configuration =
-      [[CRIWVWebViewConfiguration alloc] init];
+  CWVWebViewConfiguration* configuration =
+      [[CWVWebViewConfiguration alloc] init];
   configuration.websiteDataStore = [CWVWebsiteDataStore defaultDataStore];
 
   return [[CWVWebView alloc] initWithFrame:frame configuration:configuration];

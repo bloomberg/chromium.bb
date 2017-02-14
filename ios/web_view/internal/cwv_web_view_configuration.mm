@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/public/criwv_web_view_configuration.h"
+#import "ios/web_view/public/cwv_web_view_configuration.h"
 
 #import "ios/web_view/public/cwv_website_data_store.h"
 
@@ -10,12 +10,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CRIWVWebViewConfiguration ()
+@interface CWVWebViewConfiguration ()
 // Initialize configuration with specified data store.
 - (instancetype)initWithDataStore:(CWVWebsiteDataStore*)dataStore;
 @end
 
-@implementation CRIWVWebViewConfiguration
+@implementation CWVWebViewConfiguration
 
 @synthesize websiteDataStore = _websiteDataStore;
 

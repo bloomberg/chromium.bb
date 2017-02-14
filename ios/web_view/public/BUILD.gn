@@ -13,9 +13,9 @@ source_set("public") {
     "criwv_delegate.h",
     "criwv_translate_delegate.h",
     "criwv_translate_manager.h",
-    "criwv_web_view_configuration.h",
     "criwv_web_view_delegate.h",
     "cwv_web_view.h",
+    "cwv_web_view_configuration.h",
     "cwv_website_data_store.h",
   ]
 

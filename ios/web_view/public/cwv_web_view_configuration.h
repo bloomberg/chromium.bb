@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_CONFIGURATION_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_CONFIGURATION_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_
 
 #import <Foundation/Foundation.h>
 
 @class CWVWebsiteDataStore;
 
 // Configuration used for creation of a CWVWebView.
-@interface CRIWVWebViewConfiguration : NSObject<NSCopying>
+@interface CWVWebViewConfiguration : NSObject<NSCopying>
 
 // Data store defining persistance of website data. Default is
 // [CWVWebsiteDataStore defaultDataStore].
@@ -18,4 +18,4 @@
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_CONFIGURATION_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_

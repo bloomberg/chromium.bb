@@ -20,8 +20,8 @@
 #include "ios/web_view/internal/criwv_browser_state.h"
 #import "ios/web_view/internal/cwv_website_data_store_internal.h"
 #import "ios/web_view/internal/translate/criwv_translate_client.h"
-#import "ios/web_view/public/criwv_web_view_configuration.h"
 #import "ios/web_view/public/criwv_web_view_delegate.h"
+#import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
@@ -32,7 +32,7 @@
 #endif
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
-  CRIWVWebViewConfiguration* _configuration;
+  CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -47,7 +47,7 @@
 @synthesize loadProgress = _loadProgress;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                configuration:(CRIWVWebViewConfiguration*)configuration {
+                configuration:(CWVWebViewConfiguration*)configuration {
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = [configuration copy];

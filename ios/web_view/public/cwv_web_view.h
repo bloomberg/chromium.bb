@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class CRIWVWebViewConfiguration;
+@class CWVWebViewConfiguration;
 @protocol CRIWVWebViewDelegate;
 
 // A web view component (like WKWebView) which uses iOS Chromium's web view
@@ -43,7 +43,7 @@
 
 // |configuration| must not be null
 - (instancetype)initWithFrame:(CGRect)frame
-                configuration:(CRIWVWebViewConfiguration*)configuration
+                configuration:(CWVWebViewConfiguration*)configuration
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
