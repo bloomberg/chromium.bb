@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // API test for chrome.extension.pageCapture.
-// browser_tests.exe --gtest_filter=ExtensionPageCaptureApiTest.*
+// browser_tests.exe --gtest_filter=ExtensionApiTest.PageCapture
 
 const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
@@ -31,11 +31,6 @@ chrome.test.getConfig(function(config) {
         waitForCurrentTabLoaded(function() {
           chrome.pageCapture.saveAsMHTML({ "tabId": tab.id },
               function(data) {
-            if (config.customArg == "REQUEST_DENIED") {
-              chrome.test.assertLastError("User denied request.");
-              chrome.test.notifyPass();
-              return;
-            }
             assertEq(undefined, chrome.runtime.lastError);
             assertTrue(data != null);
             // It should contain few KBs of data.

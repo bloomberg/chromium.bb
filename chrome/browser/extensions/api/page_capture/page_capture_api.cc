@@ -8,13 +8,10 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -24,10 +21,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "extensions/common/extension_messages.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
-#endif
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -43,9 +36,6 @@ const char kFileTooBigError[] = "The MHTML file generated is too big.";
 const char kMHTMLGenerationFailedError[] = "Failed to generate MHTML.";
 const char kTemporaryFileError[] = "Failed to create a temporary file.";
 const char kTabClosedError[] = "Cannot find the tab for this request.";
-#if defined(OS_CHROMEOS)
-const char kUserDenied[] = "User denied request.";
-#endif
 
 void ClearFileReferenceOnIOThread(
     scoped_refptr<storage::ShareableFileReference>) {}
@@ -75,31 +65,6 @@ bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
 
   AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
 
-  // In Public Sessions, extensions (and apps) are force-installed by admin
-  // policy so the user does not get a chance to review the permissions for
-  // these extensions. This is not acceptable from a security/privacy
-  // standpoint, so when an extension uses the PageCapture API for the first
-  // time, we show the user a dialog where they can choose whether to allow the
-  // extension access to the API.
-#if defined(OS_CHROMEOS)
-  if (profiles::IsPublicSession()) {
-    WebContents* web_contents = GetWebContents();
-    if (!web_contents) {
-      ReturnFailure(kTabClosedError);
-      return true;
-    }
-    // This Unretained is safe because this object is Released() in
-    // OnMessageReceived which gets called at some point after callback is run.
-    auto callback =
-        base::Bind(&PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest,
-                   base::Unretained(this));
-    permission_helper::HandlePermissionRequest(
-        *extension(), {APIPermission::kPageCapture}, web_contents, callback,
-        permission_helper::PromptFactory());
-    return true;
-  }
-#endif
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile, this));
@@ -127,19 +92,6 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceived(
 
   return true;
 }
-
-#if defined(OS_CHROMEOS)
-void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
-    const PermissionIDSet& allowed_permissions) {
-  if (allowed_permissions.ContainsID(APIPermission::kPageCapture)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile, this));
-  } else {
-    ReturnFailure(kUserDenied);
-  }
-}
-#endif
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
