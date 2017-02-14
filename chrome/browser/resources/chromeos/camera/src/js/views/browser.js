@@ -421,7 +421,6 @@ camera.views.Browser.prototype.onPictureDeleting = function(picture) {
  * @param {Image} img Image object to update.
  */
 camera.views.Browser.prototype.updateImageSize_ = function(img) {
-  console.warn(img);
   var heightScale = 0.72;  // Keep in sync with main.css
   var height = heightScale * document.body.offsetHeight;
   var width = img.width * (height / img.height);
