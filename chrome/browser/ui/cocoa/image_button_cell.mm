@@ -99,6 +99,7 @@ NSRect CenterImageInFrame(NSImage* image, NSRect frame) {
 }
 
 - (void)dealloc {
+  [hoverAnimation_ stopAnimation];
   [hoverAnimation_ release];
   [super dealloc];
 }
