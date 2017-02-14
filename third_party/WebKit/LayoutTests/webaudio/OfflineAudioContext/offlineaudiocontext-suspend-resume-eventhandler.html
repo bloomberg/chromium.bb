@@ -1,15 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description('Test event handler callback from OfflineAudioContext.resume() and OfflineAudioContext.suspend().');
-      window.jsTestIsAsync = true;
+      var audit = Audit.createTaskRunner();
 
       var context;
       var renderQuantum = 128;
@@ -26,29 +26,39 @@
       // in to the render quantum boundary.
       var suspendInterval = 0.25;
 
-      function runTest() {
-        context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      audit.define('test', (task, should) => {
+        task.describe('Test event handler from resume() and suspend()');
+        context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
-        context.onstatechange = function () {
-          if (context.state === 'suspended' && context.currentTime === scheduledSuspendTime) {
-
-            testPassed('onstatechange event handler: context is suspended at ' +
-              scheduledSuspendTime + ' second(s).');
-
+        context.onstatechange = function() {
+          if (context.state === 'suspended' &&
+              context.currentTime === scheduledSuspendTime) {
+            should(
+                context.state === 'suspended' &&
+                    context.currentTime === scheduledSuspendTime,
+                'onstatechange event handler: context is suspended at ' +
+                    scheduledSuspendTime + ' second(s)')
+                .beTrue();
             scheduledSuspendTime = context.currentTime + suspendInterval;
 
             // Scheduling a suspend before the render duration should pass.
             if (scheduledSuspendTime < renderDuration) {
-              context.suspend(scheduledSuspendTime);
-              testPassed('A new suspend has been scheduled at ' +
-                scheduledSuspendTime + ' second(s).');
+              should(
+                  () => context.suspend(scheduledSuspendTime),
+                  'Scheduling a new suspend at ' + scheduledSuspendTime +
+                      ' second(s)')
+                  .notThrow();
+              ;
             }
 
             // Scheduling a suspend exactly at the render duration should be
             // rejected.
             if (scheduledSuspendTime === renderDuration) {
-              Should('Scheduling at ' + renderDuration + ' seconds',
-                context.suspend(scheduledSuspendTime)).beRejected();
+              should(
+                  context.suspend(scheduledSuspendTime),
+                  'Scheduling at ' + renderDuration + ' seconds')
+                  .beRejected();
             }
 
             context.resume();
@@ -57,20 +67,24 @@
 
         // This test is for verifying all the event handlers on OAC and that is
         // why 'oncomplete' is used here.
-        context.oncomplete = function () {
-          Should('oncomplete event handler: context.state', context.state).beEqualTo('closed');
-          finishJSTest();
+        context.oncomplete = function() {
+          should(context.state, 'oncomplete event handler: context.state')
+              .beEqualTo('closed');
+          task.done();
         };
 
         // Schedule the first suspension.
-        context.suspend(scheduledSuspendTime);
-        testPassed('A new suspend has been scheduled at ' + scheduledSuspendTime + ' second(s).');
+        should(
+            () => context.suspend(scheduledSuspendTime),
+            'A new suspend has been scheduled at ' + scheduledSuspendTime +
+                ' second(s)')
+            .notThrow();
+        ;
 
         context.startRendering();
-      }
+      });
 
-      runTest();
-      successfullyParsed = true;
+      audit.run();
     </script>
 
   </body>

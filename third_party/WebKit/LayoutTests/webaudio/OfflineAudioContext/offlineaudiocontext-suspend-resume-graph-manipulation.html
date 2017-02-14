@@ -1,15 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description('Test synchronous graph manipulation with OfflineAudioContext.suspend() and OfflineAudioContext.resume().');
-      window.jsTestIsAsync = true;
+      var audit = Audit.createTaskRunner();
 
       var context;
       var renderQuantum = 128;
@@ -19,51 +19,64 @@
       // times fall in to the render quantum boundary.
       var sampleRate = renderQuantum * 100;
 
-      context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
-
-      // Create a constant buffer of 1.0.
-      var constantBuffer = createConstantBuffer(context, 1, 1.0);
-      var constantSource = context.createBufferSource();
-      constantSource.buffer = constantBuffer;
-      constantSource.loop = true;
-
-      // The audio output from the beginning (0.0 second) to the first suspend
-      // time should be 0.0 because there is no connection to the destination.
-
       // Suspend at 1 second and activate the source node. The audio output
       // should be 1.0 from |suspendTime1| to the next suspension.
       var suspendTime1 = 1;
-      context.suspend(suspendTime1).then(function () {
-        if (context.currentTime === suspendTime1)
-          testPassed('Context is suspended at ' + suspendTime1 * sampleRate + ' frame as expected.');
-
-        constantSource.connect(context.destination);
-        constantSource.start();
-        testPassed('A constant buffer is connected to destination and started at ' +
-          suspendTime1 * sampleRate + ' frame.');
-
-        context.resume();
-      });
 
       // Suspend at 2 seconds and disconnect the node. The audio output should
       // be 0.0 from |suspendTime2| to the end.
       var suspendTime2 = 2;
-      context.suspend(suspendTime2).then(function () {
-        if (context.currentTime === suspendTime2)
-          testPassed('Context is suspended at ' + suspendTime2 * sampleRate + ' frame as expected.');
 
-        constantSource.disconnect();
-        testPassed('A constant buffer is disconnected at ' + suspendTime2 * sampleRate + ' frame.');
+      audit.define('test', (task, should) => {
+        task.describe('Synchronous graph manipulation with suspend() and resume()');
+        context = new OfflineAudioContext(1, sampleRate * renderDuration,
+          sampleRate);
 
-        context.resume();
+        // Create a constant buffer of 1.0.
+        var constantBuffer = createConstantBuffer(context, 1, 1.0);
+        var constantSource = context.createBufferSource();
+        constantSource.buffer = constantBuffer;
+        constantSource.loop = true;
+
+        // The audio output from the beginning (0.0 second) to the first suspend
+        // time should be 0.0 because there is no connection to the destination.
+
+        context.suspend(suspendTime1).then(function () {
+          if (context.currentTime === suspendTime1) {
+            should(context.currentTime * sampleRate,
+              'Frame at which context is suspended')
+            .beEqualTo(suspendTime1 * sampleRate)
+          }
+          should(() => {
+                constantSource.connect(context.destination);
+                constantSource.start()
+              },
+              'Connecting a constant buffer to destination and starting at ' +
+              suspendTime1 * sampleRate + ' frame')
+            .notThrow();;
+          context.resume();
+        });
+
+        context.suspend(suspendTime2).then(function () {
+          if (context.currentTime === suspendTime2) {
+            should(context.currentTime * sampleRate,
+                'Context is suspended')
+              .beEqualTo(suspendTime2 * sampleRate);
+          }
+          should(() => constantSource.disconnect(),
+              'Disconnecting a constant buffer at ' + suspendTime2 *
+              sampleRate + ' frame')
+            .notThrow();
+
+          context.resume();
+        });
+
+        context.startRendering().then(function (buffer) {
+          verifyResult(should, buffer);
+        }).then(() => task.done());
       });
 
-      context.startRendering().then(function (buffer) {
-        verifyResult(buffer);
-        finishJSTest();
-      });
-
-      function verifyResult(buffer) {
+      function verifyResult(should, buffer) {
         var data = buffer.getChannelData(0);
 
         var suspendIndex1 = suspendTime1 * sampleRate;
@@ -79,14 +92,17 @@
 
         // Each segment should contain a constant value of 0, 1 and 0
         // respectively.
-        Should('Buffer frame [0, ' +  suspendIndex1 + ')', subarray0).beConstantValueOf(0);
-        Should('Buffer frame [' + suspendIndex1 + ', ' + suspendIndex2 + ')', subarray1)
+        should(subarray0, 'Buffer frame [0, ' + suspendIndex1 + ')')
+          .beConstantValueOf(0);
+        should(subarray1, 'Buffer frame [' + suspendIndex1 + ', ' +
+            suspendIndex2 + ')')
           .beConstantValueOf(1);
-        Should('Buffer frame [' + suspendIndex2 + ', ' + endIndex + ')', subarray2)
+        should(subarray2, 'Buffer frame [' + suspendIndex2 + ', ' + endIndex +
+            ')')
           .beConstantValueOf(0);
       }
 
-      successfullyParsed = true;
+      audit.run();
     </script>
 
   </body>

@@ -1,16 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description('Test OfflineAudioContext.resume() and OfflineAudioContext.suspend() with the timed sequence.');
-      window.jsTestIsAsync = true;
-
+      var audit = Audit.createTaskRunner();
       var context;
 
       // The sample rate is multiple of the rendering quantum, so suspension
@@ -36,41 +35,49 @@
 
       var actualSuspendTimes = [];
 
-      context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      audit.define('test', (task, should) => {
+        task.describe('resume() and suspend() with timed sequence');
+        context = new OfflineAudioContext(1, sampleRate * renderDuration,
+          sampleRate);
 
-      for (var i = 0; i < suspendTimes.length; i++) {
+        for (var i = 0; i < suspendTimes.length; i++) {
+          // Schedule suspends in a random time order, but the actual suspend
+          // must happen in ascending time order.
+          scheduleSuspend(i, suspendTimes[i], should);
+        }
 
-        // Schedule suspends in a random time order, but the actual suspend
-        // must happen in ascending time order.
-        scheduleSuspend(i, suspendTimes[i]);
+        context.startRendering()
+          .then(buffer => verifyResult(should))
+          .then(() => task.done());
 
+      });
+
+      audit.run();
+
+      function scheduleSuspend(index, suspendTime, should) {
+        should(() => context.suspend(suspendTime)
+            .then(() => {
+              actualSuspendTimes.push(suspendTime);
+              context.resume();
+            }),
+            'Scheduling suspend #' + index + ' at ' + suspendTime +
+            ' second(s)')
+          .notThrow();
       }
 
-      function scheduleSuspend(index, suspendTime) {
-        testPassed('Scheduling suspend #' + index + ' at ' + suspendTime + ' second(s).');
-        context.suspend(suspendTime).then(function () {
-          actualSuspendTimes.push(suspendTime);
-          context.resume();
-        })
-      }
-
-      function verifyResult() {
-
+      function verifyResult(should) {
         for (var i = 0; i < actualSuspendTimes.length; i++) {
           var scheduledOrder = suspendTimes.indexOf(actualSuspendTimes[i]);
-          var expectedOrder = expectedSuspendTimes.indexOf(actualSuspendTimes[i]);
+          var expectedOrder = expectedSuspendTimes.indexOf(actualSuspendTimes[
+            i]);
 
-          if (i === expectedOrder) {
-            testPassed('The resolution order of suspend #' + scheduledOrder +
+          should(i, 'The resolution order of suspend #' + scheduledOrder +
               ' is ' + i + ' at ' + suspendTimes[scheduledOrder].toFixed(2) +
-              ' second(s).');
-          }
+              ' second(s)')
+            .beEqualTo(expectedOrder);
         }
       }
 
-      context.startRendering().then(verifyResult).then(finishJSTest);
-
-      successfullyParsed = true;
     </script>
 
   </body>

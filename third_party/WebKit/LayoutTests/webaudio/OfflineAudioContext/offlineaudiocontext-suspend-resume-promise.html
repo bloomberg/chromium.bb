@@ -1,16 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description('Test promise resolution of OfflineAudioContext.resume() and OfflineAudioContext.suspend().');
-      window.jsTestIsAsync = true;
-
+      var audit = Audit.createTaskRunner();
       var context;
 
       // The sample rate is multiple of the rendering quantum, so suspension
@@ -25,43 +24,60 @@
       // in to the render quantum boundary.
       var suspendInterval = 0.25;
 
-      context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
-
-      function onSuspended() {
-        if (context.state === 'suspended' && context.currentTime === scheduledSuspendTime) {
-
-          testPassed('suspend promise resolved: context is suspended at ' +
-            scheduledSuspendTime + ' second(s).');
+      function onSuspended(should) {
+        if (context.state === 'suspended' &&
+            context.currentTime === scheduledSuspendTime) {
+          should(
+              context.state === 'suspended' &&
+                  context.currentTime === scheduledSuspendTime,
+              'Context suspended at ' + scheduledSuspendTime + ' second(s)')
+              .beTrue();
 
           scheduledSuspendTime = context.currentTime + suspendInterval;
 
           // Scheduling a suspend before the render duration should pass.
           if (scheduledSuspendTime < renderDuration) {
-            context.suspend(scheduledSuspendTime).then(onSuspended);
-            testPassed('A new suspend has been scheduled at ' +
-              scheduledSuspendTime + ' second(s).');
+            should(
+                () => context.suspend(scheduledSuspendTime)
+                          .then(() => onSuspended(should)),
+                'Scheduling a new suspend at ' + scheduledSuspendTime +
+                    ' second(s)')
+                .notThrow();
           }
 
           // Scheduling a suspend exactly at the render duration should be
           // rejected.
           if (scheduledSuspendTime === renderDuration) {
-            Should('Scheduling at ' + renderDuration + ' seconds',
-              context.suspend(scheduledSuspendTime)).beRejected();
+            should(
+                context.suspend(scheduledSuspendTime),
+                'Scheduling at ' + renderDuration + ' seconds')
+                .beRejected();
           }
 
-         context.resume();
+          context.resume();
         }
       }
 
-      // Schedule the first suspension.
-      context.suspend(scheduledSuspendTime).then(onSuspended);
-      testPassed('A new suspend has been scheduled at ' + scheduledSuspendTime + ' second(s).');
+      audit.define('test', (task, should) => {
+        task.describe('Promise resolution of resume() and suspend()');
+        context = new OfflineAudioContext(1, sampleRate * renderDuration,
+          sampleRate);
 
-      context.startRendering().then(function () {
-        Should('Promise context.state', context.state).beEqualTo('closed');
-      }).then(finishJSTest);
+        // Schedule the first suspension.
+        should(() => context.suspend(scheduledSuspendTime)
+            .then(() =>
+              onSuspended(should)),
+            'Scheduling a new suspend at ' + scheduledSuspendTime +
+            ' second(s)')
+          .notThrow();
 
-      successfullyParsed = true;
+        context.startRendering().then(function () {
+          should(context.state, 'Promise context.state')
+            .beEqualTo('closed');
+        }).then(() => task.done());
+      });
+
+      audit.run();
     </script>
 
   </body>
