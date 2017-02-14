@@ -90,7 +90,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/style/StyleInheritedVariables.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
