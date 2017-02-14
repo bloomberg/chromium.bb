@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -98,7 +100,8 @@ class ToolbarActionViewUnitTest : public views::ViewsTestBase {
  public:
   ToolbarActionViewUnitTest()
       : widget_(nullptr),
-        ui_thread_(content::BrowserThread::UI, message_loop()) {}
+        ui_thread_(content::BrowserThread::UI, message_loop()),
+        scoped_task_scheduler_(base::MessageLoop::current()) {}
   ~ToolbarActionViewUnitTest() override {}
 
   void SetUp() override {
@@ -122,8 +125,9 @@ class ToolbarActionViewUnitTest : public views::ViewsTestBase {
   // The widget managed by this test.
   views::Widget* widget_;
 
-  // Web contents need a fake ui thread.
+  // Web contents need a UI thread and a TaskScheduler.
   content::TestBrowserThread ui_thread_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewUnitTest);
 };

@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_browser_context.h"
@@ -132,6 +134,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
  public:
   WebViewUnitTest()
       : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
+        scoped_task_scheduler_(base::MessageLoop::current()),
         file_blocking_thread_(content::BrowserThread::FILE_USER_BLOCKING,
                               base::MessageLoop::current()),
         io_thread_(content::BrowserThread::IO, base::MessageLoop::current()),
@@ -183,6 +186,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
 
  private:
   content::TestBrowserThread ui_thread_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   content::TestBrowserThread file_blocking_thread_;
   content::TestBrowserThread io_thread_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;

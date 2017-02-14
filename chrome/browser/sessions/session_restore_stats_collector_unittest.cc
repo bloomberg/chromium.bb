@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -16,7 +15,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -181,8 +180,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
  public:
   using RestoredTab = SessionRestoreDelegate::RestoredTab;
 
-  SessionRestoreStatsCollectorTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  SessionRestoreStatsCollectorTest() = default;
 
   void SetUp() override {
     test_web_contents_factory_.reset(new content::TestWebContentsFactory);
@@ -289,16 +287,14 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     stats_collector_->DeferTab(controller);
   }
 
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  // |test_browser_thread_bundle_| needs to still be alive when
+  // |testing_profile_| is destroyed.
+  TestingProfile testing_profile_;
+
   // Inputs to the stats collector. Reset prior to each test.
   base::SimpleTestTickClock* test_tick_clock_;
   std::vector<RestoredTab> restored_tabs_;
-
-  // Infrastructure needed for using the TestWebContentsFactory. These are
-  // initialized once by the fixture and reused across unittests.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  // |ui_thread_| needs to still be alive when |testing_profile_| is destroyed.
-  TestingProfile testing_profile_;
 
   // A new web contents factory is generated per test. This automatically cleans
   // up any tabs created by previous tests.

@@ -5,11 +5,12 @@
 #include "content/browser/media/session/audio_focus_manager.h"
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
@@ -34,7 +35,7 @@ using SuspendType = MediaSession::SuspendType;
 
 class AudioFocusManagerTest : public testing::Test {
  public:
-  AudioFocusManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+  AudioFocusManagerTest() = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -46,6 +47,9 @@ class AudioFocusManagerTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Run pending tasks.
+    base::RunLoop().RunUntilIdle();
+
     browser_context_.reset();
     SiteInstanceImpl::set_render_process_host_factory(nullptr);
     rph_factory_.reset();
@@ -101,8 +105,7 @@ class AudioFocusManagerTest : public testing::Test {
   std::unique_ptr<MediaSessionPlayerObserver> pepper_observer_;
 
  private:
-  base::MessageLoopForUI message_loop_;
-  TestBrowserThread ui_thread_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
 
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestBrowserContext> browser_context_;

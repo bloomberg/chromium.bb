@@ -24,6 +24,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -298,8 +299,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   // Update the display color profile cache so that it is likely to be up to
   // date when the renderer process requests the color profile.
   if (gfx::ICCProfile::CachedProfilesNeedUpdate()) {
-    BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&gfx::ICCProfile::UpdateCachedProfilesOnBackgroundThread));
   }
 #endif
