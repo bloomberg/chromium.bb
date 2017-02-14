@@ -78,7 +78,7 @@ bool CSVParser::ParseNextCSVRow(std::vector<std::string>* fields) {
       return false;
     if (field.starts_with("\"")) {
       CHECK(field.ends_with("\""));
-      CHECK_GE(field.size(), 2);
+      CHECK_GE(field.size(), 2u);
       field.remove_prefix(1);
       field.remove_suffix(1);
     }

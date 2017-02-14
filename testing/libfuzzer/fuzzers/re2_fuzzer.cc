@@ -13,7 +13,6 @@
 #include <string>
 
 #include "re2/re2.h"
-#include "util/logging.h"
 
 using re2::StringPiece;
 using std::string;
@@ -70,7 +69,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   hash ^= (hash >> 11);
   hash += (hash << 15);
 
-  re2::FLAGS_minloglevel = 3;
   RE2::Options options;
   options.set_log_errors(false);
   options.set_encoding(hash & 1 ? RE2::Options::EncodingLatin1
