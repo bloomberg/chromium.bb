@@ -71,8 +71,8 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   // Callback for pp::VideoDecoder::Decode().
   void OnDecodeDone(int32_t result);
 
-  // Fetches next picture from the |video_decoder_|.
-  void GetNextPicture();
+  // Fetches next picture from the |video_decoder_| if a decoded frame is ready.
+  void GetNextPictureIfReady();
 
   // Callback for pp::VideoDecoder::GetPicture().
   void OnPictureReady(int32_t result, PP_VideoPicture picture);

@@ -23,12 +23,14 @@
 
 namespace remoting {
 
+namespace {
 // The implementation here requires that the decoder allocates at least 3
 // pictures. PPB_VideoDecoder didn't support this parameter prior to
 // 1.1, so we have to pass 0 for backwards compatibility with older versions of
 // the browser. Currently all API implementations allocate more than 3 buffers
 // by default.
 const uint32_t kMinimumPictureCount = 3;
+}  // namespace
 
 class PepperVideoRenderer3D::FrameTracker {
  public:
@@ -329,10 +331,10 @@ void PepperVideoRenderer3D::OnDecodeDone(int32_t result) {
                          pending_frames_.begin());
 
   DecodeNextPacket();
-  GetNextPicture();
+  GetNextPictureIfReady();
 }
 
-void PepperVideoRenderer3D::GetNextPicture() {
+void PepperVideoRenderer3D::GetNextPictureIfReady() {
   // Return early if |decoded_frames_| is empty or the decoder is already
   // preparing a picture.  If we call GetPicture() before a new frame has been
   // prepared (i.e. |decoded_frames_| is populated), the OnPictureReady callback
@@ -385,7 +387,7 @@ void PepperVideoRenderer3D::OnPictureReady(int32_t result,
   next_picture_.reset(new Picture(&video_decoder_, picture));
 
   PaintIfNeeded();
-  GetNextPicture();
+  GetNextPictureIfReady();
 }
 
 void PepperVideoRenderer3D::PaintIfNeeded() {
