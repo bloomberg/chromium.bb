@@ -139,7 +139,7 @@ TextRun constructTextRun(const Font& font,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle& style) {
-  ASSERT(offset + length <= text.textLength());
+  SECURITY_DCHECK(offset + length <= text.textLength());
   if (text.hasEmptyText()) {
     return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
                                     style, TextDirection::kLtr);

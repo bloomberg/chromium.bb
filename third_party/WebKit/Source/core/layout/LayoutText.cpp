@@ -24,6 +24,7 @@
 
 #include "core/layout/LayoutText.h"
 
+#include <algorithm>
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Text.h"
 #include "core/editing/VisiblePosition.h"
@@ -1014,6 +1015,13 @@ static float minWordFragmentWidthForBreakAll(LayoutText* layoutText,
     } else {
       fragmentLength = U16_LENGTH(layoutText->codepointAt(i));
     }
+
+    // Ensure that malformed surrogate pairs don't cause us to read
+    // past the end of the string.
+    int textLength = layoutText->textLength();
+    if (i + fragmentLength > textLength)
+      fragmentLength = std::max(textLength - i, 0);
+
     // The correct behavior is to measure width without re-shaping, but we
     // reshape each fragment here because a) the current line breaker does not
     // support it, b) getCharacterRange() can reshape if the text is too long
