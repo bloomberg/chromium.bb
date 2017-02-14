@@ -217,7 +217,8 @@ void StorageHandler::OnGetDriveCacheSize(int64_t size) {
   updating_drive_cache_size_ = false;
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("storage-drive-cache-size-changed"),
-                         base::StringValue(ui::FormatBytes(size)));
+                         base::StringValue(ui::FormatBytes(size)),
+                         base::FundamentalValue(size > 0));
 }
 
 void StorageHandler::UpdateBrowsingDataSize() {

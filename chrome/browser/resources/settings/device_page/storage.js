@@ -55,6 +55,12 @@ Polymer({
       value: function() { return loadTimeData.getBoolean('isGuest'); }
     },
 
+    /** @private */
+    hasDriveCache_: {
+      type: Boolean,
+      value: false
+    },
+
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
@@ -128,7 +134,8 @@ Polymer({
    */
   onDriveCacheTap_: function(e) {
     e.preventDefault();
-    this.$.storageDriveCache.open();
+    if (this.hasDriveCache_)
+      this.$.storageDriveCache.open();
   },
 
   /**
@@ -177,11 +184,14 @@ Polymer({
   /**
    * @param {string} size Formatted string representing the size of Offline
    *     files.
+   * @param {boolean} hasCache True if the device has at least one offline file.
    * @private
    */
-  handleDriveCacheSizeChanged_: function(size) {
-    if (this.driveEnabled_)
+  handleDriveCacheSizeChanged_: function(size, hasCache) {
+    if (this.driveEnabled_) {
       this.$$('#driveCacheSize').textContent = size;
+      this.hasDriveCache_ = hasCache;
+    }
   },
 
   /**

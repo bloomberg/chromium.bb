@@ -125,6 +125,20 @@
         direction: initial;
         unicode-bidi: embed;
       }
+
+      #deleteButton {
+        display: none;
+      }
+
+      [actionable] #deleteButton {
+        display: block;
+      }
+
+      button > iron-icon {
+        --iron-icon-fill-color: var(--paper-grey-400);
+        --iron-icon-height: 24px;
+        --iron-icon-width: 24px;
+      }
     </style>
     <template is="dom-if" if="[[isSpaceLow_(sizeStat_.spaceState)]]">
       <div class="settings-box first">
@@ -178,40 +192,51 @@
         </div>
       </div>
     </div>
-    <div class="settings-box" on-tap="onDownloadsTap_" actionable>
-      <div class="start">$i18n{storageItemDownloads}</div>
-      <div id="downloadsSize" class="storage-size">
-        $i18n{storageSizeComputing}
+    <div class="settings-box two-line" on-tap="onDownloadsTap_" actionable>
+      <div class="start">
+        $i18n{storageItemDownloads}
+        <div id="downloadsSize" class="secondary">
+          $i18n{storageSizeComputing}
+        </div>
       </div>
       <button class="icon-external" is="paper-icon-button-light"
           aria-label="$i18n{storageItemDownloads}"
           aria-describedby="downloadsSize"></button>
     </div>
     <template is="dom-if" if="[[driveEnabled_]]">
-      <div class="settings-box" on-tap="onDriveCacheTap_" actionable>
-        <div class="start">$i18n{storageItemDriveCache}</div>
-        <div id="driveCacheSize" class="storage-size">
-          $i18n{storageSizeComputing}
+      <div class="settings-box two-line" on-tap="onDriveCacheTap_"
+          actionable$="[[hasDriveCache_]]" >
+        <div class="start">
+          $i18n{storageItemDriveCache}
+          <div id="driveCacheSize" class="secondary">
+            $i18n{storageSizeComputing}
+          </div>
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
+        <button id="deleteButton" is="paper-icon-button-light"
             aria-label="$i18n{storageItemDriveCache}"
-            aria-describedby="driveSizeCache"></button>
+            aria-describedby="driveSizeCache">
+          <iron-icon icon="cr:delete"></iron-icon>
+        </button>
       </div>
     </template>
-    <div class="settings-box" on-tap="onBrowsingDataTap_" actionable>
-      <div class="start">$i18n{storageItemBrowsingData}</div>
-      <div id="browsingDataSize" class="storage-size">
-        $i18n{storageSizeComputing}
+    <div class="settings-box two-line" on-tap="onBrowsingDataTap_" actionable>
+      <div class="start">
+        $i18n{storageItemBrowsingData}
+        <div id="browsingDataSize" class="secondary">
+          $i18n{storageSizeComputing}
+        </div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"
           aria-label="$i18n{storageItemBrowsingData}"
           aria-describedby="browsingDataSize"></button>
     </div>
     <template is="dom-if" if="[[androidEnabled_]]">
-      <div class="settings-box" on-tap="onAndroidTap_" actionable>
-        <div class="start">$i18n{storageItemAndroid}</div>
-        <div id="androidSize" class="storage-size">
-          $i18n{storageSizeComputing}
+      <div class="settings-box two-line" on-tap="onAndroidTap_" actionable>
+        <div class="start">
+          $i18n{storageItemAndroid}
+          <div id="androidSize" class="secondary">
+            $i18n{storageSizeComputing}
+          </div>
         </div>
         <button class="icon-external" is="paper-icon-button-light"
             aria-label="$i18n{storageItemAndroid}"
@@ -219,10 +244,12 @@
       </div>
     </template>
     <template is="dom-if" if="[[!isGuest_]]">
-      <div class="settings-box" on-tap="onOtherUsersTap_" actionable>
-        <div class="start">$i18n{storageItemOtherUsers}</div>
-        <div id="otherUsersSize" class="storage-size">
-          $i18n{storageSizeComputing}
+      <div class="settings-box two-line" on-tap="onOtherUsersTap_" actionable>
+        <div class="start">
+          $i18n{storageItemOtherUsers}
+          <div id="otherUsersSize" class="secondary">
+            $i18n{storageSizeComputing}
+          </div>
         </div>
         <button class="subpage-arrow" is="paper-icon-button-light"
             aria-label="$i18n{storageItemOtherUsers}"
