@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/timer.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -34,6 +35,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -191,6 +193,7 @@ class MagnificationControllerImpl : public MagnificationController,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Moves the view port when |point| is located within
   // |x_panning_margin| and |y_pannin_margin| to the edge of the visible
@@ -687,6 +690,33 @@ void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
     gfx::Rect root_bounds = current_root->bounds();
     if (root_bounds.Contains(event->root_location()))
       point_of_interest_ = event->root_location();
+  }
+}
+
+void MagnificationControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTouchSupportForScreenMagnifier)) {
+    return;
+  }
+
+  const ui::GestureEventDetails& details = event->details();
+  if (details.type() == ui::ET_GESTURE_SCROLL_UPDATE &&
+      details.touch_points() == 2) {
+    gfx::Rect viewport_rect_in_dip = GetViewportRect();
+    viewport_rect_in_dip.Offset(-details.scroll_x(), -details.scroll_y());
+    gfx::Rect viewport_rect_in_pixel =
+        ui::ConvertRectToPixel(root_window_->layer(), viewport_rect_in_dip);
+    MoveWindow(viewport_rect_in_pixel.origin(), false);
+    event->SetHandled();
+  } else if (details.type() == ui::ET_GESTURE_PINCH_UPDATE &&
+             details.touch_points() == 3) {
+    float scale = GetScale() * details.scale();
+    scale = std::max(scale, kMinMagnifiedScaleThreshold);
+    scale = std::min(scale, kMaxMagnifiedScaleThreshold);
+
+    point_of_interest_ = event->root_location();
+    SetScale(scale, false);
+    event->SetHandled();
   }
 }
 

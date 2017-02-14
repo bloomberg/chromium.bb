@@ -2236,6 +2236,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+    {"enable-touch-support-for-screen-magnifier",
+     IDS_FLAGS_ENABLE_TOUCH_SUPPORT_FOR_SCREEN_MAGNIFIER_NAME,
+     IDS_FLAGS_ENABLE_TOUCH_SUPPORT_FOR_SCREEN_MAGNIFIER_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         chromeos::switches::kEnableTouchSupportForScreenMagnifier)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

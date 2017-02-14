@@ -14256,6 +14256,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_DESCRIPTION" desc="Description of the Android Wallpapers App flag.">
         Enables the Android Wallpapers App as the default Wallpaper App on Chrome OS.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_SUPPORT_FOR_SCREEN_MAGNIFIER_NAME" desc="Name of the touch support for screen magnifier flag.">
+        Touch support for screen magnifier
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_SUPPORT_FOR_SCREEN_MAGNIFIER_DESCRIPTION" desc="Description of the touch support for screen magnifier flag.">
+        Enables touch support for screen magnifier
+      </message>
     </if>
 
     <if expr="is_android">
