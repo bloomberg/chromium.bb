@@ -167,31 +167,31 @@ var updateTheme = function(info) {
   var themeStyle = [];
 
   if (info.tileBorderColor) {
-    themeStyle.push('.thumb-ntp .mv-tile {' +
+    themeStyle.push('.mv-tile {' +
         'border: 1px solid ' + info.tileBorderColor + '; }');
   }
   if (info.tileHoverBorderColor) {
-    themeStyle.push('.thumb-ntp .mv-tile:hover {' +
+    themeStyle.push('.mv-tile:hover {' +
         'border-color: ' + info.tileHoverBorderColor + '; }');
   }
   if (info.isThemeDark) {
-    themeStyle.push('.thumb-ntp .mv-tile, .thumb-ntp .mv-empty-tile { ' +
+    themeStyle.push('.mv-tile, .mv-empty-tile { ' +
         'background: rgb(51,51,51); }');
-    themeStyle.push('.thumb-ntp .mv-thumb.failed-img { ' +
+    themeStyle.push('.mv-thumb.failed-img { ' +
         'background-color: #555; }');
-    themeStyle.push('.thumb-ntp .mv-thumb.failed-img::after { ' +
+    themeStyle.push('.mv-thumb.failed-img::after { ' +
         'border-color: #333; }');
-    themeStyle.push('.thumb-ntp .mv-x { ' +
+    themeStyle.push('.mv-x { ' +
         'background: linear-gradient(to left, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('html[dir=rtl] .thumb-ntp .mv-x { ' +
+    themeStyle.push('html[dir=rtl] .mv-x { ' +
         'background: linear-gradient(to right, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('.thumb-ntp .mv-x::after { ' +
+    themeStyle.push('.mv-x::after { ' +
         'background-color: rgba(255,255,255,0.7); }');
-    themeStyle.push('.thumb-ntp .mv-x:hover::after { ' +
+    themeStyle.push('.mv-x:hover::after { ' +
         'background-color: #fff; }');
-    themeStyle.push('.thumb-ntp .mv-x:active::after { ' +
+    themeStyle.push('.mv-x:active::after { ' +
         'background-color: rgba(255,255,255,0.5); }');
   }
   if (info.tileTitleColor) {
@@ -471,7 +471,6 @@ var renderTile = function(data) {
   };
 
   img.title = data.title;
-  img.classList.add('thumbnail');
   loadedCounter += 1;
   img.addEventListener('load', countLoad);
   img.addEventListener('error', countLoad);
@@ -554,8 +553,6 @@ var init = function() {
     if (isFinite(ntl))
       NUM_TITLE_LINES = ntl;
   }
-
-  document.querySelector('#most-visited').classList.add('thumb-ntp');
 
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {

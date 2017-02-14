@@ -33,6 +33,8 @@ a:visited {
 .mv-tiles-old {
   -webkit-user-select: none;
   font-size: 0;
+  height: calc(146px + 130px);
+  line-height: 146px;
   margin: 0;
   opacity: 0;
   position: absolute;
@@ -41,40 +43,30 @@ a:visited {
   transition: opacity 1s;
 }
 
-.thumb-ntp #mv-tiles,
-.thumb-ntp .mv-tiles-old {
-  height: calc(146px + 130px);
-  line-height: 146px;
-}
-
 .mv-tile,
 .mv-empty-tile {
+  background: rgb(242,242,242);
+  border: 1px solid transparent;
+  border-radius: 2px;
   box-sizing: border-box;
   display: inline-block;
   font-family: arial, sans-serif;
   font-size: 12px;
+  height: calc(130px - 2px);
+  line-height: 100%;
+  margin: 0 8px;
   opacity: 1;
   outline: 0;
   overflow: hidden;
   position: relative;
   vertical-align: top;
   white-space: nowrap;
+  width: calc(156px - 2px);
 }
 
 .mv-tile.hidden,
 .mv-empty-tile.hidden {
   display: none;
-}
-
-.thumb-ntp .mv-tile,
-.thumb-ntp .mv-empty-tile {
-  background: rgb(242,242,242);
-  border: 1px solid transparent;
-  border-radius: 2px;
-  height: calc(130px - 2px);
-  line-height: 100%;
-  margin: 0 8px;
-  width: calc(156px - 2px);
 }
 
 .mv-tile {
@@ -84,7 +76,7 @@ a:visited {
   cursor: pointer;
 }
 
-.thumb-ntp .mv-tile:focus:not(:hover) {
+.mv-tile:focus:not(:hover) {
   -webkit-filter: brightness(75%);
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 4px 8px 0 rgba(0,0,0,0.2);
 }
@@ -96,27 +88,32 @@ a:visited {
   width: 0;
 }
 
-.thumb-ntp .mv-tile:hover {
+.mv-tile:hover {
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 4px 8px 0 rgba(0,0,0,0.2);
-}
-
-.mv-tile.mv-blacklist {
-  opacity: 0;
 }
 
 .mv-tile.mv-blacklist {
   margin-left: 0;
   margin-right: 0;
+  opacity: 0;
   transform: scale(0, 0);
   transform-origin: 0 41px;
   width: 0;
 }
 
 .mv-title {
+  -webkit-mask-image:
+    linear-gradient(to right, #000, #000, 100px, transparent);
   border: none;
+  height: 15px;
+  left: 31px;
+  line-height: 14px;
   overflow: hidden;
+  padding: 0;
   position: absolute;
   text-overflow: clip;
+  top: 8px;
+  width: calc(156px - 32px - 4px);
 }
 
 .mv-title.multiline {
@@ -124,18 +121,7 @@ a:visited {
   word-wrap: break-word;
 }
 
-.thumb-ntp .mv-title {
-  -webkit-mask-image:
-    linear-gradient(to right, #000, #000, 100px, transparent);
-  height: 15px;
-  left: 31px;
-  line-height: 14px;
-  padding: 0;
-  top: 8px;
-  width: calc(156px - 32px - 4px);
-}
-
-html:not([dir=rtl]) .thumb-ntp .mv-title[style*='direction: rtl'] {
+html:not([dir=rtl]) .mv-title[style*='direction: rtl'] {
   -webkit-mask-image:
     linear-gradient(to left, black, black, 100px, transparent);
   left: auto;
@@ -148,7 +134,7 @@ html[dir=rtl] .mv-title {
   text-align: left;
 }
 
-html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
+html[dir=rtl] .mv-title[style*='direction: rtl'] {
   -webkit-mask-image:
     linear-gradient(to left, black, black, 100px, transparent);
   right: 31px;
@@ -157,39 +143,24 @@ html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
 
 .mv-thumb {
   border: none;
+  border-radius: 0;
   cursor: pointer;
   display: block;
-  overflow: hidden;
-  position: absolute;
-}
-
-.thumb-ntp .mv-thumb {
-  border-radius: 0;
   height: 94px;
   left: 3px;
+  overflow: hidden;
+  position: absolute;
   top: 31px;
   width: 148px;
 }
 
-.mv-thumb img.thumbnail {
+.mv-thumb img {
   height: auto;
   min-height: 100%;
   width: 100%;
 }
 
-.mv-thumb img.large-icon {
-  -webkit-clip-path: inset(0 0 0 0 round 4px);
-  height: 48px;
-  left: 50%;
-  margin-left: -24px;
-  margin-top: -24px;
-  position: absolute;
-  top: 50%;
-  width: 48px;
-}
-
-.mv-thumb.failed-img,
-.mv-thumb.large-icon-outer {
+.mv-thumb.failed-img {
   background-color: #fff;
   height: 94px;
   width: 148px;
@@ -209,15 +180,12 @@ html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
 
 .mv-x {
   -webkit-transition: opacity 150ms;
+  background: linear-gradient(to left, rgb(242,242,242) 60%, transparent);
   border: none;
   cursor: pointer;
+  height: 30px;
   opacity: 0;
   position: absolute;
-}
-
-.thumb-ntp .mv-x {
-  background: linear-gradient(to left, rgb(242,242,242) 60%, transparent);
-  height: 30px;
   right: 0;
   width: 40px;
 }
@@ -240,22 +208,22 @@ html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
   width: 32px;
 }
 
-html[dir=rtl] .thumb-ntp .mv-x {
+html[dir=rtl] .mv-x {
   background: linear-gradient(to right, rgb(242,242,242) 60%, transparent);
   left: -1px;
   right: auto;
 }
 
-html[dir=rtl] .thumb-ntp .mv-x::after {
+html[dir=rtl] .mv-x::after {
   left: -1px;
   right: auto;
 }
 
-.thumb-ntp .mv-x:hover::after {
+.mv-x:hover::after {
   background-color: rgb(90,90,90);
 }
 
-.thumb-ntp .mv-x:active::after {
+.mv-x:active::after {
   background-color: rgb(66,133,244);
 }
 
