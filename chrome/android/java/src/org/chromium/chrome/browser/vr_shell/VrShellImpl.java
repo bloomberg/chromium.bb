@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -531,6 +533,29 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 nativeOnTabRemoved(mNativeVrShell, tab.isIncognito(), tab.getId());
             }
         };
+    }
+
+    @CalledByNative
+    public void navigateForward() {
+        mActivity.getToolbarManager().forward();
+    }
+
+    @CalledByNative
+    public void navigateBack() {
+        mActivity.getToolbarManager().back();
+    }
+
+    @CalledByNative
+    public void loadURL(String url, int transition) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, mTab));
+        loadUrlParams.setTransitionType(transition);
+        mTab.loadUrl(loadUrlParams);
+    }
+
+    @CalledByNative
+    public void reload() {
+        mTab.reload();
     }
 
     private native long nativeInit(WebContents uiWebContents, long nativeContentWindowAndroid,

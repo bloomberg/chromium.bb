@@ -408,6 +408,7 @@ void VrShell::UpdateScene(const base::ListValue* args) {
 
 void VrShell::DoUiAction(const UiAction action,
                          const base::DictionaryValue* arguments) {
+  // Actions that can be handled natively.
   switch (action) {
     case OMNIBOX_CONTENT:
       html_interface_->HandleOmniboxInput(*arguments);
@@ -418,50 +419,48 @@ void VrShell::DoUiAction(const UiAction action,
       SetContentPaused(paused);
       return;
     }
-    default:
-      break;
-  }
-  // TODO(mthiesse): Handles these in java through the Tab.
-  if (!main_contents_)
-    return;
-  content::NavigationController& controller = main_contents_->GetController();
-  switch (action) {
     case HISTORY_BACK:
-      if (main_contents_->IsFullscreen()) {
+      if (main_contents_ && main_contents_->IsFullscreen()) {
         main_contents_->ExitFullscreen(false);
-      } else if (controller.CanGoBack()) {
-        controller.GoBack();
+        return;
       }
+      // Otherwise handle in java.
       break;
-    case HISTORY_FORWARD:
-      if (controller.CanGoForward())
-        controller.GoForward();
-      break;
-    case RELOAD:
-      controller.Reload(content::ReloadType::NORMAL, false);
-      break;
-    case LOAD_URL: {
-      std::string url_string;
-      CHECK(arguments->GetString("url", &url_string));
-      GURL url(url_string);
-      // TODO(crbug.com/683344): Sanitize the URL and prefix, and pass the
-      // proper transition type down from the UI.
-      controller.LoadURL(url, content::Referrer(),
-                         ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                         std::string(""));
-      break;
-    }
+    case ZOOM_OUT:  // Not handled yet.
+    case ZOOM_IN:   // Not handled yet.
+      return;
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
       html_interface_.reset(new UiInterface(UiInterface::Mode::STANDARD));
       SetUiState();
       vr_web_contents_observer_->SetUiInterface(html_interface_.get());
-      break;
+      return;
 #endif
-    case ZOOM_OUT:  // Not handled yet.
-    case ZOOM_IN:  // Not handled yet.
+    default:
       break;
+  }
+  // Actions that are handled in java.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  switch (action) {
+    case HISTORY_BACK:
+      Java_VrShellImpl_navigateBack(env, j_vr_shell_.obj());
+      break;
+    case HISTORY_FORWARD:
+      Java_VrShellImpl_navigateForward(env, j_vr_shell_.obj());
+      break;
+    case RELOAD:
+      Java_VrShellImpl_reload(env, j_vr_shell_.obj());
+      break;
+    case LOAD_URL: {
+      base::string16 url_string;
+      CHECK(arguments->GetString("url", &url_string));
+      base::android::ScopedJavaLocalRef<jstring> string =
+          base::android::ConvertUTF16ToJavaString(env, url_string);
+      Java_VrShellImpl_loadURL(env, j_vr_shell_.obj(), string,
+                               ui::PageTransition::PAGE_TRANSITION_TYPED);
+      break;
+    }
     default:
       NOTREACHED();
   }
