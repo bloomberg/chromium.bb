@@ -54,7 +54,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
              const NetworkTimeUpdateCallback& network_time_update_callback,
              const BindToTrackerCallback& bind_to_tracker_callback);
 
-  // HttpPostProvider implementation.
+  // HttpPostProviderInterface implementation.
   void SetExtraRequestHeaders(const char* headers) override;
   void SetURL(const char* url, int port) override;
   void SetPostPayload(const char* content_type,

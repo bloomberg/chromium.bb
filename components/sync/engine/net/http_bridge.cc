@@ -74,11 +74,12 @@ HttpBridgeFactory::HttpBridgeFactory(
     : request_context_getter_(request_context_getter),
       network_time_update_callback_(network_time_update_callback),
       cancelation_signal_(cancelation_signal) {
-  // Registration should never fail.  This should happen on the UI thread during
-  // init.  It would be impossible for a shutdown to have been requested at this
-  // point.
-  bool result = cancelation_signal_->TryRegisterHandler(this);
-  DCHECK(result);
+  // This registration is happening on the Sync thread, while signalling occurs
+  // on the UI thread. We must handle the possibility signalling has already
+  // occurred.
+  if (!cancelation_signal_->TryRegisterHandler(this)) {
+    OnSignalReceived();
+  }
 }
 
 HttpBridgeFactory::~HttpBridgeFactory() {
