@@ -806,8 +806,8 @@ test("media_perftests") {
   ]
 }
 
-# For running the subset of media_unittests that might require audio hardware
-# separately on GPU bots. media_unittests includes these too.
+# The audio subset of media_unittests. This target exists for running only the
+# audio tests on the GPU bots (which have audio hardware).
 test("audio_unittests") {
   deps = [
     ":test_support",
@@ -817,6 +817,14 @@ test("audio_unittests") {
     "//media/test:run_all_unittests",
     "//ui/gfx:test_support",
   ]
+  if (is_android) {
+    deps += [
+      # The test needs the java dependencies to add the java classes for their
+      # native counterparts to the test apk.
+      "//media/base/android:media_java",
+      "//ui/android:ui_java",
+    ]
+  }
 }
 
 static_library("test_support") {

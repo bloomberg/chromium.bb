@@ -51,6 +51,8 @@ source_set("anywhere_unit_tests") {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
+  # APK targets that depend on this, either directly or indirectly, should also
+  # depend on :media_java to get the corresponding Java classes.
   source_set("android") {
     sources = [
       "android_cdm_factory.cc",
