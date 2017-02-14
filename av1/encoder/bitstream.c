@@ -2221,30 +2221,14 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
           plane ? get_uv_tx_size(&m->mbmi, &xd->plane[plane]) : m->mbmi.tx_size;
       int idx, idy;
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      int num_4x4_w;
-      int num_4x4_h;
       int max_blocks_wide;
       int max_blocks_high;
       int step = (1 << tx_size);
+      const BLOCK_SIZE plane_bsize =
+          get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
 
-      if (tx_size == TX_4X4 && bsize <= BLOCK_8X8) {
-        num_4x4_w = 2 >> xd->plane[plane].subsampling_x;
-        num_4x4_h = 2 >> xd->plane[plane].subsampling_y;
-      } else {
-        num_4x4_w =
-            num_4x4_blocks_wide_lookup[bsize] >> xd->plane[plane].subsampling_x;
-        num_4x4_h =
-            num_4x4_blocks_high_lookup[bsize] >> xd->plane[plane].subsampling_y;
-      }
-      // TODO: Do we need below for 4x4,4x8,8x4 cases as well?
-      max_blocks_wide =
-          num_4x4_w + (xd->mb_to_right_edge >= 0
-                           ? 0
-                           : xd->mb_to_right_edge >> (5 + pd->subsampling_x));
-      max_blocks_high =
-          num_4x4_h + (xd->mb_to_bottom_edge >= 0
-                           ? 0
-                           : xd->mb_to_bottom_edge >> (5 + pd->subsampling_y));
+      max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+      max_blocks_high = max_block_high(xd, plane_bsize, plane);
 
       // TODO(yushin) Try to use av1_foreach_transformed_block_in_plane().
       // Logic like the mb_to_right_edge/mb_to_bottom_edge stuff should
