@@ -50,12 +50,16 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // PendingFrameObserver implementation:
-  void OnSurfaceActivated(Surface* pending_frame) override;
+  void OnReferencedSurfacesChanged(
+      Surface* surface,
+      const std::vector<SurfaceId>* active_referenced_surfaces,
+      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
+  void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDependenciesChanged(
-      Surface* pending_frame,
+      Surface* surface,
       const SurfaceDependencies& added_dependencies,
       const SurfaceDependencies& removed_dependencies) override;
-  void OnSurfaceDiscarded(Surface* pending_frame) override;
+  void OnSurfaceDiscarded(Surface* surface) override;
 
   // SurfaceObserver implementation:
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;

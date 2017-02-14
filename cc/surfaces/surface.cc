@@ -68,6 +68,13 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
     factory_->manager()->RequestSurfaceResolution(this);
+
+    // We do not have to notify observers that referenced surfaces have changed
+    // in the else case because ActivateFrame will notify observers.
+    for (auto& observer : observers_) {
+      observer.OnReferencedSurfacesChanged(this, active_referenced_surfaces(),
+                                           pending_referenced_surfaces());
+    }
   } else {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(std::move(frame));
@@ -176,6 +183,11 @@ void Surface::ActivateFrame(CompositorFrame frame) {
 
   for (auto& observer : observers_)
     observer.OnSurfaceActivated(this);
+
+  for (auto& observer : observers_) {
+    observer.OnReferencedSurfacesChanged(this, active_referenced_surfaces(),
+                                         pending_referenced_surfaces());
+  }
 }
 
 void Surface::UpdateBlockingSurfaces(

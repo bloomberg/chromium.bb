@@ -73,23 +73,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
-
-  if (surface_manager_->using_surface_references()) {
-    SurfaceId last_surface_id = reference_tracker_.current_surface_id();
-
-    // Populate list of surface references to add and remove based on reference
-    // surfaces in current frame compared with the last frame. The list of
-    // surface references includes references from both the pending and active
-    // frame if any.
-    SurfaceId current_surface_id(frame_sink_id_, local_surface_id);
-    Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id);
-
-    reference_tracker_.UpdateReferences(local_surface_id,
-                                        surface->active_referenced_surfaces(),
-                                        surface->pending_referenced_surfaces());
-
-    UpdateSurfaceReferences(last_surface_id, local_surface_id);
-  }
 }
 
 void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
@@ -176,6 +159,25 @@ void CompositorFrameSinkSupport::RemoveChildFrameSink(
   surface_manager_->UnregisterFrameSinkHierarchy(frame_sink_id_,
                                                  child_frame_sink_id);
   child_frame_sinks_.erase(it);
+}
+
+void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
+    const LocalSurfaceId& local_surface_id,
+    const std::vector<SurfaceId>* active_referenced_surfaces,
+    const std::vector<SurfaceId>* pending_referenced_surfaces) {
+  if (!surface_manager_->using_surface_references())
+    return;
+
+  // Populate list of surface references to add and remove based on reference
+  // surfaces in current frame compared with the last frame. The list of
+  // surface references includes references from both the pending and active
+  // frame if any.
+  reference_tracker_.UpdateReferences(local_surface_id,
+                                      active_referenced_surfaces,
+                                      pending_referenced_surfaces);
+
+  SurfaceId last_surface_id = reference_tracker_.current_surface_id();
+  UpdateSurfaceReferences(last_surface_id, local_surface_id);
 }
 
 void CompositorFrameSinkSupport::ReturnResources(

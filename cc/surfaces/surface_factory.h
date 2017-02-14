@@ -87,18 +87,18 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   bool needs_sync_points() const { return needs_sync_points_; }
   void set_needs_sync_points(bool needs) { needs_sync_points_ = needs; }
 
-  // SurfaceFactory's owner can call this when it finds out that SurfaceManager
-  // is no longer alive during destruction.
-  void DidDestroySurfaceManager() { manager_ = nullptr; }
-
  private:
   // PendingFrameObserver implementation.
-  void OnSurfaceActivated(Surface* pending_surface) override;
+  void OnReferencedSurfacesChanged(
+      Surface* surface,
+      const std::vector<SurfaceId>* active_referenced_surfaces,
+      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
+  void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDependenciesChanged(
-      Surface* pending_surface,
+      Surface* surface,
       const SurfaceDependencies& added_dependencies,
       const SurfaceDependencies& removed_dependencies) override;
-  void OnSurfaceDiscarded(Surface* pending_surface) override;
+  void OnSurfaceDiscarded(Surface* surface) override;
 
   std::unique_ptr<Surface> Create(const LocalSurfaceId& local_surface_id);
   void Destroy(std::unique_ptr<Surface> surface);
@@ -108,6 +108,7 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   SurfaceFactoryClient* client_;
   SurfaceResourceHolder holder_;
   bool needs_sync_points_;
+  bool seen_first_frame_activation_ = false;
   std::unique_ptr<Surface> current_surface_;
   base::WeakPtrFactory<SurfaceFactory> weak_factory_;
 
