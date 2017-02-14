@@ -47,6 +47,13 @@ class MEDIA_EXPORT MediaCodecUtil {
   // to check IsAvailable() explicitly before calling them.
   static bool IsMediaCodecAvailable();
 
+  // Returns true if MediaCodec is available, with |sdk| as the sdk version and
+  // |model| as the model.  This is provided for unit tests; you probably want
+  // IsMediaCodecAvailable() otherwise.
+  // TODO(liberato): merge this with IsMediaCodecAvailable, and provide a way
+  // to mock BuildInfo instead.
+  static bool IsMediaCodecAvailableFor(int sdk, const char* model);
+
   // Returns true if MediaCodec.setParameters() is available on the device.
   static bool SupportsSetParameters();
 

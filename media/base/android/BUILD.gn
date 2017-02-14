@@ -105,6 +105,7 @@ if (is_android) {
   source_set("unit_tests") {
     testonly = true
     sources = [
+      "media_codec_util_unittest.cc",
       "media_drm_bridge_unittest.cc",
       "media_player_bridge_unittest.cc",
       "media_service_throttler_unittest.cc",

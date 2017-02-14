@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.11",
+  "version": "12.12",
   "entries": [
     {
       "id": 1,
@@ -1473,6 +1473,22 @@ LONG_STRING_CONST(
       "gl_renderer": "Mali-4.*",
       "features": [
         "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 133,
+      "description": "MediaCodec on VideoCore IV HW crashes on JB",
+      "cr_bugs": [654905],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "4.4"
+        }
+      },
+      "gl_renderer": ".*VideoCore IV.*",
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
