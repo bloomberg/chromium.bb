@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -31,6 +33,10 @@ typedef HUPScoringParams::ScoreBuckets ScoreBuckets;
 
 // Field trial names.
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
+
+// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
+const base::Feature kZeroSuggestRedirectToChrome{
+    "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
 
 void InitializeBucketsFromString(const std::string& bucket_string,
                                  ScoreBuckets* score_buckets) {
@@ -572,6 +578,25 @@ int OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance() {
   return 700;
 }
 
+// static
+bool OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial() {
+  return base::FeatureList::IsEnabled(kZeroSuggestRedirectToChrome);
+}
+
+// static
+std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress() {
+  return base::GetFieldTrialParamValueByFeature(
+      kZeroSuggestRedirectToChrome,
+      kZeroSuggestRedirectToChromeServerAddressParam);
+}
+
+// static
+std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields() {
+  return base::GetFieldTrialParamValueByFeature(
+      kZeroSuggestRedirectToChrome,
+      kZeroSuggestRedirectToChromeAdditionalFieldsParam);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -647,6 +672,12 @@ const char OmniboxFieldTrial::kPhysicalWebZeroSuggestBaseRelevanceParam[] =
     "PhysicalWebZeroSuggestBaseRelevance";
 const char OmniboxFieldTrial::kPhysicalWebAfterTypingBaseRelevanceParam[] =
     "PhysicalWebAfterTypingBaseRelevanceParam";
+
+const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeServerAddressParam[] =
+    "ZeroSuggestRedirectToChromeServerAddress";
+const char
+    OmniboxFieldTrial::kZeroSuggestRedirectToChromeAdditionalFieldsParam[] =
+        "ZeroSuggestRedirectToChromeAdditionalFields";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
