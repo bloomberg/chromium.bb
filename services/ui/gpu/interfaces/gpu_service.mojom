@@ -17,7 +17,7 @@ interface GpuService {
   EstablishGpuChannel(int32 client_id,
                       uint64 client_tracing_id,
                       bool is_gpu_host)
-      => (handle<message_pipe> channel_handle);
+      => (handle<message_pipe>? channel_handle);
 
   [Sync]
   CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,

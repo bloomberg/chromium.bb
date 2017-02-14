@@ -271,7 +271,6 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
@@ -464,17 +463,6 @@ void GpuChildThread::OnGpuSwitched() {
   // Notify observers in the GPU process.
   if (!in_browser_process_)
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
-}
-
-void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
-  if (!gpu_channel_manager())
-    return;
-
-  IPC::ChannelHandle channel_handle = gpu_channel_manager()->EstablishChannel(
-      params.client_id, params.client_tracing_id, params.preempts,
-      params.allow_view_command_buffers, params.allow_real_time_streams);
-  gpu_service_->media_gpu_channel_manager()->AddChannel(params.client_id);
-  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
 void GpuChildThread::OnCloseChannel(int32_t client_id) {
