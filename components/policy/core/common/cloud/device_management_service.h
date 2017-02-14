@@ -25,9 +25,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace net {
 class URLRequestContextGetter;

@@ -26,7 +26,6 @@ namespace base {
 class CommandLine;
 struct LaunchOptions;
 class SequencedWorkerPoolOwner;
-class TaskRunner;
 class TestLauncher;
 class Thread;
 

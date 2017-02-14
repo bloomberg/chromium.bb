@@ -4,7 +4,6 @@
 
 #include "extensions/browser/updater/update_client_config.h"
 
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {

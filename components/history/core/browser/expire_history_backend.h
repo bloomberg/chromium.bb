@@ -19,10 +19,6 @@
 class GURL;
 class TestingProfile;
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace history {
 
 class HistoryBackendClient;

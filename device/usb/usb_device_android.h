@@ -9,10 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "device/usb/usb_device.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace device {
 
 class UsbServiceAndroid;

@@ -14,7 +14,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class SequencedWorkerPool;
 class SingleThreadTaskRunner;
 }
 

@@ -16,10 +16,6 @@
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace sync_file_system {
 namespace drive_backend {
 

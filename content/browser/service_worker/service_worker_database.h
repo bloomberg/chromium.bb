@@ -26,10 +26,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace tracked_objects {
-class Location;
-}
-
 namespace leveldb {
 class DB;
 class Env;
