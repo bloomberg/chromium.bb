@@ -1,0 +1,33 @@
+Test search in Timeline Tree View panel.
+
+
+Testing mode: BottomUp
+3
+Timestamp: foo10
+Timestamp: foo13
+Timestamp: foo16
+Timestamp: foo10
+Timestamp: foo13
+
+Testing mode: CallTree
+3
+Timestamp: foo10
+Timestamp: foo13
+Timestamp: foo16
+Timestamp: foo10
+Timestamp: foo13
+
+Testing mode: EventLog
+9
+Timestamp: foo05
+Timestamp: foo08
+Timestamp: foo09
+Timestamp: foo10
+Timestamp: foo13
+Timestamp: foo14
+Timestamp: foo16
+Timestamp: foo17
+Timestamp: foo18
+Timestamp: foo05
+Timestamp: foo08
+
