@@ -28,7 +28,10 @@ if (is_android) {
     widevine_cdm_binary_files = [ "chromeos/$widevine_arch/libwidevinecdm.so" ]
   } else if (is_linux) {
     widevine_cdm_version_h_file = "linux/$widevine_arch/widevine_cdm_version.h"
-    widevine_cdm_binary_files = [ "linux/$widevine_arch/libwidevinecdm.so" ]
+    widevine_cdm_binary_files = [
+      "linux/$widevine_arch/libwidevinecdm.so",
+      "linux/$widevine_arch/libwidevinecdm.so.sig",
+    ]
   } else if (is_win) {
     widevine_cdm_version_h_file = "win/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [
@@ -190,5 +193,20 @@ source_set("widevine_test_license_server") {
       # This target should be removed and targets should have data_deps on this target:
       #"//third_party/widevine/test/license_server/license_server.gyp:test_license_server"
     ]
+  }
+}
+
+if (is_chrome_branded) {
+  copy("widevine_signature_scripts") {
+    sources = [
+      "../scripts/signature_generator.py",
+      "../scripts/signer.py",
+    ]
+    outputs = [
+      "$root_out_dir/installer/widevine/{{source_file_part}}",
+    ]
+  }
+} else {
+  group("widevine_signature_scripts") {
   }
 }
