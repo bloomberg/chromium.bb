@@ -84,7 +84,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/public/rappor_utils.h"
