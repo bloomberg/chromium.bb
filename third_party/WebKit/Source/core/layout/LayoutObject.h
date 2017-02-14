@@ -575,11 +575,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void setChildrenInline(bool b) { m_bitfields.setChildrenInline(b); }
 
   bool alwaysCreateLineBoxesForLayoutInline() const {
-    ASSERT(isLayoutInline());
+    DCHECK(isLayoutInline());
     return m_bitfields.alwaysCreateLineBoxesForLayoutInline();
   }
   void setAlwaysCreateLineBoxesForLayoutInline(bool alwaysCreateLineBoxes) {
-    ASSERT(isLayoutInline());
+    DCHECK(isLayoutInline());
     m_bitfields.setAlwaysCreateLineBoxesForLayoutInline(alwaysCreateLineBoxes);
   }
 
@@ -748,10 +748,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return m_bitfields.isStickyPositioned();
   }
   bool isFixedPositioned() const {
-    return isOutOfFlowPositioned() && style()->position() == FixedPosition;
+    return isOutOfFlowPositioned() && style()->position() == EPosition::kFixed;
   }
   bool isAbsolutePositioned() const {
-    return isOutOfFlowPositioned() && style()->position() == AbsolutePosition;
+    return isOutOfFlowPositioned() &&
+           style()->position() == EPosition::kAbsolute;
   }
   bool isPositioned() const { return m_bitfields.isPositioned(); }
 
@@ -879,7 +880,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   Document& document() const {
-    ASSERT(m_node || parent());  // crbug.com/402056
+    DCHECK(m_node || parent());  // crbug.com/402056
     return m_node ? m_node->document() : parent()->document();
   }
   LocalFrame* frame() const { return document().frame(); }
@@ -1009,8 +1010,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void setPositionState(EPosition position) {
-    ASSERT((position != AbsolutePosition && position != FixedPosition) ||
-           isBox());
+    DCHECK(
+        (position != EPosition::kAbsolute && position != EPosition::kFixed) ||
+        isBox());
     m_bitfields.setPositionedState(position);
   }
   void clearPositionedState() { m_bitfields.clearPositionedState(); }
@@ -1317,7 +1319,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // FIXME: It would be better if style() returned a const reference.
   const ComputedStyle& styleRef() const { return mutableStyleRef(); }
   ComputedStyle& mutableStyleRef() const {
-    ASSERT(m_style);
+    DCHECK(m_style);
     return *m_style;
   }
 
@@ -1986,7 +1988,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void willBeRemovedFromTree();
 
   void setDocumentForAnonymous(Document* document) {
-    ASSERT(isAnonymous());
+    DCHECK(isAnonymous());
     m_node = document;
   }
 
@@ -2457,21 +2459,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       return m_positionedState != IsStaticallyPositioned;
     }
 
-    void setPositionedState(int positionState) {
+    void setPositionedState(EPosition positionState) {
       // This maps FixedPosition and AbsolutePosition to
       // IsOutOfFlowPositioned, saving one bit.
       switch (positionState) {
-        case StaticPosition:
+        case EPosition::kStatic:
           m_positionedState = IsStaticallyPositioned;
           break;
-        case RelativePosition:
+        case EPosition::kRelative:
           m_positionedState = IsRelativelyPositioned;
           break;
-        case AbsolutePosition:
-        case FixedPosition:
+        case EPosition::kAbsolute:
+        case EPosition::kFixed:
           m_positionedState = IsOutOfFlowPositioned;
           break;
-        case StickyPosition:
+        case EPosition::kSticky:
           m_positionedState = IsStickyPositioned;
           break;
         default:
@@ -2479,7 +2481,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           break;
       }
     }
-    void clearPositionedState() { m_positionedState = StaticPosition; }
+    void clearPositionedState() {
+      m_positionedState = static_cast<unsigned>(EPosition::kStatic);
+    }
 
     ALWAYS_INLINE SelectionState getSelectionState() const {
       return static_cast<SelectionState>(m_selectionState);
@@ -2732,7 +2736,7 @@ inline int adjustForAbsoluteZoom(int value, LayoutObject* layoutObject) {
 
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
                                                   LayoutObject& layoutObject) {
-  ASSERT(layoutObject.style());
+  DCHECK(layoutObject.style());
   return adjustLayoutUnitForAbsoluteZoom(value, *layoutObject.style());
 }
 
@@ -2752,7 +2756,7 @@ inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect,
 
 inline double adjustScrollForAbsoluteZoom(double value,
                                           LayoutObject& layoutObject) {
-  ASSERT(layoutObject.style());
+  DCHECK(layoutObject.style());
   return adjustScrollForAbsoluteZoom(value, *layoutObject.style());
 }
 

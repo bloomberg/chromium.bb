@@ -284,7 +284,7 @@ static WebLayerPositionConstraint computePositionConstraint(
     const PaintLayer* layer) {
   DCHECK(layer->hasCompositedLayerMapping());
   do {
-    if (layer->layoutObject()->style()->position() == FixedPosition) {
+    if (layer->layoutObject()->style()->position() == EPosition::kFixed) {
       const LayoutObject* fixedPositionObject = layer->layoutObject();
       bool fixedToRight = !fixedPositionObject->style()->right().isAuto();
       bool fixedToBottom = !fixedPositionObject->style()->bottom().isAuto();

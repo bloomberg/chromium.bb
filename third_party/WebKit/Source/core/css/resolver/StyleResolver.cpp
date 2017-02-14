@@ -562,7 +562,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
   // document element so that the common case doesn't need to create a new
   // ComputedStyle in Document::inheritHtmlAndBodyElementStyles.
   documentStyle->setDisplay(EDisplay::Block);
-  documentStyle->setPosition(AbsolutePosition);
+  documentStyle->setPosition(EPosition::kAbsolute);
 
   // Document::inheritHtmlAndBodyElementStyles will set the final overflow
   // style values, but they should initially be auto to avoid premature

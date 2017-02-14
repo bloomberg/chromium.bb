@@ -30,7 +30,7 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(
     const PaintLayer* layer) {
   LayoutObject* current = layer->layoutObject();
   while (current) {
-    if (current->style()->position() == FixedPosition) {
+    if (current->style()->position() == EPosition::kFixed) {
       for (current = current->parent();
            current && !current->canContainFixedPositionObjects();
            current = current->parent()) {
@@ -101,7 +101,7 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
   const PaintLayer* previousOverflowLayer = layer->ancestorOverflowLayer();
   layer->updateAncestorOverflowLayer(info.lastOverflowClipLayer);
   if (info.lastOverflowClipLayer && layer->needsCompositingInputsUpdate() &&
-      layer->layoutObject()->style()->position() == StickyPosition) {
+      layer->layoutObject()->style()->position() == EPosition::kSticky) {
     if (info.lastOverflowClipLayer != previousOverflowLayer &&
         !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // Old ancestor scroller should no longer have these constraints.
@@ -176,7 +176,7 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
                                       ? parent
                                       : parent->filterAncestor();
       bool layerIsFixedPosition =
-          layer->layoutObject()->style()->position() == FixedPosition;
+          layer->layoutObject()->style()->position() == EPosition::kFixed;
       properties.nearestFixedPositionLayer =
           layerIsFixedPosition ? layer : parent->nearestFixedPositionLayer();
 

@@ -1113,9 +1113,9 @@ static inline bool needsToReinsertIntoFlowThread(
       newStyle.hasTransformRelatedProperty())
     return true;
   return (oldStyle.hasInFlowPosition() &&
-          newStyle.position() == StaticPosition) ||
+          newStyle.position() == EPosition::kStatic) ||
          (newStyle.hasInFlowPosition() &&
-          oldStyle.position() == StaticPosition);
+          oldStyle.position() == EPosition::kStatic);
 }
 
 static inline bool needsToRemoveFromFlowThread(const ComputedStyle& oldStyle,

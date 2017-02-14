@@ -559,7 +559,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
       diff.setNeedsFullLayout();
   }
 
-  if (!diff.needsFullLayout() && position() != StaticPosition &&
+  if (!diff.needsFullLayout() && position() != EPosition::kStatic &&
       m_surround->offset != other.m_surround->offset) {
     // Optimize for the case where a positioned layer is moving but not changing
     // size.

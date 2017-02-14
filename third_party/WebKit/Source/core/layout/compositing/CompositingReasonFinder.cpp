@@ -200,8 +200,8 @@ bool CompositingReasonFinder::requiresCompositingForTransformAnimation(
 
 bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
     const PaintLayer* layer) const {
-  if (layer->layoutObject()->style()->position() != FixedPosition &&
-      layer->layoutObject()->style()->position() != StickyPosition)
+  if (layer->layoutObject()->style()->position() != EPosition::kFixed &&
+      layer->layoutObject()->style()->position() != EPosition::kSticky)
     return false;
 
   if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger) &&
@@ -216,7 +216,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   // container rather than the enclosing frame.
   if (layer->sticksToViewport())
     return m_layoutView.frameView()->isScrollable();
-  return layer->layoutObject()->style()->position() == StickyPosition &&
+  return layer->layoutObject()->style()->position() == EPosition::kSticky &&
          layer->ancestorOverflowLayer()->scrollsOverflow();
 }
 

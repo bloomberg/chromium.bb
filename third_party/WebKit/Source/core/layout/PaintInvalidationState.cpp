@@ -251,7 +251,7 @@ void PaintInvalidationState::updateForCurrentObject(
 
   EPosition position = m_currentObject.styleRef().position();
 
-  if (position == FixedPosition) {
+  if (position == EPosition::kFixed) {
     // Use slow path to get the offset of the fixed-position, and enable fast
     // path for descendants.
     FloatPoint fixedOffset = m_currentObject.localToAncestorPoint(
@@ -275,7 +275,7 @@ void PaintInvalidationState::updateForCurrentObject(
     return;
   }
 
-  if (position == AbsolutePosition) {
+  if (position == EPosition::kAbsolute) {
     m_cachedOffsetsEnabled = m_cachedOffsetsForAbsolutePositionEnabled;
     if (!m_cachedOffsetsEnabled)
       return;

@@ -216,7 +216,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff,
 
   if (oldStyle && parent()) {
     if (oldStyle->position() != newStyle.position() &&
-        newStyle.position() != StaticPosition) {
+        newStyle.position() != EPosition::kStatic) {
       // In LayoutObject::styleWillChange() we already removed ourself from our
       // old containing block's positioned descendant list, and we will be
       // inserted to the new containing block's list during layout. However the
@@ -518,7 +518,7 @@ void LayoutBlock::addOverflowFromPositionedObjects() {
   for (auto* positionedObject : *positionedDescendants) {
     // Fixed positioned elements don't contribute to layout overflow, since they
     // don't scroll with the content.
-    if (positionedObject->style()->position() != FixedPosition)
+    if (positionedObject->style()->position() != EPosition::kFixed)
       addOverflowFromChild(positionedObject,
                            toLayoutSize(positionedObject->location()));
   }
@@ -677,7 +677,7 @@ bool LayoutBlock::simplifiedLayout() {
 void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(
     LayoutObject* child,
     SubtreeLayoutScope& layoutScope) {
-  if (child->style()->position() != FixedPosition)
+  if (child->style()->position() != EPosition::kFixed)
     return;
 
   bool hasStaticBlockPosition =
@@ -688,7 +688,8 @@ void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(
     return;
 
   LayoutObject* o = child->parent();
-  while (o && !o->isLayoutView() && o->style()->position() != AbsolutePosition)
+  while (o && !o->isLayoutView() &&
+         o->style()->position() != EPosition::kAbsolute)
     o = o->parent();
   // The LayoutView is absolute-positioned, but does not move.
   if (o->isLayoutView())
@@ -2059,7 +2060,7 @@ bool LayoutBlock::recalcPositionedDescendantsOverflowAfterStyleChange() {
       continue;
     LayoutBlock* block = toLayoutBlock(box);
     if (!block->recalcOverflowAfterStyleChange() ||
-        box->style()->position() == FixedPosition)
+        box->style()->position() == EPosition::kFixed)
       continue;
 
     childrenOverflowChanged = true;

@@ -1954,7 +1954,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
   for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
     LayoutObject* layoutObject = viewportConstrainedObject;
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
-    if (layoutObject->style()->position() == StickyPosition) {
+    if (layoutObject->style()->position() == EPosition::kSticky) {
       // TODO(skobes): Resolve circular dependency between scroll offset and
       // compositing state, and remove this disabler. https://crbug.com/420741
       DisableCompositingQueryAsserts disabler;
@@ -4920,8 +4920,8 @@ bool FrameView::hasVisibleSlowRepaintViewportConstrainedObjects() const {
 
   for (const LayoutObject* layoutObject : *viewportConstrainedObjects()) {
     DCHECK(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
-    DCHECK(layoutObject->style()->position() == FixedPosition ||
-           layoutObject->style()->position() == StickyPosition);
+    DCHECK(layoutObject->style()->position() == EPosition::kFixed ||
+           layoutObject->style()->position() == EPosition::kSticky);
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
     // Whether the Layer sticks to the viewport is a tree-depenent

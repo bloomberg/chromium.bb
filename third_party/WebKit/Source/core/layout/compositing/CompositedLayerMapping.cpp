@@ -289,7 +289,7 @@ void CompositedLayerMapping::updateBackdropFilters(const ComputedStyle& style) {
 
 void CompositedLayerMapping::updateStickyConstraints(
     const ComputedStyle& style) {
-  bool sticky = style.position() == EPosition::StickyPosition;
+  bool sticky = style.position() == EPosition::kSticky;
   const PaintLayer* ancestorOverflowLayer =
       m_owningLayer.ancestorOverflowLayer();
   // TODO(flackr): Do we still need this?

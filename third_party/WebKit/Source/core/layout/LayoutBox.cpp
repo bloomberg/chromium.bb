@@ -215,7 +215,7 @@ void LayoutBox::styleWillChange(StyleDifference diff,
       } else {
         markContainerChainForLayout();
       }
-      if (oldStyle->position() == StaticPosition)
+      if (oldStyle->position() == EPosition::kStatic)
         setShouldDoFullPaintInvalidation();
       else if (newStyle.hasOutOfFlowPosition())
         parent()->setChildNeedsLayout();
@@ -699,7 +699,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect,
 
   // If we are fixed-position and stick to the viewport, it is useless to
   // scroll the parent.
-  if (style()->position() == FixedPosition &&
+  if (style()->position() == EPosition::kFixed &&
       containerForFixedPosition() == view()) {
     return;
   }
@@ -1540,7 +1540,7 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(
 
 static bool isCandidateForOpaquenessTest(const LayoutBox& childBox) {
   const ComputedStyle& childStyle = childBox.styleRef();
-  if (childStyle.position() != StaticPosition &&
+  if (childStyle.position() != EPosition::kStatic &&
       childBox.containingBlock() != childBox.parent())
     return false;
   if (childStyle.visibility() != EVisibility::kVisible ||
@@ -1915,7 +1915,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForGetComputedStyle() const {
 
   LayoutBoxModelObject* cb = toLayoutBoxModelObject(container());
   LayoutUnit height = containingBlockLogicalHeightForPositioned(cb);
-  if (styleRef().position() != AbsolutePosition)
+  if (styleRef().position() != EPosition::kAbsolute)
     height -= cb->paddingLogicalHeight();
   return height;
 }
@@ -1981,7 +1981,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const {
 void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                    TransformState& transformState,
                                    MapCoordinatesFlags mode) const {
-  bool isFixedPos = style()->position() == FixedPosition;
+  bool isFixedPos = style()->position() == EPosition::kFixed;
 
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
@@ -2000,7 +2000,7 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (this == ancestor)
     return;
 
-  bool isFixedPos = style()->position() == FixedPosition;
+  bool isFixedPos = style()->position() == EPosition::kFixed;
 
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
@@ -2025,7 +2025,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o) const {
   if (o->hasOverflowClip())
     offset -= toLayoutBox(o)->scrolledContentOffset();
 
-  if (style()->position() == AbsolutePosition && o->isInFlowPositioned() &&
+  if (style()->position() == EPosition::kAbsolute && o->isInFlowPositioned() &&
       o->isLayoutInline())
     offset += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
 
@@ -2397,7 +2397,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
 
   const ComputedStyle& styleToUse = styleRef();
   EPosition position = styleToUse.position();
-  if (position == AbsolutePosition && container->isInFlowPositioned() &&
+  if (position == EPosition::kAbsolute && container->isInFlowPositioned() &&
       container->isLayoutInline()) {
     topLeft +=
         toLayoutInline(container)->offsetForInFlowPositionedInline(*this);
@@ -2428,15 +2428,15 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     rect.move(-containerOffset);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
-    if (ancestor->style()->position() != FixedPosition &&
-        container->isLayoutView() && position == FixedPosition)
+    if (ancestor->style()->position() != EPosition::kFixed &&
+        container->isLayoutView() && position == EPosition::kFixed)
       rect.move(toLayoutView(container)->offsetForFixedPosition(true));
     return true;
   }
 
   if (container->isLayoutView())
     return toLayoutView(container)->mapToVisualRectInAncestorSpace(
-        ancestor, rect, position == FixedPosition ? IsFixed : 0,
+        ancestor, rect, position == EPosition::kFixed ? IsFixed : 0,
         visualRectFlags);
   else
     return container->mapToVisualRectInAncestorSpace(ancestor, rect,
@@ -3607,8 +3607,8 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(
     return containingBlockLogicalHeightForPositioned(containingBlock, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (style()->position() == FixedPosition && containingBlock->isLayoutView() &&
-      !document().printing()) {
+  if (style()->position() == EPosition::kFixed &&
+      containingBlock->isLayoutView() && !document().printing()) {
     const LayoutView* view = toLayoutView(containingBlock);
     if (FrameView* frameView = view->frameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
@@ -3668,8 +3668,8 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(
     return containingBlockLogicalWidthForPositioned(containingBlock, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (style()->position() == FixedPosition && containingBlock->isLayoutView() &&
-      !document().printing()) {
+  if (style()->position() == EPosition::kFixed &&
+      containingBlock->isLayoutView() && !document().printing()) {
     const LayoutView* view = toLayoutView(containingBlock);
     if (FrameView* frameView = view->frameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
@@ -5049,7 +5049,7 @@ LayoutBox::PaginationBreakability LayoutBox::getPaginationBreakability() const {
   // actually look for replaced elements.
   if (isAtomicInlineLevel() || hasUnsplittableScrollingOverflow() ||
       (parent() && isWritingModeRoot()) ||
-      (isOutOfFlowPositioned() && style()->position() == FixedPosition))
+      (isOutOfFlowPositioned() && style()->position() == EPosition::kFixed))
     return ForbidBreaks;
 
   EBreakInside breakValue = breakInside();

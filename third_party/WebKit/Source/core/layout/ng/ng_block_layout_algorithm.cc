@@ -430,7 +430,7 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
     if (current_child_->Type() == NGLayoutInputNode::kLegacyBlock) {
       NGBlockNode* current_block_child = toNGBlockNode(current_child_);
       EPosition position = current_block_child->Style().position();
-      if (position == AbsolutePosition || position == FixedPosition) {
+      if (position == EPosition::kAbsolute || position == EPosition::kFixed) {
         builder_->AddOutOfFlowChildCandidate(current_block_child,
                                              GetChildSpaceOffset());
         current_child_ = current_block_child->NextSibling();

@@ -918,9 +918,9 @@ LayoutBlock* LayoutObject::containingBlock(AncestorSkipInfo* skipInfo) const {
   if (!object && isLayoutScrollbarPart())
     object = toLayoutScrollbarPart(this)->scrollbarStyleSource();
   if (!isTextOrSVGChild()) {
-    if (m_style->position() == FixedPosition)
+    if (m_style->position() == EPosition::kFixed)
       return containerForFixedPosition(skipInfo);
-    if (m_style->position() == AbsolutePosition)
+    if (m_style->position() == EPosition::kAbsolute)
       return containingBlockForAbsolutePosition(skipInfo);
   }
   if (isColumnSpanAll()) {
@@ -2111,8 +2111,9 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                    : TransformState::FlattenTransform);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
-    if (ancestor->style()->position() != FixedPosition &&
-        container->isLayoutView() && styleRef().position() == FixedPosition) {
+    if (ancestor->style()->position() != EPosition::kFixed &&
+        container->isLayoutView() &&
+        styleRef().position() == EPosition::kFixed) {
       LayoutSize adjustment = toLayoutView(container)->offsetForFixedPosition();
       transformState.move(adjustment.width(), adjustment.height());
     }
@@ -2190,8 +2191,9 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transformState.move(-containerOffset.width(), -containerOffset.height());
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
-    if (ancestor->style()->position() != FixedPosition &&
-        container->isLayoutView() && styleRef().position() == FixedPosition) {
+    if (ancestor->style()->position() != EPosition::kFixed &&
+        container->isLayoutView() &&
+        styleRef().position() == EPosition::kFixed) {
       LayoutSize adjustment = toLayoutView(container)->offsetForFixedPosition();
       transformState.move(adjustment.width(), adjustment.height());
     }
@@ -2481,10 +2483,10 @@ LayoutObject* LayoutObject::container(AncestorSkipInfo* skipInfo) const {
     return parent();
 
   EPosition pos = m_style->position();
-  if (pos == FixedPosition)
+  if (pos == EPosition::kFixed)
     return containerForFixedPosition(skipInfo);
 
-  if (pos == AbsolutePosition) {
+  if (pos == EPosition::kAbsolute) {
     return containerForAbsolutePosition(skipInfo);
   }
 

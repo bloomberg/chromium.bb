@@ -880,12 +880,12 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
     context.current.paintOffset = boxModelObject.container()->paintOffset();
 
   switch (object.styleRef().position()) {
-    case StaticPosition:
+    case EPosition::kStatic:
       break;
-    case RelativePosition:
+    case EPosition::kRelative:
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
-    case AbsolutePosition: {
+    case EPosition::kAbsolute: {
       DCHECK(context.containerForAbsolutePosition ==
              boxModelObject.container());
       context.current = context.absolutePosition;
@@ -902,10 +902,10 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       }
       break;
     }
-    case StickyPosition:
+    case EPosition::kSticky:
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
-    case FixedPosition:
+    case EPosition::kFixed:
       context.current = context.fixedPosition;
       break;
     default:

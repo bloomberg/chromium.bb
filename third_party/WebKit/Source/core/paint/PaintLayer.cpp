@@ -330,8 +330,8 @@ void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
 }
 
 bool PaintLayer::sticksToViewport() const {
-  if (layoutObject()->style()->position() != FixedPosition &&
-      layoutObject()->style()->position() != StickyPosition)
+  if (layoutObject()->style()->position() != EPosition::kFixed &&
+      layoutObject()->style()->position() != EPosition::kSticky)
     return false;
 
   // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
@@ -340,7 +340,7 @@ bool PaintLayer::sticksToViewport() const {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     const auto* viewProperties = layoutObject()->view()->paintProperties();
     const ScrollPaintPropertyNode* ancestorTargetScrollNode;
-    if (layoutObject()->style()->position() == FixedPosition) {
+    if (layoutObject()->style()->position() == EPosition::kFixed) {
       ancestorTargetScrollNode = viewProperties->localBorderBoxProperties()
                                      ->transform()
                                      ->findEnclosingScrollNode();
@@ -355,10 +355,10 @@ bool PaintLayer::sticksToViewport() const {
     return transform->findEnclosingScrollNode() == ancestorTargetScrollNode;
   }
 
-  return (layoutObject()->style()->position() == FixedPosition &&
+  return (layoutObject()->style()->position() == EPosition::kFixed &&
           layoutObject()->containerForFixedPosition() ==
               layoutObject()->view()) ||
-         (layoutObject()->style()->position() == StickyPosition &&
+         (layoutObject()->style()->position() == EPosition::kSticky &&
           (!ancestorScrollingLayer() || ancestorScrollingLayer() == root()));
 }
 
@@ -2685,7 +2685,7 @@ bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const {
   }
 
   return (transform() ||
-          layoutObject()->style()->position() == FixedPosition) &&
+          layoutObject()->style()->position() == EPosition::kFixed) &&
          ((globalPaintFlags & GlobalPaintFlattenCompositingLayers) ||
           compositingState() != PaintsIntoOwnBacking);
 }
@@ -2718,7 +2718,7 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
     return false;
 
   if (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled() &&
-      layoutObject()->style()->position() == FixedPosition &&
+      layoutObject()->style()->position() == EPosition::kFixed &&
       compositingState() != PaintsIntoOwnBacking)
     return false;
 

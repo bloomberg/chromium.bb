@@ -27,8 +27,8 @@ bool IsContainingBlockForAbsoluteDescendant(
   bool contains_absolute =
       container_style.canContainAbsolutePositionObjects() || contains_fixed;
 
-  return (contains_absolute && position == AbsolutePosition) ||
-         (contains_fixed && position == FixedPosition);
+  return (contains_absolute && position == EPosition::kAbsolute) ||
+         (contains_fixed && position == EPosition::kFixed);
 }
 
 }  // namespace

@@ -111,7 +111,7 @@ void LayoutFullScreen::updateStyle(LayoutObject* parent) {
   fullscreenStyle->setAlignItemsPosition(ItemPositionCenter);
   fullscreenStyle->setFlexDirection(FlowColumn);
 
-  fullscreenStyle->setPosition(FixedPosition);
+  fullscreenStyle->setPosition(EPosition::kFixed);
   fullscreenStyle->setLeft(Length(0, blink::Fixed));
   fullscreenStyle->setTop(Length(0, blink::Fixed));
   IntSize viewportSize = document().page()->frameHost().visualViewport().size();

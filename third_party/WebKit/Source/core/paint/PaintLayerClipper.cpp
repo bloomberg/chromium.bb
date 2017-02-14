@@ -58,13 +58,13 @@ static void adjustClipRectsForChildren(const LayoutBoxModelObject& layoutObject,
   // A fixed object is essentially the root of its containing block hierarchy,
   // so when we encounter such an object, we reset our clip rects to the
   // fixedClipRect.
-  if (position == FixedPosition) {
+  if (position == EPosition::kFixed) {
     clipRects.setPosClipRect(clipRects.fixedClipRect());
     clipRects.setOverflowClipRect(clipRects.fixedClipRect());
     clipRects.setFixed(true);
-  } else if (position == RelativePosition) {
+  } else if (position == EPosition::kRelative) {
     clipRects.setPosClipRect(clipRects.overflowClipRect());
-  } else if (position == AbsolutePosition) {
+  } else if (position == EPosition::kAbsolute) {
     clipRects.setOverflowClipRect(clipRects.posClipRect());
   }
 }
@@ -423,10 +423,10 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
 
 static ClipRect backgroundClipRectForPosition(const ClipRects& parentRects,
                                               EPosition position) {
-  if (position == FixedPosition)
+  if (position == EPosition::kFixed)
     return parentRects.fixedClipRect();
 
-  if (position == AbsolutePosition)
+  if (position == EPosition::kAbsolute)
     return parentRects.posClipRect();
 
   return parentRects.overflowClipRect();

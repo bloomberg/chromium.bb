@@ -2058,19 +2058,19 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EPosition e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case StaticPosition:
+    case EPosition::kStatic:
       m_valueID = CSSValueStatic;
       break;
-    case RelativePosition:
+    case EPosition::kRelative:
       m_valueID = CSSValueRelative;
       break;
-    case AbsolutePosition:
+    case EPosition::kAbsolute:
       m_valueID = CSSValueAbsolute;
       break;
-    case FixedPosition:
+    case EPosition::kFixed:
       m_valueID = CSSValueFixed;
       break;
-    case StickyPosition:
+    case EPosition::kSticky:
       m_valueID = CSSValueSticky;
       break;
   }
@@ -2080,21 +2080,21 @@ template <>
 inline EPosition CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueStatic:
-      return StaticPosition;
+      return EPosition::kStatic;
     case CSSValueRelative:
-      return RelativePosition;
+      return EPosition::kRelative;
     case CSSValueAbsolute:
-      return AbsolutePosition;
+      return EPosition::kAbsolute;
     case CSSValueFixed:
-      return FixedPosition;
+      return EPosition::kFixed;
     case CSSValueSticky:
-      return StickyPosition;
+      return EPosition::kSticky;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return StaticPosition;
+  return EPosition::kStatic;
 }
 
 template <>

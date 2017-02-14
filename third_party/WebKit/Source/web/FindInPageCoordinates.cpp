@@ -95,7 +95,7 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
   // Fixed positions do not make sense in this coordinate system, but need to
   // leave consistent tickmarks.  So, use their position when the view is not
   // scrolled, like an absolute position.
-  if (layoutObject->style()->position() == FixedPosition &&
+  if (layoutObject->style()->position() == EPosition::kFixed &&
       container->isLayoutView()) {
     normalizedRect.move(
         -toLayoutView(container)->frameView()->getScrollOffset());

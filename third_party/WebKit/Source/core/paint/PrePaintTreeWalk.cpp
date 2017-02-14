@@ -82,7 +82,7 @@ static void updateAuxiliaryObjectProperties(const LayoutObject& object,
   PaintLayer* paintLayer = object.enclosingLayer();
   paintLayer->updateAncestorOverflowLayer(context.ancestorOverflowPaintLayer);
 
-  if (object.styleRef().position() == StickyPosition) {
+  if (object.styleRef().position() == EPosition::kSticky) {
     paintLayer->layoutObject()->updateStickyPositionConstraints();
 
     // Sticky position constraints and ancestor overflow scroller affect the

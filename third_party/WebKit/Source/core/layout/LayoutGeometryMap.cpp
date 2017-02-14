@@ -195,7 +195,8 @@ static bool canMapBetweenLayoutObjects(const LayoutObject* layoutObject,
   for (const LayoutObject* current = layoutObject;;
        current = current->parent()) {
     const ComputedStyle& style = current->styleRef();
-    if (style.position() == FixedPosition || style.isFlippedBlocksWritingMode())
+    if (style.position() == EPosition::kFixed ||
+        style.isFlippedBlocksWritingMode())
       return false;
 
     if (current->style()->canContainFixedPositionObjects() ||

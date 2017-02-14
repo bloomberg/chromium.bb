@@ -348,8 +348,8 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
   // re-raster (rect-based invalidation) is needed, display items should
   // still update their paint offset.
   if (oldStyle) {
-    bool newStyleIsFixedPosition = style()->position() == FixedPosition;
-    bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
+    bool newStyleIsFixedPosition = style()->position() == EPosition::kFixed;
+    bool oldStyleIsFixedPosition = oldStyle->position() == EPosition::kFixed;
     if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
       ObjectPaintInvalidator(*this)
           .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
@@ -378,11 +378,13 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
   }
 
   if (FrameView* frameView = view()->frameView()) {
-    bool newStyleIsViewportConstained = style()->position() == FixedPosition;
+    bool newStyleIsViewportConstained =
+        style()->position() == EPosition::kFixed;
     bool oldStyleIsViewportConstrained =
-        oldStyle && oldStyle->position() == FixedPosition;
-    bool newStyleIsSticky = style()->position() == StickyPosition;
-    bool oldStyleIsSticky = oldStyle && oldStyle->position() == StickyPosition;
+        oldStyle && oldStyle->position() == EPosition::kFixed;
+    bool newStyleIsSticky = style()->position() == EPosition::kSticky;
+    bool oldStyleIsSticky =
+        oldStyle && oldStyle->position() == EPosition::kSticky;
 
     if (newStyleIsSticky != oldStyleIsSticky) {
       if (newStyleIsSticky) {
@@ -1045,7 +1047,7 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
     if (offsetParentObject->isLayoutInline()) {
       const LayoutInline* inlineParent = toLayoutInline(offsetParentObject);
 
-      if (isBox() && style()->position() == AbsolutePosition &&
+      if (isBox() && style()->position() == EPosition::kAbsolute &&
           inlineParent->isInFlowPositioned()) {
         // Offset for absolute elements with inline parent is a special
         // case in the CSS spec
@@ -1227,7 +1229,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
     return nullptr;
 
   bool isInline = isLayoutInline();
-  bool isFixedPos = !isInline && style()->position() == FixedPosition;
+  bool isFixedPos = !isInline && style()->position() == EPosition::kFixed;
   bool containsFixedPosition = canContainFixedPositionObjects();
 
   LayoutSize adjustmentForSkippedAncestor;

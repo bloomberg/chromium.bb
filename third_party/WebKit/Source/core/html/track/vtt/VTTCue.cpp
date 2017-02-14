@@ -223,7 +223,7 @@ LayoutObject* VTTCueBox::createLayoutObject(const ComputedStyle& style) {
   // longer necessary, since cues having the region parameter set do not have
   // any positioning parameters. Also, in this case, the regions themselves
   // have positioning information.
-  if (style.position() == RelativePosition)
+  if (style.position() == EPosition::kRelative)
     return HTMLDivElement::createLayoutObject(style);
 
   return new LayoutVTTCue(this, m_snapToLinesPosition);

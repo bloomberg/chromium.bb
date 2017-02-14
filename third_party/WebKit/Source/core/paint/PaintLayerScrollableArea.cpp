@@ -1513,7 +1513,8 @@ void PaintLayerScrollableArea::updateResizerStyle() {
 void PaintLayerScrollableArea::invalidateAllStickyConstraints() {
   if (PaintLayerScrollableAreaRareData* d = rareData()) {
     for (PaintLayer* stickyLayer : d->m_stickyConstraintsMap.keys()) {
-      if (stickyLayer->layoutObject()->style()->position() == StickyPosition)
+      if (stickyLayer->layoutObject()->style()->position() ==
+          EPosition::kSticky)
         stickyLayer->setNeedsCompositingInputsUpdate();
     }
     d->m_stickyConstraintsMap.clear();
@@ -1526,7 +1527,7 @@ void PaintLayerScrollableArea::invalidateStickyConstraintsFor(
   if (PaintLayerScrollableAreaRareData* d = rareData()) {
     d->m_stickyConstraintsMap.remove(layer);
     if (needsCompositingUpdate &&
-        layer->layoutObject()->style()->position() == StickyPosition)
+        layer->layoutObject()->style()->position() == EPosition::kSticky)
       layer->setNeedsCompositingInputsUpdate();
   }
 }

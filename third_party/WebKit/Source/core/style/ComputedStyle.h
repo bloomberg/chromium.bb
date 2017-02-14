@@ -305,7 +305,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             static_cast<unsigned>(initialDisplay());
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
-    m_nonInheritedData.m_position = initialPosition();
+    m_nonInheritedData.m_position = static_cast<unsigned>(initialPosition());
     m_nonInheritedData.m_styleType = PseudoIdNone;
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_explicitInheritance = false;
@@ -1483,11 +1483,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // position
-  static EPosition initialPosition() { return StaticPosition; }
+  static EPosition initialPosition() { return EPosition::kStatic; }
   EPosition position() const {
     return static_cast<EPosition>(m_nonInheritedData.m_position);
   }
-  void setPosition(EPosition v) { m_nonInheritedData.m_position = v; }
+  void setPosition(EPosition v) {
+    m_nonInheritedData.m_position = static_cast<unsigned>(v);
+  }
 
   // resize
   static EResize initialResize() { return RESIZE_NONE; }
@@ -3200,13 +3202,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Position utility functions.
   bool hasOutOfFlowPosition() const {
-    return position() == AbsolutePosition || position() == FixedPosition;
+    return position() == EPosition::kAbsolute ||
+           position() == EPosition::kFixed;
   }
   bool hasInFlowPosition() const {
-    return position() == RelativePosition || position() == StickyPosition;
+    return position() == EPosition::kRelative ||
+           position() == EPosition::kSticky;
   }
   bool hasViewportConstrainedPosition() const {
-    return position() == FixedPosition || position() == StickyPosition;
+    return position() == EPosition::kFixed || position() == EPosition::kSticky;
   }
 
   // Clip utility functions.
@@ -3448,7 +3452,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // but not managed in stacks. See ObjectPainter::paintAllPhasesAtomically().)
   void updateIsStackingContext(bool isDocumentElement, bool isInTopLayer);
   bool isStacked() const {
-    return isStackingContext() || position() != StaticPosition;
+    return isStackingContext() || position() != EPosition::kStatic;
   }
 
   // Pseudo-styles
@@ -3462,7 +3466,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // canContainFixedPositionObjects.  We currently never use this value
   // directly, always OR'ing it with canContainFixedPositionObjects.
   bool canContainAbsolutePositionObjects() const {
-    return position() != StaticPosition;
+    return position() != EPosition::kStatic;
   }
   bool canContainFixedPositionObjects() const {
     return hasTransformRelatedProperty() || containsPaint();

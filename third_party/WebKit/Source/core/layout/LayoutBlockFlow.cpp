@@ -4317,8 +4317,8 @@ void LayoutBlockFlow::positionDialog() {
   if (dialog->getCenteringMode() == HTMLDialogElement::NotCentered)
     return;
 
-  bool canCenterDialog = (style()->position() == AbsolutePosition ||
-                          style()->position() == FixedPosition) &&
+  bool canCenterDialog = (style()->position() == EPosition::kAbsolute ||
+                          style()->position() == EPosition::kFixed) &&
                          style()->hasAutoTopAndBottom();
 
   if (dialog->getCenteringMode() == HTMLDialogElement::Centered) {
@@ -4334,7 +4334,7 @@ void LayoutBlockFlow::positionDialog() {
   }
 
   FrameView* frameView = document().view();
-  LayoutUnit top = LayoutUnit((style()->position() == FixedPosition)
+  LayoutUnit top = LayoutUnit((style()->position() == EPosition::kFixed)
                                   ? 0
                                   : frameView->scrollOffsetInt().height());
   int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();

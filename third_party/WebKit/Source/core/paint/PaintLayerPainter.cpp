@@ -641,7 +641,7 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(
 inline bool PaintLayerPainter::isFixedPositionObjectInPagedMedia() {
   LayoutObject* object = m_paintLayer.layoutObject();
   LayoutView* view = object->view();
-  return object->styleRef().position() == FixedPosition &&
+  return object->styleRef().position() == EPosition::kFixed &&
          object->container() == view && view->pageLogicalHeight() &&
          // TODO(crbug.com/619094): Figure out the correct behaviour for fixed
          // position objects in paged media with vertical writing modes.

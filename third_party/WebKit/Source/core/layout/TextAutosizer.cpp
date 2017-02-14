@@ -821,7 +821,8 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(
 
   if (const ComputedStyle* style = layoutObject->style()) {
     data.m_packedStyleProperties = static_cast<unsigned>(style->direction());
-    data.m_packedStyleProperties |= (style->position() << 1);
+    data.m_packedStyleProperties |=
+        (static_cast<unsigned>(style->position()) << 1);
     data.m_packedStyleProperties |=
         (static_cast<unsigned>(style->floating()) << 4);
     data.m_packedStyleProperties |=

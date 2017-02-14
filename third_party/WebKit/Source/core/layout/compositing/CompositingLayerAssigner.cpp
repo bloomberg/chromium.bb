@@ -125,7 +125,7 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
   if (!squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree)
     return SquashingDisallowedReasonWouldBreakPaintOrder;
 
-  ASSERT(squashingState.hasMostRecentMapping);
+  DCHECK(squashingState.hasMostRecentMapping);
   const PaintLayer& squashingLayer =
       squashingState.mostRecentMapping->owningLayer();
 
@@ -192,7 +192,7 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
   if (layer->nearestFixedPositionLayer() !=
       squashingLayer.nearestFixedPositionLayer())
     return SquashingDisallowedReasonNearestFixedPositionMismatch;
-  ASSERT(layer->layoutObject()->style()->position() != FixedPosition);
+  DCHECK(layer->layoutObject()->style()->position() != EPosition::kFixed);
 
   if ((squashingLayer.layoutObject()->style()->subtreeWillChangeContents() &&
        squashingLayer.layoutObject()
@@ -224,8 +224,8 @@ void CompositingLayerAssigner::updateSquashingAssignment(
   if (compositedLayerUpdate == PutInSquashingLayer) {
     // A layer that is squashed with other layers cannot have its own
     // CompositedLayerMapping.
-    ASSERT(!layer->hasCompositedLayerMapping());
-    ASSERT(squashingState.hasMostRecentMapping);
+    DCHECK(!layer->hasCompositedLayerMapping());
+    DCHECK(squashingState.hasMostRecentMapping);
 
     bool changedSquashingLayer =
         squashingState.mostRecentMapping->updateSquashingLayerAssignment(
@@ -332,7 +332,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(
   // At this point, if the layer is to be separately composited, then its
   // backing becomes the most recent in paint-order.
   if (layer->compositingState() == PaintsIntoOwnBacking) {
-    ASSERT(!requiresSquashing(layer->getCompositingReasons()));
+    DCHECK(!requiresSquashing(layer->getCompositingReasons()));
     squashingState.updateSquashingStateForNewMapping(
         layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(),
         layersNeedingPaintInvalidation);

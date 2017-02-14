@@ -190,7 +190,7 @@ static CompositingReasons subtreeReasonsForCompositing(
     if (layer->layoutObject()->hasClipRelatedProperty())
       subtreeReasons |= CompositingReasonClipsCompositingDescendants;
 
-    if (layer->layoutObject()->style()->position() == FixedPosition)
+    if (layer->layoutObject()->style()->position() == EPosition::kFixed)
       subtreeReasons |= CompositingReasonPositionFixedWithCompositedDescendants;
   }
 

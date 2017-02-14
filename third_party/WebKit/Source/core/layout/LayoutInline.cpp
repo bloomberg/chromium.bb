@@ -204,10 +204,10 @@ void LayoutInline::styleDidChange(StyleDifference diff,
   // If we are changing to/from static, we need to reposition
   // out-of-flow positioned descendants.
   if (oldStyle && oldStyle->position() != newStyle.position() &&
-      (newStyle.position() == StaticPosition ||
-       oldStyle->position() == StaticPosition)) {
+      (newStyle.position() == EPosition::kStatic ||
+       oldStyle->position() == EPosition::kStatic)) {
     LayoutBlock* absContainingBlock = nullptr;
-    if (oldStyle->position() == StaticPosition) {
+    if (oldStyle->position() == EPosition::kStatic) {
       absContainingBlock = containingBlockForAbsolutePosition();
     } else {
       // When position was not static, containingBlockForAbsolutePosition

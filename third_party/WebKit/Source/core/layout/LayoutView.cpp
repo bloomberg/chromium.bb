@@ -103,7 +103,7 @@ LayoutView::LayoutView(Document* document)
 
   setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
-  setPositionState(AbsolutePosition);  // to 0,0 :)
+  setPositionState(EPosition::kAbsolute);  // to 0,0 :)
 }
 
 LayoutView::~LayoutView() {}

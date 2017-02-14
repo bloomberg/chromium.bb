@@ -79,7 +79,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   // away we are from the start of the pagination context.
   m_paginationOffset = m_next->m_paginationOffset;
   bool fixed = layoutObject.isOutOfFlowPositioned() &&
-               layoutObject.style()->position() == FixedPosition;
+               layoutObject.style()->position() == EPosition::kFixed;
   if (fixed)
     return;
   m_paginationOffset =
