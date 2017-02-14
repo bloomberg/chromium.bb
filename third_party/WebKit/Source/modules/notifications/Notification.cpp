@@ -366,8 +366,17 @@ ScriptPromise Notification::requestPermission(
     Deprecation::countDeprecation(
         context, UseCounter::NotificationPermissionRequestedInsecureOrigin);
   }
+  if (context->isDocument()) {
+    LocalFrame* frame = toDocument(context)->frame();
+    if (frame && !frame->isMainFrame()) {
+      UseCounter::count(context,
+                        UseCounter::NotificationPermissionRequestedIframe);
+    }
+  }
+
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
       context, "Notification.requestPermission", true, true);
+
   return NotificationManager::from(context)->requestPermission(
       scriptState, deprecatedCallback);
 }

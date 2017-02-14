@@ -1464,6 +1464,7 @@ class CORE_EXPORT UseCounter {
     UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted = 1814,
     V8HTMLVideoElement_Poster_AttributeGetter = 1815,
     V8HTMLVideoElement_Poster_AttributeSetter = 1816,
+    NotificationPermissionRequestedIframe = 1817,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
