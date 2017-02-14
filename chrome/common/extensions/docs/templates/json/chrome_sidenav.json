@@ -557,7 +557,7 @@
           },
           {
             "title": "Develop Extensions",
-            "href": "/extensions/tut_migration_to_manifest_v2",
+            "href": "/extensions",
             "items": [
               {
                 "title": "Accessibility",
