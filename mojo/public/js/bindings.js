@@ -4,9 +4,10 @@
 
 define("mojo/public/js/bindings", [
   "mojo/public/js/core",
+  "mojo/public/js/lib/control_message_proxy",
   "mojo/public/js/interface_types",
   "mojo/public/js/router",
-], function(core, types, router) {
+], function(core, controlMessageProxy, types, router) {
 
   // ---------------------------------------------------------------------------
 
@@ -31,6 +32,7 @@ define("mojo/public/js/bindings", [
     // |router_| is lazily initialized. |handle_| is valid between bind() and
     // the initialization of |router_|.
     this.handle_ = null;
+    this.controlMessageProxy_ = null;
 
     if (ptrInfoOrHandle)
       this.bind(ptrInfoOrHandle);
@@ -111,12 +113,32 @@ define("mojo/public/js/bindings", [
     this.handle_ = null;
     this.router_ .setPayloadValidators([this.interfaceType_.validateResponse]);
 
+    this.controlMessageProxy_ = new
+        controlMessageProxy.ControlMessageProxy(this.router_);
+
     this.proxy_ = new this.interfaceType_.proxyClass(this.router_);
   };
 
-  // TODO(yzshen): Implement the following methods.
-  //   InterfacePtrController.prototype.queryVersion
-  //   InterfacePtrController.prototype.requireVersion
+  InterfacePtrController.prototype.queryVersion = function() {
+    function onQueryVersion(version) {
+      this.version = version;
+      return version;
+    }
+
+    this.configureProxyIfNecessary_();
+    return this.controlMessageProxy_.queryVersion().then(
+      onQueryVersion.bind(this));
+  };
+
+  InterfacePtrController.prototype.requireVersion = function(version) {
+    this.configureProxyIfNecessary_();
+
+    if (this.version >= version) {
+      return;
+    }
+    this.version = version;
+    this.controlMessageProxy_.requireVersion(version);
+  };
 
   // ---------------------------------------------------------------------------
 
@@ -163,7 +185,7 @@ define("mojo/public/js/bindings", [
       return;
 
     this.stub_ = new this.interfaceType_.stubClass(this.impl_);
-    this.router_ = new router.Router(handle);
+    this.router_ = new router.Router(handle, this.interfaceType_.kVersion);
     this.router_.setIncomingReceiver(this.stub_);
     this.router_ .setPayloadValidators([this.interfaceType_.validateRequest]);
   };

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+interfaces_bindings_gen_dir = "$root_gen_dir/mojo/public/interfaces/bindings"
+
 source_set("js") {
   sources = [
     "constants.cc",
@@ -11,19 +13,24 @@ source_set("js") {
 
 group("bindings") {
   data = [
+    "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
     "bindings.js",
     "buffer.js",
     "codec.js",
     "connector.js",
-    "constants.cc",
-    "constants.h",
     "core.js",
     "interface_types.js",
+    "lib/control_message_handler.js",
+    "lib/control_message_proxy.js",
     "router.js",
     "support.js",
     "threading.js",
     "unicode.js",
     "validator.js",
+  ]
+
+  deps = [
+    "//mojo/public/interfaces/bindings:bindings__generator",
   ]
 }
 
@@ -31,6 +38,7 @@ group("tests") {
   testonly = true
 
   data = [
+    "//mojo/public/interfaces/bindings/tests/data/validation/",
     "tests/binding_unittest.js",
     "tests/codec_unittest.js",
     "tests/connection_unittest.js",
@@ -41,7 +49,6 @@ group("tests") {
     "tests/union_unittest.js",
     "tests/validation_test_input_parser.js",
     "tests/validation_unittest.js",
-    "//mojo/public/interfaces/bindings/tests/data/validation/",
   ]
 
   public_deps = [

@@ -61,14 +61,19 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
     const char* path;
     const int id;
   } kBuiltinModuleResources[] = {
-    { mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS },
-    { mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS },
-    { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
-    { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
-    { mojo::kInterfaceTypesModuleName, IDR_MOJO_INTERFACE_TYPES_JS },
-    { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
-    { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
-    { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },
+      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
+      {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
+      {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
+      {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
+      {mojo::kControlMessageHandlerModuleName,
+       IDR_MOJO_CONTROL_MESSAGE_HANDLER_JS},
+      {mojo::kControlMessageProxyModuleName, IDR_MOJO_CONTROL_MESSAGE_PROXY_JS},
+      {mojo::kInterfaceControlMessagesMojom,
+       IDR_MOJO_INTERFACE_CONTROL_MESSAGES_MOJOM_JS},
+      {mojo::kInterfaceTypesModuleName, IDR_MOJO_INTERFACE_TYPES_JS},
+      {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
+      {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
+      {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
   };
 
   std::unique_ptr<ModuleSourceMap>& module_sources = g_module_sources.Get();

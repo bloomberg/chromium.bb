@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 define("{{module.path}}", [
+{%- if module.path != "mojo/public/interfaces/bindings/interface_control_messages.mojom" %}
     "mojo/public/js/bindings",
+{%- endif %}
     "mojo/public/js/codec",
     "mojo/public/js/core",
     "mojo/public/js/validator",
 {%- for import in imports %}
     "{{import.module.path}}",
 {%- endfor %}
-], function(bindings, codec, core, validator
+], function(
+{%- if module.path != "mojo/public/interfaces/bindings/interface_control_messages.mojom" -%}
+bindings, {% endif -%}
+codec, core, validator
 {%- for import in imports -%}
     , {{import.unique_name}}
 {%- endfor -%}

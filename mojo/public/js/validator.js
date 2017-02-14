@@ -210,6 +210,27 @@ define("mojo/public/js/validator", [
     return validationError.NONE;
   };
 
+  Validator.prototype.validateMessageIsRequestWithoutResponse = function() {
+    if (this.message.isResponse() || this.message.expectsResponse()) {
+      return validationError.MESSAGE_HEADER_INVALID_FLAGS;
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateMessageIsRequestExpectingResponse = function() {
+    if (this.message.isResponse() || !this.message.expectsResponse()) {
+      return validationError.MESSAGE_HEADER_INVALID_FLAGS;
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateMessageIsResponse = function() {
+    if (this.message.expectsResponse() || !this.message.isResponse()) {
+      return validationError.MESSAGE_HEADER_INVALID_FLAGS;
+    }
+    return validationError.NONE;
+  };
+
   // Returns the message.buffer relative offset this pointer "points to",
   // NULL_MOJO_POINTER if the pointer represents a null, or JS null if the
   // pointer's value is not valid.

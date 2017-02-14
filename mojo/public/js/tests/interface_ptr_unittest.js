@@ -7,12 +7,14 @@ define([
     "mojo/public/js/bindings",
     "mojo/public/js/core",
     "mojo/public/interfaces/bindings/tests/math_calculator.mojom",
+    "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom",
     "mojo/public/js/threading",
     "gc",
 ], function(expect,
             bindings,
             core,
             math,
+            sampleInterfaces,
             threading,
             gc) {
   testIsBound()
@@ -21,6 +23,8 @@ define([
       .then(testConnectionError)
       .then(testPassInterface)
       .then(testBindRawHandle)
+      .then(testQueryVersion)
+      .then(testRequireVersion)
       .then(function() {
     this.result = "PASS";
     gc.collectGarbage();  // should not crash
@@ -47,6 +51,18 @@ define([
   CalculatorImpl.prototype.multiply = function(value) {
     this.total *= value;
     return Promise.resolve({value: this.total});
+  };
+
+  function IntegerAccessorImpl() {
+    this.integer = 0;
+  }
+
+  IntegerAccessorImpl.prototype.getInteger = function() {
+    return Promise.resolve({data: this.integer});
+  };
+
+  IntegerAccessorImpl.prototype.setInteger = function(value) {
+    this.integer = value;
   };
 
   function testIsBound() {
@@ -156,5 +172,69 @@ define([
     });
 
     return promise;
+  }
+
+  function testQueryVersion() {
+    var integerAccessorPtr = new sampleInterfaces.IntegerAccessorPtr();
+
+    var integerAccessorBinding = new bindings.Binding(
+        sampleInterfaces.IntegerAccessor,
+        new IntegerAccessorImpl(),
+        bindings.makeRequest(integerAccessorPtr));
+    expect(integerAccessorPtr.ptr.version).toBe(0);
+
+    return integerAccessorPtr.ptr.queryVersion().then(function(version) {
+      expect(version).toBe(3);
+      expect(integerAccessorPtr.ptr.version).toBe(3);
+    });
+  }
+
+  function testRequireVersion() {
+    var integerAccessorImpl = new IntegerAccessorImpl();
+    var integerAccessorPtr = new sampleInterfaces.IntegerAccessorPtr();
+    var integerAccessorBinding = new bindings.Binding(
+        sampleInterfaces.IntegerAccessor,
+        integerAccessorImpl,
+        bindings.makeRequest(integerAccessorPtr));
+
+    // Inital version is 0.
+    expect(integerAccessorPtr.ptr.version).toBe(0);
+
+    function requireVersion1() {
+      integerAccessorPtr.ptr.requireVersion(1);
+      expect(integerAccessorPtr.ptr.version).toBe(1);
+      integerAccessorPtr.setInteger(123, sampleInterfaces.Enum.VALUE);
+      return integerAccessorPtr.getInteger().then(function(responseParams) {
+        expect(responseParams.data).toBe(123);
+      });
+    }
+
+    function requireVersion3() {
+      integerAccessorPtr.ptr.requireVersion(3);
+      expect(integerAccessorPtr.ptr.version).toBe(3);
+      integerAccessorPtr.setInteger(456, sampleInterfaces.Enum.VALUE);
+      return integerAccessorPtr.getInteger().then(function(responseParams) {
+        expect(responseParams.data).toBe(456);
+      });
+    }
+
+    // Require a version that is not supported by the impl side.
+    function requireVersion4() {
+      integerAccessorPtr.ptr.requireVersion(4);
+      expect(integerAccessorPtr.ptr.version).toBe(4);
+      integerAccessorPtr.setInteger(789, sampleInterfaces.Enum.VALUE);
+
+      var promise = new Promise(function(resolve, reject) {
+        integerAccessorPtr.ptr.setConnectionErrorHandler(function() {
+          // The call to setInteger() after requireVersion(4) is ignored.
+          expect(integerAccessorImpl.integer).toBe(456);
+          resolve();
+        });
+      });
+
+      return promise;
+    }
+
+    return requireVersion1().then(requireVersion3).then(requireVersion4);
   }
 });

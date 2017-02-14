@@ -7,14 +7,16 @@ define("mojo/public/js/router", [
   "mojo/public/js/codec",
   "mojo/public/js/core",
   "mojo/public/js/connector",
+  "mojo/public/js/lib/control_message_handler",
   "mojo/public/js/validator",
-], function(console, codec, core, connector, validator) {
+], function(console, codec, core, connector, controlMessageHandler, validator) {
 
   var Connector = connector.Connector;
   var MessageReader = codec.MessageReader;
   var Validator = validator.Validator;
+  var ControlMessageHandler = controlMessageHandler.ControlMessageHandler;
 
-  function Router(handle, connectorFactory) {
+  function Router(handle, interface_version, connectorFactory) {
     if (!core.isHandle(handle))
       throw new Error("Router constructor: Not a handle");
     if (connectorFactory === undefined)
@@ -26,6 +28,11 @@ define("mojo/public/js/router", [
     this.completers_ = new Map();
     this.payloadValidators_ = [];
     this.testingController_ = null;
+
+    if (interface_version !== undefined) {
+      this.controlMessageHandler_ = new
+          ControlMessageHandler(interface_version);
+    }
 
     this.connector_.setIncomingReceiver({
         accept: this.handleIncomingMessage_.bind(this),
@@ -107,7 +114,13 @@ define("mojo/public/js/router", [
       return;
 
     if (message.expectsResponse()) {
-      if (this.incomingReceiver_) {
+      if (controlMessageHandler.isControlMessage(message)) {
+        if (this.controlMessageHandler_) {
+          this.controlMessageHandler_.acceptWithResponder(message, this);
+        } else {
+          this.close();
+        }
+      } else if (this.incomingReceiver_) {
         this.incomingReceiver_.acceptWithResponder(message, this);
       } else {
         // If we receive a request expecting a response when the client is not
@@ -125,8 +138,15 @@ define("mojo/public/js/router", [
         console.log("Unexpected response with request ID: " + requestID);
       }
     } else {
-      if (this.incomingReceiver_)
+      if (controlMessageHandler.isControlMessage(message)) {
+        if (this.controlMessageHandler_) {
+          var ok = this.controlMessageHandler_.accept(message);
+          if (ok) return;
+        }
+        this.close();
+      } else if (this.incomingReceiver_) {
         this.incomingReceiver_.accept(message);
+      }
     }
   };
 
