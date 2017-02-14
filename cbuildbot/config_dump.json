@@ -24760,6 +24760,7 @@
     },
     "terra-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
@@ -24842,6 +24843,7 @@
     },
     "terra-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
@@ -26017,6 +26019,7 @@
     },
     "veyron_jaq-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jaq"
         ],
@@ -26074,6 +26077,7 @@
     },
     "veyron_jaq-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jaq"
         ],

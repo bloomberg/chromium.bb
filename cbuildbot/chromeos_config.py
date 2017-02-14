@@ -690,6 +690,8 @@ _waterfall_config_map = {
         'lakitu_next-paladin',
         'loonix-paladin',
         'poppy-paladin',
+        'veyron_jaq-paladin',
+        'terra-paladin',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
@@ -702,6 +704,12 @@ _waterfall_config_map = {
         # other builders or developer's local builds unless they specify the
         # same use flags.
         'chell-chrome-pfq',
+
+        # Temporary boards that are used as "dogfood" for the LLVM migration.
+        # Needed to generated clang/llvm prebuilds for these boards. Can be
+        # removed once migration is completed.
+        'veyron_jaq-chrome-pfq',
+        'terra-chrome-pfq',
     ]),
 }
 
