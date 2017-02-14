@@ -164,7 +164,7 @@ def SetupAndroidToolchain(target_arch):
   sysroot_arch = target_arch
   toolchain_dir_prefix = target_arch
   toolchain_bin_prefix = target_arch
-  if target_arch == 'arm-neon':
+  if target_arch == 'arm-neon' or target_arch == 'arm':
     toolchain_bin_prefix = toolchain_dir_prefix = 'arm-linux-androideabi'
     sysroot_arch = 'arm'
   elif target_arch == 'arm64':
