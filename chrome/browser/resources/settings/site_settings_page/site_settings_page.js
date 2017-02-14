@@ -34,6 +34,12 @@ Polymer({
         return loadTimeData.getBoolean('enableSiteSettings');
       },
     },
+
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value: function() { return loadTimeData.getBoolean('isGuest'); }
+    },
   },
 
   /** @override */
@@ -48,6 +54,11 @@ Polymer({
       if (key == settings.ContentSettingsTypes.USB_DEVICES ||
           key == settings.ContentSettingsTypes.ZOOM_LEVELS)
         continue;
+      // Some values are not available (and will DCHECK) in guest mode.
+      if (this.isGuest_ &&
+          key == settings.ContentSettingsTypes.PROTOCOL_HANDLERS) {
+        continue;
+      }
       this.updateDefaultValueLabel_(key);
     }
 

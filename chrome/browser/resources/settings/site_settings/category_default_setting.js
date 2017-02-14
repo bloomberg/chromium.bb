@@ -55,7 +55,7 @@ Polymer({
   observers: [
     'onCategoryChanged_(category)',
     'onChangePermissionControl_(category, controlParams_.value, ' +
-                               'subControlParams_.value)',
+        'subControlParams_.value)',
   ],
 
   ready: function() {
@@ -199,4 +199,13 @@ Polymer({
                 categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
           }.bind(this));
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isToggleDisabled_: function() {
+    return this.category == settings.ContentSettingsTypes.POPUPS &&
+        loadTimeData.getBoolean('isGuest');
+  }
 });

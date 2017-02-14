@@ -11,7 +11,8 @@
     <style include="settings-shared"></style>
     <div class="settings-box first two-line">
       <div class="start secondary">[[sliderDescription_]]</div>
-      <settings-toggle-button id="toggle" pref="{{controlParams_}}">
+      <settings-toggle-button id="toggle" pref="{{controlParams_}}"
+          disabled$="[[isToggleDisabled_(category)]]">
       </settings-toggle-button>
     </div>
     <template is="dom-if" if="[[subOptionLabel]]">

@@ -238,24 +238,26 @@
           aria-label="$i18n{siteSettingsUnsandboxedPlugins}"
           aria-describedby="unsandboxedPluginsSecondary"></button>
     </div>
-    <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
-        data-route="SITE_SETTINGS_HANDLERS"
-        on-tap="onTapNavigate_" actionable>
-      <iron-icon icon="settings:protocol-handler"></iron-icon>
-      <div class="middle">
-        $i18n{siteSettingsHandlers}
-        <div class="secondary" id="handlersSecondary">
-          [[defaultSettingLabel_(
-              default_.registerProtocolHandler,
-              '$i18nPolymer{siteSettingsHandlersAsk}',
-              '$i18nPolymer{siteSettingsHandlersBlocked}')]]
+    <template is="dom-if" if="[[!isGuest_]]">
+      <div class="settings-box two-line"
+          category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
+          data-route="SITE_SETTINGS_HANDLERS"
+          on-tap="onTapNavigate_" actionable>
+        <iron-icon icon="settings:protocol-handler"></iron-icon>
+        <div class="middle">
+          $i18n{siteSettingsHandlers}
+          <div class="secondary" id="handlersSecondary">
+            [[defaultSettingLabel_(
+                default_.registerProtocolHandler,
+                '$i18nPolymer{siteSettingsHandlersAsk}',
+                '$i18nPolymer{siteSettingsHandlersBlocked}')]]
+          </div>
         </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{siteSettingsHandlers}"
+            aria-describedby="handlersSecondary"></button>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{siteSettingsHandlers}"
-          aria-describedby="handlersSecondary"></button>
-    </div>
+    </template>
     <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
         data-route="SITE_SETTINGS_ZOOM_LEVELS"
         on-tap="onTapNavigate_" actionable>
