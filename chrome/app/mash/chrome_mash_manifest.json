@@ -18,6 +18,7 @@
         "service_manager": [ "service_manager:instance_per_child" ],
         "catalog": [ "control" ],
         "ash": [ "app" ],
+        "content_browser": [ "app" ],
         "quick_launch": [ "app" ],
         "ui": [ "app" ]
       }

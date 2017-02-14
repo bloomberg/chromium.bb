@@ -132,7 +132,8 @@ void OnInstanceQuitInMain(base::RunLoop* run_loop,
   DCHECK(run_loop);
 
   if (identity.name() != mash::common::GetWindowManagerServiceName() &&
-      identity.name() != ui::mojom::kServiceName) {
+      identity.name() != ui::mojom::kServiceName &&
+      identity.name() != content::mojom::kBrowserServiceName) {
     return;
   }
 
@@ -207,6 +208,7 @@ int MashRunner::RunServiceManagerInMain() {
   context.connector()->Connect(ui::mojom::kServiceName);
   context.connector()->Connect(mash::common::GetWindowManagerServiceName());
   context.connector()->Connect(mash::quick_launch::mojom::kServiceName);
+  context.connector()->Connect(content::mojom::kBrowserServiceName);
 
   run_loop.Run();
 
