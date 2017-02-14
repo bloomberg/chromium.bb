@@ -13,12 +13,15 @@ void LogDXVAError(int line) {
              << line;
 }
 
-IMFSample* CreateEmptySampleWithBuffer(uint32_t buffer_length, int align) {
+base::win::ScopedComPtr<IMFSample> CreateEmptySampleWithBuffer(
+    uint32_t buffer_length,
+    int align) {
   CHECK_GT(buffer_length, 0U);
 
   base::win::ScopedComPtr<IMFSample> sample;
   HRESULT hr = MFCreateSample(sample.Receive());
-  RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed", NULL);
+  RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed",
+                       base::win::ScopedComPtr<IMFSample>());
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
   if (align == 0) {
@@ -29,13 +32,15 @@ IMFSample* CreateEmptySampleWithBuffer(uint32_t buffer_length, int align) {
     hr =
         MFCreateAlignedMemoryBuffer(buffer_length, align - 1, buffer.Receive());
   }
-  RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample",
+                       base::win::ScopedComPtr<IMFSample>());
 
   hr = sample->AddBuffer(buffer.get());
-  RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample",
+                       base::win::ScopedComPtr<IMFSample>());
 
   buffer->SetCurrentLength(0);
-  return sample.Detach();
+  return sample;
 }
 
 MediaBufferScopedPointer::MediaBufferScopedPointer(IMFMediaBuffer* media_buffer)

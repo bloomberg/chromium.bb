@@ -200,20 +200,20 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
   HRESULT hr =
       encoder_->GetInputStreamInfo(input_stream_id_, &input_stream_info);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get input stream info", false);
-  input_sample_.Attach(mf::CreateEmptySampleWithBuffer(
+  input_sample_ = mf::CreateEmptySampleWithBuffer(
       input_stream_info.cbSize
           ? input_stream_info.cbSize
           : VideoFrame::AllocationSize(PIXEL_FORMAT_I420, input_visible_size_),
-      input_stream_info.cbAlignment));
+      input_stream_info.cbAlignment);
 
   MFT_OUTPUT_STREAM_INFO output_stream_info;
   hr = encoder_->GetOutputStreamInfo(output_stream_id_, &output_stream_info);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get output stream info", false);
-  output_sample_.Attach(mf::CreateEmptySampleWithBuffer(
+  output_sample_ = mf::CreateEmptySampleWithBuffer(
       output_stream_info.cbSize
           ? output_stream_info.cbSize
           : bitstream_buffer_size_ * kOutputSampleBufferSizeRatio,
-      output_stream_info.cbAlignment));
+      output_stream_info.cbAlignment);
 
   hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set ProcessMessage", false);
