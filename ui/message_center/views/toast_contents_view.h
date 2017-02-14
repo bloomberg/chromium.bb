@@ -97,6 +97,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
+  void UpdateNotificationSize(const std::string& notification_id) override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

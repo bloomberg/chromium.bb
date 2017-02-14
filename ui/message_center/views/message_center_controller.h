@@ -30,6 +30,11 @@ class MessageCenterController {
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;
   virtual void ClickOnSettingsButton(const std::string& notification_id) = 0;
+  // For ArcCustomNotificationView, size changes might come after the
+  // notification update over Mojo. Provide a method here to notify when
+  // a notification changed in some way and needs to be laid out again.
+  // See crbug.com/690813.
+  virtual void UpdateNotificationSize(const std::string& notification_id) = 0;
 };
 
 }  // namespace message_center

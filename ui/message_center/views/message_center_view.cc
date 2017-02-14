@@ -447,6 +447,11 @@ void MessageCenterView::ClickOnSettingsButton(
   message_center_->ClickOnSettingsButton(notification_id);
 }
 
+void MessageCenterView::UpdateNotificationSize(
+    const std::string& notification_id) {
+  OnNotificationUpdated(notification_id);
+}
+
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
 

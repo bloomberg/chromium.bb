@@ -11,6 +11,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/views/message_center_controller.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -143,6 +144,12 @@ bool CustomNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return MessageView::OnKeyPressed(event);
+}
+
+void CustomNotificationView::ChildPreferredSizeChanged(View* child) {
+  // Notify MessageCenterController when the custom content changes size,
+  // as it may need to relayout.
+  controller()->UpdateNotificationSize(notification_id());
 }
 
 }  // namespace message_center

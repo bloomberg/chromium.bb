@@ -156,6 +156,7 @@ class MessageCenterViewTest : public views::ViewsTestBase,
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
+  void UpdateNotificationSize(const std::string& notification_id) override;
 
   // Overridden from MockNotificationView::Test
   void RegisterCall(CallType type) override;
@@ -348,6 +349,12 @@ void MessageCenterViewTest::ClickOnNotificationButton(
 }
 
 void MessageCenterViewTest::ClickOnSettingsButton(
+    const std::string& notification_id) {
+  // For this test, this method should not be invoked.
+  NOTREACHED();
+}
+
+void MessageCenterViewTest::UpdateNotificationSize(
     const std::string& notification_id) {
   // For this test, this method should not be invoked.
   NOTREACHED();

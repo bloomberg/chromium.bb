@@ -146,6 +146,11 @@ class TestMessageCenterController : public MessageCenterController {
     NOTREACHED();
   }
 
+  void UpdateNotificationSize(const std::string& notification_id) override {
+    // For this test, this method should not be invoked.
+    NOTREACHED();
+  }
+
   bool IsRemoved(const std::string& notification_id) const {
     return (removed_ids_.find(notification_id) != removed_ids_.end());
   }

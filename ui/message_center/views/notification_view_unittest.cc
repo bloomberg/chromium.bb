@@ -94,6 +94,7 @@ class NotificationViewTest : public views::ViewsTestBase,
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
+  void UpdateNotificationSize(const std::string& notification_id) override;
 
  protected:
   // Used to fill bitmaps returned by CreateBitmap().
@@ -280,6 +281,12 @@ void NotificationViewTest::ClickOnNotificationButton(
 }
 
 void NotificationViewTest::ClickOnSettingsButton(
+    const std::string& notification_id) {
+  // For this test, this method should not be invoked.
+  NOTREACHED();
+}
+
+void NotificationViewTest::UpdateNotificationSize(
     const std::string& notification_id) {
   // For this test, this method should not be invoked.
   NOTREACHED();

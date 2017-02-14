@@ -125,6 +125,11 @@ void MessagePopupCollection::ClickOnSettingsButton(
   message_center_->ClickOnSettingsButton(notification_id);
 }
 
+void MessagePopupCollection::UpdateNotificationSize(
+    const std::string& notification_id) {
+  OnNotificationUpdated(notification_id);
+}
+
 void MessagePopupCollection::MarkAllPopupsShown() {
   std::set<std::string> closed_ids = CloseAllWidgets();
   for (std::set<std::string>::iterator iter = closed_ids.begin();
