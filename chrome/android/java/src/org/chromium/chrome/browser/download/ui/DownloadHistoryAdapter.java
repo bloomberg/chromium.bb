@@ -63,6 +63,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      */
     private static final DeletedFileTracker sDeletedFileTracker = new DeletedFileTracker();
 
+    private static final String EMPTY_QUERY = null;
+
     private final BackendItems mRegularDownloadItems = new BackendItemsImpl();
     private final BackendItems mIncognitoDownloadItems = new BackendItemsImpl();
     private final BackendItems mOfflinePageItems = new BackendItemsImpl();
@@ -80,6 +82,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
+    private String mSearchQuery = EMPTY_QUERY;
 
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
@@ -362,23 +365,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      * @param query The text to search for.
      */
     void search(String query) {
-        if (TextUtils.isEmpty(query)) {
-            filter(mFilter);
-            return;
-        }
-
-        mFilteredItems.clear();
-        mRegularDownloadItems.filter(mFilter, query, mFilteredItems);
-        mIncognitoDownloadItems.filter(mFilter, query, mFilteredItems);
-        mOfflinePageItems.filter(mFilter, query, mFilteredItems);
-        clear(false);
-        loadItems(mFilteredItems);
+        mSearchQuery = query;
+        filter(mFilter);
     }
 
     /**
      * Called when a search is ended.
      */
     void onEndSearch() {
+        mSearchQuery = EMPTY_QUERY;
         filter(mFilter);
     }
 
@@ -398,9 +393,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private void filter(int filterType) {
         mFilter = filterType;
         mFilteredItems.clear();
-        mRegularDownloadItems.filter(mFilter, mFilteredItems);
-        mIncognitoDownloadItems.filter(mFilter, mFilteredItems);
-        mOfflinePageItems.filter(mFilter, mFilteredItems);
+        mRegularDownloadItems.filter(mFilter, mSearchQuery, mFilteredItems);
+        mIncognitoDownloadItems.filter(mFilter, mSearchQuery, mFilteredItems);
+        mOfflinePageItems.filter(mFilter, mSearchQuery, mFilteredItems);
         clear(false);
         loadItems(mFilteredItems);
     }

@@ -32,24 +32,17 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
     }
 
     /**
-     * Filters out items that are displayed in this list for the current filter.
-     *
-     * @param filterType    Filter to use.
-     * @param filteredItems List for appending items that match the filter.
-     */
-    public void filter(int filterType, BackendItems filteredItems) {
-        for (DownloadHistoryItemWrapper item : this) {
-            if (item.isVisibleToUser(filterType)) filteredItems.add(item);
-        }
-    }
-
-    /**
      * Filters out items that match the query and are displayed in this list for the current filter.
      * @param filterType    Filter to use.
      * @param query         The text to match.
      * @param filteredItems List for appending items that match the filter.
      */
     public void filter(int filterType, String query, BackendItems filteredItems) {
+        if (TextUtils.isEmpty(query)) {
+            filter(filterType, filteredItems);
+            return;
+        }
+
         for (DownloadHistoryItemWrapper item : this) {
             query = query.toLowerCase(Locale.getDefault());
             Locale locale = Locale.getDefault();
@@ -90,5 +83,17 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
 
     public void setIsInitialized() {
         mIsInitialized = true;
+    }
+
+    /**
+     * Filters out items that are displayed in this list for the current filter.
+     *
+     * @param filterType    Filter to use.
+     * @param filteredItems List for appending items that match the filter.
+     */
+    private void filter(int filterType, BackendItems filteredItems) {
+        for (DownloadHistoryItemWrapper item : this) {
+            if (item.isVisibleToUser(filterType)) filteredItems.add(item);
+        }
     }
 }
