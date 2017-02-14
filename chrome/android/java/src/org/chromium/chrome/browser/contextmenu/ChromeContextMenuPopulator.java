@@ -56,6 +56,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             R.id.contextmenu_add_to_contacts,
             R.id.contextmenu_copy,
             R.id.contextmenu_copy_link_text,
+            R.id.contextmenu_load_original_image,
             R.id.contextmenu_save_link_as,
             R.id.contextmenu_save_image,
             R.id.contextmenu_share_image,
@@ -69,7 +70,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             R.id.contextmenu_open_in_other_window,
             R.id.contextmenu_open_in_incognito_tab,
             R.id.contextmenu_save_link_as,
-            R.id.contextmenu_load_original_image,
             R.id.contextmenu_open_image_in_new_tab,
             R.id.contextmenu_search_by_image,
     };
