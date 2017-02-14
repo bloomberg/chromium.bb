@@ -1796,6 +1796,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
+- (void)webStateDidDismissInterstitial:(web::WebState*)webState {
+  [parentTabModel_ notifyTabChanged:self];
+}
+
 - (void)webLoadCancelled:(const GURL&)url {
   // When a load is cancelled, this is the maximum that a page will ever load.
   [fullScreenController_ enableFullScreen];

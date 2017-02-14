@@ -90,8 +90,11 @@ void WebInterstitialImpl::DontProceed() {
 
   GetDelegate()->OnDontProceed();
 
-  // Reload last committed entry.
-  nav_manager->Reload(true /* check_for_repost */);
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  if (![user_defaults boolForKey:@"PendingIndexNavigationDisabled"]) {
+    // Reload last committed entry.
+    nav_manager->Reload(true /* check_for_repost */);
+  }
 
   delete this;
 }
