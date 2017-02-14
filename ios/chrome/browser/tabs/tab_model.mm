@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#import "base/ios/crb_protocol_observers.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,7 +30,7 @@
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/tabs/tab_model_observers.h"
 #import "ios/chrome/browser/tabs/tab_model_order_controller.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
@@ -108,11 +107,6 @@ void CleanCertificatePolicyCache(
 }
 
 }  // anonymous namespace
-
-@interface TabModelObservers : CRBProtocolObservers<TabModelObserver>
-@end
-@implementation TabModelObservers
-@end
 
 @interface TabModel ()<TabUsageRecorderDelegate> {
   // Array of |Tab| objects.
@@ -255,8 +249,7 @@ void CleanCertificatePolicyCache(
                        sessionService:(SessionServiceIOS*)service
                          browserState:(ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
-    _observers.reset([[TabModelObservers
-        observersWithProtocol:@protocol(TabModelObserver)] retain]);
+    _observers.reset([[TabModelObservers observers] retain]);
 
     _browserState = browserState;
     DCHECK(_browserState);

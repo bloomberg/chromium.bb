@@ -119,6 +119,8 @@ source_set("tabs_internal_arc") {
   sources = [
     "legacy_tab_helper.mm",
     "tab_model_list.mm",
+    "tab_model_observers.h",
+    "tab_model_observers.mm",
   ]
   deps = [
     ":tabs",
