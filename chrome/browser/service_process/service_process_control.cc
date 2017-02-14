@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,8 +39,8 @@ using content::BrowserThread;
 
 namespace {
 
-void ConnectOnBlockingPool(mojo::ScopedMessagePipeHandle handle,
-                           mojo::edk::NamedPlatformHandle os_pipe) {
+void ConnectAsync(mojo::ScopedMessagePipeHandle handle,
+                  mojo::edk::NamedPlatformHandle os_pipe) {
   mojo::edk::ScopedPlatformHandle os_pipe_handle =
       mojo::edk::CreateClientHandle(os_pipe);
   if (!os_pipe_handle.is_valid())
@@ -71,9 +72,11 @@ void ServiceProcessControl::ConnectInternal() {
   DVLOG(1) << "Connecting to Service Process IPC Server";
 
   mojo::MessagePipe pipe;
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ConnectOnBlockingPool, base::Passed(&pipe.handle1),
-                            GetServiceProcessChannel()));
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&ConnectAsync, base::Passed(&pipe.handle1),
+                 GetServiceProcessChannel()));
   // TODO(hclam): Handle error connecting to channel.
   auto io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
