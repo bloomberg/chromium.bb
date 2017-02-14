@@ -412,7 +412,7 @@ class MockUsbDevice : public UsbDevice {
     interface_desc.endpoints.emplace_back(0x81, 0x02, 512, 0);
     interface_desc.endpoints.emplace_back(0x01, 0x02, 512, 0);
     config_desc.interfaces.push_back(interface_desc);
-    configurations_.push_back(config_desc);
+    descriptor_.configurations.push_back(config_desc);
     if (T::kConfigured)
       ActiveConfigurationChanged(1);
   }

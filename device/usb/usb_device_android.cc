@@ -118,11 +118,12 @@ UsbDeviceAndroid::UsbDeviceAndroid(
     ScopedJavaLocalRef<jobjectArray> configurations =
         Java_ChromeUsbDevice_getConfigurations(env, j_object_);
     jsize count = env->GetArrayLength(configurations.obj());
-    configurations_.reserve(count);
+    descriptor_.configurations.reserve(count);
     for (jsize i = 0; i < count; ++i) {
       ScopedJavaLocalRef<jobject> config(
           env, env->GetObjectArrayElement(configurations.obj(), i));
-      configurations_.push_back(UsbConfigurationAndroid::Convert(env, config));
+      descriptor_.configurations.push_back(
+          UsbConfigurationAndroid::Convert(env, config));
     }
   } else {
     // Pre-lollipop only the first configuration was supported. Build a basic
@@ -141,7 +142,7 @@ UsbDeviceAndroid::UsbDeviceAndroid(
           env, env->GetObjectArrayElement(interfaces.obj(), i));
       config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
     }
-    configurations_.push_back(config);
+    descriptor_.configurations.push_back(config);
   }
 }
 
@@ -182,11 +183,9 @@ void UsbDeviceAndroid::OnReadDescriptors(
     return;
   }
 
-  usb_version_ = descriptor->usb_version;
-  device_version_ = descriptor->device_version;
-  configurations_ = descriptor->configurations;
+  descriptor_ = *descriptor;
 
-  if (usb_version_ >= 0x0210) {
+  if (usb_version() >= 0x0210) {
     ReadWebUsbDescriptors(device_handle,
                           base::Bind(&UsbDeviceAndroid::OnReadWebUsbDescriptors,
                                      this, device_handle));

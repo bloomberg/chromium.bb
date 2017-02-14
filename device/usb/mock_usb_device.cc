@@ -50,7 +50,7 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
                              uint16_t product_id,
                              const UsbConfigDescriptor& configuration)
     : MockUsbDevice(vendor_id, product_id) {
-  configurations_.push_back(configuration);
+  descriptor_.configurations.push_back(configuration);
 }
 
 MockUsbDevice::MockUsbDevice(
@@ -68,7 +68,7 @@ MockUsbDevice::MockUsbDevice(
                 base::string16(),
                 base::string16(),
                 base::string16()) {
-  configurations_ = configurations;
+  descriptor_.configurations = configurations;
 }
 
 MockUsbDevice::MockUsbDevice(
@@ -83,14 +83,14 @@ MockUsbDevice::MockUsbDevice(
                     manufacturer_string,
                     product_string,
                     serial_number) {
-  configurations_ = configurations;
+  descriptor_.configurations = configurations;
 }
 
 MockUsbDevice::~MockUsbDevice() {
 }
 
 void MockUsbDevice::AddMockConfig(const UsbConfigDescriptor& config) {
-  configurations_.push_back(config);
+  descriptor_.configurations.push_back(config);
 }
 
 void MockUsbDevice::ActiveConfigurationChanged(int configuration_value) {

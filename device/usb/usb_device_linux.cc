@@ -35,20 +35,13 @@ UsbDeviceLinux::UsbDeviceLinux(
     const std::string& serial_number,
     uint8_t active_configuration,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : UsbDevice(descriptor.usb_version,
-                descriptor.device_class,
-                descriptor.device_subclass,
-                descriptor.device_protocol,
-                descriptor.vendor_id,
-                descriptor.product_id,
-                descriptor.device_version,
+    : UsbDevice(descriptor,
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
                 base::UTF8ToUTF16(serial_number)),
       device_path_(device_path),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner) {
-  configurations_ = descriptor.configurations;
   ActiveConfigurationChanged(active_configuration);
 }
 

@@ -14,6 +14,16 @@ UsbDevice::Observer::~Observer() {}
 
 void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
 
+UsbDevice::UsbDevice(const UsbDeviceDescriptor& descriptor,
+                     const base::string16& manufacturer_string,
+                     const base::string16& product_string,
+                     const base::string16& serial_number)
+    : descriptor_(descriptor),
+      manufacturer_string_(manufacturer_string),
+      product_string_(product_string),
+      serial_number_(serial_number),
+      guid_(base::GenerateGUID()) {}
+
 UsbDevice::UsbDevice(uint16_t usb_version,
                      uint8_t device_class,
                      uint8_t device_subclass,
@@ -24,17 +34,18 @@ UsbDevice::UsbDevice(uint16_t usb_version,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
                      const base::string16& serial_number)
-    : usb_version_(usb_version),
-      device_version_(device_version),
-      manufacturer_string_(manufacturer_string),
+    : manufacturer_string_(manufacturer_string),
       product_string_(product_string),
       serial_number_(serial_number),
-      guid_(base::GenerateGUID()),
-      device_class_(device_class),
-      device_subclass_(device_subclass),
-      device_protocol_(device_protocol),
-      vendor_id_(vendor_id),
-      product_id_(product_id) {}
+      guid_(base::GenerateGUID()) {
+  descriptor_.usb_version = usb_version;
+  descriptor_.device_class = device_class;
+  descriptor_.device_subclass = device_subclass;
+  descriptor_.device_protocol = device_protocol;
+  descriptor_.vendor_id = vendor_id;
+  descriptor_.product_id = product_id;
+  descriptor_.device_version = device_version;
+}
 
 UsbDevice::~UsbDevice() {
 }
@@ -64,7 +75,7 @@ void UsbDevice::RemoveObserver(Observer* observer) {
 }
 
 void UsbDevice::ActiveConfigurationChanged(int configuration_value) {
-  for (const auto& config : configurations_) {
+  for (const auto& config : configurations()) {
     if (config.configuration_value == configuration_value) {
       active_configuration_ = &config;
       return;

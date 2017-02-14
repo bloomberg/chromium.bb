@@ -68,7 +68,6 @@ void UsbDeviceImpl::ReadAllConfigurations() {
   libusb_device_descriptor device_descriptor;
   int rv = libusb_get_device_descriptor(platform_device_, &device_descriptor);
   if (rv == LIBUSB_SUCCESS) {
-    UsbDeviceDescriptor desc;
     for (uint8_t i = 0; i < device_descriptor.bNumConfigurations; ++i) {
       unsigned char* buffer;
       rv = libusb_get_raw_config_descriptor(platform_device_, i, &buffer);
@@ -78,11 +77,10 @@ void UsbDeviceImpl::ReadAllConfigurations() {
         continue;
       }
 
-      if (!desc.Parse(std::vector<uint8_t>(buffer, buffer + rv)))
+      if (!descriptor_.Parse(std::vector<uint8_t>(buffer, buffer + rv)))
         USB_LOG(EVENT) << "Config descriptor index " << i << " was corrupt.";
       free(buffer);
     }
-    configurations_.swap(desc.configurations);
   } else {
     USB_LOG(EVENT) << "Failed to get device descriptor: "
                    << ConvertPlatformUsbErrorToString(rv);
