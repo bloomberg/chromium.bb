@@ -159,9 +159,9 @@ span.hint {
 }
 
 span.hint.visible {
-  -webkit-animation-duration: 200ms;
-  -webkit-animation-fill-mode: forwards;
   -webkit-user-select: text;
+  animation-duration: 200ms;
+  animation-fill-mode: forwards;
   color: rgb(140, 20, 20);
   height: auto;
   margin-bottom: -5px;
@@ -183,8 +183,8 @@ span.hint.closing {
 }
 
 .collapsible.visible {
-  -webkit-animation-duration: 200ms;
-  -webkit-animation-fill-mode: forwards;
+  animation-duration: 200ms;
+  animation-fill-mode: forwards;
   height: auto;
 }
 
@@ -222,8 +222,8 @@ label {
 }
 
 .visible .extra {
-  -webkit-animation-duration: 200ms;
-  -webkit-animation-fill-mode: forwards;
+  animation-duration: 200ms;
+  animation-fill-mode: forwards;
   height: auto;
   opacity: 1;
   overflow: hidden;
@@ -251,7 +251,7 @@ label {
   display: none !important;
 }
 
-@-webkit-keyframes dancing-dots-jump {
+@keyframes dancing-dots-jump {
   0% { top: 0; }
   55% { top: 0; }
   60% { top: -10px; }
@@ -262,17 +262,17 @@ label {
 }
 
 span.jumping-dots > span {
-  -webkit-animation: dancing-dots-jump 1800ms infinite;
+  animation: dancing-dots-jump 1800ms infinite;
   padding: 1px;
   position: relative;
 }
 
 span.jumping-dots > span:nth-child(2) {
-  -webkit-animation-delay: 100ms;
+  animation-delay: 100ms;
 }
 
 span.jumping-dots > span:nth-child(3) {
-  -webkit-animation-delay: 300ms;
+  animation-delay: 300ms;
 }
 
 #print-header .button-strip {

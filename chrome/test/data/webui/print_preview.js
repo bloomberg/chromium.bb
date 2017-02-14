@@ -160,9 +160,9 @@ PrintPreviewWebUITest.prototype = {
    */
   waitForAnimationToEnd: function(elementId) {
     // add a listener for the animation end event
-    document.addEventListener('webkitAnimationEnd', function f(e) {
+    document.addEventListener('animationend', function f(e) {
       if (e.target.id == elementId) {
-        document.removeEventListener(f, 'webkitAnimationEnd');
+        document.removeEventListener(f, 'animationend');
         testDone();
       }
     });

@@ -112,7 +112,7 @@
   display: block;
 }
 
-@-webkit-keyframes connecting-indicator-ellipsis {
+@keyframes connecting-indicator-ellipsis {
   0% {
     opacity: 0;
   }
@@ -128,15 +128,15 @@
 }
 
 #connecting-indicator-ellipsis-1 {
-  -webkit-animation: connecting-indicator-ellipsis 3s 0 infinite;
+  animation: connecting-indicator-ellipsis 3s 0 infinite;
 }
 
 #connecting-indicator-ellipsis-2 {
-  -webkit-animation: connecting-indicator-ellipsis 3s 500ms infinite;
+  animation: connecting-indicator-ellipsis 3s 500ms infinite;
 }
 
 #connecting-indicator-ellipsis-3 {
-  -webkit-animation: connecting-indicator-ellipsis 3s 1s infinite;
+  animation: connecting-indicator-ellipsis 3s 1s infinite;
 }
 
 #error-navigation {

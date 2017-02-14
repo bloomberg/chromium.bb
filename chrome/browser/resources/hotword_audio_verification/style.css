@@ -174,13 +174,13 @@ a[is='action-link'] {
   color: rgba(66, 133, 244, 1);
 }
 
-@-webkit-keyframes rotate {
+@keyframes rotate {
   from { transform: rotate(0); }
   to { transform: rotate(359deg); }
 }
 
 .train.listening .icon {
-  -webkit-animation: rotate 2s linear infinite;
+  animation: rotate 2s linear infinite;
   background: -webkit-image-set(
       url(../images/placeholder-loader-1x.png) 1x,
       url(../images/placeholder-loader-2x.png) 2x)
@@ -290,7 +290,7 @@ div.buttonbar {
 }
 
 .buttonbar .message.wait .icon {
-  -webkit-animation: rotate 2s linear infinite;
+  animation: rotate 2s linear infinite;
   background: -webkit-image-set(
       url(../images/placeholder-loader-1x.png) 1x,
       url(../images/placeholder-loader-2x.png) 2x)

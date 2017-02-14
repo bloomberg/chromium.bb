@@ -69,12 +69,12 @@
 }
 
 #destination-search .invitation-container {
-  -webkit-animation: invitation-fadein 500ms;
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
+  animation: invitation-fadein 500ms;
 }
 
-@-webkit-keyframes invitation-fadein {
+@keyframes invitation-fadein {
   from {
     opacity: 0;
   }

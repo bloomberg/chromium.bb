@@ -235,7 +235,7 @@ list:not([disabled]) > .network-group[selected] {
   width: 100%;
 }
 
-@-webkit-keyframes connecting-animation {
+@keyframes connecting-animation {
   0% {
     background-position: 0 25%;
   }
@@ -289,7 +289,7 @@ list:not([disabled]) > .network-group[selected] {
   opacity: 1;
 }
 
-@-webkit-keyframes vpn-connecting-animation {
+@keyframes vpn-connecting-animation {
   from {
     opacity: 1;
   }
@@ -299,11 +299,11 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-connecting {
-  -webkit-animation: connecting-animation 1s step-end infinite;
+  animation: connecting-animation 1s step-end infinite;
 }
 
 .network-vpn.network-connecting {
-  -webkit-animation: vpn-connecting-animation 500ms alternate infinite;
+  animation: vpn-connecting-animation 500ms alternate infinite;
 }
 
 .network-title {

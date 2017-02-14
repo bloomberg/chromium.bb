@@ -60,7 +60,7 @@ cr.define('ntp', function() {
       this.addEventListener('dragend', this.onDragEnd_);
 
       this.firstChild.addEventListener(
-          'webkitAnimationEnd', this.onContentsAnimationEnd_.bind(this));
+          'animationend', this.onContentsAnimationEnd_.bind(this));
 
       this.eventTracker = new EventTracker();
     },
@@ -304,7 +304,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Callback for the webkitAnimationEnd event on the tile's contents.
+     * Callback for the animationend event on the tile's contents.
      * @param {Event} e The event object.
      */
     onContentsAnimationEnd_: function(e) {

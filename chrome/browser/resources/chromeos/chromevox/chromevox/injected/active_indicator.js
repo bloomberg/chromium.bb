@@ -149,11 +149,11 @@ cvox.ActiveIndicator.STYLE =
     '  visibility: hidden !important;' +
     '}' +
     '.cvox_indicator_pulsing {' +
-    '  -webkit-animation: ' +
+    '  animation: ' +
     // NOTE(deboer): This animation is 0 seconds long to work around
     // http://crbug.com/128993.  Revert it to 2s when the bug is fixed.
     '      cvox_indicator_pulsing_animation 0s 2 alternate !important;' +
-    '  -webkit-animation-timing-function: ease-in-out !important;' +
+    '  animation-timing-function: ease-in-out !important;' +
     '}' +
     '.cvox_indicator_region {' +
     '  opacity: 0 !important;' +
@@ -194,7 +194,7 @@ cvox.ActiveIndicator.STYLE =
     '.cvox_indicator_bottom {' +
     '  border-radius: 0 0 inherit inherit !important;' +
     '}' +
-    '@-webkit-keyframes cvox_indicator_pulsing_animation {' +
+    '@keyframes cvox_indicator_pulsing_animation {' +
     '   0% {opacity: 1.0}' +
     '  50% {opacity: 0.5}' +
     ' 100% {opacity: 1.0}' +

@@ -44,7 +44,7 @@
   background: rgb(239, 243, 255);
 }
 
-@-webkit-keyframes highlight1 {
+@keyframes highlight1 {
   0% {
     background: rgb(255, 255, 0);
   }
@@ -53,7 +53,7 @@
   }
 }
 
-@-webkit-keyframes highlight2 {
+@keyframes highlight2 {
   0% {
     background: rgb(155, 158, 166);
   }
@@ -63,15 +63,15 @@
 }
 
 .section-details [highlighted] {
-  -webkit-animation-duration: 3s;
-  -webkit-animation-name: highlight1;
-  -webkit-animation-timing-function: linear;
+  animation-duration: 3s;
+  animation-name: highlight1;
+  animation-timing-function: linear;
 }
 
 .section-details [highlighted]:nth-child(odd) {
-  -webkit-animation-duration: 3s;
-  -webkit-animation-name: highlight2;
-  -webkit-animation-timing-function: linear;
+  animation-duration: 3s;
+  animation-name: highlight2;
+  animation-timing-function: linear;
 }
 
 .section-details .uninitialized {

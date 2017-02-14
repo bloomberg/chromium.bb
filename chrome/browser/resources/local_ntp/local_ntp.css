@@ -136,7 +136,7 @@ html[dir=rtl] #cursor {
   right: 9px;
 }
 
-@-webkit-keyframes blink {
+@keyframes blink {
   0% {
     opacity: 1;
   }
@@ -155,7 +155,7 @@ body.fakebox-drag-focused #cursor {
 }
 
 body.fakebox-focused #cursor {
-  -webkit-animation: blink 1.3s step-end infinite;
+  animation: blink 1.3s step-end infinite;
   visibility: inherit;
 }
 
