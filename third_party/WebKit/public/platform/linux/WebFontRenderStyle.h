@@ -52,7 +52,8 @@ struct BLINK_EXPORT WebFontRenderStyle {
   char useSubpixelPositioning;  // use subpixel positioning (fractional X
                                 // positions for glyphs)
 
-#if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION || \
+    BLINK_COMMON_IMPLEMENTATION
   // Translates the members of this struct to a FontRenderStyle
   void toFontRenderStyle(FontRenderStyle*);
 #endif
