@@ -154,6 +154,80 @@ TEST_F(SourceListDirectiveTest, BlobMatchingSelf) {
       "https");
 }
 
+TEST_F(SourceListDirectiveTest, FilesystemMatchingSelf) {
+  KURL base;
+  String sources = "'self'";
+  SourceListDirective sourceList("script-src", sources, csp.get());
+
+  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example.test/")));
+  EXPECT_FALSE(sourceList.allows(
+      KURL(base, "filesystem:https://example.test/file.txt")));
+
+  // Register "https" as bypassing CSP, which should trigger the innerURL
+  // behavior.
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example.test/")));
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "filesystem:https://example.test/file.txt")));
+
+  // Unregister the scheme to clean up after ourselves.
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
+}
+
+TEST_F(SourceListDirectiveTest, BlobDisallowedWhenBypassingSelfScheme) {
+  KURL base;
+  String sources = "'self' blob:";
+  SourceListDirective sourceList("script-src", sources, csp.get());
+
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "blob:https://example.test/1be95204-93d6-4GUID")));
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "blob:https://not-example.test/1be95204-93d6-4GUID")));
+
+  // Register "https" as bypassing CSP, which should trigger the innerURL
+  // behavior.
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "blob:https://example.test/1be95204-93d6-4GUID")));
+  // TODO(mkwst, arthursonzogni): This should be true.
+  // See http://crbug.com/692046
+  EXPECT_FALSE(sourceList.allows(
+      KURL(base, "blob:https://not-example.test/1be95204-93d6-4GUID")));
+
+  // Unregister the scheme to clean up after ourselves.
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
+}
+
+TEST_F(SourceListDirectiveTest, FilesystemDisallowedWhenBypassingSelfScheme) {
+  KURL base;
+  String sources = "'self' filesystem:";
+  SourceListDirective sourceList("script-src", sources, csp.get());
+
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "filesystem:https://example.test/file.txt")));
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "filesystem:https://not-example.test/file.txt")));
+
+  // Register "https" as bypassing CSP, which should trigger the innerURL
+  // behavior.
+  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+  EXPECT_TRUE(sourceList.allows(
+      KURL(base, "filesystem:https://example.test/file.txt")));
+  // TODO(mkwst, arthursonzogni): This should be true.
+  // See http://crbug.com/692046
+  EXPECT_FALSE(sourceList.allows(
+      KURL(base, "filesystem:https://not-example.test/file.txt")));
+
+  // Unregister the scheme to clean up after ourselves.
+  SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "https");
+}
+
 TEST_F(SourceListDirectiveTest, BlobMatchingBlob) {
   KURL base;
   String sources = "blob:";
