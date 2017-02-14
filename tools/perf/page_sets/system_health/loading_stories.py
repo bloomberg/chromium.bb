@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from page_sets.system_health import platforms
+from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import dropbox_login
@@ -100,12 +101,14 @@ class LoadInstagramStory(_LoadingStory):
 class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
   URL = 'https://uk.pinterest.com/categories/popular/'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
 
 class LoadTumblrStory(_LoadingStory):
   NAME = 'load:social:tumblr'
   # Redirects to the "http://" version.
   URL = 'https://50thousand.tumblr.com/'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
 
 ################################################################################
@@ -123,6 +126,7 @@ class LoadCnnStory(_LoadingStory):
   NAME = 'load:news:cnn'
   # Using "https://" shows "Your connection is not private".
   URL = 'http://edition.cnn.com'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
 
 class LoadFlipboardStory(_LoadingStory):
@@ -342,11 +346,13 @@ class LoadDropboxStory(_LoadingStory):
 class LoadWeatherStory(_LoadingStory):
   NAME = 'load:tools:weather'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
 
 class LoadDriveStory(_LoadingStory):
   NAME = 'load:tools:drive'
   URL = 'https://drive.google.com/drive/my-drive'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
   def _Login(self, action_runner):
     google_login.LoginGoogleAccount(action_runner, 'googletest',
