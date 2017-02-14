@@ -493,6 +493,11 @@ class Internals final : public GarbageCollected<Internals>,
   bool isUseCounted(Document*, uint32_t feature);
   bool isCSSPropertyUseCounted(Document*, const String&);
 
+  // Observes changes on Document's UseCounter. Returns a promise that is
+  // resolved when |feature| is counted. When |feature| was already counted,
+  // it's immediately resolved.
+  ScriptPromise observeUseCounter(ScriptState*, Document*, uint32_t feature);
+
   // Used by the iterable<>.
   unsigned length() const { return 5; }
   int anonymousIndexedGetter(uint32_t index) const { return index * index; }

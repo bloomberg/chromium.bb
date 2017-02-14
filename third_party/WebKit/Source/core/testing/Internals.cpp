@@ -157,6 +157,35 @@
 
 namespace blink {
 
+namespace {
+
+class UseCounterObserverImpl final : public UseCounter::Observer {
+  WTF_MAKE_NONCOPYABLE(UseCounterObserverImpl);
+
+ public:
+  UseCounterObserverImpl(ScriptPromiseResolver* resolver,
+                         UseCounter::Feature feature)
+      : m_resolver(resolver), m_feature(feature) {}
+
+  bool onCountFeature(UseCounter::Feature feature) final {
+    if (m_feature != feature)
+      return false;
+    m_resolver->resolve(feature);
+    return true;
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    UseCounter::Observer::trace(visitor);
+    visitor->trace(m_resolver);
+  }
+
+ private:
+  Member<ScriptPromiseResolver> m_resolver;
+  UseCounter::Feature m_feature;
+};
+
+}  // namespace
+
 static WTF::Optional<DocumentMarker::MarkerType> markerTypeFrom(
     const String& markerType) {
   if (equalIgnoringCase(markerType, "Spelling"))
@@ -2984,6 +3013,34 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& propertyName) {
   return UseCounter::isCounted(*document, propertyName);
+}
+
+ScriptPromise Internals::observeUseCounter(ScriptState* scriptState,
+                                           Document* document,
+                                           uint32_t feature) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  if (feature >= UseCounter::NumberOfFeatures) {
+    resolver->reject();
+    return promise;
+  }
+
+  UseCounter::Feature useCounterFeature =
+      static_cast<UseCounter::Feature>(feature);
+  if (UseCounter::isCounted(*document, useCounterFeature)) {
+    resolver->resolve();
+    return promise;
+  }
+
+  Frame* frame = document->frame();
+  if (!frame || !frame->host()) {
+    resolver->reject();
+    return promise;
+  }
+
+  frame->host()->useCounter().addObserver(
+      new UseCounterObserverImpl(resolver, useCounterFeature));
+  return promise;
 }
 
 String Internals::unscopableAttribute() {

@@ -2,10 +2,7 @@
 <title>Shared Worker: UseCounter</title>
 <script>
 self.connectToWorker = () => {
-  return new Promise(resolve => {
-    var worker = new SharedWorker('shared-worker-usecounter.js');
-    worker.port.onmessage = resolve;
-  });
+  var worker = new SharedWorker('shared-worker-usecounter.js');
 };
 window.opener.postMessage('LOADED', '*');
 </script>

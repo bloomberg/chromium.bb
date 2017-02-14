@@ -1125,6 +1125,7 @@ void UseCounter::recordMeasurement(Feature feature) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "FeatureFirstUsed", "feature", feature);
       featuresHistogram().count(feature);
+      notifyFeatureCounted(feature);
     }
     m_featuresRecorded.quickSet(feature);
   }
@@ -1141,6 +1142,10 @@ bool UseCounter::hasRecordedMeasurement(Feature feature) const {
   DCHECK(feature < NumberOfFeatures);
 
   return m_featuresRecorded.quickGet(feature);
+}
+
+DEFINE_TRACE(UseCounter) {
+  visitor->trace(m_observers);
 }
 
 void UseCounter::didCommitLoad(KURL url) {
@@ -1191,6 +1196,11 @@ bool UseCounter::isCounted(Document& document, Feature feature) {
 
 bool UseCounter::isCounted(CSSPropertyID unresolvedProperty) {
   return m_CSSRecorded.quickGet(unresolvedProperty);
+}
+
+void UseCounter::addObserver(Observer* observer) {
+  DCHECK(!m_observers.contains(observer));
+  m_observers.insert(observer);
 }
 
 bool UseCounter::isCounted(Document& document, const String& string) {
@@ -1247,6 +1257,17 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
 
 void UseCounter::count(Feature feature) {
   recordMeasurement(feature);
+}
+
+void UseCounter::notifyFeatureCounted(Feature feature) {
+  DCHECK(!m_muteCount);
+  DCHECK(!m_disableReporting);
+  HeapHashSet<Member<Observer>> toBeRemoved;
+  for (auto observer : m_observers) {
+    if (observer->onCountFeature(feature))
+      toBeRemoved.insert(observer);
+  }
+  m_observers.removeAll(toBeRemoved);
 }
 
 EnumerationHistogram& UseCounter::featuresHistogram() const {

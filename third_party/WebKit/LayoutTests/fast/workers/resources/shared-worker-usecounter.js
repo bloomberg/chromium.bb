@@ -5,7 +5,6 @@ onconnect = e => {
       internals.countFeature(e.data.feature);
     else if (e.data.type == 'COUNT_DEPRECATION')
       internals.countDeprecation(e.data.feature);
-    port.postMessage('COUNTED');
   };
   port.postMessage('CONNECTED');
 }

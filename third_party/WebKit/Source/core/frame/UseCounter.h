@@ -26,14 +26,16 @@
 #ifndef UseCounter_h
 #define UseCounter_h
 
+#include <v8.h>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "platform/heap/GarbageCollected.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/BitVector.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -55,7 +57,8 @@ class StyleSheetContents;
 // "Automatically send usage statistics and crash reports to Google" setting
 // enabled:
 // http://www.google.com/chrome/intl/en/privacy.html
-
+//
+// Changes on UseCounter are observable by UseCounter::Observer.
 class CORE_EXPORT UseCounter {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(UseCounter);
@@ -1467,6 +1470,19 @@ class CORE_EXPORT UseCounter {
     NumberOfFeatures,  // This enum value must be last.
   };
 
+  // An interface to observe UseCounter changes. Note that this is never
+  // notified when the counter is disabled by |m_muteCount| or
+  // |m_disableReporting|.
+  class Observer : public GarbageCollected<Observer> {
+   public:
+    // Notified when a feature is counted for the first time. This should return
+    // true if it no longer needs to observe changes so that the counter can
+    // remove a reference to the observer and stop notifications.
+    virtual bool onCountFeature(Feature) = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  };
+
   // "count" sets the bit for this feature to 1. Repeated calls are ignored.
   static void count(const Frame*, Feature);
   static void count(const Document&, Feature);
@@ -1487,6 +1503,9 @@ class CORE_EXPORT UseCounter {
   static bool isCounted(Document&, const String&);
   bool isCounted(CSSPropertyID unresolvedProperty);
 
+  // Retains a reference to the observer to notify of UseCounter changes.
+  void addObserver(Observer*);
+
   // Invoked when a new document is loaded into the main frame of the page.
   void didCommitLoad(KURL);
 
@@ -1503,7 +1522,14 @@ class CORE_EXPORT UseCounter {
   // reporting disabled.
   bool hasRecordedMeasurement(Feature) const;
 
+  DECLARE_TRACE();
+
  private:
+  // Notifies that a feature is newly counted to |m_observers|. This shouldn't
+  // be called when the counter is disabled by |m_muteCount| or
+  // |m_disableReporting|.
+  void notifyFeatureCounted(Feature);
+
   EnumerationHistogram& featuresHistogram() const;
   EnumerationHistogram& cssHistogram() const;
 
@@ -1520,6 +1546,8 @@ class CORE_EXPORT UseCounter {
   // histograms.
   BitVector m_featuresRecorded;
   BitVector m_CSSRecorded;
+
+  HeapHashSet<Member<Observer>> m_observers;
 
   // Encapsulates the work to preserve the old "FeatureObserver" histogram with
   // original semantics

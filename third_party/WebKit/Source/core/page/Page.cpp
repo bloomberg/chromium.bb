@@ -500,6 +500,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_scrollingCoordinator);
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
+  visitor->trace(m_useCounter);
   visitor->trace(m_frameHost);
   Supplementable<Page>::trace(visitor);
   PageVisibilityNotifier::trace(visitor);

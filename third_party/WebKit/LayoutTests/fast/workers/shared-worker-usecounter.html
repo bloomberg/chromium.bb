@@ -13,6 +13,10 @@ function isUseCounted(win, feature) {
   return win.internals.isUseCounted(win.document, feature);
 }
 
+function observeUseCounter(win, feature) {
+  return win.internals.observeUseCounter(win.document, feature);
+}
+
 function openWindow(url) {
   return new Promise(resolve => {
       let win = window.open(url, '_blank');
@@ -54,14 +58,13 @@ promise_test(t => {
         assert_false(isUseCounted(win2, kFeature));
 
         // Request to count a feature.
-        let promise =
-            new Promise(resolve => worker.port.onmessage = resolve);
         worker.port.postMessage({type: 'COUNT_FEATURE', feature: kFeature});
-        return promise;
+        return Promise.all([
+            observeUseCounter(win1, kFeature),
+            observeUseCounter(win2, kFeature)
+        ]);
       })
-    .then(e => {
-        assert_equals(e.data, 'COUNTED');
-
+    .then(() => {
         // API use on the SharedWorkerGlobalScope is recorded in UseCounters on
         // all connected documents.
         assert_true(isUseCounted(win1, kFeature));
@@ -71,15 +74,14 @@ promise_test(t => {
         assert_false(isUseCounted(win2, kDeprecatedFeature));
 
         // Request to count a deprecated feature.
-        let promise =
-            new Promise(resolve => worker.port.onmessage = resolve);
         worker.port.postMessage(
             {type: 'COUNT_DEPRECATION', feature: kDeprecatedFeature});
-        return promise;
+        return Promise.all([
+            observeUseCounter(win1, kDeprecatedFeature),
+            observeUseCounter(win2, kDeprecatedFeature)
+        ]);
       })
-    .then(e => {
-        assert_equals(e.data, 'COUNTED');
-
+    .then(() => {
         // Deprecated API use on the SharedWorkerGlobalScope is recorded in
         // UseCounters on all connected documents.
         assert_true(isUseCounted(win1, kDeprecatedFeature));
@@ -93,7 +95,11 @@ promise_test(t => {
         // not be counted yet.
         assert_false(isUseCounted(win3, kFeature));
         assert_false(isUseCounted(win3, kDeprecatedFeature));
-        return win3.connectToWorker();
+        win3.connectToWorker();
+        return Promise.all([
+            observeUseCounter(win3, kFeature),
+            observeUseCounter(win3, kDeprecatedFeature)
+        ]);
       })
     .then(() => {
         // A counter of the newly connected document should be synced with
