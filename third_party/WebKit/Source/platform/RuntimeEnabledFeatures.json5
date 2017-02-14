@@ -498,8 +498,7 @@
     },
     {
       name: "LongTaskObserver",
-      origin_trial_feature_name: "LongTaskObserver",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FractionalScrollOffsets",

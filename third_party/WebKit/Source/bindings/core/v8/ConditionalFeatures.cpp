@@ -33,12 +33,6 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
           interfaceObject);
     }
-  } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    if (OriginTrials::longTaskObserverEnabled(executionContext)) {
-      V8Window::installLongTaskObserver(isolate, world, instanceObject,
-                                        prototypeObject, interfaceObject);
-    }
   } else if (wrapperTypeInfo == &V8Document::wrapperTypeInfo) {
     if (OriginTrials::setRootScrollerEnabled(executionContext)) {
       V8Document::installRootScroller(isolate, world, v8::Local<v8::Object>(),
@@ -65,13 +59,6 @@ void installPendingConditionalFeatureCore(const String& feature,
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
           interfaceObject);
     }
-    return;
-  }
-  if (feature == "LongTaskObserver") {
-    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
-    V8Window::installLongTaskObserver(isolate, world, instanceObject,
-                                      v8::Local<v8::Object>(),
-                                      v8::Local<v8::Function>());
     return;
   }
   if (feature == "RootScroller") {

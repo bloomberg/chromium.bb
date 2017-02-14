@@ -3780,6 +3780,10 @@ interface PerformanceEntry
     getter startTime
     method constructor
     method toJSON
+interface PerformanceLongTaskTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter attribution
+    method constructor
 interface PerformanceMark : PerformanceEntry
     attribute @@toStringTag
     method constructor
@@ -5554,6 +5558,13 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface TaskAttributionTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter containerId
+    getter containerName
+    getter containerSrc
+    getter containerType
+    method constructor
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot

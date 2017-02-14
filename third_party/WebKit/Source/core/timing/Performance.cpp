@@ -142,8 +142,7 @@ PerformanceTiming* Performance::timing() const {
 
 void Performance::updateLongTaskInstrumentation() {
   DCHECK(frame());
-  if (!frame()->document() ||
-      !OriginTrials::longTaskObserverEnabled(frame()->document()))
+  if (!frame()->document())
     return;
 
   if (hasObserverFor(PerformanceEntry::LongTask)) {

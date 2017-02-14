@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://github.com/wicg/longtasks
-[
-    OriginTrialEnabled=LongTaskObserver,
-] interface TaskAttributionTiming : PerformanceEntry {
+interface TaskAttributionTiming : PerformanceEntry {
     readonly attribute DOMString containerType;
     readonly attribute DOMString containerSrc;
     readonly attribute DOMString containerId;
