@@ -391,6 +391,11 @@ void ThreadHeap::postGC(BlinkGC::GCType gcType) {
     state->postGC(gcType);
 }
 
+void ThreadHeap::preSweep(BlinkGC::GCType gcType) {
+  for (ThreadState* state : m_threads)
+    state->preSweep(gcType);
+}
+
 void ThreadHeap::processMarkingStack(Visitor* visitor) {
   // Ephemeron fixed point loop.
   do {

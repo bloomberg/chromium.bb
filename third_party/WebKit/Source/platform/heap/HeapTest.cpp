@@ -283,7 +283,10 @@ class TestGCScope {
     m_state->heap().preGC();
   }
 
-  ~TestGCScope() { m_state->heap().postGC(BlinkGC::GCWithSweep); }
+  ~TestGCScope() {
+    m_state->heap().postGC(BlinkGC::GCWithSweep);
+    m_state->heap().preSweep(BlinkGC::GCWithSweep);
+  }
 
  private:
   ThreadState* m_state;

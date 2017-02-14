@@ -226,8 +226,9 @@ class PLATFORM_EXPORT ThreadState {
   //
   // 1) preGC() is called.
   // 2) ThreadHeap::collectGarbage() is called. This marks live objects.
-  // 3) postGC() is called. This does thread-local weak processing,
-  //    pre-finalization, eager sweeping and heap compaction.
+  // 3) postGC() is called. This does thread-local weak processing.
+  // 4) preSweep() is called. This does pre-finalization, eager sweeping and
+  //    heap compaction.
   // 4) Lazy sweeping sweeps heaps incrementally. completeSweep() may be called
   //    to complete the sweeping.
   // 5) postSweep() is called.
@@ -241,6 +242,7 @@ class PLATFORM_EXPORT ThreadState {
   void preGC();
   void postGC(BlinkGC::GCType);
   void completeSweep();
+  void preSweep(BlinkGC::GCType);
   void postSweep();
   // makeConsistentForMutator() drops marks from marked objects and rebuild
   // free lists. This is called after taking a snapshot and before resuming
