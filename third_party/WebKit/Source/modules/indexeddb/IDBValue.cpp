@@ -4,6 +4,9 @@
 
 #include "modules/indexeddb/IDBValue.h"
 
+#include <v8.h>
+
+#include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
@@ -15,6 +18,11 @@ IDBValue::IDBValue() = default;
 
 IDBValue::IDBValue(const WebIDBValue& value)
     : IDBValue(value.data, value.webBlobInfo, value.primaryKey, value.keyPath) {
+  m_externalAllocatedSize = m_data ? static_cast<int64_t>(m_data->size()) : 0l;
+  if (m_externalAllocatedSize) {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        m_externalAllocatedSize);
+  }
 }
 
 IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
@@ -49,7 +57,12 @@ IDBValue::IDBValue(const IDBValue* value,
   }
 }
 
-IDBValue::~IDBValue() {}
+IDBValue::~IDBValue() {
+  if (m_externalAllocatedSize) {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        -m_externalAllocatedSize);
+  }
+}
 
 PassRefPtr<IDBValue> IDBValue::create() {
   return adoptRef(new IDBValue());
@@ -73,8 +86,8 @@ Vector<String> IDBValue::getUUIDs() const {
   return uuids;
 }
 
-const SharedBuffer* IDBValue::data() const {
-  return m_data.get();
+RefPtr<SerializedScriptValue> IDBValue::createSerializedValue() const {
+  return SerializedScriptValue::create(m_data->data(), m_data->size());
 }
 
 bool IDBValue::isNull() const {
