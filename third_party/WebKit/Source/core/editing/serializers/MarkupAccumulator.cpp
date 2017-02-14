@@ -111,13 +111,18 @@ void MarkupAccumulator::appendText(StringBuilder& result, Text& text) {
   m_formatter.appendText(result, text);
 }
 
-bool MarkupAccumulator::shouldIgnoreAttribute(const Element& element,
-                                              const Attribute& attribute) {
+bool MarkupAccumulator::shouldIgnoreAttribute(
+    const Element& element,
+    const Attribute& attribute) const {
+  return false;
+}
+
+bool MarkupAccumulator::shouldIgnoreElement(const Element& element) const {
   return false;
 }
 
 void MarkupAccumulator::appendElement(StringBuilder& result,
-                                      Element& element,
+                                      const Element& element,
                                       Namespaces* namespaces) {
   appendOpenTag(result, element, namespaces);
 
@@ -164,6 +169,11 @@ static void serializeNodesWithNamespaces(MarkupAccumulator& accumulator,
                                          Node& targetNode,
                                          EChildrenOnly childrenOnly,
                                          const Namespaces* namespaces) {
+  if (targetNode.isElementNode() &&
+      accumulator.shouldIgnoreElement(toElement(targetNode))) {
+    return;
+  }
+
   Namespaces namespaceHash;
   if (namespaces)
     namespaceHash = *namespaces;

@@ -365,4 +365,16 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
   EXPECT_NE(WTF::kNotFound, mhtml.find("class=3D\"modal"));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
+  String mhtml =
+      generateMHTMLParts("http://www.test.com", "remove_elements.html");
+
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<script"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<noscript"));
+
+  // If an element is removed, its children should also be skipped.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<select"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<option"));
+}
+
 }  // namespace blink
