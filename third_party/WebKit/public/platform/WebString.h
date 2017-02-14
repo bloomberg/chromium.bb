@@ -107,26 +107,26 @@ class WebString {
     return *this;
   }
 
-  BLINK_COMMON_EXPORT void reset();
-  BLINK_COMMON_EXPORT void assign(const WebString&);
-  BLINK_COMMON_EXPORT void assign(const WebUChar* data, size_t len);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebString&);
+  BLINK_PLATFORM_EXPORT void assign(const WebUChar* data, size_t len);
 
-  BLINK_COMMON_EXPORT bool equals(const WebString&) const;
-  BLINK_COMMON_EXPORT bool equals(const char* characters, size_t len) const;
+  BLINK_PLATFORM_EXPORT bool equals(const WebString&) const;
+  BLINK_PLATFORM_EXPORT bool equals(const char* characters, size_t len) const;
   bool equals(const char* characters) const {
     return equals(characters, characters ? strlen(characters) : 0);
   }
 
-  BLINK_COMMON_EXPORT size_t length() const;
+  BLINK_PLATFORM_EXPORT size_t length() const;
 
   bool isEmpty() const { return !length(); }
   bool isNull() const { return m_private.isNull(); }
 
-  BLINK_COMMON_EXPORT std::string utf8(
+  BLINK_PLATFORM_EXPORT std::string utf8(
       UTF8ConversionMode = UTF8ConversionMode::kLenient) const;
 
-  BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data,
-                                                size_t length);
+  BLINK_PLATFORM_EXPORT static WebString fromUTF8(const char* data,
+                                                  size_t length);
   static WebString fromUTF8(const std::string& s) {
     return fromUTF8(s.data(), s.length());
   }
@@ -135,18 +135,19 @@ class WebString {
     return base::Latin1OrUTF16ToUTF16(length(), data8(), data16());
   }
 
-  BLINK_COMMON_EXPORT static WebString fromUTF16(const base::string16&);
+  BLINK_PLATFORM_EXPORT static WebString fromUTF16(const base::string16&);
 
-  BLINK_COMMON_EXPORT static WebString fromUTF16(const base::NullableString16&);
+  BLINK_PLATFORM_EXPORT static WebString fromUTF16(
+      const base::NullableString16&);
 
   static base::NullableString16 toNullableString16(const WebString& s) {
     return base::NullableString16(s.utf16(), s.isNull());
   }
 
-  BLINK_COMMON_EXPORT std::string latin1() const;
+  BLINK_PLATFORM_EXPORT std::string latin1() const;
 
-  BLINK_COMMON_EXPORT static WebString fromLatin1(const WebLChar* data,
-                                                  size_t length);
+  BLINK_PLATFORM_EXPORT static WebString fromLatin1(const WebLChar* data,
+                                                    size_t length);
 
   static WebString fromLatin1(const std::string& s) {
     return fromLatin1(reinterpret_cast<const WebLChar*>(s.data()), s.length());
@@ -155,13 +156,13 @@ class WebString {
   // This asserts if the string contains non-ascii characters.
   // Use this rather than calling base::UTF16ToASCII() which always incurs
   // (likely unnecessary) string16 conversion.
-  BLINK_COMMON_EXPORT std::string ascii() const;
+  BLINK_PLATFORM_EXPORT std::string ascii() const;
 
   // Use this rather than calling base::IsStringASCII().
-  BLINK_COMMON_EXPORT bool containsOnlyASCII() const;
+  BLINK_PLATFORM_EXPORT bool containsOnlyASCII() const;
 
   // Does same as fromLatin1 but asserts if the given string has non-ascii char.
-  BLINK_COMMON_EXPORT static WebString fromASCII(const std::string&);
+  BLINK_PLATFORM_EXPORT static WebString fromASCII(const std::string&);
 
   template <int N>
   WebString(const char (&data)[N]) {
@@ -175,23 +176,23 @@ class WebString {
   }
 
 #if INSIDE_BLINK
-  BLINK_COMMON_EXPORT WebString(const WTF::String&);
-  BLINK_COMMON_EXPORT WebString& operator=(const WTF::String&);
-  BLINK_COMMON_EXPORT operator WTF::String() const;
+  BLINK_PLATFORM_EXPORT WebString(const WTF::String&);
+  BLINK_PLATFORM_EXPORT WebString& operator=(const WTF::String&);
+  BLINK_PLATFORM_EXPORT operator WTF::String() const;
 
-  BLINK_COMMON_EXPORT operator WTF::StringView() const;
+  BLINK_PLATFORM_EXPORT operator WTF::StringView() const;
 
-  BLINK_COMMON_EXPORT WebString(const WTF::AtomicString&);
-  BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
-  BLINK_COMMON_EXPORT operator WTF::AtomicString() const;
+  BLINK_PLATFORM_EXPORT WebString(const WTF::AtomicString&);
+  BLINK_PLATFORM_EXPORT WebString& operator=(const WTF::AtomicString&);
+  BLINK_PLATFORM_EXPORT operator WTF::AtomicString() const;
 #endif
 
  private:
-  BLINK_COMMON_EXPORT bool is8Bit() const;
-  BLINK_COMMON_EXPORT const WebLChar* data8() const;
-  BLINK_COMMON_EXPORT const WebUChar* data16() const;
+  BLINK_PLATFORM_EXPORT bool is8Bit() const;
+  BLINK_PLATFORM_EXPORT const WebLChar* data8() const;
+  BLINK_PLATFORM_EXPORT const WebUChar* data16() const;
 
-  BLINK_COMMON_EXPORT void assign(WTF::StringImpl*);
+  BLINK_PLATFORM_EXPORT void assign(WTF::StringImpl*);
 
   WebPrivatePtr<WTF::StringImpl> m_private;
 };
