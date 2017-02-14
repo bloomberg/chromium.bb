@@ -37,6 +37,8 @@ enum class UMAWebBluetoothFunction {
   GET_PRIMARY_SERVICES = 10,
   DESCRIPTOR_READ_VALUE = 11,
   DESCRIPTOR_WRITE_VALUE = 12,
+  CHARACTERISTIC_GET_DESCRIPTOR = 13,
+  CHARACTERISTIC_GET_DESCRIPTORS = 14,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -185,7 +187,21 @@ enum class UMAGetCharacteristicOutcome {
   NO_CHARACTERISTICS = 5,
   // Note: Add new outcomes immediately above this line.
   // Make sure to update the enum list in
-  // tools/metrisc/histogram/histograms.xml accordingly.
+  // tools/metrics/histogram/histograms.xml accordingly.
+  COUNT
+};
+
+enum class UMAGetDescriptorOutcome {
+  SUCCESS = 0,
+  NO_DEVICE = 1,
+  NO_SERVICE = 2,
+  NO_CHARACTERISTIC = 3,
+  NOT_FOUND = 4,
+  BLOCKLISTED = 5,
+  NO_DESCRIPTORS = 6,
+  // Note: Add new outcomes immediately above this line.
+  // Make sure to update the enum list in
+  // tools/metrics/histogram/histograms.xml accordingly.
   COUNT
 };
 
@@ -209,6 +225,27 @@ void RecordGetCharacteristicsOutcome(
 void RecordGetCharacteristicsCharacteristic(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
     const base::Optional<device::BluetoothUUID>& characteristic);
+
+// There should be a call to this function whenever
+// RemoteServiceGetDescriptorsCallback is run.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE for
+// getDescriptor.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE for
+// getDescriptors.
+void RecordGetDescriptorsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetDescriptorOutcome outcome);
+
+// Records the outcome of the cache query for getDescriptors. Should only be
+// called if QueryCacheForService fails.
+void RecordGetDescriptorsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome);
+
+// Records the UUID of the descriptor used when calling getDescriptor.
+void RecordGetDescriptorsDescriptor(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const base::Optional<device::BluetoothUUID>& descriptor);
 
 // GATT Operations Metrics
 

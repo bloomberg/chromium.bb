@@ -266,6 +266,64 @@ void RecordGetCharacteristicsCharacteristic(
   }
 }
 
+void RecordGetDescriptorsDescriptor(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const base::Optional<BluetoothUUID>& descriptor) {
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetDescriptor.Descriptor",
+                                  HashUUID(descriptor));
+      return;
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetDescriptors.Descriptor",
+                                  HashUUID(descriptor));
+      return;
+  }
+}
+
+void RecordGetDescriptorsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetDescriptorOutcome outcome) {
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetDescriptor.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetDescriptorOutcome::COUNT));
+      return;
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetDescriptors.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetDescriptorOutcome::COUNT));
+      return;
+  }
+}
+
+void RecordGetDescriptorsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome) {
+  switch (outcome) {
+    case CacheQueryOutcome::SUCCESS:
+    case CacheQueryOutcome::BAD_RENDERER:
+      // No need to record a success or renderer crash.
+      NOTREACHED();
+      return;
+    case CacheQueryOutcome::NO_DEVICE:
+      RecordGetDescriptorsOutcome(quantity, UMAGetDescriptorOutcome::NO_DEVICE);
+      return;
+    case CacheQueryOutcome::NO_SERVICE:
+      RecordGetDescriptorsOutcome(quantity,
+                                  UMAGetDescriptorOutcome::NO_SERVICE);
+      return;
+    case CacheQueryOutcome::NO_CHARACTERISTIC:
+      RecordGetDescriptorsOutcome(quantity,
+                                  UMAGetDescriptorOutcome::NO_CHARACTERISTIC);
+      return;
+    case CacheQueryOutcome::NO_DESCRIPTOR:
+      NOTREACHED();
+      return;
+  }
+}
+
 // GATT Operations
 
 void RecordGATTOperationOutcome(UMAGATTOperation operation,
