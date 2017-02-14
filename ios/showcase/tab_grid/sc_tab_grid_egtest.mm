@@ -30,7 +30,8 @@
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"TabCommands")]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:grey_text(@"Done")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"protocol_alerter_done")]
       performAction:grey_tap()];
 }
 

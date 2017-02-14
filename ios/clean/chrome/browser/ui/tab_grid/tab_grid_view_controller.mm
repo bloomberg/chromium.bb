@@ -17,14 +17,17 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/ui_stack_view+cr_tab_grid.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-const CGFloat kSpace = 20;
-const CGFloat kTabSize = 150;
+const CGFloat kSpace = 20.0f;
+const CGFloat kTabSize = 150.0f;
+// Height of toolbar in tab grid.
+const CGFloat kToolbarHeight = 64.0f;
 }
 
 @interface TabGridViewController ()<SettingsActions,
@@ -46,30 +49,15 @@ const CGFloat kTabSize = 150;
 @synthesize floatingNewTabButton = _floatingNewTabButton;
 
 - (void)viewDidLoad {
-  // Placeholder dark grey stripe at the top of the view.
-  UIView* stripe = [[UIView alloc] initWithFrame:CGRectZero];
-  stripe.translatesAutoresizingMaskIntoConstraints = NO;
-  stripe.backgroundColor = [UIColor darkGrayColor];
-  [self.view addSubview:stripe];
+  UIView* toolbar = [UIStackView cr_tabGridToolbarStackView];
+  [self.view addSubview:toolbar];
 
-  // Placeholder settings button at in the stripe.
-  UIButton* settings = [UIButton buttonWithType:UIButtonTypeSystem];
-  settings.translatesAutoresizingMaskIntoConstraints = NO;
-  [settings setTitle:@"⚙" forState:UIControlStateNormal];
-  settings.titleLabel.font = [UIFont systemFontOfSize:24.0];
-  [settings addTarget:nil
-                action:@selector(showSettings:)
-      forControlEvents:UIControlEventTouchUpInside];
-  [stripe addSubview:settings];
-
+  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
-    [stripe.heightAnchor constraintEqualToConstant:64.0],
-    [stripe.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [stripe.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [stripe.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-    [settings.leadingAnchor
-        constraintEqualToAnchor:stripe.layoutMarginsGuide.leadingAnchor],
-    [settings.centerYAnchor constraintEqualToAnchor:stripe.centerYAnchor]
+    [toolbar.heightAnchor constraintEqualToConstant:kToolbarHeight],
+    [toolbar.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+    [toolbar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [toolbar.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor]
   ]];
 
   TabSwitcherPanelCollectionViewLayout* layout =
@@ -92,7 +80,7 @@ const CGFloat kTabSize = 150;
       forCellWithReuseIdentifier:[TabSwitcherLocalSessionCell identifier]];
 
   [NSLayoutConstraint activateConstraints:@[
-    [self.grid.topAnchor constraintEqualToAnchor:stripe.bottomAnchor],
+    [self.grid.topAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
     [self.grid.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [self.grid.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [self.grid.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],

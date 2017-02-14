@@ -112,6 +112,7 @@ char kAssociatedProtocolNameKey;
       [UIAlertAction actionWithTitle:@"Done"
                                style:UIAlertActionStyleCancel
                              handler:nil];
+  [action setAccessibilityLabel:@"protocol_alerter_done"];
   [alertController addAction:action];
   [self.baseViewController presentViewController:alertController
                                         animated:YES

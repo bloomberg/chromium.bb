@@ -33,6 +33,10 @@ source_set("tab_grid_ui") {
     "tab_grid_tab_cell.mm",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
+    "ui_button+cr_tab_grid.h",
+    "ui_button+cr_tab_grid.mm",
+    "ui_stack_view+cr_tab_grid.h",
+    "ui_stack_view+cr_tab_grid.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
