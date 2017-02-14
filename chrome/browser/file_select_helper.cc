@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
@@ -199,9 +200,9 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   files.push_back(file);
 
 #if defined(OS_MACOSX)
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE_USER_BLOCKING,
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);
@@ -227,9 +228,9 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
     profile_->set_last_selected_directory(path);
   }
 #if defined(OS_MACOSX)
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE_USER_BLOCKING,
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);

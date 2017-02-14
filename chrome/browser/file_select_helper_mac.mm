@@ -88,8 +88,6 @@ base::FilePath FileSelectHelper::ZipPackage(const base::FilePath& path) {
 
 void FileSelectHelper::ProcessSelectedFilesMac(
     const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE_USER_BLOCKING);
-
   // Make a mutable copy of the input files.
   std::vector<ui::SelectedFileInfo> files_out(files);
   std::vector<base::FilePath> temporary_files;
