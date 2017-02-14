@@ -26,10 +26,11 @@
           label="$i18n{androidAppsEnabled}"
           on-change="onArcEnabledChange_"
           no-set-pref>
+        <a href="$i18nRaw{androidAppsLearnMoreUrl}" target="_blank"
+            class="more-actions" on-tap="stopPropagation_">
+          $i18n{androidAppsLearnMore}
+        </a>
       </settings-toggle-button>
-      <a href="$i18nRaw{androidAppsLearnMoreUrl}" target="_blank">
-        $i18n{androidAppsLearnMore}
-      </a>
     </div>
 
     <div id="manageApps" class="settings-box continuation indented"

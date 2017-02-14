@@ -100,4 +100,12 @@ Polymer({
     /** @type {!SettingsCheckboxElement} */ (this.$.enabled).resetToPrefValue();
     this.$.confirmDisableDialog.close();
   },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  stopPropagation_: function(e) {
+    e.stopPropagation();
+  },
 });
