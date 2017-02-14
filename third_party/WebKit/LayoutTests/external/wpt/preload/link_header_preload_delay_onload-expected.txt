@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Makes sure that Link headers preload resources and block window.onload after resource discovery assert_true: expected true got false
-Harness: the test ran to completion.
-

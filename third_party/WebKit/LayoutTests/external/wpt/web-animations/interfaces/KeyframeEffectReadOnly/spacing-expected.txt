@@ -20,10 +20,10 @@ FAIL Test throwing TypeError if adding trailing spaces after the paced property 
 FAIL Test throwing TypeError if these is no paced property assert_throws: function "function () {
     createDiv(t).animate(null, { spacing: 'paced()' });
   }" did not throw
-FAIL Test throwing TypeError if using a non-ident started string assert_throws: function "function () {
+FAIL Test throwing TypeError if using a non-ident started string with a period assert_throws: function "function () {
     createDiv(t).animate(null, { spacing: 'paced(.margin)' });
   }" did not throw
-FAIL Test throwing TypeError if using a non-ident started string assert_throws: function "function () {
+FAIL Test throwing TypeError if using a non-ident started string with a number assert_throws: function "function () {
     createDiv(t).animate(null, { spacing: 'paced(1margin)' });
   }" did not throw
 FAIL Test throwing TypeError if using a non-ident started string with an invalid escape assert_throws: function "function () {

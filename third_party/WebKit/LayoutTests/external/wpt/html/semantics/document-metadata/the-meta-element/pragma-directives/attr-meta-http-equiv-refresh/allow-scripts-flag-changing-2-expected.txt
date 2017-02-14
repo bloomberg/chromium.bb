@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 45: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+This is a testharness.js-based test.
+FAIL Meta refresh of the original iframe is not blocked if moved into a sandboxed iframe Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+Harness: the test ran to completion.
+

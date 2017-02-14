@@ -8,6 +8,6 @@ FAIL change currentTime when fill forwards and endDelay is negative assert_equal
 PASS change direction from "normal" to "reverse" 
 PASS change direction from "normal" to "alternate" 
 PASS change direction from "normal" to "alternate-reverse" 
-PASS change direction from "normal" to "reverse" 
+PASS change direction from "normal" to "reverse" when currentTime is 0 
 Harness: the test ran to completion.
 

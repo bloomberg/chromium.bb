@@ -15,6 +15,7 @@ PASS non-animatable property 'transitionProperty' is not accessed when using a p
 PASS non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'display' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object 
+PASS non-animatable property 'font-size' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'animation' is not accessed when using a keyframe sequence 
 PASS non-animatable property 'animationDelay' is not accessed when using a keyframe sequence 
 PASS non-animatable property 'animationDirection' is not accessed when using a keyframe sequence 
@@ -31,6 +32,7 @@ PASS non-animatable property 'transitionProperty' is not accessed when using a k
 PASS non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence 
 PASS non-animatable property 'display' is not accessed when using a keyframe sequence 
 PASS non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence 
+PASS non-animatable property 'font-size' is not accessed when using a keyframe sequence 
 FAIL Equivalent property indexed and sequenced keyframes: two properties with one value (intermediate value).getKeyframes is not a function
 FAIL Equivalent property indexed and sequenced keyframes: two properties with three values (intermediate value).getKeyframes is not a function
 FAIL Equivalent property indexed and sequenced keyframes: two properties with different numbers of values (intermediate value).getKeyframes is not a function
