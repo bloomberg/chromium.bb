@@ -74,6 +74,22 @@ std::string ValueToString(const base::Value& value) {
   return json;
 }
 
+std::string V8ToString(v8::Local<v8::Value> value,
+                       v8::Local<v8::Context> context) {
+  if (value.IsEmpty())
+    return "empty";
+  if (value->IsNull())
+    return "null";
+  if (value->IsUndefined())
+    return "undefined";
+  if (value->IsFunction())
+    return "function";
+  std::unique_ptr<base::Value> json = V8ToBaseValue(value, context);
+  if (!json)
+    return "unserializable";
+  return ValueToString(*json);
+}
+
 v8::Local<v8::Value> V8ValueFromScriptSource(v8::Local<v8::Context> context,
                                              base::StringPiece source) {
   v8::MaybeLocal<v8::Script> maybe_script = v8::Script::Compile(
@@ -188,18 +204,7 @@ std::unique_ptr<base::Value> GetBaseValuePropertyFromObject(
 std::string GetStringPropertyFromObject(v8::Local<v8::Object> object,
                                         v8::Local<v8::Context> context,
                                         base::StringPiece key) {
-  v8::Local<v8::Value> v8_val = GetPropertyFromObject(object, context, key);
-  if (v8_val.IsEmpty())
-    return "empty";
-  if (v8_val->IsNull())
-    return "null";
-  if (v8_val->IsUndefined())
-    return "undefined";
-  if (v8_val->IsFunction())
-    return "function";
-  std::unique_ptr<base::Value> json_prop = V8ToBaseValue(v8_val, context);
-  DCHECK(json_prop) << key;
-  return ValueToString(*json_prop);
+  return V8ToString(GetPropertyFromObject(object, context, key), context);
 }
 
 }  // namespace extensions

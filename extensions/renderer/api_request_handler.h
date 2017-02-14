@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "extensions/renderer/api_last_error.h"
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "v8/include/v8.h"
 
@@ -30,7 +31,7 @@ class APIRequestHandler {
                                              int argc,
                                              v8::Local<v8::Value>[])>;
 
-  explicit APIRequestHandler(const CallJSFunction& call_js);
+  APIRequestHandler(const CallJSFunction& call_js, APILastError last_error);
   ~APIRequestHandler();
 
   // Adds a pending request to the map. Returns a unique identifier for that
@@ -43,7 +44,9 @@ class APIRequestHandler {
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
   // Invalid ids are ignored.
-  void CompleteRequest(int request_id, const base::ListValue& response);
+  void CompleteRequest(int request_id,
+                       const base::ListValue& response,
+                       const std::string& error);
 
   // Invalidates any requests that are associated with |context|.
   void InvalidateContext(v8::Local<v8::Context> context);
@@ -78,6 +81,8 @@ class APIRequestHandler {
   // v8::Function::Call) can be significantly different than in production
   // (where we have to deal with e.g. blocking javascript).
   CallJSFunction call_js_;
+
+  APILastError last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandler);
 };

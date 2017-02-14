@@ -68,8 +68,15 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                               v8::Local<v8::Context> context);
 
   // Getter callback for an extension API, since APIs are constructed lazily.
-  static void GetAPIHelper(v8::Local<v8::Name> name,
-                           const v8::PropertyCallbackInfo<v8::Value>& info);
+  static void BindingAccessor(v8::Local<v8::Name> name,
+                              const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  // Creates and returns the API binding for the given |name|.
+  static v8::Local<v8::Object> GetAPIHelper(v8::Local<v8::Context> context,
+                                            v8::Local<v8::String> name);
+
+  // Gets the chrome.runtime API binding.
+  static v8::Local<v8::Object> GetRuntime(v8::Local<v8::Context> context);
 
   // Callback to get an API binding for an internal API.
   static void GetInternalAPI(const v8::FunctionCallbackInfo<v8::Value>& info);

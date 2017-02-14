@@ -36,8 +36,9 @@ APIRequestHandler::PendingRequest::PendingRequest(PendingRequest&&) = default;
 APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
     PendingRequest&&) = default;
 
-APIRequestHandler::APIRequestHandler(const CallJSFunction& call_js)
-    : call_js_(call_js) {}
+APIRequestHandler::APIRequestHandler(const CallJSFunction& call_js,
+                                     APILastError last_error)
+    : call_js_(call_js), last_error_(std::move(last_error)) {}
 
 APIRequestHandler::~APIRequestHandler() {}
 
@@ -57,7 +58,8 @@ int APIRequestHandler::AddPendingRequest(
 }
 
 void APIRequestHandler::CompleteRequest(int request_id,
-                                        const base::ListValue& response_args) {
+                                        const base::ListValue& response_args,
+                                        const std::string& error) {
   auto iter = pending_requests_.find(request_id);
   // The request may have been removed if the context was invalidated before a
   // response is ready.
@@ -70,6 +72,7 @@ void APIRequestHandler::CompleteRequest(int request_id,
   v8::Isolate* isolate = pending_request.isolate;
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = pending_request.context.Get(isolate);
+  v8::Context::Scope context_scope(context);
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   std::vector<v8::Local<v8::Value>> args;
@@ -81,10 +84,16 @@ void APIRequestHandler::CompleteRequest(int request_id,
     args.push_back(converter->ToV8Value(arg.get(), context));
 
   blink::WebScopedUserGesture user_gesture(pending_request.user_gesture_token);
+  if (!error.empty())
+    last_error_.SetError(context, error);
+
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.
   call_js_.Run(pending_request.callback.Get(isolate), context, args.size(),
                args.data());
+
+  if (!error.empty())
+    last_error_.ClearError(context, true);
 }
 
 void APIRequestHandler::InvalidateContext(v8::Local<v8::Context> context) {

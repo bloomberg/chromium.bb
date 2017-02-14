@@ -58,7 +58,8 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 
@@ -74,7 +75,8 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   std::unique_ptr<base::ListValue> response_arguments =
       ListValueFromString(kArguments);
   ASSERT_TRUE(response_arguments);
-  request_handler.CompleteRequest(request_id, *response_arguments);
+  request_handler.CompleteRequest(request_id, *response_arguments,
+                                  std::string());
 
   EXPECT_TRUE(did_run_js());
   EXPECT_EQ(ReplaceSingleQuotes(kArguments),
@@ -89,7 +91,8 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
 
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
   ASSERT_FALSE(function.IsEmpty());
@@ -105,12 +108,14 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
 
   // Try running with a non-existent request id.
   int fake_request_id = 42;
-  request_handler.CompleteRequest(fake_request_id, *response_arguments);
+  request_handler.CompleteRequest(fake_request_id, *response_arguments,
+                                  std::string());
   EXPECT_FALSE(did_run_js());
 
   // Try running with a request from an invalidated context.
   request_handler.InvalidateContext(context);
-  request_handler.CompleteRequest(request_id, *response_arguments);
+  request_handler.CompleteRequest(request_id, *response_arguments,
+                                  std::string());
   EXPECT_FALSE(did_run_js());
 }
 
@@ -122,7 +127,8 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   holder_b.SetContext(context_b);
 
   APIRequestHandler request_handler(
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
 
   // By having both different arguments and different behaviors in the
   // callbacks, we can easily verify that the right function is called in the
@@ -144,7 +150,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
       ListValueFromString("['response_a:']");
   ASSERT_TRUE(response_a);
 
-  request_handler.CompleteRequest(request_a, *response_a);
+  request_handler.CompleteRequest(request_a, *response_a, std::string());
   EXPECT_TRUE(did_run_js());
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_b));
@@ -157,7 +163,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
       ListValueFromString("['response_b:']");
   ASSERT_TRUE(response_b);
 
-  request_handler.CompleteRequest(request_b, *response_b);
+  request_handler.CompleteRequest(request_b, *response_b, std::string());
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 
   EXPECT_EQ(
@@ -170,7 +176,8 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
 
   ArgumentList custom_callback_args = {
       gin::StringToV8(isolate(), "to"), gin::StringToV8(isolate(), "be"),
@@ -187,7 +194,8 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   std::unique_ptr<base::ListValue> response_arguments =
       ListValueFromString("['or','not','to','be']");
   ASSERT_TRUE(response_arguments);
-  request_handler.CompleteRequest(request_id, *response_arguments);
+  request_handler.CompleteRequest(request_id, *response_arguments,
+                                  std::string());
 
   EXPECT_TRUE(did_run_js());
   EXPECT_EQ(ReplaceSingleQuotes("['to','be','or','not','to','be']"),
@@ -202,7 +210,8 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
 
   auto callback = [](base::Optional<bool>* ran_with_user_gesture) {
     *ran_with_user_gesture =
@@ -221,7 +230,8 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   // Try first without a user gesture.
   int request_id = request_handler.AddPendingRequest(isolate(), v8_callback,
                                                      context, ArgumentList());
-  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"));
+  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"),
+                                  std::string());
 
   ASSERT_TRUE(ran_with_user_gesture);
   EXPECT_FALSE(*ran_with_user_gesture);
@@ -239,7 +249,8 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   EXPECT_FALSE(
       blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
 
-  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"));
+  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"),
+                                  std::string());
   ASSERT_TRUE(ran_with_user_gesture);
   EXPECT_TRUE(*ran_with_user_gesture);
   // Sanity check - after the callback ran, there shouldn't be an active

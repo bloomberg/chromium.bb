@@ -115,6 +115,12 @@ var tests = [
       });
     });
   },
+  function testLastError() {
+    chrome.runtime.setUninstallURL('chrome://newtab', function() {
+      chrome.test.assertLastError('Invalid URL: "chrome://newtab".');
+      chrome.test.succeed();
+    });
+  },
 ];
 
 chrome.test.getConfig(config => {

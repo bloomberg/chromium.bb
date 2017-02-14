@@ -326,7 +326,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::Bind(&NativeExtensionBindingsSystem::SendRequest,
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
-                     base::Unretained(this))),
+                     base::Unretained(this)),
+          APILastError(base::Bind(&GetRuntime))),
       weak_factory_(this) {}
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
@@ -403,7 +404,7 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     v8::Local<v8::String> api_name =
         gin::StringToSymbol(v8_context->GetIsolate(), accessor_name);
     v8::Maybe<bool> success = chrome->SetAccessor(
-        v8_context, api_name, &GetAPIHelper, nullptr, api_name);
+        v8_context, api_name, &BindingAccessor, nullptr, api_name);
     if (!success.IsJust() || !success.FromJust()) {
       LOG(ERROR) << "Failed to create API on Chrome object.";
       return;
@@ -428,24 +429,37 @@ void NativeExtensionBindingsSystem::HandleResponse(
     bool success,
     const base::ListValue& response,
     const std::string& error) {
-  api_system_.CompleteRequest(request_id, response);
+  api_system_.CompleteRequest(request_id, response, error);
 }
 
 RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
   return nullptr;
 }
 
-// static
-void NativeExtensionBindingsSystem::GetAPIHelper(
+void NativeExtensionBindingsSystem::BindingAccessor(
     v8::Local<v8::Name> name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
+
+  // We use info.Data() to store a real name here instead of using the provided
+  // one to handle any weirdness from the caller (non-existent strings, etc).
+  v8::Local<v8::String> api_name = info.Data().As<v8::String>();
+  v8::Local<v8::Object> binding = GetAPIHelper(context, api_name);
+  if (!binding.IsEmpty())
+    info.GetReturnValue().Set(binding);
+}
+
+// static
+v8::Local<v8::Object> NativeExtensionBindingsSystem::GetAPIHelper(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::String> api_name) {
   BindingsSystemPerContextData* data = GetBindingsDataFromContext(context);
   if (!data)
-    return;
+    return v8::Local<v8::Object>();
 
+  v8::Isolate* isolate = context->GetIsolate();
   v8::Local<v8::Object> apis;
   if (data->api_object.IsEmpty()) {
     apis = v8::Object::New(isolate);
@@ -465,38 +479,41 @@ void NativeExtensionBindingsSystem::GetAPIHelper(
           ->GetFunction(context)
           .ToLocalChecked();
 
-  // We use info.Data() to store a real name here instead of using the provided
-  // one to handle any weirdness from the caller (non-existent strings, etc).
-  v8::Local<v8::String> api_name = info.Data().As<v8::String>();
-  v8::Local<v8::Value> result;
   v8::Maybe<bool> has_property = apis->HasRealNamedProperty(context, api_name);
   if (!has_property.IsJust())
-    return;
+    return v8::Local<v8::Object>();
 
   if (has_property.FromJust()) {
-    result = apis->GetRealNamedProperty(context, api_name).ToLocalChecked();
-  } else {
-    ScriptContext* script_context =
-        ScriptContextSet::GetContextByV8Context(context);
-    std::string api_name_string;
-    CHECK(gin::Converter<std::string>::FromV8(isolate, api_name,
-                                              &api_name_string));
-
-    v8::Local<v8::Object> root_binding = CreateFullBinding(
-        context, script_context, &data->bindings_system->api_system_,
-        FeatureProvider::GetAPIFeatures(), api_name_string, get_internal_api);
-    if (root_binding.IsEmpty())
-      return;
-
-    v8::Maybe<bool> success =
-        apis->CreateDataProperty(context, api_name, root_binding);
-    if (!success.IsJust() || !success.FromJust())
-      return;
-
-    result = root_binding;
+    v8::Local<v8::Value> value =
+        apis->GetRealNamedProperty(context, api_name).ToLocalChecked();
+    DCHECK(value->IsObject());
+    return value.As<v8::Object>();
   }
 
-  info.GetReturnValue().Set(result);
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  std::string api_name_string;
+  CHECK(
+      gin::Converter<std::string>::FromV8(isolate, api_name, &api_name_string));
+
+  v8::Local<v8::Object> root_binding = CreateFullBinding(
+      context, script_context, &data->bindings_system->api_system_,
+      FeatureProvider::GetAPIFeatures(), api_name_string, get_internal_api);
+  if (root_binding.IsEmpty())
+    return v8::Local<v8::Object>();
+
+  v8::Maybe<bool> success =
+      apis->CreateDataProperty(context, api_name, root_binding);
+  if (!success.IsJust() || !success.FromJust())
+    return v8::Local<v8::Object>();
+
+  return root_binding;
+}
+
+v8::Local<v8::Object> NativeExtensionBindingsSystem::GetRuntime(
+    v8::Local<v8::Context> context) {
+  return GetAPIHelper(context,
+                      gin::StringToSymbol(context->GetIsolate(), "runtime"));
 }
 
 // static

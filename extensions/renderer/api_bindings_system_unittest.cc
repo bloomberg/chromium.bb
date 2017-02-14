@@ -117,7 +117,8 @@ class APIBindingsSystemTestBase : public APIBindingTest {
         base::Bind(&APIBindingsSystemTestBase::OnAPIRequest,
                    base::Unretained(this)),
         base::Bind(&APIBindingsSystemTestBase::OnEventListenersChanged,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        APILastError(APILastError::GetParent()));
   }
 
   void TearDown() override {
@@ -248,7 +249,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     std::unique_ptr<base::ListValue> expected_args =
         ListValueFromString(kResponseArgsJson);
     bindings_system()->CompleteRequest(last_request()->request_id,
-                                       *expected_args);
+                                       *expected_args, std::string());
 
     EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson),
               GetStringPropertyFromObject(context->Global(), context,
@@ -270,7 +271,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
                         "[{'prop1':'alpha','prop2':42}]");
 
     bindings_system()->CompleteRequest(last_request()->request_id,
-                                       base::ListValue());
+                                       base::ListValue(), std::string());
 
     EXPECT_EQ("[]", GetStringPropertyFromObject(context->Global(), context,
                                                 "callbackArguments"));
@@ -402,7 +403,8 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
 
     std::unique_ptr<base::ListValue> response =
         ListValueFromString("['alpha','beta']");
-    bindings_system()->CompleteRequest(last_request()->request_id, *response);
+    bindings_system()->CompleteRequest(last_request()->request_id, *response,
+                                       std::string());
 
     EXPECT_EQ(
         "\"alpha.functionWithCallback\"",

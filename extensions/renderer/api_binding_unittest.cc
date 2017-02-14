@@ -137,7 +137,8 @@ class APIBindingUnittest : public APIBindingTest {
   void SetUp() override {
     APIBindingTest::SetUp();
     request_handler_ = base::MakeUnique<APIRequestHandler>(
-        base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        APILastError(APILastError::GetParent()));
   }
 
   void TearDown() override {

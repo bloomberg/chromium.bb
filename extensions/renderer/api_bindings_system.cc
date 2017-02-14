@@ -16,10 +16,11 @@ APIBindingsSystem::APIBindingsSystem(
     const binding::RunJSFunctionSync& call_js_sync,
     const GetAPISchemaMethod& get_api_schema,
     const APIBinding::SendRequestMethod& send_request,
-    const APIEventHandler::EventListenersChangedMethod& event_listeners_changed)
+    const APIEventHandler::EventListenersChangedMethod& event_listeners_changed,
+    APILastError last_error)
     : type_reference_map_(base::Bind(&APIBindingsSystem::InitializeType,
                                      base::Unretained(this))),
-      request_handler_(call_js),
+      request_handler_(call_js, std::move(last_error)),
       event_handler_(call_js, event_listeners_changed),
       call_js_(call_js),
       call_js_sync_(call_js_sync),
@@ -92,8 +93,9 @@ void APIBindingsSystem::InitializeType(const std::string& type_name) {
 }
 
 void APIBindingsSystem::CompleteRequest(int request_id,
-                                        const base::ListValue& response) {
-  request_handler_.CompleteRequest(request_id, response);
+                                        const base::ListValue& response,
+                                        const std::string& error) {
+  request_handler_.CompleteRequest(request_id, response, error);
 }
 
 void APIBindingsSystem::FireEventInContext(const std::string& event_name,

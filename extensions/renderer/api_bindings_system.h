@@ -14,6 +14,7 @@
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_event_handler.h"
+#include "extensions/renderer/api_last_error.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_type_reference_map.h"
 
@@ -38,7 +39,8 @@ class APIBindingsSystem {
                     const GetAPISchemaMethod& get_api_schema,
                     const APIBinding::SendRequestMethod& send_request,
                     const APIEventHandler::EventListenersChangedMethod&
-                        event_listeners_changed);
+                        event_listeners_changed,
+                    APILastError last_error);
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.
@@ -50,8 +52,10 @@ class APIBindingsSystem {
       v8::Local<v8::Object>* hooks_interface_out);
 
   // Responds to the request with the given |request_id|, calling the callback
-  // with |response|.
-  void CompleteRequest(int request_id, const base::ListValue& response);
+  // with |response|. If |error| is non-empty, sets the last error.
+  void CompleteRequest(int request_id,
+                       const base::ListValue& response,
+                       const std::string& error);
 
   // Notifies the APIEventHandler to fire the corresponding event, notifying
   // listeners.

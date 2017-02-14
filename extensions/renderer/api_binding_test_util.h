@@ -37,6 +37,12 @@ std::unique_ptr<base::DictionaryValue> DictionaryValueFromString(
 // succeed.
 std::string ValueToString(const base::Value& value);
 
+// Converts the given |value| to a string. Returns "empty", "undefined", "null",
+// or "function" for unserializable values. Note this differs from
+// gin::V8ToString, which only accepts v8::String values.
+std::string V8ToString(v8::Local<v8::Value> value,
+                       v8::Local<v8::Context> context);
+
 // Returns a v8::Value result from compiling and running |source|, or an empty
 // local on failure.
 v8::Local<v8::Value> V8ValueFromScriptSource(v8::Local<v8::Context> context,
