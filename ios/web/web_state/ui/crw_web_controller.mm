@@ -1502,8 +1502,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (UIView*)viewForPrinting {
-  // TODO(ios): crbug.com/227944. Printing is not supported for native
-  // controllers.
+  // Printing is not supported for native controllers.
   return _webView;
 }
 
