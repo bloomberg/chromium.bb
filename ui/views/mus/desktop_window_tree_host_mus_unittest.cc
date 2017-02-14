@@ -268,6 +268,16 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAbove) {
   waiter.Wait();
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, SetOpacity) {
+  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  widget1->Show();
+
+  aura::test::ChangeCompletionWaiter waiter(
+      MusClient::Get()->window_tree_client(), aura::ChangeType::OPACITY, true);
+  widget1->SetOpacity(0.5f);
+  waiter.Wait();
+}
+
 TEST_F(DesktopWindowTreeHostMusTest, TransientParentWiredToHostWindow) {
   std::unique_ptr<Widget> widget1(CreateWidget());
   widget1->Show();

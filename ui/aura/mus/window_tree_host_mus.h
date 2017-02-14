@@ -73,6 +73,9 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // clear.
   void SetHitTestMask(const base::Optional<gfx::Rect>& rect);
 
+  // Sets the opacity of the underlying mus window.
+  void SetOpacity(float value);
+
   // Requests that the window manager change the activation to the next window.
   void DeactivateWindow();
 

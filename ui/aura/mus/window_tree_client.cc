@@ -1683,6 +1683,15 @@ void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
                         out_rect);
 }
 
+void WindowTreeClient::OnWindowTreeHostSetOpacity(
+    WindowTreeHostMus* window_tree_host,
+    float opacity) {
+  WindowMus* window = WindowMus::Get(window_tree_host->window());
+  const uint32_t change_id = ScheduleInFlightChange(
+      base::MakeUnique<CrashInFlightChange>(window, ChangeType::OPACITY));
+  tree_->SetWindowOpacity(change_id, window->server_id(), opacity);
+}
+
 void WindowTreeClient::OnWindowTreeHostDeactivateWindow(
     WindowTreeHostMus* window_tree_host) {
   tree_->DeactivateWindow(

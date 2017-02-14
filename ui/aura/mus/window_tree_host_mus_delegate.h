@@ -42,6 +42,10 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       WindowTreeHostMus* window_tree_host,
       const base::Optional<gfx::Rect>& mask_rect) = 0;
 
+  // Called when the opacity is changed client side.
+  virtual void OnWindowTreeHostSetOpacity(WindowTreeHostMus* window_tree_host,
+                                          float opacity) = 0;
+
   // Called to clear the focus of the current window.
   virtual void OnWindowTreeHostDeactivateWindow(
       WindowTreeHostMus* window_tree_host) = 0;

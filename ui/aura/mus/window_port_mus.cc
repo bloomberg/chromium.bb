@@ -224,8 +224,6 @@ void WindowPortMus::SetVisibleFromServer(bool visible) {
 }
 
 void WindowPortMus::SetOpacityFromServer(float opacity) {
-  // TODO(sky): route to server.
-  // Changes to opacity don't make it back to the server.
   window_->layer()->SetOpacity(opacity);
 }
 

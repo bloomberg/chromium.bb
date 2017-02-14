@@ -434,6 +434,8 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostHitTestMaskWillChange(
       WindowTreeHostMus* window_tree_host,
       const base::Optional<gfx::Rect>& mask_rect) override;
+  void OnWindowTreeHostSetOpacity(WindowTreeHostMus* window_tree_host,
+                                  float opacity) override;
   void OnWindowTreeHostDeactivateWindow(
       WindowTreeHostMus* window_tree_host) override;
   void OnWindowTreeHostStackAbove(WindowTreeHostMus* window_tree_host,

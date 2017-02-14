@@ -675,9 +675,7 @@ bool DesktopWindowTreeHostMus::IsFullscreen() const {
          ui::SHOW_STATE_FULLSCREEN;
 }
 void DesktopWindowTreeHostMus::SetOpacity(float opacity) {
-  // TODO: this likely need to go to server so that non-client decorations get
-  // opacity. http://crbug.com/663619.
-  window()->layer()->SetOpacity(opacity);
+  WindowTreeHostMus::SetOpacity(opacity);
 }
 
 void DesktopWindowTreeHostMus::SetWindowIcons(const gfx::ImageSkia& window_icon,

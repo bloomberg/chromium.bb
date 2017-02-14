@@ -146,6 +146,10 @@ void WindowTreeHostMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
   delegate_->OnWindowTreeHostHitTestMaskWillChange(this, rect);
 }
 
+void WindowTreeHostMus::SetOpacity(float value) {
+  delegate_->OnWindowTreeHostSetOpacity(this, value);
+}
+
 void WindowTreeHostMus::DeactivateWindow() {
   delegate_->OnWindowTreeHostDeactivateWindow(this);
 }
