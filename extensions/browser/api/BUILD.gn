@@ -77,8 +77,26 @@ source_set("api") {
 
   deps = [
     "//base:i18n",
+    "//components/keyed_service/content:content",
     "//content/public/browser",
+    "//content/public/common",
+    "//extensions/browser:browser_sources",
+    "//extensions/browser/guest_view",
+    "//extensions/common",
+    "//extensions/common/api",
     "//extensions/strings",
+  ]
+
+  # TODO(michaelpg): Move these deps to the individual APIs that require them.
+  deps += [
+    "//components/onc",
+    "//components/storage_monitor",
+    "//device/base",
+    "//device/bluetooth",
+    "//device/hid",
+    "//device/power_save_blocker",
+    "//device/serial",
+    "//device/usb",
   ]
 
   if (is_chromeos) {
@@ -89,6 +107,8 @@ source_set("api") {
       "//extensions/browser/api/vpn_provider",
       "//extensions/browser/api/webcam_private",
     ]
+
+    deps += [ "//chromeos" ]
   }
 }
 

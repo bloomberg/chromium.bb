@@ -5,7 +5,41 @@
 import("//build/config/features.gni")
 import("//extensions/features/features.gni")
 
-source_set("browser") {
+group("browser") {
+  public_deps = [
+    "//extensions/browser:browser_context_keyed_service_factories",
+    "//extensions/browser:browser_sources",
+    "//extensions/browser/api:api_registration",
+  ]
+
+  if (enable_extensions) {
+    # Includes all API implementations and the ExtensionsApiClient
+    # interface. Moving an API from src/chrome to src/extensions implies
+    # it can be cleanly disabled with enable_extensions=false.
+    # TODO: Eventually the entire extensions module should not be built
+    # when enable_extensions=false.
+    public_deps += [ "//extensions/browser/api" ]
+  }
+}
+
+# Isolate the instantiation of BrowserContextKeyedServiceFactories.
+source_set("browser_context_keyed_service_factories") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
+  ]
+
+  deps = [
+    "//extensions/browser:browser_sources",
+    "//extensions/browser/api",
+  ]
+}
+
+source_set("browser_sources") {
+  visibility = [ "./*" ]
+
   sources = []
 
   deps = [
@@ -22,8 +56,8 @@ source_set("browser") {
     "//components/web_modal",
     "//components/zoom",
     "//content/public/browser",
+    "//content/public/common",
     "//crypto:platform",
-    "//extensions/browser/api:api_registration",
     "//extensions/common",
     "//extensions/common/api",
     "//extensions/features",
@@ -40,14 +74,7 @@ source_set("browser") {
   ]
 
   if (enable_extensions) {
-    # Includes all API implementations and the ExtensionsApiClient
-    # interface. Moving an API from src/chrome to src/extensions implies
-    # it can be cleanly disabled with enable_extensions=false.
-    # TODO: Eventually the entire extensions module should not be built
-    # when enable_extensions=false.
     sources = [
-      # NOTE: When moving an API out of Chrome be sure to verify that the
-      # Android build still compiles. See conditions below.
       "api_activity_monitor.cc",
       "api_activity_monitor.h",
       "app_sorting.h",
@@ -58,8 +85,6 @@ source_set("browser") {
       "blob_holder.h",
       "blocked_action_type.h",
       "browser_context_keyed_api_factory.h",
-      "browser_context_keyed_service_factories.cc",
-      "browser_context_keyed_service_factories.h",
       "component_extension_resource_manager.h",
       "computed_hashes.cc",
       "computed_hashes.h",
@@ -254,7 +279,6 @@ source_set("browser") {
     ]
 
     public_deps = [
-      "//extensions/browser/api",
       "//extensions/browser/app_window",
       "//extensions/browser/guest_view",
       "//extensions/browser/install",
@@ -264,26 +288,16 @@ source_set("browser") {
     ]
 
     deps += [
-      "//components/browsing_data/content",
-      "//components/onc",
-      "//components/storage_monitor",
+      "//components/crx_file",
+      "//components/prefs",
+      "//components/sync",
       "//components/update_client",
       "//components/variations",
       "//crypto:platform",
-      "//device/base",
-      "//device/bluetooth",
-      "//device/hid",
-      "//device/power_save_blocker",
-      "//device/serial",
-      "//device/usb",
       "//extensions:extensions_browser_resources",
       "//extensions/common:mojo",
       "//services/service_manager/public/cpp",
     ]
-
-    if (is_chromeos) {
-      deps += [ "//chromeos" ]
-    }
   }
 }
 

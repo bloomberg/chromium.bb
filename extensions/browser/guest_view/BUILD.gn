@@ -23,6 +23,7 @@ source_set("guest_view") {
   ]
 
   deps = [
+    "//components/browsing_data/content",
     "//components/guest_view/browser",
     "//content/public/common",
   ]
