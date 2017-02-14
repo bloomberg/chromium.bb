@@ -1,17 +1,14 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audio-testing.js"></script>
     <title>OfflineAudioContext.startRendering Promise</title>
   </head>
 
   <body>
     <script>
-      description("Test OfflineAudioContext.startRendering Promise")
-
-      window.jsTestIsAsync = true;
-
       var context;
       var promiseData;
 
@@ -27,13 +24,10 @@
         // promise.
         var context = new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
         context.startRendering();
-        context.startRendering()
-               .then(function () {
-                         testFailed("Promise not rejected when calling startRendering twice");
-                       }, function () {
-                         testPassed("Promise correctly rejected when calling startRendering twice");
-                       })
-               .then(done);
+        Should('Promise from calling startRendering twice',
+          context.startRendering())
+          .beRejected()
+          .then(done);
       });
 
       audit.defineTask('promise-results', function (done) {
@@ -55,21 +49,19 @@
         context.startRendering().then(handlePromise).then(done);
       });
       
-      audit.defineTask('finish', function (done) {
-        done();
-        finishJSTest();
-      });
-
-      audit.runTasks('reject-promise', 'promise-results', 'finish');
+      audit.runTasks();
       
       function handlePromise(buffer)
       {
         renderedData = buffer;
         var success = true;
 
-        shouldBeEqualToString("context.state", "closed");
-        shouldBeEqualToNumber("renderedData.numberOfChannels", contextChannels);
-        shouldBeEqualToNumber("renderedData.length", renderFrames);
+        Should("context.state", context.state)
+          .beEqualTo("closed");
+        Should("renderedData.numberOfChannels", renderedData.numberOfChannels)
+          .beEqualTo(contextChannels);
+        Should("renderedData.length", renderedData.length)
+          .beEqualTo(renderFrames);
 
         for (var channel = 0; channel < contextChannels; ++channel) {
           var data = renderedData.getChannelData(channel);
@@ -85,17 +77,10 @@
             break;
         }
 
-        if (success) {
-          testPassed("Rendered data matches expected results");
-          testPassed("OfflineAudioContext.startRendering promise succeeded");
-        } else {
-          testFailed("Rendered data does not match expected results for channel " +
-                     badChannel + ", frame " + badFrame);
-          testFailed("OfflineAudioContext.startRendering promise");
-        }
+        Should('OfflineAudioContext.startRendering promise rendered data',
+          success)
+          .summarize('correctly', 'incorrectly');
       }
-
-      successfullyParsed = true;
     </script>
     
   </body>

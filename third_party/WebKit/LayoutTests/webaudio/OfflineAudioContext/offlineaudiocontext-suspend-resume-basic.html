@@ -1,16 +1,14 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description('Basic test for OfflineAudioContext.suspend() and OfflineAudioContext.resume().');
-      window.jsTestIsAsync = true;
-
       var sampleRate = 44100;
       var renderDuration = 1;
       var renderQuantum = 128;
@@ -62,23 +60,24 @@
 
       // Task: Calling multiple suspends at the same rendering quantum should
       // reject the promise.
-      audit.defineTask('identical-suspend-time', function (done) {
-        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      audit.defineTask('identical-suspend-time', function(done) {
+        var context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
         // |suspendTime1| and |suspendTime2| are identical when quantized to
         // the render quantum size.
         var suspendTime1 = renderQuantum / sampleRate;
         var suspendTime2 = 1.5 * renderQuantum / sampleRate;
 
-        context.suspend(suspendTime1).then(function () {
-          context.resume();
-        });
+        Should(
+            'Scheduling a suspend at frame ' + suspendTime1 * sampleRate,
+            () => context.suspend(suspendTime1).then(() => context.resume()))
+            .notThrow();
 
-        // Printing out the pass message to be more informative here.
-        testPassed('Scheduling a suspend at frame ' + suspendTime1 * sampleRate + ' was successful.');
-
-        Should('Scheduling another suspend at the same rendering quantum',
-          context.suspend(suspendTime2)).beRejected();
+        Should(
+            'Scheduling another suspend at the same rendering quantum',
+            context.suspend(suspendTime2))
+            .beRejected();
 
         context.startRendering().then(done);
       });
@@ -105,10 +104,14 @@
         osc.start();
 
         // A suspend is scheduled at the 90% of the render duration.
-        context.suspend(longRenderDuration * 0.9).then(done);
-
-        testPassed('Scheduling a suspend at ' + longRenderDuration * 0.9 + ' seconds.');
-
+        Should(
+            'Scheduling a suspend at ' + longRenderDuration * 0.9 + ' seconds',
+            () => {
+              // Test is finished when this suspend resolves.
+              context.suspend(longRenderDuration * 0.9).then(done);
+            })
+            .notThrow();
+        
         // We have to start rendering to get the time running.
         context.startRendering();
 
@@ -126,22 +129,7 @@
           .beRejected().then(done);
       });
 
-      audit.defineTask('finish', function (done) {
-        finishJSTest();
-        done();
-      });
-
-      audit.runTasks(
-        'suspend-invalid-argument',
-        'suspend-in-the-past',
-        'suspend-after-render-completion',
-        'identical-suspend-time',
-        'resume-before-suspend',
-        'resume-without-suspend',
-        'finish'
-      );
-
-      successfullyParsed = true;
+      audit.runTasks();
     </script>
 
   </body>
