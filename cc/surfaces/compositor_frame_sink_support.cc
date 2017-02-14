@@ -22,23 +22,31 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     SurfaceManager* surface_manager,
     const FrameSinkId& frame_sink_id,
-    bool submits_to_display_compositor)
+    bool is_root,
+    bool handles_frame_sink_id_invalidation,
+    bool needs_sync_points)
     : client_(client),
       surface_manager_(surface_manager),
       frame_sink_id_(frame_sink_id),
       surface_factory_(frame_sink_id_, surface_manager_, this),
       reference_tracker_(frame_sink_id),
-      submits_to_display_compositor_(submits_to_display_compositor),
+      is_root_(is_root),
+      handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {
-  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
+  surface_factory_.set_needs_sync_points(needs_sync_points);
+  if (handles_frame_sink_id_invalidation_)
+    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
+  // Unregister |this| as a BeginFrameObserver so that the BeginFrameSource does
+  // not call into |this| after it's deleted.
+  SetNeedsBeginFrame(false);
+
   // For display root surfaces, the surface is no longer going to be visible
   // so make it unreachable from the top-level root.
-  if (surface_manager_->using_surface_references() &&
-      submits_to_display_compositor_ &&
+  if (surface_manager_->using_surface_references() && is_root_ &&
       reference_tracker_.current_surface_id().is_valid())
     RemoveTopLevelRootReference(reference_tracker_.current_surface_id());
 
@@ -52,7 +60,8 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // |surface_factory_|'s resources early on.
   surface_factory_.EvictSurface();
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
+  if (handles_frame_sink_id_invalidation_)
+    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::EvictFrame() {
@@ -93,7 +102,7 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
 
   // If this is a display root surface and the SurfaceId is changing, make the
   // new SurfaceId reachable from the top-level root.
-  if (submits_to_display_compositor_ && surface_id_changed)
+  if (is_root_ && surface_id_changed)
     AddTopLevelRootReference(reference_tracker_.current_surface_id());
 
   // Add references based on CompositorFrame referenced surfaces. If the
@@ -106,8 +115,7 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
   // If this is a display root surface and the SurfaceId is changing, make the
   // old SurfaceId unreachable from the top-level root. This needs to happen
   // after adding all references for the new SurfaceId.
-  if (submits_to_display_compositor_ && surface_id_changed &&
-      last_surface_id.is_valid())
+  if (is_root_ && surface_id_changed && last_surface_id.is_valid())
     RemoveTopLevelRootReference(last_surface_id);
 
   // Remove references based on CompositorFrame referenced surfaces. If the

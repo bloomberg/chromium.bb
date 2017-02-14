@@ -21,7 +21,9 @@ OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
       support_(this,
                provider->GetSurfaceManager(),
                frame_sink_id,
-               false /* submits_to_display_compositor */),
+               false /* is_root */,
+               true /* handles_frame_sink_id_invalidation */,
+               true /* needs_sync_points */),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(

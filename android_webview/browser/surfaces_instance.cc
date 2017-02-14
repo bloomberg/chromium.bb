@@ -51,9 +51,13 @@ SurfacesInstance::SurfacesInstance()
 
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
+
+  constexpr bool is_root = true;
+  constexpr bool handles_frame_sink_id_invalidation = true;
+  constexpr bool needs_sync_points = true;
   support_.reset(new cc::CompositorFrameSinkSupport(
-      this, surface_manager_.get(), frame_sink_id_,
-      true /* submits_to_display_compositor */));
+      this, surface_manager_.get(), frame_sink_id_, is_root,
+      handles_frame_sink_id_invalidation, needs_sync_points));
 
   begin_frame_source_.reset(new cc::StubBeginFrameSource);
   std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(

@@ -21,7 +21,9 @@ CompositorFrameSink::CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
     : support_(this,
                surface_manager,
                frame_sink_id,
-               false /* submits_to_display_compositor */),
+               false /* is_root */,
+               true /* handles_frame_sink_id_invalidation */,
+               true /* needs_sync_points */),
       client_(client) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}

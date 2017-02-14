@@ -136,14 +136,17 @@ class CompositorFrameSinkSupportTest : public testing::Test,
                                      begin_frame_source_.get()));
     surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kParentFrameSink,
-        false /* submits_to_display_compositor */));
+        this, &surface_manager_, kParentFrameSink, false /* is_root */,
+        true /* handles_frame_sink_id_invalidation */,
+        true /* needs_sync_points */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink1,
-        false /* submits_to_display_compositor */));
+        this, &surface_manager_, kChildFrameSink1, false /* is_root */,
+        true /* handles_frame_sink_id_invalidation */,
+        true /* needs_sync_points */));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        this, &surface_manager_, kChildFrameSink2,
-        false /* submits_to_display_compositor */));
+        this, &surface_manager_, kChildFrameSink2, false /* is_root */,
+        true /* handles_frame_sink_id_invalidation */,
+        true /* needs_sync_points */));
   }
 
   void TearDown() override {

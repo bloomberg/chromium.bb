@@ -168,12 +168,16 @@ bool SynchronousCompositorFrameSink::BindToClient(
                  base::Unretained(this)));
   registry_->RegisterCompositorFrameSink(routing_id_, this);
 
+  constexpr bool root_support_is_root = true;
+  constexpr bool child_support_is_root = false;
+  constexpr bool handles_frame_sink_id_invalidation = true;
+  constexpr bool needs_sync_points = true;
   root_support_.reset(new cc::CompositorFrameSinkSupport(
-      this, surface_manager_.get(), kRootFrameSinkId,
-      true /* submits_to_display_compositor */));
+      this, surface_manager_.get(), kRootFrameSinkId, root_support_is_root,
+      handles_frame_sink_id_invalidation, needs_sync_points));
   child_support_.reset(new cc::CompositorFrameSinkSupport(
-      this, surface_manager_.get(), kChildFrameSinkId,
-      false /* submits_to_display_compositor */));
+      this, surface_manager_.get(), kChildFrameSinkId, child_support_is_root,
+      handles_frame_sink_id_invalidation, needs_sync_points));
 
   cc::RendererSettings software_renderer_settings;
 
