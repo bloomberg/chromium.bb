@@ -112,10 +112,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
 
 }  // namespace
 
-// Bool parameter is used to implement ArcSessionOobeOptInTest tests for
-// managed/unmanaged users. To prevent ambiguous testing::Test inheritance
-// implement derivation here, in base class.
-class ArcSessionManagerTestBase : public testing::TestWithParam<bool> {
+class ArcSessionManagerTestBase : public testing::Test {
  public:
   ArcSessionManagerTestBase()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
@@ -647,7 +644,8 @@ TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
 
 class ArcSessionOobeOptInNegotiatorTest
     : public ArcSessionOobeOptInTest,
-      public chromeos::ArcTermsOfServiceScreenActor {
+      public chromeos::ArcTermsOfServiceScreenActor,
+      public testing::WithParamInterface<bool> {
  public:
   ArcSessionOobeOptInNegotiatorTest() = default;
 
