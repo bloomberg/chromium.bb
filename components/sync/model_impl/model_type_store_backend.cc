@@ -28,40 +28,14 @@ const int64_t kInvalidSchemaVersion = -1;
 const int64_t ModelTypeStoreBackend::kLatestSchemaVersion = 1;
 const char ModelTypeStoreBackend::kDBSchemaDescriptorRecordId[] =
     "_mts_schema_descriptor";
+const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
+    "Sync.ModelTypeStoreInitResult";
 
 // static
 base::LazyInstance<ModelTypeStoreBackend::BackendMap>
     ModelTypeStoreBackend::backend_map_ = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
-
-// Different reasons for ModelTypeStoreBackend initialization failure are mapped
-// to these values. The enum is used for recording UMA histogram. Don't reorder,
-// change or delete values.
-enum StoreInitResultForHistogram {
-  STORE_INIT_RESULT_SUCCESS = 0,
-
-  // Following values reflect leveldb initialization errors.
-  STORE_INIT_RESULT_NOT_FOUND,
-  STORE_INIT_RESULT_CORRUPTION,
-  STORE_INIT_RESULT_NOT_SUPPORTED,
-  STORE_INIT_RESULT_INVALID_ARGUMENT,
-  STORE_INIT_RESULT_IO_ERROR,
-
-  // Issues encountered when reading or parsing schema descriptor.
-  STORE_INIT_RESULT_SCHEMA_DESCRIPTOR_ISSUE,
-
-  // Database schema migration failed.
-  STORE_INIT_RESULT_MIGRATION,
-
-  STORE_INIT_RESULT_UNKNOWN,
-  STORE_INIT_RESULT_COUNT
-};
-
-void RecordStoreInitResultHistogram(StoreInitResultForHistogram result) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeStoreInitResult", result,
-                            STORE_INIT_RESULT_COUNT);
-}
 
 StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
     const leveldb::Status& status) {
@@ -121,24 +95,24 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
     const std::string& path,
     std::unique_ptr<leveldb::Env> env) {
   DFAKE_SCOPED_LOCK(push_pop_);
-  leveldb::DB* db_raw = nullptr;
 
-  leveldb::Options options;
-  options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
-  options.paranoid_checks = true;
-  if (env.get()) {
-    options.env = env.get();
-    env_ = std::move(env);
+  env_ = std::move(env);
+
+  leveldb::Status status = OpenDatabase(path, env_.get());
+  if (status.IsCorruption()) {
+    DCHECK(db_ == nullptr);
+    status = DestroyDatabase(path, env_.get());
+    if (status.ok())
+      status = OpenDatabase(path, env_.get());
+    if (status.ok())
+      RecordStoreInitResultHistogram(
+          STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION);
   }
-
-  leveldb::Status status = leveldb::DB::Open(options, path, &db_raw);
   if (!status.ok()) {
-    DCHECK(db_raw == nullptr);
+    DCHECK(db_ == nullptr);
     RecordStoreInitResultHistogram(LevelDbStatusToStoreInitResult(status));
     return ModelTypeStore::Result::UNSPECIFIED_ERROR;
   }
-  db_.reset(db_raw);
 
   int64_t current_version = GetStoreVersion();
   if (current_version == kInvalidSchemaVersion) {
@@ -156,6 +130,31 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
   }
   RecordStoreInitResultHistogram(STORE_INIT_RESULT_SUCCESS);
   return ModelTypeStore::Result::SUCCESS;
+}
+
+leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
+                                                    leveldb::Env* env) {
+  leveldb::DB* db_raw = nullptr;
+  leveldb::Options options;
+  options.create_if_missing = true;
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  options.paranoid_checks = true;
+  if (env)
+    options.env = env;
+
+  leveldb::Status status = leveldb::DB::Open(options, path, &db_raw);
+  DCHECK(status.ok() != (db_raw == nullptr));
+  if (status.ok())
+    db_.reset(db_raw);
+  return status;
+}
+
+leveldb::Status ModelTypeStoreBackend::DestroyDatabase(const std::string& path,
+                                                       leveldb::Env* env) {
+  leveldb::Options options;
+  if (env)
+    options.env = env;
+  return leveldb::DestroyDB(path, options);
 }
 
 ModelTypeStore::Result ModelTypeStoreBackend::ReadRecordsWithPrefix(
@@ -255,6 +254,13 @@ bool ModelTypeStoreBackend::Migrate0To1() {
       db_->Put(leveldb::WriteOptions(), kDBSchemaDescriptorRecordId,
                schema_descriptor.SerializeAsString());
   return status.ok();
+}
+
+// static
+void ModelTypeStoreBackend::RecordStoreInitResultHistogram(
+    StoreInitResultForHistogram result) {
+  UMA_HISTOGRAM_ENUMERATION(kStoreInitResultHistogramName, result,
+                            STORE_INIT_RESULT_COUNT);
 }
 
 }  // namespace syncer

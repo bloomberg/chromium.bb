@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_collision_warner.h"
 #include "components/sync/model/model_type_store.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
 class DB;
@@ -21,6 +22,32 @@ class WriteBatch;
 }  // namespace leveldb
 
 namespace syncer {
+
+// Different reasons for ModelTypeStoreBackend initialization failure are mapped
+// to these values. The enum is used for recording UMA histogram. Don't reorder,
+// change or delete values.
+enum StoreInitResultForHistogram {
+  STORE_INIT_RESULT_SUCCESS = 0,
+
+  // Following values reflect leveldb initialization errors.
+  STORE_INIT_RESULT_NOT_FOUND,
+  STORE_INIT_RESULT_CORRUPTION,
+  STORE_INIT_RESULT_NOT_SUPPORTED,
+  STORE_INIT_RESULT_INVALID_ARGUMENT,
+  STORE_INIT_RESULT_IO_ERROR,
+
+  // Issues encountered when reading or parsing schema descriptor.
+  STORE_INIT_RESULT_SCHEMA_DESCRIPTOR_ISSUE,
+
+  // Database schema migration failed.
+  STORE_INIT_RESULT_MIGRATION,
+
+  STORE_INIT_RESULT_UNKNOWN,
+
+  // Database was reset after attempt to open failed with corruption.
+  STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION,
+  STORE_INIT_RESULT_COUNT
+};
 
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
@@ -69,9 +96,43 @@ class ModelTypeStoreBackend
 
   static const int64_t kLatestSchemaVersion;
   static const char kDBSchemaDescriptorRecordId[];
+  static const char kStoreInitResultHistogramName[];
 
   explicit ModelTypeStoreBackend(const std::string& path);
   ~ModelTypeStoreBackend();
+
+  // Init opens database at |path|. If database doesn't exist it creates one.
+  // Normally |env| should be nullptr, this causes leveldb to use default disk
+  // based environment from leveldb::Env::Default().
+  // Providing |env| allows to override environment used by leveldb for tests
+  // with in-memory or faulty environment.
+  ModelTypeStore::Result Init(const std::string& path,
+                              std::unique_ptr<leveldb::Env> env);
+
+  // Opens leveldb database passing correct options. On success sets |db_| and
+  // returns ok status. On failure |db_| is nullptr and returned status reflects
+  // failure type.
+  leveldb::Status OpenDatabase(const std::string& path, leveldb::Env* env);
+
+  // Destroys leveldb database. Used for recovering after database corruption.
+  leveldb::Status DestroyDatabase(const std::string& path, leveldb::Env* env);
+
+  // Attempts to read and return the database's version.
+  // If there is not a schema descriptor present, the value returned is 0.
+  // If an error occurs, the value returned is kInvalidSchemaVersion(-1).
+  int64_t GetStoreVersion();
+
+  // Migrate the db schema from |current_version| to |desired_version|,
+  // returning true on success.
+  ModelTypeStore::Result Migrate(int64_t current_version,
+                                 int64_t desired_version);
+
+  // Migrates from no version record at all (version 0) to version 1 of
+  // the schema, returning true on success.
+  bool Migrate0To1();
+
+  static void RecordStoreInitResultHistogram(
+      StoreInitResultForHistogram result);
 
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical
   // example is when test creates in memory environment with CreateInMemoryEnv
@@ -91,28 +152,6 @@ class ModelTypeStoreBackend
   // doesn't take reference to backend, therefore doesn't block backend
   // destruction.
   static base::LazyInstance<BackendMap> backend_map_;
-
-  // Init opens database at |path|. If database doesn't exist it creates one.
-  // Normally |env| should be nullptr, this causes leveldb to use default disk
-  // based environment from leveldb::Env::Default().
-  // Providing |env| allows to override environment used by leveldb for tests
-  // with in-memory or faulty environment.
-  ModelTypeStore::Result Init(const std::string& path,
-                              std::unique_ptr<leveldb::Env> env);
-
-  // Attempts to read and return the database's version.
-  // If there is not a schema descriptor present, the value returned is 0.
-  // If an error occurs, the value returned is kInvalidSchemaVersion(-1).
-  int64_t GetStoreVersion();
-
-  // Migrate the db schema from |current_version| to |desired_version|,
-  // returning true on success.
-  ModelTypeStore::Result Migrate(int64_t current_version,
-                                 int64_t desired_version);
-
-  // Migrates from no version record at all (version 0) to version 1 of
-  // the schema, returning true on success.
-  bool Migrate0To1();
 
   // Macro wrapped mutex to guard against concurrent calls in debug builds.
   DFAKE_MUTEX(push_pop_);

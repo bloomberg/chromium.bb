@@ -7,9 +7,13 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/histogram_tester.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 using sync_pb::ModelTypeStoreSchemaDescriptor;
@@ -36,6 +40,22 @@ class ModelTypeStoreBackendTest : public testing::Test {
     scoped_refptr<ModelTypeStoreBackend> backend =
         ModelTypeStoreBackend::GetOrCreateBackend(
             path, std::move(in_memory_env), &result);
+    EXPECT_TRUE(backend.get());
+    EXPECT_EQ(result, ModelTypeStore::Result::SUCCESS);
+    return backend;
+  }
+
+  // Create backend with custom env. This function is used in tests that need to
+  // prepare env in some way (create files) before passing it to leveldb.
+  scoped_refptr<ModelTypeStoreBackend> CreateBackendWithEnv(
+      std::unique_ptr<leveldb::Env> env,
+      const std::string& path) {
+    EXPECT_FALSE(BackendExistsForPath(path));
+
+    ModelTypeStore::Result result;
+    scoped_refptr<ModelTypeStoreBackend> backend =
+        ModelTypeStoreBackend::GetOrCreateBackend(path, std::move(env),
+                                                  &result);
     EXPECT_TRUE(backend.get());
     EXPECT_EQ(result, ModelTypeStore::Result::SUCCESS);
     return backend;
@@ -73,6 +93,10 @@ class ModelTypeStoreBackendTest : public testing::Test {
 
   const char* SchemaId() {
     return ModelTypeStoreBackend::kDBSchemaDescriptorRecordId;
+  }
+
+  const char* StoreInitResultHistogramName() {
+    return ModelTypeStoreBackend::kStoreInitResultHistogramName;
   }
 };
 
@@ -242,6 +266,48 @@ TEST_F(ModelTypeStoreBackendTest, MigrateWithHigherExistingVersionFails) {
 
   ASSERT_EQ(Migrate(backend, LatestVersion() + 1, LatestVersion()),
             ModelTypeStore::Result::SCHEMA_VERSION_TOO_HIGH);
+}
+
+// Tests that initializing store after corruption triggers recovery and results
+// in successful store initialization.
+TEST_F(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
+  base::HistogramTester tester;
+  leveldb::Status s;
+
+  // Prepare environment that looks corrupt to leveldb.
+  std::unique_ptr<leveldb::Env> env =
+      base::MakeUnique<leveldb::EnvWrapper>(leveldb::Env::Default());
+
+  std::string path;
+  env->GetTestDirectory(&path);
+  path += "/corrupt_db";
+
+  // Easiest way to simulate leveldb corruption is to create empty CURRENT file.
+  {
+    s = env->CreateDir(path);
+    EXPECT_TRUE(s.ok());
+    leveldb::WritableFile* current_file_raw;
+    s = env->NewWritableFile(path + "/CURRENT", &current_file_raw);
+    EXPECT_TRUE(s.ok());
+    current_file_raw->Close();
+    delete current_file_raw;
+  }
+
+  // CreateBackendWithEnv will ensure backend initialization is successful.
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      CreateBackendWithEnv(std::move(env), path);
+
+  // Cleanup directory after the test.
+  backend = nullptr;
+  s = leveldb::DestroyDB(path, leveldb::Options());
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  // Check that both recovery and consecutive initialization are recorded in
+  // histograms.
+  tester.ExpectBucketCount(StoreInitResultHistogramName(),
+                           STORE_INIT_RESULT_SUCCESS, 1);
+  tester.ExpectBucketCount(StoreInitResultHistogramName(),
+                           STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION, 1);
 }
 
 }  // namespace syncer
