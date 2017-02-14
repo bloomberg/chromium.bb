@@ -615,12 +615,24 @@ void V8DOMConfiguration::initializeDOMInterfaceTemplate(
   v8::Local<v8::ObjectTemplate> prototypeTemplate =
       interfaceTemplate->PrototypeTemplate();
   instanceTemplate->SetInternalFieldCount(v8InternalFieldCount);
-  // TODO(yukishiino): We should set the class string to the platform object
-  // (|instanceTemplate|), too.  The reason that we don't set it is that
-  // it prevents minor GC to collect unreachable DOM objects (a layout test
-  // fast/dom/minor-dom-gc.html fails if we set the class string).
-  // See also http://heycam.github.io/webidl/#es-platform-objects
+
+  // We intentionally don't set the class string to the platform object
+  // (|instanceTemplate|), and set the class string "InterfaceName", without
+  // "Prototype", to the prototype object (|prototypeTemplate|) despite a fact
+  // that the current WebIDL spec (as of Feb 2017) requires to set the class
+  // string "InterfaceName" for the platform objects and
+  // "InterfaceNamePrototype" for the interface prototype object, because we
+  // think it's more consistent with ECMAScript 2016.
+  // See also https://crbug.com/643712
+  // https://heycam.github.io/webidl/#es-platform-objects
+  // https://heycam.github.io/webidl/#interface-prototype-object
+  //
+  // Note that V8 minor GC does not collect an object which has an own property.
+  // So, if we set the class string to the platform object as an own property,
+  // it prevents V8 minor GC to collect the object (V8 minor GC only collects
+  // an empty object).  If set, a layout test fast/dom/minor-dom-gc.html fails.
   setClassString(isolate, prototypeTemplate, interfaceName);
+
   if (!parentInterfaceTemplate.IsEmpty()) {
     interfaceTemplate->Inherit(parentInterfaceTemplate);
     // Marks the prototype object as one of native-backed objects.
