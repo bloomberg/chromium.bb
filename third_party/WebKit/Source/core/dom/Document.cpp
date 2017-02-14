@@ -3172,7 +3172,7 @@ void Document::write(const SegmentedString& text,
 
   DCHECK(m_parser);
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      this, "document.write", true);
+      this, "document.write", true, true);
   m_parser->insert(text);
 }
 

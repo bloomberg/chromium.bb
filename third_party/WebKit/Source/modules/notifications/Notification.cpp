@@ -43,6 +43,7 @@
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/notifications/NotificationAction.h"
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"
@@ -365,6 +366,8 @@ ScriptPromise Notification::requestPermission(
     Deprecation::countDeprecation(
         context, UseCounter::NotificationPermissionRequestedInsecureOrigin);
   }
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      context, "Notification.requestPermission", true, true);
   return NotificationManager::from(context)->requestPermission(
       scriptState, deprecatedCallback);
 }

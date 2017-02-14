@@ -31,6 +31,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/permissions/PermissionUtils.h"
@@ -167,6 +168,9 @@ void Geolocation::getCurrentPosition(PositionCallback* successCallback,
   if (!frame())
     return;
 
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      document(), "navigator.geolocation.getCurrentPosition", true, true);
+
   GeoNotifier* notifier =
       GeoNotifier::create(this, successCallback, errorCallback, options);
   startRequest(notifier);
@@ -179,6 +183,9 @@ int Geolocation::watchPosition(PositionCallback* successCallback,
                                const PositionOptions& options) {
   if (!frame())
     return 0;
+
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      document(), "navigator.geolocation.watchPosition", true, true);
 
   GeoNotifier* notifier =
       GeoNotifier::create(this, successCallback, errorCallback, options);

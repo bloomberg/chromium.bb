@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -94,7 +95,8 @@ void allAsyncTasksCanceled(ExecutionContext* context) {
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
                                    const char* name,
-                                   bool sync)
+                                   bool sync,
+                                   bool trace)
     : m_instrumentingAgents(instrumentingAgentsFor(context)), m_sync(sync) {
   if (!m_instrumentingAgents ||
       !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
@@ -102,7 +104,17 @@ NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
   for (InspectorDOMDebuggerAgent* domDebuggerAgent :
        m_instrumentingAgents->inspectorDOMDebuggerAgents())
     domDebuggerAgent->allowNativeBreakpoint(name, nullptr, m_sync);
+  if (trace) {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                         "InstrumentedAPI", TRACE_EVENT_SCOPE_THREAD, "data",
+                         InspectorInstrumentedAPIEvent::data(name));
+  }
 }
+
+NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
+                                   const char* name,
+                                   bool sync)
+    : NativeBreakpoint(context, name, sync, false) {}
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
                                    EventTarget* eventTarget,

@@ -1066,4 +1066,12 @@ std::unique_ptr<TracedValue> InspectorHitTestEvent::endData(
   return value;
 }
 
+std::unique_ptr<TracedValue> InspectorInstrumentedAPIEvent::data(
+    const String& name) {
+  std::unique_ptr<TracedValue> value(TracedValue::create());
+  value->setString("name", name);
+  setCallStack(value.get());
+  return value;
+}
+
 }  // namespace blink
