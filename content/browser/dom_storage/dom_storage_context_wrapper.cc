@@ -275,26 +275,8 @@ void DOMStorageContextWrapper::OnMemoryPressure(
   PurgeMemory(purge_option);
 }
 
-void DOMStorageContextWrapper::OnMemoryStateChange(base::MemoryState state) {
-  // TODO(hajimehoshi): As OnMemoryStateChange changes the state, we should
-  // adjust the limitation to the amount of cache, DomStroageContextImpl doesn't
-  // have such limitation so far though.
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      // Don't have to purge memory here.
-      break;
-    case base::MemoryState::THROTTLED:
-      // TOOD(hajimehoshi): We don't have throttling 'level' so far. When we
-      // have such value, let's change the argument accroding to the value.
-      PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
-      break;
-    case base::MemoryState::SUSPENDED:
-      // Note that SUSPENDED never occurs in the main browser process so far.
-      // Fall through.
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
+void DOMStorageContextWrapper::OnPurgeMemory() {
+  PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
 }
 
 void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption

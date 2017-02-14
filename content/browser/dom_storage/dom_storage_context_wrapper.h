@@ -91,7 +91,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   // base::MemoryCoordinatorClient implementation:
-  void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
 
