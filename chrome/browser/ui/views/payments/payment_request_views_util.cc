@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -19,6 +18,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -100,7 +100,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     layout->SkipColumns(1);
   } else {
     views::VectorIconButton* back_arrow = new views::VectorIconButton(delegate);
-    back_arrow->SetIcon(kNavigateBackIcon);
+    back_arrow->SetIcon(ui::kBackArrowIcon);
     back_arrow->SetSize(back_arrow->GetPreferredSize());
     back_arrow->set_tag(static_cast<int>(
         PaymentRequestCommonTags::BACK_BUTTON_TAG));

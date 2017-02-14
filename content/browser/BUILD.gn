@@ -1467,7 +1467,10 @@ source_set("browser") {
     deps += [ "//sandbox" ]
   }
   if (!is_android) {
-    deps += [ "//content/browser/tracing:resources" ]
+    deps += [
+      "//content/browser/tracing:resources",
+      "//ui/vector_icons",
+    ]
   }
   if ((use_udev && is_posix) || is_mac || is_win) {
     deps += [ "//tools/battor_agent:battor_agent_lib" ]

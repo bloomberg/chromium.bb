@@ -71,6 +71,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -742,18 +743,16 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  back_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNavigateBackIcon, normal_color));
-  back_->SetImage(
-      views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(kNavigateBackIcon, disabled_color));
+  back_->SetImage(views::Button::STATE_NORMAL,
+                  gfx::CreateVectorIcon(ui::kBackArrowIcon, normal_color));
+  back_->SetImage(views::Button::STATE_DISABLED,
+                  gfx::CreateVectorIcon(ui::kBackArrowIcon, disabled_color));
   forward_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNavigateForwardIcon, normal_color));
+      gfx::CreateVectorIcon(ui::kForwardArrowIcon, normal_color));
   forward_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(kNavigateForwardIcon, disabled_color));
+      gfx::CreateVectorIcon(ui::kForwardArrowIcon, disabled_color));
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(kNavigateHomeIcon, normal_color));
   app_menu_button_->UpdateIcon();

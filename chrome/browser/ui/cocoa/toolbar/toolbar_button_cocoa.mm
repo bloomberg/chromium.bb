@@ -16,6 +16,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -209,9 +210,9 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   switch ([self viewID]) {
     case VIEW_ID_BACK_BUTTON:
-      return isRTL ? &kNavigateForwardIcon : &kNavigateBackIcon;
+      return isRTL ? &ui::kForwardArrowIcon : &ui::kBackArrowIcon;
     case VIEW_ID_FORWARD_BUTTON:
-      return isRTL ? &kNavigateBackIcon : &kNavigateForwardIcon;
+      return isRTL ? &ui::kBackArrowIcon : &ui::kForwardArrowIcon;
     case VIEW_ID_HOME_BUTTON:
       return &kNavigateHomeIcon;
     case VIEW_ID_APP_MENU:
