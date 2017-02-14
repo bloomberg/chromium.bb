@@ -235,8 +235,7 @@ MdHistoryUI::~MdHistoryUI() {}
 
 // static
 bool MdHistoryUI::IsEnabled(Profile* profile) {
-  return base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
-         !profile->IsSupervised();
+  return base::FeatureList::IsEnabled(features::kMaterialDesignHistory);
 }
 
 // static
