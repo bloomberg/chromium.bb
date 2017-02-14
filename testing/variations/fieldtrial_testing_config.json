@@ -1030,6 +1030,24 @@
             ]
         }
     ],
+    "LazyParseCSS": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LazyParseCSS"
+                    ]
+                }
+            ]
+        }
+    ],
     "LimitSyncPassphrasePrompt": [
         {
             "platforms": [
