@@ -20,6 +20,8 @@ bool enable_for_testing_ = false;
 // Options for the quick unlock whitelist.
 const char kQuickUnlockWhitelistOptionAll[] = "all";
 const char kQuickUnlockWhitelistOptionPin[] = "PIN";
+// Default minimum PIN length. Policy can increase or decrease this value.
+constexpr int kDefaultMinimumPinLength = 6;
 }  // namespace
 
 void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry) {
@@ -32,7 +34,8 @@ void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry) {
       static_cast<int>(QuickUnlockPasswordConfirmationFrequency::DAY));
 
   // Preferences related the lock screen pin unlock.
-  registry->RegisterIntegerPref(prefs::kPinUnlockMinimumLength, 4);
+  registry->RegisterIntegerPref(prefs::kPinUnlockMinimumLength,
+                                kDefaultMinimumPinLength);
   // 0 indicates no maximum length for the pin.
   registry->RegisterIntegerPref(prefs::kPinUnlockMaximumLength, 0);
   registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);

@@ -9410,12 +9410,13 @@
           'id': 352,
           'caption': '''Configure allowed quick unlock modes.''',
           'tags': [],
-          'desc': '''Controls which quick unlock modes are allowed to be set up and used.
-          This setting white-lists the allowed quick unlock modes that can be set up and used to unlock the lock screen. The value is a list of strings, each of which should be one of the following: "all", "PIN". If "all" is selected, then all supported quick modes will be available, otherwise the modes in the list will be the ones available.
+          'desc': '''A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
 
-          If this setting is configured, quick unlock modes which have a type that is not on this list can not be set up or used.
+          This value is a list of strings; valid list entries are: "all", "PIN". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
 
-          If this setting is left not configured, "PIN" mode will be enabled, and all other modes will be disabled.''',
+          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To disable all quick unlock modes, use [].
+
+          By default, no quick unlock modes are available for managed devices.''',
         },
         {
           'name': 'QuickUnlockTimeout',
@@ -9470,15 +9471,15 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 4,
+          'example_value': 6,
           'id': 354,
           'caption': '''Sets the minimum length of the lock screen PIN.''',
           'tags': [],
-          'desc': '''This setting controls the minimum length a PIN can be.
+          'desc': '''This setting controls the minimum PIN length.
 
-          If this setting is configured to be less than 1, the minimum length a PIN can be is 1.
+          The absolute minimum PIN length is 1; values less than 1 are treated as 1.
 
-          If this setting is not configured, the minimum length a PIN can be is 4.''',
+          The default and recommended minimum PIN length is 6 digits.''',
         },
         {
           'name': 'PinUnlockMaximumLength',
@@ -9493,13 +9494,13 @@
           'id': 355,
           'caption': '''Sets the maximum length of the lock screen PIN.''',
           'tags': [],
-          'desc': '''This setting controls the maximum length a PIN can be.
+          'desc': '''This setting controls the maximum PIN length.
 
-          If this setting is configured to be 0 or less, there is no maximum length and a user can set a PIN as long as they want.
+          If this setting is 0 or less, there is no maximum length; the user can set a PIN as long as they want.
 
           If this setting is less than PinUnlockMinimumLength but greater than 0, the maximum length is the same as the minimum length.
 
-          If this setting is not configured, there is no maximum length and a user can set a PIN as long as they want.''',
+          This setting defaults to no maximum length.''',
         },
         {
           'name': 'PinUnlockWeakPinsAllowed',
@@ -9514,9 +9515,11 @@
           'id': 356,
           'caption': '''Enables users to set weak PINs for the lock screen PIN.''',
           'tags': [],
-          'desc': '''If this setting is configured to be false, users will be prevented from setting PINs that are considered weak. Such PINs include PINs which contain the same digit throughout, PINs whose digits are increasing by 1, PINs whose digits are decreasing by 1 and PINs which are too common.
+          'desc': '''If false, users will be unable to set PINs which are weak and easy to guess.
 
-          If this setting is configured to be true, or not configured, users can enter these PINs and will only get a warning display.''',
+          Some example weak PINs: PINs containing only one digit (1111), PINs whose digits are increasing by 1 (1234), PINs whose digits are decreasing by 1 (4321), and PINs which are commonly used.
+
+          By default, users will get a warning, not error, if the PIN is considered weak.''',
         },
       ],
     },

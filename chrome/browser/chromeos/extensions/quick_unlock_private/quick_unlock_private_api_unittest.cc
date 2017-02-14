@@ -326,7 +326,7 @@ TEST_F(QuickUnlockPrivateUnitTest, SetModesFailsWithInvalidPassword) {
   FailIfModesChanged();
   EXPECT_FALSE(SetModesUsingPassword(
       kInvalidPassword,
-      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"1111"}));
+      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
 }
 
@@ -344,10 +344,10 @@ TEST_F(QuickUnlockPrivateUnitTest, ModeChangeEventOnlyRaisedWhenModesChange) {
   ExpectModesChanged(
       QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
   EXPECT_TRUE(SetModes(
-      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"1111"}));
+      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
   FailIfModesChanged();
   EXPECT_TRUE(SetModes(
-      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"2222"}));
+      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"222222"}));
   EXPECT_TRUE(SetModes(
       QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {""}));
 }
@@ -361,7 +361,7 @@ TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
   ExpectModesChanged(
       QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
   EXPECT_TRUE(SetModes(
-      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"1111"}));
+      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
   EXPECT_EQ(GetActiveModes(),
             QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
   EXPECT_TRUE(pin_storage->IsPinSet());
@@ -381,13 +381,13 @@ TEST_F(QuickUnlockPrivateUnitTest, VerifyAuthenticationAgainstPIN) {
   EXPECT_FALSE(pin_storage->IsPinSet());
 
   EXPECT_TRUE(SetModes(
-      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"1111"}));
+      QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
   EXPECT_TRUE(pin_storage->IsPinSet());
 
   pin_storage->MarkStrongAuth();
   pin_storage->ResetUnlockAttemptCount();
-  EXPECT_TRUE(pin_storage->TryAuthenticatePin("1111"));
-  EXPECT_FALSE(pin_storage->TryAuthenticatePin("0000"));
+  EXPECT_TRUE(pin_storage->TryAuthenticatePin("111111"));
+  EXPECT_FALSE(pin_storage->TryAuthenticatePin("000000"));
 }
 
 // Verifies that the number of modes and the number of passwords given must be
@@ -402,18 +402,18 @@ TEST_F(QuickUnlockPrivateUnitTest, CheckCredentialProblemReporting) {
   PrefService* pref_service = profile()->GetPrefs();
 
   // Verify the pin checks work with the default preferences which are minimum
-  // length of 4, maximum length of 0 (no maximum) and no easy to guess check.
-  CheckPin(PIN_GOOD, "1112");
-  CheckPin(PIN_GOOD, "11112");
+  // length of 6, maximum length of 0 (no maximum) and no easy to guess check.
+  CheckPin(PIN_GOOD, "111112");
+  CheckPin(PIN_GOOD, "1111112");
   CheckPin(PIN_GOOD, "1111111111111112");
-  CheckPin(PIN_WEAK_WARNING, "1111");
+  CheckPin(PIN_WEAK_WARNING, "111111");
   CheckPin(PIN_TOO_SHORT, "1");
   CheckPin(PIN_TOO_SHORT, "11");
   CheckPin(PIN_TOO_SHORT | PIN_WEAK_WARNING, "111");
   CheckPin(PIN_TOO_SHORT | PIN_CONTAINS_NONDIGIT, "a");
-  CheckPin(PIN_CONTAINS_NONDIGIT, "aaab");
-  CheckPin(PIN_CONTAINS_NONDIGIT | PIN_WEAK_WARNING, "aaaa");
-  CheckPin(PIN_CONTAINS_NONDIGIT | PIN_WEAK_WARNING, "abcd");
+  CheckPin(PIN_CONTAINS_NONDIGIT, "aaaaab");
+  CheckPin(PIN_CONTAINS_NONDIGIT | PIN_WEAK_WARNING, "aaaaaa");
+  CheckPin(PIN_CONTAINS_NONDIGIT | PIN_WEAK_WARNING, "abcdef");
 
   // Verify that now if the minimum length is set to 3, PINs of length 3 are
   // accepted.
