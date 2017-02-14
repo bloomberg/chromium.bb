@@ -80,7 +80,7 @@ public class ToolbarPhone extends ToolbarLayout
     /** The amount of time transitioning from one theme color to another should take in ms. */
     public static final long THEME_COLOR_TRANSITION_DURATION = 250;
 
-    public static final int URL_FOCUS_CHANGE_ANIMATION_DURATION_MS = 250;
+    public static final int URL_FOCUS_CHANGE_ANIMATION_DURATION_MS = 225;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP = 10;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS = 100;
     private static final int URL_CLEAR_FOCUS_TABSTACK_DELAY_MS = 200;

@@ -294,13 +294,17 @@ public class LocationBarPhone extends LocationBarLayout {
                 GOOGLE_G_FADE_INTERPOLATOR.getInterpolation(mUrlFocusChangePercent);
         mGoogleG.setAlpha(1 - animationProgress);
 
-        // Shrink the width down to zero, and the end margin down to half of its starting value.
         FrameLayout.LayoutParams layoutParams =
                 (FrameLayout.LayoutParams) mGoogleG.getLayoutParams();
-        layoutParams.width = Math.round(mGoogleGWidth * (1 - animationProgress));
-        ApiCompatibilityUtils.setMarginEnd(
-                layoutParams, Math.round(MathUtils.interpolate(
-                                      mGoogleGMargin, mGoogleGMargin / 2f, animationProgress)));
+
+        // Shrink the width down to 30%.
+        layoutParams.width = Math.round(
+                MathUtils.interpolate(mGoogleGWidth, mGoogleGWidth * 0.3f, animationProgress));
+
+        // Shrink the margin down to 50% minus half of the G width (in the end state), i.e. 15%.
+        ApiCompatibilityUtils.setMarginEnd(layoutParams,
+                Math.round(MathUtils.interpolate(mGoogleGMargin,
+                        mGoogleGMargin * 0.5f - mGoogleGWidth * 0.15f, animationProgress)));
 
         // Just calling requestLayout() would not resolve the end margin.
         mGoogleG.setLayoutParams(layoutParams);
