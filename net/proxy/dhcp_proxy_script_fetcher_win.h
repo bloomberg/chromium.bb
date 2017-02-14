@@ -20,7 +20,6 @@
 
 namespace base {
 class SequencedWorkerPool;
-class TaskRunner;
 }
 
 namespace net {

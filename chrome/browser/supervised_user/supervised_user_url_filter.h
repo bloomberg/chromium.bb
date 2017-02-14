@@ -25,13 +25,11 @@
 class GURL;
 class SupervisedUserBlacklist;
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
+
+class GURL;
 
 // This class manages the filtering behavior for a given URL, i.e. it tells
 // callers if a given URL should be allowed, blocked or warned about. It uses

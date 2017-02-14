@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
