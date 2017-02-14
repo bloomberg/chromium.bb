@@ -188,7 +188,13 @@ class NotificationsApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBasicUsage) {
+// http://crbug.com/691913
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_TestBasicUsage DISABLED_TestBasicUsage
+#else
+#define MAYBE_TestBasicUsage TestBasicUsage
+#endif
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestBasicUsage) {
   ASSERT_TRUE(RunExtensionTest("notifications/api/basic_usage")) << message_;
 }
 
