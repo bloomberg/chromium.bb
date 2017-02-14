@@ -91,7 +91,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   }
   bool isParserInserted() const { return m_parserInserted; }
   bool alreadyStarted() const { return m_alreadyStarted; }
-  bool forceAsync() const { return m_forceAsync; }
+  bool isNonBlocking() const { return m_nonBlocking; }
 
   // Helper functions used by our parent classes.
   void didNotifySubtreeInsertionsToDocument();
@@ -142,16 +142,40 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   Member<ScriptResource> m_resource;
   WTF::OrdinalNumber m_startLineNumber;
 
-  bool m_parserInserted : 1;
-  bool m_isExternalScript : 1;
-  bool m_alreadyStarted : 1;
-  bool m_haveFiredLoad : 1;
+  // https://html.spec.whatwg.org/#script-processing-model
+  // "A script element has several associated pieces of state.":
+
+  // https://html.spec.whatwg.org/#already-started
+  // "Initially, script elements must have this flag unset"
+  bool m_alreadyStarted = false;
+
+  // https://html.spec.whatwg.org/#parser-inserted
+  // "Initially, script elements must have this flag unset."
+  bool m_parserInserted = false;
+
+  // https://html.spec.whatwg.org/#non-blocking
+  // "Initially, script elements must have this flag set."
+  bool m_nonBlocking = true;
+
+  // https://html.spec.whatwg.org/#ready-to-be-parser-executed
+  // "Initially, script elements must have this flag unset"
+  bool m_readyToBeParserExecuted = false;
+
+  // https://html.spec.whatwg.org/#concept-script-type
+  // TODO(hiroshige): Implement "script's type".
+
+  // https://html.spec.whatwg.org/#concept-script-external
+  // "It is determined when the script is prepared"
+  bool m_isExternalScript = false;
+
+  bool m_haveFiredLoad;
+
   // Same as "The parser will handle executing the script."
-  bool m_willBeParserExecuted : 1;
-  bool m_readyToBeParserExecuted : 1;
-  bool m_willExecuteWhenDocumentFinishedParsing : 1;
-  bool m_forceAsync : 1;
-  const bool m_createdDuringDocumentWrite : 1;
+  bool m_willBeParserExecuted;
+
+  bool m_willExecuteWhenDocumentFinishedParsing;
+
+  const bool m_createdDuringDocumentWrite;
 
   ScriptRunner::AsyncExecutionType m_asyncExecType;
   enum DocumentWriteIntervention {

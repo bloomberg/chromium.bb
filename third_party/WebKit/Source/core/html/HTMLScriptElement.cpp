@@ -126,7 +126,7 @@ void HTMLScriptElement::setAsync(bool async) {
 }
 
 bool HTMLScriptElement::async() const {
-  return fastHasAttribute(asyncAttr) || (m_loader->forceAsync());
+  return fastHasAttribute(asyncAttr) || m_loader->isNonBlocking();
 }
 
 KURL HTMLScriptElement::src() const {

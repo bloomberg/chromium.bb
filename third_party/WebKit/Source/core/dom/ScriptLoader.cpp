@@ -66,19 +66,36 @@ ScriptLoader::ScriptLoader(Element* element,
                            bool createdDuringDocumentWrite)
     : m_element(element),
       m_startLineNumber(WTF::OrdinalNumber::beforeFirst()),
-      m_parserInserted(parserInserted),
-      m_isExternalScript(false),
-      m_alreadyStarted(alreadyStarted),
       m_haveFiredLoad(false),
       m_willBeParserExecuted(false),
-      m_readyToBeParserExecuted(false),
       m_willExecuteWhenDocumentFinishedParsing(false),
-      m_forceAsync(!parserInserted),
       m_createdDuringDocumentWrite(createdDuringDocumentWrite),
       m_asyncExecType(ScriptRunner::None),
       m_documentWriteIntervention(
           DocumentWriteIntervention::DocumentWriteInterventionNone) {
   DCHECK(m_element);
+
+  // https://html.spec.whatwg.org/#already-started
+  // "The cloning steps for script elements must set the "already started"
+  //  flag on the copy if it is set on the element being cloned."
+  // TODO(hiroshige): Cloning is implemented together with
+  // {HTML,SVG}ScriptElement::cloneElementWithoutAttributesAndChildren().
+  // Clean up these later.
+  if (alreadyStarted)
+    m_alreadyStarted = true;
+
+  if (parserInserted) {
+    // https://html.spec.whatwg.org/#parser-inserted
+    // "It is set by the HTML parser and the XML parser
+    //  on script elements they insert"
+    m_parserInserted = true;
+
+    // https://html.spec.whatwg.org/#non-blocking
+    // "It is unset by the HTML parser and the XML parser
+    //  on script elements they insert."
+    m_nonBlocking = false;
+  }
+
   if (parserInserted && element->document().scriptableDocumentParser() &&
       !element->document().isInDocumentWrite())
     m_startLineNumber =
@@ -118,7 +135,11 @@ void ScriptLoader::handleSourceAttribute(const String& sourceUrl) {
 }
 
 void ScriptLoader::handleAsyncAttribute() {
-  m_forceAsync = false;
+  // https://html.spec.whatwg.org/#non-blocking
+  // "In addition, whenever a script element whose "non-blocking" flag is set
+  //  has an async content attribute added, the element's "non-blocking" flag
+  //  must be unset."
+  m_nonBlocking = false;
 }
 
 void ScriptLoader::detach() {
@@ -216,7 +237,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   }
 
   if (wasParserInserted && !client->asyncAttributeValue())
-    m_forceAsync = true;
+    m_nonBlocking = true;
 
   // FIXME: HTML5 spec says we should check that all children are either
   // comments or empty text nodes.
@@ -231,7 +252,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 
   if (wasParserInserted) {
     m_parserInserted = true;
-    m_forceAsync = false;
+    m_nonBlocking = false;
   }
 
   m_alreadyStarted = true;
@@ -287,7 +308,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     m_willBeParserExecuted = true;
     m_readyToBeParserExecuted = true;
   } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() &&
-             !m_forceAsync) {
+             !m_nonBlocking) {
     m_pendingScript = PendingScript::create(m_element, m_resource.get());
     m_asyncExecType = ScriptRunner::InOrder;
     contextDocument->scriptRunner()->queueScriptForExecution(this,
