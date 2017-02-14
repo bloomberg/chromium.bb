@@ -77,6 +77,14 @@ Polymer({
    */
   canAddNewFingerprint_: function() {
     return this.fingerprints_.length < MAX_NUMBER_FINGERPRINTS_ALLOWED;
-  }
+  },
+
+  /**
+   * Opens the setup fingerprint dialog.
+   * @private
+   */
+  openAddFingerprintDialog_: function() {
+    this.$.setupFingerprint.open();
+  },
 });
 })();

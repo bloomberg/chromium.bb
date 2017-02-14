@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/people_page/setup_fingerprint_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-fingerprint-list">
@@ -25,12 +26,16 @@
       </template>
     </iron-list>
     <div class="settings-box first radio-indent">
-      <paper-button class="action-button" on-tap="onAddFingerprint_"
+      <paper-button class="action-button" on-tap="openAddFingerprintDialog_"
           disabled="[[!canAddNewFingerprint_(fingerprints_.*)]]">
         [[getFingerprintButtonText_(fingerprints_.*)]]
       </paper-button>
     </div>
     <i>$i18n{lockScreenFingerprintWarning}</i>
+
+    <settings-setup-fingerprint-dialog id="setupFingerprint"
+        on-add-fingerprint="onAddFingerprint_">
+    </settings-setup-fingerprint-dialog>
   </template>
   <script src="fingerprint_list.js"></script>
 </dom-module>

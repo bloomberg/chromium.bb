@@ -2186,6 +2186,42 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ENABLE_FINGERPRINT_CHECKBOX_LABEL" desc="The text on the label of the checkbox which allows users to enable or disable fingerprint usage.">
       Enable fingerprint login and authentication
     </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE" desc="Title of the add fingerprint dialog popup.">
+      Add Fingerprint
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER" desc="Text in the add fingerprint dialog telling users what to do for step 1.">
+      Locate the fingerprint sensor on your device, then place the finger you would like to register on it.
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_MOVE_FINGER" desc="Text in the add fingerprint dialog telling users what to do for step 2.">
+      Now move your finger slightly to capture all the different parts of your fingerprint.
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_READY" desc="Text in the add fingerprint dialog telling users what to do for step 3.">
+      Fingerprint added!
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_LIFT_FINGER" desc="Warning text in the add fingerprint dialog to tell users to lift their finger and touch the sensor again.">
+      Lift finger, then touch sensor again
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_PARTIAL_DATA" desc="Warning text in the add fingerprint dialog to tell users partial data was captured.">
+      Partial data
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSUFFICIENT_DATA" desc="Warning text in the add fingerprint dialog to tell users insufficient data was captured.">
+      Insufficient data
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_SENSOR_DIRTY" desc="Warning text in the add fingerprint dialog to tell users the fingerprint sensor is dirty.">
+      Sensor dirty
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_FINGER_TOO_SLOW" desc="Warning text in the add fingerprint dialog to tell users they have moved their finger too slow.">
+      Finger moved too slowly
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_FINGER_TOO_FAST" desc="Warning text in the add fingerprint dialog to tell users they have moved their finger too fast.">
+      Finger moved too quickly
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_CANCEL_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to cancel a current setup.">
+      Cancel
+    </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_DONE_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to exit once a fingerprint has been setup.">
+      Done
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE" desc="Title of the password prompt dialog popup.">
       Confirm your password
     </message>

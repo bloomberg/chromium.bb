@@ -141,6 +141,10 @@ constexpr char kSetupPinHTMLPath[] = "people_page/setup_pin_dialog.html";
 constexpr char kSetupPinJSPath[] = "people_page/setup_pin_dialog.js";
 constexpr char kFingerprintListHTMLPath[] = "people_page/fingerprint_list.html";
 constexpr char kFingerprintListJSPath[] = "people_page/fingerprint_list.js";
+constexpr char kSetupFingerprintHTMLPath[] =
+    "people_page/setup_fingerprint_dialog.html";
+constexpr char kSetupFingerprintJSPath[] =
+    "people_page/setup_fingerprint_dialog.js";
 constexpr char kSettingsRouteHTMLPath[] = "route.html";
 constexpr char kSettingsRouteJSPath[] = "route.js";
 constexpr char kSettingsSharedCSSHTMLPath[] = "settings_shared_css.html";
@@ -294,6 +298,10 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
   path_to_idr_map_[kFingerprintListHTMLPath] =
       IDR_OPTIONS_FINGERPRINT_LIST_HTML;
   path_to_idr_map_[kFingerprintListJSPath] = IDR_OPTIONS_FINGERPRINT_LIST_JS;
+  path_to_idr_map_[kSetupFingerprintHTMLPath] =
+      IDR_OPTIONS_SETUP_FINGERPRINT_DIALOG_HTML;
+  path_to_idr_map_[kSetupFingerprintJSPath] =
+      IDR_OPTIONS_SETUP_FINGERPRINT_DIALOG_JS;
 
   path_to_idr_map_[kSettingsRouteHTMLPath] = IDR_OPTIONS_ROUTE_HTML;
   path_to_idr_map_[kSettingsRouteJSPath] = IDR_OPTIONS_ROUTE_JS;

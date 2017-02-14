@@ -117,7 +117,7 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing an arc from 0 to PI/2 with radius 50 and center at
     // (150, 75), points along that arc should be blue, and points not on that
     // arc should remain white.
-    progressArc.drawArc_(0, Math.PI / 2,
+    progressArc.drawArc(0, Math.PI / 2,
         progressArc.canvasCircleProgressColor_);
     /** @type {Array<Point>} */
     var expectedPointsOnArc = [{x:200, y:75} /* 0rad */,
@@ -135,7 +135,7 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing an arc from 3PI/2 to 5PI/2 with radius 50 and
     // center at (150, 75), points along that arc should be blue, and points not
     // on that arc should remain white.
-    progressArc.drawArc_(3 * Math.PI / 2, 5 * Math.PI / 2,
+    progressArc.drawArc(3 * Math.PI / 2, 5 * Math.PI / 2,
         progressArc.canvasCircleProgressColor_);
     expectedPointsOnArc = [{x:150, y:25} /* 3PI/2 */, {x:185, y:40} /* 7PI/4 */,
         {x:200, y:75} /* 2PI */, {x:185, y:110} /* 9PI/4 */,
@@ -150,7 +150,7 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing an circle with radius 50 and center at (150, 75),
     // points along that arc should be black, and points not on that arc should
     // remain white.
-    progressArc.drawBackgroundCircle_();
+    progressArc.drawBackgroundCircle();
     /** @type {Array<Point>} */
     var expectedPointsInCircle = [{x:200, y:75} /* 0rad */,
         {x:150, y:125} /* PI/2rad */, {x:100, y:75} /* PIrad */,
@@ -173,7 +173,7 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing a shadow with radius 50 and center at (150,75)
     // with blur 20, points that have distance between 50 and 70 from the center
     // should not be white.
-    progressArc.drawShadow_(20, 0, 0);
+    progressArc.drawShadow(20, 0, 0);
     /** @type {Array<Point>} */
     var expectedPointsInShadowBlur10 = [{x:210, y:75} /* 0rad */,
         {x:150, y:135} /* PI/2rad */, {x:90, y:75} /* PIrad */,
@@ -194,7 +194,7 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing a shadow with radius 50 and center at (150,75)
     // with blur 20, points that have distance between 50 and 60 from the center
     // should not be white. Points greater than 60 distance should be white.
-    progressArc.drawShadow_(10, 0, 0);
+    progressArc.drawShadow(10, 0, 0);
     checkListOfNotWhiteData(expectedPointsInShadowBlur10);
     checkListOfRGBData(white, expectedPointsInShadowBlur20);
   });

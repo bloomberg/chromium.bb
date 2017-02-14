@@ -71,9 +71,8 @@ Polymer({
    * @param {string} color The color of the arc we want to draw. The string is
    *     in the format rgba(r',g',b',a'). r', g', b' are values from [0-255]
    *     and a' is a value from [0-1].
-   * @private
    */
-  drawArc_: function(startAngle, endAngle, color) {
+  drawArc: function(startAngle, endAngle, color) {
     var c = this.$.canvas;
     var ctx = c.getContext('2d');
 
@@ -88,10 +87,9 @@ Polymer({
   /**
    * Draws a circle on the canvas element around the center with radius
    * |CANVAS_CIRCLE_RADIUS| and color |CANVAS_CIRCLE_BACKGROUND_COLOR|.
-   * @private
    */
-  drawBackgroundCircle_: function() {
-    this.drawArc_(0, 2 * Math.PI, this.canvasCircleBackgroundColor_);
+  drawBackgroundCircle: function() {
+    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor_);
   },
 
   /**
@@ -100,9 +98,8 @@ Polymer({
    * @param {number} blur
    * @param {number} offsetX
    * @param {number} offsetY
-   * @private
    */
-  drawShadow_: function(blur, offsetX, offsetY) {
+  drawShadow: function(blur, offsetX, offsetY) {
     var c = this.$.canvas;
     var ctx = c.getContext('2d');
 
@@ -125,9 +122,8 @@ Polymer({
    * endAngle.
    * @param {number} startAngle The start angle of the arc we want to draw.
    * @param {number} endAngle The end angle of the arc we want to draw.
-   * @private
    */
-  animate_: function(startAngle, endAngle) {
+  animate: function(startAngle, endAngle) {
     var currentAngle = startAngle;
     // The value to update the angle by each tick.
     var step = (endAngle - startAngle) /
@@ -146,10 +142,10 @@ Polymer({
         clearInterval(id);
 
       // Clears the canvas and draws the new progress circle.
-      this.clearCanvas_();
-      this.drawArc_(start, start + currentAngle,
+      this.clearCanvas();
+      this.drawArc(start, start + currentAngle,
           this.canvasCircleProgressColor_);
-      this.drawArc_(start + currentAngle, start,
+      this.drawArc(start + currentAngle, start,
           this.canvasCircleBackgroundColor_);
       currentAngle += step;
     }
@@ -157,9 +153,8 @@ Polymer({
 
   /**
    * Clear the canvas of any renderings.
-   * @private
    */
-  clearCanvas_: function() {
+  clearCanvas: function() {
     var c = this.$.canvas;
     var ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
