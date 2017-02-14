@@ -746,6 +746,11 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
 void RenderViewContextMenu::InitMenu() {
   RenderViewContextMenuBase::InitMenu();
 
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_PASSWORD)) {
+    AppendPasswordItems();
+  }
+
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
     AppendPageItems();
 
@@ -848,11 +853,6 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PRINT_PREVIEW)) {
     AppendPrintPreviewItems();
-  }
-
-  if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_PASSWORD)) {
-    AppendPasswordItems();
   }
 }
 
@@ -1466,19 +1466,19 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 }
 
 void RenderViewContextMenu::AppendPasswordItems() {
-  bool separator_added = false;
+  bool add_separator = false;
   if (password_manager::ForceSavingExperimentEnabled()) {
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    separator_added = true;
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
                                     IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
+    add_separator = true;
   }
   if (password_manager::ManualPasswordGenerationEnabled()) {
-    if (!separator_added)
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
                                     IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
+    add_separator = true;
   }
+  if (add_separator)
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
 // Menu delegate functions -----------------------------------------------------
