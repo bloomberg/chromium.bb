@@ -26,6 +26,8 @@
 - (void)simulateWriteWithError:(NSError*)error;
 - (void)simulateGattNotifySessionStarted;
 - (void)simulateGattNotifySessionFailedWithError:(NSError*)error;
+- (void)simulateGattNotifySessionStopped;
+- (void)simulateGattNotifySessionStoppedWithError:(NSError*)error;
 - (void)simulateGattCharacteristicChangedWithValue:(NSData*)value;
 - (void)simulateDescriptorWithUUID:(CBUUID*)uuid;
 - (void)discoverDescriptors;

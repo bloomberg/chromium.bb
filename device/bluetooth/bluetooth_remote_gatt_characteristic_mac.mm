@@ -212,6 +212,8 @@ void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
     const ErrorCallback& error_callback) {
   DCHECK(subscribe_to_notification_callbacks_.first.is_null());
   DCHECK(subscribe_to_notification_callbacks_.second.is_null());
+  DCHECK(unsubscribe_from_notification_callbacks_.first.is_null());
+  DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
   subscribe_to_notification_callbacks_ =
       std::make_pair(callback, error_callback);
   [GetCBPeripheral() setNotifyValue:YES
@@ -222,8 +224,14 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(http://crbug.com/633191): Implement this method
-  NOTIMPLEMENTED();
+  DCHECK(subscribe_to_notification_callbacks_.first.is_null());
+  DCHECK(subscribe_to_notification_callbacks_.second.is_null());
+  DCHECK(unsubscribe_from_notification_callbacks_.first.is_null());
+  DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
+  unsubscribe_from_notification_callbacks_ =
+      std::make_pair(callback, error_callback);
+  [GetCBPeripheral() setNotifyValue:NO
+                  forCharacteristic:cb_characteristic_.get()];
 }
 
 void BluetoothRemoteGattCharacteristicMac::DiscoverDescriptors() {
@@ -295,7 +303,17 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
 void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     NSError* error) {
   PendingNotifyCallbacks reentrant_safe_callbacks;
-  reentrant_safe_callbacks.swap(subscribe_to_notification_callbacks_);
+  if (!subscribe_to_notification_callbacks_.first.is_null()) {
+    DCHECK([GetCBCharacteristic() isNotifying] || error);
+    reentrant_safe_callbacks.swap(subscribe_to_notification_callbacks_);
+  } else if (!unsubscribe_from_notification_callbacks_.first.is_null()) {
+    DCHECK(![GetCBCharacteristic() isNotifying] || error);
+    reentrant_safe_callbacks.swap(unsubscribe_from_notification_callbacks_);
+  } else {
+    VLOG(1) << "No pending notification update for characteristic "
+            << GetUUID().value();
+    return;
+  }
   if (error) {
     VLOG(1) << "Bluetooth error while modifying notification state for "
                "characteristic, domain: "
@@ -304,14 +322,10 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
             << base::SysNSStringToUTF8(error.localizedDescription);
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
-    if (!reentrant_safe_callbacks.second.is_null()) {
-      reentrant_safe_callbacks.second.Run(error_code);
-    }
+    reentrant_safe_callbacks.second.Run(error_code);
     return;
   }
-  if (!reentrant_safe_callbacks.first.is_null()) {
-    reentrant_safe_callbacks.first.Run();
-  }
+  reentrant_safe_callbacks.first.Run();
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {

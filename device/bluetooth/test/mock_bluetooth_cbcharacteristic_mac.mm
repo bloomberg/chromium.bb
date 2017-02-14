@@ -158,6 +158,23 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
 }
 
 - (void)simulateGattNotifySessionFailedWithError:(NSError*)error {
+  _notifying = NO;
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateNotificationStateForCharacteristic:self.characteristic
+                                            error:error];
+}
+
+- (void)simulateGattNotifySessionStopped {
+  _notifying = NO;
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateNotificationStateForCharacteristic:self.characteristic
+                                            error:nil];
+}
+
+- (void)simulateGattNotifySessionStoppedWithError:(NSError*)error {
+  _notifying = NO;
   CBPeripheral* peripheral = _service.peripheral;
   [peripheral.delegate peripheral:peripheral
       didUpdateNotificationStateForCharacteristic:self.characteristic

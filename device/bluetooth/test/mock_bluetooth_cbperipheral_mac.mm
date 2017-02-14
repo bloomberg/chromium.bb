@@ -190,7 +190,8 @@ using base::scoped_nsobject;
 
 - (void)setNotifyValue:(BOOL)notification
      forCharacteristic:(CBCharacteristic*)characteristic {
-  _bluetoothTestMac->OnFakeBluetoothGattSetCharacteristicNotification();
+  _bluetoothTestMac->OnFakeBluetoothGattSetCharacteristicNotification(
+      notification == YES);
 }
 
 @end
