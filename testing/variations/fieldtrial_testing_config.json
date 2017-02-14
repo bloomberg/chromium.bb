@@ -2522,6 +2522,26 @@
             ]
         }
     ],
+    "TranslateServerStudy": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "SmartRendering",
+                    "params": {
+                        "server_params": "smrd"
+                    }
+                }
+            ]
+        }
+    ],
     "TranslateUI2016Q2": [
         {
             "platforms": [
