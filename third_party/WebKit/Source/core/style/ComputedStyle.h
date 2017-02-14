@@ -232,8 +232,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       // Generated properties are compared in ComputedStyleBase
       return m_effectiveDisplay == other.m_effectiveDisplay &&
              m_originalDisplay == other.m_originalDisplay &&
-             m_verticalAlign == other.m_verticalAlign &&
-             m_position == other.m_position;
+             m_verticalAlign == other.m_verticalAlign;
       // Differences in the following fields do not cause inequality:
       // hasViewportUnits
       // styleType
@@ -256,7 +255,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_effectiveDisplay : 5;  // EDisplay
     unsigned m_originalDisplay : 5;   // EDisplay
     unsigned m_verticalAlign : 4;     // EVerticalAlign
-    unsigned m_position : 3;          // EPosition
 
     // This is set if we used viewport units when resolving a length.
     // It is mutable so we can pass around const ComputedStyles to resolve
@@ -305,7 +303,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             static_cast<unsigned>(initialDisplay());
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
-    m_nonInheritedData.m_position = static_cast<unsigned>(initialPosition());
     m_nonInheritedData.m_styleType = PseudoIdNone;
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_explicitInheritance = false;
@@ -1480,15 +1477,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   const Length& perspectiveOriginY() const { return perspectiveOrigin().y(); }
   void setPerspectiveOriginY(const Length& v) {
     setPerspectiveOrigin(LengthPoint(perspectiveOriginX(), v));
-  }
-
-  // position
-  static EPosition initialPosition() { return EPosition::kStatic; }
-  EPosition position() const {
-    return static_cast<EPosition>(m_nonInheritedData.m_position);
-  }
-  void setPosition(EPosition v) {
-    m_nonInheritedData.m_position = static_cast<unsigned>(v);
   }
 
   // resize

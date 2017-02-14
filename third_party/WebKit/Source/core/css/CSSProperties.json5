@@ -1490,6 +1490,11 @@
     {
       name: "position",
       custom_inherit: true,
+      initial_keyword: "static",
+      keyword_only: true,
+      keywords: [
+        "static", "relative", "absolute", "fixed", "sticky",
+      ],
     },
     {
       name: "quotes",

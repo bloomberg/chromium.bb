@@ -368,7 +368,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_nonInheritedData.m_originalDisplay =
       other.m_nonInheritedData.m_originalDisplay;
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
-  m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
   m_nonInheritedData.m_hasViewportUnits =
       other.m_nonInheritedData.m_hasViewportUnits;
   m_nonInheritedData.m_hasRemUnits = other.m_nonInheritedData.m_hasRemUnits;
@@ -595,7 +594,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 bool ComputedStyle::scrollAnchorDisablingPropertyChanged(
     const ComputedStyle& other,
     const StyleDifference& diff) const {
-  if (m_nonInheritedData.m_position != other.m_nonInheritedData.m_position)
+  if (position() != other.position())
     return true;
 
   if (m_box.get() != other.m_box.get()) {
@@ -879,7 +878,7 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const {
 
   if (m_nonInheritedData.m_verticalAlign !=
           other.m_nonInheritedData.m_verticalAlign ||
-      m_nonInheritedData.m_position != other.m_nonInheritedData.m_position)
+      position() != other.position())
     return true;
 
   if (m_surround.get() != other.m_surround.get()) {

@@ -121,14 +121,6 @@ enum EBorderPrecedence {
 
 enum OutlineIsAuto { OutlineIsAutoOff = 0, OutlineIsAutoOn };
 
-enum class EPosition : unsigned {
-  kStatic,
-  kRelative,
-  kAbsolute,
-  kSticky,
-  kFixed
-};
-
 enum EMarginCollapse {
   MarginCollapseCollapse,
   MarginCollapseSeparate,
