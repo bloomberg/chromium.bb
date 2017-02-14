@@ -208,6 +208,8 @@ v8::Local<v8::Object> CreateRootBinding(
 // case (instantiating a handful of APIs instead of all of them), and it's more
 // likely they will be used (since the extension is already accessing the
 // parent).
+// TODO(devlin): We should be creating ObjectTemplates for these so that we only
+// do this work once. APIBindings (for the single API) already do this.
 v8::Local<v8::Object> CreateFullBinding(
     v8::Local<v8::Context> context,
     ScriptContext* script_context,

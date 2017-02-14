@@ -173,15 +173,16 @@ class APIBindingUnittest : public APIBindingTest {
       binding_hooks_ =
           base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync());
     }
+    event_handler_ = base::MakeUnique<APIEventHandler>(
+        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        base::Bind(&OnEventListenersChanged));
     binding_ = base::MakeUnique<APIBinding>(
         "test", binding_functions_.get(), binding_types_.get(),
         binding_events_.get(),
         base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-        std::move(binding_hooks_), &type_refs_, request_handler_.get());
+        std::move(binding_hooks_), &type_refs_, request_handler_.get(),
+        event_handler_.get());
     EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
-    event_handler_ = base::MakeUnique<APIEventHandler>(
-        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                   base::Bind(&OnEventListenersChanged));
   }
 
   void ExpectPass(v8::Local<v8::Object> object,
@@ -279,8 +280,8 @@ TEST_F(APIBindingUnittest, TestEmptyAPI) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
   EXPECT_EQ(
       0u,
       binding_object->GetOwnPropertyNames(context).ToLocalChecked()->Length());
@@ -295,8 +296,8 @@ TEST_F(APIBindingUnittest, Test) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']", false);
   ExpectPass(binding_object, "obj.oneString('');", "['']", false);
@@ -389,8 +390,8 @@ TEST_F(APIBindingUnittest, EnumValues) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   const char kExpected[] =
       "{'ALPHA':'alpha','CAMEL_CASE':'camelCase','HYPHEN_ATED':'Hyphen-ated',"
@@ -440,8 +441,8 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]", false);
@@ -485,8 +486,8 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
     return name == "test.allowedOne" || name == "test.allowedTwo";
   };
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(is_available));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(is_available));
 
   auto is_defined = [&binding_object, context](const std::string& name) {
     v8::Local<v8::Value> val =
@@ -511,8 +512,8 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   // Event behavior is tested in the APIEventHandler unittests as well as the
   // APIBindingsSystem tests, so we really only need to check that the events
@@ -540,8 +541,8 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> func =
       FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
@@ -564,9 +565,9 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
   InitializeBinding();
 
   v8::Local<v8::Object> binding_object_a = binding()->CreateInstance(
-      context_a, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+      context_a, isolate(), base::Bind(&AllowAllAPIs));
   v8::Local<v8::Object> binding_object_b = binding()->CreateInstance(
-      context_b, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+      context_b, isolate(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']",
              false);
@@ -607,8 +608,8 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   // First try calling the oneString() method, which has a custom hook
   // installed.
@@ -648,8 +649,8 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
   SetHooks(std::move(hooks));
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   // First try calling with an invalid invocation. An error should be raised and
   // the hook should never have been called, since the arguments didn't match.
@@ -703,8 +704,8 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   // Call the method with a hook. Since the hook updates arguments before
   // validation, we should be able to pass in invalid arguments and still
@@ -761,8 +762,8 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -803,8 +804,8 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -864,8 +865,8 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -915,8 +916,8 @@ TEST_F(APIBindingUnittest,
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   {
     // Test an invocation that we expect to throw an exception.
@@ -971,8 +972,8 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
   SetFunctions(kFunctions);
   InitializeBinding();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   // Try calling the method with an invalid signature. Since it's invalid, we
   // should never enter the hook.
@@ -999,8 +1000,8 @@ TEST_F(APIBindingUnittest, TestUserGestures) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
-      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context, "(function(obj) { obj.oneString('foo');})");

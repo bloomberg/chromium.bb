@@ -52,17 +52,17 @@ std::string GetJSEnumEntryName(const std::string& original) {
   return result;
 }
 
+bool IsContextValid(v8::Local<v8::Context> context) {
+  // If the given context has been disposed, the per-context data has been
+  // deleted, and the context is no longer valid. The APIBinding (which owns
+  // various necessary pieces) should outlive all contexts, so if the context
+  // is valid, associated callbacks should be safe.
+  return gin::PerContextData::From(context) != nullptr;
+}
+
 void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
-
-  // If the current context (the in which this function was created) has been
-  // disposed, the per-context data has been deleted. Since it was the owner of
-  // the callback, we can no longer access that object.
-  // Various parts of the binding system rely on per-context data. If that has
-  // been deleted (which happens during context shutdown), bail out.
-  v8::Local<v8::Context> context = args.isolate()->GetCurrentContext();
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
+  if (!IsContextValid(args.isolate()->GetCurrentContext()))
     return;
 
   v8::Local<v8::External> external;
@@ -88,10 +88,27 @@ struct APIBinding::MethodData {
   std::string full_name;
   // The expected API signature.
   APISignature signature;
-  // The template for the v8::Function for this method.
-  v8::Eternal<v8::FunctionTemplate> function_template;
   // The callback used by the v8 function.
   APIBinding::HandlerCallback callback;
+};
+
+struct APIBinding::EventData {
+  EventData(std::string exposed_name,
+            std::string full_name,
+            APIEventHandler* event_handler)
+      : exposed_name(std::move(exposed_name)),
+        full_name(std::move(full_name)),
+        event_handler(event_handler) {}
+
+  // The name of the event on the API object (e.g. onCreated).
+  std::string exposed_name;
+  // The fully-specified name of the event (e.g. tabs.onCreated).
+  std::string full_name;
+  // The associated event handler. This raw pointer is safe because the
+  // EventData is only accessed from the callbacks associated with the
+  // APIBinding, and both the APIBinding and APIEventHandler are owned by the
+  // same object (the APIBindingsSystem).
+  APIEventHandler* event_handler;
 };
 
 APIBinding::APIBinding(const std::string& api_name,
@@ -101,7 +118,8 @@ APIBinding::APIBinding(const std::string& api_name,
                        const SendRequestMethod& callback,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
-                       APIRequestHandler* request_handler)
+                       APIRequestHandler* request_handler,
+                       APIEventHandler* event_handler)
     : api_name_(api_name),
       method_callback_(callback),
       binding_hooks_(std::move(binding_hooks)),
@@ -150,13 +168,16 @@ APIBinding::APIBinding(const std::string& api_name,
   }
 
   if (event_definitions) {
-    event_names_.reserve(event_definitions->GetSize());
+    events_.reserve(event_definitions->GetSize());
     for (const auto& event : *event_definitions) {
       const base::DictionaryValue* event_dict = nullptr;
       CHECK(event->GetAsDictionary(&event_dict));
       std::string name;
       CHECK(event_dict->GetString("name", &name));
-      event_names_.push_back(std::move(name));
+      std::string full_name =
+          base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
+      events_.push_back(base::MakeUnique<EventData>(
+          std::move(name), std::move(full_name), event_handler));
     }
   }
 }
@@ -166,73 +187,30 @@ APIBinding::~APIBinding() {}
 v8::Local<v8::Object> APIBinding::CreateInstance(
     v8::Local<v8::Context> context,
     v8::Isolate* isolate,
-    APIEventHandler* event_handler,
     const AvailabilityCallback& is_available) {
-  // TODO(devlin): APIs may change depending on which features are available,
-  // but we should be able to cache the unconditional methods on an object
-  // template, create the object, and then add any conditional methods. Ideally,
-  // this information should be available on the generated API specification.
-  v8::Local<v8::Object> object = v8::Object::New(isolate);
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  DCHECK(per_context_data);
+  DCHECK(IsContextValid(context));
+  if (object_template_.IsEmpty())
+    InitializeTemplate(isolate);
+  DCHECK(!object_template_.IsEmpty());
 
+  v8::Local<v8::Object> object =
+      object_template_.Get(isolate)->NewInstance(context).ToLocalChecked();
+
+  // The object created from the template includes all methods, but some may
+  // be unavailable in this context. Iterate over them and delete any that
+  // aren't available.
+  // TODO(devlin): Ideally, we'd only do this check on the methods that are
+  // conditionally exposed. Or, we could have multiple templates for different
+  // configurations, assuming there are a small number of possibilities.
+  // TODO(devlin): enums should always be exposed, but there may be events that
+  // are restricted. Investigate.
   for (const auto& key_value : methods_) {
-    MethodData& method = *key_value.second;
-    if (!is_available.Run(method.full_name))
-      continue;
-
-    v8::Eternal<v8::FunctionTemplate>& function_template =
-        method.function_template;
-    if (function_template.IsEmpty()) {
-      DCHECK(method.callback.is_null());
-      method.callback =
-          base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
-                     method.full_name, &method.signature);
-      function_template.Set(
-          isolate,
-          v8::FunctionTemplate::New(
-              isolate, &CallbackHelper,
-              v8::External::New(isolate, &method.callback),
-              v8::Local<v8::Signature>(), 0, v8::ConstructorBehavior::kThrow));
+    if (!is_available.Run(key_value.second->full_name)) {
+      v8::Maybe<bool> success = object->Delete(
+          context, gin::StringToSymbol(isolate, key_value.first));
+      CHECK(success.IsJust());
+      CHECK(success.FromJust());
     }
-
-    v8::Local<v8::FunctionTemplate> local_template =
-        function_template.Get(isolate);
-    v8::MaybeLocal<v8::Function> maybe_function =
-        local_template->GetFunction(context);
-    v8::Maybe<bool> success = object->CreateDataProperty(
-        context, gin::StringToSymbol(isolate, key_value.first),
-        maybe_function.ToLocalChecked());
-    DCHECK(success.IsJust());
-    DCHECK(success.FromJust());
-  }
-
-  for (const std::string& event_name : event_names_) {
-    std::string full_event_name =
-        base::StringPrintf("%s.%s", api_name_.c_str(), event_name.c_str());
-    v8::Local<v8::Object> event =
-        event_handler->CreateEventInstance(full_event_name, context);
-    DCHECK(!event.IsEmpty());
-    v8::Maybe<bool> success = object->CreateDataProperty(
-        context, gin::StringToSymbol(isolate, event_name), event);
-    DCHECK(success.IsJust());
-    DCHECK(success.FromJust());
-  }
-
-  for (const auto& entry : enums_) {
-    // TODO(devlin): Store these on an ObjectTemplate.
-    v8::Local<v8::Object> enum_object = v8::Object::New(isolate);
-    for (const auto& enum_entry : entry.second) {
-      v8::Maybe<bool> success = enum_object->CreateDataProperty(
-          context, gin::StringToSymbol(isolate, enum_entry.second),
-          gin::StringToSymbol(isolate, enum_entry.first));
-      DCHECK(success.IsJust());
-      DCHECK(success.FromJust());
-    }
-    v8::Maybe<bool> success = object->CreateDataProperty(
-        context, gin::StringToSymbol(isolate, entry.first), enum_object);
-    DCHECK(success.IsJust());
-    DCHECK(success.FromJust());
   }
 
   binding_hooks_->InitializeInContext(context, api_name_);
@@ -243,6 +221,62 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
 v8::Local<v8::Object> APIBinding::GetJSHookInterface(
     v8::Local<v8::Context> context) {
   return binding_hooks_->GetJSHookInterface(api_name_, context);
+}
+
+void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
+  DCHECK(object_template_.IsEmpty());
+  v8::Local<v8::ObjectTemplate> object_template =
+      v8::ObjectTemplate::New(isolate);
+
+  for (const auto& key_value : methods_) {
+    MethodData& method = *key_value.second;
+    DCHECK(method.callback.is_null());
+    method.callback =
+        base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
+                   method.full_name, &method.signature);
+
+    object_template->Set(
+        gin::StringToSymbol(isolate, key_value.first),
+        v8::FunctionTemplate::New(isolate, &CallbackHelper,
+                                  v8::External::New(isolate, &method.callback),
+                                  v8::Local<v8::Signature>(), 0,
+                                  v8::ConstructorBehavior::kThrow));
+  }
+
+  for (const auto& event : events_) {
+    object_template->SetLazyDataProperty(
+        gin::StringToSymbol(isolate, event->exposed_name),
+        &APIBinding::GetEventObject, v8::External::New(isolate, event.get()));
+  }
+
+  for (const auto& entry : enums_) {
+    v8::Local<v8::ObjectTemplate> enum_object =
+        v8::ObjectTemplate::New(isolate);
+    for (const auto& enum_entry : entry.second) {
+      enum_object->Set(gin::StringToSymbol(isolate, enum_entry.second),
+                       gin::StringToSymbol(isolate, enum_entry.first));
+    }
+    object_template->Set(isolate, entry.first.c_str(), enum_object);
+  }
+
+  object_template_.Set(isolate, object_template);
+}
+
+// static
+void APIBinding::GetEventObject(
+    v8::Local<v8::Name> property,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = info.Holder()->CreationContext();
+  if (!IsContextValid(context))
+    return;
+
+  CHECK(info.Data()->IsExternal());
+  auto* event_data =
+      static_cast<EventData*>(info.Data().As<v8::External>()->Value());
+  info.GetReturnValue().Set(event_data->event_handler->CreateEventInstance(
+      event_data->full_name, context));
 }
 
 void APIBinding::HandleCall(const std::string& name,

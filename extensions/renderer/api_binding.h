@@ -77,14 +77,14 @@ class APIBinding {
              const SendRequestMethod& callback,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
-             APIRequestHandler* request_handler);
+             APIRequestHandler* request_handler,
+             APIEventHandler* event_handler);
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
   v8::Local<v8::Object> CreateInstance(
       v8::Local<v8::Context> context,
       v8::Isolate* isolate,
-      APIEventHandler* event_handler,
       const AvailabilityCallback& is_available);
 
   // Returns the JS interface to use when registering hooks with legacy custom
@@ -92,6 +92,14 @@ class APIBinding {
   v8::Local<v8::Object> GetJSHookInterface(v8::Local<v8::Context> context);
 
  private:
+  // Initializes the object_template_ for this API. Called lazily when the
+  // first instance is created.
+  void InitializeTemplate(v8::Isolate* isolate);
+
+  // Handler for getting the v8::Object associated with an event on the API.
+  static void GetEventObject(v8::Local<v8::Name>,
+                             const v8::PropertyCallbackInfo<v8::Value>& info);
+
   // Handles a call an API method with the given |name| and matches the
   // arguments against |signature|.
   void HandleCall(const std::string& name,
@@ -105,8 +113,9 @@ class APIBinding {
   struct MethodData;
   std::map<std::string, std::unique_ptr<MethodData>> methods_;
 
-  // The names of all events associated with this API.
-  std::vector<std::string> event_names_;
+  // The events associated with this API.
+  struct EventData;
+  std::vector<std::unique_ptr<EventData>> events_;
 
   // The pair for enum entry is <original, js-ified>. JS enum entries use
   // SCREAMING_STYLE (whereas our API enums are just inconsistent).
@@ -126,6 +135,11 @@ class APIBinding {
   // The associated request handler, shared between this and other bindings.
   // Required to outlive this object.
   APIRequestHandler* request_handler_;
+
+  // The template for this API. Note: some methods may only be available in
+  // certain contexts, but this template contains all methods. Those that are
+  // unavailable are removed after object instantiation.
+  v8::Eternal<v8::ObjectTemplate> object_template_;
 
   base::WeakPtrFactory<APIBinding> weak_factory_;
 

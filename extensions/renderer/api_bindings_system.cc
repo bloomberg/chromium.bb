@@ -40,8 +40,7 @@ v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     binding = CreateNewAPIBinding(api_name);
   if (hooks_interface_out)
     *hooks_interface_out = binding->GetJSHookInterface(context);
-  return binding->CreateInstance(
-      context, isolate, &event_handler_, is_available);
+  return binding->CreateInstance(context, isolate, is_available);
 }
 
 std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
@@ -70,7 +69,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
 
   return base::MakeUnique<APIBinding>(
       api_name, function_definitions, type_definitions, event_definitions,
-      send_request_, std::move(hooks), &type_reference_map_, &request_handler_);
+      send_request_, std::move(hooks), &type_reference_map_, &request_handler_,
+      &event_handler_);
 }
 
 void APIBindingsSystem::InitializeType(const std::string& type_name) {
