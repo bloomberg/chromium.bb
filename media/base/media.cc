@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -27,6 +28,8 @@ class MediaInitializer {
   MediaInitializer() {
     TRACE_EVENT_WARMUP_CATEGORY("audio");
     TRACE_EVENT_WARMUP_CATEGORY("media");
+
+    libyuv::InitCpuFlags();
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
     // Initialize CPU flags outside of the sandbox as this may query /proc for
