@@ -15,7 +15,7 @@ from benchmarks import media_router_timeline_metric
 
 
 class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
-  options = {'page_repeat': 6}
+  options = {'pageset_repeat': 6}
 
   page_set = media_router_perf_pages.MediaRouterDialogPageSet
 
