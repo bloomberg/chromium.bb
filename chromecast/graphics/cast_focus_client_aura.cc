@@ -209,7 +209,7 @@ aura::Window* CastFocusClientAura::GetWindowToFocus() {
 }
 
 aura::Window* CastFocusClientAura::GetZOrderWindow(aura::Window* window) {
-  while (window->parent() && !window->parent()->GetHost()) {
+  while (window->parent() && !window->parent()->IsRootWindow()) {
     window = window->parent();
   }
   return window;

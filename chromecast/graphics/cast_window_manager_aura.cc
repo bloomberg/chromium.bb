@@ -125,7 +125,41 @@ void CastLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
 
 void CastLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                        bool visible) {
-  // Note: this is invoked for child windows of the root window.
+  aura::Window* parent = child->parent();
+  if (!visible || !parent->IsRootWindow()) {
+    return;
+  }
+
+  // We set z-order here, because the window's ID could be set after the window
+  // is added to the layout, particularly when using views::Widget to create the
+  // window.  The window ID must be set prior to showing the window.  Since we
+  // only process z-order on visibility changes for top-level windows, this
+  // logic will execute infrequently.
+
+  // Determine z-order relative to existing windows.
+  aura::Window::Windows windows = parent->children();
+  aura::Window* above = nullptr;
+  aura::Window* below = nullptr;
+  for (auto* other : windows) {
+    if (other == child) {
+      continue;
+    }
+    if ((other->id() < child->id()) && (!below || other->id() > below->id())) {
+      below = other;
+    } else if ((other->id() > child->id()) &&
+               (!above || other->id() < above->id())) {
+      above = other;
+    }
+  }
+
+  // Adjust the z-order of the new child window.
+  if (above) {
+    parent->StackChildBelow(child, above);
+  } else if (below) {
+    parent->StackChildAbove(child, below);
+  } else {
+    parent->StackChildAtBottom(child);
+  }
 }
 
 void CastLayoutManager::SetChildBounds(aura::Window* child,
@@ -200,31 +234,6 @@ void CastWindowManagerAura::AddWindow(gfx::NativeView child) {
   aura::Window* parent = window_tree_host_->window();
   if (!parent->Contains(child)) {
     parent->AddChild(child);
-  }
-
-  // Determine z-order relative to existing windows.
-  aura::Window::Windows windows = parent->children();
-  aura::Window* above = nullptr;
-  aura::Window* below = nullptr;
-  for (auto* other : windows) {
-    if (other == child) {
-      continue;
-    }
-    if ((other->id() < child->id()) && (!below || other->id() > below->id())) {
-      below = other;
-    } else if ((other->id() > child->id()) &&
-               (!above || other->id() < above->id())) {
-      above = other;
-    }
-  }
-
-  // Adjust the z-order of the new child window.
-  if (above) {
-    parent->StackChildBelow(child, above);
-  } else if (below) {
-    parent->StackChildAbove(child, below);
-  } else {
-    parent->StackChildAtBottom(child);
   }
 }
 

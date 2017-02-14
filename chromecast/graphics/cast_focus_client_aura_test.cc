@@ -159,5 +159,35 @@ TEST_F(CastFocusClientAuraTest, ZOrder) {
   EXPECT_FALSE(focus_client.GetFocusedWindow());
 }
 
+TEST_F(CastFocusClientAuraTest, ZOrderWithChildWindows) {
+  std::unique_ptr<aura::WindowTreeHost> window_tree_host(
+      aura::WindowTreeHost::Create(gfx::Rect(0, 0, 1280, 720)));
+  window_tree_host->InitHost();
+  window_tree_host->Show();
+
+  CastFocusClientAura focus_client;
+
+  // Add the window with the highest z-order.
+  std::unique_ptr<TestWindow> high_parent(new TestWindow);
+  high_parent->window()->set_id(3);
+  std::unique_ptr<TestWindow> high_child(new TestWindow);
+  high_child->delegate()->set_can_focus(true);
+  high_parent->window()->AddChild(high_child->window());
+  window_tree_host->window()->AddChild(high_parent->window());
+  focus_client.FocusWindow(high_child->window());
+  EXPECT_EQ(high_child->window(), focus_client.GetFocusedWindow());
+
+  // Add the window with the lowest z-order.
+  std::unique_ptr<TestWindow> low_parent(new TestWindow);
+  low_parent->window()->set_id(1);
+  std::unique_ptr<TestWindow> low_child(new TestWindow);
+  low_child->delegate()->set_can_focus(true);
+  low_parent->window()->AddChild(low_child->window());
+  window_tree_host->window()->AddChild(low_parent->window());
+  focus_client.FocusWindow(low_child->window());
+  // Focus should remain with the child of the highest window.
+  EXPECT_EQ(high_child->window(), focus_client.GetFocusedWindow());
+}
+
 }  // namespace test
 }  // namespace chromecast
