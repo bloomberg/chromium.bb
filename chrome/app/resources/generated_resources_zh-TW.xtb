@@ -334,6 +334,7 @@
 <translation id="1459140739419123883">已封鎖惡意下載內容</translation>
 <translation id="1459967076783105826">由擴充功能新增的搜尋引擎</translation>
 <translation id="146000042969587795">此框架由於包含不安全的內容，已被封鎖。</translation>
+<translation id="1460864304233364278">顯示 Android 檔案應用程式</translation>
 <translation id="146219525117638703">ONC 狀態</translation>
 <translation id="146220085323579959">網際網路連線已中斷。請檢查您的網際網路連線，然後再試一次。</translation>
 <translation id="1463985642028688653">封鎖</translation>
@@ -426,6 +427,7 @@
 <translation id="1546280085599573572">這個擴充功能已變更您點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="1546795794523394272">歡迎使用 Chromebox 視訊會議解決方案！</translation>
 <translation id="1547572086206517271">請重新整理網頁</translation>
+<translation id="1547761976546996757">啟用指紋登入和驗證機制</translation>
 <translation id="1547964879613821194">加拿大英文</translation>
 <translation id="1548132948283577726">一律不儲存密碼的網站會顯示在這裡。</translation>
 <translation id="1549045574060481141">確認下載</translation>
@@ -554,6 +556,7 @@
 <translation id="1700199471143028312">您的管理員禁止您建立受監管的使用者。</translation>
 <translation id="1701062906490865540">移除這個使用者</translation>
 <translation id="1702294042233267824">透過網址列進行搜尋時要使用的搜尋引擎</translation>
+<translation id="1706586824377653884">由管理員新增</translation>
 <translation id="1706625117072057435">縮放等級</translation>
 <translation id="1707463636381878959">與其他使用者共用這個網路</translation>
 <translation id="1708199901407471282">使用新分頁來開啟建議網頁時，如果已有其他分頁開啟建議網頁，系統會直接切換至該分頁，不會在新分頁中載入建議網頁。</translation>
@@ -562,6 +565,7 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (原生)</translation>
 <translation id="1711973684025117106">壓縮失敗：發生未預期的錯誤：$1</translation>
 <translation id="1717733954209022288">Google Payments 信用卡儲存功能核取方塊</translation>
+<translation id="1719312230114180055">注意：使用高強度的密碼或 PIN 碼會比感應指紋來得安全。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
 <translation id="1720372306711178108">延伸桌面</translation>
 <translation id="1721937473331968728">您可以將已連接電腦的傳統印表機新增到 <ph name="CLOUD_PRINT_NAME" />。</translation>
@@ -706,6 +710,7 @@
 <translation id="192494336144674234">選擇開啟工具</translation>
 <translation id="1926336771446151296">下載影片(&amp;D)...</translation>
 <translation id="1926339101652878330">這些設定受到公司政策管控。如需瞭解詳情，請與您的管理員聯絡。</translation>
+<translation id="1927632033341042996">指紋 <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">輸入舊的 PIN 碼</translation>
 <translation id="1929546189971853037">讀取您已登入的所有裝置上的瀏覽紀錄</translation>
 <translation id="1931134289871235022">斯洛伐克文</translation>
@@ -1061,6 +1066,7 @@
 <translation id="2425632738803359658">使用質感設計使用者選單</translation>
 <translation id="2425665904502185219">總檔案大小</translation>
 <translation id="2431394478374894294">啟用虛擬鍵盤的語音輸入功能。</translation>
+<translation id="2432876185343582491">新增信用卡</translation>
 <translation id="2433452467737464329">在網址中新增查詢參數即可自動重新整理網頁：chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">外觀</translation>
 <translation id="2435248616906486374">網路已中斷連線</translation>
@@ -1144,6 +1150,7 @@
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="253434972992662860">暫停(&amp;P)</translation>
 <translation id="2534460670861217804">安全 HTTP Proxy</translation>
+<translation id="253557089021624350">Keepalive 數量</translation>
 <translation id="2537329513587967427">新增、編輯或移除搜尋引擎</translation>
 <translation id="2539110682392681234">管理員已強制執行 Proxy。</translation>
 <translation id="2539524384386349900">偵測</translation>
@@ -1233,6 +1240,7 @@
 <translation id="2648831393319960979">正在將裝置新增到您的帳戶中，這可能需要幾分鐘的時間...</translation>
 <translation id="2649045351178520408">Base64 編碼 ASCII，憑證鏈結</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" />，<ph name="CITY" /></translation>
+<translation id="2651529965339547678">在 Chrome 作業系統啟動器中顯示 Android 檔案應用程式 (只在可存取 Play 商店的裝置上有效)。</translation>
 <translation id="2653266418988778031">如果您刪除了憑證授權單位 (CA) 的憑證，您的瀏覽器就不會再信任該憑證授權單位所核發的任何憑證。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">欄位值</translation>
@@ -1321,6 +1329,7 @@
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773802008104670137">這類檔案可能會損害你的電腦。</translation>
 <translation id="2773948261276885771">設定網頁</translation>
+<translation id="2775104091073479743">編輯指紋</translation>
 <translation id="2776441542064982094">網路上沒有可註冊的裝置，如果您的裝置已開啟並連上網際網路，請依照操作說明手冊中的指示進行註冊。</translation>
 <translation id="277674485549860058">在 Chrome 作業系統使用者介面中設定 Material Design 元素。</translation>
 <translation id="2778459533137481732">權限黑名單</translation>
@@ -1886,6 +1895,7 @@
 <translation id="3450505713373650336">正在備份 <ph name="FILE_COUNT" /> 張相片</translation>
 <translation id="3453612417627951340">需要授權</translation>
 <translation id="3454157711543303649">啟用完成</translation>
+<translation id="3455970245215355643">啟用指紋快速解鎖後，只要你登入裝置並指定相關設定，即可在螢幕鎖定畫面使用指紋解鎖 Chromebook。</translation>
 <translation id="3456236151053308041">啟用 IME 擴充功能，提供方便使用者輸入的自訂檢視模式，例如虛擬鍵盤。</translation>
 <translation id="345693547134384690">在新分頁中開啟圖片(&amp;I)</translation>
 <translation id="3458620904104024826">允許將追蹤事件匯出到 ETW。</translation>
@@ -2339,6 +2349,7 @@
 <translation id="4057896668975954729">前往商店查看</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">立即檢查文件</translation>
+<translation id="405943233949298442">伺服器未提供足夠憑證來建立信任根的憑證鏈結時，啟用中繼憑證擷取功能。</translation>
 <translation id="406070391919917862">背景應用程式</translation>
 <translation id="4062251648694601778">祝您使用 <ph name="SHORT_PRODUCT_NAME" /> 裝置愉快！如有任何問題，只要按一下狀態匣中的 [?]，我們將隨時為您提供協助。</translation>
 <translation id="4065876735068446555">目前使用的網路 (<ph name="NETWORK_ID" />) 可能會要求您造訪登入網頁。</translation>
@@ -2557,6 +2568,7 @@
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="438122767399415311">強制套用特定使用者介面文字方向</translation>
 <translation id="4381849418013903196">冒號</translation>
+<translation id="4384312707950789900">加入慣用網路</translation>
 <translation id="4384652540891215547">啟用擴充功能</translation>
 <translation id="438503109373656455">赤兔馬</translation>
 <translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
@@ -2667,6 +2679,7 @@
 <translation id="4556110439722119938">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，讓您在所有個人裝置上使用。</translation>
 <translation id="4557136421275541763">警告：</translation>
 <translation id="4558426062282641716">已要求自動啟動權限</translation>
+<translation id="4562155214028662640">新增指紋</translation>
 <translation id="4563488537534296354">將視窗固定在畫面左側/右側。</translation>
 <translation id="456664934433279154">控制是否使用工具包介面型 Chrome 應用程式視窗。</translation>
 <translation id="4567772783389002344">新增字詞</translation>
@@ -2922,6 +2935,7 @@
 <translation id="49088176676474409">隱藏 VPD 值。</translation>
 <translation id="4909038193460299775">這個帳戶是由 <ph name="DOMAIN" /> 所管理，因此系統會將你的書籤、歷史紀錄、密碼和其他設定從這個裝置上清除。不過，你的資料仍會儲存在你的 Google 帳戶中，並可透過 <ph name="BEGIN_LINK" />Google 資訊主頁<ph name="END_LINK" />管理。</translation>
 <translation id="4910021444507283344">WebGL</translation>
+<translation id="4910187779917897961">快速解鎖 (指紋)</translation>
 <translation id="4910673011243110136">私人網路</translation>
 <translation id="4911714727432509308">尚未對任何擴充功能指派鍵盤快速鍵。</translation>
 <translation id="4912643508233590958">閒置喚醒</translation>
@@ -3139,6 +3153,7 @@
 <translation id="5220992698394817380">允許選用輸入法編輯器選單</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5222738340020399230">下載圖片(&amp;D)...</translation>
+<translation id="5222834039033127518">擷取中繼憑證</translation>
 <translation id="5225324770654022472">顯示應用程式捷徑</translation>
 <translation id="5227536357203429560">新增私人網路...</translation>
 <translation id="5227679487546032910">預設的藍綠色顯示圖片</translation>
@@ -3398,6 +3413,7 @@
 <translation id="5528368756083817449">書籤管理員</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">通用</translation>
+<translation id="5533001281916885985"><ph name="SITE_NAME" /> 要求下列權限：</translation>
 <translation id="5533555070048896610">音譯 (namaste → नमस्ते)</translation>
 <translation id="5534520101572674276">正在計算大小</translation>
 <translation id="5535080075879535355">進行網頁認證入口授權程序時略過 Proxy 伺服器</translation>
@@ -3725,6 +3741,7 @@
 <translation id="6006484371116297560">傳統版</translation>
 <translation id="6007237601604674381">移動失敗，<ph name="ERROR_MESSAGE" /></translation>
 <translation id="6008241731410823808">傳送超連結稽核偵測。</translation>
+<translation id="6011193465932186973">指紋</translation>
 <translation id="6011449291337289699">清除網站資料</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">確認執行 Powerwash 並還原至上一個版本</translation>
@@ -3771,6 +3788,7 @@
 <translation id="6075731018162044558">糟糕！系統無法為這個裝置取得長期 API 存取符記。</translation>
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME" /> 的裝置交換資料</translation>
 <translation id="6076448957780543068">包含這個螢幕擷取畫面</translation>
+<translation id="6077131872140550515">從慣用網路移除</translation>
 <translation id="6080100832288487452">啟用虛擬鍵盤的手勢輸入功能。</translation>
 <translation id="6080689532560039067">請檢查您的系統時間</translation>
 <translation id="6080696365213338172">您使用了管理員提供的憑證存取內容，因此管理員可攔截您傳送至「<ph name="DOMAIN" />」的資料。</translation>
@@ -3899,6 +3917,7 @@
 <translation id="6263541650532042179">重設同步處理</translation>
 <translation id="6264347891387618177">音譯 (selam → ሰላም)</translation>
 <translation id="6264365405983206840">選取全部(&amp;A)</translation>
+<translation id="6265251091976123484">啟用 Pointer Events API 支援功能 (僅供網站開發人員進行測試)。</translation>
 <translation id="626568068055008686">密碼不正確或檔案已毀損。</translation>
 <translation id="6267166720438879315">請選取您在 <ph name="HOST_NAME" /> 的驗證憑證</translation>
 <translation id="6267909379545953750">實驗性 JavaScript</translation>
@@ -3952,6 +3971,7 @@
 <translation id="6324839205543480136">找不到您的手機，請確認手機是否在一個手臂的距離範圍內，並且已開啟藍牙。</translation>
 <translation id="6325191661371220117">停用自動啟動功能</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
+<translation id="6326855256003666642">Keepalive 數量</translation>
 <translation id="632744581670418035">鍵盤自訂快速鍵</translation>
 <translation id="6327785803543103246">網路 Proxy 自動探索</translation>
 <translation id="6333049849394141510">選擇要同步處理的資料類型</translation>
@@ -4108,6 +4128,7 @@
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="652030171967109828">顯示無效渲染回饋</translation>
+<translation id="6521494105510930048">共用方式</translation>
 <translation id="6526654154229718724">實驗性的全螢幕體驗，使用者必須按住 Esc 鍵才能結束鍵盤鎖定模式。</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528546217685656218">這個用戶端憑證沒有私密金鑰或私密金鑰無效。</translation>
@@ -4233,6 +4254,7 @@
 <translation id="6708242697268981054">來源：</translation>
 <translation id="6709357832553498500">使用「<ph name="EXTENSIONNAME" />」連線</translation>
 <translation id="6710213216561001401">返回</translation>
+<translation id="6716704051134091292">PDF 轉換工具</translation>
 <translation id="6718273304615422081">壓縮中...</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
 <translation id="6721972322305477112">檔案(&amp;F)</translation>
@@ -4340,6 +4362,7 @@
 <translation id="6868924482674768124">Mojo 使用者介面服務 (mus)。</translation>
 <translation id="6869402422344886127">勾選的核取方塊</translation>
 <translation id="6870130893560916279">烏克蘭文鍵盤</translation>
+<translation id="6870888490422746447">選擇要共用的應用程式：</translation>
 <translation id="6871644448911473373">OCSP 回應程式：<ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">含文章內容的網頁</translation>
 <translation id="6874681241562738119">登入錯誤</translation>
@@ -4366,6 +4389,7 @@
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="6915804003454593391">使用者：</translation>
 <translation id="6916590542764765824">管理擴充功能</translation>
+<translation id="6918034620977647184">已註冊的指紋：</translation>
 <translation id="6918340160281024199">美式 Workman</translation>
 <translation id="6920569915859786172">載入 WebFonts 時一律中斷使用者代理程式。</translation>
 <translation id="6920989436227028121">在一般分頁中開啟</translation>
@@ -4428,6 +4452,7 @@
 <translation id="7002454948392136538">選擇這位受監管使用者的管理員</translation>
 <translation id="7003257528951459794">頻率：</translation>
 <translation id="7003339318920871147">網路資料庫</translation>
+<translation id="7003723821785740825">設定更快速的裝置解鎖方式</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7005848115657603926">頁面範圍無效，請使用 <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006017748900345484">WebRTC H.264 軟體視訊編碼器/解碼器</translation>
@@ -4686,6 +4711,7 @@
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7379693629660652503">使用支援 Postscript 的印表機列印時，產生 Postscript 而非 EMF。</translation>
 <translation id="7382160026931194400">已儲存的|內容設定|和#搜尋引擎#資料不會被清除，而且可能會反映您的瀏覽習慣。</translation>
 <translation id="7383627141017162945">載入完整網站內容</translation>
 <translation id="7384292194278095697">我們已不再支援這個裝置</translation>
@@ -5575,6 +5601,7 @@
 <translation id="8606726445206553943">使用您的 MIDI 裝置</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610892630019863050">網站要求顯示通知時詢問我 (建議)</translation>
+<translation id="8612551051970873664">PostScript 列印</translation>
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
@@ -5621,6 +5648,7 @@
 <translation id="8670262106224659584">Yama LSM enforcing</translation>
 <translation id="8670737526251003256">正在搜尋裝置...</translation>
 <translation id="8671210955687109937">可以註解</translation>
+<translation id="8671955835389053707">只能再新增 <ph name="MAX_FINGERPRINTS" /> 個指紋。</translation>
 <translation id="8673026256276578048">搜尋網頁...</translation>
 <translation id="8673383193459449849">伺服器問題</translation>
 <translation id="8673795350651259145">支援所有網路應用程式啟用 Native Client (不論應用程式是否是從「Chrome 線上應用程式商店」安裝)。</translation>

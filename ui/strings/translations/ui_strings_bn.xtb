@@ -26,7 +26,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2497284189126895209">সকল ফাইল</translation>
-<translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ক্রমাঙ্কন সম্পূর্ণ হয়েছে</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
@@ -82,6 +81,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
+<translation id="6264365405983206840">&amp;সকল নির্বাচন করুন</translation>
 <translation id="6364916375976753737">বাঁ দিকে স্ক্রোল করুন</translation>
 <translation id="6394627529324717982">কমা</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{১ সেকেন্ড পূর্বে}one{# সেকেন্ড পূর্বে}other{# সেকেন্ড পূর্বে}}</translation>
@@ -91,7 +91,6 @@
 <translation id="6699343763173986273">মিডিয়া পরবর্তী ট্র্যাক</translation>
 <translation id="6786750046913594791">ফোল্ডার বন্ধ করুন</translation>
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
-<translation id="6829324100069873704">বিজ্ঞপ্তিগুলিতে ফিরে যান</translation>
 <translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
 <translation id="6845533974506654842">টিপুন</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{১ ঘণ্টা বাকি}one{# ঘণ্টা বাকি}other{# ঘণ্টা বাকি}}</translation>
@@ -109,7 +108,6 @@
 <translation id="7457942297256758195">সমস্ত সাফ করুন</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7647488630410863958">আপনার বিজ্ঞপ্তিগুলি দেখতে ডিভাইস আনলক করুন</translation>
-<translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7814458197256864873">&amp;অনুলিপি</translation>
@@ -140,5 +138,4 @@
 <translation id="9150735707954472829">ট্যাব</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="932327136139879170">হোম</translation>
-<translation id="945522503751344254">প্রতিক্রিয়া পাঠান</translation>
 </translationbundle>

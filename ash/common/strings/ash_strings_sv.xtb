@@ -82,6 +82,7 @@
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
 <translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="3157169093162779309">Aktivera rotationslås</translation>
+<translation id="3164154768979021380">Dockat läge avslutas</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3335772982573114336">Ny anteckning</translation>
 <translation id="3364721542077212959">Verktyg för e-penna</translation>
@@ -99,7 +100,6 @@
 <translation id="3683428399328702079">Upplösningen för <ph name="DISPLAY_NAME" /> ändrades till <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktivera Wi-Fi</translation>
 <translation id="3712407551474845318">Ta bild av skärmområde</translation>
-<translation id="372094107052732682">Avsluta genom att trycka på Ctrl + Skift + Q två gånger.</translation>
 <translation id="3742055079367172538">Skärmbilden har tagits</translation>
 <translation id="3775358506042162758">Du kan högst använda tre konton för multiinloggning.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -141,7 +141,6 @@
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="5222676887888702881">Logga ut</translation>
-<translation id="5238774010593222950">Det går inte att logga in på ett annat konto.</translation>
 <translation id="532063867737390965">Den här nätverksinställningen har inaktiverats av administratören.</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -170,6 +169,7 @@
 <translation id="5977415296283489383">Hörlurar</translation>
 <translation id="5978382165065462689">Dela kontroll över skärmen via Fjärrhjälp.</translation>
 <translation id="5980301590375426705">Avsluta gästsession</translation>
+<translation id="6018164090099858612">Spegelläge avslutas</translation>
 <translation id="6041154455840261787">Högkontrastläget har aktiverats. Tryck på söktangenten + Skift + H igen om du vill inaktivera det.</translation>
 <translation id="6043212731627905357">Skärmen kan inte användas med <ph name="DEVICE_TYPE" /> (det finns inte stöd för skärmen).</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
@@ -180,7 +180,6 @@
 <translation id="6144938890088808325">Hjälp oss att göra Chromebook bättre</translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="6165508094623778733">Läs mer</translation>
-<translation id="6248847161401822652">Avsluta genom att trycka på Ctrl + Skift + Q två gånger.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverar ...</translation>
 <translation id="6297287540776456956">Markera ett område med e-pennan</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> byttes till <ph name="ROTATION" /></translation>
@@ -269,9 +268,11 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonen används.</translation>
 <translation id="9089416786594320554">Inmatningsmetoder</translation>
+<translation id="9091626656156419976">Visningen <ph name="DISPLAY_NAME" /> har tagits bort</translation>
 <translation id="9151726767154816831">Starta om och utför en Powerwash-återställning för att uppdatera</translation>
 <translation id="9194617393863864469">Logga in med en annan användare ...</translation>
 <translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE" /> %.</translation>
+<translation id="9210037371811586452">Enhetligt skrivbordsläge avslutas</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
 <translation id="939252827960237676">Det gick inte att spara skärmdumpen</translation>

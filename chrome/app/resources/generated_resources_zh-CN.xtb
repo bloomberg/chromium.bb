@@ -334,6 +334,7 @@
 <translation id="1459140739419123883">已屏蔽恶意下载内容</translation>
 <translation id="1459967076783105826">由扩展程序添加的搜索引擎</translation>
 <translation id="146000042969587795">此框架因含某些不安全内容而被拦截。</translation>
+<translation id="1460864304233364278">显示 Android“文件”应用</translation>
 <translation id="146219525117638703">ONC 状态</translation>
 <translation id="146220085323579959">互联网连接已断开。请检查您的互联网连接并重试。</translation>
 <translation id="1463985642028688653">阻止</translation>
@@ -423,6 +424,7 @@
 <translation id="1546280085599573572">此扩展程序更改了您点击“主页”按钮后系统显示的页面。</translation>
 <translation id="1546795794523394272">欢迎使用 Chromebox 会易！</translation>
 <translation id="1547572086206517271">需要刷新</translation>
+<translation id="1547761976546996757">启用指纹登录和身份验证</translation>
 <translation id="1547964879613821194">加拿大英语</translation>
 <translation id="1548132948283577726">一律不保存密码的网站会显示在此处。</translation>
 <translation id="1549045574060481141">确认下载</translation>
@@ -551,6 +553,7 @@
 <translation id="1700199471143028312">您的管理员禁止您创建受监管用户。</translation>
 <translation id="1701062906490865540">移除此用户</translation>
 <translation id="1702294042233267824">在通过多功能框搜索时使用的搜索引擎</translation>
+<translation id="1706586824377653884">此图标是由管理员添加的</translation>
 <translation id="1706625117072057435">缩放级别</translation>
 <translation id="1707463636381878959">与其他用户共享此网络</translation>
 <translation id="1708199901407471282">从“打开新的标签页”页面打开建议的网页时，如果已有其他标签页打开了建议的网页，那么系统会直接切换到该标签页，而不会在新标签页中加载建议的网页。</translation>
@@ -559,6 +562,7 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
 <translation id="1711973684025117106">压缩失败，发生意外错误：$1</translation>
 <translation id="1717733954209022288">用于指定是否保存 Google Payments 卡数据的复选框</translation>
+<translation id="1719312230114180055">请注意：指纹识别的安全性可能不及安全系数高的密码或 PIN 码。</translation>
 <translation id="1720318856472900922">TLS WWW 服务器身份验证</translation>
 <translation id="1720372306711178108">扩展桌面</translation>
 <translation id="1721937473331968728">您可将连接到您计算机的传统打印机添加到“<ph name="CLOUD_PRINT_NAME" />”。</translation>
@@ -703,6 +707,7 @@
 <translation id="192494336144674234">打开方式</translation>
 <translation id="1926336771446151296">下载视频(&amp;D)…</translation>
 <translation id="1926339101652878330">这些设置由企业政策控制。如需更多信息，请与管理员联系。</translation>
+<translation id="1927632033341042996">指纹 <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">输入原来的 PIN 码</translation>
 <translation id="1929546189971853037">读取您在所有登录过的设备上的浏览记录</translation>
 <translation id="1931134289871235022">斯洛伐克语</translation>
@@ -1058,6 +1063,7 @@
 <translation id="2425632738803359658">使用 Material Design 用户菜单</translation>
 <translation id="2425665904502185219">文件总大小</translation>
 <translation id="2431394478374894294">启用虚拟键盘语音输入功能。</translation>
+<translation id="2432876185343582491">添加卡</translation>
 <translation id="2433452467737464329">在网址中添加查询参数以便自动刷新网页：chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">外观</translation>
 <translation id="2435248616906486374">网络连接已断开</translation>
@@ -1141,6 +1147,7 @@
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="253434972992662860">暂停(&amp;P)</translation>
 <translation id="2534460670861217804">安全的 HTTP 代理</translation>
+<translation id="253557089021624350">正在使用相应扩展程序的活动数</translation>
 <translation id="2537329513587967427">添加、修改或移除搜索引擎</translation>
 <translation id="2539110682392681234">您的管理员强制要求使用代理。</translation>
 <translation id="2539524384386349900">检测</translation>
@@ -1229,6 +1236,7 @@
 <translation id="2648831393319960979">正在将该设备添加到您的帐号，这可能需要一点时间…</translation>
 <translation id="2649045351178520408">Base64 编码 ASCII，证书链</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" /><ph name="CITY" /></translation>
+<translation id="2651529965339547678">在 Chrome 操作系统启动器中显示 Android“文件”应用。这仅在可以访问 Play 商店的设备上有效。</translation>
 <translation id="2653266418988778031">如果您删除了某个证书授权中心 (CA) 证书，则浏览器不会再信任该 CA 颁发的任何证书。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">字段值</translation>
@@ -1317,6 +1325,7 @@
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773802008104670137">这种类型的文件可能会损害您的计算机。</translation>
 <translation id="2773948261276885771">设置网页</translation>
+<translation id="2775104091073479743">修改指纹</translation>
 <translation id="2776441542064982094">似乎没有可用于在网络中注册的设备。如果您的设备已开启并连接到互联网，请按照说明手册中的说明尝试对其进行注册。</translation>
 <translation id="277674485549860058">设置 Chrome 操作系统界面中的 Material Design 元素。</translation>
 <translation id="2778459533137481732">权限黑名单</translation>
@@ -1880,6 +1889,7 @@
 <translation id="3450505713373650336">正在备份 <ph name="FILE_COUNT" /> 张照片</translation>
 <translation id="3453612417627951340">需要获得授权</translation>
 <translation id="3454157711543303649">激活已完成</translation>
+<translation id="3455970245215355643">启用指纹快速解锁功能后，您可以在登录设备的情况下，设置指纹并在锁定屏幕上使用指纹解锁 Chromebook。</translation>
 <translation id="3456236151053308041">启用IME扩展程序，以便为用户输入方式（例如虚拟键盘）提供自定义视图。</translation>
 <translation id="345693547134384690">在新标签页中打开图片(&amp;I)</translation>
 <translation id="3458620904104024826">启用将跟踪事件导出到 ETW 的功能。</translation>
@@ -2333,6 +2343,7 @@
 <translation id="4057896668975954729">在应用店中查看</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">立即检查文稿</translation>
+<translation id="405943233949298442">当服务器不能提供足够的证书来构建连到可信根的证书链时，启用中间证书提取功能。</translation>
 <translation id="406070391919917862">后台应用</translation>
 <translation id="4062251648694601778">尽情享受<ph name="SHORT_PRODUCT_NAME" />设备给您带来的便利吧！如有任何问题，只需点击状态栏中的“?”，即可获得帮助。</translation>
 <translation id="4065876735068446555">您正在使用的网络 (<ph name="NETWORK_ID" />) 可能需要您访问其登录页面。</translation>
@@ -2551,6 +2562,7 @@
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="438122767399415311">强制采用指定的界面语言书写方向</translation>
 <translation id="4381849418013903196">冒号</translation>
+<translation id="4384312707950789900">添加到首选网络列表</translation>
 <translation id="4384652540891215547">激活该扩展程序</translation>
 <translation id="438503109373656455">小马</translation>
 <translation id="4387004326333427325">身份验证证书遭到远程拒绝</translation>
@@ -2661,6 +2673,7 @@
 <translation id="4556110439722119938">您的书签、历史记录、密码及其他设置均将同步到您的 Google 帐号，以便您在自己的任意设备上使用</translation>
 <translation id="4557136421275541763">警告：</translation>
 <translation id="4558426062282641716">已请求获取自动启动权限</translation>
+<translation id="4562155214028662640">添加指纹</translation>
 <translation id="4563488537534296354">使用户能够将窗口固定到屏幕左侧或右侧。</translation>
 <translation id="456664934433279154">控制是否使用基于 Toolkit-Views 的 Chrome 应用窗口。</translation>
 <translation id="4567772783389002344">添加字词</translation>
@@ -2915,6 +2928,7 @@
 <translation id="49088176676474409">隐藏 VPD 值。</translation>
 <translation id="4909038193460299775">由于此帐号是由 <ph name="DOMAIN" /> 管理，因此系统将会从该设备中清除您的书签、历史记录、密码及其他设置。但是，您的数据依然会存储在您的 Google 帐号中，而且您可以通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />管理这些数据。</translation>
 <translation id="4910021444507283344">WebGL</translation>
+<translation id="4910187779917897961">快速解锁（指纹）</translation>
 <translation id="4910673011243110136">专用网络</translation>
 <translation id="4911714727432509308">尚未为任何扩展程序分配键盘快捷键。</translation>
 <translation id="4912643508233590958">闲置状态唤醒</translation>
@@ -3131,6 +3145,7 @@
 <translation id="5220992698394817380">启用 IME 菜单</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5222738340020399230">下载图片(&amp;D)…</translation>
+<translation id="5222834039033127518">中间证书提取</translation>
 <translation id="5225324770654022472">显示应用快捷方式</translation>
 <translation id="5227536357203429560">添加专用网络...</translation>
 <translation id="5227679487546032910">默认的水鸭头像</translation>
@@ -3384,6 +3399,7 @@
 <translation id="5528368756083817449">书签管理器</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">全局</translation>
+<translation id="5533001281916885985"><ph name="SITE_NAME" /> 想要</translation>
 <translation id="5533555070048896610">音译(namaste → नमस्ते)</translation>
 <translation id="5534520101572674276">正在计算大小</translation>
 <translation id="5535080075879535355">进行强制门户授权时绕过代理</translation>
@@ -3711,6 +3727,7 @@
 <translation id="6006484371116297560">经典</translation>
 <translation id="6007237601604674381">移动失败。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="6008241731410823808">发送超链接审核 Ping。</translation>
+<translation id="6011193465932186973">指纹</translation>
 <translation id="6011449291337289699">清除网站数据</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">确认 Powerwash 是否将设备还原到之前的版本</translation>
@@ -3757,6 +3774,7 @@
 <translation id="6075731018162044558">糟糕！系统无法为此设备获得长期的 API 访问令牌。</translation>
 <translation id="6075907793831890935">与名为“<ph name="HOSTNAME" />”的设备交换数据</translation>
 <translation id="6076448957780543068">包括此屏幕截图</translation>
+<translation id="6077131872140550515">从首选网络列表中移除</translation>
 <translation id="6080100832288487452">虚拟键盘滑行输入功能。</translation>
 <translation id="6080689532560039067">检查系统时间</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
@@ -3885,6 +3903,7 @@
 <translation id="6263541650532042179">重置同步设置</translation>
 <translation id="6264347891387618177">音译(selam → ሰላም)</translation>
 <translation id="6264365405983206840">全选(&amp;A)</translation>
+<translation id="6265251091976123484">启用对 Pointer Events API 的支持。此选项仅供网络开发者进行测试时使用。</translation>
 <translation id="626568068055008686">密码不正确或文件已损坏。</translation>
 <translation id="6267166720438879315">请选择证书，以在 <ph name="HOST_NAME" /> 上对您本人进行身份验证</translation>
 <translation id="6267909379545953750">实验性 JavaScript</translation>
@@ -3938,6 +3957,7 @@
 <translation id="6324839205543480136">找不到配对手机。请确保配对手机不超过一臂远，并且蓝牙功能处于开启状态。</translation>
 <translation id="6325191661371220117">停用自动启动</translation>
 <translation id="6326175484149238433">从Chrome中移除</translation>
+<translation id="6326855256003666642">正在使用相应扩展程序的活动数</translation>
 <translation id="632744581670418035">键盘功能标注</translation>
 <translation id="6327785803543103246">网络代理自动发现</translation>
 <translation id="6333049849394141510">选择要同步的数据类型</translation>
@@ -4094,6 +4114,7 @@
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="652030171967109828">显示过度绘制反馈</translation>
+<translation id="6521494105510930048">分享方式</translation>
 <translation id="6526654154229718724">实验性全屏键盘锁定模式（用户需要按住 Esc 键才能退出）。</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528546217685656218">缺少此客户端证书的私钥，或私钥无效。</translation>
@@ -4219,6 +4240,7 @@
 <translation id="6708242697268981054">来源：</translation>
 <translation id="6709357832553498500">使用“<ph name="EXTENSIONNAME" />”连接</translation>
 <translation id="6710213216561001401">上一个</translation>
+<translation id="6716704051134091292">PDF 转换器</translation>
 <translation id="6718273304615422081">正在压缩…</translation>
 <translation id="671928215901716392">锁定屏幕</translation>
 <translation id="6721972322305477112">文件(&amp;F)</translation>
@@ -4326,6 +4348,7 @@
 <translation id="6868924482674768124">Mojo 界面服务 (mus)。</translation>
 <translation id="6869402422344886127">选中的复选框</translation>
 <translation id="6870130893560916279">乌克兰语键盘</translation>
+<translation id="6870888490422746447">选择要分享给哪个应用：</translation>
 <translation id="6871644448911473373">OCSP 响应程序：<ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">显示为文章</translation>
 <translation id="6874681241562738119">登录错误</translation>
@@ -4352,6 +4375,7 @@
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6916590542764765824">管理扩展程序</translation>
+<translation id="6918034620977647184">已注册的指纹：</translation>
 <translation id="6918340160281024199">美式 Workman</translation>
 <translation id="6920569915859786172">加载 WebFonts 时一律触发用户代理干预。</translation>
 <translation id="6920989436227028121">在常规标签页中打开</translation>
@@ -4414,6 +4438,7 @@
 <translation id="7002454948392136538">选择此受监管用户的管理员</translation>
 <translation id="7003257528951459794">频率：</translation>
 <translation id="7003339318920871147">网络数据库</translation>
+<translation id="7003723821785740825">为您的设备设置更快速的解锁方式</translation>
 <translation id="7004499039102548441">最近打开的标签页</translation>
 <translation id="7005848115657603926">页码范围无效，请使用 <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006017748900345484">WebRTC H.264 软件视频编码器/解码器</translation>
@@ -4672,6 +4697,7 @@
 <translation id="7377169924702866686">大写锁定已打开。</translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7379693629660652503">使用支持 PostScript 的打印机打印时，生成 PostScript 而非生成 EMF。</translation>
 <translation id="7382160026931194400">已保存的|内容设置|和#搜索引擎#不会被清除，并可能会反映您的浏览习惯。</translation>
 <translation id="7383627141017162945">加载完整版网站</translation>
 <translation id="7384292194278095697">此设备不再受支持</translation>
@@ -5555,6 +5581,7 @@
 <translation id="8606726445206553943">使用您的 MIDI 设备</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610892630019863050">当网站要显示通知时询问您（推荐）</translation>
+<translation id="8612551051970873664">PostScript 打印</translation>
 <translation id="8615618338313291042">隐身模式下使用的应用...<ph name="APP_NAME" /></translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫游状态</translation>
@@ -5601,6 +5628,7 @@
 <translation id="8670262106224659584">Yama LSM enforcing</translation>
 <translation id="8670737526251003256">正在搜索设备...</translation>
 <translation id="8671210955687109937">可以评论</translation>
+<translation id="8671955835389053707">您最多只能添加 <ph name="MAX_FINGERPRINTS" /> 个指纹。</translation>
 <translation id="8673026256276578048">搜索网页...</translation>
 <translation id="8673383193459449849">服务器出现问题</translation>
 <translation id="8673795350651259145">对于所有网络应用（包括不是从 Chrome 网上应用店安装的应用），均支持 Native Client。</translation>

@@ -77,6 +77,7 @@
 <translation id="168841957122794586">സെർവർ സർട്ടിഫിക്കറ്റിൽ ഒരു ദുർബലമായ ഗൂഢഭാഷ കീ ഉൾപ്പെടുന്നു.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">ഈ സൈറ്റ് സന്ദർശിക്കാൻ നിങ്ങൾക്ക് <ph name="NAME" /> എന്നയാളിൽ നിന്നുള്ള അനുമതി ആവശ്യമാണ്</translation>
+<translation id="1728677426644403582">നിങ്ങൾ ഒരു വെബ് പേജിന്റെ ഉറവിടമാണ് കാണുന്നത്</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">സിസ്റ്റം അഡ്‌മിനെ ബന്ധപ്പെടാൻ ശ്രമിക്കുക.</translation>
 <translation id="1745358365027406341">പേജ് പിന്നീട് ഡൗൺലോഡുചെയ്യുക</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">കാർഡും വിലാസ ഓപ്‌ഷനുകളും നിങ്ങളുടെ Google അക്കൗണ്ടിൽ നിന്നും (<ph name="ACCOUNT_EMAIL" />) Chrome-ൽ നിന്നുമുള്ളതാണ്. നിങ്ങൾക്ക് ഇവ <ph name="BEGIN_LINK" />ക്രമീകണത്തിൽ<ph name="END_LINK" /> മാനേജുചെയ്യാം.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> ഡൊമെയ്‌ന് ഒരു ഉപയോക്തൃനാമവും പാസ്‌വേഡും വേണം.</translation>
 <translation id="2318774815570432836">വെബ്സൈറ്റ് HSTS ഉപയോഗിക്കുന്നതിനാൽ നിങ്ങൾക്ക് ഇപ്പോൾ <ph name="SITE" /> സന്ദർശിക്കാനാകില്ല. നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലിക പ്രശ്‌നങ്ങളായതിനാൽ ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> സൂചികയിൽ അസാധുവായ ബുക്ക്‌മാർക്ക് അവഗണിച്ചു</translation>
 <translation id="2354001756790975382">മറ്റ് ബുക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="2355395290879513365">നിങ്ങൾ ഈ സൈറ്റിൽ തിരയുന്ന ചിത്രങ്ങൾ കാണാനും അവയിൽ മാറ്റം വരുത്തി നിങ്ങളെ കബളിപ്പിക്കാനും അക്രമകാരികൾക്ക് കഴിഞ്ഞേക്കാം.</translation>
 <translation id="2359808026110333948">തുടരൂ</translation>
@@ -561,6 +561,7 @@
 <translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6556239504065605927">കണക്ഷൻ സുരക്ഷിതമാണ്</translation>
 <translation id="6563469144985748109">നിങ്ങളുടെ മാനേജർ ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
+<translation id="6569060085658103619">നിങ്ങൾ ഒരു വിപുലീകരണ പേജാണ് കാണുന്നത്</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" />-യിൽ താഴെ</translation>
 <translation id="6596325263575161958">എൻക്രിപ്‌ഷൻ ഓപ്‌ഷനുകൾ</translation>
 <translation id="662080504995468778">തുടരുക</translation>

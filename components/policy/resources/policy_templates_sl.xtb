@@ -387,6 +387,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2312134445771258233">Omogoča, da nastavite strani, ki se naložijo pri zagonu.
 
       Vsebina seznama »URL-ji, ki naj se odprejo ob zagonu« se prezre, razen če v možnosti »Dejanje ob zagonu« izberete »Odpri seznam URL-jev«.</translation>
+<translation id="23323722127921515">Pokaže ikono za Google Cast v orodni vrstici</translation>
 <translation id="2337466621458842053">Omogoča nastavitev seznama vzorcev URL-jev, s katerim se določijo, ki lahko prikazujejo slike.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -520,6 +521,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je ta pravilnik nastavljen na »False«, se namesto poziva za konfiguracijo omrežja prikaže sporočilo o napaki.</translation>
 <translation id="2498238926436517902">Vedno samodejno skrij polico</translation>
+<translation id="2503514368596117142">Konfiguriranje pravilnikov za Google Cast – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
 <translation id="2514328368635166290">Določa URL ikone priljubljene strani privzetega ponudnika iskanja.
 
           Ta pravilnik je izbiren. Če ni nastavljen, ikona za ponudnika iskanja ne bo prikazana.
@@ -541,6 +543,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
+<translation id="2558917182010914102">Če je ta pravilnik omogočen ali ni nastavljen, bo Google Cast omogočen in uporabniki ga bodo lahko zagnali iz menija aplikacije, priročnih menijev na straneh, s kontrolniki za predstavnosti na spletnih mestih, ki podpirajo Google Cast, in ikone za Google Cast v orodni vrstici.
+
+          Če je ta pravilnik onemogočen, bo Google Cast onemogočen.</translation>
 <translation id="2562339630163277285">Določa URL iskalnika, ki se uporablja za prikaz rezultatov dinamičnega iskanja. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bo ob času poizvedbe nadomestilo besedilo, ki ga je uporabnik vnesel do takrat.
 
           Ta pravilnik je izbiren. Če ni nastavljen, ne bo prikazan noben rezultat dinamičnega iskanja.
@@ -952,6 +957,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta nastavitev ni konfigurirana, za sprejemljive vrste razširitev/aplikacij ne veljajo omejitve.</translation>
 <translation id="3780152581321609624">Vključi nestandardna vrata v SPN za Kerberos</translation>
+<translation id="3780319008680229708">Če je ta pravilnik omogočen, bo ikona za Google Cast v orodni vrstici vedno prikazana v orodni vrstici ali v meniju z dodatnimi elementi in je uporabniki ne bodo mogli odstraniti.
+
+          Če je ta pravilnik onemogočen ali ni nastavljen, bodo lahko uporabniki ikono pripeli ali odstranili prek priročnega menija.
+
+          Če je pravilnik »EnableMediaRouter« onemogočen, vrednost tega pravilnika ne bo imela vpliva in ikona v orodni vrstici ne bo prikazana.</translation>
 <translation id="3788662722837364290">Nastavitve upravljanja energije, ko uporabnik postane nedejaven</translation>
 <translation id="3793095274466276777">Nastavi privzeta preverjanja brskalnika v programu <ph name="PRODUCT_NAME" /> in prepreči, da bi jih uporabniki spreminjali.
 
@@ -1344,6 +1354,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
 
           Če je ta pravilnik nastavljen na »False«, bodo zahteve za zaklepanje preklopa zaslona iz mirovanja prezrta.</translation>
+<translation id="4876805738539874299">Najvišja omogočena različica protokola SSL</translation>
 <translation id="4882546920824859909">Opredelitev domen, ki smejo dostopati do storitve Google Apps</translation>
 <translation id="4890209226533226410">Nastavitev vrste lupe, ki je omogočena.
 
@@ -1685,6 +1696,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če to nastavitev onemogočite ali ne nastavite vrednosti, Google Varno iskanje v Iskanju Google ni uveljavljeno.</translation>
 <translation id="5937539742111853215">Ta pravilnik nadzira samo način za razvijalce sistema <ph name="PRODUCT_OS_NAME" />. Če želite preprečiti dostop do možnosti za razvijalce za Android, morate nastaviti pravilnik <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Omogoči Google Cast</translation>
 <translation id="5946082169633555022">Preskusna različica</translation>
 <translation id="5950205771952201658">Ker mehko preverjanje preklica ne zagotavlja dodatne varnosti, je v brskalniku <ph name="PRODUCT_NAME" /> različice 19 ali novejšem privzeto onemogočeno. Če ta pravilnik nastavite na »true«, se obnovijo prejšnje nastavitve in se izvajajo spletna preverjanja OCSP/CRL.
 
@@ -2066,6 +2078,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7027785306666625591">Konfigurira upravljanje porabe za <ph name="PRODUCT_OS_NAME" />.
 
       S temi pravilniki lahko nastavite, kaj naj <ph name="PRODUCT_OS_NAME" /> izvede, ko je uporabnik nedejaven nekaj časa.</translation>
+<translation id="703078280527762319">Opozorilo: pravilnik za najvišjo različico protokola TLS bo v celoti odstranjen iz izdelka <ph name="PRODUCT_NAME" /> okoli različice 66 (okoli februarja 2018).
+
+      Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporabljata privzeto najvišjo različico, ki je TLSv1.3.
+
+      Sicer bo nastavljen na eno od teh vrednosti: »tls1.2« ali »tls1.3«. Če je nastavljen, izdelek <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, višjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
 <translation id="7040229947030068419">Vzorčna vrednost:</translation>
 <translation id="7049373494483449255">Omogoča programu <ph name="PRODUCT_NAME" /> pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /> za tiskanje. OPOMBA: To vpliva le na podporo storitve <ph name="CLOUD_PRINT_NAME" /> v programu <ph name="PRODUCT_NAME" />. Uporabnikom ne preprečuje pošiljanja tiskalniških poslov na spletna mesta.
 
@@ -2296,6 +2313,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite, <ph name="PRODUCT_NAME" /> uporabi nastavljene območne nastavitve. Če nastavljene območne nastavitve niso podprte, bo uporabljena nastavitev »en-US«.
 
      Če to nastavitev onemogočite ali je ne nastavite, <ph name="PRODUCT_NAME" /> uporabi prednostne območne nastavitve, ki jih izbere uporabnik (če so nastavljene), sistemske območne nastavitve ali rezervne območne nastavitve (»en-US«).</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Določa, ali je podatkovno gostovanje za napravo omogočeno. Če je pravilnik omogočen, je podatkovno gostovanje omogočeno. Če ni nastavljen ali je onemogočen, podatkovno gostovanje ni na voljo.</translation>
 <translation id="76810863974142048">URL, na katerem morajo odjemalci za oddaljeni dostop pridobiti žeton za preverjanje pristnosti.
 
@@ -2574,6 +2592,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       V prihodnje težimo k odstranitvi preglasitve.</translation>
 <translation id="8285435910062771358">Vklop lupe celozaslonskega načina</translation>
+<translation id="8288199156259560552">Omogoči Googlovo lokacijsko storitev za Android</translation>
 <translation id="8294750666104911727">Običajno bodo strani, ki imajo možnost »X-UA-Compatible« nastavljeno na »chrome=1«, upodobljene v izdelku <ph name="PRODUCT_FRAME_NAME" />, ne glede na pravilnik »ChromeFrameRendererSettings«.
 
           Če to nastavitev omogočite, se na straneh ne bodo iskale metaoznake.
@@ -2664,6 +2683,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       še vedno podprta priprava pravilnikov za uporabo prek registra.</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
+<translation id="8613640727149655305">Če je ta pravilnik omogočen, je omogočena Googlova lokacijska storitev za Android. Tako bodo lahko aplikacije za Android uporabljale njene podatke za ugotavljanje lokacije naprave, omogočeno pa bo tudi pošiljanje anonimnih lokacijskih podatkov Googlu.
+
+      Če je ta pravilnik onemogočen, bo Googlova lokacijska storitev za Android izklopljena.
+
+      Če je ta nastavitev konfigurirana, je uporabniki ne morejo sami spremeniti.
+
+      Če ta nastavitev ni konfigurirana, lahko uporabniki Googlovo lokacijsko storitev za Android izklopijo ali vklopijo v aplikaciji Nastavitve za Android.
+
+      Upoštevajte, da lahko to vrednost pravilnika preglasi pravilnik <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />. če je nastavljen na <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Ta pravilnik velja samo za uporabnike, ki lahko izvajajo aplikacije za Android.</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
 <translation id="8631434304112909927">do različice <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Pri aplikacijah za Android ta pravilnik vpliva samo na vgrajen fotoaparat. Če je ta pravilnik omogočen, je fotoaparat brez izjem onemogočen pri vseh aplikacijah za Android.</translation>

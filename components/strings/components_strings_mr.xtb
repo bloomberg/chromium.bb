@@ -77,6 +77,7 @@
 <translation id="168841957122794586">सर्व्हर प्रमाणपत्रात एक कमकुवत क्रिप्टोग्राफिक की आहे.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">या साइटला भेट देण्यासाठी आपल्याला <ph name="NAME" /> कडील परवानगी आवश्यक आहे</translation>
+<translation id="1728677426644403582">आपण वेब पृष्ठाचा स्रोत पाहत आहात</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टीम प्रशासकाशी संपर्क साधण्याचा प्रयत्न करा.</translation>
 <translation id="1745358365027406341">पृष्ठ नंतर डाउनलोड करा</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">कार्ड आणि पत्ता पर्याय आपले (<ph name="ACCOUNT_EMAIL" />) Google खाते आणि Chrome मधील आहेत. आपण<ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये ते व्यवस्थापित करू शकता.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> साठी वापरकर्तानाव आणि संकेतशब्द आवश्यक आहेत.</translation>
 <translation id="2318774815570432836">आपण <ph name="SITE" /> ला आत्ता भेट देऊ शकत नाही कारण वेबसाइट HSTS वापरते. नेटवर्क त्रुटी आणि आक्रमणे सामान्यतः तात्पुरती असतात, यामुळे हे पृष्ठ कदाचित नंतर कार्य करेल. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> अनुक्रमणिकेमधील अवैध बुकमार्ककडे दुर्लक्ष केले</translation>
 <translation id="2354001756790975382">इतर बुकमार्क</translation>
 <translation id="2355395290879513365">आपण या साइटवर पाहत असलेल्या प्रतिमा पाहण्यास आक्रमणकर्ते सक्षम असू शकतात आणि त्यात सुधारणा करून आपली फसवणूक करू शकतात.</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
@@ -563,6 +563,7 @@
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6556239504065605927">सुरक्षित कनेक्शन</translation>
 <translation id="6563469144985748109">आपल्या व्यवस्थापकाने अद्याप ती मंजूर केली नाही</translation>
+<translation id="6569060085658103619">आपण एक विस्तार पृष्ठ पाहत आहात</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> पेक्षा कमी</translation>
 <translation id="6596325263575161958">कूटबद्धता पर्याय</translation>
 <translation id="662080504995468778">यावर रहा</translation>

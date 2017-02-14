@@ -387,6 +387,7 @@
 <translation id="2312134445771258233">Leidžiama konfigūruoti paleidžiant įkeliamus puslapius.
 
       Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, sąrašo „Paleidžiant atidaromi URL“ turinio bus nepaisoma.</translation>
+<translation id="23323722127921515">Rodoma „Google Cast“ įrankių juostos piktograma</translation>
 <translation id="2337466621458842053">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
@@ -519,6 +520,7 @@
 
       Jei ši politika nustatyta į „False“, pateikiamas klaidos pranešimas vietoje tinklo konfigūracijos raginimo.</translation>
 <translation id="2498238926436517902">Visada automatiškai paslėpti lentyną</translation>
+<translation id="2503514368596117142">Konfigūruojama „Google Cast“ – funkcijos, kurią naudodami naudotojai gali siųsti skirtukų, svetainių ar darbalaukio turinį iš naršyklės į nuotolinius ekranus ir garso sistemas, politika.</translation>
 <translation id="2514328368635166290">Nurodomas numatytojo paieškos teikėjo mėgstamiausios piktogramos URL.
 
           Ši politika pasirenkama. Nenustačius jos, jokia piktograma nebus pateikta paieškos teikėjui.
@@ -540,6 +542,9 @@
 <translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
+<translation id="2558917182010914102">Jei ši politika bus nustatyta į „true“ (tiesa) arba nebus nustatyta, „Google Cast“ bus įgalinta ir naudotojai galės paleisti ją iš programos meniu, puslapio kontekstinių meniu, naudodami medijos valdiklius su „Cast“ suderinamose svetainėse bei naudodami „Cast“ įrankių juostos piktogramą (jei rodoma).
+
+          Jei ši politika bus nustatyta į „false“ (netiesa), „Google Cast“ bus išjungta.</translation>
 <translation id="2562339630163277285">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
 
           Ši politika pasirenkama. Jos nenustačius nebus pateikta jokių tiesioginių paieškos rezultatų.
@@ -951,6 +956,11 @@
 
           Jei šis nustatymas nesukonfigūruotas, nėra jokių diegiamų plėtinių / programų apribojimų.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
+<translation id="3780319008680229708">Jei ši politika bus nustatyta į „true“ (tiesa), „Cast“ įrankių juostos piktograma visada bus rodoma įrankių juostoje arba perpildymo meniu ir naudotojai negalės jos pašalinti.
+
+          Jei ši politika bus nustatyta į „false“ (netiesa) arba nebus nustatyta, naudotojai galės prisegti arba pašalinti piktogramą kontekstiniame meniu.
+
+          Jei politika „EnableMediaRouter“ bus nustatyta į „false“ (netiesa), šios politikos vertė neturės jokio poveikio ir įrankių juostos piktograma nebus rodoma.</translation>
 <translation id="3788662722837364290">Maitinimo valdymo nustatymai, kai naudotojas tampa neaktyvus</translation>
 <translation id="3793095274466276777">Konfigūruojamos „<ph name="PRODUCT_NAME" />“ vykdomos numatytosios naršyklės patikros; naudotojams šio nustatymo keisti neleidžiama.
 
@@ -1342,6 +1352,7 @@
           Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, ekrano pažadinimo užraktams leidžiama tvarkyti energiją.
 
           Jei ši politika nustatyta kaip „Netiesa“, ekrano pažadinimo užraktų užklausų nepaisoma.</translation>
+<translation id="4876805738539874299">Maksimali SSL versija įgalinta</translation>
 <translation id="4882546920824859909">Nurodyti domenus, kuriems leidžiama pasiekti „Google Apps“</translation>
 <translation id="4890209226533226410">Nustatyti įgalinto ekrano didinimo tipą.
 
@@ -1684,6 +1695,7 @@
 
       Jei šio nustatymo neleisite arba nenustatysite vertės, saugi paieška „Google“ paieškoje nebus vykdoma.</translation>
 <translation id="5937539742111853215">Ši politika valdo tik „<ph name="PRODUCT_OS_NAME" />“ kūrėjo režimą. Jei norite uždrausti galimybę pasiekti „Android“ kūrėjo parinktis, turite nustatyti politiką „<ph name="DEVELOPER_TOOLS_POLICY" />“.</translation>
+<translation id="5940306398763671235">Įgalinama „Google Cast“</translation>
 <translation id="5946082169633555022">Beta versijos kanalas</translation>
 <translation id="5950205771952201658">Jei įvyksta laikinoji klaida, atlikus internetinius panaikinimo patikrinimus sauga nėra užtikrinama efektyviai, todėl jie išjungiami pagal numatytuosius nustatymus naudojant 19 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją. Nustačius šios politikos reikšmę į „true“, atkuriama ankstesnė elgsena ir internete atliekami OCSP / CRL patikrinimai.
 
@@ -2062,6 +2074,11 @@
 <translation id="7027785306666625591">Konfigūruoti energijos valdymą „<ph name="PRODUCT_OS_NAME" />“.
 
       Pagal šią politiką leidžiama konfigūruoti, kokius veiksmus atlieka „<ph name="PRODUCT_OS_NAME" />“, kai naudotojas tam tikrą laiką neatlieka jokių veiksmų.</translation>
+<translation id="703078280527762319">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 66 versija (maždaug 2018 m. vasario mėn.).
+
+      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytosios maksimalios 1.3 versijos TLS.
+
+      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="7040229947030068419">Vertės pavyzdys:</translation>
 <translation id="7049373494483449255">Įgalinama „<ph name="PRODUCT_NAME" />“ pateikti dokumentus „<ph name="CLOUD_PRINT_NAME" />“, kad būtų spausdinami. PASTABA: tai turi įtakos tik palaikant „<ph name="CLOUD_PRINT_NAME" />“ „<ph name="PRODUCT_NAME" />“. Dėl to nėra draudžiama naudotojams pateikti spausdinimo darbų svetainėse.
 
@@ -2292,6 +2309,7 @@
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ naudos nurodytą lokalę. Jei sukonfigūruota lokalė nebus palaikoma, bus naudojama „en-US“.
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME" />“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
 <translation id="76810863974142048">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą.
 
@@ -2572,6 +2590,7 @@
 
       Ateityje ketinama pašalinti šią nepaisymo parinktį.</translation>
 <translation id="8285435910062771358">Viso ekrano didinimas įgalintas</translation>
+<translation id="8288199156259560552">„Android“ skirtos „Google“ vietovių paslaugos įgalinimas</translation>
 <translation id="8294750666104911727">Paprastai puslapiai, kuriuose „X-UA-Compatible“ nustatyta į „chrome=1“ bus pateikti „<ph name="PRODUCT_FRAME_NAME" />“, neatsižvelgiant į politiką „ChromeFrameRendererSettings“.
 
           Jei įgalinsite šį nustatymą, puslapiai nebus nuskaitomi ieškant metažymų.
@@ -2662,6 +2681,17 @@
       kurie susieti su aktyvaus katalogo domenu.</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
+<translation id="8613640727149655305">Kai ši politika nustatyta į „true“ (tiesa), įgalinama „Android“ skirta „Google“ vietovių paslauga. Tada „Android“ programoms leidžiama naudoti paslaugos duomenis įrenginio vietai surasti bei įgalinamas anoniminių vietovės duomenų teikimas „Google“.
+
+      Kai ši politika nustatyta į „false“ (netiesa), „Android“ skirta „Google“ vietovių paslauga išjungiama.
+
+      Jei šis nustatymas sukonfigūruotas, naudotojai patys negali jo keisti.
+
+      Jei šis nustatymas nesukonfigūruotas, naudotojai gali įjungti ir išjungti „Google“ vietovių paslaugą „Android“ nustatymų programoje.
+
+      Atminkite, kad šios politikos vertė bus pakeista taikant politiką „<ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />“, kai pastaroji bus nustatyta į „<ph name="BLOCK_GEOLOCATION_SETTING" />“.
+
+      Ši politika taikoma tik naudotojams, kurie gali vykdyti „Android“ programas.</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
 <translation id="8631434304112909927">iki <ph name="UNTIL_VERSION" /> versijos</translation>
 <translation id="863319402127182273">„Android“ programose ši politika turi įtakos tik integruotam fotoaparatui. Kai ši politika nustatyta į „Tiesa“, fotoaparatas išjungiamas visose „Android“ programose be išimčių.</translation>

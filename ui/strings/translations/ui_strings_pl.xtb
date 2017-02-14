@@ -26,7 +26,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2497284189126895209">Wszystkie pliki</translation>
-<translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibracja została ukończona</translation>
 <translation id="252373100621549798">Nieznany wyświetlacz</translation>
 <translation id="2666092431469916601">Do góry</translation>
@@ -82,6 +81,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6203030746557259519">Wirtualny wyświetlacz</translation>
+<translation id="6264365405983206840">Wybierz &amp;wszystko</translation>
 <translation id="6364916375976753737">Przewiń w lewo</translation>
 <translation id="6394627529324717982">Przecinek</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s temu}few{# s temu}many{# s temu}other{# s temu}}</translation>
@@ -91,7 +91,6 @@
 <translation id="6699343763173986273">Następny utwór multimedialny</translation>
 <translation id="6786750046913594791">Zamknij folder</translation>
 <translation id="6808150112686056157">Zatrzymaj multimedia</translation>
-<translation id="6829324100069873704">Wróć do powiadomień</translation>
 <translation id="6845383723252244143">Wybierz folder</translation>
 <translation id="6845533974506654842">naciśnij</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Pozostała 1 godzina}few{Pozostały # godziny}many{Pozostało # godzin}other{Pozostało # godziny}}</translation>
@@ -109,7 +108,6 @@
 <translation id="7457942297256758195">Wyczyść wszystkie</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
-<translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="7814458197256864873">&amp;Kopiuj</translation>
@@ -140,5 +138,4 @@
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="932327136139879170">Strona główna</translation>
-<translation id="945522503751344254">Wyślij zgłoszenie</translation>
 </translationbundle>

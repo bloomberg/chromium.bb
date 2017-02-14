@@ -392,6 +392,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="2312134445771258233">Membenarkan anda mengkonfigurasi halaman yang dimuatkan pada permulaan.
 
       Kandungan senarai 'URL untuk dibuka semasa permulaan' diabaikan melainkan anda memilih 'Buka senarai URL' dalam 'Tindakan pada permulaan'.</translation>
+<translation id="23323722127921515">Menunjukkan ikon bar alat Google Cast</translation>
 <translation id="2337466621458842053">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang dibenarkan untuk memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -522,6 +523,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Jika dasar ini ditetapkan kepada Palsu, mesej ralat akan dipaparkan dan bukannya gesaan konfigurasi rangkaian.</translation>
 <translation id="2498238926436517902">Sentiasa sembunyikan rak secara automatik</translation>
+<translation id="2503514368596117142">Konfigurasikan dasar untuk Google Cast, ciri yang membolehkan pengguna menghantar kandungan tab, tapak atau desktop daripada penyemak imbas ke paparan dan sistem bunyi jauh.</translation>
 <translation id="2514328368635166290">Menetapkan URL ikon kegemaran penyedia carian lalai.
 
           Dasar ini adalah pilihan. Jika tidak ditetapkan, ikon tidak akan dipaparkan untuk penyedia carian ini.
@@ -543,6 +545,9 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="2529880111512635313">Konfigurasikan senarai apl dan sambungan pemasangan paksa</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2552966063069741410">Zon waktu</translation>
+<translation id="2558917182010914102">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, Google Cast akan didayakan dan pengguna akan dapat melancarkan Google Cast daripada menu apl, menu konteks halaman, kawalan media di tapak web berdaya Cast dan (jika ditunjukkan) ikon bar alat Cast.
+
+          Jika dasar ini ditetapkan kepada palsu, Google Cast akan dilumpuhkan.</translation>
 <translation id="2562339630163277285">Menentukan URL enjin carian yang digunakan untuk memberikan hasil carian segera. URL tersebut harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER" />, yang akan digantikan oleh teks yang telah dimasukkan oleh pengguna setakat ini pada masa pertanyaan dibuat.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada hasil carian segera akan diberikan.
@@ -951,6 +956,11 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
           Jika tetapan ini dibiarkan tanpa dikonfigurasikan, tiada pengehadan dikenakan terhadap jenis sambungan/apl yang boleh diterima.</translation>
 <translation id="3780152581321609624">Termasuk port tidak standard dalam Kerberos SPN</translation>
+<translation id="3780319008680229708">Jika dasar ini ditetapkan kepada benar, ikon bar alat Cast akan sentiasa ditunjukkan di bar alat atau menu limpahan dan pengguna tidak akan dapat mengalih keluar ikon ini.
+
+          Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, pengguna akan dapat menyematkan atau mengalih keluar ikon ini melalui menu konteks ikon.
+
+          Jika dasar "EnableMediaRouter" ditetapkan kepada palsu, maka nilai dasar ini tidak akan mempunyai kesan dan ikon bar alat tidak akan ditunjukkan.</translation>
 <translation id="3788662722837364290">Tetapan pengurusan kuasa apabila pengguna melahu</translation>
 <translation id="3793095274466276777">Mengkonfigurasi pemeriksaan penyemak imbas lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
 
@@ -1343,6 +1353,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.
 
           Jika dasar ini ditetapkan kepada palsu, permintaan kunci bangkit skrin akan diabaikan.</translation>
+<translation id="4876805738539874299">Versi SSL maksimum didayakan</translation>
 <translation id="4882546920824859909">Tentukan domain yang dibenarkan untuk mengakses Google Apps</translation>
 <translation id="4890209226533226410">Tetapkan jenis penggadang skrin yang didayakan.
 
@@ -1683,6 +1694,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, SafeSearch dalam Carian Google tidak dikuatkuasakan.</translation>
 <translation id="5937539742111853215">Dasar ini mengawal mod pembangun <ph name="PRODUCT_OS_NAME" /> sahaja. Jika anda mahu menghalang akses ke Pilihan Pembangaun Android, anda perlu menetapkan dasar <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Mendayakan Google Cast</translation>
 <translation id="5946082169633555022">Saluran Beta</translation>
 <translation id="5950205771952201658">Berasaskan fakta bahawa semakan pembatalan dalam talian gagal-lembut tidak memberikan sebarang manfaat keselamatan yang berkesan, semakan ini dilumpuhkan secara lalai dalam <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baharu. Dengan menetapkan dasar ini kepada benar, gelagat sebelumnya dipulihkan dan semakan OCSP/CRL dalam talian akan dilaksanakan.
 
@@ -2062,6 +2074,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       
       Dasar ini membolehkan anda mengkonfigurasi gelagat <ph name="PRODUCT_OS_NAME" /> apabila pengguna kekal melahu selama sejumlah masa tertentu.</translation>
+<translation id="703078280527762319">Amaran: Dasar versi TLS maksimum akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> sekitar versi 66 (sekitar Februari 2018).
+
+      Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum lalai iaitu TLSv1.3.
+
+      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
 <translation id="7049373494483449255">Membolehkan <ph name="PRODUCT_NAME" /> menyerahkan dokumen kepada <ph name="CLOUD_PRINT_NAME" /> untuk cetakan.  NOTA: Ini hanya memberikan kesan terhadap sokongan <ph name="CLOUD_PRINT_NAME" /> dalam <ph name="PRODUCT_NAME" />.  Ia tidak menghalang pengguna daripada menyerahkan tugas cetakan di tapak web.
 
@@ -2293,6 +2310,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> menggunakan penempatan yang dinyatakan. Sebaliknya, jika penempatan yang dikonfigurasi tidak disokong, 'en-US' akan digunakan.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> menggunakan sama ada penempatan pilihan yang ditentukan pengguna (jika dikonfigurasi), penempatan sistem atau penempatan bertahan 'en-US'.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
 <translation id="76810863974142048">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka.
 
@@ -2574,6 +2592,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
      Hasrat kami adalah untuk mengalih keluar pembatalan ini pada masa hadapan.</translation>
 <translation id="8285435910062771358">Penggadang skrin penuh didayakan</translation>
+<translation id="8288199156259560552">Dayakan Perkhidmatan Lokasi Google Android</translation>
 <translation id="8294750666104911727">Biasanya, halaman dengan X-UA-Compatible ditetapkan kepada chrome=1 akan dipaparkan dalam <ph name="PRODUCT_FRAME_NAME" /> tanpa mengambil kira dasar 'ChromeFrameRendererSettings'.
 
           Jika anda mendayakan tetapan ini, halaman tidak akan diimbas untuk mengesan teg meta.
@@ -2664,6 +2683,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Windows yang bersambung kepada domain Direktori Aktif.</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
+<translation id="8613640727149655305">Apabila dasar ini ditetapkan kepada benar, Perkhidmatan Lokasi Google Android didayakan. Tetapan ini membolehkan apl Android menggunakan data untuk mencari lokasi peranti dan juga akan mendayakan penyerahan data lokasi awanama kepada Google.
+
+      Apabila dasar ini ditetapkan kepada palsu, Perkhidmatan Lokasi Google Android akan dimatikan.
+
+      Jika tetapan ini dikonfigurasikan, maka pengguna tidak dapat menukar sendiri tetapan ini.
+
+      Jika tetapan ini tidak dikonfigurasikan, maka pengguna dapat menghidupkan atau mematikan Lokasi Perkhidmatan Google dalam apl Tetapan Android.
+
+      Sila ambil perhatian bahawa nilai dasar ini mungkin diatasi oleh dasar <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />, apabila dasar yang disebut kemudian itu ditetapkan kepada <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Dasar ini hanya terpakai kepada pengguna yang dapat menjalankan apl Android.</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
 <translation id="8631434304112909927">sehingga versi <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Untuk apl Android, dasar ini memberi kesan terhadap kamera terbina dalam sahaja. Apabila dasar ini ditetapkan kepada benar, kamera dilumpuhkan untuk semua apl Android tanpa pengecualian.</translation>

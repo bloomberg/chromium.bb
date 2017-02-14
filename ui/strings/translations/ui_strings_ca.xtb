@@ -26,7 +26,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
-<translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">S'ha acabat de calibrar</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="2666092431469916601">Superior</translation>
@@ -82,6 +81,7 @@
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6203030746557259519">Pantalla virtual</translation>
+<translation id="6264365405983206840">Selecciona-ho &amp;tot</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>
 <translation id="6394627529324717982">Coma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{fa 1 s}other{fa # s}}</translation>
@@ -91,7 +91,6 @@
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
 <translation id="6786750046913594791">Tanca la carpeta</translation>
 <translation id="6808150112686056157">Fitxer multimèdia: atura</translation>
-<translation id="6829324100069873704">Torna a les notificacions</translation>
 <translation id="6845383723252244143">Selecció d'una carpeta</translation>
 <translation id="6845533974506654842">prem</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 hora restant}other{# hores restants}}</translation>
@@ -109,7 +108,6 @@
 <translation id="7457942297256758195">Esborra-ho tot</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7647488630410863958">Desbloqueja el dispositiu per veure les notificacions</translation>
-<translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
@@ -140,5 +138,4 @@
 <translation id="9150735707954472829">Pestanya</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
-<translation id="945522503751344254">Envia suggeriments</translation>
 </translationbundle>

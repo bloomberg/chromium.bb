@@ -83,6 +83,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3126069444801937830">Reinicia el sistema para actualizarlo.</translation>
 <translation id="3147142846278915599">Menú de aplicaciones (sincronizando aplicaciones...)</translation>
 <translation id="3157169093162779309">Habilitar bloqueo de rotación</translation>
+<translation id="3164154768979021380">Saliendo del modo de acoplamiento</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="3335772982573114336">Nueva nota</translation>
 <translation id="3364721542077212959">Herramientas del lápiz óptico</translation>
@@ -100,7 +101,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3683428399328702079">Se ha modificado la resolución de <ph name="DISPLAY_NAME" /> a <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Habilitar Wi-Fi</translation>
 <translation id="3712407551474845318">Capturar parte de la pantalla</translation>
-<translation id="372094107052732682">Pulsa Ctrl+Mayús+Q dos veces para salir.</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
 <translation id="3775358506042162758">Solo puedes utilizar un máximo de tres cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
-<translation id="5238774010593222950">No puedo iniciar sesión en otra cuenta.</translation>
 <translation id="532063867737390965">El administrador ha inhabilitado la configuración de red.</translation>
 <translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Compartiendo control de la pantalla a través de Asistencia remota.</translation>
 <translation id="5980301590375426705">Salir de la sesión de invitado</translation>
+<translation id="6018164090099858612">Saliendo del modo de duplicación</translation>
 <translation id="6041154455840261787">Se ha habilitado el modo de contraste alto. Vuelve a pulsar Búsqueda+Mayús+H para desactivarlo.</translation>
 <translation id="6043212731627905357">Este monitor no se puede utilizar con tu <ph name="DEVICE_TYPE" /> (el monitor no es compatible).</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
@@ -181,7 +181,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6144938890088808325">Ayúdanos a mejorar los Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
-<translation id="6248847161401822652">Pulsa Ctrl+Mayús+Q dos veces para salir.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
 <translation id="6297287540776456956">Usa el lápiz óptico para seleccionar una parte de la pantalla</translation>
 <translation id="6310121235600822547">Se ha modificado la rotación de <ph name="DISPLAY_NAME" /> a <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">El micrófono se está utilizando.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
+<translation id="9091626656156419976">Se ha quitado la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Reinicia y aplica la función Powerwash para actualizar el sistema</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
+<translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="938582441709398163">Superposición de teclado</translation>
 <translation id="939252827960237676">Error al guardar captura de pantalla</translation>

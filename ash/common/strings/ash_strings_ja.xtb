@@ -83,6 +83,7 @@
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="3157169093162779309">回転ロックを有効にする</translation>
+<translation id="3164154768979021380">ドッキング モードを終了しています</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3335772982573114336">新しいメモ</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
@@ -100,7 +101,6 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> の解像度を <ph name="RESOLUTION" /> に変更しました</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
-<translation id="372094107052732682">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5222676887888702881">ログアウト</translation>
-<translation id="5238774010593222950">別のアカウントにログインできません。</translation>
 <translation id="532063867737390965">このネットワーク設定は管理者によって無効にされています。</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -171,6 +170,7 @@
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
 <translation id="5980301590375426705">ゲスト セッションを終了</translation>
+<translation id="6018164090099858612">ミラーモードを終了しています</translation>
 <translation id="6041154455840261787">ハイコントラスト モードが有効になりました。無効にするには、検索+Shift+H キーをもう一度押します。</translation>
 <translation id="6043212731627905357">このモニターは <ph name="DEVICE_TYPE" /> では使用できません（サポートされていません）。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
@@ -181,7 +181,6 @@
 <translation id="6144938890088808325">Chromebooks の改善にご協力ください</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
-<translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 有効にしています...</translation>
 <translation id="6297287540776456956">タッチペンを使って部分を選択してください</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
@@ -271,9 +270,11 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">マイクは使用中です。</translation>
 <translation id="9089416786594320554">入力方法</translation>
+<translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」を削除しました</translation>
 <translation id="9151726767154816831">更新するには、再起動して Powerwash を実行してください</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
+<translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>

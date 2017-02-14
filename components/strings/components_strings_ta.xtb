@@ -77,6 +77,7 @@
 <translation id="168841957122794586">சேவையக சான்றிதழில் வலுவற்ற குறியீட்டாக்க விசை இருக்கிறது.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">இந்தத் தளத்திற்குச் செல்ல, <ph name="NAME" /> இன் அனுமதி வேண்டும்</translation>
+<translation id="1728677426644403582">இணையப் பக்கத்தின் மூலத்தைப் பார்க்கிறீர்கள்</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">கணினி நிர்வாகியைத் தொடர்புகொள்ளவும்</translation>
 <translation id="1745358365027406341">பக்கத்தைப் பின்னர் பதிவிறக்கு</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">கார்டும் முகவரி விவரங்களும் உங்கள் Google கணக்கு (<ph name="ACCOUNT_EMAIL" />) மற்றும் Chrome இலிருந்து பெறப்பட்டதாகும். அவற்றை <ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> நிர்வகிக்கலாம்.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />க்குப் பயனர்பெயரும் கடவுச்சொல்லும் தேவை.</translation>
 <translation id="2318774815570432836"><ph name="SITE" /> இணையதளம் HSTSஐப் பயன்படுத்துவதால், இப்போது அத்தளத்திற்குச் செல்ல முடியாது. நெட்வொர்க் பிழைகளும் பாதிப்புகளும் தற்காலிகமானவையே. இந்தப் பக்கம் சிறிது நேரம் கழித்துச் செயல்படும். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> அட்டவணையில் தவறான புக்மார்க் புறக்கணிக்கப்பட்டது</translation>
 <translation id="2354001756790975382">பிற புக்மார்க்ஸ்</translation>
 <translation id="2355395290879513365">இந்தத் தளத்தில் நீங்கள் பார்த்துக் கொண்டிருக்கும் படங்களை தீங்கிழைப்பவர்களும் பார்த்து, அவற்றை மாற்றியமைத்து உங்களை ஏமாற்றக்கூடும்.</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
@@ -558,6 +558,7 @@
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6556239504065605927">பாதுகாப்பான இணைப்பு</translation>
 <translation id="6563469144985748109">இன்னும் உங்கள் நிர்வாகி அனுமதிக்கவில்லை</translation>
+<translation id="6569060085658103619">நீட்டிப்புப் பக்கத்தைப் பார்க்கிறீர்கள்</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" />க்கும் குறைவாக உள்ளது</translation>
 <translation id="6596325263575161958">குறியாக்க விருப்பங்கள்</translation>
 <translation id="662080504995468778">வேண்டாம்</translation>

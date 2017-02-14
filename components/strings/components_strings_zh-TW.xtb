@@ -77,6 +77,7 @@
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
 <translation id="1710259589646384581">作業系統</translation>
 <translation id="1721312023322545264">你必須獲得<ph name="NAME" />授權，才能造訪這個網站</translation>
+<translation id="1728677426644403582">目前顯示的是網頁原始碼</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">建議您與系統管理員聯絡。</translation>
 <translation id="1745358365027406341">稍後下載網頁</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">信用卡和地址選項來自你的 Google 帳戶 (<ph name="ACCOUNT_EMAIL" />) 和 Chrome。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中管理相關資訊。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供使用者名稱和密碼。</translation>
 <translation id="2318774815570432836">目前無法造訪 <ph name="SITE" />，因為這個網站使用 HSTS。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">已忽略索引「<ph name="ENTRY_INDEX" />」的無效書籤</translation>
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="2355395290879513365">攻擊者可能會看到你正在這個網站上瀏覽的圖片，並以修改圖片內容的方式讓你受騙。</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">選項</translation>
 <translation id="6556239504065605927">安全連線</translation>
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
+<translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
 <translation id="6593753688552673085">不到 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">加密選項</translation>
 <translation id="662080504995468778">不離開</translation>

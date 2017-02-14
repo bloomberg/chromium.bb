@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Certifikát servera obsahuje slabý kryptografický kľúč.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Ak chcete navštíviť tento web, potrebujete povolenie od správcu <ph name="NAME" /></translation>
+<translation id="1728677426644403582">Prezeráte si zdrojový kód webovej stránky</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skúste kontaktovať správcu systému.</translation>
 <translation id="1745358365027406341">Stiahnuť stránku neskôr</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Možnosti karty a adresy sú z účtu Google (<ph name="ACCOUNT_EMAIL" />) a Chromu. Môžete ich spravovať v časti <ph name="BEGIN_LINK" />Nastavenia<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
 <translation id="2318774815570432836">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože používa pravidlo HSTS. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">Neplatná záložka v indexe <ph name="ENTRY_INDEX" /> bola ignorovaná</translation>
 <translation id="2354001756790975382">Iné záložky</translation>
 <translation id="2355395290879513365">Útočníci môžu vidieť obrázky, ktoré si prehliadate na tomto webe, a môžu vás napadnúť tým, že ich podvodným spôsobom upravia.</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
@@ -557,6 +557,7 @@
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6556239504065605927">Zabezpečené pripojenie</translation>
 <translation id="6563469144985748109">Váš správca to zatiaľ neschválil</translation>
+<translation id="6569060085658103619">Prezeráte si stránku s rozšíreniami</translation>
 <translation id="6593753688552673085">menej ako <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Možnosti šifrovania</translation>
 <translation id="662080504995468778">Zostať</translation>

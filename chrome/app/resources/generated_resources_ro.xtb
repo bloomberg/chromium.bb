@@ -334,6 +334,7 @@
 <translation id="1459140739419123883">A fost blocată o descărcare rău-intenționată</translation>
 <translation id="1459967076783105826">Motoare de căutare adăugate de extensii</translation>
 <translation id="146000042969587795">Acest cadru a fost blocat, deoarece are conținut nesigur.</translation>
+<translation id="1460864304233364278">Afișează aplicația Android Fișiere</translation>
 <translation id="146219525117638703">Stare ONC</translation>
 <translation id="146220085323579959">Internet deconectat. Verificați conexiunea la internet și încercați din nou.</translation>
 <translation id="1463985642028688653">blocați</translation>
@@ -426,6 +427,7 @@
 <translation id="1546280085599573572">Această extensie a modificat ce pagină se afișează când dai clic pe butonul Pagină de pornire.</translation>
 <translation id="1546795794523394272">Bun venit la Chromebox pentru videoconferințe!</translation>
 <translation id="1547572086206517271">Este necesară actualizarea</translation>
+<translation id="1547761976546996757">Activează conectarea și autentificarea folosind amprenta</translation>
 <translation id="1547964879613821194">Engleză canadiană</translation>
 <translation id="1548132948283577726">Site-urile care nu salvează niciodată parole vor apărea aici.</translation>
 <translation id="1549045574060481141">Confirmați descărcarea</translation>
@@ -554,6 +556,7 @@
 <translation id="1700199471143028312">Administratorul nu îți permite să creezi utilizatori monitorizați.</translation>
 <translation id="1701062906490865540">Elimină această persoană</translation>
 <translation id="1702294042233267824">Motorul de căutare folosit când cauți din caseta polivalentă</translation>
+<translation id="1706586824377653884">Adăugat de administrator</translation>
 <translation id="1706625117072057435">Niveluri de zoom</translation>
 <translation id="1707463636381878959">Permite accesul la această rețea altor utilizatori</translation>
 <translation id="1708199901407471282">Când deschizi o pagină web sugerată de pe pagina Filă nouă, dacă este deschisă deja o filă pentru acea sugestie, comută la aceea în loc să încarci sugestia în noua filă.</translation>
@@ -562,6 +565,7 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativă)</translation>
 <translation id="1711973684025117106">Arhivarea nu a reușit, eroare neașteptată: $1</translation>
 <translation id="1717733954209022288">Caseta de selectare pentru salvarea cardului Google Payments</translation>
+<translation id="1719312230114180055">Notă: este posibil ca amprenta să fie mai puțin sigură decât o parolă sau un cod PIN puternic.</translation>
 <translation id="1720318856472900922">Autentificarea serverului TLS WWW</translation>
 <translation id="1720372306711178108">Desktop extins</translation>
 <translation id="1721937473331968728">Puteți adăuga la <ph name="CLOUD_PRINT_NAME" /> imprimantele clasice pe care le-ați conectat la computer.</translation>
@@ -706,6 +710,7 @@
 <translation id="192494336144674234">Deschide cu</translation>
 <translation id="1926336771446151296">&amp;Descarcă videoclipul…</translation>
 <translation id="1926339101652878330">Aceste setări sunt controlate de politica de companie. Pentru mai multe informații, contactează administratorul.</translation>
+<translation id="1927632033341042996">Degetul <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Introdu codul PIN vechi</translation>
 <translation id="1929546189971853037">Citește istoricul de navigare pe toate dispozitivele conectate</translation>
 <translation id="1931134289871235022">Slovacă</translation>
@@ -1061,6 +1066,7 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2425632738803359658">Folosește meniul utilizatorului cu design material</translation>
 <translation id="2425665904502185219">Dimensiunea totală a fișierelor</translation>
 <translation id="2431394478374894294">Activează intrarea vocală pe tastatura virtuală.</translation>
+<translation id="2432876185343582491">Adaugă un card</translation>
 <translation id="2433452467737464329">Pentru actualizarea automată a paginii: chrome://network/?refresh=&lt;sec&gt;, adăugați un parametru de interogare în adresa URL</translation>
 <translation id="2433507940547922241">Aspect</translation>
 <translation id="2435248616906486374">Rețea deconectată</translation>
@@ -1144,6 +1150,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
 <translation id="253434972992662860">&amp;Întrerupe</translation>
 <translation id="2534460670861217804">Proxy HTTP securizat</translation>
+<translation id="253557089021624350">Număr necesar pentru stare activă</translation>
 <translation id="2537329513587967427">Adaugă, editează sau elimină motoare de căutare</translation>
 <translation id="2539110682392681234">Setările serverului proxy sunt aplicate de administrator.</translation>
 <translation id="2539524384386349900">Detectează</translation>
@@ -1233,6 +1240,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2648831393319960979">Se adaugă dispozitivul la cont. Poate dura un timp...</translation>
 <translation id="2649045351178520408">ASCII codificat Base64, lanț de certificate</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2651529965339547678">Afișează aplicația Android Fișiere în lansatorul sistemului de operare Chrome. Se aplică numai pe dispozitive cu acces la Magazinul Play.</translation>
 <translation id="2653266418988778031">Dacă ștergi un certificat al unei autorități de certificare (CA), browserul nu va mai avea încredere în niciun certificat emis de acea CA.</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="265390580714150011">Valoarea câmpului</translation>
@@ -1321,6 +1329,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2772936498786524345">Ninja</translation>
 <translation id="2773802008104670137">Este posibil ca acest tip de fișier să dăuneze computerului.</translation>
 <translation id="2773948261276885771">Setați paginile</translation>
+<translation id="2775104091073479743">Editează amprentele</translation>
 <translation id="2776441542064982094">Se pare că nu există dispozitive disponibile pentru a fi înregistrate în rețea. Dacă ați pornit dispozitivul și v-ați conectat la internet, încercați să îl înregistrați urmând instrucțiunile din manualul care îl însoțește.</translation>
 <translation id="277674485549860058">Setează elementele de design material în interfața de utilizare a sistemului de operare Chrome.</translation>
 <translation id="2778459533137481732">Lista neagră cu permisiuni</translation>
@@ -1886,6 +1895,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3450505713373650336">Se face backup pentru <ph name="FILE_COUNT" /> (de) fotografii</translation>
 <translation id="3453612417627951340">Necesită autorizare</translation>
 <translation id="3454157711543303649">Activarea a fost finalizată</translation>
+<translation id="3455970245215355643">Dacă activezi deblocarea rapidă prin amprentă, poți să configurezi și să folosești o amprentă ca să deblochezi Chromebookul de pe ecranul de blocare după ce te-ai conectat la dispozitiv.</translation>
 <translation id="3456236151053308041">Activează extensiile IME pentru a oferi afișări personalizate pentru metoda de introducere a textului folosită de utilizator, cum ar fi tastaturile virtuale.</translation>
 <translation id="345693547134384690">Deschide &amp;imaginea într-o filă nouă</translation>
 <translation id="3458620904104024826">Activează exportul evenimentelor de urmărire în ETW.</translation>
@@ -2340,6 +2350,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4057896668975954729">Vedeți în magazin</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Verifică acum documentul</translation>
+<translation id="405943233949298442">Activează preluarea unui certificat intermediar când serverul nu oferă suficiente certificate pentru a crea un lanț către o sursă de încredere.</translation>
 <translation id="406070391919917862">Aplicații în fundal</translation>
 <translation id="4062251648694601778">Bucurați-vă de dispozitivul dvs. <ph name="SHORT_PRODUCT_NAME" />. Aveți întrebări? Puteți primi oricând ajutor dând clic pe „?” în bara de stare.</translation>
 <translation id="4065876735068446555">Rețeaua pe care o folosești (<ph name="NETWORK_ID" />) poate solicita accesarea paginii de conectare.</translation>
@@ -2558,6 +2569,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="438122767399415311">Impune direcția interfeței de utilizare</translation>
 <translation id="4381849418013903196">Două puncte</translation>
+<translation id="4384312707950789900">Adaugă în preferate</translation>
 <translation id="4384652540891215547">Activați extensia</translation>
 <translation id="438503109373656455">Fulgeraș</translation>
 <translation id="4387004326333427325">Certificatul de autentificare a fost respins de la distanță</translation>
@@ -2668,6 +2680,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4556110439722119938">Marcajele, istoricul, parolele și alte setări vor fi sincronizate cu Contul Google, pentru a le putea folosi pe toate dispozitivele</translation>
 <translation id="4557136421275541763">Avertisment:</translation>
 <translation id="4558426062282641716">S-a solicitat permisiunea de lansare automată</translation>
+<translation id="4562155214028662640">Adaugă o amprentă</translation>
 <translation id="4563488537534296354">Activează andocarea ferestrelor în stânga și în dreapta ecranului.</translation>
 <translation id="456664934433279154">Controlează dacă se folosesc ferestrele aplicațiilor Chrome bazate pe afișările setului de instrumente.</translation>
 <translation id="4567772783389002344">Adaugă un cuvânt</translation>
@@ -2925,6 +2938,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="49088176676474409">Ascunde valorile VPD.</translation>
 <translation id="4909038193460299775">Deoarece acest cont este gestionat de <ph name="DOMAIN" />, vor fi șterse marcajele, istoricul, parolele și alte setări de pe acest dispozitiv. Totuși, datele vor rămâne stocate în Contul Google și pot fi gestionate din <ph name="BEGIN_LINK" />Tabloul de bord Google<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
+<translation id="4910187779917897961">Deblocare rapidă (amprentă)</translation>
 <translation id="4910673011243110136">Rețele private</translation>
 <translation id="4911714727432509308">Nu există extensii pentru care să fie atribuite comenzi rapide de la tastatură.</translation>
 <translation id="4912643508233590958">Ieșiri din modul inactiv</translation>
@@ -3144,6 +3158,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5220992698394817380">Activează meniul de înscriere la IME</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="5222738340020399230">&amp;Descarcă imaginea…</translation>
+<translation id="5222834039033127518">Preluarea unui certificat intermediar</translation>
 <translation id="5225324770654022472">Afișați comanda rapidă pentru aplicații</translation>
 <translation id="5227536357203429560">Adaugă o rețea privată...</translation>
 <translation id="5227679487546032910">Avatar turcoaz prestabilit</translation>
@@ -3403,6 +3418,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5528368756083817449">Manager de marcaje</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
+<translation id="5533001281916885985"><ph name="SITE_NAME" /> dorește să</translation>
 <translation id="5533555070048896610">Transliterație (namaste → नमस्ते)</translation>
 <translation id="5534520101572674276">Se calculează dimensiunea</translation>
 <translation id="5535080075879535355">Ocolește proxy-ul pentru autorizarea prin portalul captiv</translation>
@@ -3730,6 +3746,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6006484371116297560">Tema clasică</translation>
 <translation id="6007237601604674381">Mutarea nu a reușit. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6008241731410823808">Trimite comenzi ping de verificare a hyperlinkurilor.</translation>
+<translation id="6011193465932186973">Amprentă</translation>
 <translation id="6011449291337289699">Șterge datele site-ului</translation>
 <translation id="6015796118275082299">An</translation>
 <translation id="6016551720757758985">Confirmă Powerwash cu revenire la versiunea anterioară</translation>
@@ -3776,6 +3793,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6075731018162044558">Hopa! Sistemul nu a putut obține un indicativ de acces pe termen lung la API pentru acest dispozitiv.</translation>
 <translation id="6075907793831890935">Fă schimb de date cu dispozitivul numit <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Include această captură de ecran</translation>
+<translation id="6077131872140550515">Elimină din preferate</translation>
 <translation id="6080100832288487452">Tastare gestuală pentru tastatura virtuală.</translation>
 <translation id="6080689532560039067">Verificați ora sistemului</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
@@ -3904,6 +3922,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6263541650532042179">resetează sincronizarea</translation>
 <translation id="6264347891387618177">Transliterație (selam → ሰላም)</translation>
 <translation id="6264365405983206840">Select&amp;ează tot</translation>
+<translation id="6265251091976123484">Activează compatibilitatea pentru API-ul Pointer Events. Acțiune indicată numai pentru testările dezvoltatorilor web.</translation>
 <translation id="626568068055008686">Parola nu este corectă sau fișierul este deteriorat.</translation>
 <translation id="6267166720438879315">Selectează un certificat pentru a te autentifica pe <ph name="HOST_NAME" /></translation>
 <translation id="6267909379545953750">JavaScript experimental</translation>
@@ -3957,6 +3976,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6324839205543480136">Telefonul nu poate fi găsit. Asigură-te că este în apropiere și că funcția Bluetooth este activată.</translation>
 <translation id="6325191661371220117">Dezactivați lansarea automată</translation>
 <translation id="6326175484149238433">Eliminați din Chrome</translation>
+<translation id="6326855256003666642">Număr necesar pentru stare activă</translation>
 <translation id="632744581670418035">Suprapunere a tastaturii</translation>
 <translation id="6327785803543103246">Web Proxy Auto-Discovery</translation>
 <translation id="6333049849394141510">Alege elementele de sincronizat</translation>
@@ -4114,6 +4134,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="652030171967109828">Afișează feedbackul privind suprapunerea</translation>
+<translation id="6521494105510930048">Trimite prin</translation>
 <translation id="6526654154229718724">Un ecran complet experimental, cu un mod de blocare a tastaturii care necesită ca utilizatorul să apese lung pe tasta Esc pentru a ieși.</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6528546217685656218">Cheia privată pentru acest Certificat de client lipsește sau nu este validă.</translation>
@@ -4238,6 +4259,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6708242697268981054">Origine:</translation>
 <translation id="6709357832553498500">Conectează-te folosind <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Înapoi</translation>
+<translation id="6716704051134091292">Convertor PDF</translation>
 <translation id="6718273304615422081">Se arhivează...</translation>
 <translation id="671928215901716392">Blocați ecranul</translation>
 <translation id="6721972322305477112">&amp;Fișier</translation>
@@ -4345,6 +4367,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6868924482674768124">Serviciul pentru interfața de utilizare Mojo (mus).</translation>
 <translation id="6869402422344886127">Casetă de validare bifată</translation>
 <translation id="6870130893560916279">Tastatură ucraineană</translation>
+<translation id="6870888490422746447">Alege o aplicație pentru trimitere:</translation>
 <translation id="6871644448911473373">Respondent OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">Pare a fi un articol</translation>
 <translation id="6874681241562738119">Eroare de conectare</translation>
@@ -4371,6 +4394,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="6916590542764765824">Gestionează extensiile</translation>
+<translation id="6918034620977647184">Amprente înregistrate:</translation>
 <translation id="6918340160281024199">S.U.A. Workman</translation>
 <translation id="6920569915859786172">Declanșează întotdeauna Intervenția user agent pentru încărcarea WebFonts.</translation>
 <translation id="6920989436227028121">Deschide ca filă obișnuită</translation>
@@ -4432,6 +4456,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7002454948392136538">Alegeți administratorul pentru acest utilizator monitorizat</translation>
 <translation id="7003257528951459794">Frecvență:</translation>
 <translation id="7003339318920871147">Baze de date web</translation>
+<translation id="7003723821785740825">Configurează o modalitate mai rapidă de a debloca dispozitivul</translation>
 <translation id="7004499039102548441">File recente</translation>
 <translation id="7005848115657603926">Interval de pagini nevalid, utilizează <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006017748900345484">Codificator/decodor video software WebRTC H.264</translation>
@@ -4690,6 +4715,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7377169924702866686">Tasta Caps Lock este activată.</translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7379693629660652503">Activează generarea PostScript în locul generării EMF când se printează folosind imprimante compatibile cu PostScript.</translation>
 <translation id="7382160026931194400">|Setările de conținut| și #motoarele de căutare# salvate nu vor fi șterse și este posibil să reflecte obiceiurile dvs. de navigare.</translation>
 <translation id="7383627141017162945">Încarcă site-ul complet</translation>
 <translation id="7384292194278095697">Acest dispozitiv nu mai este acceptat</translation>
@@ -5582,6 +5608,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8606726445206553943">Folosească dispozitive MIDI</translation>
 <translation id="8609465669617005112">Mutați mai sus</translation>
 <translation id="8610892630019863050">Anunță-mă dacă un site vrea să afișeze notificări (recomandat)</translation>
+<translation id="8612551051970873664">Printare PostScript</translation>
 <translation id="8615618338313291042">Aplicație incognito: <ph name="APP_NAME" /></translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stare roaming</translation>
@@ -5628,6 +5655,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8670262106224659584">Aplicarea modulului Yama LSM</translation>
 <translation id="8670737526251003256">Se caută dispozitive...</translation>
 <translation id="8671210955687109937">Poate face comentarii</translation>
+<translation id="8671955835389053707">Poți adăuga cel mult <ph name="MAX_FINGERPRINTS" /> amprente.</translation>
 <translation id="8673026256276578048">Caută pe web...</translation>
 <translation id="8673383193459449849">Problemă de server</translation>
 <translation id="8673795350651259145">Acceptă modul Client nativ pentru toate aplicațiile web, chiar și pentru cele care nu au fost instalate din Magazinul web Chrome.</translation>

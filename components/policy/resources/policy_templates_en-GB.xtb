@@ -387,6 +387,7 @@
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
+<translation id="23323722127921515">Shows the Google Cast toolbar icon</translation>
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -519,6 +520,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is set to False, an error message will be displayed instead of the network configuration prompt.</translation>
 <translation id="2498238926436517902">Always auto-hide the shelf</translation>
+<translation id="2503514368596117142">Configure policies for Google Cast, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
 <translation id="2514328368635166290">Specifies the favourite icon URL of the default search provider.
 
           This policy is optional. If not set, no icon will be present for the search provider.
@@ -540,6 +542,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
+<translation id="2558917182010914102">If this policy is set to true or is not set, Google Cast will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites and (if shown) the Cast toolbar icon.
+
+          If this policy is set to false, Google Cast will be disabled.</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
           This policy is optional. If not set, no instant search results will be provided.
@@ -951,6 +956,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this setting is left not-configured, no restrictions on the acceptable extension/app types are enforced.</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
+<translation id="3780319008680229708">If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu and users will not be able to remove it.
+
+          If this policy is set to false or is not set, users will be able to pin or remove the icon via its contextual menu.
+
+          If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect and the toolbar icon would not be shown.</translation>
 <translation id="3788662722837364290">Power management settings when the user becomes idle</translation>
 <translation id="3793095274466276777">Configures the default browser checks in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
 
@@ -1343,6 +1353,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to true or left not set, screen wake locks will be honoured for power management.
 
           If this policy is set to false, screen wake lock requests will be ignored.</translation>
+<translation id="4876805738539874299">Maximum SSL version enabled</translation>
 <translation id="4882546920824859909">Define domains allowed to access Google Apps</translation>
 <translation id="4890209226533226410">Set the type of screen magnifier that is enabled.
 
@@ -1687,6 +1698,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
 <translation id="5937539742111853215">This policy controls <ph name="PRODUCT_OS_NAME" /> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_POLICY" /> policy.</translation>
+<translation id="5940306398763671235">Enables Google Cast</translation>
 <translation id="5946082169633555022">Beta channel</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
@@ -2061,6 +2073,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7027785306666625591">Configure power management in <ph name="PRODUCT_OS_NAME" />.
 
       These policies let you configure how <ph name="PRODUCT_OS_NAME" /> behaves when the user remains idle for some amount of time.</translation>
+<translation id="703078280527762319">Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME" /> around version 66 (around February 2018).
+
+      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default maximum version which is TLSv1.3.
+
+      Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="7040229947030068419">Sample value</translation>
 <translation id="7049373494483449255">Enables <ph name="PRODUCT_NAME" /> to submit documents to <ph name="CLOUD_PRINT_NAME" /> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME" /> support in <ph name="PRODUCT_NAME" />.  It does not prevent users from submitting print jobs on websites.
 
@@ -2291,6 +2308,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, <ph name="PRODUCT_NAME" /> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
 <translation id="76810863974142048">URL where remote access clients should obtain their authentication token.
 
@@ -2572,6 +2590,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       The desire is to remove this override in the future.</translation>
 <translation id="8285435910062771358">Full-screen magnifier enabled</translation>
+<translation id="8288199156259560552">Enable Android Google Location Service</translation>
 <translation id="8294750666104911727">Normally pages with X-UA-Compatible set to chrome=1 will be rendered in <ph name="PRODUCT_FRAME_NAME" /> regardless of the 'ChromeFrameRendererSettings' policy.
 
           If you enable this setting, pages will not be scanned for meta tags.
@@ -2662,6 +2681,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       that are joined to an Active Directory domain.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
+<translation id="8613640727149655305">When this policy is set to true, the Android Google Location Service is enabled. This will allow Android apps to use its data to find the device location and also will enable submitting of anonymous location data to Google.
+
+      When this policy is set to false, Android Google Location Service will be switched off.
+
+      If this setting is configured then users are not able change it themselves.
+
+      If this setting is not configured then users are able to turn Google Location Service on and off in the Android Settings app.
+
+      Note that this policy value may be overridden by the <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> policy, when the latter is set to <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      This policy is applicable only to the users that are able to run Android apps.</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.</translation>

@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Serverio sertifikate yra nesudėtingas kriptografinis raktas.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Turite gauti <ph name="NAME" /> leidimą apsilankyti šioje svetainėje</translation>
+<translation id="1728677426644403582">Peržiūrite tinklalapio šaltinį</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Pabandykite susisiekti su sistemos administratoriumi.</translation>
 <translation id="1745358365027406341">Atsisiųsti puslapį vėliau</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Naudojamos kortelės ir adreso parinktys iš jūsų „Google“ paskyros (<ph name="ACCOUNT_EMAIL" />) ir „Chrome“. Jas galite tvarkyti skiltyje <ph name="BEGIN_LINK" />Nustatymai<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
 <translation id="2318774815570432836">Šiuo metu negalite apsilankyti <ph name="SITE" />, nes svetainėje naudojama HSTS. Tinklo klaidos ir išpuoliai dažniausiai yra laikini, todėl šis puslapis tikriausiai veiks vėliau. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Nepaisoma netinkama žymė indekse <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Kitos žymės</translation>
 <translation id="2355395290879513365">Užpuolikai galbūt galės matyti, kuriuos šios svetainės vaizdus peržiūrite, ir juos pakeis siekdami jus suklaidinti.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
@@ -563,6 +563,7 @@
 <translation id="6550675742724504774">Parinktys</translation>
 <translation id="6556239504065605927">Saugus ryšys</translation>
 <translation id="6563469144985748109">Jūsų valdytojas dar jos nepatvirtino</translation>
+<translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6593753688552673085">mažiau nei <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Šifravimo parinktys</translation>
 <translation id="662080504995468778">Likti</translation>

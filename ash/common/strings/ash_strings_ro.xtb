@@ -83,6 +83,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="3157169093162779309">Activează blocarea rotirii</translation>
+<translation id="3164154768979021380">Se iese din modul andocat</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="3335772982573114336">Notă nouă</translation>
 <translation id="3364721542077212959">Instrumente pentru creion</translation>
@@ -100,7 +101,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
 <translation id="3712407551474845318">Capturează zona</translation>
-<translation id="372094107052732682">Apăsați de două ori Ctrl+Shift+Q pentru a ieși.</translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
 <translation id="3775358506042162758">Conectarea multiplă acceptă maximum trei conturi.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
-<translation id="5238774010593222950">Nu vă puteți conecta la alt cont.</translation>
 <translation id="532063867737390965">Această setare de rețea este dezactivată de administrator.</translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="5977415296283489383">Căști</translation>
 <translation id="5978382165065462689">În prezent, permiți controlul la ecran prin Asistență la distanță.</translation>
 <translation id="5980301590375426705">Ieșiți din modul pentru invitați</translation>
+<translation id="6018164090099858612">Se iese din modul oglindă</translation>
 <translation id="6041154455840261787">Modul Contrast ridicat este activat. Apasă din nou pe tasta de căutare + Shift + H pentru a-l dezactiva.</translation>
 <translation id="6043212731627905357">Monitorul nu funcționează cu <ph name="DEVICE_TYPE" /> (monitorul nu este compatibil).</translation>
 <translation id="6043994281159824495">Deconectați-vă acum</translation>
@@ -181,7 +181,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6144938890088808325">Ajută-ne să îmbunătățim Chromebookurile</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
-<translation id="6248847161401822652">Apăsați de două ori Control Shift Q pentru a ieși.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: se activează...</translation>
 <translation id="6297287540776456956">Folosește creionul pentru a selecta o zonă</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> a fost rotit la <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Microfonul este în uz.</translation>
 <translation id="9089416786594320554">Metode de introducere</translation>
+<translation id="9091626656156419976">S-a eliminat afișajul <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Pentru a actualiza, repornește și folosește Powerwash</translation>
 <translation id="9194617393863864469">Conectează-te cu alt nume de utilizator...</translation>
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE" />%.</translation>
+<translation id="9210037371811586452">Se iese din modul desktop unificat</translation>
 <translation id="923686485342484400">Apăsați de două ori Control Shift Q pentru a vă deconecta.</translation>
 <translation id="938582441709398163">Suprapunere a tastaturii</translation>
 <translation id="939252827960237676">Captura de ecran nu a putut fi salvată.</translation>

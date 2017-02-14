@@ -83,6 +83,7 @@
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="3157169093162779309">Заблокувати обертання</translation>
+<translation id="3164154768979021380">Вихід із режиму док-станції</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="3335772982573114336">Нова нотатка</translation>
 <translation id="3364721542077212959">Інструменти стилуса</translation>
@@ -100,7 +101,6 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" />: установлено роздільну здатність <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Увімкнути Wi-Fi</translation>
 <translation id="3712407551474845318">Зробити знімок певної області</translation>
-<translation id="372094107052732682">Двічі натисніть комбінацію клавіш Ctrl+Shift+Q, щоб вийти.</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
 <translation id="3775358506042162758">Паралельно можна входити не більше ніж у три облікові записи.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
 <translation id="5170568018924773124">Показати в папці</translation>
 <translation id="5222676887888702881">Вийти</translation>
-<translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
 <translation id="532063867737390965">Адміністратор вимкнув налаштування мережі.</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
 <translation id="5431825016875453137">OpenVPN або L2TP</translation>
@@ -171,6 +170,7 @@
 <translation id="5977415296283489383">Навушники</translation>
 <translation id="5978382165065462689">Спільний доступ до екрана через віддалену допомогу.</translation>
 <translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
+<translation id="6018164090099858612">Вихід із режиму віддзеркалення</translation>
 <translation id="6041154455840261787">Увімкнено режим високого контрасту. Щоб вимкнути його, знову натисніть Search+Shift+H.</translation>
 <translation id="6043212731627905357">Ваш пристрій <ph name="DEVICE_TYPE" /> не підтримує цей монітор.</translation>
 <translation id="6043994281159824495">Вийти зараз</translation>
@@ -181,7 +181,6 @@
 <translation id="6144938890088808325">Допоможіть нам покращити Chromebook</translation>
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="6165508094623778733">Докладніше</translation>
-<translation id="6248847161401822652">Двічі натисніть комбінацію клавіш Control Shift Q, щоб вийти.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: активація…</translation>
 <translation id="6297287540776456956">Виберіть область за допомогою стилуса</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> обернено на <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Мікрофон використовується.</translation>
 <translation id="9089416786594320554">Методи введення</translation>
+<translation id="9091626656156419976">Дисплей <ph name="DISPLAY_NAME" /> вилучено</translation>
 <translation id="9151726767154816831">Для оновлення перезапустіть пристрій і виконайте Powerwash</translation>
 <translation id="9194617393863864469">Увійдіть як інший користувач…</translation>
 <translation id="9201131092683066720">Акумулятор заряджений на <ph name="PERCENTAGE" />%.</translation>
+<translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>
 <translation id="938582441709398163">Розкладка клавіатури</translation>
 <translation id="939252827960237676">Не вдалося зберегти знімок екрана</translation>

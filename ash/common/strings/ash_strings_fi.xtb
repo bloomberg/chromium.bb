@@ -82,6 +82,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="3157169093162779309">Ota näytön kierron lukitus käyttöön</translation>
+<translation id="3164154768979021380">Poistutaan telakoidusta tilasta</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="3335772982573114336">Uusi muistiinpano</translation>
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
@@ -99,7 +100,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3683428399328702079">Ruudun <ph name="DISPLAY_NAME" /> tarkkuudeksi vaihdettiin <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Ota Wi-Fi käyttöön</translation>
 <translation id="3712407551474845318">Tallenna kuvakaappaus alueesta</translation>
-<translation id="372094107052732682">Lopeta painamalla kahdesti Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Kuvakaappaus otettu</translation>
 <translation id="3775358506042162758">Sinulla voi olla enintään kolme tiliä useaan tiliin kirjautuessasi.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -141,7 +141,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5170568018924773124">Näytä kansiossa</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
-<translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
 <translation id="532063867737390965">Järjestelmänvalvoja on ottanut tämän verkkoasetuksen pois käytöstä.</translation>
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -170,6 +169,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5977415296283489383">Kuulokkeet</translation>
 <translation id="5978382165065462689">Näyttösi hallinta jaetaan Etätuen kautta.</translation>
 <translation id="5980301590375426705">Sulje vierastila</translation>
+<translation id="6018164090099858612">Poistutaan peilitilasta</translation>
 <translation id="6041154455840261787">Suuri kontrasti ‑tila on käytössä. Poista se käytöstä painamalla uudelleen Haku + Vaihto + H.</translation>
 <translation id="6043212731627905357">Näyttö ja <ph name="DEVICE_TYPE" /> eivät sovi yhteen (näyttöä ei tueta).</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
@@ -180,7 +180,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6144938890088808325">Auta meitä parantamaan Chromebookeja</translation>
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
-<translation id="6248847161401822652">Lopeta painamalla kahdesti Control Shift Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktivoidaan…</translation>
 <translation id="6297287540776456956">Valitse alue näyttökynällä.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> käännettiin asentoon <ph name="ROTATION" /></translation>
@@ -268,9 +267,11 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
 <translation id="9089416786594320554">Syöttötavat</translation>
+<translation id="9091626656156419976">Näyttö <ph name="DISPLAY_NAME" /> poistettu</translation>
 <translation id="9151726767154816831">Käynnistä laite uudelleen ja suorita powerwash asentaaksesi päivitykset</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE" /> %.</translation>
+<translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="938582441709398163">Näppäimistön peitto</translation>
 <translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>

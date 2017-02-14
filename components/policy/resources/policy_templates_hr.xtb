@@ -367,6 +367,7 @@
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se, osim ako odaberete "Otvori popis URL-ova" pod "Radnje prilikom pokretanja".</translation>
+<translation id="23323722127921515">Prikazuje alatnu traku Google Casta</translation>
 <translation id="2337466621458842053">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju prikazivati slike. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="2372547058085956601">Odgoda automatske prijave u javnu sesiju.
 
@@ -495,6 +496,7 @@
 
       Ako je to pravilo postavljeno na netočno, umjesto odzivne poruke za konfiguraciju mreže prikazat će se poruka pogreške.</translation>
 <translation id="2498238926436517902">Uvijek automatski sakrij policu</translation>
+<translation id="2503514368596117142">Konfigurirajte pravila za Google Cast, značajku koja korisnicima omogućuje da sadržaj kartica, web-lokacija ili radne površine iz preglednika pošalju na udaljene zaslone i zvučne sustave.</translation>
 <translation id="2514328368635166290">Određuje URL ikone favorita zadanog davatelja usluga pretraživanja. Ovo je pravilo izborno. Ako nije postavljeno, za davatelja usluga pretraživanja neće biti prikazana nijedna ikona. Ovo se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2516525961735516234">Određuje hoće li aktivnost videozapisa utjecati na upravljanje napajanjem.
 
@@ -512,6 +514,9 @@
 <translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
+<translation id="2558917182010914102">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, Google Cast bit će omogućen i korisnici će ga moći pokrenuti iz izbornika aplikacije, kontekstnih izbornika na stranici, medijskih kontrola na web-lokacijama koje podržavaju Cast te ikone Casta na alatnoj traci (ako je prikazana).
+
+          Ako se pravilo postavi na "neistinito", Google Cast bit će onemogućen.</translation>
 <translation id="2562339630163277285">Određuje URL tražilice koja se upotrebljava za davanje instant rezultata. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER" /> koji će se u trenutku postavljanja upita zamijeniti tekstom koji je korisnik dotad unio.
 
           To pravilo nije obavezno. Ako se ne postavi, rezultati instant pretraživanja neće se prikazivati.
@@ -904,6 +909,11 @@
 
           Ako se ta postavka ne konfigurira, neće se primijeniti ograničenja o prihvatljivim vrstama proširenja/aplikacija.</translation>
 <translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
+<translation id="3780319008680229708">Ako se to pravilo postavi na "istinito", ikona Casta na alatnoj traci uvijek će se prikazivati na alatnoj traci ili u dodatnom izborniku te je korisnici neće moći ukloniti.
+
+          Ako se pravilo postavi na "neistinito" ili se ne postavi, korisnici će moći prikvačiti ili ukloniti ikonu putem njezinog kontekstnog izbornika.
+
+          Ako se pravilo "EnableMediaRouter" postavi na "neistinito", tada vrijednost tog pravila nema učinka i ikona na alatnoj traci neće se prikazivati.</translation>
 <translation id="3788662722837364290">Postavke upravljanja napajanjem kada korisnik postane neaktivan</translation>
 <translation id="3793095274466276777">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> će prilikom svakog pokretanja provjeriti je li zadani preglednik i automatski se registrirati ako je moguće. Ako je ova postavka onemogućena, <ph name="PRODUCT_NAME" /> neće nikad provjeravati je li zadani preglednik i onemogućit će korisničke kontrole za postavljanje ove opcije. Ako ova postavka nije podešena, korisnik će moći odrediti je li <ph name="PRODUCT_NAME" /> zadani preglednik i trebaju li korisničke obavijesti biti prikazane kada to nije slučaj.</translation>
 <translation id="379659290574555063">Postupaj s vanjskim uređajima za pohranu kao da su samo za čitanje.</translation>
@@ -1267,6 +1277,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
 
           Ako je to pravilo postavljeno na netočno, ti će se zahtjevi zanemarivati.</translation>
+<translation id="4876805738539874299">Maksimalna verzija SSL-a omogućena</translation>
 <translation id="4882546920824859909">Definiranje domena kojima je dopušten pristup Google Appsu</translation>
 <translation id="4890209226533226410">Postavi vrstu povećala koje je omogućeno.
 
@@ -1581,6 +1592,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako onemogućite tu postavku ili ne odredite njenu vrijednost, Sigurno pretraživanje u Google pretraživanju neće biti primijenjeno.</translation>
 <translation id="5937539742111853215">To pravilo kontrolira samo način rada razvojnog programera za <ph name="PRODUCT_OS_NAME" />. Ako želite spriječiti pristup Opcijama za razvojne programere Androida, trebate postaviti pravilo <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Omogućuje Google Cast</translation>
 <translation id="5946082169633555022">Beta kanal</translation>
 <translation id="5950205771952201658">Budući da "soft-fail", mrežne provjere opoziva ne pružaju učinkovitu zaštitu sigurnosti, onemogućuju se prema zadanim postavkama u pregledniku <ph name="PRODUCT_NAME" /> verzije 19 i novijih verzija. Postavljanjem tog pravila na točno prethodno se ponašanje vraća i izvršit će se mrežne provjere OCSP/CRL.
 
@@ -1932,6 +1944,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7027785306666625591">Konfigurirajte upravljanje napajanjem za <ph name="PRODUCT_OS_NAME" />.
 
       Ova vam pravila omogućuju da konfigurirate kako će se <ph name="PRODUCT_OS_NAME" /> ponašati kad korisnik ne bude aktivan određeno vrijeme.</translation>
+<translation id="703078280527762319">Upozorenje: pravilo o maksimalnoj verziji TLS-a u potpunosti će se ukloniti iz značajke <ph name="PRODUCT_NAME" /> oko verzije 66 (oko veljače 2018.).
+
+      Ako se to pravilo ne konfigurira, tada <ph name="PRODUCT_NAME" /> upotrebljava zadanu maksimalnu verziju, odnosno TLSv1.3.
+
+      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="7040229947030068419">Primjer vrijednosti:</translation>
 <translation id="7049373494483449255">Omogućuje proizvodu <ph name="PRODUCT_NAME" /> slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /> za ispis. NAPOMENA: To se odnosi samo na podršku usluge <ph name="CLOUD_PRINT_NAME" /> u proizvodu <ph name="PRODUCT_NAME" />. To ne sprječava korisnike da poslove ispisa šalju na web-lokacije. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME" /> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME" />. Ako je ova postavka onemogućena, korisnici ne mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME" /> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Ako je omogućeno, ovo pravilo prisilno uvozi knjižne oznake iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, nijedna knjižna oznaka neće biti uvezena. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti oznake ili do uvoza može doći automatski.</translation>
@@ -2144,6 +2161,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7625444193696794922">Određuje kanal za izdavanje na koji bi ovaj uređaj trebao biti priključen.</translation>
 <translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
 <translation id="7635471475589566552">Konfigurira oznaku zemlje/jezika aplikacije u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> upotrebljavat će navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljavat će se "en-US". Ako je ova postavka onemogućena ili nije postavljena, <ph name="PRODUCT_NAME" /> upotrebljavat će oznaku zemlje/jezika koju odredi korisnik (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika "en-US".</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
 <translation id="76810863974142048">URL na kojem klijenti daljinskog pristupa trebaju dobiti autentifikacijsku oznaku.
 
@@ -2406,6 +2424,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Namjera je da se to nadjačavanje ubuduće ukloni.</translation>
 <translation id="8285435910062771358">Omogućeno je povećalo cijelog zaslona</translation>
+<translation id="8288199156259560552">Omogući Googleovu uslugu lokacije na Androidu</translation>
 <translation id="8294750666104911727">Stranice čija je vrijednost X-UA-Compatible postavljena na chrome=1 uobičajeno će se generirati u okviru <ph name="PRODUCT_FRAME_NAME" /> bez obzira na pravilo "ChromeFrameRendererSettings".
 
           Ako omogućite tu postavku, na stranicama se neće tražiti metaoznake.
@@ -2495,6 +2514,17 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Windowsa pridružene domeni aktivnog direktorija.</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
+<translation id="8613640727149655305">Kad se to pravilo postavi na "istinito", omogućuje se Googleova usluga lokacije na Androidu. To Android aplikacijama omogućuje slanje podataka radi pronalaženja lokacije uređaja, kao i slanje anonimnih podataka o lokaciji Googleu.
+
+      Kad se pravilo postavi na "neistinito", Googleova usluga lokacije na Androidu isključuje se.
+
+      Ako je postavka konfigurirana, korisnici je ne mogu sami mijenjati.
+
+      Ako postavka nije konfigurirana, korisnici mogu uključivati i isključivati Googleovu uslugu lokacije u aplikaciji Postavke Androida.
+
+      Imajte na umu da pravilo <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> može nadjačati to pravilo kad je postavljeno na <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      To se pravilo primjenjuje samo na korisnike koji mogu pokrenuti Android aplikacije.</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
 <translation id="8631434304112909927">do verzije <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Za Android aplikacije to pravilo utječe samo na ugrađenu kameru. Kada se to pravilo postavi na True, kamera je onemogućena za sve Android aplikacije, bez iznimke.</translation>

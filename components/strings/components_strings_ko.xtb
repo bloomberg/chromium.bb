@@ -77,6 +77,7 @@
 <translation id="168841957122794586">서버 인증서에 안전성이 낮은 암호화 키가 포함되어 있습니다.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">이 사이트를 방문하려면 <ph name="NAME" />님으로부터 권한을 받아야 합니다.</translation>
+<translation id="1728677426644403582">웹페이지 소스를 보는 중</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">시스템 관리자에게 문의하세요.</translation>
 <translation id="1745358365027406341">페이지 나중에 다운로드</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">카드 및 주소 옵션은 Google 계정(<ph name="ACCOUNT_EMAIL" />) 및 Chrome에서 가져왔습니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 카드 및 주소 옵션을 관리할 수 있습니다.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />에 사용자 이름과 비밀번호를 입력해야 합니다.</translation>
 <translation id="2318774815570432836"><ph name="SITE" />에서 HSTS를 사용하고 있기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> 색인의 잘못된 북마크 무시됨</translation>
 <translation id="2354001756790975382">기타 북마크</translation>
 <translation id="2355395290879513365">공격자는 사용자가 이 사이트에서 보고 있는 이미지를 볼 수 있으며 이미지를 수정하여 사용자를 속일 수 있습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6556239504065605927">보안 연결</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
+<translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> 미만</translation>
 <translation id="6596325263575161958">암호화 옵션</translation>
 <translation id="662080504995468778">머무르기</translation>

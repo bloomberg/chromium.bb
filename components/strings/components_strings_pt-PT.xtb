@@ -77,6 +77,7 @@
 <translation id="168841957122794586">O certificado do servidor contém uma chave criptográfica fraca.</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1721312023322545264">Precisa da autorização de <ph name="NAME" /> para visitar este site</translation>
+<translation id="1728677426644403582">Está a ver a fonte de uma página Web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Experimente contactar o administrador do sistema.</translation>
 <translation id="1745358365027406341">Transferir página mais tarde</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">As opções de cartão e endereço são provenientes da sua Conta Google (<ph name="ACCOUNT_EMAIL" />) e do Chrome. Pode geri-las nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535">O domínio <ph name="DOMAIN" /> requer um nome de utilizador e uma palavra-passe.</translation>
 <translation id="2318774815570432836">De momento, não é possível aceder a <ph name="SITE" /> porque o Website utiliza HSTS. Geralmente, os erros de rede e os ataques são temporários, pelo que é provável que esta página funcione mais tarde. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Marcador inválido ignorado no índice <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Outros marcadores</translation>
 <translation id="2355395290879513365">Os atacantes podem ver as imagens que está a visualizar neste site e enganá-lo ao modificá-las.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6556239504065605927">Ligação segura</translation>
 <translation id="6563469144985748109">O seu administrador ainda não o aprovou</translation>
+<translation id="6569060085658103619">Está a ver a página de uma extensão</translation>
 <translation id="6593753688552673085">menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
 <translation id="662080504995468778">Ficar</translation>

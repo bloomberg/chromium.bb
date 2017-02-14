@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
 <translation id="1710259589646384581">Sistem de operare</translation>
 <translation id="1721312023322545264">Ai nevoie de permisiunea utilizatorului <ph name="NAME" /> ca să accesezi acest site</translation>
+<translation id="1728677426644403582">Se afișează sursa unei pagini web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Încearcă să contactezi administratorul sistemului.</translation>
 <translation id="1745358365027406341">Descarcă pagina mai târziu</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Opțiunile privind cardul și adresa provin din Contul Google (<ph name="ACCOUNT_EMAIL" />) și din Chrome. Le poți gestiona în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> necesită un nume de utilizator și o parolă.</translation>
 <translation id="2318774815570432836">Momentan, nu poți accesa site-ul <ph name="SITE" />, deoarece acesta folosește HSTS. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Marcaj nevalid ignorat la indexul <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="2355395290879513365">Este posibil ca atacatorii să poată vedea imaginile la care te uiți pe acest site și să te păcălească prin modificarea lor.</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6556239504065605927">Conexiune securizată</translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
+<translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6593753688552673085">mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
 <translation id="662080504995468778">Rămâi pe pagină</translation>

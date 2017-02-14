@@ -362,6 +362,7 @@
 <translation id="2299220924812062390">有効なプラグインのリストを指定する</translation>
 <translation id="2309390639296060546">デフォルトの位置情報設定</translation>
 <translation id="2312134445771258233">起動時に読み込まれるページを設定できます。[起動時の操作] の [URL のリストを開く] を選択しない場合、[起動時に開く URL] リストのコンテンツは無視されます。</translation>
+<translation id="23323722127921515">Google Cast ツールバー アイコンを表示する</translation>
 <translation id="2337466621458842053">画像を表示できるサイトを指定する url パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultImagesSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="2372547058085956601">公開セッションに自動ログインするまでの時間です。
 
@@ -490,6 +491,7 @@
 
        このポリシーが False に設定されている場合、ネットワーク設定メッセージではなくエラー メッセージが表示されます。</translation>
 <translation id="2498238926436517902">常にシェルフを自動的に非表示にする</translation>
+<translation id="2503514368596117142">Google Cast のポリシーを設定します。Google Cast は、タブ、サイト、デスクトップのコンテンツをブラウザからリモートのディスプレイや音声システムへ送信できる機能です。</translation>
 <translation id="2514328368635166290">デフォルトの検索プロバイダのお気に入りアイコンの URL を指定します。このポリシーは省略可能です。未設定の場合、検索プロバイダにアイコンは表示されません。このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="2516525961735516234">動画再生を電源管理に関連付けるかどうかを指定します。
 
@@ -507,6 +509,9 @@
 <translation id="2529880111512635313">強制インストールするアプリと拡張機能のリストを設定します</translation>
 <translation id="253135976343875019">アイドル警告が表示されるまでの時間（AC 電源での実行時）</translation>
 <translation id="2552966063069741410">タイムゾーン</translation>
+<translation id="2558917182010914102">このポリシーが true に設定されているか未設定の場合は、Google Cast が有効になり、ユーザーはアプリメニュー、ページ コンテキスト メニュー、Cast 対応ウェブサイトのメディア コントロール、Cast ツールバー アイコン（表示されている場合）から Google Cast を起動できます。
+
+          このポリシーが false に設定されている場合、Google Cast は無効になります。</translation>
 <translation id="2562339630163277285">インスタント検索の結果表示に使用する検索エンジンの URL を指定します。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、検索時にユーザーが入力したテキストに置き換えられます。
 
           このポリシーは省略可能です。このポリシーが未設定の場合、インスタント検索の結果は表示されません。
@@ -901,6 +906,11 @@
 
           未設定の場合、インストールできる拡張機能やアプリのタイプに関する制限は適用されません。</translation>
 <translation id="3780152581321609624">Kerberos SPN に非標準ポートを含める</translation>
+<translation id="3780319008680229708">このポリシーが true に設定されている場合は、ツールバーまたはオーバーフロー メニューに Cast ツールバー アイコンが常に表示されます。ユーザーがこのアイコンを削除することはできません。
+
+          このポリシーが false に設定されているか未設定の場合、ユーザーはコンテキスト メニューを使ってこのアイコンを固定したり削除したりできます。
+
+          「EnableMediaRouter」ポリシーが false に設定されている場合、このポリシーの値は適用されず、ツールバー アイコンは表示されません。</translation>
 <translation id="3788662722837364290">ユーザーがアイドル状態になったときの電源管理設定</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME" /> での既定のブラウザのチェックを設定し、ユーザーがこの設定を変更できないようにします。この設定を有効にすると、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうかを常に起動時にチェックし、必要に応じて自動登録します。この設定を無効にすると、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうかをチェックせずに、このオプションを設定するユーザー コントロールを無効にします。この設定を設定しないと、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうか、既定でない場合にユーザー通知を表示すべきかどうかをユーザーが管理できます。</translation>
 <translation id="379659290574555063">外部ストレージ デバイスを読み取り専用にする。</translation>
@@ -1263,6 +1273,7 @@
           このポリシーが true に設定されているか、または未設定の場合、電源管理でウェイクアップ画面のロックが有効となります。
 
           このポリシーが false に設定されている場合、ウェイクアップ画面のロック リクエストは無視されます。</translation>
+<translation id="4876805738539874299">有効な SSL の最大バージョン</translation>
 <translation id="4882546920824859909">Google Apps へのアクセスを許可するドメインを定義する</translation>
 <translation id="4890209226533226410">有効にする画面拡大鏡のタイプを設定します。
 
@@ -1570,6 +1581,7 @@ Active Directory ドメインに参加していない Windows インスタンス
 
       この設定を無効にする場合や値を設定しない場合、Google 検索のセーフサーチは強制されません。</translation>
 <translation id="5937539742111853215">このポリシーでは <ph name="PRODUCT_OS_NAME" /> のデベロッパー モードのみを管理できます。Android 開発者向けオプションへのアクセスを禁止するには、<ph name="DEVELOPER_TOOLS_POLICY" /> ポリシーを設定する必要があります。</translation>
+<translation id="5940306398763671235">Google Cast を有効にする</translation>
 <translation id="5946082169633555022">Beta チャンネル</translation>
 <translation id="5950205771952201658">オンラインによる証明書取り消しの確認が Soft Fail の場合、セキュリティ上特段の効果がないという点を考慮し、<ph name="PRODUCT_NAME" /> バージョン 19 以降ではデフォルトで無効になっています。このポリシーを true に設定すると、前回の動作を復元し、オンライン OCSP / CRL チェックを実行します。
 
@@ -1924,6 +1936,11 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> の電源管理を設定します。
 
       これらのポリシーでは、アイドル状態が一定時間続いたときの <ph name="PRODUCT_OS_NAME" /> の動作を設定できます。</translation>
+<translation id="703078280527762319">警告: TLS の最大バージョン ポリシーは、<ph name="PRODUCT_NAME" /> のバージョン 66 前後で完全に削除されます（2018 年 2 月頃）。
+
+      このポリシーが未設定の場合、<ph name="PRODUCT_NAME" /> ではデフォルトの最大バージョン TLSv1.3 が使用されます。
+
+      このポリシーを設定する場合は、「tls1.2」または「tls1.3」の値を指定できます。その場合、<ph name="PRODUCT_NAME" /> では、指定されたバージョンより大きい SSL/TLS バージョンは使用されません。認識されない値は無視されます。</translation>
 <translation id="7040229947030068419">サンプル値:</translation>
 <translation id="7049373494483449255"><ph name="PRODUCT_NAME" /> がドキュメントを <ph name="CLOUD_PRINT_NAME" /> に送信して印刷できるようにします。注: この設定は <ph name="PRODUCT_NAME" /> での <ph name="CLOUD_PRINT_NAME" /> のサポートのみに影響します。ユーザーがウェブサイトで印刷ジョブを送信できなくなるわけではありません。この設定が有効または未設定の場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" /> に印刷できます。この設定を無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" /> に印刷できなくなります。</translation>
 <translation id="7053678646221257043">このポリシーを有効にすると、現在の既定のブラウザからブックマークがインポートされます。有効にすると、このポリシーはインポートのダイアログにも影響を与えます。無効にすると、ブックマークはインポートされません。未設定の場合はインポートするかどうかをユーザーに尋ねるか、自動的にインポートされます。</translation>
@@ -2137,6 +2154,7 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="7625444193696794922">この端末を固定するリリース チャンネルを指定します。</translation>
 <translation id="7632724434767231364">GSSAPI ライブラリ名</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> のアプリケーションの言語/地域を設定し、ユーザーが言語/地域を変更できないようにします。この設定を有効にすると、<ph name="PRODUCT_NAME" /> では指定された言語/地域が使用されます。設定した言語/地域がサポートされない場合、「en-US」が使用されます。この設定を無効にするか設定しないと、<ph name="PRODUCT_NAME" /> ではユーザー指定の適切な言語/地域（設定されている場合）、システムの言語/地域、代替の言語/地域「en-US」のいずれかが使用されます。</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">データ ローミングを端末に対して有効にするかどうかを指定します。true に設定した場合、データ ローミングが許可されます。未設定または false に設定した場合、データ ローミングは利用できません。</translation>
 <translation id="76810863974142048">リモート アクセス クライアントが認証トークンを取得する場所の URL。
 
@@ -2399,6 +2417,7 @@ Active Directory ドメインに参加していない Windows インスタンス
 
       将来的にこのオーバーライドは削除される予定です。</translation>
 <translation id="8285435910062771358">全画面拡大鏡を有効にする</translation>
+<translation id="8288199156259560552">Android Google 位置情報サービスを有効にする</translation>
 <translation id="8294750666104911727">通常、X-UA-Compatible が chrome=1 に設定されているページは、ChromeFrameRendererSettings ポリシーに関係なく <ph name="PRODUCT_FRAME_NAME" /> にレンダリングされます。
           この設定を有効にすると、ページのメタ タグはスキャンされません。
 
@@ -2488,6 +2507,17 @@ Active Directory ドメインに参加していない Windows インスタンス
       ポリシーのプロビジョニングもサポートされています。</translation>
 <translation id="8566842294717252664">新しいタブページとアプリ ランチャーでウェブストアを非表示にする</translation>
 <translation id="8587229956764455752">新しいユーザー アカウントの作成を許可する</translation>
+<translation id="8613640727149655305">このポリシーが true に設定されている場合は、Android Google 位置情報サービスが有効になります。この場合、Android アプリでは位置情報のデータを使用して端末の現在地を認識できるようになります。また、匿名の現在地データを Google に送信することが可能になります。
+
+      このポリシーが false に設定されている場合、Android Google 位置情報サービスは無効になります。
+
+      この設定が指定されている場合、ユーザーが設定内容を変更することはできません。
+
+      この設定が指定されていない場合、ユーザーは Android 設定アプリで Google 位置情報サービスのオンとオフを切り替えることができます。
+
+      <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> ポリシーが <ph name="BLOCK_GEOLOCATION_SETTING" /> に設定されている場合は、このポリシーの値よりも優先されます。
+
+      このポリシーは Android アプリを実行できるユーザーのみに適用されます。</translation>
 <translation id="8614804915612153606">自動更新を無効にする</translation>
 <translation id="8631434304112909927">バージョン <ph name="UNTIL_VERSION" /> まで</translation>
 <translation id="863319402127182273">Android アプリに対しては、このポリシーは内蔵カメラにのみ適用されます。このポリシーを true に設定した場合、すべての Android アプリでは例外なくカメラが無効になります。</translation>

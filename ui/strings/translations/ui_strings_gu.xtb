@@ -26,7 +26,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
-<translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">કૅલિબ્રેશન પૂર્ણ થયું</translation>
 <translation id="252373100621549798">અજ્ઞાત પ્રદર્શન</translation>
 <translation id="2666092431469916601">ઉપર</translation>
@@ -82,6 +81,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6203030746557259519">વર્ચ્યુઅલ ડિસ્પ્લે</translation>
+<translation id="6264365405983206840">&amp;બધા પસંદ કરો</translation>
 <translation id="6364916375976753737">ડાબે સ્ક્રોલ કરો</translation>
 <translation id="6394627529324717982">અલ્પવિરામ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 સે પહેલાં}one{# સે પહેલાં}other{# સે પહેલાં}}</translation>
@@ -91,7 +91,6 @@
 <translation id="6699343763173986273">મીડિયા આગલો ટ્રૅક</translation>
 <translation id="6786750046913594791">ફોલ્ડર બંધ કરો</translation>
 <translation id="6808150112686056157">મીડિયા સ્ટોપ</translation>
-<translation id="6829324100069873704">સૂચનાઓ પર પાછા જાઓ</translation>
 <translation id="6845383723252244143">ફોલ્ડર પસંદ કરો</translation>
 <translation id="6845533974506654842">દબાવો</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 કલાક બાકી}one{# કલાક બાકી}other{# કલાક બાકી}}</translation>
@@ -109,7 +108,6 @@
 <translation id="7457942297256758195">બધું સાફ કરો</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ઉપકરણને અનલૉક કરો</translation>
-<translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
 <translation id="7814458197256864873">&amp;કૉપિ કરો</translation>
@@ -140,5 +138,4 @@
 <translation id="9150735707954472829">ટૅબ</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="932327136139879170">હોમ</translation>
-<translation id="945522503751344254">પ્રતિસાદ મોકલો</translation>
 </translationbundle>

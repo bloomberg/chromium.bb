@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Chứng chỉ máy chủ chứa khóa mật mã yếu.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Bạn cần được <ph name="NAME" /> cấp quyền để truy cập vào trang web này</translation>
+<translation id="1728677426644403582">Bạn đang xem nguồn của trang web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
 <translation id="1745358365027406341">Tải trang xuống sau</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Tùy chọn thẻ và địa chỉ từ Tài khoản Google (<ph name="ACCOUNT_EMAIL" />) của bạn và Chrome. Bạn có thể quản lý các mục này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
 <translation id="2318774815570432836">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web sử dụng HSTS. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó, trang này có thể sẽ hoạt động lại sau. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Đã bỏ qua dấu trang không hợp lệ tại chỉ mục <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Dấu trang khác</translation>
 <translation id="2355395290879513365">Kẻ tấn công có thể thấy những hình ảnh mà bạn đang xem trên trang web này và lừa bạn bằng cách sửa đổi những hình ảnh đó.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6556239504065605927">Kết nối an toàn</translation>
 <translation id="6563469144985748109">Người quản lý của bạn chưa phê duyệt trang web</translation>
+<translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6593753688552673085">dưới <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Tùy chọn mã hóa</translation>
 <translation id="662080504995468778">Ở lại</translation>

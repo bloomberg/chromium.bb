@@ -365,6 +365,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
 <translation id="2309390639296060546">Predvolené nastavenie geolokácie</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovať stránky, ktoré sa načítavajú pri spustení. Ak ste v časti „Akcie pri spustení“ nezvolili možnosť „Otvoriť zoznam webových adries“, položky v zozname „Webové adresy otvárané pri spustení“ sa ignorujú.</translation>
+<translation id="23323722127921515">Zobrazí na paneli s nástrojmi ikonu Google Cast</translation>
 <translation id="2337466621458842053">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, na ktorých sa môžu zobrazovať obrázky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -501,6 +502,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je hodnota pravidla nastavená na False, namiesto výzvy na konfiguráciu siete sa zobrazí chybové hlásenie.</translation>
 <translation id="2498238926436517902">Poličku vždy skrývať automaticky</translation>
+<translation id="2503514368596117142">Konfiguruje pravidlá pre funkciu Google Cast, ktorá používateľom umožňuje odosielať obsah kariet, webov alebo plochy z prehliadača na vzdialené obrazovky a do vzdialených zvukových systémov.</translation>
 <translation id="2514328368635166290">Určuje webovú adresu ikony predvoleného poskytovateľa vyhľadávania.
 
           Toto pravidlo je voliteľné. Ak nebude nastavené, pri poskytovateľovi vyhľadávania sa nezobrazí žiadna ikona.
@@ -522,6 +524,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
+<translation id="2558917182010914102">Ak je toto pravidlo nastavené na hodnotu True alebo nie je nastavené vôbec, bude funkcia Google Cast povolená a používatelia ju budú môcť spustiť z ponuky aplikácií, kontextových ponúk stránok, ovládacích prvkov médií na weboch, ktoré podporujú technológiu Cast, a pomocou ikony Cast na paneli s nástrojmi (ak sa zobrazuje).
+
+          Ak je toto pravidlo nastavené na hodnotu False, funkcia Google Cast bude zakázaná.</translation>
 <translation id="2562339630163277285">Určuje webovú adresu vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
 
           Toto pravidlo je voliteľné. Ak ho nenastavíte, nebudú sa vám zobrazovať žiadne výsledky dynamického vyhľadávania.
@@ -933,6 +938,11 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak je toto nastavenie ponechané nenakonfigurované, nebudú sa vynucovať žiadne obmedzenia týkajúce sa prijateľných typov rozšírení alebo aplikácií.</translation>
 <translation id="3780152581321609624">Do hlavného názvu služby protokolu Kerberos zahrnúť neštandardný port</translation>
+<translation id="3780319008680229708">Ak je toto pravidlo nastavené na hodnotu True, bude sa ikona Cast stále zobrazovať na paneli s nástrojmi a používatelia ju nebudú môcť odobrať.
+
+          Ak je toto pravidlo nastavené na hodnotu False alebo nie je nastavené vôbec, používatelia budú môcť ikonu pripnúť alebo odstrániť prostredníctvom kontextovej ponuky.
+
+          Ak je pravidlo EnableMediaRouter nastavené na hodnotu False, hodnota tohto pravidla sa nijak neprejaví a ikona sa na paneli s nástrojmi nebude zobrazovať.</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
 <translation id="3793095274466276777">Slúži na konfiguráciu kontroly predvoleného prehliadača v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom toto nastavenie zmeniť. Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> pri spustení vždy skontroluje, či je predvoleným prehliadačom, a ak to bude možné, automaticky sa registruje. Ak je toto nastavenie zakázané, prehliadač <ph name="PRODUCT_NAME" /> nebude kontrolovať, či je predvoleným prehliadačom, a zakáže používateľské ovládacie prvky na nastavenie tejto možnosti. Ak toto nastavenie nebolo nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> umožní používateľovi určiť, či ho chce nastaviť ako predvolený prehliadač a či sa v prípade, ak ním nie je, majú používateľovi zobraziť upozornenia.</translation>
 <translation id="379659290574555063">Považovať externé úložné zariadenia za položky iba na čítanie</translation>
@@ -1320,6 +1330,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto pravidlo nastavené na hodnotu True alebo nie je nastavené vôbec, uzamknutia obrazovky v aktívnom režime budú pre správu napájania povolené.
 
           Ak je toto pravidlo nastavené na hodnotu False, budú sa žiadosti o uzamknutie obrazovky v aktívnom režime ignorovať.</translation>
+<translation id="4876805738539874299">Maximálna povolená verzia SSL</translation>
 <translation id="4882546920824859909">Definovať domény s povoleným prístupom do služby Google Apps</translation>
 <translation id="4890209226533226410">Nastaví typ lupy obrazovky, ktorý je povolený.
 
@@ -1660,6 +1671,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečné vyhľadávanie vo Vyhľadávaní Google vynucované nebude.</translation>
 <translation id="5937539742111853215">Toto pravidlo ovláda iba režim vývojára systému <ph name="PRODUCT_OS_NAME" />. Ak chcete zabrániť prístupu k nastaveniu Androidu Pre vývojárov, musíte nastaviť pravidlo <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Povoľuje Google Cast</translation>
 <translation id="5946082169633555022">Verzia beta</translation>
 <translation id="5950205771952201658">Vzhľadom na to, že kontroly online odvolania s príznakom soft-fail neposkytujú žiadne účinné bezpečnostné výhody, sú v predvolenom nastavení aplikácie <ph name="PRODUCT_NAME" /> verzie 19 alebo vyššej deaktivované. Ak toto pravidlo nastavíte na hodnotu true, predchádzajúce správanie sa obnoví a budú sa vykonávať kontroly online OCSP/CRL.
 
@@ -2037,6 +2049,11 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7027785306666625591">Konfiguruje správu napájania v systéme <ph name="PRODUCT_OS_NAME" />.
 
       Tieto pravidlá vám umožňujú nakonfigurovať, ako sa systém <ph name="PRODUCT_OS_NAME" /> správa po určitej dobe nečinnosti používateľa.</translation>
+<translation id="703078280527762319">Upozornenie: Približne od verzie 66 (cca vo februári 2018) bude pravidlo maximálnej verzie TLS z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránené.
+
+      Ak toto pravidlo nie je nakonfigurované, použije prehliadač <ph name="PRODUCT_NAME" /> predvolenú maximálnu verziu (TLSv1.3).
+
+      V opačnom prípade ho môžete nastaviť na jednu z nasledujúcich hodnôt: „tls1.2“ alebo „tls1.3“. Ak túto hodnotu nastavíte, prehliadač <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS vo vyššej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.</translation>
 <translation id="7040229947030068419">Vzorová hodnota:</translation>
 <translation id="7049373494483449255">Povoľuje prehliadaču <ph name="PRODUCT_NAME" /> odosielať dokumenty na tlač do služby <ph name="CLOUD_PRINT_NAME" />. Poznámka: Toto pravidlo sa týka len podpory služby <ph name="CLOUD_PRINT_NAME" /> v prehliadači <ph name="PRODUCT_NAME" />. To však používateľom nebráni v tom, aby odosielali tlačové úlohy na webových stránkach.
 
@@ -2266,6 +2283,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> bude používať zvolené miestne nastavenie. Ak nebude nakonfigurované miestne nastavenie podporované, prehliadač namiesto toho použije nastavenie en-US.
 
       Ak je toto nastavenie zakázané alebo nenastavené, prehliadač <ph name="PRODUCT_NAME" /> použije preferované miestne nastavenie určené používateľom (ak je nakonfigurované) alebo miestne nastavenie systému alebo záložné nastavenie en-US.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Určuje, či bude v zariadení povolený roaming pre dátové prenosy. Ak je pravidlo nastavené na hodnotu true, roaming pre dátové prenosy bude povolený. Ak ho ponecháte nenakonfigurované alebo ho nastavíte na hodnotu false, roaming pre dátové prenosy nebude k dispozícii.</translation>
 <translation id="76810863974142048">Webová adresa, kde klienti so vzdialeným prístupom získajú token na overenie totožnosti.
 
@@ -2546,6 +2564,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       V budúcnosti by malo byť toto prepísanie odstránené.</translation>
 <translation id="8285435910062771358">Lupa v režime na celú obrazovku je povolená</translation>
+<translation id="8288199156259560552">Povoliť službu určovania polohy Google systému Android</translation>
 <translation id="8294750666104911727">Stránky s prvkom X-UA-Compatible nastaveným na hodnotu chrome=1 sa obvykle vykreslia v rámci služby <ph name="PRODUCT_FRAME_NAME" /> bez ohľadu na pravidlo ChromeFrameRendererSettings.
 
           Ak toto nastavenie povolíte, na stránkach sa nebudú hľadať metaznačky.
@@ -2627,6 +2646,17 @@ Tieto pravidlá sú výhradne určené na použitie pri konfigurácii inštanci�
 Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctvom objektu pravidiel skupiny (GPO). Spravovanie pravidiel prostredníctvom registrov je však v inštanciách systému Windows pripojených k doméne Active Directory naďalej podporované.</translation>
 <translation id="8566842294717252664">Skryť internetový obchod zo stránky na novej karte a zo spúšťača aplikácií</translation>
 <translation id="8587229956764455752">Povoliť vytváranie nových používateľských účtov</translation>
+<translation id="8613640727149655305">Keď je toto pravidlo nastavené na hodnotu True, služba určovania polohy Google systému Android je povolená. Aplikácie pre Android tak budú môcť používať svoje údaje na určenie polohy zariadenia a tiež bude povolené odosielanie anonymných údajov o polohe do Googlu.
+
+      Keď je toto pravidlo nastavené na hodnotu False, služba určovania polohy Google systému Android bude vypnutá.
+
+      Ak je toto nastavenie nakonfigurované, používatelia ho sami nemôžu zmeniť.
+
+      Ak toto nastavenie nie je nakonfigurované, budú môcť používatelia službu určovania polohy v Androide zapnúť alebo vypnúť v aplikácii Nastavenia.
+
+      Upozorňujeme, že hodnota tohto pravidla môže byť prepísaná pravidlom <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> (ak je nastavené na hodnotu <ph name="BLOCK_GEOLOCATION_SETTING" />).
+
+      Toto pravidlo má vplyv iba na používateľov, ktorí môžu spúšťať aplikácie pre Android.</translation>
 <translation id="8614804915612153606">Zakáže automatickú aktualizáciu</translation>
 <translation id="8631434304112909927">po verziu <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">V prípade aplikácií pre Android toto pravidlo ovplyvňuje iba vstavaný fotoaparát. Keď je pravidlo nastavené na hodnotu True, fotoaparát je zakázaný pre všetky aplikácie pre Android (bez výnimiek).</translation>

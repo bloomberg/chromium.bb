@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Сертификат сервера содержит ненадежный криптографический ключ.</translation>
 <translation id="1710259589646384581">ОС</translation>
 <translation id="1721312023322545264">Для доступа к этой странице требуется разрешение пользователя <ph name="NAME" /></translation>
+<translation id="1728677426644403582">Вы просматриваете код страницы</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
 <translation id="1745358365027406341">Скачать позже</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Сведения о карте и адресе получены из вашего аккаунта Google (<ph name="ACCOUNT_EMAIL" />) и браузера Chrome. Их можно изменить в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535">Для доступа к домену <ph name="DOMAIN" /> необходимо указать имя пользователя и пароль.</translation>
 <translation id="2318774815570432836">Соединение с веб-сайтом <ph name="SITE" />, использующим механизм HSTS, могло быть скомпрометировано, поэтому его нельзя открыть в настоящий момент. Проблема также может быть связана с настройками сервера или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">Пропущена недопустимая закладка, индекс <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Другие закладки</translation>
 <translation id="2355395290879513365">Злоумышленники могут видеть изображения, которые видны вам, и изменять их в целях мошенничества.</translation>
 <translation id="2359808026110333948">Далее</translation>
@@ -561,6 +561,7 @@
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6556239504065605927">Защищенное соединение</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
+<translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
 <translation id="6593753688552673085">менее <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
 <translation id="662080504995468778">Остаться</translation>

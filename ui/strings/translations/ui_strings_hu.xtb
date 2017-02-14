@@ -26,7 +26,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2497284189126895209">Minden fájl</translation>
-<translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">A kalibrálás befejeződött</translation>
 <translation id="252373100621549798">Ismeretlen kijelző</translation>
 <translation id="2666092431469916601">Felülre</translation>
@@ -82,6 +81,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6203030746557259519">Virtuális kijelző</translation>
+<translation id="6264365405983206840">Össz&amp;es kiválasztása</translation>
 <translation id="6364916375976753737">Görgetés balra</translation>
 <translation id="6394627529324717982">Vessző</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
@@ -91,7 +91,6 @@
 <translation id="6699343763173986273">Következő szám</translation>
 <translation id="6786750046913594791">Mappa bezárása</translation>
 <translation id="6808150112686056157">Leállítás</translation>
-<translation id="6829324100069873704">Vissza az értesítésekhez</translation>
 <translation id="6845383723252244143">Mappa választása</translation>
 <translation id="6845533974506654842">Gomb lenyomása</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 óra van hátra}other{# óra van hátra}}</translation>
@@ -109,7 +108,6 @@
 <translation id="7457942297256758195">Összes törlése</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7647488630410863958">Az eszköz zárolásának feloldása az értesítések megtekintéséhez</translation>
-<translation id="7649070708921625228">Súgó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7781829728241885113">Tegnap</translation>
 <translation id="7814458197256864873">&amp;Másolás</translation>
@@ -140,5 +138,4 @@
 <translation id="9150735707954472829">Lap</translation>
 <translation id="9170848237812810038">&amp;Visszavonás</translation>
 <translation id="932327136139879170">Főoldal</translation>
-<translation id="945522503751344254">Visszajelzés küldése</translation>
 </translationbundle>

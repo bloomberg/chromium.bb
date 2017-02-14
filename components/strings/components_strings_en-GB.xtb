@@ -77,6 +77,7 @@
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">You need permission from <ph name="NAME" /> to visit this site</translation>
+<translation id="1728677426644403582">You're viewing the source of a web page</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Try contacting the system admin.</translation>
 <translation id="1745358365027406341">Download page later</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Card and address options are from your Google account (<ph name="ACCOUNT_EMAIL" />) and Chrome. You can manage these in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requires a username and password.</translation>
 <translation id="2318774815570432836">You cannot visit <ph name="SITE" /> at the moment because the website uses HSTS. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Ignored invalid bookmark at index <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Other bookmarks</translation>
 <translation id="2355395290879513365">Attackers might be able to see the images that you’re looking at on this site and trick you by modifying them.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Options</translation>
 <translation id="6556239504065605927">Secure connection</translation>
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
+<translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6593753688552673085">less than <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="662080504995468778">Stay</translation>

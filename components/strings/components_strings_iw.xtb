@@ -16,7 +16,7 @@
 <translation id="1111153019813902504">סימניות אחרונות</translation>
 <translation id="1113869188872983271">&amp;ביטול של שינוי סדר</translation>
 <translation id="1126551341858583091">גודל האחסון המקומי הוא <ph name="CRASH_SIZE" />.</translation>
-<translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
+<translation id="112840717907525620">המטמון של המדיניות תקין</translation>
 <translation id="113188000913989374"><ph name="SITE" /> אומר:</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK" />עותק בקובץ שמור<ph name="END_LINK" /> של <ph name="URL" /></translation>
@@ -77,6 +77,7 @@
 <translation id="168841957122794586">אישור השרת מכיל מפתח הצפנה חלש.</translation>
 <translation id="1710259589646384581">מערכת הפעלה</translation>
 <translation id="1721312023322545264">עליך לפנות אל <ph name="NAME" /> לקבלת הרשאה לביקור באתר הזה</translation>
+<translation id="1728677426644403582">אתה מציג את המקור של דף אינטרנט</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">נסה לפנות אל מנהל המערכת.</translation>
 <translation id="1745358365027406341">הורד את הדף מאוחר יותר</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">‏האפשרויות של כרטיסים וכתובות נלקחו מחשבון Google שלך (<ph name="ACCOUNT_EMAIL" />) ומ-Chrome. תוכל לנהל את האפשרויות האלו ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> דורש שם משתמש וסיסמה.</translation>
 <translation id="2318774815570432836">‏לא ניתן לבקר עכשיו באתר <ph name="SITE" /> מכיוון שהוא משתמש ב-HSTS‏. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, ולכן סביר להניח שדף זה יחזור לפעול מאוחר יותר. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">המערכת התעלמה מסימניה לא חוקית באינדקס <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">סימניות אחרות</translation>
 <translation id="2355395290879513365">ייתכן שתוקפים יוכלו לראות את התמונות שבהן אתה צופה באתר זה, ולאחר מכן הם ינסו להונות אותך על ידי שינוי התמונות.</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -567,6 +567,7 @@ Del</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6556239504065605927">חיבור מאובטח</translation>
 <translation id="6563469144985748109">המנהל שלך עדיין לא אישר זאת</translation>
+<translation id="6569060085658103619">אתה מציג דף של תוסף</translation>
 <translation id="6593753688552673085">פחות מ-<ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">אפשרויות הצפנה</translation>
 <translation id="662080504995468778">הישאר</translation>
@@ -683,7 +684,7 @@ Del</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
 <translation id="7682287625158474539">משלוח</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
-<translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהקובץ השמור</translation>
+<translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהמטמון</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="7755287808199759310">אחד מההורים שלך יכול לבטל בשבילך את החסימה</translation>

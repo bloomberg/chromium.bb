@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Certifikat poslužitelja sadrži slab kriptografski ključ!</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264"><ph name="NAME" /> mora dopustiti da posjetiš tu web-lokaciju</translation>
+<translation id="1728677426644403582">Gledate izvor web-stranice</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Pokušajte kontaktirati administratora sustava.</translation>
 <translation id="1745358365027406341">Preuzmi stranicu kasnije</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Opcije kartica i adresa preuzete su s vašeg Google računa (<ph name="ACCOUNT_EMAIL" />) i Chromea. Tim opcijama možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> zahtijeva korisničko ime i zaporku.</translation>
 <translation id="2318774815570432836">Trenutačno ne možete otvoriti <ph name="SITE" /> jer web-lokacija upotrebljava HSTS. Mrežne pogreške i napadi uglavnom su privremeni, tako da će ta stranica vjerojatno kasnije funkcionirati. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Zanemarena nevažeća oznaka u indeksu <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Druge oznake</translation>
 <translation id="2355395290879513365">Napadači možda mogu vidjeti slike koje gledate na ovoj web-lokaciji i izmijeniti ih kako bi vas prevarili.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -561,6 +561,7 @@
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6556239504065605927">Sigurna veza</translation>
 <translation id="6563469144985748109">Voditelj je još nije odobrio</translation>
+<translation id="6569060085658103619">Gledate stranicu proširenja</translation>
 <translation id="6593753688552673085">manje od <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opcije šifriranja</translation>
 <translation id="662080504995468778">Ostani</translation>

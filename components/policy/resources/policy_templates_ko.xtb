@@ -385,6 +385,7 @@
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
 <translation id="2309390639296060546">기본 위치정보 설정</translation>
 <translation id="2312134445771258233">시작 시 로드되는 페이지를 설정할 수 있습니다. '시작 시 동작'에서 'URL 목록 열기'를 선택하지 않으면 '시작 시 열리는 URL' 목록의 콘텐츠는 무시됩니다.</translation>
+<translation id="23323722127921515">Google Cast 툴바 아이콘 표시</translation>
 <translation id="2337466621458842053">이미지 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultImagesSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -517,6 +518,7 @@
 
       이 정책이 False로 설정된 경우 네트워크 설정 프롬프트 대신 오류 메시지가 표시됩니다.</translation>
 <translation id="2498238926436517902">항상 실행기 자동 숨김</translation>
+<translation id="2503514368596117142">사용자가 탭, 사이트, 바탕화면의 콘텐츠를 브라우저에서 원격 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 Google Cast 정책을 설정합니다.</translation>
 <translation id="2514328368635166290">기본 검색 공급자의 즐겨찾기 아이콘 URL을 지정합니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 검색 공급자에 대한 아이콘이 표시되지 않습니다.
@@ -538,6 +540,9 @@
 <translation id="2529880111512635313">강제로 설치된 앱과 확장 프로그램 목록 구성</translation>
 <translation id="253135976343875019">AC 전원으로 실행할 때 유휴 경고 지연</translation>
 <translation id="2552966063069741410">시간대</translation>
+<translation id="2558917182010914102">이 정책을 'true'로 설정하거나 설정하지 않으면 Google Cast가 사용 설정되며 사용자는 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시되는 경우)을 통해 Google Cast를 실행할 수 있습니다.
+
+          이 정책을 'false'로 설정하면 Google Cast가 사용 중지됩니다.</translation>
 <translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 순간 검색결과가 제공되지 않습니다.
@@ -949,6 +954,11 @@
 
           이 설정을 사용하지 않으면 허용되는 확장 프로그램/앱 유형에 제한이 없습니다.</translation>
 <translation id="3780152581321609624">Kerberos SPN에 비표준 포트 포함</translation>
+<translation id="3780319008680229708">이 정책을 'true'로 설정하면 Cast 툴바 아이콘이 툴바 또는 더보기 메뉴에 항상 표시되며 사용자는 이 아이콘을 삭제할 수 없습니다.
+
+          이 정책을 'false'로 설정하거나 설정하지 않으면 사용자는 컨텍스트 메뉴를 통해 아이콘을 고정하거나 삭제할 수 있습니다.
+
+          정책 'EnableMediaRouter'를 'false'로 설정하면 이 정책의 값은 아무런 영향을 미치지 않으며, 툴바 아이콘이 표시되지 않습니다.</translation>
 <translation id="3788662722837364290">사용자가 유휴 상태가 될 때 전원 관리 설정</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME" />에서 기본 브라우저 확인을 설정하고 사용자가 변경하지 못하게 합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME" />은(는) 시작 시 사용하는 브라우저가 기본 브라우저인지 확인하고 가능한 경우 해당 브라우저를 기본 브라우저로 자동 등록합니다. 이 설정을 사용 중지하면 <ph name="PRODUCT_NAME" />은(는) 기본 브라우저 여부를 확인하지 않고 사용자가 이 옵션을 설정하지 못하도록 합니다. 이 설정을 지정하지 않으면 <ph name="PRODUCT_NAME" />은(는) 사용자가 기본 브라우저 여부를 확인하고 기본 브라우저가 아닐 때 사용자 알림 표시를 할지를 선택할 수 있도록 허용합니다.</translation>
 <translation id="379659290574555063">외부 저장 기기를 읽기 전용으로 처리합니다.</translation>
@@ -1337,6 +1347,7 @@
           정책이 True로 설정되거나 설정되지 않은 경우, 화면 잠금이 전원 관리에 적용됩니다.
 
           정책이 False로 설정된 경우, 잠금 요청이 무시됩니다.</translation>
+<translation id="4876805738539874299">최대 SSL 버전 사용 설정됨</translation>
 <translation id="4882546920824859909">Google Apps에 액세스할 수 있도록 허용된 도메인 정의</translation>
 <translation id="4890209226533226410">사용하도록 설정한 화면 돋보기의 유형을 설정합니다.
 
@@ -1676,6 +1687,7 @@
 
       이 설정을 사용중지하거나 값을 설정하지 않으면 Google 검색에 세이프서치가 적용되지 않습니다.</translation>
 <translation id="5937539742111853215">이 정책은 <ph name="PRODUCT_OS_NAME" /> 개발자 모드만 제어합니다. Android 개발자 옵션에 액세스하지 못하게 하려면 <ph name="DEVELOPER_TOOLS_POLICY" /> 정책을 설정해야 합니다.</translation>
+<translation id="5940306398763671235">Google Cast 사용</translation>
 <translation id="5946082169633555022">베타 채널</translation>
 <translation id="5950205771952201658">소프트 페일(soft-fail), 온라인 인증서 해지 검사가 보안 혜택을 제공하지 않는다는 점을 고려하여 기본적으로 <ph name="PRODUCT_NAME" /> 버전 19 이상에서는 사용 중지됩니다. 이 정책을 true로 설정하면 이전 작업이 복원되며 온라인 OCSP/CRL 검사가 수행됩니다.
 
@@ -2054,6 +2066,11 @@
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 
       이 정책으로 사용자가 일정 시간 동안 유휴 상태일 때 <ph name="PRODUCT_OS_NAME" />에서 수행할 동작을 설정할 수 있습니다.</translation>
+<translation id="703078280527762319">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 66쯤에서 완전히 삭제됩니다(2018년 2월경).
+
+      이 정책을 구성하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최대 버전인 TLSv1.3이 사용됩니다.
+
+      또는 'tls1.2'나 'tls1.3' 중 하나로 설정될 수 있습니다. 설정되면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 높은 SSL/TLS 버전이 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="7040229947030068419">예시:</translation>
 <translation id="7049373494483449255">문서를 <ph name="CLOUD_PRINT_NAME" />에 제출하여 인쇄하기 위해 <ph name="PRODUCT_NAME" />을(를) 사용하도록 설정합니다. 참고: 이 설정은 <ph name="PRODUCT_NAME" />의 <ph name="CLOUD_PRINT_NAME" /> 지원에만 영향을 미치며, 사용자는 웹사이트에서 인쇄 작업을 제출할 수 있습니다.
 
@@ -2283,6 +2300,7 @@
       이 설정을 사용하면 <ph name="PRODUCT_NAME" />이(가) 지정된 언어를 사용합니다. 설정한 언어가 지원되지 않으면 'en-US'가 대신 사용됩니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />은(는) 사용자가 지정한 기본 언어(설정한 경우)나 시스템 언어 또는 대체 언어인 'en-US'를 사용합니다.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">데이터 로밍을 기기에 사용할 지 여부를 결정합니다. true로 설정하면 데이터 로밍이 허용됩니다. 구성하지 않거나 false로 설정하면 데이터 로밍은 사용할 수 없습니다.</translation>
 <translation id="76810863974142048">원격 액세스 클라이언트가 인증 토큰을 받는 URL입니다.
 
@@ -2562,6 +2580,7 @@
 
       향후 이 중복 문제를 제거하는 것이 바람직합니다.</translation>
 <translation id="8285435910062771358">전체화면 돋보기 사용</translation>
+<translation id="8288199156259560552">Android Google 위치 서비스 사용</translation>
 <translation id="8294750666104911727">일반적으로 X-UA-호환성이 chrome=1로 설정된 페이지는 'ChromeFrameRendererSettings' 정책에 관계없이 <ph name="PRODUCT_FRAME_NAME" />에서 렌더링됩니다.
 
           이 설정을 사용하도록 설정하면 메타 태그에 대해 페이지가 스캔되지 않습니다.
@@ -2652,6 +2671,17 @@
       인스턴스에서는 레지스트리를 통한 정책 프로비저닝이 아직 지원됩니다.</translation>
 <translation id="8566842294717252664">새 탭 페이지 및 앱 런처에서 웹 스토어 숨기기</translation>
 <translation id="8587229956764455752">새로운 사용자 계정 생성 허용</translation>
+<translation id="8613640727149655305">이 정책을 'true'로 설정하면 Android Google 위치 서비스가 사용 설정됩니다. 그러면 Android 앱에서 위치 데이터를 사용하여 기기 위치를 찾을 수 있으며, Google에 익명의 위치 데이터를 제출할 수 있습니다.
+
+      이 정책을 'false'로 설정하면 Android Google 위치 서비스가 사용 중지됩니다.
+
+      이 설정을 구성하면 사용자가 직접 설정을 변경할 수 없습니다.
+
+      이 설정을 구성하지 않으면 사용자가 Android 설정 앱에서 Google 위치 서비스를 켜고 끌 수 있습니다.
+
+      <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> 정책이 <ph name="BLOCK_GEOLOCATION_SETTING" />(으)로 설정된 경우 이 정책 값을 재정의할 수 있습니다.
+
+      이 정책은 Android 앱을 실행할 수 있는 사용자에게만 적용됩니다.</translation>
 <translation id="8614804915612153606">자동 업데이트 사용 안 함</translation>
 <translation id="8631434304112909927">버전 <ph name="UNTIL_VERSION" /> 이하</translation>
 <translation id="863319402127182273">Android 앱의 경우 이 정책은 내장 카메라에만 영향을 줍니다. 이 정책이 true로 설정된 경우 카메라는 모든 앱에서 사용 중지되며 예외는 없습니다.</translation>

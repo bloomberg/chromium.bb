@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Anda memerlukan izin dari <ph name="NAME" /> untuk mengunjungi situs ini</translation>
+<translation id="1728677426644403582">Anda melihat sumber halaman web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Coba hubungi admin sistem.</translation>
 <translation id="1745358365027406341">Download halaman nanti</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Opsi kartu dan alamat berasal dari Akun Google (<ph name="ACCOUNT_EMAIL" />) dan Chrome. Anda dapat mengelolanya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> memerlukan nama pengguna dan sandi.</translation>
 <translation id="2318774815570432836">Saat ini, Anda tidak dapat mengunjungi <ph name="SITE" /> karena situs web tersebut menggunakan HSTS. Kesalahan dan serangan jaringan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Mengabaikan bookmark tidak valid di indeks <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Bookmark lain</translation>
 <translation id="2355395290879513365">Penyerang mungkin dapat melihat gambar yang sedang Anda lihat di situs dan mengelabui Anda dengan memodifikasinya.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6556239504065605927">Sambungan aman</translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
+<translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6593753688552673085">kurang dari <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
 <translation id="662080504995468778">Tinggal</translation>

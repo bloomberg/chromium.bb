@@ -390,6 +390,7 @@
 <translation id="2312134445771258233">Ļauj konfigurēt lapas, kas tiek ielādētas startēšanas brīdī.
 
       Saraksta vietrāžu URL, kas jāatver startēšanas brīdī, saturs tiek ignorēts, ja vien iestatījumam Darbība startēšanas brīdī tiek atlasīts iestatījums Atvērt URL sarakstu.</translation>
+<translation id="23323722127921515">Tiek rādīta Google Cast rīkjoslas ikona</translation>
 <translation id="2337466621458842053">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -522,6 +523,7 @@
 
       Ja šai politikai ir norādīta vērtība “False”, tiks rādīts kļūdas ziņojums, nevis tīkla konfigurācijas uzvedne.</translation>
 <translation id="2498238926436517902">Vienmēr automātiski slēpt plauktu</translation>
+<translation id="2503514368596117142">Konfigurējiet Google Cast politikas. Izmantojot funkciju Google Cast, lietotāji pārlūkprogrammas atvērtajās cilnēs, vietnēs vai darbvirsmā redzamo saturu var pārsūtīt uz attāliem displejiem un skaņas sistēmām.</translation>
 <translation id="2514328368635166290">Norāda noklusējuma meklētājprogrammas iecienītās ikonas URL.
 
           Šī politika ir neobligāta. Ja tā nav iestatīta, meklētājprogrammas ikona netiks rādīta.
@@ -543,6 +545,9 @@
 <translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2552966063069741410">Laika josla</translation>
+<translation id="2558917182010914102">Ja politikai tiks iestatīta vērtība “True” vai politika netiks iestatīta, funkcija Google Cast tiks iespējota, kā arī lietotāji varēs palaist to, izmantojot lietotnes izvēlni, lapas kontekstizvēlnes un multivides vadīklas vietnēs, kurās ir iespējota funkcija Google Cast, un (ja būs redzama) Cast rīkjoslu ikonu.
+
+          Ja politikai tiks iestatīta vērtība “False”, funkcija Google Cast tiks atspējota.</translation>
 <translation id="2562339630163277285">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota dinamiskās meklēšanas rezultātu iegūšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja ievadīto tekstu.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, netiks nodrošināti dinamiskās meklēšanas rezultāti.
@@ -948,6 +953,11 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Ja šie iestatījumi nav konfigurēti, atļauto paplašinājumu/lietotņu veida ierobežojumi netiks piemēroti.</translation>
 <translation id="3780152581321609624">Ietver Kerberos SPN nestandarta portu</translation>
+<translation id="3780319008680229708">Ja politikai tiks iestatīta vērtība “True”, rīkjoslā vai pārpildes izvēlnē vienmēr būs redzama Cast rīkjoslas ikona, un lietotāji to nevarēs noņemt.
+
+          Ja politikai tiks iestatīta vērtība “False” vai politika netiks iestatīta, lietotāji varēs piespraust vai noņemt ikonu, izmantojot tās kontekstizvēlni.
+
+          Ja politikai “EnableMediaRouter” tiks iestatīta vērtība “False”, šī politikas vērtība neradīs nekādu efektu, un rīkjoslas ikona nebūs redzama.</translation>
 <translation id="3788662722837364290">Barošanas pārvaldības iestatījumi, kad lietotājs ir neaktīvs</translation>
 <translation id="3793095274466276777">Konfigurē noklusējuma pārlūka pārbaudes produktā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem tās mainīt.
 
@@ -1328,6 +1338,7 @@ Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā insta
           Ja politikai ir iestatīta vērtība “true” vai politika nav iestatīta, barošanas pārvaldībā tiks veikta ekrāna aktivizēšanas bloķēšana.
 
           Ja politikai ir iestatīta vērtība “false”, ekrāna aktivizēšanas bloķēšana tiks ignorēta.</translation>
+<translation id="4876805738539874299">Maksimālā iespējotā SSL versija</translation>
 <translation id="4882546920824859909">To domēnu definēšana, kuri var piekļūt Google Apps for Work pakalpojumiem</translation>
 <translation id="4890209226533226410">Iestatiet iespējotās ekrāna lupas veidu.
 
@@ -1671,6 +1682,7 @@ Ja šī politika nav iestatīta, jebkurš spraudnis, kas atbilst politikā Disab
 
       Ja atspējosiet šo iestatījumu vai neiestatīsiet vērtību, filtrs Droša meklēšana pakalpojumā Google meklēšana netiks izmantots piespiedu kārtā.</translation>
 <translation id="5937539742111853215">Šī politika kontrolē tikai <ph name="PRODUCT_OS_NAME" /> izstrādātāja režīmu. Ja nevēlaties, ka kāds var piekļūt Android izstrādātājiem paredzētajām opcijām, jums ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Iespējo Google Cast</translation>
 <translation id="5946082169633555022">Beta versija</translation>
 <translation id="5950205771952201658">Ņemot vērā to, ka pastāvīgas atteices atsaukšanas pārbaudes tiešsaistē nenodrošina nevienu efektīvu drošības priekšrocību, tās pēc noklusējuma tiek atspējotas pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā. Ja šai politikai ir iestatīta vērtība Patiesa, tiek atjaunota iepriekšējā darbība un tiek veiktas OCSP/CRL pārbaudes tiešsaistē.
 
@@ -2019,6 +2031,11 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7027785306666625591">Konfigurēt jaudas pārvaldību operētājsistēmā <ph name="PRODUCT_OS_NAME" />.
 
       Šīs politikas ļauj konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> darbību, ja lietotājs noteiktā laika periodā neveic nekādas darbības.</translation>
+<translation id="703078280527762319">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 66, maksimālā TLS versijas politika tiks pilnībā noņemta (pēc aptuveni 2018. gada februāra).
+
+      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju, t.i., TLSv1.3.
+
+      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad attiecīgā politikas vērtība tiks iestatīta, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="7040229947030068419">Vērtības piemērs:</translation>
 <translation id="7049373494483449255">Iespējo dokumentu iesniegšanu no <ph name="PRODUCT_NAME" /> pakalpojumā <ph name="CLOUD_PRINT_NAME" />. Piezīme: šis iestatījums ietekmē tikai <ph name="CLOUD_PRINT_NAME" /> atbalstu pakalpojumā <ph name="PRODUCT_NAME" />. Tas nenovērš iespēju lietotājiem iesniegt drukas darbus no vietnēm.
 
@@ -2249,6 +2266,7 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> lieto norādīto lokalizāciju. Ja konfigurētā lokalizācija netiek atbalstīta, tiek lietota lokalizācija en-US.
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, <ph name="PRODUCT_NAME" /> lieto lietotāja vēlamo lokalizāciju (ja tā ir konfigurēta), sistēmas lokalizāciju vai atkāpšanās lokalizāciju en-US.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Nosaka, vai datu viesabonēšana ir jāiespējo ierīcei. Ja politika ir iestatīta uz Patiesa, datu viesabonēšana ir atļauta. Ja politika nav konfigurēta vai iestatīta uz Aplama, datu viesabonēšana nav atļauta.</translation>
 <translation id="76810863974142048">Vietrādis URL, kurā attālās piekļuves klientiem ir jāiegūst autentifikācijas pilnvara.
 
@@ -2530,6 +2548,7 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 
       Ir paredzams nākotnē noņemt šo ignorēšanas iestatījumu.</translation>
 <translation id="8285435910062771358">Pilnekrāna režīma lupa ir iespējota</translation>
+<translation id="8288199156259560552">Google atrašanās vietas pakalpojuma iespējošana operētājsistēmai Android</translation>
 <translation id="8294750666104911727">Lapas, kurās X-UA-Compatible iestatījums ir chrome=1, parasti tiek renderētas spraudnī <ph name="PRODUCT_FRAME_NAME" /> neatkarīgi no politikas ChromeFrameRendererSettings iestatījuma.
 
           Ja iespējosiet šo iestatījumu, lapās netiks meklēti metatagi.
@@ -2620,6 +2639,17 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       politiku izvietošanai var izmantot arī reģistru.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
+<translation id="8613640727149655305">Ja šai politikai tiks iestatīta vērtība “True”, tiks iespējots Google atrašanās vietas pakalpojums operētājsistēmai Android. Tādējādi Android lietotnes varēs izmantot datus, lai atrastu ierīces atrašanās vietu, kā arī uzņēmumam Google var tikt iesniegti anonīmi dati par atrašanās vietu.
+
+      Ja politikai tiks iestatīta vērtība “False”, tiks atspējots Google atrašanās vietas pakalpojums operētājsistēmai Android.
+
+      Ja šis iestatījums ir konfigurēts, lietotāji to nevar patstāvīgi mainīt.
+
+      Ja šis iestatījums nav konfigurēts, lietotāji var iespējot/atspējot Google atrašanās vietas pakalpojumu Android lietotnes iestatījumos.
+
+      Ņemiet vērā, ka politikas vērtību nevar pārrakstīt ar <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> politiku, ja politikai ir iestatīta vērtība <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Šī politika ir piemērojama tikai tiem lietotājiem, kuri var palaist Android lietotnes.</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>
 <translation id="8631434304112909927">līdz <ph name="UNTIL_VERSION" /> versijai</translation>
 <translation id="863319402127182273">Android lietotnēs šī politika ietekmē tikai iebūvēto kameru. Kad šī politika ir iestatīta kā patiesa, kamera tiek atspējota visās Android lietotnēs bez izņēmuma.</translation>

@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Du skal have tilladelse fra <ph name="NAME" /> til at besøge dette website</translation>
+<translation id="1728677426644403582">Du ser kilden for en webside</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prøv at kontakte systemadministratoren.</translation>
 <translation id="1745358365027406341">Download siden senere</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Kort- og adresseindstillingerne er fra din Google-konto (<ph name="ACCOUNT_EMAIL" />) og Chrome. Du kan administrere dem i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kræver et brugernavn og en adgangskode.</translation>
 <translation id="2318774815570432836">Du kan ikke gå til <ph name="SITE" /> lige nu, fordi websitet bruger HSTS. Netværksfejl og hackerangreb er normalt midlertidige, så siden vil sandsynligvis fungere senere. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Ugyldigt bogmærke ved indeks <ph name="ENTRY_INDEX" /> er ignoreret</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="2355395290879513365">Hackere kan muligvis se de billeder, du kigger på på dette website, og narre dig ved at ændre dem.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6556239504065605927">Sikker forbindelse</translation>
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
+<translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6593753688552673085">mindre end <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="662080504995468778">Bliv her</translation>

@@ -77,6 +77,7 @@
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1710259589646384581">操作系统</translation>
 <translation id="1721312023322545264">您需要获得<ph name="NAME" />的许可，然后才能访问此网站</translation>
+<translation id="1728677426644403582">您正在查看网页的源代码</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
 <translation id="1745358365027406341">稍后下载网页</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">信用卡和地址选项均来自您的 Google 帐号 (<ph name="ACCOUNT_EMAIL" />) 和 Chrome。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
 <translation id="2318774815570432836">您目前无法访问 <ph name="SITE" />，因为此网站使用了 HSTS。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能就会恢复正常。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
-<translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2355395290879513365">攻击者可能能够看到您正在此网站上浏览的图片，并通过编辑这些图片让您受骗。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -558,6 +558,7 @@
 <translation id="6550675742724504774">选项</translation>
 <translation id="6556239504065605927">安全连接</translation>
 <translation id="6563469144985748109">您的管理员尚未批准此网站</translation>
+<translation id="6569060085658103619">您正在查看扩展程序页面</translation>
 <translation id="6593753688552673085">不到 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">加密选项</translation>
 <translation id="662080504995468778">留下</translation>

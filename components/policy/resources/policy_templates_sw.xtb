@@ -379,6 +379,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2312134445771258233">Inakuruhusu kusanidi kurasa ambazo zinapakiwa mwanzoni.
 
       Maudhui ya orodha ya  'URL za kufungua mwanzoni' zinapuuzwa isipokuwa uchague 'Fungua orodha ya URL katika 'Kitendo cha mwanzo'.</translation>
+<translation id="23323722127921515">Inaonyesha aikoni ya upau wa vidhibiti vya Google Cast</translation>
 <translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
 
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -507,6 +508,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
      Sera hii ikiwekwa kuwa Sivyo, ujumbe wa hitilafu utaonyeshwa badala ya ombi la kusanidi mtandao.</translation>
 <translation id="2498238926436517902">Ficha rafu otomatiki kila wakati</translation>
+<translation id="2503514368596117142">Weka sera za Google Cast, kipengele kinachoruhusu watumiaji kutuma maudhui ya vichupo, tovuti au eneo-kazi kutoka kwenye kivinjari hadi skrini za mbali na mifumo ya sauti.</translation>
 <translation id="2514328368635166290">Inabainisha ikoni ya URL pendwa ya mtoaji chaguo-msingi wa utafutaji.
 
           Sera hii ni ya hiari. Ikiwa haitawekwa, hakuna ikoni itakayokuwepo kwa mtojai wa utafutaji.
@@ -528,6 +530,9 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2529880111512635313">Sanidi orodha ya programu na viendelezi vilivyosakinishwa kwa nguvu</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
+<translation id="2558917182010914102">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, Google Cast itawashwa, na watumiaji wataweza kuizindua kutoka kwenye menyu ya programu, menyu za kurasa, vidhibiti vya maudhui kwenye tovuti zinazoweza kutumia Google Cast, na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast. 
+
+              Sera hii ikiwekwa kuwa sivyo, Google Cast itazimwa.</translation>
 <translation id="2562339630163277285">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL inapaswa kuwa na mfuatano wa <ph name="SEARCH_TERM_MARKER" />, ambao nafasi yake itachukuliwa wakati wa kuandika hoja ya maandishi ambayo mtumiaji atakuwa ameweka.
 
           Sera hii ni ya hiari. Ikiwa haijawekwa, hakuna matokeo ya utafutaji ya papo hapo yatakayotolewa.
@@ -939,6 +944,11 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Ikiwa mipangilio hii itaachwa bila kusanidiwa, hakuna vikwazo vitakavyotekelezwa kwenye aina za viendelezi/programu zinazokubaliwa.</translation>
 <translation id="3780152581321609624">Jumuisha lango lisiyo wastani katika Kerberos SPN</translation>
+<translation id="3780319008680229708">Sera hii ikiwekwa kuwa ndivyo, aikoni ya upau wa vidhibiti vya Google Cast itaonyeshwa kila wakati kwenye upau wa vidhibiti au menyu ya vipengee vya ziada, na watumiaji hawataweza kuiondoa. 
+
+             Sera hii ikiwekwa kuwa sivyo au isipowekwa, watumiaji wataweza kubandika au kuondoa aikoni kupitia menyu yake.
+
+              Sera ya "EnableMediaRouter" ikiwekwa kuwa sivyo, basi thamani ya sera hii haitakuwa na athari, na aikoni ya upau wa vidhibiti haitaonyeshwa.</translation>
 <translation id="3788662722837364290">Mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu</translation>
 <translation id="3793095274466276777">Inasanidi ukaguzi wa kivinjari chaguo-msingi kwenye <ph name="PRODUCT_NAME" /> na kuzuia watumiaji kwa kuvibadilisha.
 
@@ -1323,6 +1333,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
           Iwapo sera hii itawekwa kwenye kweli au kuachwa kama haijawekwa, makufuli ya kuwasha skrini yataheshimiwa kwa usimamizi wa nishati.
 
           Iwapo sera hii itawekwa kwenye usiruhusu, kufuli la kuwasha skrini litapuuzwa.</translation>
+<translation id="4876805738539874299">Toleo la juu zaidi la SSL limewashwa</translation>
 <translation id="4882546920824859909">Bainisha vikoa vinavyoruhusiwa kufikia Google Apps</translation>
 <translation id="4890209226533226410">Weka aina ya kikuza skrini ambacho kimewashwa.
           Iwapo sera hii imeweka, inadhibiti aina ya kikuza skrini amabacho  kimewashwa. Kuweka sera kuwa "Hakuna" huzima kikuza skrini. 
@@ -1657,6 +1668,7 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
 
       Ukifunga mpangilio huu au usipoweka thamani, SafeSearch katika Utafutaji wa Google haitekelezwi.</translation>
 <translation id="5937539742111853215">Sera hii hudhibiti hali ya wasanidi programu ya <ph name="PRODUCT_OS_NAME" /> pekee. Ikiwa unataka kuzuia idhini ya kufikia Chaguo za Wasanidi Programu za Android, unahitaji kuweka sera ya <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Huwasha Google Cast</translation>
 <translation id="5946082169633555022">Kituo cha beta</translation>
 <translation id="5950205771952201658">Kutokana na sababu kwamba ukaguzi wa ubatilishaji wa mtandaoni unaoshindwa chinichini hautoi usalama bora unaofanya kazi, unazimwa kwa chaguo-msingi katika toleo la 19 la <ph name="PRODUCT_NAME" /> na matoleo mapya zaidi. Kwa kuweka sera hii kuwa ndivyo, tabia ya awali inarejeshwa na ukaguzi wa mtandaoni wa OCSP/CRL utatekelezwa.
 
@@ -2030,6 +2042,11 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="7027785306666625591">Sanidi udhibiti wa nishati katika <ph name="PRODUCT_OS_NAME" />.
 
       Sera hizi zinakuwezesha kusanidi jinsi <ph name="PRODUCT_OS_NAME" /> hufanya kazi mtumiaji anapokuwa hana shughuli kwa muda fulani.</translation>
+<translation id="703078280527762319">Onyo: Sera ya kiwango cha juu cha toleo la TLS itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> takriban matoleo 66 (katika mwezi wa Februari 2018 hivi).
+
+      Ikiwa sera hii haijasanidiwa, basi <ph name="PRODUCT_NAME" /> itatumia toleo la kiwango cha juu chaguo-msingi ambayo ni TLSv1.3.
+
+      La sivyo, huenda ikawekwa kwenye mojawapo ya thamani zifuatazo: "tls1.2" au "tls1.3". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS ambayo ni makubwa zaidi ya toleo lililobainishwa. Thamani isiyotambuliwa itapuuzwa.</translation>
 <translation id="7040229947030068419">Thamani ya mfano:</translation>
 <translation id="7049373494483449255">Inawezesha <ph name="PRODUCT_NAME" /> kuwasilisha nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /> ili kuchapishwa.  KUMBUKA: Hii inaathiri tu msaada wa <ph name="CLOUD_PRINT_NAME" /> katika <ph name="PRODUCT_NAME" />.  Haizuii watumiaji kuwasilisha kazi zilizochapishwa kwenye tovuti.
 
@@ -2251,6 +2268,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
      Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> hutumia lugha iliyobainishwa. Ikiwa lugha iliyosanidiwa haijahimiliwa, 'en-US' inatumiwa badala yake.
 
       Ikiwa mpangilio huu utalemazwa au haujawekwa, <ph name="PRODUCT_NAME" /> hutumia lugha inayopendelewa iliyobainishwa na mtumiaji (ikiwa imesanidiwa), lugha ya mfumo au lugha mbadala 'en-US'.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Inathibitisha iwapo utumiaji wa data nje ya mtandao wako unapaswa kuwezeshwa kwa kifaa. Ikiwa itawekwa kuwa Ndivyo, utumiaji wa data nje ya mtandao wako unawezeshwa. Ikiwa hautasanidiwa au kuwekwa kuwa siyo Ndivyo, utumiaji wa data nje ya mtandao wako hautapatikana.</translation>
 <translation id="76810863974142048">URL ambapo seva teja za uwezo wa kufikia kwa mbali zanapaswa kupata tokeni yao ya uthibitishaji.
 
@@ -2522,6 +2540,7 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 
       Kuna lengo la kuondoa ubatilishaji huu siku za usoni.</translation>
 <translation id="8285435910062771358">Kikuza skrini nzima kimewashwa</translation>
+<translation id="8288199156259560552">Washa Huduma ya Mahali ya Android Google</translation>
 <translation id="8294750666104911727">Kwa kawaida kurasa Zinazooana na X-UA zilizowekwa kwa chrome=1  zitaonyeshwa katika <ph name="PRODUCT_FRAME_NAME" /> bila kujali sera ya 'ChromeFrameRendererSettings'.
 
          Ukiwasha mpangilio huu, kurasa hazitachanganuliwa kwa metatagi. 
@@ -2608,6 +2627,20 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
       ambayo yameunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="8566842294717252664">Ficha duka la wavuti kwenye ukurasa mpya wa kichupo na kifungua programu cha Chrome</translation>
 <translation id="8587229956764455752">Ruhusu uundaji wa akaunti mpya za mtumiaji</translation>
+<translation id="8613640727149655305">Sera hii ikiwekwa kuwa ndivyo, Huduma ya Mahali ya Android Google itawashwa. Hii itaruhusu programu za Android kutumia data yake kupata mahali kilipo kifaa, na pia itaruhusu uwasilishaji wa data ya mahali isiyojulikana kwa Google.
+
+       Sera hii ikiwekwa kuwa sivyo, Huduma ya Mahali ya Android Google itazimwa.
+
+       Ikiwa mipangilio hii imewekwa, basi watumiaji hawataweza kuibadilisha 
+       wenyewe.
+
+       Ikiwa mipangilio hii haijawekwa, basi watumiaji wanaweza kuwasha na kuzima 
+       Huduma ya Mahali ya Android Google katika programu ya Mipangilio ya Android.
+
+       Kumbuka kwamba thamani hii ya sera huenda ikabatilishwa na sera ya 
+       <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />, ikiwa sera itawekwa kuwa <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+       Sera hii inatumika tu kwa watumiaji wanaoweza kutumia programu za Android.</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>
 <translation id="8631434304112909927">mpaka toleo la <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Kwa programu za Android, sera hii inaathiri kamera iliyojengewa ndani pekee. Sera ikiwekwa kuwa ndivyo, kamera huzimwa kwa programu zote za Android, bila kuacha programu yoyote.</translation>

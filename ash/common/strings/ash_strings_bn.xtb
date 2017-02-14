@@ -83,6 +83,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3126069444801937830">আপডেট করার জন্য পুনরারম্ভ করুন</translation>
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
+<translation id="3164154768979021380">ডক করা মোড থেকে প্রস্থান করছে</translation>
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="3335772982573114336">নতুন টীকা</translation>
 <translation id="3364721542077212959">লেখনী সরঞ্জামগুলি</translation>
@@ -100,7 +101,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION" /> করা হয়েছে</translation>
 <translation id="370649949373421643">Wi-fi সক্ষম করুন</translation>
 <translation id="3712407551474845318">অঞ্চল ক্যাপচার করুন</translation>
-<translation id="372094107052732682">প্রস্থান করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3742055079367172538">স্ক্রীনশট নেওয়া হয়েছে</translation>
 <translation id="3775358506042162758">একাধিক সাইন ইনে আপনার কেবলমাত্র তিনটি অ্যাকাউন্ট থাকতে পারে৷</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
-<translation id="5238774010593222950">অন্য অ্যাকাউন্টে প্রবেশ করুন করা যাবে না।</translation>
 <translation id="532063867737390965">এই নেটওয়ার্ক সেটিং প্রশাসকের দ্বারা অক্ষম করা হয়েছে।</translation>
 <translation id="5331975486040154427">USB-C ডিভাইস (বাঁ দিকের পিছনের পোর্ট)</translation>
 <translation id="5431825016875453137">VPN / L2TP খুলুন</translation>
@@ -171,6 +170,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5977415296283489383">হেডফোন</translation>
 <translation id="5978382165065462689">রিমোট সহায়কের মাধ্যমে আপনার স্ক্রীন নিয়ন্ত্রণ ভাগ করুন৷</translation>
 <translation id="5980301590375426705">অতিথি থেকে প্রস্থান</translation>
+<translation id="6018164090099858612">মিরর মোড থেকে প্রস্থান করছে</translation>
 <translation id="6041154455840261787">উচ্চ কনট্রাস্ট মোড সক্ষম করা হয়েছে। এটি টগল করে বন্ধ করতে চাইলে আবার Search+Shift+H টিপু্ন।</translation>
 <translation id="6043212731627905357">এই মনিটরটি আপনার <ph name="DEVICE_TYPE" /> এর সাথে তাল মেলাতে পারছে না (মনিটরটি সমর্থিত নয়)।</translation>
 <translation id="6043994281159824495">এখনই প্রস্থান করুন করুন</translation>
@@ -181,7 +181,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6144938890088808325">আমাদের Chromebooks উন্নত করতে সাহায্য করুন</translation>
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
-<translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
 <translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
@@ -270,9 +269,11 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
+<translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> প্রদর্শন সরানো হয়েছে</translation>
 <translation id="9151726767154816831">আপডেট করার জন্য আবার শুরু করুন এবং পাওয়ারওয়াশ করুন</translation>
 <translation id="9194617393863864469">অন্য ব্যবহারকারীকে প্রবেশ করুন করান...</translation>
 <translation id="9201131092683066720">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ৷</translation>
+<translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
 <translation id="923686485342484400">প্রস্থান করুন করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="938582441709398163">কীবোর্ড ওভারলে</translation>
 <translation id="939252827960237676">স্ক্রীনশট সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>

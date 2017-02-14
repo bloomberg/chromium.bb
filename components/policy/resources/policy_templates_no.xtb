@@ -380,6 +380,7 @@
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
+<translation id="23323722127921515">Viser verktøyradikonet for Google Cast</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
@@ -508,6 +509,7 @@
 
       Hvis denne innstillingen angis som False, vises en feilmelding i stedet for meldingen om nettverkskonfigurasjon.</translation>
 <translation id="2498238926436517902">Alltid skjul hyllen automatisk</translation>
+<translation id="2503514368596117142">Konfigurerer regler for Google Cast – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
 <translation id="2514328368635166290">Angir nettadresse til favorittikonet til standard søkeleverandør.
 
           Denne retningslinjen er valgfri. Hvis den ikke angis, presenteres ikke noe ikon for søkeleverandøren.
@@ -529,6 +531,9 @@
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2552966063069741410">Tidssone</translation>
+<translation id="2558917182010914102">Hvis denne regelen angis som «true» (sann) eller ikke angis, slås Google Cast på, og brukere kan starte den fra appmenyen, kontekstuelle menyer på sider, mediekontroller på Cast-kompatible nettsteder og (hvis det vises) verktøyradikonet for Cast.
+
+          Hvis denne regelen angis som «false» (usann), slås Google Cast av.</translation>
 <translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
 
           Denne regelen er ikke valgfri. Hvis den ikke angis, kommer det ikke opp noen umiddelbare søkeresultater.
@@ -932,6 +937,11 @@
 
           Hvis innstillingen ikke konfigureres, settes det ingen begrensninger for hvilke typer utvidelser og apper som kan installeres.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
+<translation id="3780319008680229708">Hvis denne regelen angis som «true» (sann), vises verktøyradikonet for Cast hele tiden i verktøyraden eller overflytsmenyen, og brukere kan ikke fjerne det.
+
+          Hvis denne regelen angis som «false» (usann) eller ikke angis, kan brukere feste eller fjerne ikonet via den kontekstuelle menyen.
+
+          Hvis regelen «EnableMediaRouter» angis som false, har denne regelens verdi ingen virkning, og verktøyradikonet vises ikke.</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
 <translation id="3793095274466276777">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem. Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig. Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og deaktiverer brukerstyrt kontroll av dette alternativet. Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.</translation>
 <translation id="379659290574555063">Behandle eksterne lagringsenheter som skrivebeskyttet.</translation>
@@ -1310,6 +1320,7 @@
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
+<translation id="4876805738539874299">Nyeste SSL-versjon er slått på</translation>
 <translation id="4882546920824859909">Spesifiser hvilke domener som har tilgang til Google-apper</translation>
 <translation id="4890209226533226410">Angi type forstørrelsesskjerm som er aktivert.
 
@@ -1642,6 +1653,7 @@
 
       Hvsi du deaktiverer denne innstillingen, eller ikke angir noen verdi, blir ikke Sikkert Søk i Google Søk iverksatt.</translation>
 <translation id="5937539742111853215">Denne regelen kan bare brukes til å kontrollere utviklermodus for <ph name="PRODUCT_OS_NAME" />. Hvis du vil forhindre tilgang til utvikleralternativene for Android, må du angi <ph name="DEVELOPER_TOOLS_POLICY" />-regelen.</translation>
+<translation id="5940306398763671235">Slår på Google Cast</translation>
 <translation id="5946082169633555022">Betakanal</translation>
 <translation id="5950205771952201658">Som et resultat av at nettbaserte opphevelsekontroller for «soft-fail» ikke gir noen effektiv sikkerhetsfordel, er de avslått som standard i <ph name="PRODUCT_NAME" /> versjon 19 og nyere. Hvis denne regelen settes til true (sann), gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.
 
@@ -2017,6 +2029,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7027785306666625591">Konfigurer strømstyring i <ph name="PRODUCT_OS_NAME" />.
 
       Disse innstillingene lar deg konfigurere hvordan <ph name="PRODUCT_OS_NAME" /> oppfører seg når brukeren er inaktiv i en periode.</translation>
+<translation id="703078280527762319">Advarsel: Regelen for nyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 66 (rundt februar 2018).
+
+      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> TLSv1.3 som standard for maksimumsversjon.
+
+      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, kommer ikke <ph name="PRODUCT_NAME" /> til å bruke nyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="7040229947030068419">Eksempelverdi:</translation>
 <translation id="7049373494483449255">Gjør at <ph name="PRODUCT_NAME" /> kan sende dokumenter til <ph name="CLOUD_PRINT_NAME" /> for utskrift.  MERK: Dette påvirker bare støtte av <ph name="CLOUD_PRINT_NAME" /> i <ph name="PRODUCT_NAME" />. Det hindrer ikke brukeren i å sende utskriftsjobber på nettsteder.
 
@@ -2240,6 +2257,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du aktiverer denne innstillingen, bruker <ph name="PRODUCT_NAME" /> det angitte språket. Hvis det konfigurerte språket ikke håndteres, brukes språket en-US i stedet.
 
       Hvis denne innstillingen er deakivert eller ikke angis, bruker <ph name="PRODUCT_NAME" /> enten det brukerspesifikke foretrukne språket (hvis dette er konfiguert), systemspråket eller, som siste mulighet, en-US.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
 <translation id="76810863974142048">Nettadressen fjerntilgangsklienter skal hente autentiseringstoken fra.
 
@@ -2516,6 +2534,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Det er ønskelig å fjerne denne overstyringen i fremtiden.</translation>
 <translation id="8285435910062771358">Fullskjermsforstørrelse aktivert</translation>
+<translation id="8288199156259560552">Slå på Googles posisjonstjeneste for Android</translation>
 <translation id="8294750666104911727">Vanligvis blir sider angitt med X-UA-Compatible til chrome=1 gjengitt i <ph name="PRODUCT_FRAME_NAME" /> uavhengig av innstillingen «ChromeFrameRendererSettings».
 
           Hvis du aktiverer denne innstillingen, skannes ikke sider for metatagger.
@@ -2607,6 +2626,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Active Directory-domener.</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
+<translation id="8613640727149655305">Når denne regelen angis som «true» (sann), slås Googles posisjonstjeneste for Android på. Dette gir Android-apper tillatelse til å bruke dataene fra denne tjenesten for å finne enhetens posisjon, og det slår også på innsending av anonyme posisjonsdata til Google.
+
+      Når denne regelen angis som «false» (usann), slås Googles posisjonstjeneste for Android av.
+
+      Hvis denne innstillingen konfigureres, kan ikke brukere endre den selv.
+
+      Hvis denne innstillingen ikke konfigureres, kan brukere slå Googles posisjonstjeneste av og på i Innstillinger-appen for Android.
+
+      Vær oppmerksom på at verdien for denne regelen kan overstyres av <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />-regelen når sistnevnte er angitt som <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Denne regelen gjelder bare for brukere som kan kjøre Android-apper.</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">For Android-apper blir bare det innebygde kameraet påvirket av denne regelen. Når denne regelen er angitt som «true» (sann), slås kameraet av for alle Android-apper – uten unntak.</translation>

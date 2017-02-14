@@ -83,6 +83,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="3157169093162779309">Draaivergrendeling inschakelen</translation>
+<translation id="3164154768979021380">Gedockte modus wordt gesloten</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3335772982573114336">Nieuwe notitie</translation>
 <translation id="3364721542077212959">Stylustools</translation>
@@ -100,7 +101,6 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3683428399328702079">De resolutie van <ph name="DISPLAY_NAME" /> is gewijzigd in <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wifi inschakelen</translation>
 <translation id="3712407551474845318">Gebied vastleggen</translation>
-<translation id="372094107052732682">Druk twee keer op Ctrl+Shift+Q om te stoppen.</translation>
 <translation id="3742055079367172538">Screenshot gemaakt</translation>
 <translation id="3775358506042162758">Je kunt maximaal drie accounts hebben in Toegang tot meerdere accounts</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
 <translation id="5170568018924773124">Weergeven in map</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
-<translation id="5238774010593222950">Kan niet inloggen op een ander account.</translation>
 <translation id="532063867737390965">Deze netwerkinstelling is uitgeschakeld door de beheerder.</translation>
 <translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
 <translation id="5978382165065462689">De controle over je scherm delen via externe ondersteuning.</translation>
 <translation id="5980301590375426705">Gastsessie sluiten</translation>
+<translation id="6018164090099858612">Mirrormodus wordt gesloten</translation>
 <translation id="6041154455840261787">Modus voor hoog contrast ingeschakeld. Druk opnieuw op Zoeken+Shift+H om deze modus uit te schakelen.</translation>
 <translation id="6043212731627905357">Dit beeldscherm werkt niet met je <ph name="DEVICE_TYPE" /> (het beeldscherm wordt niet ondersteund).</translation>
 <translation id="6043994281159824495">Nu uitloggen</translation>
@@ -181,7 +181,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6144938890088808325">Help ons Chromebooks te verbeteren</translation>
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
-<translation id="6248847161401822652">Druk twee keer op Control+Shift+Q om te stoppen.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: activeren...</translation>
 <translation id="6297287540776456956">Gebruik de stylus om een gebied te selecteren</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is gedraaid naar <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
+<translation id="9091626656156419976">Display <ph name="DISPLAY_NAME" /> is verwijderd</translation>
 <translation id="9151726767154816831">Opnieuw opstarten en de functie Powerwash gebruiken om bij te werken</translation>
 <translation id="9194617393863864469">Een andere gebruiker inloggen...</translation>
 <translation id="9201131092683066720">De accu is <ph name="PERCENTAGE" />% vol.</translation>
+<translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
 <translation id="938582441709398163">Overlay voor toetsenbord</translation>
 <translation id="939252827960237676">Kan screenshot niet opslaan</translation>

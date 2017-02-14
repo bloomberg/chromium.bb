@@ -83,6 +83,7 @@
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="3147142846278915599">Launcher (กำลังซิงค์แอป...)</translation>
 <translation id="3157169093162779309">เปิดใช้ล็อกการหมุน</translation>
+<translation id="3164154768979021380">กำลังออกจากโหมดเชื่อมต่อแท่นชาร์จ</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="3335772982573114336">โน้ตใหม่</translation>
 <translation id="3364721542077212959">เครื่องมือสไตลัส</translation>
@@ -100,7 +101,6 @@
 <translation id="3683428399328702079">ความละเอียดของ <ph name="DISPLAY_NAME" /> เปลี่ยนเป็น <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">เปิดใช้งาน Wi-Fi</translation>
 <translation id="3712407551474845318">จับภาพบางส่วนของหน้าเว็บ</translation>
-<translation id="372094107052732682">กด Ctrl+Shift+Q สองครั้งเพื่อออก</translation>
 <translation id="3742055079367172538">ภาพหน้าจอที่บันทึก</translation>
 <translation id="3775358506042162758">คุณสามารถมีได้มากสุดสามบัญชีเท่านั้นในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
-<translation id="5238774010593222950">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
 <translation id="532063867737390965">การตั้งค่าเครือข่ายนี้ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@
 <translation id="5977415296283489383">ชุดหูฟัง</translation>
 <translation id="5978382165065462689">กำลังแชร์การควบคุมหน้าจอผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="5980301590375426705">ออกจากเซสชันผู้มาเยือน</translation>
+<translation id="6018164090099858612">กำลังออกจากโหมดมิเรอร์</translation>
 <translation id="6041154455840261787">เปิดใช้โหมดคอนทราสต์สูงอยู่ กด Search+Shift+H อีกครั้งเพื่อสลับเป็นปิด</translation>
 <translation id="6043212731627905357">จอภาพนี้ใช้งานไม่ได้กับ <ph name="DEVICE_TYPE" /> ของคุณ (ไม่รองรับจอภาพนี้)</translation>
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
@@ -181,7 +181,6 @@
 <translation id="6144938890088808325">ช่วยเราปรับปรุง Chromebook</translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
-<translation id="6248847161401822652">กด Control Shift Q สองครั้งเพื่อออก</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> กำลังเปิดใช้งาน...</translation>
 <translation id="6297287540776456956">ใช้สไตลัสเพื่อเลือกพื้นที่</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
+<translation id="9091626656156419976">นำจอแสดงผล <ph name="DISPLAY_NAME" /> ออกแล้ว</translation>
 <translation id="9151726767154816831">รีสตาร์ทและ Powerwash เพื่ออัปเดต</translation>
 <translation id="9194617393863864469">ลงชื่อเข้าใช้ด้วยชื่อผู้ใช้อื่น...</translation>
 <translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE" />%</translation>
+<translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="938582441709398163">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>

@@ -83,6 +83,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="3157169093162779309">Włącz blokadę obracania</translation>
+<translation id="3164154768979021380">Wyłączam tryb dokowania</translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="3335772982573114336">Nowa notatka</translation>
 <translation id="3364721542077212959">Narzędzia rysika</translation>
@@ -100,7 +101,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3683428399328702079">Rozdzielczość wyświetlacza <ph name="DISPLAY_NAME" /> została zmieniona na <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Włącz Wi-Fi</translation>
 <translation id="3712407551474845318">Zrzut obszaru ekranu</translation>
-<translation id="372094107052732682">Naciśnij dwukrotnie Ctrl+Shift+Q, by zakończyć.</translation>
 <translation id="3742055079367172538">Wykonano zrzut ekranu</translation>
 <translation id="3775358506042162758">W wielokrotnym logowaniu możesz mieć najwyżej trzy konta.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5170568018924773124">Pokaż w folderze</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
-<translation id="5238774010593222950">Nie możesz zalogować się na inne konto.</translation>
 <translation id="532063867737390965">To ustawienie sieci zostało wyłączone przez administratora.</translation>
 <translation id="5331975486040154427">Urządzenie USB-C (tylny port na lewym boku)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -171,6 +170,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="5977415296283489383">Słuchawki</translation>
 <translation id="5978382165065462689">Udostępnianie sterowania ekranem przy użyciu pomocy zdalnej.</translation>
 <translation id="5980301590375426705">Zakończ sesję gościa</translation>
+<translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
 <translation id="6041154455840261787">Włączono tryb wysokiego kontrastu. Aby go wyłączyć, naciśnij ponownie klawisz wyszukiwania + Shift + H.</translation>
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
@@ -181,7 +181,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6144938890088808325">Pomóż nam ulepszyć Chromebooki</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
-<translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktywuję...</translation>
 <translation id="6297287540776456956">Zaznacz obszar rysikiem</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>
+<translation id="9091626656156419976">Wyświetlacz <ph name="DISPLAY_NAME" /> został usunięty</translation>
 <translation id="9151726767154816831">Uruchom ponownie i wykonaj Powerwash, by zaktualizować</translation>
 <translation id="9194617393863864469">Zaloguj innego użytkownika...</translation>
 <translation id="9201131092683066720">Naładowanie baterii: <ph name="PERCENTAGE" />%.</translation>
+<translation id="9210037371811586452">Wyłączam tryb ujednoliconego pulpitu</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
 <translation id="938582441709398163">Nakładka klawiatury</translation>
 <translation id="939252827960237676">Nie można zapisać zrzutu ekranu</translation>

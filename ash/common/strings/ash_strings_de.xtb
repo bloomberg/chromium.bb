@@ -83,6 +83,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
+<translation id="3164154768979021380">Docking-Modus wird beendet</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3335772982573114336">Neue Notiz</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
@@ -100,7 +101,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3683428399328702079">Auflösung von <ph name="DISPLAY_NAME" /> wurde zu <ph name="RESOLUTION" /> geändert.</translation>
 <translation id="370649949373421643">WLAN aktivieren</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
-<translation id="372094107052732682">Drücken Sie zum Beenden zweimal Strg+Shift+Q.</translation>
 <translation id="3742055079367172538">Screenshot erstellt</translation>
 <translation id="3775358506042162758">Bei der Mehrfachanmeldung sind maximal drei Konten zulässig.</translation>
 <translation id="3783640748446814672">Alt</translation>
@@ -142,7 +142,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5170568018924773124">In Ordner anzeigen</translation>
 <translation id="5222676887888702881">Abmelden</translation>
-<translation id="5238774010593222950">Fehler bei der Anmeldung in einem anderen Konto</translation>
 <translation id="532063867737390965">Diese Netzwerkeinstellung wurde durch den Administrator deaktiviert.</translation>
 <translation id="5331975486040154427">USB-C-Gerät (Port hinten links)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="5977415296283489383">Kopfhörer</translation>
 <translation id="5978382165065462689">Sie teilen sich die Bildschirmsteuerung per Remote-Unterstützung.</translation>
 <translation id="5980301590375426705">Gastsitzung beenden</translation>
+<translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
 <translation id="6041154455840261787">Modus mit hohem Kontrast aktiviert. Drücken Sie Suche + Shift + H, um ihn zu deaktivieren.</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
@@ -181,7 +181,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6144938890088808325">Bei der Verbesserung von Chromebooks helfen</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
-<translation id="6248847161401822652">Drücken Sie zum Beenden zweimal Steuerung-Shift-Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
 <translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
@@ -271,9 +270,11 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon wird verwendet.</translation>
 <translation id="9089416786594320554">Eingabemethoden</translation>
+<translation id="9091626656156419976">Bildschirm <ph name="DISPLAY_NAME" /> wurde entfernt</translation>
 <translation id="9151726767154816831">Zum Aktualisieren Neustart und Powerwash durchführen</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
+<translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Shift - Q.</translation>
 <translation id="938582441709398163">Tastatur-Overlay</translation>
 <translation id="939252827960237676">Screenshot konnte nicht gespeichert werden.</translation>

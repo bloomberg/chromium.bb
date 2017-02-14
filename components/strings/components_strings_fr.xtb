@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Le certificat du serveur contient une clé de chiffrement faible.</translation>
 <translation id="1710259589646384581">Système d'exploitation</translation>
 <translation id="1721312023322545264">Vous devez disposer de l'autorisation de <ph name="NAME" /> pour consulter ce site</translation>
+<translation id="1728677426644403582">Vous consultez actuellement la source d'une page Web</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Essayez de contacter l'administrateur système.</translation>
 <translation id="1745358365027406341">Télécharger la page plus tard</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Les cartes et les adresses proposées proviennent de votre compte Google (<ph name="ACCOUNT_EMAIL" />) et de Chrome. Vous pouvez les gérer dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
 <translation id="2318774815570432836">Vous ne pouvez pas consulter le site Web <ph name="SITE" /> pour le moment, car la technologie HSTS y est utilisée. Les attaques et les erreurs réseau sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">Favori non valide ignoré (index <ph name="ENTRY_INDEX" />)</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
 <translation id="2355395290879513365">Il se peut que des pirates informatiques puissent voir les images que vous regardez sur ce site et vous piègent en les modifiant.</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Options</translation>
 <translation id="6556239504065605927">Connexion sécurisée</translation>
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>
+<translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6593753688552673085">moins de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
 <translation id="662080504995468778">Rester</translation>

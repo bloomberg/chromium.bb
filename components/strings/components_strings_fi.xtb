@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Palvelinvarmenne sisältää heikon salausavaimen.</translation>
 <translation id="1710259589646384581">Käyttöjärjestelmä</translation>
 <translation id="1721312023322545264">Tarvitset henkilön <ph name="NAME" /> luvan käydä tällä sivustolla</translation>
+<translation id="1728677426644403582">Tämä on verkkosivun lähdekoodi.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="1745358365027406341">Lataa sivu myöhemmin</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Kortti- ja osoitevaihtoehdot ovat peräisin Google-tililtäsi (<ph name="ACCOUNT_EMAIL" />) ja Chromesta. Voit hallita tietoja <ph name="BEGIN_LINK" />Asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> pyytää käyttäjänimeä ja salasanaa.</translation>
 <translation id="2318774815570432836">Et juuri nyt voi siirtyä sivustolle <ph name="SITE" />, sillä se käyttää HSTS:ää. Verkkovirheet ja ‑hyökkäykset ovat yleensä väliaikaisia, joten voit todennäköisesti vierailla sivustolla myöhemmin. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">Ohitettiin virheellinen kirjanmerkki kohdassa <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Muut kirjanmerkit</translation>
 <translation id="2355395290879513365">Hyökkääjät voivat mahdollisesti nähdä kuvat, joita katselet tällä sivustolla, ja huijata sinua muokkaamalla niitä.</translation>
 <translation id="2359808026110333948">Jatka</translation>
@@ -563,6 +563,7 @@
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="6556239504065605927">Suojattu yhteys</translation>
 <translation id="6563469144985748109">Ylläpitäjä ei ole hyväksynyt sitä vielä.</translation>
+<translation id="6569060085658103619">Tämä on laajennussivu.</translation>
 <translation id="6593753688552673085">alle <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Salausasetukset</translation>
 <translation id="662080504995468778">Jää</translation>

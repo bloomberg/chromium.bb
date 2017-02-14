@@ -83,6 +83,7 @@
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="3157169093162779309">회전 잠금 사용</translation>
+<translation id="3164154768979021380">고정 모드 종료 중</translation>
 <translation id="3294437725009624529">손님</translation>
 <translation id="3335772982573114336">새 메모</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
@@ -100,7 +101,6 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 해상도가 <ph name="RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="370649949373421643">Wi-Fi 사용</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
-<translation id="372094107052732682">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3742055079367172538">찍은 캡처화면</translation>
 <translation id="3775358506042162758">멀티 로그인 시 계정은 최대 3개까지만 사용할 수 있습니다.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5170568018924773124">폴더 열기</translation>
 <translation id="5222676887888702881">로그아웃</translation>
-<translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
 <translation id="532063867737390965">관리자가 이 네트워크 설정을 사용 중지했습니다.</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -171,6 +170,7 @@
 <translation id="5977415296283489383">헤드폰</translation>
 <translation id="5978382165065462689">원격 지원을 통해 화면 제어 공유</translation>
 <translation id="5980301590375426705">손님 세션 종료</translation>
+<translation id="6018164090099858612">미러링 모드 종료 중</translation>
 <translation id="6041154455840261787">고대비 모드가 사용 설정되었습니다. 사용 중지하려면 Search+Shift+H를 다시 누르세요.</translation>
 <translation id="6043212731627905357"><ph name="DEVICE_TYPE" />과(와) 호환되지 않는 모니터입니다(지원되지 않는 모니터임).</translation>
 <translation id="6043994281159824495">지금 로그아웃</translation>
@@ -181,7 +181,6 @@
 <translation id="6144938890088808325">Chromebook 개선에 도움을 주세요.</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
-<translation id="6248847161401822652">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
 <translation id="6297287540776456956">스타일러스를 사용하여 영역을 선택하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
@@ -271,9 +270,11 @@
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>
 <translation id="9089416786594320554">입력 방법</translation>
+<translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
 <translation id="9151726767154816831">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
 <translation id="9194617393863864469">다른 사용자로 로그인...</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE" />% 남았습니다.</translation>
+<translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="938582441709398163">키보드 오버레이</translation>
 <translation id="939252827960237676">캡처화면을 저장하지 못했습니다.</translation>

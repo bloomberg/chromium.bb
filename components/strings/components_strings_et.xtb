@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Serveri sertifikaat sisaldab nõrka krüptograafilist võtit.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Vajate saidi külastamiseks halduri <ph name="NAME" /> luba</translation>
+<translation id="1728677426644403582">Vaatate veebilehe lähtekoodi</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Proovige ühendust võtta süsteemiadministraatoriga.</translation>
 <translation id="1745358365027406341">Laadi leht hiljem alla</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Kaardi ja aadressi valikud pärinevad teie Google'i kontolt (<ph name="ACCOUNT_EMAIL" />) ning Chrome'ist. Neid saate hallata menüüs <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535">Domeen <ph name="DOMAIN" /> nõuab kasutajanime ja parooli.</translation>
 <translation id="2318774815570432836">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait kasutab HSTS-i. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht on tõenäoliselt hiljem töökorras. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">Ignoreeriti vale järjehoidjat registris <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Muud järjehoidjad</translation>
 <translation id="2355395290879513365">Ründajad võivad näha pilte, mida sellel saidil vaatate, ja teid neid pilte muutes petta.</translation>
 <translation id="2359808026110333948">Jätka</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6556239504065605927">Turvaline ühendus</translation>
 <translation id="6563469144985748109">Haldur ei ole seda veel kinnitanud</translation>
+<translation id="6569060085658103619">Vaatate laienduse lehte</translation>
 <translation id="6593753688552673085">vähem kui <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krüpteerimise valikud</translation>
 <translation id="662080504995468778">Jää siia</translation>

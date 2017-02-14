@@ -77,6 +77,7 @@
 <translation id="168841957122794586">సర్వర్ ప్రమాణపత్రం బలహీన క్రిప్టోగ్రాఫిక్ కీని కలిగి ఉంది.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">ఈ సైట్‌ని సందర్శించడానికి మీకు <ph name="NAME" /> నుండి అనుమతి అవసరం</translation>
+<translation id="1728677426644403582">మీరు వెబ్ పేజీ యొక్క మూలాధారాన్ని వీక్షిస్తున్నారు</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">సిస్టమ్ నిర్వాహకుడిని సంప్రదించి ప్రయత్నించండి.</translation>
 <translation id="1745358365027406341">పేజీని తర్వాత డౌన్‌లోడ్ చేయి</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">కార్డ్ మరియు చిరునామా ఎంపికలు మీ Google ఖాతా (<ph name="ACCOUNT_EMAIL" />) మరియు Chrome నుండి ఉన్నాయి. మీరు వీటిని <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />లో నిర్వహించగలరు.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />కి వినియోగదారు పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
 <translation id="2318774815570432836">వెబ్‌సైట్ HSTSని ఉపయోగిస్తున్నందున మీరు ప్రస్తుతం <ph name="SITE" />ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికంగానే ఉంటాయి, కావున ఈ పేజీ కాసేపటి తర్వాత పని చేసే అవకాశం ఉంది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155"><ph name="ENTRY_INDEX" />వ సూచికలో చెల్లని బుక్‌మార్క్ విస్మరించబడింది</translation>
 <translation id="2354001756790975382">ఇతర బుక్‌మార్క్‌లు</translation>
 <translation id="2355395290879513365">దాడికి పాల్పడేవారు ఈ సైట్‌లో మీరు చూస్తున్న చిత్రాలను చూడగలగవచ్చు మరియు వాటిని సవరించడం ద్వారా మిమ్మల్ని మోసగించవచ్చు.</translation>
 <translation id="2359808026110333948">కొనసాగు</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6556239504065605927">సురక్షిత కనెక్షన్</translation>
 <translation id="6563469144985748109">మీ నిర్వాహకుడు దీన్ని ఇంకా ఆమోదించలేదు</translation>
+<translation id="6569060085658103619">మీరు పొడిగింపు పేజీని వీక్షిస్తున్నారు</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> కంటే తక్కువ</translation>
 <translation id="6596325263575161958">గుప్తీకరణ ఎంపికలు</translation>
 <translation id="662080504995468778">ఇందులోనే ఉంచు</translation>

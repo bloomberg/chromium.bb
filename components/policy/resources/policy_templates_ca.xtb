@@ -354,6 +354,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="2309390639296060546">Configuració d'ubicació geogràfica predeterminada</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
+<translation id="23323722127921515">Mostra la icona de la barra d'eines de Google Cast</translation>
 <translation id="2337466621458842053">Us permet definir una llista de patrons d'URL que especifiquen els llocs que poden mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultImagesSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="2372547058085956601">Retard d'inici de sessió automàtic de la sessió pública.
 
@@ -482,6 +483,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
       Si aquesta política es defineix com a False, es mostrarà un missatge d'error en comptes de la sol·licitud de configuració de la xarxa.</translation>
 <translation id="2498238926436517902">Amaga sempre el prestatge automàticament</translation>
+<translation id="2503514368596117142">Configura les polítiques de Google Cast, una funció que permet als usuaris enviar el contingut de pestanyes, de llocs o de l'escriptori del navegador a pantalles remotes i sistemes de so.</translation>
 <translation id="2514328368635166290">Especifica l'URL de la icona preferida del proveïdor de cerca predeterminat. Aquesta política és opcional. Si no es defineix, no apareixerà cap icona per al proveïdor de cerca. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2516525961735516234">Indica si l'activitat de vídeo afecta la gestió d'alimentació.
 
@@ -499,6 +501,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2552966063069741410">Zona horària</translation>
+<translation id="2558917182010914102">Si aquesta política es defineix com a true o no es defineix, Google Cast s'activarà i els usuaris podran iniciar-lo des del menú d'aplicacions, menús contextuals d'una pàgina, controls multimèdia de llocs web compatibles amb Cast i (si es mostra) des de la icona de la barra d'eines de Cast.
+
+          Si aquesta política es defineix com a false, Google Cast es desactivarà.</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats immediats. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
 
           Aquesta política és opcional i, si no s'estableix, no es proporcionaran resultats de cerca immediats.
@@ -893,6 +898,11 @@ Si es configura aquesta opció, no s'instal·laran les extensions o les aplicaci
 
 Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipus d'extensions i d'aplicacions acceptables.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
+<translation id="3780319008680229708">Si aquesta política es defineix com a true, la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
+
+          Si aquesta política es defineix com a false o no es defineix, els usuaris podran fixar o suprimir la icona des del menú contextual.
+
+          Si la política EnableMediaRouter es defineix com a false, el valor de la política no tindrà cap efecte i la icona no es mostrarà a la barra d'eines.</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
 <translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME" /> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME" /> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
 <translation id="379659290574555063">Utilitza els dispositius d'emmagatzematge externs com a només de lectura.</translation>
@@ -1253,6 +1263,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta aplicació es defineix com a vertadera o no es defineix, es compliran els bloquejos d'activació de la pantalla per a la gestió d'alimentació.
 
           Si es defineix com a falsa, les sol·licituds de bloqueig d'activació de la pantalla es rebutjaran.</translation>
+<translation id="4876805738539874299">Versió SSL màxima activada</translation>
 <translation id="4882546920824859909">Definiu els dominis que tenen permís per accedir a Google Apps for Work</translation>
 <translation id="4890209226533226410">Defineix el tipus de lupa activat.
 
@@ -1556,6 +1567,7 @@ Si activeu aquest paràmetre, SafeSearch de Cerca de Google sempre estarà activ
 
 Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca de Google no s'executarà.</translation>
 <translation id="5937539742111853215">Aquesta política controla només el mode desenvolupador de <ph name="PRODUCT_OS_NAME" />. Si vols impedir l'accés a les Opcions per a desenvolupadors d'Android, has d'establir la política <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5940306398763671235">Activa Google Cast</translation>
 <translation id="5946082169633555022">Canal beta</translation>
 <translation id="5950205771952201658">Com que les comprovacions de revocació en línia "soft-fail" no proporcionen cap avantatge concret en termes de seguretat, estan desactivades de manera predeterminada a <ph name="PRODUCT_NAME" /> versió 19 i versions posteriors. En establir aquesta política en true, es restaurarà el comportament anterior i es realitzaran les comprovacions OCSP/CRL en línia.
 
@@ -1908,6 +1920,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7027785306666625591">Configureu la gestió de l'alimentació de <ph name="PRODUCT_OS_NAME" />.
 
       Aquestes polítiques us permeten configurar el comportament de <ph name="PRODUCT_OS_NAME" /> quan l'usuari està inactiu durant un temps determinat.</translation>
+<translation id="703078280527762319">Advertiment: la política de la versió TLS màxima se suprimirà completament de <ph name="PRODUCT_NAME" /> aproximadament a la versió 66 (cap al febrer de 2018).
+
+      Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà com a versió màxima predeterminada TLSv1.3.
+
+      També es pot definir a un dels valors següents: tls1.2 o tls1.3. Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS superiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
 <translation id="7040229947030068419">Valor d'exemple:</translation>
 <translation id="7049373494483449255">Permet que <ph name="PRODUCT_NAME" /> enviï documents a <ph name="CLOUD_PRINT_NAME" /> per imprimir. NOTA: Això només afecta a l'assistència de <ph name="CLOUD_PRINT_NAME" /> a <ph name="PRODUCT_NAME" />. No impedeix que els usuaris enviïn treballs d'impressió als llocs web. Si aquest paràmetre està activat o no està configurat, els usuaris podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />. Si aquest paràmetre està desactivat, els usuaris no podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Si està activada, aquesta política fa que s'importin les adreces d'interès des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importaran les adreces d'interès. Si no s'ha definit, es demanarà a l'usuari si vol importar o la importació es pot produir de forma automàtica.</translation>
@@ -2122,6 +2139,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
 <translation id="76810863974142048">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació.
 
@@ -2385,6 +2403,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       La voluntat és suprimir aquesta anul·lació en el futur.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa activada</translation>
+<translation id="8288199156259560552">Activa el servei d'ubicació de Google a Android</translation>
 <translation id="8294750666104911727">Normalment, les pàgines compatibles amb X-UA que s'estableixen com a chrome=1 es renderitzen a <ph name="PRODUCT_FRAME_NAME" />, independentment de la política "ChromeFrameRendererSettings".
 
           Si activeu el paràmetre, no se cercaran metaetiquetes a les pàgines.
@@ -2476,6 +2495,17 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       tot i que encara es permet administrar la política mitjançant el registre per a instàncies de Windows vinculades a un domini d'Active Directory.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
+<translation id="8613640727149655305">Si aquesta política es defineix com a true, s'activarà el servei d'ubicació de Google a Android. Això permetrà a les aplicacions d'Android fer servir les seves dades per trobar la ubicació del dispositiu i també permetrà enviar dades d'ubicació a Google de manera anònima.
+
+      Si aquesta política es defineix com a false, el servei d'ubicació de Google a Android es desactivarà.
+
+      Si aquesta opció de configuració es defineix, els usuaris no la podran modificar.
+
+      Si aquesta opció de configuració no es defineix, els usuaris podran activar i desactivar el servei d'ubicació de Google des de l'aplicació de configuració d'Android.
+
+      Tingues en compte que el valor d'aquesta política es pot substituir per la política <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />, quan aquesta última estigui definida com a <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Aquesta política només s'aplica als usuaris que puguin executar aplicacions d'Android.</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>
 <translation id="8631434304112909927">fins a la versió <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">En el cas de les aplicacions per a Android, aquesta política afecta només la càmera integrada. Quan s'estableix en "true", es desactiva la càmera en totes les aplicacions per a Android, sense cap excepció.</translation>

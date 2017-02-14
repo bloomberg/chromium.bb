@@ -83,6 +83,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
+<translation id="3164154768979021380">Uscita dalla modalità dock</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3335772982573114336">Nuova nota</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
@@ -100,7 +101,6 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3683428399328702079">La risoluzione di <ph name="DISPLAY_NAME" /> è stata modificata in: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Attiva Wi-Fi</translation>
 <translation id="3712407551474845318">Acquisisci area</translation>
-<translation id="372094107052732682">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
 <translation id="3742055079367172538">Screenshot acquisito</translation>
 <translation id="3775358506042162758">Puoi avere massimo tre account per l'accesso simultaneo.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
 <translation id="5170568018924773124">Mostra nella cartella</translation>
 <translation id="5222676887888702881">Esci</translation>
-<translation id="5238774010593222950">Impossibile accedere a un altro account.</translation>
 <translation id="532063867737390965">Questa impostazione di rete è stata disattivata dall'amministratore.</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="5977415296283489383">Cuffia</translation>
 <translation id="5978382165065462689">Condividi il controllo dello schermo tramite Assistenza remota.</translation>
 <translation id="5980301590375426705">Esci da sessione Ospite</translation>
+<translation id="6018164090099858612">Uscita dalla modalità mirroring</translation>
 <translation id="6041154455840261787">Modalità ad alto contrasto attivata. Premi il tasto per la ricerca+MAIUSC+H per disattivarla.</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
@@ -181,7 +181,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6144938890088808325">Aiutaci a migliorare i Chromebook</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
-<translation id="6248847161401822652">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: attivazione in corso...</translation>
 <translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Il microfono è in uso.</translation>
 <translation id="9089416786594320554">Metodi di immissione</translation>
+<translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>
 <translation id="9194617393863864469">Accedi a un altro utente...</translation>
 <translation id="9201131092683066720">Percentuale di caricamento della batteria: <ph name="PERCENTAGE" />%.</translation>
+<translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
 <translation id="938582441709398163">Overlay tastiera</translation>
 <translation id="939252827960237676">Salvataggio dello screenshot non riuscito</translation>

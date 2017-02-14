@@ -77,6 +77,7 @@
 <translation id="168841957122794586">Das Serverzertifikat weist einen schwachen kryptografischen Schlüssel auf.</translation>
 <translation id="1710259589646384581">Betriebssystem</translation>
 <translation id="1721312023322545264">Du benötigst die Berechtigung von <ph name="NAME" />, um diese Website zu besuchen</translation>
+<translation id="1728677426644403582">Dies ist die Quelle einer Webseite</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Setzen Sie sich mit dem Systemadministrator in Verbindung.</translation>
 <translation id="1745358365027406341">Seite später herunterladen</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">Karten- und Adressoptionen stammen von Ihrem Google-Konto (<ph name="ACCOUNT_EMAIL" />) und Chrome. <ph name="BEGIN_LINK" />Sie können diese in den Einstellungen verwalten.<ph name="END_LINK" /></translation>
 <translation id="2317259163369394535">Für <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="2318774815570432836">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, da die Website HSTS verwendet. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2328300916057834155">Ungültiges Lesezeichen bei Index <ph name="ENTRY_INDEX" /> ignoriert</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
 <translation id="2355395290879513365">Angreifer können unter Umständen die Bilder sehen, die Sie sich auf dieser Website ansehen, und könnten dann versuchen, Sie durch Ändern der Bilder zu täuschen.</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -561,6 +561,7 @@
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6556239504065605927">Sichere Verbindung</translation>
 <translation id="6563469144985748109">Der Administrator hat die Berechtigung noch nicht erteilt</translation>
+<translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
 <translation id="6593753688552673085">weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
 <translation id="662080504995468778">Bleiben</translation>

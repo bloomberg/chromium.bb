@@ -77,6 +77,7 @@
 <translation id="168841957122794586">تحتوي شهادة الخادم على مفتاح تشفير ضعيف.</translation>
 <translation id="1710259589646384581">نظام التشغيل</translation>
 <translation id="1721312023322545264">أنت بحاجة لإذن من <ph name="NAME" /> لزيارة هذا الموقع</translation>
+<translation id="1728677426644403582">أنت تعرض مصدر صفحة ويب</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">جرّب الاتصال بمشرف النظام.</translation>
 <translation id="1745358365027406341">تنزيل الصفحة لاحقًا</translation>
@@ -140,7 +141,6 @@
 <translation id="230697611605700222">‏تتوفر خيارات البطاقة والعنوان في حسابك في Google (<ph name="ACCOUNT_EMAIL" />) وChrome. يمكنك إدارة هذه الخيارات في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="2317259163369394535">يتطلَّب <ph name="DOMAIN" /> اسم مستخدم وكلمة مرور.</translation>
 <translation id="2318774815570432836">‏لا يمكنك زيارة <ph name="SITE" /> الآن نظرًا لأن موقع الويب يستخدم HSTS. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2328300916057834155">تم تجاهل الإشارة المرجعية غير الصالحة في الفهرس <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">الإشارات الأخرى</translation>
 <translation id="2355395290879513365">قد يتمكن المهاجمون من رؤية الصور التي تتطلع عليها على هذا الموقع وخداعك من خلال تعديلها.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -562,6 +562,7 @@
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6556239504065605927">اتصال آمن</translation>
 <translation id="6563469144985748109">لم يوافق عليه مديرك حتى الآن</translation>
+<translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6593753688552673085">أقل من <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">خيارات التشفير</translation>
 <translation id="662080504995468778">البقاء</translation>

@@ -101,7 +101,6 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ጥራት ወደ <ph name="RESOLUTION" /> ተለውጧል</translation>
 <translation id="370649949373421643">Wi-Fi ያንቁ</translation>
 <translation id="3712407551474845318">ክልልን አንሳ</translation>
-<translation id="372094107052732682">ለመውጣት Ctrl+Shift+Qን ይጫኑ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
 <translation id="3775358506042162758">በአንድ ጊዜ ብዙ መግባት ላይ እስከ ሶስት መለያዎች ድረስ ብቻ ነው ሊኖርዎ የሚችለው።</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -143,7 +142,6 @@
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
 <translation id="5170568018924773124">በአቃፊ አሳይ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
-<translation id="5238774010593222950">ወደሌላ መለያ በመለያ መግባት አይቻልም።</translation>
 <translation id="532063867737390965">ይህ የአውታረ መረብ ቅንብር በአስተዳዳሪው ተሰናክሏል።</translation>
 <translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -183,7 +181,6 @@
 <translation id="6144938890088808325">Chromebooksን እንድናሻሽል ያግዙን</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
-<translation id="6248847161401822652">ለመተው Control Shift Qን ሁለት ጊዜ ይጫኑ።</translation>
 <translation id="6267036997247669271"><ph name="NAME" />፦ በማግበር ላይ...</translation>
 <translation id="6297287540776456956">ክልል ለመምረጥ ስቲለሱን ይጠቀሙ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ወደ <ph name="ROTATION" /> ዞሯል</translation>

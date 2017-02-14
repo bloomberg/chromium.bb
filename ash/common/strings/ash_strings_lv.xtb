@@ -83,6 +83,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3126069444801937830">Restartēt, lai atjauninātu</translation>
 <translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
 <translation id="3157169093162779309">Iespējot rotācijas bloķēšanu</translation>
+<translation id="3164154768979021380">Notiek iziešana no dokošanas režīma</translation>
 <translation id="3294437725009624529">Viesis</translation>
 <translation id="3335772982573114336">Jauna piezīme</translation>
 <translation id="3364721542077212959">Skārienekrāna pildspalvas rīki</translation>
@@ -100,7 +101,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> izšķirtspēja tika mainīta uz <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Iespējot Wi-Fi</translation>
 <translation id="3712407551474845318">Uzņemt ekrāna daļas attēlu</translation>
-<translation id="372094107052732682">Lai izietu, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Ekrānuzņēmums ir uzņemts</translation>
 <translation id="3775358506042162758">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā trīs kontus.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
 <translation id="5170568018924773124">Rādīt mapē</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
-<translation id="5238774010593222950">Vairs nevar pierakstīties citā kontā.</translation>
 <translation id="532063867737390965">Administrators ir atspējojis šo tīkla iestatījumu.</translation>
 <translation id="5331975486040154427">USB-C ierīce (pieslēgvieta kreisajā pusē aizmugurē)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="5977415296283489383">Austiņas</translation>
 <translation id="5978382165065462689">Ekrāna pārvaldības koplietošana, izmantojot attālo palīdzību.</translation>
 <translation id="5980301590375426705">Aizvērt viesa sesiju</translation>
+<translation id="6018164090099858612">Notiek iziešana no spoguļošanas režīma</translation>
 <translation id="6041154455840261787">Augsta kontrasta režīms iespējots. Vēlreiz nospiediet Meklēt+Shift+H, lai izslēgtu to.</translation>
 <translation id="6043212731627905357">Šis monitors nav saderīgs ar jūsu ierīci <ph name="DEVICE_TYPE" /> (monitors netiek atbalstīts).</translation>
 <translation id="6043994281159824495">Izrakstīties tagad</translation>
@@ -181,7 +181,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6144938890088808325">Palīdziet mums uzlabot Chromebook datorus</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
-<translation id="6248847161401822652">Lai izietu, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: notiek aktivizēšana...</translation>
 <translation id="6297287540776456956">Izmantojiet skārienekrāna pildspalvu, lai atlasītu ekrāna daļu.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> tika pagriezts šādi: <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Tiek izmantots mikrofons.</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>
+<translation id="9091626656156419976">Displejs <ph name="DISPLAY_NAME" /> tika noņemts.</translation>
 <translation id="9151726767154816831">Lai atjauninātu, restartējiet ierīci un izmantojiet funkciju Powerwash.</translation>
 <translation id="9194617393863864469">Pierakstīties kā citam lietotājam...</translation>
 <translation id="9201131092683066720">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE" />%</translation>
+<translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="938582441709398163">Tastatūras pārklājums</translation>
 <translation id="939252827960237676">Neizdevās saglabāt ekrānuzņēmumu.</translation>

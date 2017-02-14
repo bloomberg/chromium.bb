@@ -83,6 +83,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
 <translation id="3147142846278915599">Zaganjalnik (sinhronizacija aplikacij ...)</translation>
 <translation id="3157169093162779309">Omogočanje zaklepanja sukanja</translation>
+<translation id="3164154768979021380">Izhod iz načina v nosilcu</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="3335772982573114336">Nov zapisek</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
@@ -100,7 +101,6 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> – ločljivost je bila spremenjena na: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Omogoči Wi-Fi</translation>
 <translation id="3712407551474845318">Zajem območja</translation>
-<translation id="372094107052732682">Dvakrat pritisnite Ctrl + Shift + Q, če želite končati.</translation>
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
 <translation id="3775358506042162758">S prijavo z več računi lahko uporabljate samo tri račune.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5170568018924773124">Prikaži v mapi</translation>
 <translation id="5222676887888702881">Odjava</translation>
-<translation id="5238774010593222950">Prijava v drug račun ni mogoča.</translation>
 <translation id="532063867737390965">To omrežno nastavitev je onemogočil skrbnik.</translation>
 <translation id="5331975486040154427">Naprava USB-C (vrata levo zadaj)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="5977415296283489383">Slušalke</translation>
 <translation id="5978382165065462689">Deljenje nadzora nad zaslonom prek pomoči na daljavo.</translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
+<translation id="6018164090099858612">Izhod iz zrcalnega načina</translation>
 <translation id="6041154455840261787">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite tipko za iskanje + Shift + H.</translation>
 <translation id="6043212731627905357">Ta monitor se ne ujema z napravo <ph name="DEVICE_TYPE" /> (monitor ni podprt).</translation>
 <translation id="6043994281159824495">Odjava</translation>
@@ -181,7 +181,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6144938890088808325">Pomagajte nam izboljšati Chromebooke</translation>
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6165508094623778733">Več o tem</translation>
-<translation id="6248847161401822652">Dvakrat pritisnite Ctrl + Shift + Q, če želite končati.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiviranje ...</translation>
 <translation id="6297287540776456956">S pisalom izberite območje</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> – zasuk na <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>
+<translation id="9091626656156419976">Odstranjen zaslon <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Če želite posodobiti, znova zaženite in uporabite funkcijo Powerwash</translation>
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
+<translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="938582441709398163">Prekrivna tipkovnica</translation>
 <translation id="939252827960237676">Posnetka zaslona ni bilo mogoče shraniti</translation>

@@ -385,6 +385,7 @@
 <translation id="2312134445771258233">Hiermee kun he de pagina's configureren die bij het starten worden geladen.
 
       De content van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij je 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
+<translation id="23323722127921515">Hiermee wordt het Google Cast-icoon in de werkbalk getoond</translation>
 <translation id="2337466621458842053">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop afbeeldingen kunnen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -514,6 +515,7 @@
 
       Als dit beleid op 'onwaar' is ingesteld, verschijnt een foutmelding in plaats van de prompt voor de netwerkconfiguratie.</translation>
 <translation id="2498238926436517902">Archief altijd automatisch verbergen</translation>
+<translation id="2503514368596117142">Configureer beleid voor Google Cast, een functie waarmee gebruikers de inhoud van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2514328368635166290">Hiermee specificeer je de URL van het voorkeurspictogram voor de standaardzoekprovider.
 
           Dit beleid is optioneel. Als je het niet instelt, wordt er geen pictogram weergegeven voor de zoekprovider.
@@ -535,6 +537,9 @@
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
+<translation id="2558917182010914102">Als dit beleid is ingesteld op 'waar' (true) of niet is ingesteld, is Google Cast ingeschakeld en kunnen gebruikers deze functie starten vanuit het app-menu, contextmenu's op pagina's, mediabedieningsopties op websites die werken met Cast en via het Cast-icoon in de werkbalk (als dit wordt weergegeven).
+
+          Als dit beleid is ingesteld op 'onwaar' (false), is Google Cast uitgeschakeld.</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, worden er geen instantresultaten geleverd.
@@ -942,6 +947,11 @@
 
           Als deze instelling niet wordt geconfigureerd, worden er geen beperkingen afgedwongen voor de geaccepteerde typen extensies/apps.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
+<translation id="3780319008680229708">Als dit beleid is ingesteld op 'waar' (true), wordt het Cast-icoon in de werkbalk altijd weergegeven in de werkbalk of het overloopmenu en kunnen gebruikers het niet verwijderen.
+
+          Als dit beleid is ingesteld op 'onwaar' (false) of niet is ingesteld, kunnen gebruikers het Cast-icoon vastzetten of verwijderen via het contextmenu van het icoon.
+
+          Als het beleid 'EnableMediaRouter' is ingesteld op 'onwaar' (false), heeft de waarde van dit beleid geen effect en wordt het icoon niet weergegeven in de werkbalk.</translation>
 <translation id="3788662722837364290">Instellingen voor energiebeheer wanneer de gebruiker inactief is</translation>
 <translation id="3793095274466276777">Hiermee worden de controles van standaardbrowser in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -1328,6 +1338,7 @@
           Als dit beleid is ingesteld als 'true' of als het niet is ingesteld, wordt schermactiveringsvergrendeling ingesteld voor stroombeheer.
 
           Als dit beleid is ingesteld als 'false', worden verzoeken voor schermactiveringsvergrendeling genegeerd.</translation>
+<translation id="4876805738539874299">Maximale SSL-versie ingeschakeld</translation>
 <translation id="4882546920824859909">Domeinen definiëren voor toegang tot Google-apps</translation>
 <translation id="4890209226533226410">Het type vergrootglas instellen dat is ingeschakeld.
 
@@ -1670,6 +1681,7 @@
 
       Als je deze instelling uitschakelt of geen waarde instelt, wordt SafeSearch Zoeken niet afgedwongen voor Google Zoeken.</translation>
 <translation id="5937539742111853215">Met dit beleid wordt alleen de ontwikkelaarsmodus van <ph name="PRODUCT_OS_NAME" /> bepaald. Als je de toegang tot de ontwikkelaarsopties van Android wilt blokkeren, moet je het beleid <ph name="DEVELOPER_TOOLS_POLICY" /> instellen.</translation>
+<translation id="5940306398763671235">Hiermee wordt Google Cast ingeschakeld</translation>
 <translation id="5946082169633555022">Bètakanaal</translation>
 <translation id="5950205771952201658">Omdat soft-fail online certificaatintrekkingscontroles de veiligheid niet aantoonbaar verhogen, worden deze standaard uitgeschakeld in versie 19 en hoger van <ph name="PRODUCT_NAME" />. Als dit beleid op 'waar' wordt ingesteld, wordt het eerdere gedrag hersteld en worden online OCSP/CRL-controles uitgevoerd.
 
@@ -2015,6 +2027,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7027785306666625591">Energiebeheer in <ph name="PRODUCT_OS_NAME" /> configureren.
 
       Met dit beleid kun je configureren hoe <ph name="PRODUCT_OS_NAME" /> zich gedraagt wanneer de gebruiker enige tijd inactief is.</translation>
+<translation id="703078280527762319">Waarschuwing: Het beleid voor de maximale TLS-versie wordt rond versie 66 volledig verwijderd uit <ph name="PRODUCT_NAME" /> (rond februari 2018).
+
+      Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard maximumversie: TLS-versie 1.3.
+
+      Dit beleid kan ook zijn ingesteld op een van de volgende waarden: 'tls1.2' of 'tls1.3'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen hogere SSL-/TLS-versies dan de gespecificeerde versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
 <translation id="7049373494483449255">Hiermee kan <ph name="PRODUCT_NAME" /> documenten verzenden naar <ph name="CLOUD_PRINT_NAME" /> voor afdrukken. OPMERKING: dit is alleen van invloed op ondersteuning voor <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />. Hiermee wordt niet voorkomen dat gebruikers afdruktaken verzenden via websites.
 
@@ -2244,6 +2261,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als je deze instelling inschakelt, gebruikt <ph name="PRODUCT_NAME" /> de gespecificeerde landinstelling. Als de geconfigureerde landinstelling niet wordt ondersteund, wordt 'en-US' gebruikt.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de door de gebruiker gespecificeerde landinstelling (indien geconfigureerd), de landinstelling voor het systeem of 'en-US'.</translation>
+<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Bepaalt of gegevensroaming moet worden ingeschakeld voor het apparaat. Als dit is ingesteld op 'true', wordt gegevensroaming toegestaan. Als de instelling niet wordt geconfigureerd of op 'false' is ingesteld, is gegevensroaming niet beschikbaar.</translation>
 <translation id="76810863974142048">URL waarop clients met externe toegang hun verificatietoken moeten ophalen.
 
@@ -2525,6 +2543,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       We hopen deze overschrijving in de toekomst te verwijderen.</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
+<translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>
 <translation id="8294750666104911727">Normaal worden pagina's waarvoor X-UA-Compatible is ingesteld op chrome=1, weergegeven in <ph name="PRODUCT_FRAME_NAME" /> ongeacht het beleid 'ChromeFrameRendererSettings'.
 
           Als je deze instelling inschakelt, worden pagina's niet gescand op metatags.
@@ -2614,6 +2633,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
+<translation id="8613640727149655305">Wanneer dit beleid is ingesteld op 'waar' (true), is de Google-locatieservice voor Android ingeschakeld. Android-apps kunnen de gegevens van deze service gebruiken om de apparaatlocatie te vinden. Ook wordt het verzenden van anonieme locatiegegevens naar Google ingeschakeld.
+
+      Wanneer dit beleid is ingesteld op 'onwaar' (false), is de Google-locatieservice voor Android uitgeschakeld.
+
+      Als deze instelling is geconfigureerd, kunnen gebruikers deze niet zelf wijzigen.
+
+      Als deze instelling niet is geconfigureerd, kunnen gebruikers de Google-locatieservice in- en uitschakelen via de app Instellingen voor Android.
+
+      Houd er rekening mee dat dit beleid kan worden overschreven door het beleid <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" /> wanneer dat is ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />.
+
+      Dit beleid is alleen van toepassing op gebruikers die Android-apps kunnen uitvoeren.</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Voor Android-apps is dit beleid alleen van invloed op de ingebouwde camera. Wanneer dit beleid is ingesteld op true (waar), wordt voor alle Android-apps, zonder uitzondering, de camera uitgeschakeld.</translation>

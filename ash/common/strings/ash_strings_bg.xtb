@@ -83,6 +83,7 @@
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="3157169093162779309">Заключване на завъртането</translation>
+<translation id="3164154768979021380">Излиза се от режима с докинг станция</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3335772982573114336">Нова бележка</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
@@ -100,7 +101,6 @@
 <translation id="3683428399328702079">Променихте разделителната способност на „<ph name="DISPLAY_NAME" />“ на <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Активиране на Wi-Fi</translation>
 <translation id="3712407551474845318">Заснемане на област</translation>
-<translation id="372094107052732682">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Направена бе екранна снимка</translation>
 <translation id="3775358506042162758">В централизирания вход можете да имате най-много три профила.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
 <translation id="5170568018924773124">Показване в папката</translation>
 <translation id="5222676887888702881">Изход</translation>
-<translation id="5238774010593222950">Не можете да влезете в друг профил</translation>
 <translation id="532063867737390965">Тази мрежова настройка е деактивирана от администратора.</translation>
 <translation id="5331975486040154427">Устройство с USB-C (задният ляв порт)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -171,6 +170,7 @@
 <translation id="5977415296283489383">Слушалки</translation>
 <translation id="5978382165065462689">Споделяте контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="5980301590375426705">Изход от сесията като гост</translation>
+<translation id="6018164090099858612">Излиза се от огледалния режим</translation>
 <translation id="6041154455840261787">Режимът на висок контраст е активиран. Натиснете отново Search + Shift + H, за да го изключите.</translation>
 <translation id="6043212731627905357">Този монитор не се поддържа от вашия <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Изход сега</translation>
@@ -181,7 +181,6 @@
 <translation id="6144938890088808325">Помогнете ни да подобрим Chromebook</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6165508094623778733">Научете повече</translation>
-<translation id="6248847161401822652">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: Активира се...</translation>
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
 <translation id="9089416786594320554">Методи за въвеждане</translation>
+<translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
+<translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
 <translation id="938582441709398163">Наслагване върху клавиатурата</translation>
 <translation id="939252827960237676">Запазването на екранната снимка не бе успешно</translation>

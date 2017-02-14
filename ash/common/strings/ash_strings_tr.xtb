@@ -83,6 +83,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
 <translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="3157169093162779309">Döndürme kilidini etkinleştir</translation>
+<translation id="3164154768979021380">Yuva modundan çıkılıyor</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="3335772982573114336">Yeni not</translation>
 <translation id="3364721542077212959">Ekran kalemi araçları</translation>
@@ -100,7 +101,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> çözünürlüğü <ph name="RESOLUTION" /> olarak değiştirildi</translation>
 <translation id="370649949373421643">Kablosuzu Etkinleştir</translation>
 <translation id="3712407551474845318">Alan yakala</translation>
-<translation id="372094107052732682">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
 <translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
 <translation id="3775358506042162758">Çoklu oturum açmada en fazla üç hesabınız olabilir.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="5170568018924773124">Klasörde göster</translation>
 <translation id="5222676887888702881">Çıkış</translation>
-<translation id="5238774010593222950">Başka bir hesapta oturum açamıyorum.</translation>
 <translation id="532063867737390965">Bu ağ ayarı yönetici tarafından devre dışı bırakıldı.</translation>
 <translation id="5331975486040154427">USB-C cihaz (sol arka bağlantı noktası)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -171,6 +170,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5977415296283489383">Kulaklık</translation>
 <translation id="5978382165065462689">Ekranınızın kontrolü Uzaktan Yardım kullanılarak paylaşılıyor.</translation>
 <translation id="5980301590375426705">Misafir oturumundan çık</translation>
+<translation id="6018164090099858612">Ayna modundan çıkılıyor</translation>
 <translation id="6041154455840261787">Yüksek Kontrast Modu etkinleştirildi. Kapatmak için tekrar Ara+Üst Karakter+H tuşlarına basın.</translation>
 <translation id="6043212731627905357">Bu monitör <ph name="DEVICE_TYPE" /> cihazınızla uyuşmuyor (monitör desteklenmiyor).</translation>
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
@@ -182,7 +182,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6144938890088808325">Chromebook'ları iyileştirmemize yardımcı olun</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
-<translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Etkinleştiriliyor...</translation>
 <translation id="6297287540776456956">Alan seçmek için ekran kalemini kullanın</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
@@ -272,9 +271,11 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
+<translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> adlı ekran kaldırıldı</translation>
 <translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>
 <translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
 <translation id="9201131092683066720">Pil %<ph name="PERCENTAGE" /> dolu.</translation>
+<translation id="9210037371811586452">Birleşik masaüstü modundan çıkılıyor</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
 <translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
 <translation id="939252827960237676">Ekran görüntüsü kaydedilemedi</translation>

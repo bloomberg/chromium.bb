@@ -83,6 +83,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="3157169093162779309">Įgalinti pasukimo užrakinimą</translation>
+<translation id="3164154768979021380">Išjungiamas prijungimo prie doko režimas</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="3335772982573114336">Naujas užrašas</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
@@ -100,7 +101,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> skyra pakeista į <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Įgalinti „Wi-Fi“</translation>
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
-<translation id="372094107052732682">Jei norite išeiti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
 <translation id="3775358506042162758">Naudodami kelių paskyrų funkciją, galite turėti iki trijų paskyrų.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -142,7 +142,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="5168181903108465623">Pasiekiami perdavimo įrenginiai</translation>
 <translation id="5170568018924773124">Rodyti aplanke</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
-<translation id="5238774010593222950">Nepavyksta prisijungti prie kitos paskyros.</translation>
 <translation id="532063867737390965">Šį tinklo nustatymą išjungė administratorius.</translation>
 <translation id="5331975486040154427">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
@@ -171,6 +170,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="5977415296283489383">Ausinės</translation>
 <translation id="5978382165065462689">Leidžiama valdyti jūsų ekraną naudojant Nuotolinę pagalbą.</translation>
 <translation id="5980301590375426705">Išeiti iš svečio režimo</translation>
+<translation id="6018164090099858612">Išjungiamas atvaizdavimo režimas</translation>
 <translation id="6041154455840261787">Įgalintas didelio kontrasto režimas. Dar kartą paspauskite „Search“ + „Shift“ + H, kad jį išjungtumėte.</translation>
 <translation id="6043212731627905357">Šis monitorius nesuderinamas su jūsų „<ph name="DEVICE_TYPE" />“ (monitorius nepalaikomas).</translation>
 <translation id="6043994281159824495">Atsijungti dabar</translation>
@@ -181,7 +181,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6144938890088808325">Padėkite mums tobulinti „Chromebook“ kompiuterius</translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
-<translation id="6248847161401822652">Jei norite išeiti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: aktyvinama...</translation>
 <translation id="6297287540776456956">Naudodami rašiklį pasirinkite sritį</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> pakeista į <ph name="ROTATION" /></translation>
@@ -271,9 +270,11 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>
 <translation id="9089416786594320554">Įvesties metodai</translation>
+<translation id="9091626656156419976">Pašalintas vaizdas „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="9151726767154816831">Kad atnaujintumėte, paleiskite iš naujo ir naudokite „Powerwash“</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
 <translation id="9201131092683066720">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %.</translation>
+<translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="938582441709398163">Klaviatūros perdanga</translation>
 <translation id="939252827960237676">Išsaugant ekrano kopiją įvyko klaida</translation>
