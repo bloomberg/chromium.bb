@@ -38,7 +38,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentUserGestureToken.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -392,9 +391,9 @@ void LocalDOMWindow::dispatchWindowLoadEvent() {
   // workaround to avoid Editing code crashes.  We should always dispatch
   // 'load' event asynchronously.  crbug.com/569511.
   if (ScopedEventQueue::instance()->shouldQueueEvents() && m_document) {
-    m_document->postTask(
-        TaskType::Networking, BLINK_FROM_HERE,
-        createSameThreadTask(&LocalDOMWindow::dispatchLoadEvent,
+    TaskRunnerHelper::get(TaskType::Networking, m_document)
+        ->postTask(BLINK_FROM_HERE,
+                   WTF::bind(&LocalDOMWindow::dispatchLoadEvent,
                              wrapPersistent(this)));
     return;
   }

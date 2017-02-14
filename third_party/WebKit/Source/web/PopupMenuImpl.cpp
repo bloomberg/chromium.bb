@@ -7,7 +7,6 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -503,9 +502,9 @@ void PopupMenuImpl::updateFromElement(UpdateReason) {
   if (m_needsUpdate)
     return;
   m_needsUpdate = true;
-  ownerElement().document().postTask(
-      TaskType::UserInteraction, BLINK_FROM_HERE,
-      createSameThreadTask(&PopupMenuImpl::update, wrapPersistent(this)));
+  TaskRunnerHelper::get(TaskType::UserInteraction, &ownerElement().document())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&PopupMenuImpl::update, wrapPersistent(this)));
 }
 
 void PopupMenuImpl::update() {

@@ -386,6 +386,10 @@ static bool s_threadedParsingEnabledForTesting = true;
 
 // This doesn't work with non-Document ExecutionContext.
 static void runAutofocusTask(ExecutionContext* context) {
+  // Document lifecycle check is done in Element::focus()
+  if (!context)
+    return;
+
   Document* document = toDocument(context);
   if (Element* element = document->autofocusElement()) {
     document->setAutofocusElement(0);
@@ -5722,10 +5726,12 @@ static void runAddConsoleMessageTask(MessageSource source,
 
 void Document::addConsoleMessage(ConsoleMessage* consoleMessage) {
   if (!isContextThread()) {
-    postTask(TaskType::Unthrottled, BLINK_FROM_HERE,
-             createCrossThreadTask(
-                 &runAddConsoleMessageTask, consoleMessage->source(),
-                 consoleMessage->level(), consoleMessage->message()));
+    TaskRunnerHelper::get(TaskType::Unthrottled, this)
+        ->postTask(
+            BLINK_FROM_HERE,
+            crossThreadBind(&runAddConsoleMessageTask, consoleMessage->source(),
+                            consoleMessage->level(), consoleMessage->message(),
+                            wrapCrossThreadPersistent(this)));
     return;
   }
 
@@ -6312,8 +6318,9 @@ void Document::setAutofocusElement(Element* element) {
   m_hasAutofocused = true;
   DCHECK(!m_autofocusElement);
   m_autofocusElement = element;
-  postTask(TaskType::UserInteraction, BLINK_FROM_HERE,
-           createSameThreadTask(&runAutofocusTask));
+  TaskRunnerHelper::get(TaskType::UserInteraction, this)
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&runAutofocusTask, wrapWeakPersistent(this)));
 }
 
 Element* Document::activeElement() const {

@@ -30,7 +30,6 @@
 
 #include "web/ExternalPopupMenu.h"
 
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameHost.h"
@@ -147,10 +146,10 @@ void ExternalPopupMenu::updateFromElement(UpdateReason reason) {
       if (m_needsUpdate)
         return;
       m_needsUpdate = true;
-      m_ownerElement->document().postTask(
-          TaskType::UserInteraction, BLINK_FROM_HERE,
-          createSameThreadTask(&ExternalPopupMenu::update,
-                               wrapPersistent(this)));
+      TaskRunnerHelper::get(TaskType::UserInteraction,
+                            &m_ownerElement->document())
+          ->postTask(BLINK_FROM_HERE, WTF::bind(&ExternalPopupMenu::update,
+                                                wrapPersistent(this)));
       break;
 
     case ByStyleChange:

@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
@@ -107,10 +106,9 @@ void SearchInputType::startSearchEventTimer() {
 
   if (!length) {
     m_searchEventTimer.stop();
-    element().document().postTask(
-        TaskType::UserInteraction, BLINK_FROM_HERE,
-        createSameThreadTask(&HTMLInputElement::onSearch,
-                             wrapPersistent(&element())));
+    TaskRunnerHelper::get(TaskType::UserInteraction, &element().document())
+        ->postTask(BLINK_FROM_HERE, WTF::bind(&HTMLInputElement::onSearch,
+                                              wrapPersistent(&element())));
     return;
   }
 

@@ -37,7 +37,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
@@ -895,9 +894,9 @@ void HTMLSelectElement::scrollToOption(HTMLOptionElement* option) {
   // inserted before executing scrollToOptionTask().
   m_optionToScrollTo = option;
   if (!hasPendingTask)
-    document().postTask(
-        TaskType::UserInteraction, BLINK_FROM_HERE,
-        createSameThreadTask(&HTMLSelectElement::scrollToOptionTask,
+    TaskRunnerHelper::get(TaskType::UserInteraction, &document())
+        ->postTask(BLINK_FROM_HERE,
+                   WTF::bind(&HTMLSelectElement::scrollToOptionTask,
                              wrapPersistent(this)));
 }
 
