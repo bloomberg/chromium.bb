@@ -567,7 +567,8 @@ Actions:"""
                       help='Limit output to the specific project')
   parser.add_argument('-t', '--topic',
                       help='Limit output to the specific topic')
-  parser.add_argument('args', nargs='+')
+  parser.add_argument('action', help='The gerrit action to perform')
+  parser.add_argument('args', nargs='*', help='Action arguments')
   opts = parser.parse_args(argv)
 
   # A cache of gerrit helpers we'll load on demand.
@@ -579,23 +580,21 @@ Actions:"""
   COLOR = terminal.Color(enabled=opts.color)
 
   # Now look up the requested user action and run it.
-  cmd = opts.args[0].lower()
-  args = opts.args[1:]
-  functor = globals().get(act_pfx + cmd.capitalize())
+  functor = globals().get(act_pfx + opts.action.capitalize())
   if functor:
     argspec = inspect.getargspec(functor)
     if argspec.varargs:
       arg_min = getattr(functor, 'arg_min', len(argspec.args))
-      if len(args) < arg_min:
+      if len(opts.args) < arg_min:
         parser.error('incorrect number of args: %s expects at least %s' %
-                     (cmd, arg_min))
-    elif len(argspec.args) - 1 != len(args):
+                     (opts.action, arg_min))
+    elif len(argspec.args) - 1 != len(opts.args):
       parser.error('incorrect number of args: %s expects %s' %
-                   (cmd, len(argspec.args) - 1))
+                   (opts.action, len(argspec.args) - 1))
     try:
-      functor(opts, *args)
+      functor(opts, *opts.args)
     except (cros_build_lib.RunCommandError, gerrit.GerritException,
             gob_util.GOBError) as e:
       cros_build_lib.Die(e.message)
   else:
-    parser.error('unknown action: %s' % (cmd,))
+    parser.error('unknown action: %s' % (opts.action,))
