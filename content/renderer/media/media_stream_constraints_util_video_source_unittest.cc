@@ -20,6 +20,7 @@ namespace {
 const char kDeviceID1[] = "fake_device_1";
 const char kDeviceID2[] = "fake_device_2";
 const char kDeviceID3[] = "fake_device_3";
+const char kDeviceID4[] = "fake_device_4";
 }
 
 class MediaStreamConstraintsUtilVideoSourceTest : public testing::Test {
@@ -83,6 +84,14 @@ class MediaStreamConstraintsUtilVideoSourceTest : public testing::Test {
         media::VideoCaptureFormat(gfx::Size(2304, 1536), 10.0f,
                                   media::PIXEL_FORMAT_I420),
     };
+    capabilities_.device_capabilities.push_back(std::move(device));
+
+    // A depth capture device.
+    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device->device_id = kDeviceID4;
+    device->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+    device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
+                                                 media::PIXEL_FORMAT_Y16)};
     capabilities_.device_capabilities.push_back(std::move(device));
 
     capabilities_.power_line_capabilities = {
@@ -151,6 +160,17 @@ TEST_F(MediaStreamConstraintsUtilVideoSourceTest, OverconstrainedOnFacingMode) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(constraint_factory_.basic().facingMode.name(),
+            result.failed_constraint_name);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoSourceTest, OverconstrainedOnVideoKind) {
+  constraint_factory_.Reset();
+  // No device in |capabilities_| has video kind infrared.
+  constraint_factory_.basic().videoKind.setExact(
+      blink::WebString::fromASCII("infrared"));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.has_value());
+  EXPECT_EQ(constraint_factory_.basic().videoKind.name(),
             result.failed_constraint_name);
 }
 
@@ -328,6 +348,22 @@ TEST_F(MediaStreamConstraintsUtilVideoSourceTest, MandatoryFacingMode) {
   EXPECT_EQ(*high_res_closest_format_, result.settings.format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.settings.power_line_frequency());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoSourceTest, MandatoryVideoKind) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().videoKind.setExact(
+      blink::WebString::fromASCII("depth"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(kDeviceID4, result.settings.device_id());
+  EXPECT_EQ(media::PIXEL_FORMAT_Y16, result.settings.format().pixel_format);
+
+  constraint_factory_.basic().videoKind.setExact(
+      blink::WebString::fromASCII("color"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(default_device_->device_id, result.settings.device_id());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoSourceTest, MandatoryPowerLineFrequency) {

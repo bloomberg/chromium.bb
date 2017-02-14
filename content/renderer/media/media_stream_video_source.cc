@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
+#include "content/renderer/media/media_stream_constraints_util_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_track_adapter.h"
 
@@ -28,7 +29,8 @@ const char* const kLegalVideoConstraints[] = {"width",
                                               "deviceId",
                                               "groupId",
                                               "mediaStreamSource",
-                                              "googNoiseReduction"};
+                                              "googNoiseReduction",
+                                              "videoKind"};
 
 // Returns true if |constraint| has mandatory constraints.
 bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
@@ -142,6 +144,9 @@ bool UpdateFormatForConstraints(
              (constraints.height.hasExact() &&
               constraints.height.exact() > format->frame_size.height())) {
     *failing_constraint_name = constraints.height.name();
+  } else if (constraints.videoKind.hasExact() &&
+             !constraints.videoKind.matches(GetVideoKindForFormat(*format))) {
+    *failing_constraint_name = constraints.videoKind.name();
   } else if (!constraints.frameRate.matches(format->frame_rate)) {
     if (constraints.frameRate.hasMax()) {
       const double value = constraints.frameRate.max();

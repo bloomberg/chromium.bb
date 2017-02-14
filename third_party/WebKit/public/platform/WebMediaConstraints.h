@@ -232,6 +232,7 @@ struct WebMediaTrackConstraintSet {
   BooleanConstraint disableLocalEcho;
   StringConstraint groupId;
   // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
+  StringConstraint videoKind;
   DoubleConstraint depthNear;
   DoubleConstraint depthFar;
   DoubleConstraint focalLengthX;

@@ -30,6 +30,10 @@ const int kDefaultResolutionArea = MediaStreamVideoSource::kDefaultWidth *
 // The minimum aspect ratio to be supported by sources.
 const double kMinSourceAspectRatio = 0.05;
 
+// VideoKind enum values. See https://w3c.github.io/mediacapture-depth.
+const char kVideoKindColor[] = "color";
+const char kVideoKindDepth[] = "depth";
+
 blink::WebString ToWebString(::mojom::FacingMode facing_mode) {
   switch (facing_mode) {
     case ::mojom::FacingMode::USER:
@@ -307,7 +311,10 @@ double FormatSourceDistance(
              constraint_set.aspectRatio, failed_constraint_name) +
          FrameRateConstraintSourceDistance(format.frame_rate,
                                            constraint_set.frameRate,
-                                           failed_constraint_name);
+                                           failed_constraint_name) +
+         StringConstraintSourceDistance(GetVideoKindForFormat(format),
+                                        constraint_set.videoKind,
+                                        failed_constraint_name);
 }
 
 // Returns a custom distance between a set of candidate settings and a
@@ -477,6 +484,8 @@ double CandidateFitnessDistance(
                                              constraint_set.facingMode);
   fitness += FrameRateConstraintFitnessDistance(candidate.GetFrameRate(),
                                                 constraint_set.frameRate);
+  fitness += StringConstraintFitnessDistance(candidate.GetVideoKind(),
+                                             constraint_set.videoKind);
   fitness += PowerLineFrequencyConstraintFitnessDistance(
       candidate.GetPowerLineFrequency(), constraint_set.googPowerLineFrequency);
   fitness += ResolutionConstraintFitnessDistance(candidate.GetHeight(),
@@ -554,6 +563,13 @@ void AppendDistanceFromDefault(const VideoCaptureSourceSettings& candidate,
 
 }  // namespace
 
+blink::WebString GetVideoKindForFormat(
+    const media::VideoCaptureFormat& format) {
+  return (format.pixel_format == media::PIXEL_FORMAT_Y16)
+             ? blink::WebString::fromASCII(kVideoKindDepth)
+             : blink::WebString::fromASCII(kVideoKindColor);
+}
+
 VideoCaptureCapabilities::VideoCaptureCapabilities() = default;
 VideoCaptureCapabilities::VideoCaptureCapabilities(
     VideoCaptureCapabilities&& other) = default;
@@ -607,6 +623,10 @@ double VideoCaptureSourceSettings::GetFrameRate() const {
 
 blink::WebString VideoCaptureSourceSettings::GetDeviceId() const {
   return blink::WebString::fromASCII(device_id_.data());
+}
+
+blink::WebString VideoCaptureSourceSettings::GetVideoKind() const {
+  return GetVideoKindForFormat(format_);
 }
 
 const char kDefaultFailedConstraintName[] = "";

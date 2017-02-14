@@ -32,6 +32,15 @@ function getFake16bitStream() {
   });
 }
 
+function getStreamOfVideoKind(constraint_kind) {
+  var constraints = {
+    video:{
+      videoKind: constraint_kind
+    }
+  }
+  return navigator.mediaDevices.getUserMedia(constraints);
+}
+
 // Data is RGBA array data and could be used with different formats:
 // e.g. Uint8Array, Uint8ClampedArray, Float32Array...
 // Value at point (row, column) is calculated as

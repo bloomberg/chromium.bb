@@ -20,6 +20,11 @@ class WebMediaConstraints;
 
 namespace content {
 
+// Calculates and returns videoKind value for |format|.
+// See https://w3c.github.io/mediacapture-depth.
+blink::WebString CONTENT_EXPORT
+GetVideoKindForFormat(const media::VideoCaptureFormat& format);
+
 struct CONTENT_EXPORT VideoCaptureCapabilities {
   VideoCaptureCapabilities();
   VideoCaptureCapabilities(VideoCaptureCapabilities&& other);
@@ -52,6 +57,7 @@ class CONTENT_EXPORT VideoCaptureSourceSettings {
   long GetHeight() const;
   double GetFrameRate() const;
   blink::WebString GetDeviceId() const;
+  blink::WebString GetVideoKind() const;
 
   const media::VideoCaptureFormat& format() const { return format_; }
   const std::string& device_id() const { return device_id_; }

@@ -21,6 +21,9 @@ static const char kGetDepthStreamAndCameraCalibration[] =
     "getDepthStreamAndCameraCalibration";
 static const char kGetBothStreamsAndCheckForFeaturesPresence[] =
     "getBothStreamsAndCheckForFeaturesPresence";
+static const char kGetStreamsByVideoKind[] = "getStreamsByVideoKind";
+static const char kGetStreamsByVideoKindNoDepth[] =
+    "getStreamsByVideoKindNoDepth";
 
 void RemoveSwitchFromCommandLine(base::CommandLine* command_line,
                                  const std::string& switch_value) {
@@ -108,6 +111,42 @@ IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest,
 
   ExecuteJavascriptAndWaitForOk(base::StringPrintf(
       "%s({video: true});", kGetBothStreamsAndCheckForFeaturesPresence));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest, GetStreamsByVideoKind) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII("--enable-blink-features",
+                                  "MediaGetSettings,MediaCaptureDepth");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(
+      embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});", kGetStreamsByVideoKind));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest,
+                       GetStreamsByVideoKindNoDepth) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // Set fake factory to have only one device, of type "color".
+  RemoveSwitchFromCommandLine(command_line,
+                              switches::kUseFakeDeviceForMediaStream);
+  command_line->AppendSwitchASCII(switches::kUseFakeDeviceForMediaStream,
+                                  "device-count=1");
+  command_line->AppendSwitchASCII("--enable-blink-features",
+                                  "MediaGetSettings,MediaCaptureDepth");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(
+      embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});", kGetStreamsByVideoKindNoDepth));
 }
 
 }  // namespace content

@@ -116,6 +116,60 @@
     failedCallback);
   }
 
+  function testGetStreamByVideoKindConstraint(constraint, kind) {
+    return new Promise(function(resolve, reject) {
+      getStreamOfVideoKind(constraint).then(function(stream) {
+        if (stream.getVideoTracks().length != 1) {
+          return reject("Expected one " + kind + " track, got " +
+                        stream.getVideoTracks().length +
+                        " when using constraint " + JSON.stringify(constraint));
+        }
+        var track = stream.getVideoTracks()[0];
+        if (track.getSettings().videoKind != kind) {
+          return reject("Expected " + kind + " track, got " +
+                        track.getSettings().videoKind +
+                       " when using constraint " + JSON.stringify(constraint));
+        }
+        return resolve();
+      },
+      failedCallback);
+    });
+  }
+  
+  function getStreamsByVideoKind() {
+    console.log('Calling getStreamsByVideoKind');
+    var cases = [{constraint: {exact: "depth"}, kind: "depth"},
+                 {constraint: {exact: "color"}, kind: "color"}];
+    var tests = [];
+    for (var i in cases) {
+      var test_case = cases[i];
+      tests.push(testGetStreamByVideoKindConstraint(test_case.constraint,
+                                                    test_case.kind));
+    }
+    Promise.all(tests).then(reportTestSuccess, reason => {
+      failedCallback({name: reason});
+    });
+  }
+
+  function getStreamsByVideoKindNoDepth() {
+    console.log('Calling getStreamsByVideoKindNoDepth');
+    testGetStreamByVideoKindConstraint({exact: "color"}, "color")
+    .then(function() {
+      // Getting a depth stream should fail.
+      getStreamOfVideoKind({exact: "depth"}).then(function(stream) {
+        return failedCallback({name: "Expected to fail, got depth instead."});
+      }, function() {
+        // Getting a random stream should fail.
+        getStreamOfVideoKind({exact: "fisheye"}).then(function(stream) {
+          return failedCallback(
+              {name: "Expected to fail, got fisheye instead."});
+        }, reportTestSuccess);
+      });
+    }, reason => {
+      failedCallback({name: reason});
+    });
+  }
+
   function depthStreamToRGBAUint8Texture() {
     console.log('Calling depthStreamToRGBAUint8Texture');
     getFake16bitStream().then(function(stream) {

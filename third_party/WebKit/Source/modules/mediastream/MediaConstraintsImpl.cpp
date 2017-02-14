@@ -149,6 +149,10 @@ const char kAudioLatency[] = "latencyMs";
 // https://crbug.com/579729
 const char kGoogLeakyBucket[] = "googLeakyBucket";
 const char kPowerLineFrequency[] = "googPowerLineFrequency";
+// mediacapture-depth: videoKind key and VideoKindEnum values.
+const char kVideoKind[] = "videoKind";
+const char kVideoKindColor[] = "color";
+const char kVideoKindDepth[] = "depth";
 // Names used for testing.
 const char kTestConstraint1[] = "valid_and_supported_1";
 const char kTestConstraint2[] = "valid_and_supported_2";
@@ -426,6 +430,14 @@ static void parseOldStyleNames(
           DeprecationMessageSource, WarningMessageLevel,
           "Obsolete constraint named " + String(constraint.m_name) +
               " is ignored. Please stop using it."));
+    } else if (constraint.m_name.equals(kVideoKind)) {
+      if (!constraint.m_value.equals(kVideoKindColor) &&
+          !constraint.m_value.equals(kVideoKindDepth)) {
+        errorState.throwConstraintError("Illegal value for constraint",
+                                        constraint.m_name);
+      } else {
+        result.videoKind.setExact(constraint.m_value);
+      }
     } else if (constraint.m_name.equals(kTestConstraint1) ||
                constraint.m_name.equals(kTestConstraint2)) {
       // These constraints are only for testing parsing.
@@ -670,6 +682,10 @@ void copyConstraintSet(const MediaTrackConstraintSet& constraintsIn,
     copyStringConstraint(constraintsIn.groupId(), nakedTreatment,
                          constraintBuffer.groupId);
   }
+  if (constraintsIn.hasVideoKind()) {
+    copyStringConstraint(constraintsIn.videoKind(), nakedTreatment,
+                         constraintBuffer.videoKind);
+  }
   if (constraintsIn.hasDepthNear()) {
     copyDoubleConstraint(constraintsIn.depthNear(), nakedTreatment,
                          constraintBuffer.depthNear);
@@ -911,6 +927,8 @@ void convertConstraintSet(const WebMediaTrackConstraintSet& input,
     output.setDeviceId(convertString(input.deviceId, nakedTreatment));
   if (!input.groupId.isEmpty())
     output.setGroupId(convertString(input.groupId, nakedTreatment));
+  if (!input.videoKind.isEmpty())
+    output.setVideoKind(convertString(input.videoKind, nakedTreatment));
   // TODO(hta): Decide the future of the nonstandard constraints.
   // If they go forward, they need to be added here.
   // https://crbug.com/605673

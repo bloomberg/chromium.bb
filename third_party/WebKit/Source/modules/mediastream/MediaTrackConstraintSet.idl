@@ -23,17 +23,18 @@ dictionary MediaTrackConstraintSet {
     [RuntimeEnabled=MediaConstraints] ConstrainLong channelCount;
     [RuntimeEnabled=MediaConstraints] ConstrainDOMString deviceId;
     [RuntimeEnabled=MediaConstraints] ConstrainDOMString groupId;
+    // Media Capture Depth Stream Extensions
+    // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
+    // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,
+    // focalLengthX and focalLengthY attributes should be declared as partial
+    // dictionary but IDL parser can't support it yet. http://crbug.com/579896.
+    [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDOMString videoKind;
+    [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble depthNear;
+    [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble depthFar;
+    [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble focalLengthX;
+    [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble focalLengthY;
     // The "mandatory" and "_optional" members are retained for conformance
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
     Dictionary mandatory;
     sequence<Dictionary> _optional;
-    // Media Capture Depth Stream Extensions
-    // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
-    // TODO(aleksandar.stojiljkovic): depthNear, depthFar, focalLengthX and
-    // focalLengthY attributes should be declared as partial dictionary but IDL
-    // parser can't support it yet. Please see: http://crbug.com/579896.
-    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthNear;
-    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthFar;
-    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble focalLengthX;
-    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble focalLengthY;
 };

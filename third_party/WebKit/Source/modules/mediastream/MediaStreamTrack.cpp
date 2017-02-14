@@ -230,6 +230,8 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
   }
   if (RuntimeEnabledFeatures::mediaCaptureDepthEnabled() &&
       m_component->source()->type() == MediaStreamSource::TypeVideo) {
+    if (platformSettings.hasVideoKind())
+      settings.setVideoKind(platformSettings.videoKind);
     if (platformSettings.hasDepthNear())
       settings.setDepthNear(platformSettings.depthNear);
     if (platformSettings.hasDepthFar())
