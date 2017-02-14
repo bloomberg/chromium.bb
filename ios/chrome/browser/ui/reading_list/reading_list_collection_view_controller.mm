@@ -214,9 +214,12 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     return _attributesProvider;
   }
 
+  // Accept any favicon even the smallest ones (16x16) as it is better than the
+  // fallback icon.
+  // Pass 1 as minimum size to avoid empty favicons.
   _attributesProvider = [[FaviconAttributesProvider alloc]
       initWithFaviconSize:kFaviconPreferredSize
-           minFaviconSize:kFaviconMinSize
+           minFaviconSize:1
          largeIconService:self.largeIconService];
   return _attributesProvider;
 }
