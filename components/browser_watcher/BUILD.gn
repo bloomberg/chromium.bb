@@ -50,6 +50,7 @@ if (is_win) {
       "postmortem_minidump_writer_win.cc",
     ]
     deps = [
+      ":stability_data",
       ":stability_report_proto",
       "//base",
       "//third_party/crashpad/crashpad/client",
@@ -65,6 +66,7 @@ if (is_win) {
     ]
     deps = [
       ":postmortem_minidump_writer",
+      ":stability_data",
       ":stability_report_proto",
       "//base",
       "//third_party/crashpad/crashpad/client",
@@ -110,6 +112,7 @@ if (is_win) {
       ":browser_watcher_client",
       ":postmortem_minidump_writer",
       ":postmortem_report_collector",
+      ":stability_data",
       ":stability_report_proto",
       "//base",
       "//base/test:test_support",

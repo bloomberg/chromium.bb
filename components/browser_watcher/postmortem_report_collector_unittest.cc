@@ -25,6 +25,7 @@
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
+#include "components/browser_watcher/stability_data_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
@@ -53,6 +54,16 @@ namespace {
 const char kProductName[] = "TestProduct";
 const char kVersionNumber[] = "TestVersionNumber";
 const char kChannelName[] = "TestChannel";
+
+void ContainsKeyValue(
+    const google::protobuf::Map<std::string, TypedValue>& data,
+    const std::string& key,
+    const std::string& value) {
+  auto it = data.find(key);
+  ASSERT_TRUE(it != data.end());
+  EXPECT_EQ(TypedValue::kStringValue, it->second.value_case());
+  EXPECT_EQ(value, it->second.string_value());
+}
 
 // Exposes a public constructor in order to create a dummy database.
 class MockCrashReportDatabase : public CrashReportDatabase {
@@ -118,7 +129,7 @@ class MockPostmortemReportCollector : public PostmortemReportCollector {
                    const std::set<base::FilePath>&));
   MOCK_METHOD1(CollectRaw, StabilityReport*(const base::FilePath&));
   MOCK_METHOD4(WriteReportToMinidump,
-               bool(const StabilityReport& report,
+               bool(StabilityReport* report,
                     const crashpad::UUID& client_id,
                     const crashpad::UUID& report_id,
                     base::PlatformFile minidump_file));
@@ -192,7 +203,7 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
                         Return(CrashReportDatabase::kNoError)));
 
     EXPECT_CALL(collector_,
-                WriteReportToMinidump(EqualsProto(*stability_report), _, _,
+                WriteReportToMinidump(stability_report, _, _,
                                       minidump_file.GetPlatformFile()))
         .Times(1)
         .WillOnce(Return(true));
@@ -587,7 +598,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 
   // Validate the report's user data.
   const auto& collected_data = report->global_data();
-  ASSERT_EQ(8U, collected_data.size());
+  ASSERT_EQ(12U, collected_data.size());
 
   ASSERT_TRUE(base::ContainsKey(collected_data, "raw"));
   EXPECT_EQ(TypedValue::kBytesValue, collected_data.at("raw").value_case());
@@ -626,6 +637,16 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
       collected_data.at("sref").string_reference();
   EXPECT_EQ(reinterpret_cast<uintptr_t>(string2), sref.address());
   EXPECT_EQ(strlen(string2), static_cast<uint64_t>(sref.size()));
+
+  // Reporter's version details.
+  ContainsKeyValue(collected_data, kStabilityReporterProduct, kProductName);
+  ContainsKeyValue(collected_data, kStabilityReporterChannel, kChannelName);
+#if defined(ARCH_CPU_X86)
+  ContainsKeyValue(collected_data, kStabilityReporterPlatform, "Win32");
+#elif defined(ARCH_CPU_X86_64)
+  ContainsKeyValue(collected_data, kStabilityReporterPlatform, "Win64");
+#endif
+  ContainsKeyValue(collected_data, kStabilityReporterVersion, kVersionNumber);
 }
 
 TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,

@@ -101,7 +101,7 @@ class PostmortemReportCollector {
       const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
       ThreadState* thread_state);
 
-  virtual bool WriteReportToMinidump(const StabilityReport& report,
+  virtual bool WriteReportToMinidump(StabilityReport* report,
                                      const crashpad::UUID& client_id,
                                      const crashpad::UUID& report_id,
                                      base::PlatformFile minidump_file);

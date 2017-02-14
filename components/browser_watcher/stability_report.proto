@@ -78,7 +78,7 @@ message TypedValue {
 }
 
 // An activity represents information about something of interest on a thread.
-// Next id: 10
+// Next id: 11
 message Activity {
   enum Type {
     UNKNOWN = 0;
@@ -115,6 +115,8 @@ message Activity {
 
   // A unique identifier for a process.
   optional int64 process_id = 8;
+
+  // Tag id 10 is reserved for server side augmentation.
 
   // A key-value store.
   map<string, TypedValue> user_data = 9;

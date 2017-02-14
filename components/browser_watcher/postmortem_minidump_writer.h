@@ -15,33 +15,15 @@
 
 namespace browser_watcher {
 
-// Minidump information required by the Crashpad reporter.
-struct MinidumpInfo {
-  MinidumpInfo();
-  ~MinidumpInfo();
-
-  // Client and report identifiers, from the Crashpad database.
-  crashpad::UUID client_id;
-  crashpad::UUID report_id;
-
-  // Product name, version number and channel name from the executable's version
-  // resource.
-  std::string product_name;
-  std::string version_number;
-  std::string channel_name;
-
-  // The platform identifier (e.g. "Win32" or "Win64").
-  std::string platform;
-};
-
 // Write to |minidump_file| a minimal minidump that wraps |report|. Returns
 // true on success, false otherwise.
 // Note: the caller owns |minidump_file| and is responsible for keeping it valid
 // for this function's duration. |minidump_file| is expected to be empty
 // and a binary stream.
 bool WritePostmortemDump(base::PlatformFile minidump_file,
-                         const StabilityReport& report,
-                         const MinidumpInfo& minidump_info);
+                         const crashpad::UUID& client_id,
+                         const crashpad::UUID& report_id,
+                         StabilityReport* report);
 
 }  // namespace browser_watcher
 

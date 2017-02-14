@@ -19,8 +19,10 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
+#include "components/browser_watcher/stability_data_names.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_extensions.h"
 
 namespace browser_watcher {
@@ -33,6 +35,49 @@ namespace {
 // the SyzyAsan proto.
 // TODO(manzagop): centralize the stream type definitions to avoid issues.
 const uint32_t kStabilityReportStreamType = 0x4B6B0002;
+
+struct ProductDetails {
+  std::string product;
+  std::string channel;
+  std::string platform;
+  std::string version;
+};
+
+bool GetStringFromTypedValueMap(
+    const google::protobuf::Map<std::string, TypedValue>& map,
+    const std::string& key,
+    std::string* out) {
+  DCHECK(out);
+
+  auto it = map.find(key);
+  if (it == map.end())
+    return false;
+
+  const TypedValue& value = it->second;
+  if (value.value_case() != TypedValue::kStringValue)
+    return false;
+
+  *out = value.string_value();
+  return true;
+}
+
+bool GetProductDetails(
+    const google::protobuf::Map<std::string, TypedValue>& global_data,
+    ProductDetails* product_details) {
+  DCHECK(product_details);
+
+  if (!GetStringFromTypedValueMap(global_data, kStabilityProduct,
+                                  &(product_details->product)))
+    return false;
+  if (!GetStringFromTypedValueMap(global_data, kStabilityChannel,
+                                  &(product_details->channel)))
+    return false;
+  if (!GetStringFromTypedValueMap(global_data, kStabilityPlatform,
+                                  &(product_details->platform)))
+    return false;
+  return GetStringFromTypedValueMap(global_data, kStabilityVersion,
+                                    &(product_details->version));
+}
 
 int64_t GetFileOffset(base::File* file) {
   DCHECK(file);
@@ -55,6 +100,14 @@ bool IsFileEmpty(base::File* file) {
 //     in the protocol buffer or in a module stream.
 class PostmortemMinidumpWriter {
  public:
+  // DO NOT CHANGE VALUES. This is logged persistently in a histogram.
+  enum WriteStatus {
+    SUCCESS = 0,
+    FAILED = 1,
+    FAILED_MISSING_PRODUCT_DETAILS = 2,
+    WRITE_STATUS_MAX = 3
+  };
+
   PostmortemMinidumpWriter();
   ~PostmortemMinidumpWriter();
 
@@ -64,8 +117,9 @@ class PostmortemMinidumpWriter {
   // valid for this object's lifetime. |minidump_file| is expected to be empty
   // and a binary stream.
   bool WriteDump(base::PlatformFile minidump_file,
-                 const StabilityReport& report,
-                 const MinidumpInfo& minidump_info);
+                 const crashpad::UUID& client_id,
+                 const crashpad::UUID& report_id,
+                 StabilityReport* report);
 
  private:
   // An offset within a minidump file. Note: using this type to avoid including
@@ -76,7 +130,9 @@ class PostmortemMinidumpWriter {
   static const FilePosition kHeaderPos = 0U;
 
   bool WriteDumpImpl(const StabilityReport& report,
-                     const MinidumpInfo& minidump_info);
+                     const crashpad::UUID& client_id,
+                     const crashpad::UUID& report_id,
+                     const ProductDetails& product_details);
 
   bool AppendCrashpadInfo(const crashpad::UUID& client_id,
                           const crashpad::UUID& report_id,
@@ -128,6 +184,12 @@ class PostmortemMinidumpWriter {
   DISALLOW_COPY_AND_ASSIGN(PostmortemMinidumpWriter);
 };
 
+// This function's purpose is to limit code / data size caused by uma macros.
+void RecordWriteDumpStatus(PostmortemMinidumpWriter::WriteStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("ActivityTracker.Collect.WriteDumpStatus", status,
+                            PostmortemMinidumpWriter::WRITE_STATUS_MAX);
+}
+
 PostmortemMinidumpWriter::PostmortemMinidumpWriter()
     : next_available_byte_(0U), minidump_file_(nullptr) {}
 
@@ -137,13 +199,30 @@ PostmortemMinidumpWriter::~PostmortemMinidumpWriter() {
 
 bool PostmortemMinidumpWriter::WriteDump(
     base::PlatformFile minidump_platform_file,
-    const StabilityReport& report,
-    const MinidumpInfo& minidump_info) {
+    const crashpad::UUID& client_id,
+    const crashpad::UUID& report_id,
+    StabilityReport* report) {
   DCHECK_NE(base::kInvalidPlatformFile, minidump_platform_file);
+  DCHECK(report);
 
   DCHECK_EQ(0U, next_available_byte_);
   DCHECK(directory_.empty());
   DCHECK_EQ(nullptr, minidump_file_);
+
+  // Ensure the report contains the crasher's product details.
+  ProductDetails product_details = {};
+  if (!GetProductDetails(report->global_data(), &product_details)) {
+    // The report is missing the basic information to determine the affected
+    // version. Ignore the report.
+    RecordWriteDumpStatus(FAILED_MISSING_PRODUCT_DETAILS);
+    return false;
+  }
+
+  // No need to keep the version details inside the report.
+  report->mutable_global_data()->erase(kStabilityProduct);
+  report->mutable_global_data()->erase(kStabilityChannel);
+  report->mutable_global_data()->erase(kStabilityPlatform);
+  report->mutable_global_data()->erase(kStabilityVersion);
 
   // We do not own |minidump_platform_file|, but we want to rely on base::File's
   // API, and so we need to duplicate it.
@@ -151,8 +230,10 @@ bool PostmortemMinidumpWriter::WriteDump(
   BOOL duplicate_success = ::DuplicateHandle(
       ::GetCurrentProcess(), minidump_platform_file, ::GetCurrentProcess(),
       &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
-  if (!duplicate_success)
+  if (!duplicate_success) {
+    RecordWriteDumpStatus(FAILED);
     return false;
+  }
   base::File minidump_file(duplicated_handle);
   DCHECK(minidump_file.IsValid());
   minidump_file_ = &minidump_file;
@@ -160,17 +241,20 @@ bool PostmortemMinidumpWriter::WriteDump(
   DCHECK(IsFileEmpty(minidump_file_));
 
   // Write the minidump, then reset members.
-  bool success = WriteDumpImpl(report, minidump_info);
+  bool success = WriteDumpImpl(*report, client_id, report_id, product_details);
   next_available_byte_ = 0U;
   directory_.clear();
   minidump_file_ = nullptr;
 
+  RecordWriteDumpStatus(success ? SUCCESS : FAILED);
   return success;
 }
 
 bool PostmortemMinidumpWriter::WriteDumpImpl(
     const StabilityReport& report,
-    const MinidumpInfo& minidump_info) {
+    const crashpad::UUID& client_id,
+    const crashpad::UUID& report_id,
+    const ProductDetails& product_details) {
   // Allocate space for the header and seek the cursor.
   FilePosition pos = 0U;
   if (!Allocate(sizeof(MINIDUMP_HEADER), &pos))
@@ -197,12 +281,11 @@ bool PostmortemMinidumpWriter::WriteDumpImpl(
   // TODO(manzagop): use product and version from the stability report. The
   // current executable's values are an (imperfect) proxy.
   std::map<std::string, std::string> crash_keys = {
-      {"prod", minidump_info.product_name + "_Postmortem"},
-      {"ver", minidump_info.version_number},
-      {"channel", minidump_info.channel_name},
-      {"plat", minidump_info.platform}};
-  if (!AppendCrashpadInfo(minidump_info.client_id, minidump_info.report_id,
-                          crash_keys))
+      {"prod", product_details.product + "_Postmortem"},
+      {"ver", product_details.version},
+      {"channel", product_details.channel},
+      {"plat", product_details.platform}};
+  if (!AppendCrashpadInfo(client_id, report_id, crash_keys))
     return false;
 
   // Write the directory.
@@ -405,15 +488,14 @@ void PostmortemMinidumpWriter::RegisterDirectoryEntry(uint32_t stream_type,
 
 }  // namespace
 
-MinidumpInfo::MinidumpInfo() {}
-
-MinidumpInfo::~MinidumpInfo() {}
-
 bool WritePostmortemDump(base::PlatformFile minidump_file,
-                         const StabilityReport& report,
-                         const MinidumpInfo& minidump_info) {
+                         const crashpad::UUID& client_id,
+                         const crashpad::UUID& report_id,
+                         StabilityReport* report) {
+  DCHECK(report);
+
   PostmortemMinidumpWriter writer;
-  return writer.WriteDump(minidump_file, report, minidump_info);
+  return writer.WriteDump(minidump_file, client_id, report_id, report);
 }
 
 }  // namespace browser_watcher

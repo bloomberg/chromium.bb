@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/win/scoped_handle.h"
+#include "components/browser_watcher/stability_data_names.h"
 #include "components/browser_watcher/stability_report.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
@@ -43,12 +44,25 @@ class WritePostmortemDumpTest : public testing::Test {
     module->set_base_address(1024);
     module->set_code_file("some_code_file.dll");
 
-    // Write the minidump.
+    // Set up directory and path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     minidump_path_ = temp_dir_.GetPath().AppendASCII("minidump.dmp");
   }
 
-  bool WriteDump() {
+  bool WriteDump(bool add_product_details) {
+    // Make a copy of the expected report as product details are stripped from
+    // the proto written to the minidump stream.
+    StabilityReport report(expected_report_);
+
+    if (add_product_details) {
+      google::protobuf::Map<std::string, TypedValue>& global_data =
+          *report.mutable_global_data();
+      global_data[kStabilityChannel].set_string_value(kChannel);
+      global_data[kStabilityPlatform].set_string_value(kPlatform);
+      global_data[kStabilityProduct].set_string_value(kProductName);
+      global_data[kStabilityVersion].set_string_value(kVersion);
+    }
+
     base::win::ScopedHandle file_handle(::CreateFile(
         minidump_path_.value().c_str(), GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, CREATE_NEW,
@@ -56,16 +70,8 @@ class WritePostmortemDumpTest : public testing::Test {
     if (!file_handle.IsValid())
       return false;
 
-    MinidumpInfo minidump_info;
-    minidump_info.client_id = expected_client_id_;
-    minidump_info.report_id = expected_report_id_;
-    minidump_info.product_name = kProductName;
-    minidump_info.version_number = kVersion;
-    minidump_info.channel_name = kChannel;
-    minidump_info.platform = kPlatform;
-
-    return WritePostmortemDump(file_handle.Get(), expected_report_,
-                               minidump_info);
+    return WritePostmortemDump(file_handle.Get(), expected_client_id_,
+                               expected_report_id_, &report);
   }
 
   const base::FilePath& minidump_path() { return minidump_path_; }
@@ -81,8 +87,12 @@ class WritePostmortemDumpTest : public testing::Test {
   StabilityReport expected_report_;
 };
 
+TEST_F(WritePostmortemDumpTest, MissingProductDetailsFailureTest) {
+  ASSERT_FALSE(WriteDump(false));
+}
+
 TEST_F(WritePostmortemDumpTest, ValidateStabilityReportTest) {
-  ASSERT_TRUE(WriteDump());
+  ASSERT_TRUE(WriteDump(true));
 
   // Read back the minidump to extract the proto.
   // TODO(manzagop): rely on crashpad for reading the proto once crashpad
@@ -120,7 +130,7 @@ TEST_F(WritePostmortemDumpTest, ValidateStabilityReportTest) {
 }
 
 TEST_F(WritePostmortemDumpTest, CrashpadCanReadTest) {
-  ASSERT_TRUE(WriteDump());
+  ASSERT_TRUE(WriteDump(true));
 
   // Validate crashpad can read the produced minidump.
   crashpad::FileReader minidump_file_reader;

@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_watcher/postmortem_minidump_writer.h"
+#include "components/browser_watcher/stability_data_names.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
 
@@ -224,7 +225,7 @@ PostmortemReportCollector::CollectAndSubmit(
       call_error_writing_crash_report(report_database, new_report);
 
   // Write the report to a minidump.
-  if (!WriteReportToMinidump(*report_proto, client_id, new_report->uuid,
+  if (!WriteReportToMinidump(report_proto.get(), client_id, new_report->uuid,
                              reinterpret_cast<FILE*>(new_report->handle))) {
     return WRITE_TO_MINIDUMP_FAILED;
   }
@@ -285,7 +286,21 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
   }
 
   // Collect global user data.
-  CollectUserData(global_data_snapshot, (*report)->mutable_global_data());
+  google::protobuf::Map<std::string, TypedValue>& global_data =
+      *(*report)->mutable_global_data();
+  CollectUserData(global_data_snapshot, &global_data);
+
+  // Add the reporting Chrome's details to the report.
+  global_data[kStabilityReporterChannel].set_string_value(channel_name());
+#if defined(ARCH_CPU_X86)
+  global_data[kStabilityReporterPlatform].set_string_value(
+      std::string("Win32"));
+#elif defined(ARCH_CPU_X86_64)
+  global_data[kStabilityReporterPlatform].set_string_value(
+      std::string("Win64"));
+#endif
+  global_data[kStabilityReporterProduct].set_string_value(product_name());
+  global_data[kStabilityReporterVersion].set_string_value(version_number());
 
   // Collect thread activity data.
   // Note: a single process is instrumented.
@@ -362,27 +377,13 @@ void PostmortemReportCollector::CollectThread(
 }
 
 bool PostmortemReportCollector::WriteReportToMinidump(
-    const StabilityReport& report,
+    StabilityReport* report,
     const crashpad::UUID& client_id,
     const crashpad::UUID& report_id,
     base::PlatformFile minidump_file) {
-  MinidumpInfo minidump_info;
-  minidump_info.client_id = client_id;
-  minidump_info.report_id = report_id;
-  // TODO(manzagop): replace this information, i.e. the reporter's attributes,
-  // by that of the reportee. Doing so requires adding this information to the
-  // stability report. In the meantime, there is a tolerable information
-  // mismatch after upgrades.
-  minidump_info.product_name = product_name();
-  minidump_info.version_number = version_number();
-  minidump_info.channel_name = channel_name();
-#if defined(ARCH_CPU_X86)
-  minidump_info.platform = std::string("Win32");
-#elif defined(ARCH_CPU_X86_64)
-  minidump_info.platform = std::string("Win64");
-#endif
+  DCHECK(report);
 
-  return WritePostmortemDump(minidump_file, report, minidump_info);
+  return WritePostmortemDump(minidump_file, client_id, report_id, report);
 }
 
 }  // namespace browser_watcher
