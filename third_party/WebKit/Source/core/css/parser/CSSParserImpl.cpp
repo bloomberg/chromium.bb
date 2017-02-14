@@ -244,6 +244,8 @@ void CSSParserImpl::parseStyleSheet(const String& string,
                                styleSheet->parserAppendRule(rule);
                              });
   styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
+  if (parser.m_lazyState)
+    parser.m_lazyState->finishInitialParsing();
   TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
 
   TRACE_EVENT_END2("blink,blink_style", "CSSParserImpl::parseStyleSheet",

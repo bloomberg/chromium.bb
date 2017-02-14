@@ -27,6 +27,10 @@ class CSSLazyParsingState
                       const String& sheetText,
                       StyleSheetContents*);
 
+  // Called when all lazy property parsers are initialized. At this point we
+  // know the total number of style rules that deferred parsing.
+  void finishInitialParsing();
+
   // Helper method used to bump m_totalStyleRules.
   CSSLazyPropertyParserImpl* createLazyParser(const CSSParserTokenRange& block);
 

@@ -23,7 +23,9 @@ CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext* context,
       m_totalStyleRules(0),
       m_styleRulesNeededForNextMilestone(0),
       m_usage(UsageGe0),
-      m_shouldUseCount(m_context->isUseCounterRecordingEnabled()) {
+      m_shouldUseCount(m_context->isUseCounterRecordingEnabled()) {}
+
+void CSSLazyParsingState::finishInitialParsing() {
   recordUsageMetrics();
 }
 
@@ -90,8 +92,13 @@ bool CSSLazyParsingState::shouldLazilyParseProperties(
 void CSSLazyParsingState::recordUsageMetrics() {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, usageHistogram,
                       ("Style.LazyUsage.Percent", UsageLastValue));
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, totalRulesHistogram,
+                      ("Style.TotalLazyRules", 0, 100000, 50));
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, totalRulesFullUsageHistogram,
+                      ("Style.TotalLazyRules.FullUsage", 0, 100000, 50));
   switch (m_usage) {
     case UsageGe0:
+      totalRulesHistogram.count(m_totalStyleRules);
       m_styleRulesNeededForNextMilestone = m_totalStyleRules * .1;
       break;
     case UsageGt10:
@@ -110,6 +117,7 @@ void CSSLazyParsingState::recordUsageMetrics() {
       m_styleRulesNeededForNextMilestone = m_totalStyleRules - 1;
       break;
     case UsageAll:
+      totalRulesFullUsageHistogram.count(m_totalStyleRules);
       m_styleRulesNeededForNextMilestone = m_totalStyleRules;
       break;
   }
