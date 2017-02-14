@@ -25,6 +25,7 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -319,6 +320,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(CONTENT_SETTING_ASK,
                 permission_context.GetContentSettingFromMap(url, url));
     }
+
+    histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
+                                  PermissionEmbargoStatus::NOT_EMBARGOED, 1);
   }
 
   void DismissMultipleTimesAndExpectBlock(
@@ -356,8 +360,20 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
               PermissionUtil::GetPermissionString(permission_type),
           i, 1);
+      histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
+                                  i + 1);
+      if (i < 2) {
+        histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
+                                      PermissionEmbargoStatus::NOT_EMBARGOED,
+                                      i + 1);
+      } else {
+        histograms.ExpectBucketCount(
+            "Permissions.AutoBlocker.EmbargoStatus",
+            PermissionEmbargoStatus::REPEATED_DISMISSALS, 1);
+      }
+
       ASSERT_EQ(1u, permission_context.decisions().size());
-      EXPECT_EQ(expected, permission_context.decisions()[0]);
+      EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
     }
@@ -410,6 +426,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
+      histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
+                                    PermissionEmbargoStatus::NOT_EMBARGOED,
+                                    i + 1);
+
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
@@ -492,7 +512,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                      base::Unretained(&permission_context)));
 
       EXPECT_EQ(1u, permission_context.decisions().size());
-      ASSERT_EQ(expected, permission_context.decisions()[0]);
+      ASSERT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
 
@@ -500,6 +520,18 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i, 1);
+
+      histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
+                                  i + 1);
+      if (i < 4) {
+        histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
+                                      PermissionEmbargoStatus::NOT_EMBARGOED,
+                                      i + 1);
+      } else {
+        histograms.ExpectBucketCount(
+            "Permissions.AutoBlocker.EmbargoStatus",
+            PermissionEmbargoStatus::REPEATED_DISMISSALS, 1);
+      }
     }
 
     // Ensure that we finish in the block state.
@@ -646,8 +678,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
       const GURL& url,
       int timeout,
-      ContentSetting expected_permission_status) {
+      ContentSetting expected_permission_status,
+      PermissionEmbargoStatus expected_embargo_reason) {
     NavigateAndCommit(url);
+    base::HistogramTester histograms;
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPermissionsBlacklist);
     TestPermissionContext permission_context(profile(), permission_type,
@@ -680,6 +714,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected_permission_status, permission_context.decisions()[0]);
     }
+    histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
+                                  expected_embargo_reason, 1);
   }
 
  private:
@@ -845,9 +881,10 @@ TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingBlocked) {
   const GURL url("https://www.example.com");
   std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  TestPermissionsBlacklisting(content::PermissionType::GEOLOCATION,
-                              CONTENT_SETTINGS_TYPE_GEOLOCATION, db_manager,
-                              url, 2000 /* timeout */, CONTENT_SETTING_BLOCK);
+  TestPermissionsBlacklisting(
+      content::PermissionType::GEOLOCATION, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      db_manager, url, 2000 /* timeout */, CONTENT_SETTING_BLOCK,
+      PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
 }
 
 // Tests that a URL that is blacklisted for one permission can still request
@@ -860,5 +897,6 @@ TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingAllowed) {
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   TestPermissionsBlacklisting(content::PermissionType::NOTIFICATIONS,
                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS, db_manager,
-                              url, 2000 /* timeout */, CONTENT_SETTING_ALLOW);
+                              url, 2000 /* timeout */, CONTENT_SETTING_ALLOW,
+                              PermissionEmbargoStatus::NOT_EMBARGOED);
 }

@@ -146,13 +146,14 @@ void PermissionContextBase::ContinueRequestPermission(
     bool permission_blocked) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permission_blocked) {
-    // TODO(meredithl): Add UMA metrics here.
     web_contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "%s permission has been auto-blocked.",
             PermissionUtil::GetPermissionString(permission_type_).c_str()));
     // Permission has been automatically blocked.
+    PermissionUmaUtil::RecordPermissionEmbargoStatus(
+        PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
@@ -295,6 +296,8 @@ void PermissionContextBase::PermissionDecided(
     PermissionRequestGestureType gesture_type =
         user_gesture ? PermissionRequestGestureType::GESTURE
                      : PermissionRequestGestureType::NO_GESTURE;
+    PermissionEmbargoStatus embargo_status =
+        PermissionEmbargoStatus::NOT_EMBARGOED;
     DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
            content_setting == CONTENT_SETTING_BLOCK ||
            content_setting == CONTENT_SETTING_DEFAULT);
@@ -307,15 +310,13 @@ void PermissionContextBase::PermissionDecided(
     } else {
       PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
                                              requesting_origin, profile_);
-    }
-  }
 
-  if (content_setting == CONTENT_SETTING_DEFAULT &&
-      PermissionDecisionAutoBlocker::GetForProfile(profile_)
-          ->RecordDismissAndEmbargo(requesting_origin, permission_type_)) {
-    // The permission has been embargoed, so it is blocked for this permission
-    // request, but not persisted.
-    content_setting = CONTENT_SETTING_BLOCK;
+      if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
+              ->RecordDismissAndEmbargo(requesting_origin, permission_type_)) {
+        embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
+      }
+    }
+    PermissionUmaUtil::RecordPermissionEmbargoStatus(embargo_status);
   }
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,

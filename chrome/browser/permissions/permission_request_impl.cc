@@ -38,6 +38,8 @@ PermissionRequestImpl::~PermissionRequestImpl() {
   if (!action_taken_) {
     PermissionUmaUtil::PermissionIgnored(permission_type_, GetGestureType(),
                                          request_origin_, profile_);
+    PermissionUmaUtil::RecordPermissionEmbargoStatus(
+        PermissionEmbargoStatus::NOT_EMBARGOED);
   }
 }
 

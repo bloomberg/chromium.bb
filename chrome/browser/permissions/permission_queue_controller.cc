@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -228,16 +229,28 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
                                            requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptAccepted(request_type,
                                                         gesture_type);
+      PermissionUmaUtil::RecordPermissionEmbargoStatus(
+          PermissionEmbargoStatus::NOT_EMBARGOED);
       break;
     case DENIED:
       PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
                                           requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptDenied(request_type,
                                                       gesture_type);
+      PermissionUmaUtil::RecordPermissionEmbargoStatus(
+          PermissionEmbargoStatus::NOT_EMBARGOED);
       break;
     case DISMISSED:
       PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
                                              requesting_frame, profile_);
+      if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
+              ->RecordDismissAndEmbargo(requesting_frame, permission_type_)) {
+        PermissionUmaUtil::RecordPermissionEmbargoStatus(
+            PermissionEmbargoStatus::REPEATED_DISMISSALS);
+      } else {
+        PermissionUmaUtil::RecordPermissionEmbargoStatus(
+            PermissionEmbargoStatus::NOT_EMBARGOED);
+      }
       break;
     default:
       NOTREACHED();

@@ -358,6 +358,13 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
   }
 }
 
+void PermissionUmaUtil::RecordPermissionEmbargoStatus(
+    PermissionEmbargoStatus embargo_status) {
+  UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoStatus",
+                            embargo_status,
+                            PermissionEmbargoStatus::STATUS_NUM);
+}
+
 void PermissionUmaUtil::RecordSafeBrowsingResponse(
     base::TimeDelta response_time,
     SafeBrowsingResponse response) {

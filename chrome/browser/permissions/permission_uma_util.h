@@ -76,6 +76,15 @@ struct PermissionReportInfo {
   int num_prior_ignores;
 };
 
+enum PermissionEmbargoStatus {
+  NOT_EMBARGOED = 0,
+  PERMISSIONS_BLACKLISTING = 1,
+  REPEATED_DISMISSALS = 2,
+
+  // Keep this at the end.
+  STATUS_NUM,
+};
+
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:
@@ -125,8 +134,13 @@ class PermissionUmaUtil {
                                 PermissionSourceUI source_ui,
                                 const GURL& revoked_origin,
                                 Profile* profile);
+
+  static void RecordPermissionEmbargoStatus(
+      PermissionEmbargoStatus embargo_status);
+
   static void RecordSafeBrowsingResponse(base::TimeDelta response_time,
                                          SafeBrowsingResponse response);
+
   // UMA specifically for when permission prompts are shown. This should be
   // roughly equivalent to the metrics above, however it is
   // useful to have separate UMA to a few reasons:
