@@ -18,6 +18,7 @@ service_test("service_unittests") {
     "//services/device:tests",
     "//services/image_decoder:tests",
     "//services/memory_instrumentation:tests",
+    "//services/shape_detection:tests",
   ]
 
   if (is_android) {

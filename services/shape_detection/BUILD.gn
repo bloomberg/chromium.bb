@@ -4,6 +4,7 @@
 
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
@@ -47,4 +48,31 @@ source_set("lib") {
 service_manifest("manifest") {
   name = "shape_detection"
   source = "manifest.json"
+}
+
+source_set("tests") {
+  testonly = true
+  sources = []
+  if (is_mac) {
+    sources += [
+      "barcode_detection_impl_mac_unittest.mm",
+      "face_detection_impl_mac_unittest.mm",
+    ]
+
+    libs = [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "QuartzCore.framework",
+    ]
+
+    deps = [
+      ":lib",
+      "//base",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gfx",
+      "//ui/gl",
+    ]
+  }
 }
