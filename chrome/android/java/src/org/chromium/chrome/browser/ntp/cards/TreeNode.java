@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * A tree interface to allow the New Tab Page RecyclerView to delegate to other components.
  */
-interface TreeNode {
+public interface TreeNode {
     /**
      * Sets the parent of this node. This method should be called at most once. Before the parent
      * has been set, the node will not send any notifications about changes to its subtree.

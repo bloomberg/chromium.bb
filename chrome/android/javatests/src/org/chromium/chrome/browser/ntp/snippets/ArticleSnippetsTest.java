@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
@@ -29,13 +28,14 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
-import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
+import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsMetricsReporter;
+import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -250,26 +250,4 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
     }
 
-    private static class DummySuggestionsMetricsReporter implements SuggestionsMetricsReporter {
-        @Override
-        public void onPageShown(int[] categories, int[] suggestionsPerCategory) {}
-
-        @Override
-        public void onSuggestionShown(SnippetArticle suggestion) {}
-
-        @Override
-        public void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition) {}
-
-        @Override
-        public void onSuggestionMenuOpened(SnippetArticle suggestion) {}
-
-        @Override
-        public void onMoreButtonShown(@CategoryInt ActionItem category) {}
-
-        @Override
-        public void onMoreButtonClicked(@CategoryInt ActionItem category) {}
-
-        @Override
-        public void setRanker(SuggestionsRanker suggestionsRanker) {}
-    }
 }

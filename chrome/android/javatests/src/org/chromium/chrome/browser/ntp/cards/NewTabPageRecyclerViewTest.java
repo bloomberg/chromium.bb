@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -23,7 +22,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageView;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
-import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.suggestions.FakeMostVisitedSites;
@@ -32,8 +30,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -162,7 +160,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
         View allDismissedView = getViewHolderAtPosition(allDismissedPosition).itemView;
         singleClickView(allDismissedView.findViewById(R.id.action_button));
-        waitForViewToDetach(allDismissedView);
+        RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), allDismissedView);
         assertEquals(1, mSource.getCategories().length);
         assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
     }
@@ -181,7 +179,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Dismiss the suggestion using the context menu.
         invokeContextMenu(suggestionView, ContextMenuManager.ID_REMOVE);
-        waitForViewToDetach(suggestionView);
+        RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), suggestionView);
 
         suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
         assertEquals(9, suggestions.size());
@@ -203,7 +201,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Dismiss the status card using the context menu.
         invokeContextMenu(statusCardView, ContextMenuManager.ID_REMOVE);
-        waitForViewToDetach(statusCardView);
+        RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), statusCardView);
 
         assertArrayEquals(new int[0], mSource.getCategories());
     }
@@ -223,7 +221,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Dismiss the action item using the context menu.
         invokeContextMenu(actionItemView, ContextMenuManager.ID_REMOVE);
-        waitForViewToDetach(actionItemView);
+        RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), actionItemView);
 
         assertArrayEquals(new int[0], mSource.getCategories());
     }
@@ -266,7 +264,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                                 R.dimen.tab_strip_height));
             }
         });
-        return waitForView(position);
+        return RecyclerViewTestUtils.waitForView(getRecyclerView(), position);
     }
 
     /**
@@ -284,7 +282,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                 getRecyclerView().dismissItemWithAnimation(viewHolder);
             }
         });
-        waitForViewToDetach(viewHolder.itemView);
+        RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), (viewHolder.itemView));
     }
 
     private void setSuggestionsAndWaitForUpdate(final int suggestionsCount) {
@@ -297,7 +295,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                 source.setSuggestionsForCategory(TEST_CATEGORY, buildSuggestions(suggestionsCount));
             }
         });
-        waitForStableRecyclerView();
+        RecyclerViewTestUtils.waitForStableRecyclerView(getRecyclerView());
     }
 
     private List<SnippetArticle> buildSuggestions(int suggestionsCount) {
@@ -316,81 +314,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                 getInstrumentation().invokeContextMenuAction(getActivity(), contextMenuItemId, 0));
     }
 
-    private ViewHolder waitForView(final int position) {
-        final NewTabPageRecyclerView recyclerView = getRecyclerView();
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(position);
-
-                if (viewHolder == null) {
-                    updateFailureReason("Cannot find view holder for position " + position + ".");
-                    return false;
-                }
-
-                if (viewHolder.itemView.getParent() == null) {
-                    updateFailureReason("The view is not attached for position " + position + ".");
-                    return false;
-                }
-
-                return true;
-            }
-        });
-
-        waitForStableRecyclerView();
-
-        return recyclerView.findViewHolderForAdapterPosition(position);
-    }
-
-    private void waitForViewToDetach(final View view)
-            throws InterruptedException, TimeoutException {
-        final RecyclerView recyclerView = getRecyclerView();
-        final CallbackHelper callback = new CallbackHelper();
-
-        recyclerView.addOnChildAttachStateChangeListener(
-                new RecyclerView.OnChildAttachStateChangeListener() {
-                    @Override
-                    public void onChildViewAttachedToWindow(View view) {}
-
-                    @Override
-                    public void onChildViewDetachedFromWindow(View detachedView) {
-                        if (detachedView == view) {
-                            recyclerView.removeOnChildAttachStateChangeListener(this);
-                            callback.notifyCalled();
-                        }
-                    }
-                });
-        callback.waitForCallback("The view did not detach.", 0);
-
-        waitForStableRecyclerView();
-    }
-
-    private void waitForStableRecyclerView() {
-        final RecyclerView recyclerView = getRecyclerView();
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (recyclerView.isComputingLayout()) {
-                    updateFailureReason("The recycler view is computing layout.");
-                    return false;
-                }
-
-                if (recyclerView.isLayoutFrozen()) {
-                    updateFailureReason("The recycler view layout is frozen.");
-                    return false;
-                }
-
-                if (recyclerView.isAnimating()) {
-                    updateFailureReason("The recycler view is animating.");
-                    return false;
-                }
-
-                return true;
-            }
-        });
-    }
 
     private static void assertArrayEquals(int[] expected, int[] actual) {
         assertEquals(Arrays.toString(expected), Arrays.toString(actual));

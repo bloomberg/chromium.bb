@@ -627,7 +627,7 @@ public class NewTabPage
             mLogoBridge = null;
         }
         if (mSnippetsBridge != null) {
-            mSnippetsBridge.destroy();
+            mSnippetsBridge.onDestroy();
             mSnippetsBridge = null;
         }
         mNewTabPageManager.onDestroy();

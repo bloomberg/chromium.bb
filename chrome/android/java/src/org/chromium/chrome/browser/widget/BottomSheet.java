@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -148,7 +149,7 @@ public class BottomSheet
      */
     public interface BottomSheetContent {
         /**
-         * Gets the {@link ScrollingView} that holds the content to be displayed in the Chrome Home
+         * Gets the {@link RecyclerView} that holds the content to be displayed in the Chrome Home
          * bottom sheet.
          * @return The scrolling content view.
          */
@@ -235,6 +236,7 @@ public class BottomSheet
             // Figure out the projected state of the sheet and animate there. Note that a swipe up
             // will have a negative velocity, swipe down will have a positive velocity. Negate this
             // values so that the logic is more intuitive.
+            @SheetState
             int targetState = getTargetSheetState(
                     getSheetOffsetFromBottom() + getFlingDistance(-velocityY), -velocityY);
             setSheetState(targetState, true);
@@ -291,6 +293,7 @@ public class BottomSheet
             if (mSettleAnimator == null) {
                 // Negate velocity so a positive number indicates a swipe up.
                 float currentVelocity = -mVelocityTracker.getYVelocity();
+                @SheetState
                 int targetState = getTargetSheetState(getSheetOffsetFromBottom(), currentVelocity);
 
                 setSheetState(targetState, true);
@@ -455,7 +458,7 @@ public class BottomSheet
 
     /**
      * Show content in the bottom sheet's content area.
-     * @param page The BottomSheetContent to show.
+     * @param content The {@link BottomSheetContent} to show.
      */
     private void showContent(BottomSheetContent content) {
         // If the desired content is already showing, do nothing.
@@ -679,6 +682,11 @@ public class BottomSheet
         return mSettleAnimator != null;
     }
 
+    @VisibleForTesting
+    public BottomSheetContent getCurrentSheetContent() {
+        return mSheetContent;
+    }
+
     /**
      * Gets the height of the bottom sheet based on a provided state.
      * @param state The state to get the height from.
@@ -709,7 +717,10 @@ public class BottomSheet
         if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
 
         // First, find the two states that the sheet height is between.
+        @SheetState
         int nextState = sStates[0];
+
+        @SheetState
         int prevState = nextState;
         for (int i = 0; i < sStates.length; i++) {
             prevState = nextState;

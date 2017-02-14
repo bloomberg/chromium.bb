@@ -13,10 +13,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.makeUiConfig;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.bindViewHolders;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.makeUiConfig;
+import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,9 +31,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -42,6 +40,8 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
+import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
+import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.List;

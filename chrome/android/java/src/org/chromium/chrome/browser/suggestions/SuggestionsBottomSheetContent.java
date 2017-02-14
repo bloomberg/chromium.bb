@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -29,26 +30,26 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * notified of it, at least when it is pulled up on the new tab.
  */
 public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent {
+    private static SuggestionsSource sSuggestionsSourceForTesting;
+    private static SuggestionsMetricsReporter sMetricsReporterForTesting;
+
     private final NewTabPageRecyclerView mRecyclerView;
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsManager;
-    private final SnippetsBridge mSnippetsBridge;
     private final TileGroup.Delegate mTileGroupDelegate;
 
     public SuggestionsBottomSheetContent(
             final ChromeActivity activity, NativePageHost host, TabModelSelector tabModelSelector) {
-        mRecyclerView = (NewTabPageRecyclerView) LayoutInflater.from(activity).inflate(
-                R.layout.new_tab_page_recycler_view, null, false);
 
         Profile profile = Profile.getLastUsedProfile();
-        UiConfig uiConfig = new UiConfig(mRecyclerView);
-
-        mSnippetsBridge = new SnippetsBridge(profile);
         SuggestionsNavigationDelegate navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, host, tabModelSelector);
+        mTileGroupDelegate =
+                new TileGroupDelegateImpl(activity, profile, tabModelSelector, navigationDelegate);
+        mSuggestionsManager = createSuggestionsDelegate(profile, navigationDelegate, host);
 
-        mSuggestionsManager = new SuggestionsUiDelegateImpl(
-                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, host);
+        mRecyclerView = (NewTabPageRecyclerView) LayoutInflater.from(activity).inflate(
+                R.layout.new_tab_page_recycler_view, null, false);
         mContextMenuManager = new ContextMenuManager(activity, navigationDelegate, mRecyclerView);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         mSuggestionsManager.addDestructionObserver(new DestructionObserver() {
@@ -58,8 +59,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
         });
 
-        mTileGroupDelegate =
-                new TileGroupDelegateImpl(activity, profile, tabModelSelector, navigationDelegate);
+        UiConfig uiConfig = new UiConfig(mRecyclerView);
 
         NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
@@ -83,8 +83,42 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     public void destroy() {
-        mSnippetsBridge.destroy();
         mSuggestionsManager.onDestroy();
         mTileGroupDelegate.destroy();
+    }
+
+    public static void setSuggestionsSourceForTesting(SuggestionsSource suggestionsSource) {
+        sSuggestionsSourceForTesting = suggestionsSource;
+    }
+
+    public static void setMetricsReporterForTesting(SuggestionsMetricsReporter metricsReporter) {
+        sMetricsReporterForTesting = metricsReporter;
+    }
+
+    private static SuggestionsUiDelegateImpl createSuggestionsDelegate(Profile profile,
+            SuggestionsNavigationDelegate navigationDelegate, NativePageHost host) {
+        SnippetsBridge snippetsBridge = null;
+        SuggestionsSource suggestionsSource;
+        SuggestionsMetricsReporter metricsReporter;
+
+        if (sSuggestionsSourceForTesting == null) {
+            snippetsBridge = new SnippetsBridge(profile);
+            suggestionsSource = snippetsBridge;
+        } else {
+            suggestionsSource = sSuggestionsSourceForTesting;
+        }
+
+        if (sMetricsReporterForTesting == null) {
+            if (snippetsBridge == null) snippetsBridge = new SnippetsBridge(profile);
+            metricsReporter = snippetsBridge;
+        } else {
+            metricsReporter = sMetricsReporterForTesting;
+        }
+
+        SuggestionsUiDelegateImpl delegate = new SuggestionsUiDelegateImpl(
+                suggestionsSource, metricsReporter, navigationDelegate, profile, host);
+        if (snippetsBridge != null) delegate.addDestructionObserver(snippetsBridge);
+
+        return delegate;
     }
 }

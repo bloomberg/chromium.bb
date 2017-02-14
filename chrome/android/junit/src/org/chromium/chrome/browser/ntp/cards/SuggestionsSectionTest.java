@@ -26,8 +26,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.bindViewHolders;
+import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +41,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.EnableFeatures;
-import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.UpdateLayoutParamsCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -51,6 +50,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;

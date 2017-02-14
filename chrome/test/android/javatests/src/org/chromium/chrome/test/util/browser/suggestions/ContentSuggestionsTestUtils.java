@@ -2,22 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.cards;
+package org.chromium.chrome.test.util.browser.suggestions;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
-import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
-import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
-import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,45 +146,6 @@ public final class ContentSuggestionsTestUtils {
             return new SuggestionsCategoryInfo(mCategory, mTitle, mCardLayout, mHasFetchAction,
                     mHasViewAllAction, mShowIfEmpty, mNoSuggestionsMessage);
         }
-    }
-
-    public static void bindViewHolders(InnerNode node) {
-        bindViewHolders(node, 0, node.getItemCount());
-    }
-
-    public static void bindViewHolders(InnerNode node, int startIndex, int endIndex) {
-        for (int i = startIndex; i < endIndex; ++i) {
-            node.onBindViewHolder(makeViewHolder(node.getItemViewType(i)), i);
-        }
-    }
-
-    private static NewTabPageViewHolder makeViewHolder(@CategoryInt int viewType) {
-        switch (viewType) {
-            case ItemViewType.SNIPPET:
-                return mock(SnippetArticleViewHolder.class);
-            case ItemViewType.HEADER:
-                return mock(SectionHeaderViewHolder.class);
-            case ItemViewType.STATUS:
-                return mock(StatusCardViewHolder.class);
-            case ItemViewType.ACTION:
-                return mock(ActionItem.ViewHolder.class);
-            case ItemViewType.PROGRESS:
-                return mock(ProgressViewHolder.class);
-            default:
-                return mock(NewTabPageViewHolder.class);
-        }
-    }
-
-    public static UiConfig makeUiConfig(
-            @HorizontalDisplayStyle int horizontal, @VerticalDisplayStyle int vertical) {
-        UiConfig uiConfig = mock(UiConfig.class);
-        when(uiConfig.getCurrentDisplayStyle())
-                .thenReturn(new UiConfig.DisplayStyle(horizontal, vertical));
-        return uiConfig;
-    }
-
-    public static UiConfig makeUiConfig() {
-        return makeUiConfig(HorizontalDisplayStyle.REGULAR, VerticalDisplayStyle.REGULAR);
     }
 
     /** Helper method to print the current state of a node. */

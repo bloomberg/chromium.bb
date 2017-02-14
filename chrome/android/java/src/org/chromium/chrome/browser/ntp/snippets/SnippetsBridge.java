@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
@@ -22,7 +23,8 @@ import java.util.List;
 /**
  * Provides access to the snippets to display on the NTP using the C++ ContentSuggestionsService.
  */
-public class SnippetsBridge implements SuggestionsSource, SuggestionsMetricsReporter {
+public class SnippetsBridge
+        implements SuggestionsSource, SuggestionsMetricsReporter, DestructionObserver {
     private static final String TAG = "SnippetsBridge";
 
     private long mNativeSnippetsBridge;
@@ -63,7 +65,8 @@ public class SnippetsBridge implements SuggestionsSource, SuggestionsMetricsRepo
      * Destroys the native bridge. This object can no longer be used to send native commands, and
      * any observer is nulled out and will stop receiving updates. This object should be discarded.
      */
-    public void destroy() {
+    @Override
+    public void onDestroy() {
         assert mNativeSnippetsBridge != 0;
         nativeDestroy(mNativeSnippetsBridge);
         mNativeSnippetsBridge = 0;

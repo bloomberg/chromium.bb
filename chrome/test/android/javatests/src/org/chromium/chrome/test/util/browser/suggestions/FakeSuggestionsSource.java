@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.snippets;
+package org.chromium.chrome.test.util.browser.suggestions;
 
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,8 +42,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     /**
      * Sets the status to be returned for a given category.
      */
-    public void setStatusForCategory(@CategoryInt int category,
-            @CategoryStatusEnum int status) {
+    public void setStatusForCategory(@CategoryInt int category, @CategoryStatusEnum int status) {
         mCategoryStatus.put(category, status);
         if (status == CategoryStatus.NOT_PROVIDED) {
             mCategories.remove(Integer.valueOf(category));
@@ -168,7 +172,6 @@ public class FakeSuggestionsSource implements SuggestionsSource {
             return Collections.emptyList();
         }
         List<SnippetArticle> result = mSuggestions.get(category);
-        return result == null ? Collections.<SnippetArticle>emptyList()
-                              : new ArrayList<SnippetArticle>(result);
+        return result == null ? Collections.<SnippetArticle>emptyList() : new ArrayList<>(result);
     }
 }

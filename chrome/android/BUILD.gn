@@ -316,6 +316,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
+    "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/invalidation/impl:java",
     "//components/payments:payment_request_java",
