@@ -27,14 +27,22 @@ PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8] collapseToStart()
 PASS Range 3 [paras[0].firstChild, 2, paras[0].firstChild, 8] collapseToEnd() 
 PASS Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] collapseToStart() 
 FAIL Range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] collapseToEnd() assert_equals: focusOffset must equal the original end offset expected 9 but got 10
-PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] collapseToStart() 
-PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] collapseToEnd() 
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] collapseToStart() assert_equals: focusOffset must equal the original start offset expected 0 but got 1
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] collapseToEnd() assert_equals: anchorOffset must equal the original end offset expected 1 but got 0
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] collapseToStart() assert_equals: focusOffset must equal the original start offset expected 2 but got 8
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] collapseToEnd() assert_equals: anchorOffset must equal the original end offset expected 8 but got 2
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] collapseToStart() assert_equals: focusOffset must equal the original start offset expected 2 but got 9
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] collapseToEnd() assert_equals: anchorOffset must equal the original end offset expected 9 but got 2
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] collapseToStart() assert_equals: focusNode must equal the original start node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] collapseToEnd() assert_equals: focusNode must equal the original end node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] collapseToEnd() assert_equals: focusNode must equal the original end node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] collapseToStart() assert_equals: focusNode must equal the original start node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] collapseToEnd() assert_equals: focusNode must equal the original end node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] collapseToStart() assert_equals: focusNode must equal the original start node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] collapseToEnd() assert_equals: focusNode must equal the original end node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 9 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 0] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 10 [detachedPara1.firstChild, 0, detachedPara1.firstChild, 1] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
@@ -47,16 +55,20 @@ FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1] collapseT
 FAIL Range 13 [foreignPara1.firstChild, 0, foreignPara1.firstChild, 1] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1] collapseToStart() assert_equals: focusOffset must equal the original start offset expected 0 but got 1
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1] collapseToEnd() assert_equals: anchorOffset must equal the original end offset expected 1 but got 0
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Qrstuvwx"
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Qrstuvwx"
-PASS Range 18 [document.head, 1, document.head, 1] collapseToStart() 
-PASS Range 18 [document.head, 1, document.head, 1] collapseToEnd() 
+FAIL Range 18 [document.head, 1, document.head, 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <head><title>Selection.collapseTo(Start|End)() tests</tit... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 18 [document.head, 1, document.head, 1] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <head><title>Selection.collapseTo(Start|End)() tests</tit... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 19 [document.body, 0, document.body, 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -68,8 +80,12 @@ FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1] collapseToStart() assert_
 FAIL Range 21 [foreignDoc.head, 1, foreignDoc.head, 1] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 22 [foreignDoc.body, 0, foreignDoc.body, 0] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
-PASS Range 23 [paras[0], 0, paras[0], 0] collapseToStart() 
-PASS Range 23 [paras[0], 0, paras[0], 0] collapseToEnd() 
+FAIL Range 23 [paras[0], 0, paras[0], 0] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 23 [paras[0], 0, paras[0], 0] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 24 [paras[0], 0, paras[0], 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -98,14 +114,17 @@ FAIL Range 31 [testDiv, 2, paras[4], 1] collapseToEnd() assert_equals: focusNode
 FAIL Range 32 [testDiv, 1, paras[2].firstChild, 5] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS Range 32 [testDiv, 1, paras[2].firstChild, 5] collapseToEnd() 
-FAIL Range 33 [document.documentElement, 1, document.body, 0] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
-FAIL Range 33 [document.documentElement, 1, document.body, 0] collapseToEnd() assert_equals: anchorNode must equal the original end node expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id... but got Element node <html><head><title>Selection.collapseTo(Start|End)() test...
+FAIL Range 33 [document.documentElement, 1, document.body, 0] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <html><head><title>Selection.collapseTo(Start|End)() test... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 33 [document.documentElement, 1, document.body, 0] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
-FAIL Range 35 [document, 0, document, 1] collapseToStart() assert_equals: focusOffset must equal the original start offset expected 0 but got 1
-FAIL Range 35 [document, 0, document, 1] collapseToEnd() assert_equals: anchorOffset must equal the original end offset expected 1 but got 0
+FAIL Range 35 [document, 0, document, 1] collapseToStart() assert_equals: focusNode must equal the original start node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 35 [document, 0, document, 1] collapseToEnd() assert_equals: focusNode must equal the original end node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 36 [document, 0, document, 2] collapseToStart() assert_equals: focusNode must equal the original start node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 FAIL Range 36 [document, 0, document, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Document node with 2 children but got Text node "Qrstuvwx"
@@ -118,8 +137,8 @@ FAIL Range 38 [testDiv, 0, comment, 5] collapseToStart() assert_equals: focusNod
 FAIL Range 38 [testDiv, 0, comment, 5] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 PASS Range 39 [paras[2].firstChild, 4, comment, 2] collapseToStart() 
 FAIL Range 39 [paras[2].firstChild, 4, comment, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
-FAIL Range 40 [paras[3], 1, comment, 8] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <p id="d" style="display:none">Yzabcdef</p> but got Comment node <!--Alphabet soup?-->
-FAIL Range 40 [paras[3], 1, comment, 8] collapseToEnd() assert_equals: anchorNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Element node <p id="d" style="display:none">Yzabcdef</p>
+FAIL Range 40 [paras[3], 1, comment, 8] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <p id="d" style="display:none">Yzabcdef</p> but got Text node "Qrstuvwx"
+FAIL Range 40 [paras[3], 1, comment, 8] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0

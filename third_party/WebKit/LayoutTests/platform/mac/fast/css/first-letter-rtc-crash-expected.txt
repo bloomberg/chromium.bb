@@ -1,4 +1,6 @@
+CONSOLE ERROR: line 21: Discontiguous selection is not supported.
+CONSOLE ERROR: line 21: Discontiguous selection is not supported.
+CONSOLE ERROR: line 21: Discontiguous selection is not supported.
 CONSOLE ERROR: line 38: Uncaught HierarchyRequestError: Failed to execute 'insertNode' on 'Range': The node to be inserted contains the insertion point; it may not be inserted into itself.
-text
-a
+texta
 Test passes if it does not CRASH.

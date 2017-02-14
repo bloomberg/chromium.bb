@@ -51,7 +51,7 @@
         },
         [
             '<div contenteditable id="div">',
-                '^<a href="http://example.com/">|</a>',
+                '|<a href="http://example.com/"></a>',
             '</div>',
         ].join('')),
         'Range#extractContents() extracts A with anchor text but leaves A.');

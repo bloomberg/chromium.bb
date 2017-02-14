@@ -40,8 +40,8 @@ testIt('a<br>|<br><br>', 'a<br><br>', 'sample.firstChild', 1);
 testIt('a<br><br>|<br><br>', 'a<br><br><br>', 'sample', 2);
 
 testIt('a<br>|b', 'ab', 'sample.firstChild', 1);
-testIt('a<br><br>|b', 'a<br>b', 'sample', 2);
-testIt('a<br><br><br>|b', 'a<br><br>b', 'sample', 3);
+testIt('a<br><br>|b', 'a<br>b', 'sample.lastChild', 0);
+testIt('a<br><br><br>|b', 'a<br><br>b', 'sample.lastChild', 0);
 
 testIt('a<br>b|', 'a<br><br>', 'sample', 2);
 testIt('a<br><br>b|', 'a<br><br><br>', 'sample', 3);

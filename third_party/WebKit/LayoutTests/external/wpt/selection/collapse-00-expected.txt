@@ -1205,10 +1205,14 @@ PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 6 [paras[0]
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 7 [paras[0].firstChild, 65535] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 8 [paras[1].firstChild, -1] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 9 [paras[1].firstChild, 0] 
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 0
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must equal the offset we collapse()d to expected 2 but got 0
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must equal the offset we collapse()d to expected 8 but got 0
-FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must equal the offset we collapse()d to expected 9 but got 0
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 10 [paras[1].firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 11 [paras[1].firstChild, 2] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 12 [paras[1].firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 13 [paras[1].firstChild, 9] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 14 [paras[1].firstChild, 10] 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 15 [paras[1].firstChild, 65535] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Ijklmnop
@@ -1256,11 +1260,9 @@ FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 36 [paras[0
 "
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 37 [paras[0], 2] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 38 [paras[1], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 39 [paras[1], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 40 [paras[1], 2] 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], point 41 [detachedPara1, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Text node "Ijklmnop
 "
@@ -1354,11 +1356,16 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 5 [paras[0]
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 6 [paras[0].firstChild, 10] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 7 [paras[0].firstChild, 65535] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 8 [paras[1].firstChild, -1] 
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must equal the offset we collapse()d to expected 0 but got 1
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 10 [paras[1].firstChild, 1] assert_equals: focusOffset and anchorOffset must be equal after collapse() expected 0 but got 1
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must equal the offset we collapse()d to expected 2 but got 1
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must equal the offset we collapse()d to expected 8 but got 1
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must equal the offset we collapse()d to expected 9 but got 1
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 9 [paras[1].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 10 [paras[1].firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 11 [paras[1].firstChild, 2] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 12 [paras[1].firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 13 [paras[1].firstChild, 9] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 14 [paras[1].firstChild, 10] 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 15 [paras[1].firstChild, 65535] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Ijklmnop
@@ -1406,11 +1413,9 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 36 [paras[0
 "
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 37 [paras[0], 2] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 38 [paras[1], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 39 [paras[1], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 40 [paras[1], 2] 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], point 41 [detachedPara1, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Text node "Ijklmnop
 "
@@ -1504,11 +1509,16 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 5 [paras[0]
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 6 [paras[0].firstChild, 10] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 7 [paras[0].firstChild, 65535] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 8 [paras[1].firstChild, -1] 
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must equal the offset we collapse()d to expected 0 but got 8
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 8
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must equal the offset we collapse()d to expected 2 but got 8
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 12 [paras[1].firstChild, 8] assert_equals: focusOffset and anchorOffset must be equal after collapse() expected 2 but got 8
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must equal the offset we collapse()d to expected 9 but got 8
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 9 [paras[1].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 10 [paras[1].firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 11 [paras[1].firstChild, 2] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 12 [paras[1].firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 13 [paras[1].firstChild, 9] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 14 [paras[1].firstChild, 10] 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 15 [paras[1].firstChild, 65535] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Ijklmnop
@@ -1556,11 +1566,9 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 36 [paras[0
 "
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 37 [paras[0], 2] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 38 [paras[1], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 39 [paras[1], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 40 [paras[1], 2] 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], point 41 [detachedPara1, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Text node "Ijklmnop
 "
@@ -1654,11 +1662,16 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 5 [paras[0]
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 6 [paras[0].firstChild, 10] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 7 [paras[0].firstChild, 65535] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 8 [paras[1].firstChild, -1] 
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must equal the offset we collapse()d to expected 0 but got 9
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 9
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must equal the offset we collapse()d to expected 2 but got 9
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must equal the offset we collapse()d to expected 8 but got 9
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 13 [paras[1].firstChild, 9] assert_equals: focusOffset and anchorOffset must be equal after collapse() expected 2 but got 9
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 9 [paras[1].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 10 [paras[1].firstChild, 1] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 11 [paras[1].firstChild, 2] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 12 [paras[1].firstChild, 8] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 13 [paras[1].firstChild, 9] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 14 [paras[1].firstChild, 10] 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 15 [paras[1].firstChild, 65535] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 16 [detachedPara1.firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Opqrstuv" but got Text node "Ijklmnop
@@ -1706,11 +1719,9 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 36 [paras[0
 "
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 37 [paras[0], 2] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 38 [paras[1], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 39 [paras[1], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 40 [paras[1], 2] 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], point 41 [detachedPara1, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Text node "Ijklmnop
 "
@@ -2480,9 +2491,7 @@ PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 85
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 86 [foreignDoctype, 0] 
 PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], point 87 [xmlDoctype, 0] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 0 [paras[0].firstChild, -1] 
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 1 [paras[0].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 3 [paras[0].firstChild, 2] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 4 [paras[0].firstChild, 8] 
@@ -2517,14 +2526,18 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
 <me...
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 24 [document.documentElement, -1] 
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 25 [document.documentElement, 0] assert_equals: focusOffset must equal the offset we collapse()d to expected 0 but got 1
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 26 [document.documentElement, 1] assert_equals: focusOffset and anchorOffset must be equal after collapse() expected 0 but got 1
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 26 [document.documentElement, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 27 [document.documentElement, 2] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Qrstuvwx"
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 28 [document.documentElement, 7] 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 29 [document.head, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <head><title>Selection.collapse() tests</title>
-<meta nam... but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
+<meta nam... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 30 [document.body, 3] assert_equals: focusNode must equal the node we collapse()d to expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Qrstuvwx"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 31 [foreignDoc.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title></title></head><body><p>Efghijkl</p><p... but got Element node <html><head><title>Selection.collapse() tests</title>
@@ -2536,8 +2549,8 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 34 [foreignDoc.body, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <body><p>Efghijkl</p><p>Mnopqrst</p>I admit that I harbor... but got Element node <html><head><title>Selection.collapse() tests</title>
 <me...
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 35 [paras[0], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p> but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 36 [paras[0], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -2552,15 +2565,15 @@ FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 42 [detachedPara1, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Element node <html><head><title>Selection.collapse() tests</title>
 <me...
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 43 [testDiv, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 44 [testDiv, 3] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 45 [document, -1] 
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <html><head><title>Selection.collapse() tests</title>
-<me...
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], point 48 [document, 2] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Qrstuvwx"
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 49 [document, 3] 
 PASS Range 15 [document.documentElement, 0, document.documentElement, 1], point 50 [comment, -1] 
@@ -2937,9 +2950,7 @@ PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 86 [foreignDoctype, 0] 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], point 87 [xmlDoctype, 0] 
 PASS Range 18 [document.head, 1, document.head, 1], point 0 [paras[0].firstChild, -1] 
-FAIL Range 18 [document.head, 1, document.head, 1], point 1 [paras[0].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+PASS Range 18 [document.head, 1, document.head, 1], point 1 [paras[0].firstChild, 0] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
 PASS Range 18 [document.head, 1, document.head, 1], point 3 [paras[0].firstChild, 2] 
 PASS Range 18 [document.head, 1, document.head, 1], point 4 [paras[0].firstChild, 8] 
@@ -2975,11 +2986,11 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 22 [foreignPara1.first
 PASS Range 18 [document.head, 1, document.head, 1], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 18 [document.head, 1, document.head, 1], point 24 [document.documentElement, -1] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
-<me... but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 18 [document.head, 1, document.head, 1], point 26 [document.documentElement, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
-<me... but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 18 [document.head, 1, document.head, 1], point 27 [document.documentElement, 2] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Qrstuvwx"
 PASS Range 18 [document.head, 1, document.head, 1], point 28 [document.documentElement, 7] 
@@ -2995,8 +3006,8 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 33 [foreignDoc.head, 0
 FAIL Range 18 [document.head, 1, document.head, 1], point 34 [foreignDoc.body, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <body><p>Efghijkl</p><p>Mnopqrst</p>I admit that I harbor... but got Element node <head><title>Selection.collapse() tests</title>
 <meta nam...
 FAIL Range 18 [document.head, 1, document.head, 1], point 35 [paras[0], 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p> but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+</p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 18 [document.head, 1, document.head, 1], point 36 [paras[0], 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3011,15 +3022,15 @@ FAIL Range 18 [document.head, 1, document.head, 1], point 41 [detachedPara1, 0] 
 FAIL Range 18 [document.head, 1, document.head, 1], point 42 [detachedPara1, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Element node <head><title>Selection.collapse() tests</title>
 <meta nam...
 FAIL Range 18 [document.head, 1, document.head, 1], point 43 [testDiv, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 18 [document.head, 1, document.head, 1], point 44 [testDiv, 3] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS Range 18 [document.head, 1, document.head, 1], point 45 [document, -1] 
-FAIL Range 18 [document.head, 1, document.head, 1], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
-FAIL Range 18 [document.head, 1, document.head, 1], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <head><title>Selection.collapse() tests</title>
-<meta nam...
+FAIL Range 18 [document.head, 1, document.head, 1], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 18 [document.head, 1, document.head, 1], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 18 [document.head, 1, document.head, 1], point 48 [document, 2] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Qrstuvwx"
 PASS Range 18 [document.head, 1, document.head, 1], point 49 [document, 3] 
 PASS Range 18 [document.head, 1, document.head, 1], point 50 [comment, -1] 
@@ -3585,9 +3596,7 @@ PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 85 [doctype, 1]
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 86 [foreignDoctype, 0] 
 PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], point 87 [xmlDoctype, 0] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 0 [paras[0].firstChild, -1] 
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 1 [paras[0].firstChild, 0] assert_equals: focusNode must equal the node we collapse()d to expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 0], point 1 [paras[0].firstChild, 0] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 2 [paras[0].firstChild, 1] assert_equals: focusOffset must equal the offset we collapse()d to expected 1 but got 2
 PASS Range 23 [paras[0], 0, paras[0], 0], point 3 [paras[0].firstChild, 2] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 4 [paras[0].firstChild, 8] 
@@ -3623,17 +3632,17 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], point 22 [foreignPara1.firstChild, 8] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 23 [foreignPara1.firstChild, 9] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 24 [document.documentElement, -1] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 25 [document.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
-<me... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 26 [document.documentElement, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
-<me... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+<me... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 27 [document.documentElement, 2] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title>Selection.collapse() tests</title>
 <me... but got Text node "Qrstuvwx"
 PASS Range 23 [paras[0], 0, paras[0], 0], point 28 [document.documentElement, 7] 
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 29 [document.head, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <head><title>Selection.collapse() tests</title>
-<meta nam... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+<meta nam... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 30 [document.body, 3] assert_equals: focusNode must equal the node we collapse()d to expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Qrstuvwx"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 31 [foreignDoc.documentElement, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <html><head><title></title></head><body><p>Efghijkl</p><p... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
@@ -3659,15 +3668,15 @@ FAIL Range 23 [paras[0], 0, paras[0], 0], point 41 [detachedPara1, 0] assert_equ
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 42 [detachedPara1, 1] assert_equals: focusNode must equal the node we collapse()d to expected Element node <p>Opqrstuv</p> but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p>
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 43 [testDiv, 0] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 44 [testDiv, 3] assert_equals: focusNode must equal the node we collapse()d to expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Qrstuvwx"
 PASS Range 23 [paras[0], 0, paras[0], 0], point 45 [document, -1] 
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
-FAIL Range 23 [paras[0], 0, paras[0], 0], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+FAIL Range 23 [paras[0], 0, paras[0], 0], point 46 [document, 0] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 23 [paras[0], 0, paras[0], 0], point 47 [document, 1] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL Range 23 [paras[0], 0, paras[0], 0], point 48 [document, 2] assert_equals: focusNode must equal the node we collapse()d to expected Document node with 2 children but got Text node "Qrstuvwx"
 PASS Range 23 [paras[0], 0, paras[0], 0], point 49 [document, 3] 
 PASS Range 23 [paras[0], 0, paras[0], 0], point 50 [comment, -1] 

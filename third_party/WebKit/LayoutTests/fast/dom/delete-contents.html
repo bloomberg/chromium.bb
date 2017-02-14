@@ -12,6 +12,6 @@ test(() => assert_selection(
         range.deleteContents();
         range.insertNode(selection.document.createElement('div'));
     },
-    '<div id="mydiv">|<div></div></div>'),
+    '<div id="mydiv">^<div></div>|</div>'),
     'Range#deleteContents() then Range#insertNode() should not crash');
 </script>

@@ -266,17 +266,14 @@ TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret) {
   EXPECT_EQ(Position(document().body(), 0), selection().start());
   EXPECT_EQ(selection().start(), caretPosition().position());
   document().body()->remove();
-  // TODO(yosin): Once lazy canonicalization implemented, selection.start
-  // should be Position(HTML, 0).
-  EXPECT_EQ(Position(document().documentElement(), 1), selection().start());
+  EXPECT_EQ(Position(), selection().start())
+      << "Selection has been removed by BODY.remove().";
   EXPECT_EQ(selection().start(), caretPosition().position());
   document().updateStyleAndLayout();
   selection().updateIfNeeded();
 
-  // TODO(yosin): Once lazy canonicalization implemented, selection.start
-  // should be Position(HTML, 0).
   EXPECT_EQ(Position(), selection().start())
-      << "updateIfNeeded() makes selection to null.";
+      << "selection().updateIfNeeded() does nothing.";
   EXPECT_EQ(selection().start(), caretPosition().position());
 }
 
