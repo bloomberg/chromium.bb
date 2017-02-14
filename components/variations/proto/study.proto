@@ -192,9 +192,13 @@ message Study {
 
   // Possible form factors Chrome is running on.
   enum FormFactor {
+    // Chrome Desktop on Windows, Mac, Linux, or ChromeOS.
     DESKTOP = 0;
+    // Phone-based mobile Chrome, e.g. an Android phone or iPhone.
     PHONE   = 1;
+    // Tablet-based mobile Chrome, e.g. an Android tablet or iPad.
     TABLET  = 2;
+    // ChromeOS running in single-app Kiosk mode.
     KIOSK   = 3;
   }
 
