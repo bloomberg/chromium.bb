@@ -4,6 +4,8 @@
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
+#include <signal.h>
+
 #include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -110,6 +112,14 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // Seccomp has been detected, check if the field trial experiment should run.
   if (base::FeatureList::IsEnabled(features::kSeccompSandboxAndroid)) {
     status_uma.set_status(RecordSeccompStatus::FEATURE_ENABLED);
+
+    // TODO(rsesek): When "the thing after N" has an sdk_int(), restrict this to
+    // that platform version or higher.
+    sig_t old_handler = signal(SIGSYS, SIG_DFL);
+    if (old_handler != SIG_DFL) {
+      DLOG(WARNING) << "Un-hooking existing SIGSYS handler before "
+                    << "starting Seccomp sandbox";
+    }
 
     sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
     CHECK(sandbox.StartSandbox(
