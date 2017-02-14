@@ -125,12 +125,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         mDelegate.addUIObserver(this);
         if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
         delegate.getModel().addObserver(mBookmarkModelObserver);
-
-        // This class will handle setting the title. Pass 0 to the superclass so that it doesn't
-        // try to set the title when a selection is cleared.
-        int titleResId = 0;
-        initialize(delegate.getSelectionDelegate(), titleResId, delegate.getDrawerLayout(),
-                R.id.normal_menu_group, R.id.selection_mode_menu_group, null);
     }
 
     @Override
@@ -164,6 +158,11 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         super.onSelectionStateChange(selectedBookmarks);
+
+        // The super class registers itself as a SelectionObserver before
+        // #onBookmarkDelegateInitialized() is called. Return early if mDelegate has not been set.
+        if (mDelegate == null) return;
+
         if (mIsSelectionEnabled) {
             // Editing a bookmark action on multiple selected items doesn't make sense. So disable.
             getMenu().findItem(R.id.selection_mode_edit_menu_id).setVisible(

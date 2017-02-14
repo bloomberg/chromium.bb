@@ -58,6 +58,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
         public void onChanged() {
+            super.onChanged();
             if (mAdapter.getItemCount() == 0) {
                 mEmptyView.setVisibility(View.VISIBLE);
                 mRecyclerView.setVisibility(View.GONE);
@@ -71,7 +72,27 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
 
             mToolbar.onDataChanged(mAdapter.getItemCount());
         }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            super.onItemRangeInserted(positionStart, itemCount);
+            updateEmptyViewVisibility();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            super.onItemRangeRemoved(positionStart, itemCount);
+            updateEmptyViewVisibility();
+        }
     };
+
+    /**
+     * Unlike ListView or GridView, RecyclerView does not provide default empty
+     * view implementation. We need to check it ourselves.
+     */
+    private void updateEmptyViewVisibility() {
+        mEmptyView.setVisibility(mAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    }
 
     public SelectableListLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -114,6 +135,8 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerView.setHasFixedSize(true);
+
         return mRecyclerView;
     }
 
@@ -141,8 +164,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
             int normalGroupResId, int selectedGroupResId,
             @Nullable Integer normalBackgroundColorResId, boolean hideShadowOnLargeTablets,
-            OnMenuItemClickListener listener) {
-
+            @Nullable OnMenuItemClickListener listener) {
         FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
         if (hideShadowOnLargeTablets && DeviceFormFactor.isLargeTablet(getContext())) {
             shadow.setVisibility(View.GONE);
@@ -157,7 +179,11 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
         mToolbar = toolbar;
         mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
                 selectedGroupResId, normalBackgroundColorResId);
-        mToolbar.setOnMenuItemClickListener(listener);
+
+        if (listener != null) {
+            mToolbar.setOnMenuItemClickListener(listener);
+        }
+
         return mToolbar;
     }
 
@@ -223,7 +249,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
     }
 
     /**
-     * @param displayStyle The current display style.
+     * @param displayStyle The current display style..
      * @param resources The {@link Resources} used to retrieve configuration and display metrics.
      * @return The lateral padding to use for the current display style.
      */

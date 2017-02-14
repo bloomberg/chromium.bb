@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -32,8 +31,6 @@ public class BookmarkActivity extends SnackbarActivity {
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
         mBookmarkManager.updateForUrl(url);
         setContentView(mBookmarkManager.getView());
-        // Hack to work around inferred theme false lint error: http://crbug.com/445633
-        assert (R.layout.bookmark_main_content != 0);
     }
 
     @Override

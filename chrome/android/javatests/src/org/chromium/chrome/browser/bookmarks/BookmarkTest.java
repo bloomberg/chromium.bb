@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.support.test.filters.SmallTest;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PAGE_TITLE = "The Google";
 
     private BookmarkModel mBookmarkModel;
-    protected BookmarkRecyclerView mItemsContainer;
+    protected RecyclerView mItemsContainer;
     private String mTestPage;
     private EmbeddedTestServer mTestServer;
 
@@ -78,15 +79,13 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private void openBookmarkManager() throws InterruptedException {
         if (DeviceFormFactor.isTablet(getActivity())) {
             loadUrl(UrlConstants.BOOKMARKS_URL);
-            mItemsContainer = (BookmarkRecyclerView) getActivity().findViewById(
-                    R.id.bookmark_items_container);
+            mItemsContainer = (RecyclerView) getActivity().findViewById(R.id.recycler_view);
         } else {
             // phone
             BookmarkActivity activity = ActivityUtils.waitForActivity(getInstrumentation(),
                     BookmarkActivity.class, new MenuUtils.MenuActivityTrigger(
                             getInstrumentation(), getActivity(), R.id.all_bookmarks_menu_id));
-            mItemsContainer = (BookmarkRecyclerView) activity.findViewById(
-                    R.id.bookmark_items_container);
+            mItemsContainer = (RecyclerView) activity.findViewById(R.id.recycler_view);
         }
     }
 
@@ -95,7 +94,8 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public Boolean call() throws Exception {
                 for (int i = 0; i < mItemsContainer.getAdapter().getItemCount(); i++) {
-                    BookmarkId item = mItemsContainer.getAdapter().getItem(i);
+                    BookmarkId item =
+                            ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).getItem(i);
                     if (item == null) continue;
 
                     String actualTitle = mBookmarkModel.getBookmarkTitle(item);
@@ -168,7 +168,8 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @SmallTest
     public void testOpenBookmarkManager() throws InterruptedException {
         openBookmarkManager();
-        BookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
+        BookmarkDelegate delegate =
+                ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).getDelegateForTesting();
         assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         assertEquals("chrome-native://bookmarks/folder/3",
                 BookmarkUtils.getLastUsedUrl(getActivity()));

@@ -25,7 +25,11 @@
         android:inAnimation="@android:anim/fade_in"
         android:outAnimation="@android:anim/fade_out" >
 
-        <include layout="@layout/bookmark_main_content" />
+        <org.chromium.chrome.browser.widget.selection.SelectableListLayout
+            android:id="@+id/selectable_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white" />
 
         <include layout="@layout/bookmark_search" />
     </ViewSwitcher>

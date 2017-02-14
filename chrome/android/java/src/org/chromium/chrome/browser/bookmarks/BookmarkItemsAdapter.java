@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BaseAdapter for {@link BookmarkRecyclerView}. It manages bookmarks to list there.
+ * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
 class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
         BookmarkUIObserver, PromoHeaderShowingChangeListener {
@@ -298,5 +299,10 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (mPromoHeaderManager.shouldShow()) {
             mPromoHeaderSection.add(null);
         }
+    }
+
+    @VisibleForTesting
+    public BookmarkDelegate getDelegateForTesting() {
+        return mDelegate;
     }
 }
