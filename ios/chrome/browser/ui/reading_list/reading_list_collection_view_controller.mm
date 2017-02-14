@@ -515,9 +515,10 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       attributesProvider:self.attributesProvider
                      url:url
        distillationState:entry.DistilledState()];
-  base::string16 urlString = url_formatter::FormatUrl(url);
-  item.text = base::SysUTF8ToNSString(entry.Title());
-  item.detailText = base::SysUTF16ToNSString(urlString);
+  NSString* urlString = base::SysUTF16ToNSString(url_formatter::FormatUrl(url));
+  NSString* title = base::SysUTF8ToNSString(entry.Title());
+  item.text = [title length] ? title : urlString;
+  item.detailText = urlString;
   item.faviconPageURL =
       entry.DistilledURL().is_valid() ? entry.DistilledURL() : url;
   return item;

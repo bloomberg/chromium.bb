@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
@@ -239,8 +240,10 @@ void ReadingListDownloadService::OnDownloadEnd(
       !distilled_path.empty()) {
     reading_list_model_->SetEntryDistilledInfo(url, distilled_path,
                                                distilled_url);
-    if (!title.empty())
-      reading_list_model_->SetEntryTitle(url, title);
+
+    std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+    if (!trimmed_title.empty())
+      reading_list_model_->SetEntryTitle(url, trimmed_title);
 
     const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
     if (entry)

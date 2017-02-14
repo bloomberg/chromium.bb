@@ -313,10 +313,9 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   RemoveEntryByURL(url);
 
-  std::string trimmedTitle(title);
-  base::TrimWhitespaceASCII(trimmedTitle, base::TRIM_ALL, &trimmedTitle);
+  std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
 
-  ReadingListEntry entry(url, trimmedTitle);
+  ReadingListEntry entry(url, trimmed_title);
   for (auto& observer : observers_)
     observer.ReadingListWillAddEntry(this, entry);
   UpdateEntryStateCountersOnEntryInsertion(entry);
@@ -372,14 +371,15 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
     return;
   }
   ReadingListEntry& entry = iterator->second;
-  if (entry.Title() == title) {
+  std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+  if (entry.Title() == trimmed_title) {
     return;
   }
 
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListWillUpdateEntry(this, url);
   }
-  entry.SetTitle(title);
+  entry.SetTitle(trimmed_title);
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }

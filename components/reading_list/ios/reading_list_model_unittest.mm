@@ -683,4 +683,18 @@ TEST_F(ReadingListModelTest, CallbackModelBeingDeleted) {
   AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0);
 }
 
+// Tests that new line characters and spaces are collapsed in title.
+TEST_F(ReadingListModelTest, TestTrimmingTitle) {
+  const GURL gurl("http://example.com");
+  std::string title = "\n  This\ttitle \n contains new     line \n characters ";
+  model_->AddEntry(gurl, title, reading_list::ADDED_VIA_CURRENT_APP);
+  model_->SetReadStatus(gurl, true);
+  const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
+  EXPECT_EQ(entry->Title(), "This title contains new line characters");
+  model_->SetEntryTitle(gurl, "test");
+  EXPECT_EQ(entry->Title(), "test");
+  model_->SetEntryTitle(gurl, title);
+  EXPECT_EQ(entry->Title(), "This title contains new line characters");
+}
+
 }  // namespace
