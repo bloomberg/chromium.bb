@@ -260,7 +260,7 @@ bool PresentationFrame::HasScreenAvailabilityListenerForTest(
 }
 
 void PresentationFrame::Reset() {
-  auto offscreen_presentation_manager =
+  auto* offscreen_presentation_manager =
       OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
           web_contents_);
 

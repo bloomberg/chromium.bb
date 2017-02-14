@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
   load2.Wait();
 
   // Set the auto-discardable state of the first tab to false.
-  auto tsm = browser()->tab_strip_model();
+  auto* tsm = browser()->tab_strip_model();
   ASSERT_EQ(2, tsm->count());
   tab_manager->SetTabAutoDiscardableState(tsm->GetWebContentsAt(0), false);
 

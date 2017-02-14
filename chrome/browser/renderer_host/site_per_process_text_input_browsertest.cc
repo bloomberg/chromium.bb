@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
       GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
       GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
   std::vector<content::RenderWidgetHostView*> views;
-  for (auto frame : frames)
+  for (auto* frame : frames)
     views.push_back(frame->GetView());
   std::vector<std::string> values{"a", "ab", "ac", "aca", "acb", "acd"};
   for (size_t i = 0; i < frames.size(); ++i)

@@ -801,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
     persisted.WaitForPersisted();
     std::vector<content::DownloadItem*> downloads;
     GetDownloadManager()->GetAllDownloads(&downloads);
-    for (auto download : downloads)
+    for (auto* download : downloads)
       download->Remove();
   }
 

@@ -33,7 +33,7 @@ std::unique_ptr<views::View> ShippingListViewController::CreateView() {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   content_view->SetLayoutManager(layout);
 
-  for (auto& profile : request()->shipping_profiles()) {
+  for (auto* profile : request()->shipping_profiles()) {
     // TODO(tmartino): Pass an actual locale in place of empty string.
     content_view->AddChildView(
         GetShippingAddressLabel(AddressStyleType::DETAILED, std::string(),

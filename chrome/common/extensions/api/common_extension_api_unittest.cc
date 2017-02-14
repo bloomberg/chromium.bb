@@ -200,7 +200,7 @@ TEST(ExtensionAPITest, APIFeatures) {
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     TestExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    for (const auto& key : kTestFeatures)
+    for (auto* key : kTestFeatures)
       api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
@@ -222,7 +222,7 @@ TEST(ExtensionAPITest, APIFeaturesAlias) {
 
   TestExtensionAPI api;
   api.RegisterDependencyProvider("api", &api_feature_provider);
-  for (const auto& key : kAliasTestApis)
+  for (auto* key : kAliasTestApis)
     api.add_fake_schema(key);
   ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
@@ -322,7 +322,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     TestExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    for (const auto& key : kTestFeatures)
+    for (auto* key : kTestFeatures)
       api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
@@ -382,7 +382,7 @@ TEST(ExtensionAPITest, SessionTypeFeature) {
   for (const auto& test : kTestData) {
     TestExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    for (const auto& key : kSessionTypeTestFeatures)
+    for (auto* key : kSessionTypeTestFeatures)
       api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 

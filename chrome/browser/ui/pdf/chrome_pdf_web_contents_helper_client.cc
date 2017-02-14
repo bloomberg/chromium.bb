@@ -16,7 +16,7 @@ content::WebContents* GetWebContentsToUse(
     content::WebContents* web_contents) {
   // If we're viewing the PDF in a MimeHandlerViewGuest, use its embedder
   // WebContents.
-  auto guest_view =
+  auto* guest_view =
       extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
   if (guest_view)
     return guest_view->embedder_web_contents();

@@ -36,7 +36,7 @@ void AppendDeepCopyVector(
     const std::vector<const autofill::PasswordForm*>& forms,
     std::vector<std::unique_ptr<autofill::PasswordForm>>* result) {
   result->reserve(result->size() + forms.size());
-  for (const auto& form : forms)
+  for (auto* form : forms)
     result->push_back(base::MakeUnique<autofill::PasswordForm>(*form));
 }
 

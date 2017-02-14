@@ -52,7 +52,7 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       "http://adobe.com/go/gntray_dl_getflashplayer_jp",
   };
 
-  for (auto& url : flash_intercept_urls) {
+  for (auto* url : flash_intercept_urls) {
     EXPECT_TRUE(ShouldStopFlashDownloadAction(url))
         << "Should have intercepted: " << url;
   }
@@ -68,7 +68,7 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       "http://www.adobe.com/go/flash",
   };
 
-  for (auto& url : flash_no_intercept_urls) {
+  for (auto* url : flash_no_intercept_urls) {
     EXPECT_FALSE(ShouldStopFlashDownloadAction(url))
         << "Should not have intercepted: " << url;
   }

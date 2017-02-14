@@ -171,7 +171,7 @@ void ChromeDataUseAscriberService::SetDataUseAscriber(
   ascriber_ = ascriber;
   is_initialized_ = true;
 
-  for (auto& it : pending_frames_queue_) {
+  for (auto* it : pending_frames_queue_) {
     RenderFrameCreated(it);
     if (pending_visible_main_frames_.find(it) !=
         pending_visible_main_frames_.end()) {

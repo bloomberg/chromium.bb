@@ -96,7 +96,7 @@ int SessionsSyncPerfTest::GetTabCount(int profile) {
 
   int tab_count = 0;
   sessions.push_back(local_session);
-  for (const auto& session : sessions)
+  for (auto* session : sessions)
     for (const auto& win_pair : session->windows)
       tab_count += win_pair.second->tabs.size();
 

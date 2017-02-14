@@ -59,7 +59,7 @@ ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
     return nullptr;
 
   // If a DataUseRecorder has already been set as user data, then return that.
-  auto user_data = static_cast<DataUseRecorderEntryAsUserData*>(
+  auto* user_data = static_cast<DataUseRecorderEntryAsUserData*>(
       request.GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
   return user_data ? &(*user_data->recorder_entry()) : nullptr;
 }
@@ -74,7 +74,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
     return data_use_recorders_.end();
 
   // If a DataUseRecorder has already been set as user data, then return that.
-  auto user_data = static_cast<DataUseRecorderEntryAsUserData*>(
+  auto* user_data = static_cast<DataUseRecorderEntryAsUserData*>(
       request->GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
   if (user_data)
     return user_data->recorder_entry();
@@ -318,7 +318,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
   if (is_same_page_navigation) {
     old_frame_entry->MergeFrom(&(*entry));
 
-    for (auto request : entry->pending_url_requests()) {
+    for (auto* request : entry->pending_url_requests()) {
       request->RemoveUserData(DataUseRecorderEntryAsUserData::kUserDataKey);
       request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
                            new DataUseRecorderEntryAsUserData(old_frame_entry));

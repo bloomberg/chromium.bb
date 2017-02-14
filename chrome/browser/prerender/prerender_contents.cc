@@ -231,7 +231,7 @@ bool PrerenderContents::IsValidHttpMethod(const std::string& method) {
   // |method| has been canonicalized to upper case at this point so we can just
   // compare them.
   DCHECK_EQ(method, base::ToUpperASCII(method));
-  for (const auto& valid_method : kValidHttpMethods) {
+  for (auto* valid_method : kValidHttpMethods) {
     if (method == valid_method)
       return true;
   }
@@ -239,7 +239,7 @@ bool PrerenderContents::IsValidHttpMethod(const std::string& method) {
   if (prerender_mode() == PREFETCH_ONLY)
     return false;
 
-  for (const auto& valid_method : kValidHttpMethodsForPrerendering) {
+  for (auto* valid_method : kValidHttpMethodsForPrerendering) {
     if (method == valid_method)
       return true;
   }

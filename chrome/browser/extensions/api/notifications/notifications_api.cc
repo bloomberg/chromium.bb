@@ -262,7 +262,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   bool ShouldDisplayOverFullscreen() const override {
     AppWindowRegistry::AppWindowList windows = AppWindowRegistry::Get(
         api_function_->GetProfile())->GetAppWindowsForApp(extension_id_);
-    for (const auto& window : windows) {
+    for (auto* window : windows) {
       // Window must be fullscreen and visible
       if (window->IsFullscreen() && window->GetBaseWindow()->IsActive()) {
         bool enabled = base::FeatureList::IsEnabled(

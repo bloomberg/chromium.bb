@@ -540,7 +540,7 @@ void TestPrerender::OnPrerenderStop(PrerenderContents* contents) {
 FirstContentfulPaintManagerWaiter* FirstContentfulPaintManagerWaiter::Create(
     PrerenderManager* manager) {
   auto fcp_waiter = base::WrapUnique(new FirstContentfulPaintManagerWaiter());
-  auto fcp_waiter_ptr = fcp_waiter.get();
+  auto* fcp_waiter_ptr = fcp_waiter.get();
   manager->AddObserver(std::move(fcp_waiter));
   return fcp_waiter_ptr;
 }

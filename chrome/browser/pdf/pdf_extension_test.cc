@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
   ASSERT_TRUE(it != preset_zoom_levels.end());
   double new_zoom_level = *it;
 
-  auto zoom_controller = ZoomController::FromWebContents(web_contents);
+  auto* zoom_controller = ZoomController::FromWebContents(web_contents);
   // We expect a ZoomChangedEvent with can_show_bubble == false if the PDF
   // extension behaviour is properly picked up. The test times out otherwise.
   ZoomChangedWatcher watcher(zoom_controller,

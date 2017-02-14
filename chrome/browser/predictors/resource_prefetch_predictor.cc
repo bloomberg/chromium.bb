@@ -436,10 +436,10 @@ void ResourcePrefetchPredictor::StartInitialization() {
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.
-  auto url_data_map_ptr = url_data_map.get();
-  auto host_data_map_ptr = host_data_map.get();
-  auto url_redirect_data_map_ptr = url_redirect_data_map.get();
-  auto host_redirect_data_map_ptr = host_redirect_data_map.get();
+  auto* url_data_map_ptr = url_data_map.get();
+  auto* host_data_map_ptr = host_data_map.get();
+  auto* url_redirect_data_map_ptr = url_redirect_data_map.get();
+  auto* host_redirect_data_map_ptr = host_redirect_data_map.get();
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE,

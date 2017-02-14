@@ -412,14 +412,14 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   ResourceSummary* AddExternalResource(const GURL& resource_url,
                                        content::ResourceType resource_type,
                                        net::RequestPriority priority) {
-    auto resource = AddResource(resource_url, resource_type, priority);
+    auto* resource = AddResource(resource_url, resource_type, priority);
     resource->is_external = true;
     return resource;
   }
 
   void AddUnobservableResources(const std::vector<GURL>& resource_urls) {
     for (const GURL& resource_url : resource_urls) {
-      auto resource =
+      auto* resource =
           AddResource(resource_url, content::RESOURCE_TYPE_SUB_RESOURCE,
                       net::DEFAULT_PRIORITY);
       resource->is_observable = false;
@@ -694,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
                        JavascriptDocumentWrite) {
-  auto externalScript =
+  auto* externalScript =
       AddExternalResource(GetURL(kScriptDocumentWritePath),
                           content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
                        JavascriptAppendChild) {
-  auto externalScript =
+  auto* externalScript =
       AddExternalResource(GetURL(kScriptAppendChildPath),
                           content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
                        JavascriptInnerHtml) {
-  auto externalScript = AddExternalResource(
+  auto* externalScript = AddExternalResource(
       GetURL(kScriptInnerHtmlPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
   AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
@@ -736,17 +736,17 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
 // Requests originated by XMLHttpRequest have content::RESOURCE_TYPE_XHR.
 // Actual resource type is inferred from the mime-type.
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, JavascriptXHR) {
-  auto externalScript = AddExternalResource(
+  auto* externalScript = AddExternalResource(
       GetURL(kScriptXHRPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
-  auto image = AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
-                           net::HIGHEST);
-  image->request.mime_type = kImageMime;
-  auto style = AddResource(GetURL(kStylePath),
-                           content::RESOURCE_TYPE_STYLESHEET, net::HIGHEST);
-  style->request.mime_type = kStyleMime;
-  auto script = AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT,
+  auto* image = AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
                             net::HIGHEST);
+  image->request.mime_type = kImageMime;
+  auto* style = AddResource(GetURL(kStylePath),
+                            content::RESOURCE_TYPE_STYLESHEET, net::HIGHEST);
+  style->request.mime_type = kStyleMime;
+  auto* script = AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT,
+                             net::HIGHEST);
   script->request.mime_type = kJavascriptMime;
   TestLearningAndPrefetching(GetURL(kHtmlXHRPath));
 }
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, AlwaysRevalidate) {
       AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
                   net::HIGHEST),
   };
-  for (auto& resource : resources)
+  for (auto* resource : resources)
     resource->request.always_revalidate = true;
   TestLearningAndPrefetching(GetURL(kHtmlSubresourcesPath));
 }

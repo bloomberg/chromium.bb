@@ -272,7 +272,7 @@ void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
                     bool is_cellular) {
                    // Some unit tests use IOThread but do not initialize
                    // MetricsService. In that case it's fine to skip the update.
-                   auto metrics_service = g_browser_process->metrics_service();
+                   auto* metrics_service = g_browser_process->metrics_service();
                    if (metrics_service) {
                      metrics_service->UpdateMetricsUsagePrefs(service_name,
                                                               message_size,

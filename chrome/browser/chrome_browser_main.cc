@@ -472,7 +472,7 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 #endif  // defined(OS_MACOSX)
 
 void RegisterComponentsForUpdate() {
-  const auto cus = g_browser_process->component_updater();
+  auto* const cus = g_browser_process->component_updater();
 
   if (base::FeatureList::IsEnabled(features::kImprovedRecoveryComponent))
     RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());

@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
 
 IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  auto tsm = browser()->tab_strip_model();
+  auto* tsm = browser()->tab_strip_model();
   set_tab_strip_model(tsm);
 
   // Open two tabs.

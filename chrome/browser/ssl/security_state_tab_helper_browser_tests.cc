@@ -71,7 +71,7 @@ const base::FilePath::CharType kDocRoot[] =
 void InjectScript(content::WebContents* contents) {
   // Any frame in the page might have a password field, so inject scripts into
   // all of them to ensure that notifications from all of them have been sent.
-  for (const auto& frame : contents->GetAllFrames()) {
+  for (auto* frame : contents->GetAllFrames()) {
     bool js_result = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
         frame, "window.domAutomationController.send(true);", &js_result));

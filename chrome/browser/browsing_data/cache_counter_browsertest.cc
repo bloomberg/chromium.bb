@@ -138,7 +138,8 @@ class CacheCounterTest : public InProcessBrowserTest {
     finished_ = result->Finished();
 
     if (finished_) {
-      auto cache_result = static_cast<CacheCounter::CacheResult*>(result.get());
+      auto* cache_result =
+          static_cast<CacheCounter::CacheResult*>(result.get());
       result_ = cache_result->cache_size();
       is_upper_limit_ = cache_result->is_upper_limit();
     }

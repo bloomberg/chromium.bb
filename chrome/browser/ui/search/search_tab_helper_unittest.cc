@@ -84,7 +84,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
-    auto search_tab = SearchTabHelper::FromWebContents(web_contents());
+    auto* search_tab = SearchTabHelper::FromWebContents(web_contents());
     auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
     ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(&mock_search_box_));
     search_tab->ipc_router_for_testing()

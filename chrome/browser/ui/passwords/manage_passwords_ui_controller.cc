@@ -358,7 +358,7 @@ void ManagePasswordsUIController::SavePasswordInternal() {
       GetPasswordStore(web_contents());
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
-  for (const auto& form : form_manager->blacklisted_matches()) {
+  for (auto* form : form_manager->blacklisted_matches()) {
     password_store->RemoveLogin(*form);
   }
 

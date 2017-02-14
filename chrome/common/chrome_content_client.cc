@@ -586,7 +586,7 @@ static const char* const kChromeStandardURLSchemes[] = {
 };
 
 void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
-  for (auto& standard_scheme : kChromeStandardURLSchemes)
+  for (auto* standard_scheme : kChromeStandardURLSchemes)
     schemes->standard_schemes.push_back(standard_scheme);
 
 #if defined(OS_ANDROID)

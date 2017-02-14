@@ -91,7 +91,7 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   if (!handled) {
     // Make a copy of the handlers to prevent modification during iteration.
     std::vector<MessageHandler*> temp_handlers = message_handlers_.get();
-    for (const auto& handler : temp_handlers) {
+    for (auto* handler : temp_handlers) {
       handled = handler->HandleMessage(msg);
       if (handled)
         break;

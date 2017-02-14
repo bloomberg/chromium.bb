@@ -55,7 +55,7 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
   void CountEntries(base::Time begin_time, base::Time end_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     last_size_ = -1;
-    auto helper = ConditionalCacheCountingHelper::CreateForRange(
+    auto* helper = ConditionalCacheCountingHelper::CreateForRange(
         cache_util_->partition(), begin_time, end_time);
     helper->CountAndDestroySelfWhenFinished(count_callback_);
   }

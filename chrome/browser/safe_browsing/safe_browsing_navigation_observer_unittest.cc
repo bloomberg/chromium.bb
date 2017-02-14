@@ -158,7 +158,7 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                              ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   CommitPendingLoad(controller);
   int tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
-  auto nav_list = navigation_event_list();
+  auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),                // source_url
                         GURL(),                // source_main_frame_url
@@ -182,7 +182,7 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
   rfh_tester->SimulateNavigationCommit(redirect);
   int tab_id = SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
-  auto nav_list = navigation_event_list();
+  auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL("http://foo/0"),       // source_url
                         GURL("http://foo/0"),       // source_main_frame_url
