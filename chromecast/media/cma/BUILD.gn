@@ -14,7 +14,8 @@ group("cma") {
   ]
 }
 
-test("cast_cma_unittests") {
+source_set("unittests") {
+  testonly = true
   sources = [
     "backend/audio_video_pipeline_device_unittest.cc",
     "base/balanced_media_task_runner_unittest.cc",
@@ -36,7 +37,6 @@ test("cast_cma_unittests") {
     "test/mock_frame_provider.h",
     "test/mock_media_pipeline_backend.cc",
     "test/mock_media_pipeline_backend.h",
-    "test/run_all_unittests.cc",
   ]
 
   deps = [
@@ -58,6 +58,10 @@ test("cast_cma_unittests") {
     "//testing/gtest",
     "//ui/display",
     "//ui/gfx/geometry",
+  ]
+
+  data = [
+    "//media/test/data/",
   ]
 
   # MultizoneBackendTest verifies rendering delay reported by the backend.

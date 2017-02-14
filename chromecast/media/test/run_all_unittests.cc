@@ -9,21 +9,17 @@
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 #include "media/base/media.h"
 
-#if defined(OS_ANDROID)
-#error "CMA not supported on Android"
-#endif
-
-class CmaTestSuite : public base::TestSuite {
+class CastMediaTestSuite : public base::TestSuite {
  public:
   // Note: the base class constructor creates an AtExitManager.
-  CmaTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
-  ~CmaTestSuite() override {}
+  CastMediaTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
+  ~CastMediaTestSuite() override {}
 
  protected:
   void Initialize() override;
 };
 
-void CmaTestSuite::Initialize() {
+void CastMediaTestSuite::Initialize() {
   // Run TestSuite::Initialize first so that logging is initialized.
   base::TestSuite::Initialize();
 
@@ -37,9 +33,9 @@ void CmaTestSuite::Initialize() {
 }
 
 int main(int argc, char** argv) {
-  CmaTestSuite test_suite(argc, argv);
+  CastMediaTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&CmaTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc, argv,
+      base::Bind(&CastMediaTestSuite::Run, base::Unretained(&test_suite)));
 }

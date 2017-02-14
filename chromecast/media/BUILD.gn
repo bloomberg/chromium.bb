@@ -20,12 +20,12 @@ test("cast_media_unittests") {
     "audio/cast_audio_output_stream_unittest.cc",
     "base/media_resource_tracker_unittest.cc",
     "base/supported_codec_profile_levels_memo_unittest.cc",
+    "test/run_all_unittests.cc",
   ]
 
   deps = [
     ":media",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
@@ -35,4 +35,8 @@ test("cast_media_unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (!is_android) {
+    deps += [ "//chromecast/media/cma:unittests" ]
+  }
 }
