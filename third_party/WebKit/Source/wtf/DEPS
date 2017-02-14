@@ -22,4 +22,5 @@ include_rules = [
     "+build",
     # Allow redirection to platform/wtf. See crbug.com/691465.
     "+platform/wtf",
+    "-v8",
 ]

@@ -3,5 +3,6 @@ include_rules = [
     "-core",
     "-modules",
     "+platform/heap",
+    "+v8",
     "+wtf",
 ]

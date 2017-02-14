@@ -3,6 +3,7 @@ include_rules = [
     "+base/gtest_prod_util.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
+    "+v8",
     "+wtf",
 ]
 

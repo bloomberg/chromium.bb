@@ -24,4 +24,5 @@ include_rules = [
     # platform files. Think carefully if you want to relax this restriction.
     "-platform",
     "+platform/wtf",
+    "-v8",
 ]
