@@ -43,6 +43,12 @@ class CastWindowManager {
   // If the window manager hasn't been initialized, this has the side effect of
   // causing it to initialize.
   virtual void AddWindow(gfx::NativeView window) = 0;
+
+  // Sets a window's ID.
+  virtual void SetWindowId(gfx::NativeView window, WindowId window_id) = 0;
+
+  // Return the root window that holds all top-level windows.
+  virtual gfx::NativeView GetRootWindow() = 0;
 };
 
 }  // namespace chromecast

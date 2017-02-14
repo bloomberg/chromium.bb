@@ -19,6 +19,8 @@ class CastWindowManagerDefault : public CastWindowManager {
   // CastWindowManager implementation:
   void TearDown() override;
   void AddWindow(gfx::NativeView window) override;
+  void SetWindowId(gfx::NativeView window, WindowId window_id) override;
+  gfx::NativeView GetRootWindow() override;
 
  private:
   friend class CastWindowManager;

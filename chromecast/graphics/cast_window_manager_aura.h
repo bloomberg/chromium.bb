@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chromecast/graphics/cast_vsync_settings.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "ui/aura/client/window_parenting_client.h"
 
 namespace aura {
 namespace client {
@@ -23,6 +24,7 @@ class CastFocusClientAura;
 class CastWindowTreeHost;
 
 class CastWindowManagerAura : public CastWindowManager,
+                              public aura::client::WindowParentingClient,
                               private CastVSyncSettings::Observer {
  public:
   ~CastWindowManagerAura() override;
@@ -30,6 +32,13 @@ class CastWindowManagerAura : public CastWindowManager,
   // CastWindowManager implementation:
   void TearDown() override;
   void AddWindow(gfx::NativeView window) override;
+  gfx::NativeView GetRootWindow() override;
+  void SetWindowId(gfx::NativeView window, WindowId window_id) override;
+
+  // aura::client::WindowParentingClient implementation:
+  aura::Window* GetDefaultParent(aura::Window* context,
+                                 aura::Window* window,
+                                 const gfx::Rect& bounds) override;
 
  private:
   friend class CastWindowManager;

@@ -74,8 +74,10 @@ void CastContentWindowLinux::ShowWebContents(
     content::WebContents* web_contents,
     CastWindowManager* window_manager) {
   DCHECK(window_manager);
-  window_manager->AddWindow(web_contents->GetNativeView());
-  web_contents->GetNativeView()->Show();
+  gfx::NativeView window = web_contents->GetNativeView();
+  window_manager->SetWindowId(window, CastWindowManager::APP);
+  window_manager->AddWindow(window);
+  window->Show();
 }
 
 void CastContentWindowLinux::DidFirstVisuallyNonEmptyPaint() {

@@ -12,6 +12,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace aura {
 class Window;
@@ -20,7 +21,8 @@ class Window;
 namespace chromecast {
 
 class CastFocusClientAura : public aura::WindowObserver,
-                            public aura::client::FocusClient {
+                            public aura::client::FocusClient,
+                            public aura::client::ActivationClient {
  public:
   CastFocusClientAura();
   ~CastFocusClientAura() override;
@@ -31,6 +33,17 @@ class CastFocusClientAura : public aura::WindowObserver,
   void FocusWindow(aura::Window* window) override;
   void ResetFocusWithinActiveWindow(aura::Window* window) override;
   aura::Window* GetFocusedWindow() override;
+
+  // Overridden from aura::client::ActivationClient:
+  void AddObserver(aura::client::ActivationChangeObserver* observer) override;
+  void RemoveObserver(
+      aura::client::ActivationChangeObserver* observer) override;
+  void ActivateWindow(aura::Window* window) override;
+  void DeactivateWindow(aura::Window* window) override;
+  aura::Window* GetActiveWindow() override;
+  aura::Window* GetActivatableWindow(aura::Window* window) override;
+  aura::Window* GetToplevelWindow(aura::Window* window) override;
+  bool CanActivateWindow(aura::Window* window) const override;
 
  private:
   // aura::WindowObserver implementation:

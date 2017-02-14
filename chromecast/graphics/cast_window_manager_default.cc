@@ -20,5 +20,10 @@ CastWindowManagerDefault::~CastWindowManagerDefault() {}
 
 void CastWindowManagerDefault::TearDown() {}
 void CastWindowManagerDefault::AddWindow(gfx::NativeView window) {}
+void CastWindowManagerDefault::SetWindowId(gfx::NativeView window,
+                                           WindowId window_id) {}
+gfx::NativeView CastWindowManagerDefault::GetRootWindow() {
+  return nullptr;
+}
 
 }  // namespace chromecast
