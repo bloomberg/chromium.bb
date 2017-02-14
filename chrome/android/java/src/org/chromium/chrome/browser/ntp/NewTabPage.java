@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -475,7 +476,7 @@ public class NewTabPage
 
     private boolean isInSingleUrlBarMode(Context context) {
         if (DeviceFormFactor.isTablet(context)) return false;
-
+        if (FeatureUtilities.isChromeHomeEnabled()) return false;
         return mSearchProviderHasLogo;
     }
 

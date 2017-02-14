@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.suggestions.Tile;
 import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -590,7 +591,7 @@ public class NewTabPageView
     }
 
     private void onUrlFocusAnimationChanged() {
-        if (mDisableUrlFocusChangeAnimations) return;
+        if (mDisableUrlFocusChangeAnimations || FeatureUtilities.isChromeHomeEnabled()) return;
 
         // Translate so that the search box is at the top, but only upwards.
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
