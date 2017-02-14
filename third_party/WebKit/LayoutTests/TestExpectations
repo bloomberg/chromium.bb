@@ -956,6 +956,10 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
 Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
+crbug.com/691887 [ Linux Win ] external/wpt/selection/extend-00.html [ NeedsRebaseline ]
+crbug.com/691887 [ Linux Win ] external/wpt/selection/extend-20.html [ NeedsRebaseline ]
+crbug.com/691887 [ Linux Win ] external/wpt/selection/extend-40.html [ NeedsRebaseline ]
+crbug.com/691887 [ Linux Win ] external/wpt/selection/selectAllChildren.html [ NeedsRebaseline ]
 
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
@@ -1953,7 +1957,6 @@ crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-ifra
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]
-crbug.com/626703 external/wpt/selection/selectAllChildren.html [ Pass Timeout ]
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]

@@ -43,14 +43,14 @@ PASS selection.focusOffset is 1
 a<br><br>|b
 PASS sample.innerHTML is "a<br>b"
 PASS selection.type is "Caret"
-PASS selection.focusNode is sample.lastChild
-PASS selection.focusOffset is 0
+PASS selection.focusNode is sample
+PASS selection.focusOffset is 2
 
 a<br><br><br>|b
 PASS sample.innerHTML is "a<br><br>b"
 PASS selection.type is "Caret"
-PASS selection.focusNode is sample.lastChild
-PASS selection.focusOffset is 0
+PASS selection.focusNode is sample
+PASS selection.focusOffset is 3
 
 a<br>b|
 PASS sample.innerHTML is "a<br><br>"

@@ -89,7 +89,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   void collapseToEnd(ExceptionState&);
   void collapseToStart(ExceptionState&);
   void extend(Node*, int offset, ExceptionState&);
-  Range* getRangeAt(int, ExceptionState&);
+  Range* getRangeAt(int, ExceptionState&) const;
   void removeAllRanges();
   void addRange(Range*);
   void deleteFromDocument();
@@ -117,11 +117,11 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   bool isValidForPosition(Node*) const;
 
   void addConsoleError(const String& message);
-
-  Range* createRangeFromSelectionEditor();
+  Range* primaryRangeOrNull() const;
+  Range* createRangeFromSelectionEditor() const;
 
   bool isSelectionOfDocument() const;
-  void cacheRangeIfSelectionOfDocument(Range*);
+  void cacheRangeIfSelectionOfDocument(Range*) const;
   Range* documentCachedRange() const;
   void clearCachedRangeIfSelectionOfDocument();
 

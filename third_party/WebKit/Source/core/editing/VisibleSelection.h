@@ -116,6 +116,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     return !isNone() && !start().isOrphan() && !end().isOrphan();
   }
 
+  // True if base() <= extent().
   bool isBaseFirst() const { return m_baseIsFirst; }
   bool isDirectional() const { return m_isDirectional; }
   void setIsDirectional(bool isDirectional) { m_isDirectional = isDirectional; }

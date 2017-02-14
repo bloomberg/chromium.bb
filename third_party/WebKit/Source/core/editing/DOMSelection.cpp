@@ -95,31 +95,39 @@ static Position extentPosition(const VisibleSelection& selection) {
 }
 
 Node* DOMSelection::anchorNode() const {
-  if (!isAvailable())
-    return 0;
-
-  return shadowAdjustedNode(anchorPosition(visibleSelection()));
+  if (Range* range = primaryRangeOrNull()) {
+    if (!frame() || visibleSelection().isBaseFirst())
+      return range->startContainer();
+    return range->endContainer();
+  }
+  return nullptr;
 }
 
 int DOMSelection::anchorOffset() const {
-  if (!isAvailable())
-    return 0;
-
-  return shadowAdjustedOffset(anchorPosition(visibleSelection()));
+  if (Range* range = primaryRangeOrNull()) {
+    if (!frame() || visibleSelection().isBaseFirst())
+      return range->startOffset();
+    return range->endOffset();
+  }
+  return 0;
 }
 
 Node* DOMSelection::focusNode() const {
-  if (!isAvailable())
-    return 0;
-
-  return shadowAdjustedNode(focusPosition(visibleSelection()));
+  if (Range* range = primaryRangeOrNull()) {
+    if (!frame() || visibleSelection().isBaseFirst())
+      return range->endContainer();
+    return range->startContainer();
+  }
+  return nullptr;
 }
 
 int DOMSelection::focusOffset() const {
-  if (!isAvailable())
-    return 0;
-
-  return shadowAdjustedOffset(focusPosition(visibleSelection()));
+  if (Range* range = primaryRangeOrNull()) {
+    if (!frame() || visibleSelection().isBaseFirst())
+      return range->endOffset();
+    return range->startOffset();
+  }
+  return 0;
 }
 
 Node* DOMSelection::baseNode() const {
@@ -153,21 +161,20 @@ int DOMSelection::extentOffset() const {
 bool DOMSelection::isCollapsed() const {
   if (!isAvailable() || selectionShadowAncestor(frame()))
     return true;
-  return !frame()->selection().isRange();
+  if (Range* range = primaryRangeOrNull())
+    return range->collapsed();
+  return true;
 }
 
 String DOMSelection::type() const {
   if (!isAvailable())
     return String();
-
-  FrameSelection& selection = frame()->selection();
-
   // This is a WebKit DOM extension, incompatible with an IE extension
   // IE has this same attribute, but returns "none", "text" and "control"
   // http://msdn.microsoft.com/en-us/library/ms534692(VS.85).aspx
-  if (selection.isNone())
+  if (rangeCount() == 0)
     return "None";
-  if (selection.isCaret())
+  if (isCollapsed())
     return "Caret";
   return "Range";
 }
@@ -414,7 +421,8 @@ void DOMSelection::extend(Node* node,
                                         .build());
 }
 
-Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState) {
+Range* DOMSelection::getRangeAt(int index,
+                                ExceptionState& exceptionState) const {
   if (!isAvailable())
     return nullptr;
 
@@ -435,26 +443,33 @@ Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState) {
   return range;
 }
 
-Range* DOMSelection::createRangeFromSelectionEditor() {
+Range* DOMSelection::primaryRangeOrNull() const {
+  return rangeCount() > 0 ? getRangeAt(0, ASSERT_NO_EXCEPTION) : nullptr;
+}
+
+Range* DOMSelection::createRangeFromSelectionEditor() const {
   Position anchor = anchorPosition(visibleSelection());
-  if (!anchor.anchorNode()->isInShadowTree())
+  if (isSelectionOfDocument() && !anchor.anchorNode()->isInShadowTree())
     return frame()->selection().firstRange();
 
   Node* node = shadowAdjustedNode(anchor);
   if (!node)  // crbug.com/595100
     return nullptr;
-  if (!visibleSelection().isBaseFirst())
-    return Range::create(*anchor.document(), focusNode(), focusOffset(), node,
-                         anchorOffset());
-  return Range::create(*anchor.document(), node, anchorOffset(), focusNode(),
-                       focusOffset());
+  Position focus = focusPosition(visibleSelection());
+  if (!visibleSelection().isBaseFirst()) {
+    return Range::create(*anchor.document(), shadowAdjustedNode(focus),
+                         shadowAdjustedOffset(focus), node,
+                         shadowAdjustedOffset(anchor));
+  }
+  return Range::create(*anchor.document(), node, shadowAdjustedOffset(anchor),
+                       shadowAdjustedNode(focus), shadowAdjustedOffset(focus));
 }
 
 bool DOMSelection::isSelectionOfDocument() const {
   return m_treeScope == m_treeScope->document();
 }
 
-void DOMSelection::cacheRangeIfSelectionOfDocument(Range* range) {
+void DOMSelection::cacheRangeIfSelectionOfDocument(Range* range) const {
   if (!isSelectionOfDocument())
     return;
   frame()->selection().cacheRangeOfDocument(range);

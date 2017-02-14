@@ -31,7 +31,7 @@ PASS getSelection().baseNode is container
 PASS getSelection().baseOffset is 1
 PASS getSelection().extentNode is container
 PASS getSelection().extentOffset is 1
-PASS getSelection().type is 'Range'
+PASS getSelection().type is 'Caret'
 
 Add a textarea element.
 
@@ -49,7 +49,7 @@ PASS getSelection().baseNode is container
 PASS getSelection().baseOffset is 2
 PASS getSelection().extentNode is container
 PASS getSelection().extentOffset is 2
-PASS getSelection().type is 'Range'
+PASS getSelection().type is 'Caret'
 
 PASS successfullyParsed is true
 

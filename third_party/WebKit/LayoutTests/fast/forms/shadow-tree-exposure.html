@@ -50,7 +50,7 @@ shouldBe("getSelection().baseNode", "container");
 shouldBe("getSelection().baseOffset", "1");
 shouldBe("getSelection().extentNode", "container");
 shouldBe("getSelection().extentOffset", "1");
-shouldBe("getSelection().type", "'Range'");
+shouldBe("getSelection().type", "'Caret'");
 
 debug("\nAdd a textarea element.\n");
 
@@ -75,7 +75,7 @@ shouldBe("getSelection().baseNode", "container");
 shouldBe("getSelection().baseOffset", "2");
 shouldBe("getSelection().extentNode", "container");
 shouldBe("getSelection().extentOffset", "2");
-shouldBe("getSelection().type", "'Range'");
+shouldBe("getSelection().type", "'Caret'");
 
 document.body.removeChild(container);
 
