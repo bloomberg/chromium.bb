@@ -67,6 +67,8 @@ That said, it's up-to the individual developers to sync with newer version
 
 When and how to update these files
 ----------------------------------
+Note: One should not do _any_ changes to the files apart from the steps below.
+
 In order to update the files do the following:
  - Switch to a Linux kernel tree/branch which is not rebased.
 For example: airlied/drm-next
