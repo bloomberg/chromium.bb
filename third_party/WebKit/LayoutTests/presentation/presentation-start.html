@@ -17,6 +17,7 @@ var testPresentationRequestStart = function(t, requestArgument, connectionUrl) {
       new PresentationRequest(requestArgument).start().then(
       t.step_func_done(connection => {
         assert_equals(connection.url, connectionUrl);
+        assert_equals(connection.state, 'connecting');
       }));
     }, button);
   });

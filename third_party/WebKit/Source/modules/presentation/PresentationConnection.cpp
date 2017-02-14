@@ -209,9 +209,6 @@ PresentationConnection* PresentationConnection::take(
       createSameThreadTask(&PresentationConnection::dispatchEventAsync,
                            wrapPersistent(request), wrapPersistent(event)));
 
-  // Fire onconnect event asynchronously, after onconnectionavailable.
-  connection->didChangeState(WebPresentationConnectionState::Connected);
-
   return connection;
 }
 
