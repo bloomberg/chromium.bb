@@ -354,6 +354,8 @@ def gclient_sync(with_branch_heads, shallow, revisions, break_repo_locks):
   if break_repo_locks:
     args += ['--break_repo_locks']
   for name, revision in sorted(revisions.iteritems()):
+    if revision.upper() == 'HEAD':
+      revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
   try:

@@ -215,7 +215,7 @@ class BotUpdateUnittests(unittest.TestCase):
         '--revision', idx_first_revision+1)
     with self.assertRaises(ValueError):
       args.index('--revision', idx_second_revision+1)
-    self.assertEquals(args[idx_first_revision+1], 'src@HEAD')
+    self.assertEquals(args[idx_first_revision+1], 'src@origin/master')
     self.assertEquals(args[idx_second_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
