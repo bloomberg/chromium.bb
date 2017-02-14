@@ -104,8 +104,11 @@ login.createScreen('NetworkScreen', 'connect', function() {
     onBeforeShow: function(data) {
       this.setMDMode_();
       cr.ui.DropDown.show('networks-list', true, -1);
-      this.classList.toggle('connect-debugging-view',
-        data && 'isDeveloperMode' in data && data['isDeveloperMode']);
+      var debuggingLinkVisible =
+        data && 'isDeveloperMode' in data && data['isDeveloperMode'];
+
+      this.classList.toggle('connect-debugging-view', debuggingLinkVisible);
+      $('oobe-welcome-md').debuggingLinkVisible = debuggingLinkVisible;
     },
 
     onBeforeHide: function() {

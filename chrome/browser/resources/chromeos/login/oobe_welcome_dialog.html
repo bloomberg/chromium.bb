@@ -18,6 +18,11 @@
         <h1 id="title">$i18n{networkScreenGreeting}</h1>
         <!-- TODO(alemate): Display images depending on screen ppi. -->
         <img id="welcomeIllustration" src="images/welcome_illustration_2x.png">
+        <div hidden="[[!debuggingLinkVisible]]">
+          <a href="#" on-tap="onDebuggingLinkClicked_">
+            $i18n{debuggingFeaturesLink}
+          </a>
+        </div>
         <div class="flex"></div>
         <div id="buttons" class="layout horizontal center">
           <oobe-welcome-secondary-button icon="icons:language"

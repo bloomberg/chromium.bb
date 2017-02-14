@@ -19,6 +19,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Controls displaying of "Enable debugging features" link.
+     */
+     debuggingLinkVisible: Boolean,
   },
 
   onLanguageClicked_: function() {
@@ -35,6 +40,11 @@ Polymer({
 
   onNextClicked_: function() {
     this.fire('next-button-clicked');
+  },
+
+  onDebuggingLinkClicked_: function() {
+    chrome.send('login.NetworkScreen.userActed',
+        ['connect-debugging-features']);
   },
 
   /**

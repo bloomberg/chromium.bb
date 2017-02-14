@@ -126,6 +126,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Controls displaying of "Enable debugging features" link.
+     */
+     debuggingLinkVisible: Boolean,
   },
 
   /** @override */
