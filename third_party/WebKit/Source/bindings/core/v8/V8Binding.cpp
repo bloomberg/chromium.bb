@@ -792,14 +792,6 @@ Frame* toFrameIfNotDetached(v8::Local<v8::Context> context) {
   return nullptr;
 }
 
-EventTarget* toEventTarget(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  // We need to handle a DOMWindow specially, because a DOMWindow wrapper
-  // exists on a prototype chain of v8Value.
-  if (DOMWindow* window = toDOMWindow(isolate, value))
-    return window;
-  return V8EventTarget::toImplWithTypeCheck(isolate, value);
-}
-
 void toFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                FlexibleArrayBufferView& result,

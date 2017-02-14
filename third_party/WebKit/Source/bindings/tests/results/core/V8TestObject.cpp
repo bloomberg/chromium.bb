@@ -4054,7 +4054,7 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
   }
 
   EventTarget* eventTargetArg;
-  eventTargetArg = toEventTarget(info.GetIsolate(), info[0]);
+  eventTargetArg = V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!eventTargetArg) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", "parameter 1 is not of type 'EventTarget'."));
 

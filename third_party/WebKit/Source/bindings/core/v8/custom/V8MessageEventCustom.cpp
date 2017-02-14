@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
@@ -110,7 +111,8 @@ void V8MessageEvent::initMessageEventMethodCustom(
   v8::Local<v8::Value> dataArg = info[3];
   TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
   TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
-  EventTarget* sourceArg = toEventTarget(info.GetIsolate(), info[6]);
+  EventTarget* sourceArg =
+      V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[6]);
   MessagePortArray* portArray = nullptr;
   const int portArrayIndex = 7;
   if (!isUndefinedOrNull(info[portArrayIndex])) {

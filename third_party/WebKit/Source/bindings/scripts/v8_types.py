@@ -504,7 +504,6 @@ V8_VALUE_TO_CPP_VALUE = {
     'unsigned long long': 'toUInt64({isolate}, {arguments})',
     # Interface types
     'Dictionary': 'Dictionary({isolate}, {v8_value}, exceptionState)',
-    'EventTarget': 'toEventTarget({isolate}, {v8_value})',
     'FlexibleArrayBufferView': 'toFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',

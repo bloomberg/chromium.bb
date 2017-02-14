@@ -30,8 +30,10 @@
 
 #include "bindings/core/v8/V8Document.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
@@ -47,7 +49,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -117,7 +118,7 @@ void V8Document::createTouchMethodPrologueCustom(
   if (isUndefinedOrNull(v8Target)) {
     UseCounter::count(currentExecutionContext(info.GetIsolate()),
                       UseCounter::DocumentCreateTouchTargetNull);
-  } else if (!toEventTarget(info.GetIsolate(), v8Target)) {
+  } else if (!V8EventTarget::hasInstance(v8Target, info.GetIsolate())) {
     UseCounter::count(currentExecutionContext(info.GetIsolate()),
                       UseCounter::DocumentCreateTouchTargetWrongType);
   }

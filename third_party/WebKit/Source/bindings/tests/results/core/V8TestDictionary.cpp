@@ -234,7 +234,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (eventTargetMemberValue.IsEmpty() || eventTargetMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    EventTarget* eventTargetMember = toEventTarget(isolate, eventTargetMemberValue);
+    EventTarget* eventTargetMember = V8EventTarget::toImplWithTypeCheck(isolate, eventTargetMemberValue);
     if (!eventTargetMember) {
       exceptionState.throwTypeError("member eventTargetMember is not of type EventTarget.");
       return;

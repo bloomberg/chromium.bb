@@ -30,7 +30,6 @@
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8TextTrack.h"
 #include "bindings/core/v8/V8Uint8Array.h"
@@ -225,18 +224,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary,
       source = V8TextTrack::toImpl(track);
   }
   value = source;
-  return true;
-}
-
-template <>
-bool DictionaryHelper::get(const Dictionary& dictionary,
-                           const StringView& key,
-                           Member<EventTarget>& value) {
-  v8::Local<v8::Value> v8Value;
-  if (!dictionary.get(key, v8Value))
-    return false;
-
-  value = toEventTarget(dictionary.isolate(), v8Value);
   return true;
 }
 
