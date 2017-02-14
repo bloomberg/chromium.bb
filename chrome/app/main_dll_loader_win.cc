@@ -39,9 +39,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics_constants_util_win.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
@@ -167,9 +165,6 @@ int MainDllLoader::Launch(HINSTANCE instance,
     base::FilePath watcher_data_directory;
     if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory))
       return chrome::RESULT_CODE_MISSING_DATA;
-
-    base::string16 channel_name = GoogleUpdateSettings::GetChromeChannel(
-        !InstallUtil::IsPerUserInstall(cmd_line.GetProgram()));
 
     // Intentionally leaked.
     HMODULE watcher_dll = Load(&file);
