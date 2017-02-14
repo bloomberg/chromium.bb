@@ -216,6 +216,18 @@ base::TimeDelta GetPasswordRevealDuration() {
              : base::TimeDelta();
 }
 
+bool IsControlKeyModifier(int flags) {
+// XKB layout doesn't natively generate printable characters from a
+// Control-modified key combination, but we cannot extend it to other platforms
+// as Control has different meanings and behaviors.
+// https://crrev.com/2580483002/#msg46
+#if defined(OS_LINUX)
+  return flags & ui::EF_CONTROL_DOWN;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 // static
@@ -1289,13 +1301,14 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
   }
 
   // Filter out all control characters, including tab and new line characters,
-  // and all characters with Alt modifier (and Search on ChromeOS). But allow
-  // characters with the AltGr modifier. On Windows AltGr is represented by
-  // Alt+Ctrl or Right Alt, and on Linux it's a different flag that we don't
-  // care about.
+  // and all characters with Alt modifier (and Search on ChromeOS, Ctrl on
+  // Linux). But allow characters with the AltGr modifier. On Windows AltGr is
+  // represented by Alt+Ctrl or Right Alt, and on Linux it's a different flag
+  // that we don't care about.
   const base::char16 ch = event.GetCharacter();
   const bool should_insert_char = ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
-                                  !ui::IsSystemKeyModifier(event.flags());
+                                  !ui::IsSystemKeyModifier(event.flags()) &&
+                                  !IsControlKeyModifier(event.flags());
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || !should_insert_char)
     return;
 

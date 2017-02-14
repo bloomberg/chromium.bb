@@ -508,18 +508,20 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     SendKeyEvent(key_code, false, false);
   }
 
-  void SendKeyEvent(base::char16 ch) {
+  void SendKeyEvent(base::char16 ch) { SendKeyEvent(ch, ui::EF_NONE); }
+
+  void SendKeyEvent(base::char16 ch, int flags) {
     if (ch < 0x80) {
       ui::KeyboardCode code =
           ch == ' ' ? ui::VKEY_SPACE :
           static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
-      SendKeyEvent(code);
+      SendKeyPress(code, flags);
     } else {
       // For unicode characters, assume they come from IME rather than the
       // keyboard. So they are dispatched directly to the input method. But on
       // Mac, key events don't pass through InputMethod. Hence they are
       // dispatched regularly.
-      ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::EF_NONE);
+      ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, flags);
 #if defined(OS_MACOSX)
       event_generator_->Dispatch(&event);
 #else
@@ -769,6 +771,27 @@ TEST_F(TextfieldTest, KeyTest) {
   else
     EXPECT_STR_EQ("TexT!1!1", textfield_->text());
 }
+
+#if defined(OS_LINUX)
+// Control key shouldn't generate a printable character on Linux.
+TEST_F(TextfieldTest, KeyTestControlModifier) {
+  InitTextfield();
+  // 0x0448 is for 'CYRILLIC SMALL LETTER SHA'.
+  SendKeyEvent(0x0448, 0);
+  SendKeyEvent(0x0448, ui::EF_CONTROL_DOWN);
+  // 0x044C is for 'CYRILLIC SMALL LETTER FRONT YER'.
+  SendKeyEvent(0x044C, 0);
+  SendKeyEvent(0x044C, ui::EF_CONTROL_DOWN);
+  SendKeyEvent('i', 0);
+  SendKeyEvent('i', ui::EF_CONTROL_DOWN);
+  SendKeyEvent('m', 0);
+  SendKeyEvent('m', ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(WideToUTF16(L"\x0448\x044C"
+                        L"im"),
+            textfield_->text());
+}
+#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_KeysWithModifiersTest KeysWithModifiersTest
