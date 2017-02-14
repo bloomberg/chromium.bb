@@ -7,14 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class CRIWVWebsiteDataStore;
+@class CWVWebsiteDataStore;
 
 // Configuration used for creation of a CWVWebView.
 @interface CRIWVWebViewConfiguration : NSObject<NSCopying>
 
 // Data store defining persistance of website data. Default is
-// [CRIWVWebsiteDataStore defaultDataStore].
-@property(nonatomic, strong, nonnull) CRIWVWebsiteDataStore* websiteDataStore;
+// [CWVWebsiteDataStore defaultDataStore].
+@property(nonatomic, strong, nonnull) CWVWebsiteDataStore* websiteDataStore;
 
 @end
 

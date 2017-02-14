@@ -4,7 +4,7 @@
 
 #import "ios/web_view/public/criwv_web_view_configuration.h"
 
-#import "ios/web_view/public/criwv_website_data_store.h"
+#import "ios/web_view/public/cwv_website_data_store.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -12,7 +12,7 @@
 
 @interface CRIWVWebViewConfiguration ()
 // Initialize configuration with specified data store.
-- (instancetype)initWithDataStore:(CRIWVWebsiteDataStore*)dataStore;
+- (instancetype)initWithDataStore:(CWVWebsiteDataStore*)dataStore;
 @end
 
 @implementation CRIWVWebViewConfiguration
@@ -20,10 +20,10 @@
 @synthesize websiteDataStore = _websiteDataStore;
 
 - (instancetype)init {
-  return [self initWithDataStore:[CRIWVWebsiteDataStore defaultDataStore]];
+  return [self initWithDataStore:[CWVWebsiteDataStore defaultDataStore]];
 }
 
-- (instancetype)initWithDataStore:(CRIWVWebsiteDataStore*)dataStore {
+- (instancetype)initWithDataStore:(CWVWebsiteDataStore*)dataStore {
   self = [super init];
   if (self) {
     _websiteDataStore = dataStore;

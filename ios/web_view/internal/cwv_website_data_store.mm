@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/criwv_website_data_store_internal.h"
+#import "ios/web_view/internal/cwv_website_data_store_internal.h"
 
 #include <memory.h>
 
@@ -13,8 +13,8 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation CRIWVWebsiteDataStore
-// TODO(crbug.com/690182): CRIWVWebsiteDataStore should own _browserState.
+@implementation CWVWebsiteDataStore
+// TODO(crbug.com/690182): CWVWebsiteDataStore should own _browserState.
 ios_web_view::CRIWVBrowserState* _browserState;
 
 - (BOOL)isPersistent {
@@ -31,7 +31,7 @@ ios_web_view::CRIWVBrowserState* _browserState;
 }
 
 + (instancetype)defaultDataStore {
-  CRIWVWebsiteDataStore* dataStore = [[CRIWVWebsiteDataStore alloc] init];
+  CWVWebsiteDataStore* dataStore = [[CWVWebsiteDataStore alloc] init];
 
   ios_web_view::CRIWVWebClient* client =
       static_cast<ios_web_view::CRIWVWebClient*>(web::GetWebClient());
@@ -41,7 +41,7 @@ ios_web_view::CRIWVBrowserState* _browserState;
 }
 
 + (instancetype)nonPersistentDataStore {
-  CRIWVWebsiteDataStore* dataStore = [[CRIWVWebsiteDataStore alloc] init];
+  CWVWebsiteDataStore* dataStore = [[CWVWebsiteDataStore alloc] init];
 
   ios_web_view::CRIWVWebClient* client =
       static_cast<ios_web_view::CRIWVWebClient*>(web::GetWebClient());

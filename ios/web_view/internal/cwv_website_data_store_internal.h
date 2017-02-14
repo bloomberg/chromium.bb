@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_WEBSITE_DATA_STORE_INTERNAL_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_WEBSITE_DATA_STORE_INTERNAL_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_CWV_WEBSITE_DATA_STORE_INTERNAL_H_
+#define IOS_WEB_VIEW_INTERNAL_CWV_WEBSITE_DATA_STORE_INTERNAL_H_
 
-#import "ios/web_view/public/criwv_website_data_store.h"
+#import "ios/web_view/public/cwv_website_data_store.h"
 
 namespace ios_web_view {
 class CRIWVBrowserState;
 }  // namespace ios_web_view
 
-@interface CRIWVWebsiteDataStore ()
+@interface CWVWebsiteDataStore ()
 
 // The browser state associated with this website data store.
 @property(nonatomic, readonly, nonnull)
@@ -19,4 +19,4 @@ class CRIWVBrowserState;
 
 @end
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_WEBSITE_DATA_STORE_INTERNAL_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_CWV_WEBSITE_DATA_STORE_INTERNAL_H_

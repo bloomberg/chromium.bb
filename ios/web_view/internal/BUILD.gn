@@ -23,9 +23,9 @@ source_set("internal") {
     "criwv_web_main_parts.h",
     "criwv_web_main_parts.mm",
     "criwv_web_view_configuration.mm",
-    "criwv_website_data_store.mm",
-    "criwv_website_data_store_internal.h",
     "cwv_web_view.mm",
+    "cwv_website_data_store.mm",
+    "cwv_website_data_store_internal.h",
     "pref_names.cc",
     "pref_names.h",
   ]

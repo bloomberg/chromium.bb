@@ -15,8 +15,8 @@ source_set("public") {
     "criwv_translate_manager.h",
     "criwv_web_view_configuration.h",
     "criwv_web_view_delegate.h",
-    "criwv_website_data_store.h",
     "cwv_web_view.h",
+    "cwv_website_data_store.h",
   ]
 
   libs = [ "UIKit.framework" ]
