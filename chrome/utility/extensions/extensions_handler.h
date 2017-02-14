@@ -20,8 +20,6 @@
 #error "Extensions must be enabled"
 #endif
 
-class ChromeContentUtilityClient;
-
 namespace service_manager {
 class InterfaceRegistry;
 }
@@ -40,7 +38,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
   // interface.
   static void ExposeInterfacesToBrowser(
       service_manager::InterfaceRegistry* registry,
-      ChromeContentUtilityClient* utility_client,
       bool running_elevated);
 
   // UtilityMessageHandler:

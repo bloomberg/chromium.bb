@@ -37,8 +37,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       service_manager::InterfaceRegistry* registry) override;
   void RegisterServices(StaticServiceMap* services) override;
 
-  void AddHandler(std::unique_ptr<UtilityMessageHandler> handler);
-
   static void PreSandboxStartup();
 
  private:

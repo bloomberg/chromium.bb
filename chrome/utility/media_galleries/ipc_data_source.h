@@ -7,12 +7,11 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/utility/utility_message_handler.h"
+#include "chrome/common/extensions/media_parser.mojom.h"
 #include "media/base/data_source.h"
 
 namespace base {
@@ -21,54 +20,43 @@ class TaskRunner;
 
 namespace metadata {
 
-// Provides the metadata parser with bytes from the browser process via IPC.
-// Class must be created and destroyed on the utility thread. Class may be used
-// as a DataSource on a different thread. The utility thread must not be blocked
+// Provides the metadata parser with blob data from the browser process. Class
+// must be created and destroyed on the utility thread. Class may be used as a
+// DataSource on a different thread. The utility thread must not be blocked
 // for read operations to succeed.
-class IPCDataSource: public media::DataSource,
-                     public UtilityMessageHandler {
+class IPCDataSource : public media::DataSource {
  public:
   // May only be called on the utility thread.
-  explicit IPCDataSource(int64_t total_size);
+  IPCDataSource(extensions::mojom::MediaDataSourcePtr media_data_source,
+                int64_t total_size);
   ~IPCDataSource() override;
 
-  // Implementation of DataSource. These methods may be called on any single
+  // media::DataSource implementation. The methods may be called on any single
   // thread. First usage of these methods attaches a thread checker.
   void Stop() override;
   void Abort() override;
   void Read(int64_t position,
             int size,
-            uint8_t* data,
-            const ReadCB& read_cb) override;
+            uint8_t* destination,
+            const ReadCB& callback) override;
   bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;
 
-  // Implementation of UtilityMessageHandler. May only be called on the utility
-  // thread.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
  private:
-  struct Request {
-    Request();
-    Request(const Request& other);
-    ~Request();
-    uint8_t* destination;
-    ReadCB callback;
-  };
+  // Blob data read helpers: must be run on the utility thread.
+  void ReadBlob(uint8_t* destination,
+                const ReadCB& callback,
+                int64_t position,
+                int size);
+  void ReadDone(uint8_t* destination,
+                const ReadCB& callback,
+                const std::vector<uint8_t>& data);
 
-  void ReadOnUtilityThread(int64_t position,
-                           int size,
-                           uint8_t* data,
-                           const ReadCB& read_cb);
-
-  void OnRequestBlobBytesFinished(int64_t request_id, const std::string& bytes);
-
+  extensions::mojom::MediaDataSourcePtr media_data_source_;
   const int64_t total_size_;
 
   scoped_refptr<base::TaskRunner> utility_task_runner_;
-  std::map<int64_t, Request> pending_requests_;
-  int64_t next_request_id_;
 
   base::ThreadChecker utility_thread_checker_;
 

@@ -26,8 +26,8 @@ namespace metadata {
 
 // This class takes a MIME type and data source and parses its metadata. It
 // handles audio, video, and images. It delegates its operations to FFMPEG.
-// This class lives and operates on the utility thread of the utility process,
-// as we wish to sandbox potentially dangerous operations on user-provided data.
+// This class lives and operates on the utility thread of the utility process
+// so we sandbox potentially dangerous operations on user-provided data.
 class MediaMetadataParser {
  public:
   typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;
@@ -36,9 +36,8 @@ class MediaMetadataParser {
            const std::vector<AttachedImage>& attached_images)>
   MetadataCallback;
 
-  // Does not take ownership of |source|. Caller is responsible for ensuring
-  // that |source| outlives this object.
-  MediaMetadataParser(media::DataSource* source, const std::string& mime_type,
+  MediaMetadataParser(std::unique_ptr<media::DataSource> source,
+                      const std::string& mime_type,
                       bool get_attached_images);
 
   ~MediaMetadataParser();
@@ -48,7 +47,7 @@ class MediaMetadataParser {
 
  private:
   // Only accessed on |media_thread_| from this class.
-  media::DataSource* const source_;
+  std::unique_ptr<media::DataSource> source_;
 
   const std::string mime_type_;
 

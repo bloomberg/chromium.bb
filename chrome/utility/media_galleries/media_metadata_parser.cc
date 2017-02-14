@@ -112,37 +112,44 @@ void FinishParseAudioVideoMetadata(
   callback.Run(*metadata, *attached_images);
 }
 
-}  // namespace
-
-MediaMetadataParser::MediaMetadataParser(media::DataSource* source,
-                                         const std::string& mime_type,
-                                         bool get_attached_images)
-    : source_(source),
-      mime_type_(mime_type),
-      get_attached_images_(get_attached_images) {
+bool IsSupportedMetadataMimetype(const std::string& mime_type) {
+  if (base::StartsWith(mime_type, "audio/", base::CompareCase::SENSITIVE))
+    return true;
+  if (base::StartsWith(mime_type, "video/", base::CompareCase::SENSITIVE))
+    return true;
+  return false;
 }
 
-MediaMetadataParser::~MediaMetadataParser() {}
+}  // namespace
+
+MediaMetadataParser::MediaMetadataParser(
+    std::unique_ptr<media::DataSource> source,
+    const std::string& mime_type,
+    bool get_attached_images)
+    : source_(std::move(source)),
+      mime_type_(mime_type),
+      get_attached_images_(get_attached_images) {}
+
+MediaMetadataParser::~MediaMetadataParser() = default;
 
 void MediaMetadataParser::Start(const MetadataCallback& callback) {
-  if (base::StartsWith(mime_type_, "audio/", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(mime_type_, "video/", base::CompareCase::SENSITIVE)) {
-    MediaMetadata* metadata = new MediaMetadata;
-    metadata->mime_type = mime_type_;
-    std::vector<AttachedImage>* attached_images =
-        new std::vector<AttachedImage>;
-
-    media_thread_.reset(new base::Thread("media_thread"));
-    CHECK(media_thread_->Start());
-    media_thread_->task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&ParseAudioVideoMetadata, source_,
-                              get_attached_images_, metadata, attached_images),
-        base::Bind(&FinishParseAudioVideoMetadata, callback,
-                   base::Owned(metadata), base::Owned(attached_images)));
+  if (!IsSupportedMetadataMimetype(mime_type_)) {
+    callback.Run(MediaMetadata(), std::vector<AttachedImage>());
     return;
   }
 
-  callback.Run(MediaMetadata(), std::vector<AttachedImage>());
+  MediaMetadata* metadata = new MediaMetadata();
+  metadata->mime_type = mime_type_;
+  std::vector<AttachedImage>* images = new std::vector<AttachedImage>();
+
+  media_thread_.reset(new base::Thread("media_thread"));
+  CHECK(media_thread_->Start());
+
+  media_thread_->task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&ParseAudioVideoMetadata, source_.get(),
+                            get_attached_images_, metadata, images),
+      base::Bind(&FinishParseAudioVideoMetadata, callback,
+                 base::Owned(metadata), base::Owned(images)));
 }
 
 }  // namespace metadata

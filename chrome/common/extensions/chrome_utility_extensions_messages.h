@@ -85,10 +85,6 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
                      std::vector<picasa::FolderINIContents> /* folders_inis */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
-                     int64_t /* request_id */,
-                     std::string /* bytes */)
-
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -119,8 +115,3 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished,
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
                      picasa::AlbumImagesMap /* albums_images */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
-                     int64_t /* request_id */,
-                     int64_t /* start_byte */,
-                     int64_t /* length */)

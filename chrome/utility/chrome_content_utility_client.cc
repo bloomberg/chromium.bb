@@ -199,11 +199,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     return true;
 
   for (auto* handler : handlers_) {
-    // At least one of the utility process handlers adds a new handler to
-    // |handlers_| when it handles a message. This causes any iterator over
-    // |handlers_| to become invalid. Therefore, it is necessary to break the
-    // loop at this point instead of evaluating it as a loop condition (if the
-    // for loop was using iterators explicitly, as originally done).
     if (handler->OnMessageReceived(message))
       return true;
   }
@@ -214,9 +209,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* registry) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ChromeContentUtilityClient* utility_client = this;
   extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
-      registry, utility_client, utility_process_running_elevated_);
+      registry, utility_process_running_elevated_);
 #endif
   // If our process runs with elevated privileges, only add elevated Mojo
   // services to the interface registry.
@@ -242,11 +236,6 @@ void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
   image_decoder_info.factory = base::Bind(&CreateImageDecoderService);
   services->insert(
       std::make_pair(image_decoder::mojom::kServiceName, image_decoder_info));
-}
-
-void ChromeContentUtilityClient::AddHandler(
-    std::unique_ptr<UtilityMessageHandler> handler) {
-  handlers_.push_back(std::move(handler));
 }
 
 // static
