@@ -140,6 +140,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void OnUserSwitchAnimationFinished() override;
 
  private:
+  class LoginWidgetDelegate;
+
   // Way to restore if renderer have crashed.
   enum RestorePath {
     RESTORE_UNKNOWN,

@@ -279,26 +279,6 @@ void EnableSystemSoundsForAccessibility() {
   chromeos::AccessibilityManager::Get()->EnableSystemSounds(true);
 }
 
-// A login implementation of WidgetDelegate.
-class LoginWidgetDelegate : public views::WidgetDelegate {
- public:
-  explicit LoginWidgetDelegate(views::Widget* widget) : widget_(widget) {
-  }
-  ~LoginWidgetDelegate() override {}
-
-  // Overridden from WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
-  bool CanActivate() const override { return true; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
-
- private:
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginWidgetDelegate);
-};
-
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
@@ -317,6 +297,39 @@ namespace chromeos {
 
 // static
 const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
+
+// A login implementation of WidgetDelegate.
+class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {
+ public:
+  LoginWidgetDelegate(views::Widget* widget, LoginDisplayHostImpl* host)
+      : widget_(widget), login_display_host_(host) {
+    DCHECK(widget_);
+    DCHECK(login_display_host_);
+  }
+  ~LoginWidgetDelegate() override {}
+
+  // Overridden from WidgetDelegate:
+  void WindowClosing() override {
+    // Reset the cached Widget and View pointers. The Widget may close due to:
+    // * Login completion
+    // * Ash crash at the login screen on mustash
+    // In the latter case the mash root process will trigger a clean restart
+    // of content_browser.
+    if (chrome::IsRunningInMash())
+      login_display_host_->ResetLoginWindowAndView();
+  }
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+  bool CanActivate() const override { return true; }
+  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
+
+ private:
+  views::Widget* widget_;
+  LoginDisplayHostImpl* login_display_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginWidgetDelegate);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
@@ -1206,7 +1219,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
             ash::kShellWindowId_LockScreenContainer);
   }
   login_window_ = new views::Widget;
-  params.delegate = new LoginWidgetDelegate(login_window_);
+  params.delegate = new LoginWidgetDelegate(login_window_, this);
   login_window_->Init(params);
 
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
@@ -1350,6 +1363,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
           ? session_manager::SessionState::LOGIN_PRIMARY
           : session_manager::SessionState::OOBE);
 
+  // Manages its own lifetime. See ShutdownDisplayHost().
   LoginDisplayHostImpl* display_host = new LoginDisplayHostImpl(screen_bounds);
 
   bool show_app_launch_splash_screen =
