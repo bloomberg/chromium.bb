@@ -25,6 +25,11 @@ MockModelTypeWorker::MockModelTypeWorker(
 MockModelTypeWorker::~MockModelTypeWorker() {}
 
 void MockModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
+  // Verify that all request entities have valid id, version combinations.
+  for (const CommitRequestData& commit_request_data : list) {
+    EXPECT_TRUE(commit_request_data.base_version == -1 ||
+                !commit_request_data.entity->id.empty());
+  }
   pending_commits_.push_back(list);
 }
 
@@ -188,13 +193,13 @@ CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
 
   CommitResponseData response_data;
 
-  if (request_data.base_version == 0) {
+  if (request_data.base_version == kUncommittedVersion) {
     // Server assigns new ID to newly committed items.
     DCHECK(entity.id.empty());
-    response_data.id = entity.id;
+    response_data.id = GenerateId(client_tag_hash);
   } else {
     // Otherwise we reuse the ID from the request.
-    response_data.id = GenerateId(client_tag_hash);
+    response_data.id = entity.id;
   }
 
   response_data.client_tag_hash = client_tag_hash;

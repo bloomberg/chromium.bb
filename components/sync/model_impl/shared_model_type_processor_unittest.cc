@@ -1061,17 +1061,21 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseLocal) {
   InitializeToReadyState();
-  EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue1);
+  // WriteAndAck entity to get id from the server.
+  WriteItemAndAck(kKey1, kValue1);
   bridge()->SetConflictResolution(ConflictResolution::UseLocal());
 
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
+  // Change value locally and at the same time simulate conflicting update from
+  // server.
+  EntitySpecifics specifics2 = bridge()->WriteItem(kKey1, kValue2);
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3));
 
   // Updated metadata but not data; new commit request.
-  EXPECT_EQ(1U, db().data_change_count());
-  EXPECT_EQ(2U, db().metadata_change_count());
-  EXPECT_EQ(1, db().GetMetadata(kKey1).server_version());
+  EXPECT_EQ(2U, db().data_change_count());
+  EXPECT_EQ(4U, db().metadata_change_count());
+  EXPECT_EQ(2, db().GetMetadata(kKey1).server_version());
   worker()->ExpectPendingCommits({kHash1, kHash1});
-  worker()->ExpectNthPendingCommit(1, kHash1, specifics);
+  worker()->ExpectNthPendingCommit(1, kHash1, specifics2);
 }
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseRemote) {
@@ -1246,18 +1250,20 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
 // Test that re-encrypting enqueues the right data for USE_LOCAL conflicts.
 TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
   InitializeToReadyState();
+  // WriteAndAck entity to get id from the server.
+  WriteItemAndAck(kKey1, kValue1);
   worker()->UpdateWithEncryptionKey("k1");
-  EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue1);
+  EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue2);
   worker()->ExpectPendingCommits({kHash1});
 
   bridge()->SetConflictResolution(ConflictResolution::UseLocal());
   // Unencrypted update needs to be re-commited with key k1.
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2), 1, "");
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3), 1, "");
 
   // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(1, kHash1, specifics);
-  EXPECT_EQ(kValue1, db().GetValue(kKey1));
+  EXPECT_EQ(kValue2, db().GetValue(kKey1));
 }
 
 // Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
@@ -1347,10 +1353,12 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
 // Same as above but with two commit requests before one ack.
 TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
   InitializeToReadyState();
-  EntitySpecifics specifics1 = bridge()->WriteItem(kKey1, kValue1);
-  EntitySpecifics specifics2 = bridge()->WriteItem(kKey1, kValue2);
+  // WriteAndAck entity to get id from the server.
+  WriteItemAndAck(kKey1, kValue1);
+  EntitySpecifics specifics1 = bridge()->WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics2 = bridge()->WriteItem(kKey1, kValue3);
   worker()->AckOnePendingCommit();
-  // kValue1 is now the base value.
+  // kValue2 is now the base value.
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics2);
 

@@ -59,11 +59,17 @@ ProcessorEntityTracker::ProcessorEntityTracker(
 
 ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
-void ProcessorEntityTracker::CacheCommitData(EntityData* data) {
+void ProcessorEntityTracker::SetCommitData(EntityData* data) {
   DCHECK(data);
-  if (data->client_tag_hash.empty()) {
-    data->client_tag_hash = metadata_.client_tag_hash();
-  }
+  // Update data's fields from metadata.
+  data->client_tag_hash = metadata_.client_tag_hash();
+  if (!metadata_.server_id().empty())
+    data->id = metadata_.server_id();
+  data->creation_time = ProtoTimeToTime(metadata_.creation_time());
+  data->modification_time = ProtoTimeToTime(metadata_.modification_time());
+  DCHECK(MatchesSpecificsHash(data->specifics));
+
+  commit_data_.reset();
   CacheCommitData(data->PassToPtr());
 }
 
@@ -145,21 +151,24 @@ void ProcessorEntityTracker::RecordForcedUpdate(
 
 void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
-  DCHECK_EQ(metadata_.client_tag_hash(), data->client_tag_hash);
 
-  if (data->modification_time.is_null()) {
-    data->modification_time = base::Time::Now();
-  }
+  // Update metadata fields from updated data.
+  base::Time modification_time = !data->modification_time.is_null()
+                                     ? data->modification_time
+                                     : base::Time::Now();
 
+  // IncrementSequenceNumber should be called before UpdateSpecificHash since
+  // it remembers specifics hash before the modifications.
   IncrementSequenceNumber();
   UpdateSpecificsHash(data->specifics);
-  metadata_.set_modification_time(TimeToProtoTime(data->modification_time));
+  if (!data->creation_time.is_null())
+    metadata_.set_creation_time(TimeToProtoTime(data->creation_time));
+  metadata_.set_modification_time(TimeToProtoTime(modification_time));
   metadata_.set_is_deleted(false);
 
-  data->id = metadata_.server_id();
-  data->creation_time = ProtoTimeToTime(metadata_.creation_time());
-  commit_data_.reset();
-  CacheCommitData(data.get());
+  // SetCommitData will update data's fileds from metadata and wrap it into
+  // immutable EntityDataPtr.
+  SetCommitData(data.get());
 }
 
 void ProcessorEntityTracker::Delete() {
@@ -176,6 +185,7 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
   if (!metadata_.is_deleted()) {
     DCHECK(HasCommitData());
     DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
+    DCHECK_EQ(commit_data_->id, metadata_.server_id());
     request->entity = commit_data_;
   } else {
     // Make an EntityData with empty specifics to indicate deletion. This is

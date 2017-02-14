@@ -209,19 +209,14 @@ void SharedModelTypeProcessor::Put(const std::string& storage_key,
     return;
   }
 
-  // Fill in some data.
-  data->client_tag_hash = GetClientTagHash(storage_key, *data);
-  if (data->modification_time.is_null()) {
-    data->modification_time = base::Time::Now();
-  }
-
-  ProcessorEntityTracker* entity = GetEntityForTagHash(data->client_tag_hash);
-
+  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // The bridge is creating a new entity.
-    if (data->creation_time.is_null()) {
-      data->creation_time = data->modification_time;
-    }
+    data->client_tag_hash = GetClientTagHash(storage_key, *data);
+    if (data->creation_time.is_null())
+      data->creation_time = base::Time::Now();
+    if (data->modification_time.is_null())
+      data->modification_time = data->creation_time;
     entity = CreateEntity(storage_key, *data);
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
@@ -613,7 +608,9 @@ void SharedModelTypeProcessor::ConsumeDataBatch(
     ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
-      entity->CacheCommitData(data.second.get());
+      // SetCommitData will update EntityData's fields with values from
+      // metadata.
+      entity->SetCommitData(data.second.get());
     }
   }
 }
