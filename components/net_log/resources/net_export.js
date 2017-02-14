@@ -28,7 +28,9 @@ var NetExportView = (function() {
     $('export-view-stop-data').onclick = this.onStopData_.bind(this);
     $('export-view-send-data').onclick = this.onSendData_.bind(this);
 
-    chrome.send('initialize');
+    // Tell NetExportMessageHandler to notify the UI of future state changes
+    // from this point on (through onExportNetLogInfoChanged()).
+    chrome.send('enableNotifyUIWithState');
   }
 
   cr.addSingletonGetter(NetExportView);

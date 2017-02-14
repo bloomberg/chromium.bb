@@ -59,7 +59,7 @@ class NetExportMessageHandler
   void RegisterMessages() override;
 
   // Messages.
-  void OnInitialize(const base::ListValue* list);
+  void OnEnableNotifyUIWithState(const base::ListValue* list);
   void OnStartNetLog(const base::ListValue* list);
   void OnStopNetLog(const base::ListValue* list);
   void OnSendNetLog(const base::ListValue* list);
@@ -105,8 +105,8 @@ void NetExportMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   web_ui()->RegisterMessageCallback(
-      net_log::kInitializeHandler,
-      base::Bind(&NetExportMessageHandler::OnInitialize,
+      net_log::kEnableNotifyUIWithStateHandler,
+      base::Bind(&NetExportMessageHandler::OnEnableNotifyUIWithState,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kStartNetLogHandler,
@@ -122,7 +122,8 @@ void NetExportMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void NetExportMessageHandler::OnInitialize(const base::ListValue* list) {
+void NetExportMessageHandler::OnEnableNotifyUIWithState(
+    const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!state_observer_manager_.IsObservingSources()) {
     state_observer_manager_.Add(file_writer_);

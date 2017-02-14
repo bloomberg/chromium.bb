@@ -13,7 +13,7 @@ extern const char kNetExportUIJS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.
-extern const char kInitializeHandler[];
+extern const char kEnableNotifyUIWithStateHandler[];
 extern const char kSendNetLogHandler[];
 extern const char kStartNetLogHandler[];
 extern const char kStopNetLogHandler[];

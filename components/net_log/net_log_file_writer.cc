@@ -24,20 +24,45 @@
 
 namespace net_log {
 
+namespace {
+
 // Path of logs relative to default temporary directory given by
 // base::GetTempDir(). Must be kept in sync with
 // chrome/android/java/res/xml/file_paths.xml. Only used if not saving log file
 // to a custom path.
-base::FilePath::CharType kLogRelativePath[] =
+const base::FilePath::CharType kLogRelativePath[] =
     FILE_PATH_LITERAL("net-export/chrome-net-export-log.json");
 
 // Old path used by net-export. Used to delete old files.
 // TODO(mmenke): Should remove at some point. Added in M46.
-base::FilePath::CharType kOldLogRelativePath[] =
+const base::FilePath::CharType kOldLogRelativePath[] =
     FILE_PATH_LITERAL("chrome-net-export-log.json");
 
-// Adds net info from net::GetNetInfo() to |polled_data|. Runs on
-// |net_task_runner_|.
+// Contains file-related initialization tasks for NetLogFileWriter.
+NetLogFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
+    const NetLogFileWriter::DirectoryGetter& default_log_base_dir_getter) {
+  NetLogFileWriter::DefaultLogPathResults results;
+  results.default_log_path_success = false;
+  results.log_exists = false;
+
+  base::FilePath default_base_dir;
+  if (!default_log_base_dir_getter.Run(&default_base_dir))
+    return results;
+
+  // Delete log file at old location, if present.
+  base::DeleteFile(default_base_dir.Append(kOldLogRelativePath), false);
+
+  results.default_log_path = default_base_dir.Append(kLogRelativePath);
+  if (!base::CreateDirectoryAndGetError(results.default_log_path.DirName(),
+                                        nullptr))
+    return results;
+
+  results.log_exists = base::PathExists(results.default_log_path);
+  results.default_log_path_success = true;
+  return results;
+}
+
+// Adds net info from net::GetNetInfo() to |polled_data|.
 std::unique_ptr<base::DictionaryValue> AddNetInfo(
     scoped_refptr<net::URLRequestContextGetter> context_getter,
     std::unique_ptr<base::DictionaryValue> polled_data) {
@@ -64,6 +89,8 @@ base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
 #endif
 }
 
+}  // namespace
+
 NetLogFileWriter::NetLogFileWriter(
     ChromeNetLog* chrome_net_log,
     const base::CommandLine::StringType& command_line_string,
@@ -75,12 +102,12 @@ NetLogFileWriter::NetLogFileWriter(
       chrome_net_log_(chrome_net_log),
       command_line_string_(command_line_string),
       channel_string_(channel_string),
-      default_log_base_directory_getter_(base::Bind(&base::GetTempDir)),
+      default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
       weak_ptr_factory_(this) {}
 
 NetLogFileWriter::~NetLogFileWriter() {
-  if (write_to_file_observer_)
-    write_to_file_observer_->StopObserving(nullptr, base::Bind([] {}));
+  if (file_net_log_observer_)
+    file_net_log_observer_->StopObserving(nullptr, base::Bind([] {}));
 }
 
 void NetLogFileWriter::AddObserver(StateObserver* observer) {
@@ -116,8 +143,7 @@ void NetLogFileWriter::Initialize(
 
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
-      base::Bind(&NetLogFileWriter::SetUpDefaultLogPath,
-                 default_log_base_directory_getter_),
+      base::Bind(&SetUpDefaultLogPath, default_log_base_dir_getter_),
       base::Bind(&NetLogFileWriter::SetStateAfterSetUpDefaultLogPath,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -144,9 +170,9 @@ void NetLogFileWriter::StartNetLog(const base::FilePath& log_path,
 
   std::unique_ptr<base::Value> constants(
       ChromeNetLog::GetConstants(command_line_string_, channel_string_));
-  write_to_file_observer_ =
+  file_net_log_observer_ =
       base::MakeUnique<net::FileNetLogObserver>(file_task_runner_);
-  write_to_file_observer_->StartObservingUnbounded(
+  file_net_log_observer_->StartObservingUnbounded(
       chrome_net_log_, capture_mode, log_path_, std::move(constants), nullptr);
 }
 
@@ -258,7 +284,7 @@ net::NetLogCaptureMode NetLogFileWriter::CaptureModeFromString(
 
 void NetLogFileWriter::SetDefaultLogBaseDirectoryGetterForTest(
     const DirectoryGetter& getter) {
-  default_log_base_directory_getter_ = getter;
+  default_log_base_dir_getter_ = getter;
 }
 
 void NetLogFileWriter::NotifyStateObservers() {
@@ -274,29 +300,6 @@ void NetLogFileWriter::NotifyStateObserversAsync() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&NetLogFileWriter::NotifyStateObservers,
                             weak_ptr_factory_.GetWeakPtr()));
-}
-
-NetLogFileWriter::DefaultLogPathResults NetLogFileWriter::SetUpDefaultLogPath(
-    const DirectoryGetter& default_log_base_directory_getter) {
-  DefaultLogPathResults results;
-  results.default_log_path_success = false;
-  results.log_exists = false;
-
-  base::FilePath default_base_dir;
-  if (!default_log_base_directory_getter.Run(&default_base_dir))
-    return results;
-
-  // Delete log file at old location, if present.
-  base::DeleteFile(default_base_dir.Append(kOldLogRelativePath), false);
-
-  results.default_log_path = default_base_dir.Append(kLogRelativePath);
-  if (!base::CreateDirectoryAndGetError(results.default_log_path.DirName(),
-                                        nullptr))
-    return results;
-
-  results.log_exists = base::PathExists(results.default_log_path);
-  results.default_log_path_success = true;
-  return results;
 }
 
 void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
@@ -320,7 +323,7 @@ void NetLogFileWriter::StopNetLogAfterAddNetInfo(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_STOPPING_LOG);
 
-  write_to_file_observer_->StopObserving(
+  file_net_log_observer_->StopObserving(
       std::move(polled_data),
       base::Bind(&NetLogFileWriter::ResetObserverThenSetStateNotLogging,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -328,7 +331,7 @@ void NetLogFileWriter::StopNetLogAfterAddNetInfo(
 
 void NetLogFileWriter::ResetObserverThenSetStateNotLogging() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  write_to_file_observer_.reset();
+  file_net_log_observer_.reset();
   state_ = STATE_NOT_LOGGING;
 
   NotifyStateObservers();

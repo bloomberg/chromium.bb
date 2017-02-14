@@ -42,8 +42,8 @@ class ChromeNetLog;
 // to the ChromeNetLog. This class is used by the iOS and non-iOS
 // implementations of net-export.
 //
-// NetLogFileWriter maintains the current logging state (using the members
-// (|state_|, |log_exists_|, |log_capture_mode_known_|, |log_capture_mode_|).
+// NetLogFileWriter maintains the current logging state using the members
+// |state_|, |log_exists_|, |log_capture_mode_known_|, |log_capture_mode_|.
 // Its three main commands are Initialize(), StartNetLog(), and StopNetLog().
 // These are the only functions that may cause NetLogFileWriter to change state.
 // Initialize() must be called before NetLogFileWriter can process any other
@@ -60,6 +60,14 @@ class NetLogFileWriter {
   class StateObserver {
    public:
     virtual void OnNewState(const base::DictionaryValue& state) = 0;
+  };
+
+  // Struct used to store the results of setting up the default log directory
+  // and log path.
+  struct DefaultLogPathResults {
+    bool default_log_path_success;
+    base::FilePath default_log_path;
+    bool log_exists;
   };
 
   using FilePathCallback = base::Callback<void(const base::FilePath&)>;
@@ -79,6 +87,7 @@ class NetLogFileWriter {
   void RemoveObserver(StateObserver* observer);
 
   // Initializes NetLogFileWriter if not initialized.
+  //
   // Also sets the task runners used by NetLogFileWriter for doing file I/O and
   // network I/O respectively. The task runners must not be changed once set.
   // However, calling this function again with the same parameters is OK.
@@ -86,8 +95,8 @@ class NetLogFileWriter {
                   scoped_refptr<base::SingleThreadTaskRunner> net_task_runner);
 
   // Starts collecting NetLog data into the file at |log_path|. If |log_path| is
-  // empty, the default log path is used. It is a no-op if NetLogFileWriter is
-  // already collecting data into a file, and |capture_mode| is ignored.
+  // empty, the default log path is used. If NetLogFileWriter is already
+  // logging, this is a no-op and |capture_mode| is ignored.
   void StartNetLog(const base::FilePath& log_path,
                    net::NetLogCaptureMode capture_mode);
 
@@ -151,26 +160,14 @@ class NetLogFileWriter {
     STATE_STOPPING_LOG,
   };
 
-  // Struct used to store the results of SetUpDefaultLogPath() which will be
-  // passed to InitStateThenCallback().
-  struct DefaultLogPathResults {
-    bool default_log_path_success;
-    base::FilePath default_log_path;
-    bool log_exists;
-  };
-
   void NotifyStateObservers();
 
   // Posts NotifyStateObservers() to the current thread.
   void NotifyStateObserversAsync();
 
-  // Contains file-related initialization tasks. Will run on
-  // |file_task_runner_|.
-  static DefaultLogPathResults SetUpDefaultLogPath(
-      const DirectoryGetter& default_log_base_directory_getter);
-
-  // Will initialize NetLogFileWriter's state variables using the result of
-  // SetUpDefaultLogPath().
+  // Called internally by Initialize(). Will initialize NetLogFileWriter's state
+  // variables after the default log directory is set up and the default log
+  // path is determined.
   void SetStateAfterSetUpDefaultLogPath(
       const DefaultLogPathResults& set_up_default_log_path_results);
 
@@ -179,7 +176,7 @@ class NetLogFileWriter {
   void StopNetLogAfterAddNetInfo(
       std::unique_ptr<base::DictionaryValue> polled_data);
 
-  // Contains tasks to be done after |write_to_file_observer_| has completely
+  // Contains tasks to be done after |file_net_log_observer_| has completely
   // stopped writing.
   void ResetObserverThenSetStateNotLogging();
 
@@ -195,15 +192,15 @@ class NetLogFileWriter {
 
   State state_;  // Current logging state of NetLogFileWriter.
 
-  bool log_exists_;  // Whether or not the log exists on disk.
+  bool log_exists_;  // Whether or not a log file exists on disk.
   bool log_capture_mode_known_;
   net::NetLogCaptureMode log_capture_mode_;
 
   base::FilePath log_path_;  // base::FilePath to the NetLog file.
 
-  // |write_to_file_observer_| watches the NetLog event stream, and
+  // |file_net_log_observer_| watches the NetLog event stream, and
   // sends all entries to the file created in StartNetLog().
-  std::unique_ptr<net::FileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
 
   // The |chrome_net_log_| is owned by the browser process, cached here to avoid
   // using global (g_browser_process).
@@ -217,7 +214,7 @@ class NetLogFileWriter {
 
   // Used by unit tests to override the default log base directory retrieved
   // during initialization. This getter is initialized to base::GetTempDir().
-  DirectoryGetter default_log_base_directory_getter_;
+  DirectoryGetter default_log_base_dir_getter_;
 
   base::WeakPtrFactory<NetLogFileWriter> weak_ptr_factory_;
 
