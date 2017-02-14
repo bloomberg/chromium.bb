@@ -61,6 +61,37 @@ bool ShouldNotifyInState(base::android::ApplicationState state) {
   return false;
 }
 
+int DayAsYYYYMMDD() {
+  base::Time::Exploded now{};
+  base::Time::Now().LocalExplode(&now);
+  return (now.year * 10000) + (now.month * 100) + now.day_of_month;
+}
+
+bool HaveQuotaForToday(PrefService* prefs) {
+  int today = DayAsYYYYMMDD();
+  int limit = variations::GetVariationParamByFeatureAsInt(
+      kContentSuggestionsNotificationsFeature,
+      kContentSuggestionsNotificationsDailyLimit,
+      kContentSuggestionsNotificationsDefaultDailyLimit);
+  int sent =
+      prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentDay) == today
+          ? prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentCount)
+          : 0;
+  return sent < limit;
+}
+
+void ConsumeQuota(PrefService* prefs) {
+  int sent =
+      prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentCount);
+  int today = DayAsYYYYMMDD();
+  if (prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentDay) !=
+      today) {
+    prefs->SetInteger(prefs::kContentSuggestionsNotificationsSentDay, today);
+    sent = 0;  // Reset on day change.
+  }
+  prefs->SetInteger(prefs::kContentSuggestionsNotificationsSentCount, sent + 1);
+}
+
 }  // namespace
 
 class ContentSuggestionsNotifierService::NotifyingObserver
@@ -81,6 +112,9 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     } else if (ContentSuggestionsNotificationHelper::IsDisabledForProfile(
                    profile_)) {
       DVLOG(1) << "Suppressed notification due to opt-out";
+      return;
+    } else if (!HaveQuotaForToday(profile_->GetPrefs())) {
+      DVLOG(1) << "Notification suppressed due to daily limit";
       return;
     }
     const ContentSuggestion* suggestion = GetSuggestionToNotifyAbout(category);
@@ -187,6 +221,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     // check if suggestion is still valid.
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
+    ConsumeQuota(profile_->GetPrefs());
     if (ContentSuggestionsNotificationHelper::SendNotification(
             id, url, title, text, CropSquare(image), timeout_at)) {
       RecordContentSuggestionsNotificationImpression(
@@ -220,6 +255,10 @@ void ContentSuggestionsNotifierService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
+  registry->RegisterIntegerPref(prefs::kContentSuggestionsNotificationsSentDay,
+                                0);
+  registry->RegisterIntegerPref(
+      prefs::kContentSuggestionsNotificationsSentCount, 0);
 
   // TODO(sfiera): remove after M62; no longer (and never really) used.
   registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());

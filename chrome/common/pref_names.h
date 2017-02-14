@@ -560,6 +560,8 @@ extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 extern const char kContentSuggestionsConsecutiveIgnoredPrefName[];
+extern const char kContentSuggestionsNotificationsSentDay[];
+extern const char kContentSuggestionsNotificationsSentCount[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 

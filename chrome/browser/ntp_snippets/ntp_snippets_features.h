@@ -23,6 +23,10 @@ extern const char kContentSuggestionsNotificationsUseSnippetAsTextParam[];
 extern const char
     kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam[];
 
+// An integer. The maximum number of notifications that will be shown in 1 day.
+extern const char kContentSuggestionsNotificationsDailyLimit[];
+constexpr int kContentSuggestionsNotificationsDefaultDailyLimit = 1;
+
 // An integer. The number of notifications that can be ignored. If the user
 // ignores this many notifications or more, we stop sending them.
 extern const char kContentSuggestionsNotificationsIgnoredLimitParam[];

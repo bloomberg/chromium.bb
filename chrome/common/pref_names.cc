@@ -1553,6 +1553,15 @@ const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 // should stop showing them.
 const char kContentSuggestionsConsecutiveIgnoredPrefName[] =
     "ntp.content_suggestions.notifications.consecutive_ignored";
+
+// Tracks how many notifications have been sent today, and what day "today" is,
+// as an integer YYYYMMDD, in wall time in the local timezone.
+// If sent_day changes, sent_count is reset to 0. Allows limiting per-day
+// notification count.
+extern const char kContentSuggestionsNotificationsSentDay[] =
+    "ntp.content_suggestions.notifications.sent_day";
+extern const char kContentSuggestionsNotificationsSentCount[] =
+    "ntp.content_suggestions.notifications.sent_count";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
