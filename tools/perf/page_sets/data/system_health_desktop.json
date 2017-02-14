@@ -10,7 +10,8 @@
             "DEFAULT": "system_health_desktop_036.wpr"
         },
         "browse:media:youtube": {
-            "DEFAULT": "system_health_desktop_026.wpr"
+            "DEFAULT": "system_health_desktop_026.wpr",
+            "linux": "system_health_desktop_026.wpr"
         },
         "browse:news:cnn": {
             "DEFAULT": "system_health_desktop_013.wpr"
@@ -70,7 +71,8 @@
             "DEFAULT": "system_health_desktop_003.wpr"
         },
         "load:media:youtube": {
-            "DEFAULT": "system_health_desktop_003.wpr"
+            "DEFAULT": "system_health_desktop_003.wpr",
+            "linux": "system_health_desktop_003.wpr"
         },
         "load:news:bbc": {
             "DEFAULT": "system_health_desktop_002.wpr"

@@ -208,6 +208,7 @@ class LoadYouTubeStory(_LoadingStory):
   # No way to disable autoplay on desktop.
   NAME = 'load:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
+  PLATFORM_SPECIFIC = True
 
 
 class LoadDailymotionStory(_LoadingStory):

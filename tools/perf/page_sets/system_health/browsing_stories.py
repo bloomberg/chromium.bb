@@ -406,6 +406,7 @@ class YouTubeDesktopStory(_MediaBrowsingStory):
   ITEM_VIEW_TIME_IN_SECONDS = 5
   ITEMS_TO_VISIT = 8
   ITEM_SELECTOR_INDEX = 3
+  PLATFORM_SPECIFIC = True
 
 
 class FacebookPhotosMobileStory(_MediaBrowsingStory):
