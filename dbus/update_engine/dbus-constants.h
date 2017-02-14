@@ -24,6 +24,8 @@ const char kGetChannel[] = "GetChannel";
 const char kAttemptRollback[] = "AttemptRollback";
 const char kCanRollback[] = "CanRollback";
 const char kGetEolStatus[] = "GetEolStatus";
+const char kSetUpdateOverCellularPermission[] =
+    "SetUpdateOverCellularPermission";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
