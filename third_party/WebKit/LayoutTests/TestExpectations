@@ -2302,3 +2302,9 @@ crbug.com/688515 [ Linux ] http/tests/media/video-play-stall.html [ Pass Failure
 
 # Sheriff failures Feb 13 2017
 crbug.com/691423 [ Mac ] fast/frames/location-change-no-file-access.html [ Failure Pass ]
+
+# Sheriff failures Feb 14 2017
+crbug.com/692047 [ Linux Win ] external/wpt/selection/extend-00.html [ NeedsManualRebaseline ]
+crbug.com/692047 [ Linux Win ] external/wpt/selection/extend-20.html [ NeedsManualRebaseline ]
+crbug.com/692047 [ Linux Win ] external/wpt/selection/extend-40.html [ NeedsManualRebaseline ]
+crbug.com/692047 [ Linux Win ] external/wpt/selection/selectAllChildren.html [ NeedsManualRebaseline ]
