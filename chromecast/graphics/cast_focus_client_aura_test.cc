@@ -17,21 +17,17 @@ using CastFocusClientAuraTest = aura::test::AuraTestBase;
 
 class TestWindow {
  public:
-  TestWindow()
-      : delegate_(new aura::test::TestWindowDelegate()),
-        window_(new aura::Window(delegate_)) {
-    window_->Init(ui::LAYER_NOT_DRAWN);
-    window_->Show();
+  TestWindow() : window_(&delegate_) {
+    window_.Init(ui::LAYER_NOT_DRAWN);
+    window_.Show();
   }
 
-  virtual ~TestWindow() {}
-
-  aura::test::TestWindowDelegate* delegate() const { return delegate_; }
-  aura::Window* window() const { return window_.get(); }
+  aura::test::TestWindowDelegate* delegate() { return &delegate_; }
+  aura::Window* window() { return &window_; }
 
  private:
-  aura::test::TestWindowDelegate* const delegate_;
-  std::unique_ptr<aura::Window> const window_;
+  aura::test::TestWindowDelegate delegate_;
+  aura::Window window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
