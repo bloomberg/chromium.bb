@@ -136,10 +136,6 @@ bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
 bool g_use_direct_composition = false;
 
-base::LazyInstance<ANGLEPlatformImpl> g_angle_platform_impl =
-    LAZY_INSTANCE_INITIALIZER;
-ANGLEPlatformShutdownFunc g_angle_platform_shutdown = nullptr;
-
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
                                    bool warpDevice) {
@@ -549,9 +545,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
 
 // static
 void GLSurfaceEGL::ShutdownOneOff() {
-  if (g_angle_platform_shutdown) {
-    g_angle_platform_shutdown();
-  }
+  ResetANGLEPlatform(g_display);
 
   if (g_display != EGL_NO_DISPLAY)
     eglTerminate(g_display);
@@ -626,17 +620,6 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
 
   g_native_display = native_display;
 
-  // Init ANGLE platform here, before we call GetPlatformDisplay().
-  ANGLEPlatformInitializeFunc angle_platform_init =
-      reinterpret_cast<ANGLEPlatformInitializeFunc>(
-          eglGetProcAddress("ANGLEPlatformInitialize"));
-  if (angle_platform_init) {
-    angle_platform_init(&g_angle_platform_impl.Get());
-
-    g_angle_platform_shutdown = reinterpret_cast<ANGLEPlatformShutdownFunc>(
-        eglGetProcAddress("ANGLEPlatformShutdown"));
-  }
-
   // If EGL_EXT_client_extensions not supported this call to eglQueryString
   // will return NULL.
   const char* client_extensions =
@@ -668,6 +651,11 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
     if (display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();
+    }
+
+    // Init ANGLE platform now that we have the global display.
+    if (!InitializeANGLEPlatform(display)) {
+      LOG(ERROR) << "ANGLE Platform initialization failed.";
     }
 
     if (!eglInitialize(display, nullptr, nullptr)) {
