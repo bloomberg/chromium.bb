@@ -45,10 +45,11 @@
         <div class="secondary label">[[subLabel]]</div>
       </div>
       <content select=".more-actions"></content>
-      <template is="dom-if" if="[[pref.controlledBy]]">
+      <template is="dom-if" if="[[pref.controlledBy]]" restamp>
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"
+          on-change="notifyChangedByUserInteraction"
           disabled="[[controlDisabled_(disabled, pref)]]">
       </paper-toggle-button>
     </div>

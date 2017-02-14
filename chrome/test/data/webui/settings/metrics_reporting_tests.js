@@ -24,8 +24,8 @@ suite('metrics reporting', function() {
 
       var control = page.$.metricsReportingControl;
       assertEquals(testBrowserProxy.metricsReporting.enabled, control.checked);
-      var indicatorVisible = !!page.$$('#indicator');
-      assertEquals(testBrowserProxy.metricsReporting.managed, indicatorVisible);
+      assertEquals(testBrowserProxy.metricsReporting.managed,
+                   !!control.pref.controlledBy);
 
       var changedMetrics = {
         enabled: !testBrowserProxy.metricsReporting.enabled,
@@ -35,13 +35,16 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       assertEquals(changedMetrics.enabled, control.checked);
-      indicatorVisible = !!page.$$('#indicator');
-      assertEquals(changedMetrics.managed, indicatorVisible);
+      assertEquals(changedMetrics.managed, !!control.pref.controlledBy);
 
       var toggled = !changedMetrics.enabled;
+      control.checked = toggled;
+      control.notifyChangedByUserInteraction();
 
-      MockInteractions.tap(control);
-      return testBrowserProxy.whenCalled('setMetricsReportingEnabled', toggled);
+      return testBrowserProxy.whenCalled('setMetricsReportingEnabled').then(
+          function(enabled) {
+            assertEquals(toggled, enabled);
+          });
     });
   });
 

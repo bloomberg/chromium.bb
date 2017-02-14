@@ -32,14 +32,28 @@ Polymer({
     pageVisibility: Object,
 
 // <if expr="_google_chrome and not chromeos">
-    /** @type {MetricsReporting} */
-    metricsReporting_: Object,
+    // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
+    // (but handled differently in C++).
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    metricsReportingPref_: {
+      type: Object,
+      value: function() {
+        // TODO(dbeam): this is basically only to appease PrefControlBehavior.
+        // Maybe add a no-validate attribute instead? This makes little sense.
+        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+      },
+    },
 
     showRestart_: Boolean,
 // </if>
 
-    /** @private */
-    safeBrowsingExtendedReportingEnabled_: Boolean,
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    safeBrowsingExtendedReportingPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+      },
+    },
 
     /** @private */
     showClearBrowsingDataDialog_: Boolean,
@@ -48,19 +62,17 @@ Polymer({
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
 
-// <if expr="_google_chrome and not chromeos">
-    var boundSetMetricsReporting = this.setMetricsReporting_.bind(this);
-    this.addWebUIListener('metrics-reporting-change', boundSetMetricsReporting);
+    this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
 
-    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
-    browserProxy.getMetricsReporting().then(boundSetMetricsReporting);
+// <if expr="_google_chrome and not chromeos">
+    var setMetricsReportingPref = this.setMetricsReportingPref_.bind(this);
+    this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
+    this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
 // </if>
 
-    var boundSetSber = this.setSafeBrowsingExtendedReporting_.bind(this);
-    this.addWebUIListener('safe-browsing-extended-reporting-change',
-                          boundSetSber);
-    settings.PrivacyPageBrowserProxyImpl.getInstance()
-        .getSafeBrowsingExtendedReporting().then(boundSetSber);
+    var setSber = this.setSafeBrowsingExtendedReporting_.bind(this);
+    this.addWebUIListener('safe-browsing-extended-reporting-change', setSber);
+    this.browserProxy_.getSafeBrowsingExtendedReporting().then(setSber);
   },
 
   /** @protected */
@@ -75,8 +87,7 @@ Polymer({
     settings.navigateTo(settings.Route.CERTIFICATES);
 // </if>
 // <if expr="is_win or is_macosx">
-    settings.PrivacyPageBrowserProxyImpl.getInstance().
-        showManageSSLCertificates();
+    this.browserProxy_.showManageSSLCertificates();
 // </if>
   },
 
@@ -112,48 +123,67 @@ Polymer({
         'https://support.google.com/chrome/?p=settings_manage_exceptions');
   },
 
+  /** @private */
+  onSberChange_: function() {
+    var enabled = this.$.safeBrowsingExtendedReportingControl.checked;
+    this.browserProxy_.setSafeBrowsingExtendedReportingEnabled(enabled);
+  },
+
 // <if expr="_google_chrome and not chromeos">
   /** @private */
-  onMetricsReportingControlTap_: function() {
-    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
+  onMetricsReportingChange_: function() {
     var enabled = this.$.metricsReportingControl.checked;
-    browserProxy.setMetricsReportingEnabled(enabled);
+    this.browserProxy_.setMetricsReportingEnabled(enabled);
   },
 
   /**
    * @param {!MetricsReporting} metricsReporting
    * @private
    */
-  setMetricsReporting_: function(metricsReporting) {
+  setMetricsReportingPref_: function(metricsReporting) {
+    var hadPreviousPref = this.metricsReportingPref_.value !== undefined;
+    var pref = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: metricsReporting.enabled,
+    };
+    if (metricsReporting.managed) {
+      pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+      pref.controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
+    }
+
+    // Ignore the next change because it will happen when we set the pref.
+    this.metricsReportingPref_ = pref;
+
     // TODO(dbeam): remember whether metrics reporting was enabled when Chrome
     // started.
-    if (metricsReporting.managed) {
+    if (metricsReporting.managed)
       this.showRestart_ = false;
-    } else if (this.metricsReporting_ &&
-               metricsReporting.enabled != this.metricsReporting_.enabled) {
+    else if (hadPreviousPref)
       this.showRestart_ = true;
-    }
-    this.metricsReporting_ = metricsReporting;
   },
 
-  /** @private */
-  onRestartTap_: function() {
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onRestartTap_: function(e) {
+    e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 // </if>
 
-  /** @private */
-  onSafeBrowsingExtendedReportingControlTap_: function() {
-    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
-    var enabled = this.$.safeBrowsingExtendedReportingControl.checked;
-    browserProxy.setSafeBrowsingExtendedReportingEnabled(enabled);
-  },
-
-  /** @param {boolean} enabled Whether reporting is enabled or not.
-    * @private
-    */
+  /**
+   * @param {boolean} enabled Whether reporting is enabled or not.
+   * @private
+   */
   setSafeBrowsingExtendedReporting_: function(enabled) {
-    this.safeBrowsingExtendedReportingEnabled_ = enabled;
+    // Ignore the next change because it will happen when we set the pref.
+    this.safeBrowsingExtendedReportingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: enabled,
+    };
   },
 
   /**

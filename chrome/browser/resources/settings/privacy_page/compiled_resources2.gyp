@@ -23,6 +23,7 @@
         '../site_settings/compiled_resources2.gyp:constants',
         '../site_settings/compiled_resources2.gyp:site_data_details_subpage',
         'privacy_page_browser_proxy',
+        '<(EXTERNS_GYP):settings_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

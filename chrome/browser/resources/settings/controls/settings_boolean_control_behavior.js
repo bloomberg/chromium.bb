@@ -61,6 +61,10 @@ var SettingsBooleanControlBehaviorImpl = {
     'prefValueChanged_(pref.value)',
   ],
 
+  notifyChangedByUserInteraction: function() {
+    this.fire('settings-boolean-control-change');
+  },
+
   /** Reset the checked state to match the current pref value. */
   resetToPrefValue: function() {
     this.checked = this.getNewValue_(this.pref.value);

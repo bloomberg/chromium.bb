@@ -38,20 +38,6 @@
       button[is='paper-icon-button-light'].icon-help {
         background-image: url(../images/help_outline.svg);
       }
-
-      .settings-row-min-height {
-        min-height: var(--settings-row-min-height);
-      }
-
-      #metricsReporting paper-tooltip {
-        --paper-tooltip: var(--cr-policy-tooltip);
-      }
-
-      #metricsReportingControl,
-      #indicator,
-      #restart {
-        -webkit-margin-start: var(--checkbox-spacing);
-      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -83,11 +69,13 @@
           </settings-toggle-button>
         </div>
         <div class="settings-box">
-          <div class="start">$i18n{safeBrowsingEnableExtendedReporting}</div>
-          <paper-toggle-button id="safeBrowsingExtendedReportingControl"
-              on-tap="onSafeBrowsingExtendedReportingControlTap_"
-              checked="[[safeBrowsingExtendedReportingEnabled_]]">
-          </paper-toggle-button>
+          <settings-toggle-button class="start"
+              id="safeBrowsingExtendedReportingControl"
+              pref="[[safeBrowsingExtendedReportingPref_]]"
+              label="$i18n{safeBrowsingEnableExtendedReporting}"
+              on-settings-boolean-control-change="onSberChange_"
+              no-set-pref>
+          </settings-toggle-button>
         </div>
         <div class="settings-box">
           <settings-toggle-button class="start"
@@ -106,24 +94,19 @@
 </if><!-- chromeos -->
 <if expr="not chromeos">
         <div class="settings-box">
-          <div class="start">$i18n{enableLogging}</div>
-          <template is="dom-if" if="[[showRestart_]]" restamp>
-            <paper-button on-tap="onRestartTap_" id="restart">
-              $i18n{restart}
-            </paper-button>
-          </template>
-          <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
-            <iron-icon id="indicator" tabindex=0 icon="cr20:domain"></iron-icon>
-            <paper-tooltip for="indicator" position="top"
-                fit-to-visible-bounds>
-              $i18n{controlledSettingPolicy}
-            </paper-tooltip>
-          </template>
-          <paper-toggle-button id="metricsReportingControl"
-              on-tap="onMetricsReportingControlTap_"
-              checked="[[metricsReporting_.enabled]]"
-              disabled="[[metricsReporting_.managed]]">
-          </paper-toggle-button>
+          <settings-toggle-button class="start"
+              id="metricsReportingControl"
+              pref="[[metricsReportingPref_]]"
+              label="$i18n{enableLogging}"
+              on-settings-boolean-control-change="onMetricsReportingChange_"
+              no-set-pref>
+            <template is="dom-if" if="[[showRestart_]]" restamp>
+              <paper-button on-tap="onRestartTap_" id="restart"
+                  class="more-actions">
+                $i18n{restart}
+              </paper-button>
+            </template>
+          </settings-toggle-button>
         </div>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->

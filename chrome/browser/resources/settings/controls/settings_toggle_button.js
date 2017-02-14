@@ -20,7 +20,10 @@ Polymer({
 
   /** @private */
   onLabelWrapperTap_: function() {
-    if (!this.controlDisabled_())
-      this.checked = !this.checked;
+    if (this.controlDisabled_())
+      return;
+
+    this.checked = !this.checked;
+    this.notifyChangedByUserInteraction();
   },
 });
