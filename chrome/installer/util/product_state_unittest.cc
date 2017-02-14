@@ -19,6 +19,8 @@ class ProductStateTest : public testing::TestWithParam<bool> {
  protected:
   ProductStateTest();
 
+  void SetUp() override;
+
   void ApplyUninstallCommand(const wchar_t* exe_path, const wchar_t* args);
   void MinimallyInstallProduct(const wchar_t* version);
 
@@ -31,14 +33,17 @@ class ProductStateTest : public testing::TestWithParam<bool> {
 
 ProductStateTest::ProductStateTest()
     : system_install_(GetParam()),
-      overridden_(system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER) {
-  registry_override_manager_.OverrideRegistry(overridden_);
+      overridden_(system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER) {}
+
+void ProductStateTest::SetUp() {
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override_manager_.OverrideRegistry(overridden_));
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  EXPECT_EQ(ERROR_SUCCESS,
+  ASSERT_EQ(ERROR_SUCCESS,
             clients_.Create(overridden_, dist->GetVersionKey().c_str(),
                             KEY_ALL_ACCESS | KEY_WOW64_32KEY));
-  EXPECT_EQ(ERROR_SUCCESS,
+  ASSERT_EQ(ERROR_SUCCESS,
             client_state_.Create(overridden_, dist->GetStateKey().c_str(),
                                  KEY_ALL_ACCESS | KEY_WOW64_32KEY));
 }

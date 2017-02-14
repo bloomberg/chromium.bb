@@ -34,7 +34,8 @@ class SetRegValueWorkItemTest : public testing::Test {
   SetRegValueWorkItemTest() {}
 
   void SetUp() override {
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     // Create a temporary key for testing.
     ASSERT_NE(ERROR_SUCCESS,

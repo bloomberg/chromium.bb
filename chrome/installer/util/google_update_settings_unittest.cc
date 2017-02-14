@@ -52,9 +52,13 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
   GoogleUpdateSettingsTest()
       : program_files_override_(base::DIR_PROGRAM_FILES),
-        program_files_x86_override_(base::DIR_PROGRAM_FILESX86) {
-    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
-    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
+        program_files_x86_override_(base::DIR_PROGRAM_FILESX86) {}
+
+  void SetUp() override {
+    ASSERT_NO_FATAL_FAILURE(
+        registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+    ASSERT_NO_FATAL_FAILURE(
+        registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER));
   }
 
   void SetApField(SystemUserInstall is_system, const wchar_t* value) {
@@ -1203,8 +1207,10 @@ void CollectStatsConsent::TearDownTestCase() {
 // Install the registry override and apply the settings to the registry.
 void CollectStatsConsent::SetUp() {
   // Override both HKLM and HKCU as tests may touch either/both.
-  override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
-  override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
   const StatsState& stats_state = GetParam();
   const HKEY root_key = stats_state.root_key();

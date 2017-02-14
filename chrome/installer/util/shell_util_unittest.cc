@@ -816,7 +816,8 @@ class ShellUtilRegistryTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER));
 
     // .test2 files already have a default application.
     base::win::RegKey key;

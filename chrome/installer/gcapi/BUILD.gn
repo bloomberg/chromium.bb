@@ -66,8 +66,6 @@ test("gcapi_test") {
     "gcapi_reactivation_test.cc",
     "gcapi_test.cc",
     "gcapi_test.rc",
-    "gcapi_test_registry_overrider.cc",
-    "gcapi_test_registry_overrider.h",
     "resource.h",
   ]
 

@@ -294,9 +294,11 @@ class NtRegistryTest : public testing::Test {
  protected:
   void SetUp() override {
     base::string16 temp;
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
-    override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKLM, temp));
   }
 

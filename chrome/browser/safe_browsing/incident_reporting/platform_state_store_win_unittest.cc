@@ -42,7 +42,8 @@ class PlatformStateStoreWinTest : public ::testing::Test {
   void SetUp() override {
     ::testing::Test::SetUp();
     base::MessageLoop::current()->SetTaskRunner(task_runner_);
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     ASSERT_TRUE(profile_manager_.SetUp());
   }
 

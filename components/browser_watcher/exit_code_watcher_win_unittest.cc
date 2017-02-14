@@ -85,7 +85,8 @@ class ExitCodeWatcherTest : public testing::Test {
   void SetUp() override {
     Super::SetUp();
 
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
   }
 
   base::Process OpenSelfWithAccess(uint32_t access) {

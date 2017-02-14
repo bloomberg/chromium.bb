@@ -173,13 +173,17 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
         root_key_(test_data_.system_level ? HKEY_LOCAL_MACHINE
                                           : HKEY_CURRENT_USER),
         nt_root_key_(test_data_.system_level ? nt::HKLM : nt::HKCU) {
-    base::string16 path;
-    override_manager_.OverrideRegistry(root_key_, &path);
-    nt::SetTestingOverride(nt_root_key_, path);
   }
 
   ~MakeProductDetailsTest() {
     nt::SetTestingOverride(nt_root_key_, base::string16());
+  }
+
+  void SetUp() override {
+    base::string16 path;
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(root_key_, &path));
+    nt::SetTestingOverride(nt_root_key_, path);
   }
 
   const TestData& test_data() const { return test_data_; }

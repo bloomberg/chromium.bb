@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
-#include "chrome/installer/gcapi/gcapi_test_registry_overrider.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +23,13 @@ using base::win::RegKey;
 class GCAPIReactivationTest : public ::testing::Test {
  protected:
   GCAPIReactivationTest() {}
+
+  void SetUp() override {
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  }
 
   bool SetChromeInstallMarker(HKEY hive) {
     // Create the client state keys in the right places.
@@ -91,7 +98,7 @@ class GCAPIReactivationTest : public ::testing::Test {
     return L"ERROR";
   }
 
-  const GCAPITestRegistryOverrider gcapi_test_registry_overrider_;
+  registry_util::RegistryOverrideManager override_manager_;
 };
 
 TEST_F(GCAPIReactivationTest, CheckSetReactivationBrandCode) {

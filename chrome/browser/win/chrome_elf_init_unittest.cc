@@ -30,7 +30,8 @@ class ChromeBlacklistTrialTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     blacklist_registry_key_.reset(
         new base::win::RegKey(HKEY_CURRENT_USER,

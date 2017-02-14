@@ -46,7 +46,7 @@ TEST(ProductTest, ProductInstallBasic) {
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
 
     // There should be no installed version in the registry.
     machine_state.Initialize();

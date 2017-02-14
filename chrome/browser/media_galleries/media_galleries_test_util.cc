@@ -193,7 +193,8 @@ void EnsureMediaDirectoriesExists::Init() {
   local_app_data_override_.reset(new base::ScopedPathOverride(
       base::DIR_LOCAL_APP_DATA, GetFakeLocalAppDataPath()));
   // Picasa also looks in the registry for an alternate path.
-  registry_override_.OverrideRegistry(HKEY_CURRENT_USER);
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)

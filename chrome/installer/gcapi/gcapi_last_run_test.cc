@@ -26,7 +26,8 @@ class GCAPILastRunTest : public ::testing::Test {
  protected:
   void SetUp() override {
     // Override keys - this is undone during destruction.
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     // Create the client state key in the right places.
     std::wstring reg_path(google_update::kRegPathClientState);

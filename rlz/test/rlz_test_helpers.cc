@@ -115,8 +115,10 @@ void InitializeRegistryOverridesForTesting(
                                        KEY_READ), &data);
   }
 
-  override_manager->OverrideRegistry(HKEY_LOCAL_MACHINE);
-  override_manager->OverrideRegistry(HKEY_CURRENT_USER);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager->OverrideRegistry(HKEY_LOCAL_MACHINE));
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager->OverrideRegistry(HKEY_CURRENT_USER));
 
   if (do_copy) {
     base::win::RegKey key(
@@ -131,7 +133,8 @@ void InitializeRegistryOverridesForTesting(
 
 void RlzLibTestNoMachineStateHelper::SetUp() {
 #if defined(OS_WIN)
-  InitializeRegistryOverridesForTesting(&override_manager_);
+  ASSERT_NO_FATAL_FAILURE(
+      InitializeRegistryOverridesForTesting(&override_manager_));
 #elif defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif  // defined(OS_WIN)

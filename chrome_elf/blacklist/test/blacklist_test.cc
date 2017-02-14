@@ -143,7 +143,8 @@ class BlacklistTest : public testing::Test {
 
   void SetUp() override {
     base::string16 temp;
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
 
     // Make the override path available to our test DLL.

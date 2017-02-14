@@ -273,18 +273,18 @@ class InstallStaticUtilTest
         scoped_install_details_(system_level_, std::get<0>(GetParam())),
         mode_(&InstallDetails::Get().mode()),
         root_key_(system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER),
-        nt_root_key_(system_level_ ? nt::HKLM : nt::HKCU) {
-    base::string16 path;
-    override_manager_.OverrideRegistry(root_key_, &path);
-    nt::SetTestingOverride(nt_root_key_, path);
-  }
-
-  ~InstallStaticUtilTest() {
-    nt::SetTestingOverride(nt_root_key_, base::string16());
-  }
+        nt_root_key_(system_level_ ? nt::HKLM : nt::HKCU) {}
 
   void SetUp() override {
     ASSERT_TRUE(!system_level_ || mode_->supports_system_level);
+    base::string16 path;
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(root_key_, &path));
+    nt::SetTestingOverride(nt_root_key_, path);
+  }
+
+  void TearDown() override {
+    nt::SetTestingOverride(nt_root_key_, base::string16());
   }
 
   bool system_level() const { return system_level_; }

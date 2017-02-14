@@ -87,7 +87,7 @@ TEST_F(InstallerStateTest, WithProduct) {
 
   {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
     EXPECT_TRUE(chrome_key.Valid());
@@ -123,7 +123,7 @@ TEST_F(InstallerStateTest, InstallerResult) {
   };
   for (const wchar_t* command_line : kCommandLines) {
     RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
     base::CommandLine cmd_line = base::CommandLine::FromString(command_line);
     const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
@@ -164,8 +164,9 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   base::ScopedPathOverride local_app_data_override(base::DIR_LOCAL_APP_DATA,
                                                    temp);
   registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
-  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+  ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(HKEY_CURRENT_USER));
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE));
 
   InstallationState machine_state;
   machine_state.Initialize();

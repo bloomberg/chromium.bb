@@ -34,7 +34,8 @@ class WatcherMetricsProviderWinTest : public testing::Test {
   void SetUp() override {
     Super::SetUp();
 
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     test_task_runner_ = new base::TestSimpleTaskRunner();
   }
 

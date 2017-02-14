@@ -197,7 +197,8 @@ TEST(SetupUtilTest, GuidToSquid) {
 
 TEST(SetupUtilTest, RegisterEventLogProvider) {
   registry_util::RegistryOverrideManager registry_override_manager;
-  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE));
 
   const base::Version version("1.2.3.4");
   const base::FilePath install_directory(
@@ -374,8 +375,10 @@ class FindArchiveToPatchTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
-    registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
     product_version_ = base::Version("30.0.1559.0");
     max_version_ = base::Version("47.0.1559.0");
 
@@ -530,7 +533,7 @@ class DeleteRegistryKeyPartialTest : public ::testing::Test {
   using RegKey = base::win::RegKey;
 
   void SetUp() override {
-    _registry_override_manager.OverrideRegistry(root_);
+    ASSERT_NO_FATAL_FAILURE(_registry_override_manager.OverrideRegistry(root_));
     to_preserve_.push_back(L"preSERve1");
     to_preserve_.push_back(L"1evRESerp");
   }
@@ -641,7 +644,8 @@ class LegacyCleanupsTest : public ::testing::Test {
   LegacyCleanupsTest() = default;
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     installer_state_ =
         base::MakeUnique<FakeInstallerState>(temp_dir_.GetPath());
     // Create the state to be cleared.

@@ -30,7 +30,8 @@ class RegistryHashStoreContentsWinTest : public testing::Test {
   RegistryHashStoreContentsWinTest() {}
 
   void SetUp() override {
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     contents.reset(new RegistryHashStoreContentsWin(kRegistryPath, kStoreKey));
   }

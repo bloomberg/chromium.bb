@@ -212,7 +212,8 @@ class IncidentReportingServiceTest : public testing::Test {
 #if defined(OS_WIN)
     // Redirect HKCU so that the platform state store used by the test doesn't
     // collide with existing Chrome installs or other tests running in parallel.
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 #endif
     ASSERT_TRUE(profile_manager_.SetUp());
   }

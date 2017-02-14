@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_reg_util_win.h"
 #include "chrome/installer/gcapi/gcapi.h"
-#include "chrome/installer/gcapi/gcapi_test_registry_overrider.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/variations/variations_experiment_util.h"
@@ -35,6 +35,13 @@ class GCAPIOmahaExperimentTest : public ::testing::Test {
             kBrand, gcapi_internals::kRelaunchLabel)) {
   }
 
+  void SetUp() override {
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  }
+
   void VerifyExperimentLabels(const base::string16& expected_labels) {
     base::string16 actual_labels;
     EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(false,
@@ -42,11 +49,10 @@ class GCAPIOmahaExperimentTest : public ::testing::Test {
     EXPECT_EQ(expected_labels, actual_labels);
   }
 
+  registry_util::RegistryOverrideManager override_manager_;
   base::string16 brand_;
   base::string16 reactivation_label_;
   base::string16 relaunch_label_;
-
-  const GCAPITestRegistryOverrider gcapi_test_registry_overrider_;
 };
 
 TEST_F(GCAPIOmahaExperimentTest, SetReactivationLabelFromEmptyExperiments) {

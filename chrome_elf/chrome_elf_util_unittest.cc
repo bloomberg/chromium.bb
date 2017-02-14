@@ -63,10 +63,10 @@ void RegRedirect(nt::ROOT_KEY key,
   base::string16 temp;
 
   if (key == nt::HKCU) {
-    rom->OverrideRegistry(HKEY_CURRENT_USER, &temp);
+    ASSERT_NO_FATAL_FAILURE(rom->OverrideRegistry(HKEY_CURRENT_USER, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
   } else {
-    rom->OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+    ASSERT_NO_FATAL_FAILURE(rom->OverrideRegistry(HKEY_LOCAL_MACHINE, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKLM, temp));
   }
 }
@@ -85,7 +85,7 @@ TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
 
   // Set up registry override for this test.
   registry_util::RegistryOverrideManager override_manager;
-  RegRedirect(nt::HKCU, &override_manager);
+  ASSERT_NO_FATAL_FAILURE(RegRedirect(nt::HKCU, &override_manager));
 
   // First, ensure that the emergency-off finch signal works.
   EXPECT_TRUE(SetSecurityFinchFlag(true));
@@ -97,7 +97,7 @@ TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
   elf_security::EarlyBrowserSecurity();
   EXPECT_TRUE(IsSecuritySet());
 
-  CancelRegRedirect(nt::HKCU);
+  ASSERT_NO_FATAL_FAILURE(CancelRegRedirect(nt::HKCU));
 }
 
 }  // namespace

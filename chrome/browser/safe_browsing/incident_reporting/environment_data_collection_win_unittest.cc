@@ -183,7 +183,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   // Ensure that all values and subkeys from the specified registry keys are
   // correctly stored in the report.
   registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
+  ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(HKEY_CURRENT_USER));
 
   const wchar_t kRootKey[] = L"Software\\TestKey";
   const RegistryKeyInfo kRegKeysToCollect[] = {

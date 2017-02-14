@@ -560,8 +560,10 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
         new base::ScopedPathOverride(base::DIR_LOCAL_APP_DATA, temp));
 
     // Override the registry so that tests can freely push state to it.
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
-    registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
 
     // Chrome is installed.
     const HKEY root =

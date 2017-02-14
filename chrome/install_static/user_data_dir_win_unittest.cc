@@ -71,7 +71,8 @@ TEST(UserDataDir, RegistrySettingsInHKLMOverrides) {
   // precedence over the command line in both implementations.
   registry_util::RegistryOverrideManager override_manager;
   base::string16 temp;
-  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp));
   ScopedNTRegistryTestingOverride nt_override(nt::HKLM, temp);
 
   base::win::RegKey key(HKEY_LOCAL_MACHINE, kPolicyRegistryKey, KEY_WRITE);
@@ -92,7 +93,8 @@ TEST(UserDataDir, RegistrySettingsInHKCUOverrides) {
   // precedence over the command line in both implementations.
   registry_util::RegistryOverrideManager override_manager;
   base::string16 temp;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp));
   ScopedNTRegistryTestingOverride nt_override(nt::HKCU, temp);
 
   base::win::RegKey key(HKEY_CURRENT_USER, kPolicyRegistryKey, KEY_WRITE);
@@ -113,14 +115,16 @@ TEST(UserDataDir, RegistrySettingsInHKLMTakesPrecedenceOverHKCU) {
   // precedence.
   registry_util::RegistryOverrideManager override_manager;
   base::string16 temp;
-  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp));
   ScopedNTRegistryTestingOverride nt_override(nt::HKLM, temp);
   LONG rv;
   base::win::RegKey key1(HKEY_LOCAL_MACHINE, kPolicyRegistryKey, KEY_WRITE);
   rv = key1.WriteValue(kUserDataDirRegistryKey, L"111");
   ASSERT_EQ(rv, ERROR_SUCCESS);
 
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp));
   ScopedNTRegistryTestingOverride nt_override2(nt::HKCU, temp);
   base::win::RegKey key2(HKEY_CURRENT_USER, kPolicyRegistryKey, KEY_WRITE);
   rv = key2.WriteValue(kUserDataDirRegistryKey, L"222");
@@ -138,7 +142,8 @@ TEST(UserDataDir, RegistrySettingWithPathExpansionHKCU) {
 
   registry_util::RegistryOverrideManager override_manager;
   base::string16 temp;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+  ASSERT_NO_FATAL_FAILURE(
+      override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp));
   ScopedNTRegistryTestingOverride nt_override(nt::HKCU, temp);
   base::win::RegKey key(HKEY_CURRENT_USER, kPolicyRegistryKey, KEY_WRITE);
   LONG rv = key.WriteValue(kUserDataDirRegistryKey, L"${windows}");

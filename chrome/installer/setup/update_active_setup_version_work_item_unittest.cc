@@ -80,7 +80,8 @@ class UpdateActiveSetupVersionWorkItemTest
   UpdateActiveSetupVersionWorkItemTest() {}
 
   void SetUp() override {
-    registry_override_manager_.OverrideRegistry(kActiveSetupRoot);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(kActiveSetupRoot));
   }
 
  private:

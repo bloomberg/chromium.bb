@@ -41,10 +41,14 @@ class BeaconTest : public ::testing::TestWithParam<
                 beacon_type_,
                 beacon_scope_,
                 system_install_,
-                app_registration_data_) {
+                app_registration_data_) {}
+
+  void SetUp() override {
     // Override the registry so that tests can freely push state to it.
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
-    registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
   }
 
   TestAppRegistrationData app_registration_data_;
@@ -177,8 +181,10 @@ class DefaultBrowserBeaconTest
     }
 
     // Override the registry so that tests can freely push state to it.
-    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
-    registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
 
     // Ensure that IsPerUserInstall returns the proper value.
     ASSERT_EQ(!system_install_, InstallUtil::IsPerUserInstall(chrome_exe_));
