@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -32,7 +33,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -66,7 +66,8 @@ content::WebUIDataSource* CreateNetExportHTMLSource() {
 class NetExportMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<NetExportMessageHandler>,
-      public ui::SelectFileDialog::Listener {
+      public ui::SelectFileDialog::Listener,
+      public net_log::NetLogFileWriter::StateObserver {
  public:
   NetExportMessageHandler();
   ~NetExportMessageHandler() override;
@@ -75,25 +76,21 @@ class NetExportMessageHandler
   void RegisterMessages() override;
 
   // Messages.
-  void OnGetExportNetLogInfo(const base::ListValue* list);
+  void OnInitialize(const base::ListValue* list);
   void OnStartNetLog(const base::ListValue* list);
   void OnStopNetLog(const base::ListValue* list);
   void OnSendNetLog(const base::ListValue* list);
 
-  // ui::SelectFileDialog::Listener:
+  // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
+  // net_log::NetLogFileWriter::StateObserver implementation.
+  void OnNewState(const base::DictionaryValue& state) override;
+
  private:
-  // If |log_path| is empty, then the NetLogFileWriter will use its default
-  // log path.
-  void StartNetLogThenNotifyUI(const base::FilePath& log_path,
-                               net::NetLogCaptureMode capture_mode);
-
-  void StopNetLogThenNotifyUI();
-
   // Send NetLog data via email.
   static void SendEmail(const base::FilePath& file_to_send);
 
@@ -101,7 +98,7 @@ class NetExportMessageHandler
   // On mobile a user cannot pick where their NetLog file is saved to.
   // Instead, everything is saved on the user's temp directory. Thus the
   // mobile user has the UI available to send their NetLog file as an
-  // email while the desktop user, who gets to chose their NetLog file's
+  // email while the desktop user, who gets to choose their NetLog file's
   // location, does not. Furthermore, since every time a user starts logging
   // to a new NetLog file on mobile platforms it overwrites the previous
   // NetLog file, a warning message appears on the Start Logging button
@@ -111,8 +108,7 @@ class NetExportMessageHandler
 
   // Calls NetExportView.onExportNetLogInfoChanged JavaScript function in the
   // renderer, passing in |file_writer_state|.
-  void NotifyUIWithNetLogFileWriterState(
-      std::unique_ptr<base::DictionaryValue> file_writer_state);
+  void NotifyUIWithState(std::unique_ptr<base::DictionaryValue> state);
 
   // Opens the SelectFileDialog UI with the default path to save a
   // NetLog file.
@@ -120,7 +116,11 @@ class NetExportMessageHandler
 
   // Cache of g_browser_process->net_log()->net_log_file_writer(). This
   // is owned by ChromeNetLog which is owned by BrowserProcessImpl.
-  net_log::NetLogFileWriter* net_log_file_writer_;
+  net_log::NetLogFileWriter* file_writer_;
+
+  ScopedObserver<net_log::NetLogFileWriter,
+                 net_log::NetLogFileWriter::StateObserver>
+      state_observer_manager_;
 
   // The capture mode the user chose in the UI when logging started is cached
   // here and is read after a file path is chosen in the save dialog.
@@ -135,9 +135,10 @@ class NetExportMessageHandler
 };
 
 NetExportMessageHandler::NetExportMessageHandler()
-    : net_log_file_writer_(g_browser_process->net_log()->net_log_file_writer()),
+    : file_writer_(g_browser_process->net_log()->net_log_file_writer()),
+      state_observer_manager_(this),
       weak_ptr_factory_(this) {
-  net_log_file_writer_->SetTaskRunners(
+  file_writer_->Initialize(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE_USER_BLOCKING),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
@@ -145,20 +146,18 @@ NetExportMessageHandler::NetExportMessageHandler()
 NetExportMessageHandler::~NetExportMessageHandler() {
   // There may be a pending file dialog, it needs to be told that the user
   // has gone away so that it doesn't try to call back.
-  if (select_file_dialog_.get())
+  if (select_file_dialog_)
     select_file_dialog_->ListenerDestroyed();
 
-  net_log_file_writer_->StopNetLog(
-      nullptr, nullptr,
-      base::Bind([](std::unique_ptr<base::DictionaryValue>) {}));
+  file_writer_->StopNetLog(nullptr, nullptr);
 }
 
 void NetExportMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_ui()->RegisterMessageCallback(
-      net_log::kGetExportNetLogInfoHandler,
-      base::Bind(&NetExportMessageHandler::OnGetExportNetLogInfo,
+      net_log::kInitializeHandler,
+      base::Bind(&NetExportMessageHandler::OnInitialize,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kStartNetLogHandler,
@@ -174,12 +173,12 @@ void NetExportMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void NetExportMessageHandler::OnGetExportNetLogInfo(
-    const base::ListValue* list) {
+void NetExportMessageHandler::OnInitialize(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net_log_file_writer_->GetState(
-      base::Bind(&NetExportMessageHandler::NotifyUIWithNetLogFileWriterState,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (!state_observer_manager_.IsObservingSources()) {
+    state_observer_manager_.Add(file_writer_);
+  }
+  NotifyUIWithState(file_writer_->GetState());
 }
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
@@ -192,7 +191,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
       net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
 
   if (UsingMobileUI()) {
-    StartNetLogThenNotifyUI(base::FilePath(), capture_mode_);
+    file_writer_->StartNetLog(base::FilePath(), capture_mode_);
   } else {
     base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
         DownloadPrefs::FromBrowserContext(
@@ -206,39 +205,40 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StopNetLogThenNotifyUI();
-}
-
-void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net_log_file_writer_->GetFilePathToCompletedLog(
-      base::Bind(&NetExportMessageHandler::SendEmail));
-}
-
-void NetExportMessageHandler::StartNetLogThenNotifyUI(
-    const base::FilePath& log_path,
-    net::NetLogCaptureMode capture_mode) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  net_log_file_writer_->StartNetLog(
-      log_path, capture_mode,
-      base::Bind(&NetExportMessageHandler::NotifyUIWithNetLogFileWriterState,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NetExportMessageHandler::StopNetLogThenNotifyUI() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<base::DictionaryValue> ui_thread_polled_data;
 
   // TODO(crbug.com/438656): fill |ui_thread_polled_data| with browser-specific
   // polled data.
 
-  net_log_file_writer_->StopNetLog(
-      std::move(ui_thread_polled_data),
-      Profile::FromWebUI(web_ui())->GetRequestContext(),
-      base::Bind(&NetExportMessageHandler::NotifyUIWithNetLogFileWriterState,
-                 weak_ptr_factory_.GetWeakPtr()));
+  file_writer_->StopNetLog(std::move(ui_thread_polled_data),
+                           Profile::FromWebUI(web_ui())->GetRequestContext());
+}
+
+void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  file_writer_->GetFilePathToCompletedLog(
+      base::Bind(&NetExportMessageHandler::SendEmail));
+}
+
+void NetExportMessageHandler::FileSelected(const base::FilePath& path,
+                                           int index,
+                                           void* params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(select_file_dialog_);
+  select_file_dialog_ = nullptr;
+  *last_save_dir.Pointer() = path.DirName();
+
+  file_writer_->StartNetLog(path, capture_mode_);
+}
+
+void NetExportMessageHandler::FileSelectionCanceled(void* params) {
+  DCHECK(select_file_dialog_);
+  select_file_dialog_ = nullptr;
+}
+
+void NetExportMessageHandler::OnNewState(const base::DictionaryValue& state) {
+  NotifyUIWithState(state.CreateDeepCopy());
 }
 
 // static
@@ -270,12 +270,13 @@ bool NetExportMessageHandler::UsingMobileUI() {
 #endif
 }
 
-void NetExportMessageHandler::NotifyUIWithNetLogFileWriterState(
-    std::unique_ptr<base::DictionaryValue> file_writer_state) {
+void NetExportMessageHandler::NotifyUIWithState(
+    std::unique_ptr<base::DictionaryValue> state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  file_writer_state->SetBoolean("useMobileUI", UsingMobileUI());
+  DCHECK(web_ui());
+  state->SetBoolean("useMobileUI", UsingMobileUI());
   web_ui()->CallJavascriptFunctionUnsafe(net_log::kOnExportNetLogInfoChanged,
-                                         *file_writer_state);
+                                         *state);
 }
 
 void NetExportMessageHandler::ShowSelectFileDialog(
@@ -295,22 +296,6 @@ void NetExportMessageHandler::ShowSelectFileDialog(
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_path,
       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
-}
-
-void NetExportMessageHandler::FileSelected(const base::FilePath& path,
-                                           int index,
-                                           void* params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(select_file_dialog_);
-  select_file_dialog_ = nullptr;
-  *last_save_dir.Pointer() = path.DirName();
-
-  StartNetLogThenNotifyUI(path, capture_mode_);
-}
-
-void NetExportMessageHandler::FileSelectionCanceled(void* params) {
-  DCHECK(select_file_dialog_);
-  select_file_dialog_ = nullptr;
 }
 
 }  // namespace

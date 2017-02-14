@@ -9,11 +9,13 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -25,7 +27,6 @@
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/write_to_file_net_log_observer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,9 +44,10 @@ const char kCaptureModeIncludeCookiesAndCredentialsString[] = "NORMAL";
 const char kCaptureModeIncludeSocketBytesString[] = "LOG_BYTES";
 
 const char kStateUninitializedString[] = "UNINITIALIZED";
+const char kStateInitializingString[] = "INITIALIZING";
 const char kStateNotLoggingString[] = "NOT_LOGGING";
 const char kStateLoggingString[] = "LOGGING";
-
+const char kStateStoppingLogString[] = "STOPPING_LOG";
 }  // namespace
 
 namespace net_log {
@@ -59,34 +61,68 @@ bool SetPathToGivenAndReturnTrue(const base::FilePath& path_to_return,
   return true;
 }
 
-// Checks the fields of the state returned by NetLogFileWriter's state callback.
-// |expected_log_capture_mode_string| is only checked if
-// |expected_log_capture_mode_known| is true.
-void VerifyState(const base::DictionaryValue& state,
-                 const std::string& expected_state_string,
-                 bool expected_log_exists,
-                 bool expected_log_capture_mode_known,
-                 const std::string& expected_log_capture_mode_string) {
-  std::string state_string;
-  ASSERT_TRUE(state.GetString("state", &state_string));
-  EXPECT_EQ(state_string, expected_state_string);
-
-  bool log_exists;
-  ASSERT_TRUE(state.GetBoolean("logExists", &log_exists));
-  EXPECT_EQ(log_exists, expected_log_exists);
-
-  bool log_capture_mode_known;
-  ASSERT_TRUE(state.GetBoolean("logCaptureModeKnown", &log_capture_mode_known));
-  EXPECT_EQ(log_capture_mode_known, expected_log_capture_mode_known);
-
-  if (expected_log_capture_mode_known) {
-    std::string log_capture_mode_string;
-    ASSERT_TRUE(state.GetString("captureMode", &log_capture_mode_string));
-    EXPECT_EQ(log_capture_mode_string, expected_log_capture_mode_string);
+// Checks the "state" string of a NetLogFileWriter state.
+WARN_UNUSED_RESULT ::testing::AssertionResult VerifyState(
+    std::unique_ptr<base::DictionaryValue> state,
+    const std::string& expected_state_string) {
+  std::string actual_state_string;
+  if (!state->GetString("state", &actual_state_string)) {
+    return ::testing::AssertionFailure()
+           << "State is missing \"state\" string.";
   }
+  if (actual_state_string != expected_state_string) {
+    return ::testing::AssertionFailure()
+           << "\"state\" string of state does not match expected." << std::endl
+           << "    Actual: " << actual_state_string << std::endl
+           << "  Expected: " << expected_state_string;
+  }
+  return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult ReadCompleteLogFile(
+// Checks all fields of a NetLogFileWriter state except possibly the
+// "captureMode" string; that field is only checked if
+// |expected_log_capture_mode_known| is true.
+WARN_UNUSED_RESULT ::testing::AssertionResult VerifyState(
+    std::unique_ptr<base::DictionaryValue> state,
+    const std::string& expected_state_string,
+    bool expected_log_exists,
+    bool expected_log_capture_mode_known,
+    const std::string& expected_log_capture_mode_string) {
+  base::DictionaryValue expected_state;
+  expected_state.SetString("state", expected_state_string);
+  expected_state.SetBoolean("logExists", expected_log_exists);
+  expected_state.SetBoolean("logCaptureModeKnown",
+                            expected_log_capture_mode_known);
+  if (expected_log_capture_mode_known) {
+    expected_state.SetString("captureMode", expected_log_capture_mode_string);
+  } else {
+    state->Remove("captureMode", nullptr);
+  }
+
+  // Remove "file" field which is only added in debug mode.
+  state->Remove("file", nullptr);
+
+  std::string expected_state_json_string;
+  JSONStringValueSerializer expected_state_serializer(
+      &expected_state_json_string);
+  expected_state_serializer.Serialize(expected_state);
+
+  std::string actual_state_json_string;
+  JSONStringValueSerializer actual_state_serializer(&actual_state_json_string);
+  actual_state_serializer.Serialize(*state);
+
+  if (actual_state_json_string != expected_state_json_string) {
+    return ::testing::AssertionFailure()
+           << "State (possibly excluding \"captureMode\") does not match "
+              "expected."
+           << std::endl
+           << "    Actual: " << actual_state_json_string << std::endl
+           << "  Expected: " << expected_state_json_string;
+  }
+  return ::testing::AssertionSuccess();
+}
+
+WARN_UNUSED_RESULT ::testing::AssertionResult ReadCompleteLogFile(
     const base::FilePath& log_path,
     std::unique_ptr<base::DictionaryValue>* root) {
   DCHECK(!log_path.empty());
@@ -112,14 +148,14 @@ void VerifyState(const base::DictionaryValue& state,
   if (!(*root)->GetDictionary("constants", &constants)) {
     root->reset();
     return ::testing::AssertionFailure() << log_path.value()
-                                         << " does not contain constants.";
+                                         << " is missing constants.";
   }
   // Make sure the "events" section exists
   base::ListValue* events;
   if (!(*root)->GetList("events", &events)) {
     root->reset();
     return ::testing::AssertionFailure() << log_path.value()
-                                         << " does not contain events list.";
+                                         << " is missing events list.";
   }
   return ::testing::AssertionSuccess();
 }
@@ -144,33 +180,25 @@ void SetUpTestContextGetterWithQuicTimeoutInfo(
       base::ThreadTaskRunnerHandle::Get(), std::move(context));
 }
 
-// A class that wraps around TestClosure. Provides the ability to wait on a
-// state callback and retrieve the result.
-class TestStateCallback {
+// An implementation of NetLogFileWriter::StateObserver that allows waiting
+// until it's notified of a new state.
+class TestStateObserver : public NetLogFileWriter::StateObserver {
  public:
-  TestStateCallback()
-      : callback_(base::Bind(&TestStateCallback::SetResultThenNotify,
-                             base::Unretained(this))) {}
-
-  const base::Callback<void(std::unique_ptr<base::DictionaryValue>)>& callback()
-      const {
-    return callback_;
+  // NetLogFileWriter::StateObserver implementation
+  void OnNewState(const base::DictionaryValue& state) override {
+    test_closure_.closure().Run();
+    result_state_ = state.CreateDeepCopy();
   }
 
-  std::unique_ptr<base::DictionaryValue> WaitForResult() {
+  std::unique_ptr<base::DictionaryValue> WaitForNewState() {
     test_closure_.WaitForResult();
-    return std::move(result_);
+    DCHECK(result_state_);
+    return std::move(result_state_);
   }
 
  private:
-  void SetResultThenNotify(std::unique_ptr<base::DictionaryValue> result) {
-    result_ = std::move(result);
-    test_closure_.closure().Run();
-  }
-
   net::TestClosure test_closure_;
-  std::unique_ptr<base::DictionaryValue> result_;
-  base::Callback<void(std::unique_ptr<base::DictionaryValue>)> callback_;
+  std::unique_ptr<base::DictionaryValue> result_state_;
 };
 
 // A class that wraps around TestClosure. Provides the ability to wait on a
@@ -229,15 +257,16 @@ class NetLogFileWriterTest : public ::testing::Test {
     ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(net_thread_.Start());
 
-    net_log_file_writer_.SetTaskRunners(file_thread_.task_runner(),
-                                        net_thread_.task_runner());
-  }
-  void TearDown() override { ASSERT_TRUE(log_temp_dir_.Delete()); }
+    net_log_file_writer_.AddObserver(&test_state_observer_);
 
-  std::unique_ptr<base::DictionaryValue> FileWriterGetState() {
-    TestStateCallback test_callback;
-    net_log_file_writer_.GetState(test_callback.callback());
-    return test_callback.WaitForResult();
+    ASSERT_TRUE(VerifyState(net_log_file_writer_.GetState(),
+                            kStateUninitializedString, false, false, ""));
+  }
+
+  // ::testing::Test implementation
+  void TearDown() override {
+    net_log_file_writer_.RemoveObserver(&test_state_observer_);
+    ASSERT_TRUE(log_temp_dir_.Delete());
   }
 
   base::FilePath FileWriterGetFilePathToCompletedLog() {
@@ -246,45 +275,119 @@ class NetLogFileWriterTest : public ::testing::Test {
     return test_callback.WaitForResult();
   }
 
-  // If |custom_log_path| is empty path, |net_log_file_writer_| will use its
-  // default log path.
-  void StartThenVerifyState(const base::FilePath& custom_log_path,
-                            net::NetLogCaptureMode capture_mode,
-                            const std::string& expected_capture_mode_string) {
-    TestStateCallback test_callback;
-    net_log_file_writer_.StartNetLog(custom_log_path, capture_mode,
-                                     test_callback.callback());
+  WARN_UNUSED_RESULT ::testing::AssertionResult InitializeThenVerifyNewState(
+      bool expected_initialize_success,
+      bool expected_log_exists) {
+    net_log_file_writer_.Initialize(file_thread_.task_runner(),
+                                    net_thread_.task_runner());
     std::unique_ptr<base::DictionaryValue> state =
-        test_callback.WaitForResult();
-    VerifyState(*state, kStateLoggingString, true, true,
-                expected_capture_mode_string);
+        test_state_observer_.WaitForNewState();
+    ::testing::AssertionResult result =
+        VerifyState(std::move(state), kStateInitializingString);
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "First state after Initialize() does not match expected:"
+             << std::endl
+             << result.message();
+    }
 
-    // Make sure NetLogFileWriter::GetFilePath() returns empty path when
-    // logging.
-    EXPECT_TRUE(FileWriterGetFilePathToCompletedLog().empty());
+    state = test_state_observer_.WaitForNewState();
+    result = VerifyState(std::move(state), expected_initialize_success
+                                               ? kStateNotLoggingString
+                                               : kStateUninitializedString,
+                         expected_log_exists, false, "");
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "Second state after Initialize() does not match expected:"
+             << std::endl
+             << result.message();
+    }
+
+    return ::testing::AssertionSuccess();
+  }
+
+  // If |custom_log_path| is empty path, |net_log_file_writer_| will use its
+  // default log path, which is cached in |default_log_path_|.
+  WARN_UNUSED_RESULT ::testing::AssertionResult StartThenVerifyNewState(
+      const base::FilePath& custom_log_path,
+      net::NetLogCaptureMode capture_mode,
+      const std::string& expected_capture_mode_string) {
+    net_log_file_writer_.StartNetLog(custom_log_path, capture_mode);
+    std::unique_ptr<base::DictionaryValue> state =
+        test_state_observer_.WaitForNewState();
+    ::testing::AssertionResult result =
+        VerifyState(std::move(state), kStateLoggingString, true, true,
+                    expected_capture_mode_string);
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "First state after StartNetLog() does not match expected:"
+             << std::endl
+             << result.message();
+    }
+
+    // Make sure GetFilePath() returns empty path when logging.
+    base::FilePath actual_log_path = FileWriterGetFilePathToCompletedLog();
+    if (!actual_log_path.empty()) {
+      return ::testing::AssertionFailure()
+             << "GetFilePath() should return empty path after logging starts."
+             << " Actual: " << ::testing::PrintToString(actual_log_path);
+    }
+
+    return ::testing::AssertionSuccess();
   }
 
   // If |custom_log_path| is empty path, it's assumed the log file with be at
-  // |default_path_|.
-  void StopThenVerifyStateAndFile(
+  // |default_log_path_|.
+  WARN_UNUSED_RESULT ::testing::AssertionResult StopThenVerifyNewStateAndFile(
       const base::FilePath& custom_log_path,
       std::unique_ptr<base::DictionaryValue> polled_data,
       scoped_refptr<net::URLRequestContextGetter> context_getter,
       const std::string& expected_capture_mode_string) {
-    TestStateCallback test_callback;
-    net_log_file_writer_.StopNetLog(std::move(polled_data), context_getter,
-                                    test_callback.callback());
+    net_log_file_writer_.StopNetLog(std::move(polled_data), context_getter);
     std::unique_ptr<base::DictionaryValue> state =
-        test_callback.WaitForResult();
-    VerifyState(*state, kStateNotLoggingString, true, true,
-                expected_capture_mode_string);
+        test_state_observer_.WaitForNewState();
+    ::testing::AssertionResult result =
+        VerifyState(std::move(state), kStateStoppingLogString);
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "First state after StopNetLog() does not match expected:"
+             << std::endl
+             << result.message();
+    }
 
-    const base::FilePath& log_path =
+    state = test_state_observer_.WaitForNewState();
+    result = VerifyState(std::move(state), kStateNotLoggingString, true, true,
+                         expected_capture_mode_string);
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "Second state after StopNetLog() does not match expected:"
+             << std::endl
+             << result.message();
+    }
+
+    // Make sure GetFilePath() returns the expected path.
+    const base::FilePath& expected_log_path =
         custom_log_path.empty() ? default_log_path_ : custom_log_path;
-    EXPECT_EQ(FileWriterGetFilePathToCompletedLog(), log_path);
+    base::FilePath actual_log_path = FileWriterGetFilePathToCompletedLog();
+    if (actual_log_path != expected_log_path) {
+      return ::testing::AssertionFailure()
+             << "GetFilePath() returned incorrect path after logging stopped."
+             << std::endl
+             << "    Actual: " << ::testing::PrintToString(actual_log_path)
+             << std::endl
+             << "  Expected: " << ::testing::PrintToString(expected_log_path);
+    }
 
+    // Make sure the generated log file is valid.
     std::unique_ptr<base::DictionaryValue> root;
-    ASSERT_TRUE(ReadCompleteLogFile(log_path, &root));
+    result = ReadCompleteLogFile(expected_log_path, &root);
+    if (!result) {
+      return ::testing::AssertionFailure()
+             << "Log file after logging stopped is not valid:" << std::endl
+             << result.message();
+    }
+
+    return ::testing::AssertionSuccess();
   }
 
  protected:
@@ -302,6 +405,8 @@ class NetLogFileWriterTest : public ::testing::Test {
   base::Thread file_thread_;
   base::Thread net_thread_;
 
+  TestStateObserver test_state_observer_;
+
  private:
   // Allows tasks to be posted to the main thread.
   base::MessageLoop message_loop_;
@@ -313,19 +418,15 @@ TEST_F(NetLogFileWriterTest, InitFail) {
   net_log_file_writer_.SetDefaultLogBaseDirectoryGetterForTest(
       base::Bind([](base::FilePath* path) -> bool { return false; }));
 
-  // GetState() will cause |net_log_file_writer_| to initialize. In this case,
-  // initialization will fail since |net_log_file_writer_| will fail to
-  // retrieve the default log base directory.
-  VerifyState(*FileWriterGetState(), kStateUninitializedString, false, false,
-              "");
+  // Initialization should fail due to the override.
+  ASSERT_TRUE(InitializeThenVerifyNewState(false, false));
 
   // NetLogFileWriter::GetFilePath() should return empty path if uninitialized.
   EXPECT_TRUE(FileWriterGetFilePathToCompletedLog().empty());
 }
 
 TEST_F(NetLogFileWriterTest, InitWithoutExistingLog) {
-  // GetState() will cause |net_log_file_writer_| to initialize.
-  VerifyState(*FileWriterGetState(), kStateNotLoggingString, false, false, "");
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
   // NetLogFileWriter::GetFilePathToCompletedLog() should return empty path when
   // no log file exists.
@@ -341,10 +442,9 @@ TEST_F(NetLogFileWriterTest, InitWithExistingLog) {
   ASSERT_TRUE(empty_file.get());
   empty_file.reset();
 
-  // GetState() will cause |net_log_file_writer_| to initialize.
-  VerifyState(*FileWriterGetState(), kStateNotLoggingString, true, false, "");
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, true));
 
-  EXPECT_EQ(FileWriterGetFilePathToCompletedLog(), default_log_path_);
+  EXPECT_EQ(default_log_path_, FileWriterGetFilePathToCompletedLog());
 }
 
 TEST_F(NetLogFileWriterTest, StartAndStopWithAllCaptureModes) {
@@ -357,40 +457,53 @@ TEST_F(NetLogFileWriterTest, StartAndStopWithAllCaptureModes) {
       kCaptureModeDefaultString, kCaptureModeIncludeCookiesAndCredentialsString,
       kCaptureModeIncludeSocketBytesString};
 
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
+
   // For each capture mode, start and stop |net_log_file_writer_| in that mode.
   for (int i = 0; i < 3; ++i) {
-    StartThenVerifyState(base::FilePath(), capture_modes[i],
-                         capture_mode_strings[i]);
+    // StartNetLog(), should result in state change.
+    ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(), capture_modes[i],
+                                        capture_mode_strings[i]));
 
-    // Starting a second time should be a no-op.
-    StartThenVerifyState(base::FilePath(), capture_modes[i],
-                         capture_mode_strings[i]);
+    // Calling StartNetLog() again should be a no-op. Try doing StartNetLog()
+    // with various capture modes; they should all be ignored and result in no
+    // state change.
+    net_log_file_writer_.StartNetLog(base::FilePath(), capture_modes[i]);
+    net_log_file_writer_.StartNetLog(base::FilePath(),
+                                     capture_modes[(i + 1) % 3]);
+    net_log_file_writer_.StartNetLog(base::FilePath(),
+                                     capture_modes[(i + 2) % 3]);
 
-    // Starting with other capture modes should also be no-ops. This should also
-    // not affect the capture mode reported by |net_log_file_writer_|.
-    StartThenVerifyState(base::FilePath(), capture_modes[(i + 1) % 3],
-                         capture_mode_strings[i]);
-
-    StartThenVerifyState(base::FilePath(), capture_modes[(i + 2) % 3],
-                         capture_mode_strings[i]);
-
-    StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                               capture_mode_strings[i]);
+    // StopNetLog(), should result in state change. The capture mode should
+    // match that of the first StartNetLog() call (called by
+    // StartThenVerifyNewState()).
+    ASSERT_TRUE(StopThenVerifyNewStateAndFile(
+        base::FilePath(), nullptr, nullptr, capture_mode_strings[i]));
 
     // Stopping a second time should be a no-op.
-    StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                               capture_mode_strings[i]);
+    net_log_file_writer_.StopNetLog(nullptr, nullptr);
   }
+
+  // Start and stop one more time just to make sure the last StopNetLog() call
+  // was properly ignored and left |net_log_file_writer_| in a valid state.
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(), capture_modes[0],
+                                      capture_mode_strings[0]));
+
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+                                            capture_mode_strings[0]));
 }
 
 // Verify the file sizes after two consecutive starts/stops are the same (even
 // if some junk data is added in between).
 TEST_F(NetLogFileWriterTest, StartClearsFile) {
-  StartThenVerifyState(base::FilePath(), net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
-  StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(),
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
+
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
   int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(default_log_path_, &stop_file_size));
@@ -406,48 +519,55 @@ TEST_F(NetLogFileWriterTest, StartClearsFile) {
 
   // Start and stop again and make sure the file is back to the size it was
   // before adding the junk data.
-  StartThenVerifyState(base::FilePath(), net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(),
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
 
-  StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
   int64_t new_stop_file_size;
   EXPECT_TRUE(base::GetFileSize(default_log_path_, &new_stop_file_size));
 
-  EXPECT_EQ(new_stop_file_size, stop_file_size);
+  EXPECT_EQ(stop_file_size, new_stop_file_size);
 }
 
 // Adds an event to the log file, then checks that the file is larger than
 // the file created without that event.
 TEST_F(NetLogFileWriterTest, AddEvent) {
-  StartThenVerifyState(base::FilePath(), net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
-  StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(),
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
+
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
   // Get file size without the event.
   int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(default_log_path_, &stop_file_size));
 
-  StartThenVerifyState(base::FilePath(), net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(),
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
 
   net_log_.AddGlobalEntry(net::NetLogEventType::CANCELLED);
 
-  StopThenVerifyStateAndFile(base::FilePath(), nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
+  // Get file size after adding the event and make sure it's larger than before.
   int64_t new_stop_file_size;
   EXPECT_TRUE(base::GetFileSize(default_log_path_, &new_stop_file_size));
-
   EXPECT_GE(new_stop_file_size, stop_file_size);
 }
 
-// Using a custom path to make sure logging can still occur when
-// the path has changed.
+// Using a custom path to make sure logging can still occur when the path has
+// changed.
 TEST_F(NetLogFileWriterTest, AddEventCustomPath) {
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
+
   base::FilePath::CharType kCustomRelativePath[] =
       FILE_PATH_LITERAL("custom/custom/chrome-net-export-log.json");
   base::FilePath custom_log_path =
@@ -455,30 +575,35 @@ TEST_F(NetLogFileWriterTest, AddEventCustomPath) {
   EXPECT_TRUE(
       base::CreateDirectoryAndGetError(custom_log_path.DirName(), nullptr));
 
-  StartThenVerifyState(custom_log_path, net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(custom_log_path,
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
 
-  StopThenVerifyStateAndFile(custom_log_path, nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
   // Get file size without the event.
   int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(custom_log_path, &stop_file_size));
 
-  StartThenVerifyState(custom_log_path, net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(custom_log_path,
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
 
   net_log_.AddGlobalEntry(net::NetLogEventType::CANCELLED);
 
-  StopThenVerifyStateAndFile(custom_log_path, nullptr, nullptr,
-                             kCaptureModeDefaultString);
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr, nullptr,
+                                            kCaptureModeDefaultString));
 
+  // Get file size after adding the event and make sure it's larger than before.
   int64_t new_stop_file_size;
   EXPECT_TRUE(base::GetFileSize(custom_log_path, &new_stop_file_size));
   EXPECT_GE(new_stop_file_size, stop_file_size);
 }
 
 TEST_F(NetLogFileWriterTest, StopWithPolledDataAndContextGetter) {
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
+
   // Create dummy polled data
   const char kDummyPolledDataPath[] = "dummy_path";
   const char kDummyPolledDataString[] = "dummy_info";
@@ -489,7 +614,6 @@ TEST_F(NetLogFileWriterTest, StopWithPolledDataAndContextGetter) {
   // Create test context getter on |net_thread_| and wait for it to finish.
   scoped_refptr<net::TestURLRequestContextGetter> context_getter;
   const int kDummyQuicParam = 75;
-
   net::TestClosure init_done;
   net_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&SetUpTestContextGetterWithQuicTimeoutInfo,
@@ -497,11 +621,13 @@ TEST_F(NetLogFileWriterTest, StopWithPolledDataAndContextGetter) {
       init_done.closure());
   init_done.WaitForResult();
 
-  StartThenVerifyState(base::FilePath(), net::NetLogCaptureMode::Default(),
-                       kCaptureModeDefaultString);
+  ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(),
+                                      net::NetLogCaptureMode::Default(),
+                                      kCaptureModeDefaultString));
 
-  StopThenVerifyStateAndFile(base::FilePath(), std::move(dummy_polled_data),
-                             context_getter, kCaptureModeDefaultString);
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(
+      base::FilePath(), std::move(dummy_polled_data), context_getter,
+      kCaptureModeDefaultString));
 
   // Read polledData from log file.
   std::unique_ptr<base::DictionaryValue> root;
@@ -512,7 +638,7 @@ TEST_F(NetLogFileWriterTest, StopWithPolledDataAndContextGetter) {
   // Check that it contains the field from the polled data that was passed in.
   std::string dummy_string;
   ASSERT_TRUE(polled_data->GetString(kDummyPolledDataPath, &dummy_string));
-  EXPECT_EQ(dummy_string, kDummyPolledDataString);
+  EXPECT_EQ(kDummyPolledDataString, dummy_string);
 
   // Check that it also contains the field from the URLRequestContext that was
   // passed in.
@@ -523,86 +649,62 @@ TEST_F(NetLogFileWriterTest, StopWithPolledDataAndContextGetter) {
   ASSERT_TRUE(
       quic_info->Get("idle_connection_timeout_seconds", &timeout_value));
   ASSERT_TRUE(timeout_value->GetAsInteger(&timeout));
-  EXPECT_EQ(timeout, kDummyQuicParam);
+  EXPECT_EQ(kDummyQuicParam, timeout);
 }
 
 TEST_F(NetLogFileWriterTest, ReceiveStartWhileInitializing) {
   // Trigger initialization of |net_log_file_writer_|.
-  TestStateCallback init_callback;
-  net_log_file_writer_.GetState(init_callback.callback());
+  net_log_file_writer_.Initialize(file_thread_.task_runner(),
+                                  net_thread_.task_runner());
 
   // Before running the main message loop, tell |net_log_file_writer_| to start
   // logging. Not running the main message loop prevents the initialization
   // process from completing, so this ensures that StartNetLog() is received
   // before |net_log_file_writer_| finishes initialization, which means this
   // should be a no-op.
-  TestStateCallback start_during_init_callback;
   net_log_file_writer_.StartNetLog(base::FilePath(),
-                                   net::NetLogCaptureMode::Default(),
-                                   start_during_init_callback.callback());
+                                   net::NetLogCaptureMode::Default());
 
-  // Now run the main message loop.
-  std::unique_ptr<base::DictionaryValue> init_callback_state =
-      init_callback.WaitForResult();
-
-  // The state returned by the GetState() call should be the state after
-  // initialization, which should indicate not-logging.
-  VerifyState(*init_callback_state, kStateNotLoggingString, false, false, "");
-
-  // The state returned by the ignored StartNetLog() call should also be the
-  // state after the ongoing initialization finishes, so it should be identical
-  // to the state returned by GetState().
-  std::unique_ptr<base::DictionaryValue> start_during_init_callback_state =
-      start_during_init_callback.WaitForResult();
-  VerifyState(*start_during_init_callback_state, kStateNotLoggingString, false,
-              false, "");
-
-  // Run an additional GetState() just to make sure |net_log_file_writer_| is
-  // not logging.
-  VerifyState(*FileWriterGetState(), kStateNotLoggingString, false, false, "");
+  // Now run the main message loop. Make sure StartNetLog() was ignored by
+  // checking that the next two states are "initializing" followed by
+  // "not-logging".
+  std::unique_ptr<base::DictionaryValue> state =
+      test_state_observer_.WaitForNewState();
+  ASSERT_TRUE(VerifyState(std::move(state), kStateInitializingString));
+  state = test_state_observer_.WaitForNewState();
+  ASSERT_TRUE(
+      VerifyState(std::move(state), kStateNotLoggingString, false, false, ""));
 }
 
 TEST_F(NetLogFileWriterTest, ReceiveStartWhileStoppingLog) {
-  // Call StartNetLog() on |net_log_file_writer_| and wait for it to run its
-  // state callback.
-  StartThenVerifyState(base::FilePath(),
-                       net::NetLogCaptureMode::IncludeSocketBytes(),
-                       kCaptureModeIncludeSocketBytesString);
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
+
+  // Call StartNetLog() on |net_log_file_writer_| and wait for the state change.
+  ASSERT_TRUE(StartThenVerifyNewState(
+      base::FilePath(), net::NetLogCaptureMode::IncludeSocketBytes(),
+      kCaptureModeIncludeSocketBytesString));
 
   // Tell |net_log_file_writer_| to stop logging.
-  TestStateCallback stop_callback;
-  net_log_file_writer_.StopNetLog(nullptr, nullptr, stop_callback.callback());
+  net_log_file_writer_.StopNetLog(nullptr, nullptr);
 
   // Before running the main message loop, tell |net_log_file_writer_| to start
   // logging. Not running the main message loop prevents the stopping process
   // from completing, so this ensures StartNetLog() is received before
   // |net_log_file_writer_| finishes stopping, which means this should be a
   // no-op.
-  TestStateCallback start_during_stop_callback;
   net_log_file_writer_.StartNetLog(base::FilePath(),
-                                   net::NetLogCaptureMode::Default(),
-                                   start_during_stop_callback.callback());
+                                   net::NetLogCaptureMode::Default());
 
-  // Now run the main message loop. Since StartNetLog() will be a no-op, it will
-  // simply run the state callback. There are no guarantees for when this state
-  // callback will execute if StartNetLog() is called during the stopping
-  // process, so the state it returns could either be stopping-log or
-  // not-logging. For simplicity, the returned state will not be verified.
-  start_during_stop_callback.WaitForResult();
-
-  // The state returned by the StopNetLog() call should be the state after
-  // stopping, which should indicate not-logging. Also, the capture mode should
-  // be the same as the one passed to the first StartNetLog() call, not the
-  // second (ignored) one.
-  std::unique_ptr<base::DictionaryValue> stop_callback_state =
-      stop_callback.WaitForResult();
-  VerifyState(*stop_callback_state, kStateNotLoggingString, true, true,
-              kCaptureModeIncludeSocketBytesString);
-
-  // Run an additional GetState() just to make sure |net_log_file_writer_| is
-  // not logging.
-  VerifyState(*FileWriterGetState(), kStateNotLoggingString, true, true,
-              kCaptureModeIncludeSocketBytesString);
+  // Now run the main message loop. Make sure the last StartNetLog() was
+  // ignored by checking that the next two states are "stopping-log" followed by
+  // "not-logging". Also make sure the capture mode matches that of the first
+  // StartNetLog() call (called by StartThenVerifyState()).
+  std::unique_ptr<base::DictionaryValue> state =
+      test_state_observer_.WaitForNewState();
+  ASSERT_TRUE(VerifyState(std::move(state), kStateStoppingLogString));
+  state = test_state_observer_.WaitForNewState();
+  ASSERT_TRUE(VerifyState(std::move(state), kStateNotLoggingString, true, true,
+                          kCaptureModeIncludeSocketBytesString));
 }
 
 }  // namespace net_log

@@ -36,8 +36,8 @@ base::FilePath::CharType kLogRelativePath[] =
 base::FilePath::CharType kOldLogRelativePath[] =
     FILE_PATH_LITERAL("chrome-net-export-log.json");
 
-// Adds net info from net::GetNetInfo() to |polled_data|. Must run on the
-// |net_task_runner_| of NetLogFileWriter.
+// Adds net info from net::GetNetInfo() to |polled_data|. Runs on
+// |net_task_runner_|.
 std::unique_ptr<base::DictionaryValue> AddNetInfo(
     scoped_refptr<net::URLRequestContextGetter> context_getter,
     std::unique_ptr<base::DictionaryValue> polled_data) {
@@ -83,62 +83,137 @@ NetLogFileWriter::~NetLogFileWriter() {
     write_to_file_observer_->StopObserving(nullptr, base::Bind([] {}));
 }
 
-void NetLogFileWriter::StartNetLog(const base::FilePath& log_path,
-                                   net::NetLogCaptureMode capture_mode,
-                                   const StateCallback& state_callback) {
+void NetLogFileWriter::AddObserver(StateObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  state_observer_list_.AddObserver(observer);
+}
 
-  EnsureInitThenRun(
-      base::Bind(&NetLogFileWriter::StartNetLogAfterInitialized,
-                 weak_ptr_factory_.GetWeakPtr(), log_path, capture_mode),
-      state_callback);
+void NetLogFileWriter::RemoveObserver(StateObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  state_observer_list_.RemoveObserver(observer);
+}
+
+void NetLogFileWriter::Initialize(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> net_task_runner) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(file_task_runner);
+  DCHECK(net_task_runner);
+
+  if (file_task_runner_)
+    DCHECK_EQ(file_task_runner, file_task_runner_);
+  file_task_runner_ = file_task_runner;
+  if (net_task_runner_)
+    DCHECK_EQ(net_task_runner, net_task_runner_);
+  net_task_runner_ = net_task_runner;
+
+  if (state_ != STATE_UNINITIALIZED)
+    return;
+
+  state_ = STATE_INITIALIZING;
+
+  NotifyStateObserversAsync();
+
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::Bind(&NetLogFileWriter::SetUpDefaultLogPath,
+                 default_log_base_directory_getter_),
+      base::Bind(&NetLogFileWriter::SetStateAfterSetUpDefaultLogPath,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetLogFileWriter::StartNetLog(const base::FilePath& log_path,
+                                   net::NetLogCaptureMode capture_mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(file_task_runner_);
+
+  if (state_ != STATE_NOT_LOGGING)
+    return;
+
+  if (!log_path.empty())
+    log_path_ = log_path;
+
+  DCHECK(!log_path_.empty());
+
+  state_ = STATE_LOGGING;
+  log_exists_ = true;
+  log_capture_mode_known_ = true;
+  log_capture_mode_ = capture_mode;
+
+  NotifyStateObserversAsync();
+
+  std::unique_ptr<base::Value> constants(
+      ChromeNetLog::GetConstants(command_line_string_, channel_string_));
+  write_to_file_observer_ =
+      base::MakeUnique<net::FileNetLogObserver>(file_task_runner_);
+  write_to_file_observer_->StartObservingUnbounded(
+      chrome_net_log_, capture_mode, log_path_, std::move(constants), nullptr);
 }
 
 void NetLogFileWriter::StopNetLog(
     std::unique_ptr<base::DictionaryValue> polled_data,
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    const StateCallback& state_callback) {
+    scoped_refptr<net::URLRequestContextGetter> context_getter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(net_task_runner_);
-  if (state_ == STATE_LOGGING) {
-    // Stopping the log requires first grabbing the net info on the net thread.
-    // Before posting that task to the net thread, change the state to
-    // STATE_STOP_LOGGING so that if the NetLogFileWriter receives a command
-    // while the net info is being retrieved on the net thread, the state can be
-    // checked and the command can be ignored. It's the responsibility of the
-    // commands (StartNetLog(), StopNetLog(), GetState()) to check the state
-    // before performing their actions.
-    state_ = STATE_STOPPING_LOG;
 
-    // StopLogging() will always execute its state callback asynchronously,
-    // which means |state_callback| will always be executed asynchronously
-    // relative to the StopNetLog() call regardless of how StopLogging() is
-    // called here.
+  if (state_ != STATE_LOGGING)
+    return;
 
-    if (context_getter) {
-      base::PostTaskAndReplyWithResult(
-          net_task_runner_.get(), FROM_HERE,
-          base::Bind(&AddNetInfo, context_getter, base::Passed(&polled_data)),
-          base::Bind(&NetLogFileWriter::StopNetLogAfterAddNetInfo,
-                     weak_ptr_factory_.GetWeakPtr(), state_callback));
-    } else {
-      StopNetLogAfterAddNetInfo(state_callback, std::move(polled_data));
-    }
+  state_ = STATE_STOPPING_LOG;
+
+  NotifyStateObserversAsync();
+
+  if (context_getter) {
+    base::PostTaskAndReplyWithResult(
+        net_task_runner_.get(), FROM_HERE,
+        base::Bind(&AddNetInfo, context_getter, base::Passed(&polled_data)),
+        base::Bind(&NetLogFileWriter::StopNetLogAfterAddNetInfo,
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
-    // No-op; just run |state_callback| asynchronously.
-    RunStateCallbackAsync(state_callback);
+    StopNetLogAfterAddNetInfo(std::move(polled_data));
   }
 }
 
-void NetLogFileWriter::GetState(const StateCallback& state_callback) {
+std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  EnsureInitThenRun(base::Bind([] {}), state_callback);
+
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+
+#ifndef NDEBUG
+  dict->SetString("file", log_path_.LossyDisplayName());
+#endif  // NDEBUG
+
+  base::StringPiece state_string;
+  switch (state_) {
+    case STATE_UNINITIALIZED:
+      state_string = "UNINITIALIZED";
+      break;
+    case STATE_INITIALIZING:
+      state_string = "INITIALIZING";
+      break;
+    case STATE_NOT_LOGGING:
+      state_string = "NOT_LOGGING";
+      break;
+    case STATE_LOGGING:
+      state_string = "LOGGING";
+      break;
+    case STATE_STOPPING_LOG:
+      state_string = "STOPPING_LOG";
+      break;
+  }
+  dict->SetString("state", state_string);
+
+  dict->SetBoolean("logExists", log_exists_);
+  dict->SetBoolean("logCaptureModeKnown", log_capture_mode_known_);
+  dict->SetString("captureMode", CaptureModeToString(log_capture_mode_));
+
+  return dict;
 }
 
 void NetLogFileWriter::GetFilePathToCompletedLog(
     const FilePathCallback& path_callback) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!log_exists_ || state_ == STATE_LOGGING) {
+  if (!(log_exists_ && state_ == STATE_NOT_LOGGING)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(path_callback, base::FilePath()));
     return;
@@ -150,19 +225,6 @@ void NetLogFileWriter::GetFilePathToCompletedLog(
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::Bind(&GetPathWithAllPermissions, log_path_), path_callback);
-}
-
-void NetLogFileWriter::SetTaskRunners(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> net_task_runner) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (file_task_runner_)
-    DCHECK_EQ(file_task_runner, file_task_runner_);
-  file_task_runner_ = file_task_runner;
-
-  if (net_task_runner_)
-    DCHECK_EQ(net_task_runner, net_task_runner_);
-  net_task_runner_ = net_task_runner;
 }
 
 std::string NetLogFileWriter::CaptureModeToString(
@@ -199,45 +261,19 @@ void NetLogFileWriter::SetDefaultLogBaseDirectoryGetterForTest(
   default_log_base_directory_getter_ = getter;
 }
 
-void NetLogFileWriter::EnsureInitThenRun(
-    const base::Closure& after_successful_init_callback,
-    const StateCallback& state_callback) {
+void NetLogFileWriter::NotifyStateObservers() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ == STATE_UNINITIALIZED) {
-    state_ = STATE_INITIALIZING;
-    // Run initialization tasks on the file thread, then the main thread. Once
-    // finished, run |after_successful_init_callback| and |state_callback| on
-    // the main thread.
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE,
-        base::Bind(&NetLogFileWriter::SetUpDefaultLogPath,
-                   default_log_base_directory_getter_),
-        base::Bind(&NetLogFileWriter::SetStateAfterSetUpDefaultLogPathThenRun,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   after_successful_init_callback, state_callback));
-  } else if (state_ == STATE_INITIALIZING) {
-    // If NetLogFileWriter is already in the process of initializing due to a
-    // previous call to EnsureInitThenRun(), commands received by
-    // NetLogFileWriter should be ignored, so only |state_callback| will be
-    // executed.
-    // Wait for the in-progress initialization to finish before calling
-    // |state_callback|. To do this, post a dummy task to the file thread
-    // (which is guaranteed to run after the tasks belonging to the
-    // in-progress initialization have finished), and have that dummy task
-    // post |state_callback| as a reply on the main thread.
-    file_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind([] {}),
-        base::Bind(&NetLogFileWriter::RunStateCallback,
-                   weak_ptr_factory_.GetWeakPtr(), state_callback));
-
-  } else {
-    // NetLogFileWriter is already fully initialized. Run
-    // |after_successful_init_callback| synchronously and |state_callback|
-    // asynchronously.
-    after_successful_init_callback.Run();
-    RunStateCallbackAsync(state_callback);
+  std::unique_ptr<base::DictionaryValue> state = GetState();
+  for (StateObserver& observer : state_observer_list_) {
+    observer.OnNewState(*state);
   }
+}
+
+void NetLogFileWriter::NotifyStateObserversAsync() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&NetLogFileWriter::NotifyStateObservers,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 NetLogFileWriter::DefaultLogPathResults NetLogFileWriter::SetUpDefaultLogPath(
@@ -263,9 +299,7 @@ NetLogFileWriter::DefaultLogPathResults NetLogFileWriter::SetUpDefaultLogPath(
   return results;
 }
 
-void NetLogFileWriter::SetStateAfterSetUpDefaultLogPathThenRun(
-    const base::Closure& after_successful_init_callback,
-    const StateCallback& state_callback,
+void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
     const DefaultLogPathResults& set_up_default_log_path_results) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_INITIALIZING);
@@ -275,59 +309,13 @@ void NetLogFileWriter::SetStateAfterSetUpDefaultLogPathThenRun(
     log_path_ = set_up_default_log_path_results.default_log_path;
     log_exists_ = set_up_default_log_path_results.log_exists;
     DCHECK(!log_capture_mode_known_);
-
-    after_successful_init_callback.Run();
   } else {
     state_ = STATE_UNINITIALIZED;
   }
-
-  RunStateCallback(state_callback);
-}
-
-void NetLogFileWriter::RunStateCallback(
-    const StateCallback& state_callback) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  state_callback.Run(GetState());
-}
-
-void NetLogFileWriter::RunStateCallbackAsync(
-    const StateCallback& state_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&NetLogFileWriter::RunStateCallback,
-                            weak_ptr_factory_.GetWeakPtr(), state_callback));
-}
-
-void NetLogFileWriter::StartNetLogAfterInitialized(
-    const base::FilePath& log_path,
-    net::NetLogCaptureMode capture_mode) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_INITIALIZING);
-  DCHECK(file_task_runner_);
-
-  if (state_ == STATE_NOT_LOGGING) {
-    if (!log_path.empty())
-      log_path_ = log_path;
-
-    DCHECK(!log_path_.empty());
-
-    state_ = STATE_LOGGING;
-    log_exists_ = true;
-    log_capture_mode_known_ = true;
-    log_capture_mode_ = capture_mode;
-
-    std::unique_ptr<base::Value> constants(
-        ChromeNetLog::GetConstants(command_line_string_, channel_string_));
-    write_to_file_observer_ =
-        base::MakeUnique<net::FileNetLogObserver>(file_task_runner_);
-    write_to_file_observer_->StartObservingUnbounded(
-        chrome_net_log_, capture_mode, log_path_, std::move(constants),
-        nullptr);
-  }
+  NotifyStateObservers();
 }
 
 void NetLogFileWriter::StopNetLogAfterAddNetInfo(
-    const StateCallback& state_callback,
     std::unique_ptr<base::DictionaryValue> polled_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_STOPPING_LOG);
@@ -335,50 +323,15 @@ void NetLogFileWriter::StopNetLogAfterAddNetInfo(
   write_to_file_observer_->StopObserving(
       std::move(polled_data),
       base::Bind(&NetLogFileWriter::ResetObserverThenSetStateNotLogging,
-                 weak_ptr_factory_.GetWeakPtr(), state_callback));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetLogFileWriter::ResetObserverThenSetStateNotLogging(
-    const StateCallback& state_callback) {
+void NetLogFileWriter::ResetObserverThenSetStateNotLogging() {
   DCHECK(thread_checker_.CalledOnValidThread());
   write_to_file_observer_.reset();
   state_ = STATE_NOT_LOGGING;
 
-  RunStateCallback(state_callback);
-}
-
-std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-
-#ifndef NDEBUG
-  dict->SetString("file", log_path_.LossyDisplayName());
-#endif  // NDEBUG
-
-  switch (state_) {
-    case STATE_UNINITIALIZED:
-      dict->SetString("state", "UNINITIALIZED");
-      break;
-    case STATE_INITIALIZING:
-      dict->SetString("state", "INITIALIZING");
-      break;
-    case STATE_NOT_LOGGING:
-      dict->SetString("state", "NOT_LOGGING");
-      break;
-    case STATE_LOGGING:
-      dict->SetString("state", "LOGGING");
-      break;
-    case STATE_STOPPING_LOG:
-      dict->SetString("state", "STOPPING_LOG");
-      break;
-  }
-
-  dict->SetBoolean("logExists", log_exists_);
-  dict->SetBoolean("logCaptureModeKnown", log_capture_mode_known_);
-  dict->SetString("captureMode", CaptureModeToString(log_capture_mode_));
-
-  return dict;
+  NotifyStateObservers();
 }
 
 }  // namespace net_log

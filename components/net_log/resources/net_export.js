@@ -18,11 +18,6 @@ document.addEventListener('DOMContentLoaded', onLoad);
 var NetExportView = (function() {
   'use strict';
 
-  /**
-   * Delay in milliseconds between updates of certain browser information.
-   */
-  /** @const */ var POLL_INTERVAL_MS = 5000;
-
   // --------------------------------------------------------------------------
 
   /**
@@ -33,10 +28,7 @@ var NetExportView = (function() {
     $('export-view-stop-data').onclick = this.onStopData_.bind(this);
     $('export-view-send-data').onclick = this.onSendData_.bind(this);
 
-    window.setInterval(function() { chrome.send('getExportNetLogInfo'); },
-                       POLL_INTERVAL_MS);
-
-    chrome.send('getExportNetLogInfo');
+    chrome.send('initialize');
   }
 
   cr.addSingletonGetter(NetExportView);
