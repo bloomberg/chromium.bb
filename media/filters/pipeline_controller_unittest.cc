@@ -136,6 +136,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnWaitingForDecryptionKey() override {}
   void OnVideoNaturalSizeChange(const gfx::Size& size) override {}
   void OnVideoOpacityChange(bool opaque) override {}
+  void OnVideoAverageKeyframeDistanceUpdate() override {}
 
   base::MessageLoop message_loop_;
 

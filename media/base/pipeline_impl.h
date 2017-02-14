@@ -135,6 +135,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnWaitingForDecryptionKey();
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
+  void OnVideoAverageKeyframeDistanceUpdate();
 
   // Task completion callbacks from RendererWrapper.
   void OnSeekDone();

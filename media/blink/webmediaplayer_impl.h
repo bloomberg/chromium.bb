@@ -265,6 +265,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnWaitingForDecryptionKey() override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
+  void OnVideoAverageKeyframeDistanceUpdate() override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.

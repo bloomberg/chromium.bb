@@ -62,6 +62,9 @@ class MEDIA_EXPORT Pipeline {
 
     // Executed for the first video frame and whenever opacity changes.
     virtual void OnVideoOpacityChange(bool opaque) = 0;
+
+    // Executed when the average keyframe distance for the video changes.
+    virtual void OnVideoAverageKeyframeDistanceUpdate() = 0;
   };
 
   virtual ~Pipeline() {}
