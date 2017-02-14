@@ -143,57 +143,62 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
     ShouldRetain shouldRetain) {
   const FontFaceCreationParams fallbackCreationParams(
       getFallbackFontFamily(description));
-  const FontPlatformData* fontPlatformData =
-      getFontPlatformData(description, fallbackCreationParams);
+  const FontPlatformData* fontPlatformData = getFontPlatformData(
+      description, fallbackCreationParams, AlternateFontName::LastResort);
 
   // We should at least have Sans or Arial which is the last resort fallback of
   // SkFontHost ports.
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, sansCreationParams,
                         (AtomicString("Sans")));
-    fontPlatformData = getFontPlatformData(description, sansCreationParams);
+    fontPlatformData = getFontPlatformData(description, sansCreationParams,
+                                           AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, arialCreationParams,
                         (AtomicString("Arial")));
-    fontPlatformData = getFontPlatformData(description, arialCreationParams);
+    fontPlatformData = getFontPlatformData(description, arialCreationParams,
+                                           AlternateFontName::LastResort);
   }
 #if OS(WIN)
   // Try some more Windows-specific fallbacks.
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, msuigothicCreationParams,
                         (AtomicString("MS UI Gothic")));
-    fontPlatformData =
-        getFontPlatformData(description, msuigothicCreationParams);
+    fontPlatformData = getFontPlatformData(
+        description, msuigothicCreationParams, AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, mssansserifCreationParams,
                         (AtomicString("Microsoft Sans Serif")));
-    fontPlatformData =
-        getFontPlatformData(description, mssansserifCreationParams);
+    fontPlatformData = getFontPlatformData(
+        description, mssansserifCreationParams, AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, segoeuiCreationParams,
                         (AtomicString("Segoe UI")));
-    fontPlatformData = getFontPlatformData(description, segoeuiCreationParams);
+    fontPlatformData = getFontPlatformData(description, segoeuiCreationParams,
+                                           AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, calibriCreationParams,
                         (AtomicString("Calibri")));
-    fontPlatformData = getFontPlatformData(description, calibriCreationParams);
+    fontPlatformData = getFontPlatformData(description, calibriCreationParams,
+                                           AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams,
                         timesnewromanCreationParams,
                         (AtomicString("Times New Roman")));
     fontPlatformData =
-        getFontPlatformData(description, timesnewromanCreationParams);
+        getFontPlatformData(description, timesnewromanCreationParams,
+                            AlternateFontName::LastResort);
   }
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, couriernewCreationParams,
                         (AtomicString("Courier New")));
-    fontPlatformData =
-        getFontPlatformData(description, couriernewCreationParams);
+    fontPlatformData = getFontPlatformData(
+        description, couriernewCreationParams, AlternateFontName::LastResort);
   }
 #endif
 
@@ -256,7 +261,8 @@ sk_sp<SkTypeface> FontCache::createTypeface(
 std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams,
-    float fontSize) {
+    float fontSize,
+    AlternateFontName) {
   CString name;
   sk_sp<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
   if (!tf)

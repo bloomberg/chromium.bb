@@ -231,7 +231,8 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
   // For now we'll pick the default that the user would get without changing
   // any prefs.
   RefPtr<SimpleFontData> simpleFontData =
-      getFontData(fontDescription, timesStr, false, shouldRetain);
+      getFontData(fontDescription, timesStr, AlternateFontName::AllowAlternate,
+                  shouldRetain);
   if (simpleFontData)
     return simpleFontData.release();
 
@@ -240,13 +241,15 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
   // that's guaranteed to be there, according to Nathan Taylor. This is good
   // enough to avoid a crash at least.
   DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande"));
-  return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
+  return getFontData(fontDescription, lucidaGrandeStr,
+                     AlternateFontName::AllowAlternate, shouldRetain);
 }
 
 std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams,
-    float fontSize) {
+    float fontSize,
+    AlternateFontName) {
   NSFontTraitMask traits = fontDescription.style() ? NSFontItalicTrait : 0;
   float size = fontSize;
 

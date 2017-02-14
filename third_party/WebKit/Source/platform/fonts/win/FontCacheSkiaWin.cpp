@@ -333,7 +333,8 @@ static bool typefacesHasStretchSuffix(const AtomicString& family,
 std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams,
-    float fontSize) {
+    float fontSize,
+    AlternateFontName alternateFontName) {
   ASSERT(creationParams.creationType() == CreateFontByFamily);
 
   CString name;
@@ -346,8 +347,11 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     FontWeight variantWeight;
     FontStretch variantStretch;
 
-    if (typefacesHasWeightSuffix(creationParams.family(), adjustedName,
-                                 variantWeight)) {
+    if (alternateFontName == AlternateFontName::LastResort) {
+      if (!tf)
+        return nullptr;
+    } else if (typefacesHasWeightSuffix(creationParams.family(), adjustedName,
+                                        variantWeight)) {
       FontFaceCreationParams adjustedParams(adjustedName);
       FontDescription adjustedFontDescription = fontDescription;
       adjustedFontDescription.setWeight(variantWeight);

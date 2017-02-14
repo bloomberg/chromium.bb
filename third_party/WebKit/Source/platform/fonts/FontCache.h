@@ -69,6 +69,7 @@ class SimpleFontData;
 
 enum ShouldRetain { Retain, DoNotRetain };
 enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
+enum class AlternateFontName { AllowAlternate, NoAlternate, LastResort };
 
 class PLATFORM_EXPORT FontCache {
   friend class FontCachePurgePreventer;
@@ -92,10 +93,11 @@ class PLATFORM_EXPORT FontCache {
   // Also implemented by the platform.
   void platformInit();
 
-  PassRefPtr<SimpleFontData> getFontData(const FontDescription&,
-                                         const AtomicString&,
-                                         bool checkingAlternateName = false,
-                                         ShouldRetain = Retain);
+  PassRefPtr<SimpleFontData> getFontData(
+      const FontDescription&,
+      const AtomicString&,
+      AlternateFontName = AlternateFontName::AllowAlternate,
+      ShouldRetain = Retain);
   PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&,
                                                        ShouldRetain = Retain);
   SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
@@ -209,9 +211,10 @@ class PLATFORM_EXPORT FontCache {
   }
 
   // FIXME: This method should eventually be removed.
-  FontPlatformData* getFontPlatformData(const FontDescription&,
-                                        const FontFaceCreationParams&,
-                                        bool checkingAlternateName = false);
+  FontPlatformData* getFontPlatformData(
+      const FontDescription&,
+      const FontFaceCreationParams&,
+      AlternateFontName = AlternateFontName::AllowAlternate);
 #if !OS(MACOSX)
   FontPlatformData* systemFontPlatformData(const FontDescription&);
 #endif
@@ -220,7 +223,8 @@ class PLATFORM_EXPORT FontCache {
   std::unique_ptr<FontPlatformData> createFontPlatformData(
       const FontDescription&,
       const FontFaceCreationParams&,
-      float fontSize);
+      float fontSize,
+      AlternateFontName = AlternateFontName::AllowAlternate);
   std::unique_ptr<FontPlatformData> scaleFontPlatformData(
       const FontPlatformData&,
       const FontDescription&,
