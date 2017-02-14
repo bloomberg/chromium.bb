@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/child/fileapi/webfilewriter_base.h"

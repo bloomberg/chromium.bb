@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/path_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"

@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session.h"

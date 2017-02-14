@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"

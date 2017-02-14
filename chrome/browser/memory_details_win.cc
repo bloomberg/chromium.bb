@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/url_constants.h"

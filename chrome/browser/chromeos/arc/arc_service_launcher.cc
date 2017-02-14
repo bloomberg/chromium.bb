@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"

@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"

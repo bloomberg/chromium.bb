@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"

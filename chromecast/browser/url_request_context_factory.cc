@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"

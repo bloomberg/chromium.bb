@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"

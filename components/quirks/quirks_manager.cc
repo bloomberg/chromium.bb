@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/quirks/pref_names.h"

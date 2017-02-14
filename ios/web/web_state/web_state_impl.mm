@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"

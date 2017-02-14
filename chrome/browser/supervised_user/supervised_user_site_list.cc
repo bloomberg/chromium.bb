@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"

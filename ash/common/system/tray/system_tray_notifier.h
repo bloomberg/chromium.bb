@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/accessibility_types.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
