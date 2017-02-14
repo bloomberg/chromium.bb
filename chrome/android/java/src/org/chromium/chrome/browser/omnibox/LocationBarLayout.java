@@ -2146,7 +2146,13 @@ public class LocationBarLayout extends FrameLayout
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
-            currentTab.loadUrl(loadUrlParams);
+
+            // If the bottom sheet exists, route the navigation through it instead of the tab.
+            if (mBottomSheet != null) {
+                mBottomSheet.loadUrl(loadUrlParams);
+            } else {
+                currentTab.loadUrl(loadUrlParams);
+            }
 
             setUrlToPageUrl();
             RecordUserAction.record("MobileOmniboxUse");

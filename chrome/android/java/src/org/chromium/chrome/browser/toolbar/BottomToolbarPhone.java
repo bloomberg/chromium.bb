@@ -19,9 +19,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** A handle to the bottom sheet. */
     private BottomSheet mBottomSheet;
 
-    /** The state of the bottom sheet before the URL bar was focused. */
-    private int mStateBeforeUrlFocus;
-
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -42,11 +39,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected void triggerUrlFocusAnimation(final boolean hasFocus) {
         super.triggerUrlFocusAnimation(hasFocus);
 
-        if (mBottomSheet == null) return;
+        if (mBottomSheet == null || !hasFocus) return;
 
-        if (hasFocus) mStateBeforeUrlFocus = mBottomSheet.getSheetState();
-        mBottomSheet.setSheetState(
-                hasFocus ? BottomSheet.SHEET_STATE_FULL : mStateBeforeUrlFocus, true);
+        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
     }
 
     @Override
