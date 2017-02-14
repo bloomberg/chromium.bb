@@ -951,6 +951,10 @@ window.Audit = (function () {
 
     // Start the assertion chain.
     should (actual, actualDescription) {
+      // If no argument is given, we cannot proceed. Halt.
+      if (arguments.length === 0)
+        _throwException('Task.should:: requires at least 1 argument.');
+
       return new Should(this, actual, actualDescription);
     }
 
