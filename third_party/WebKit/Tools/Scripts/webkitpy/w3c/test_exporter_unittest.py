@@ -53,13 +53,14 @@ class TestExporterTest(unittest.TestCase):
 
         def mock_command(args):
             canned_git_outputs = {
-                'show': 'newer fake text' if 'cafedad5' in args else 'older fake text',
-                'rev-list': 'facebeef\ncafedad5',
+                'show': 'newer fake text' if 'add087a97844f4b9e307d9a216940582d96db306' in args else 'older fake text',
+                'rev-list': 'c881563d734a86f7d9cd57ac509653a61c45c240\nadd087a97844f4b9e307d9a216940582d96db306',
                 'footers': 'fake-cr-position',
                 'remote': 'github',
                 'format-patch': 'fake patch',
                 'diff': 'fake patch diff',
                 'diff-tree': 'fake\n\files\nchanged',
+                'crrev-parse': 'c881563d734a86f7d9cd57ac509653a61c45c240',
             }
             return canned_git_outputs.get(args[1], '')
 

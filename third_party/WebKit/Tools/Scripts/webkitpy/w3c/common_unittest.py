@@ -18,6 +18,13 @@ def mock_command_exec(vals):
     return MockExecutive(run_command_fn=run_fn)
 
 
+def mock_command_exec_strict(vals):
+    def run_fn(args):
+        sub_command = args[1]
+        return vals[sub_command]
+    return MockExecutive(run_command_fn=run_fn)
+
+
 class MockLocalWPT(object):
 
     def test_patch(self, patch, chromium_commit):  # pylint: disable=unused-argument
@@ -30,9 +37,9 @@ class CommonTest(unittest.TestCase):
         host = MockHost()
         host.executive = mock_command_exec({
             'show': 'fake message',
-            'rev-list': 'badbeef8',
-            'rev-parse': 'badbeef8',
-            'crrev-parse': 'badbeef8',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
+            'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
+            'crrev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
             'diff': 'fake diff',
             'diff-tree': 'some\nfiles',
             'format-patch': 'hey I\'m a patch',
@@ -44,60 +51,62 @@ class CommonTest(unittest.TestCase):
         self.assertIsInstance(commits[0], ChromiumCommit)
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
-            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
+             'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
-            ['git', 'format-patch', '-1', '--stdout', 'badbeef8', '--', 'some', 'files'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']
+            ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306'],
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306']
         ])
 
     def test_ignores_commits_with_noexport_true(self):
         host = MockHost()
         host.executive = mock_command_exec({
             'show': 'Commit message\nNOEXPORT=true',
-            'rev-list': 'badbeef8',
-            'rev-parse': 'badbeef8',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
+            'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
             'footers': 'cr-rev-position',
         })
 
-        commits = exportable_commits_since('beefcafe', host, MockLocalWPT())
+        commits = exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
         self.assertEqual(commits, [])
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
-            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+            ['git', 'rev-list', 'add087a97844f4b9e307d9a216940582d96db306..HEAD', '--reverse', '--',
+             'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306']
         ])
 
     def test_ignores_reverted_commits_with_noexport_true(self):
         host = MockHost()
-        host.executive = mock_command_exec({
+        host.executive = mock_command_exec_strict({
             'show': 'Commit message\n> NOEXPORT=true',
-            'rev-list': 'badbeef8',
-            'rev-parse': 'badbeef8',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
+            'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
             'footers': 'cr-rev-position',
+            'diff-tree': '',
         })
 
-        commits = exportable_commits_since('beefcafe', host, MockLocalWPT())
+        commits = exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
         self.assertEqual(len(commits), 0)
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
-            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+            ['git', 'rev-list', 'add087a97844f4b9e307d9a216940582d96db306..HEAD', '--reverse', '--',
+             'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306']
         ])
 
     def test_ignores_commits_that_start_with_import(self):
         host = MockHost()
         host.executive = mock_command_exec({
             'show': 'Import rutabaga@deadbeef',
-            'rev-list': 'badbeef8',
-            'rev-parse': 'badbeef8',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
+            'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
             'footers': 'cr-rev-position',
         })
 
@@ -106,9 +115,9 @@ class CommonTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
-            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+             'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306'],
+            ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306'],
         ])
