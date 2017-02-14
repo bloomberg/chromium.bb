@@ -381,7 +381,7 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // m_nonInheritedData.m_explicitInheritance
 
   // unique() styles are not cacheable.
-  DCHECK(!other.m_nonInheritedData.m_unique);
+  DCHECK(!other.unique());
 
   // styles with non inherited properties that reference variables are not
   // cacheable.

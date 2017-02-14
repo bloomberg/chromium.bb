@@ -2555,11 +2555,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareNonInheritedData, m_isStackingContext, b);
   }
 
-  // A unique style is one that has matches something that makes it impossible
-  // to share.
-  bool unique() const { return m_nonInheritedData.m_unique; }
-  void setUnique() { m_nonInheritedData.m_unique = true; }
-
   float textAutosizingMultiplier() const {
     return m_styleInheritedData->textAutosizingMultiplier;
   }

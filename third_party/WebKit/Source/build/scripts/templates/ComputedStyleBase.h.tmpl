@@ -104,7 +104,11 @@ class CORE_EXPORT ComputedStyleBase {
   // {{field.property_name}}
   inline static {{field.storage_type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
   {{field.storage_type}} {{field.getter_method_name}}() const { return static_cast<{{field.storage_type}}>({{field.name}}); }
+  {% if field.is_nonproperty %}
+  void {{field.setter_method_name}}() { {{field.name}} = static_cast<unsigned>(true); }
+  {% else %}
   void {{field.setter_method_name}}({{field.storage_type}} v) { {{field.name}} = static_cast<unsigned>(v); }
+  {% endif %}
   inline void {{field.resetter_method_name}}() { {{field.name}} = {{default_value(field)}}; }
 
   {% endfor %}

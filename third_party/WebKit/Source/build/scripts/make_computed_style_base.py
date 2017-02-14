@@ -10,7 +10,15 @@ import json5_generator
 import template_expander
 import make_style_builder
 
-from name_utilities import camel_case, lower_first
+from name_utilities import camel_case, lower_first, upper_first_letter
+
+
+# Temporary hard-coded list of fields that are not CSS properties.
+# Ideally these would be specified in a .in or .json5 file.
+NONPROPERTY_FIELDS = set([
+    # Style can not be shared.
+    'unique',
+])
 
 
 class Field(object):
@@ -60,8 +68,9 @@ class Field(object):
         # Field family: one of these must be true
         self.is_property = field_family == 'property'
         self.is_inherited_flag = field_family == 'inherited_flag'
-        assert (self.is_property, self.is_inherited_flag).count(True) == 1, \
-            'Field family has to be exactly one of: property, inherited_flag'
+        self.is_nonproperty = field_family == 'nonproperty'
+        assert (self.is_property, self.is_inherited_flag, self.is_nonproperty).count(True) == 1, \
+            'Field family has to be exactly one of: property, inherited_flag, nonproperty'
 
         if self.is_property:
             self.is_inherited = kwargs.pop('inherited')
@@ -176,6 +185,28 @@ def _create_inherited_flag_field(property_):
     )
 
 
+def _create_nonproperty_field(field_name):
+    """
+    Create a nonproperty field from its name and return the Field object.
+    """
+    member_name = 'm_' + field_name
+    field_name_upper = upper_first_letter(field_name)
+
+    return Field(
+        'nonproperty',
+        name=member_name,
+        property_name=field_name,
+        storage_type='bool',
+        storage_type_path=None,
+        size=1,
+        default_value='false',
+        getter_method_name=field_name,
+        setter_method_name='set' + field_name_upper,
+        initial_method_name='initial' + field_name_upper,
+        resetter_method_name='reset' + field_name_upper,
+    )
+
+
 def _create_fields(properties):
     """
     Create ComputedStyle fields from CSS properties and return a list of Field objects.
@@ -190,6 +221,9 @@ def _create_fields(properties):
                 fields.append(_create_inherited_flag_field(property_))
 
             fields.append(_create_property_field(property_))
+
+    for field_name in NONPROPERTY_FIELDS:
+        fields.append(_create_nonproperty_field(field_name))
 
     return fields
 
