@@ -76,6 +76,11 @@ class PpdProviderTest : public ::testing::Test {
              ["printer_b_ref", "printer_b.ppd"],
              ["printer_c_ref", "printer_c.ppd"]
             ])"},
+        {"metadata/usb-031f.json",
+         R"([
+             [1592, "Some canonical reference"],
+             [6535, "Some other canonical reference"]
+            ])"},
         {"metadata/manufacturers-en.json",
          R"([
             ["manufacturer_a_en", "manufacturer_a.json"],
@@ -149,6 +154,12 @@ class PpdProviderTest : public ::testing::Test {
     captured_resolve_ppd_.push_back({code, contents});
   }
 
+  // Capture the result of a ResolveUsbIds() call.
+  void CaptureResolveUsbIds(PpdProvider::CallbackResultCode code,
+                            const std::string& contents) {
+    captured_resolve_usb_ids_.push_back({code, contents});
+  }
+
   // Discard the result of a ResolvePpd() call.
   void DiscardResolvePpd(PpdProvider::CallbackResultCode code,
                          const std::string& contents) {}
@@ -201,6 +212,9 @@ class PpdProviderTest : public ::testing::Test {
 
   std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
       captured_resolve_ppd_;
+
+  std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
+      captured_resolve_usb_ids_;
 
   std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
 
@@ -262,6 +276,46 @@ TEST_F(PpdProviderTest, LocalizationAndFallbacks) {
   RunLocalizationTest("en-gb-foo", "en-gb");
   RunLocalizationTest("es", "es-mx");
   RunLocalizationTest("bogus", "en");
+}
+
+// Test successful and unsuccessful usb resolutions.
+TEST_F(PpdProviderTest, UsbResolution) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+
+  // Should get back "Some canonical reference"
+  provider->ResolveUsbIds(0x031f, 1592,
+                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
+                                     base::Unretained(this)));
+  // Should get back "Some other canonical reference"
+  provider->ResolveUsbIds(0x031f, 6535,
+                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
+                                     base::Unretained(this)));
+
+  // Extant vendor id, nonexistant device id, should get a NOT_FOUND
+  provider->ResolveUsbIds(0x031f, 8162,
+                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
+                                     base::Unretained(this)));
+
+  // Nonexistant vendor id, should get a NOT_FOUND in the real world, but
+  // the URL interceptor we're using considers all nonexistant files to
+  // be effectively CONNECTION REFUSED, so we just check for non-success
+  // on this one.
+  provider->ResolveUsbIds(1234, 1782,
+                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
+                                     base::Unretained(this)));
+  Drain(*provider);
+
+  ASSERT_EQ(captured_resolve_usb_ids_.size(), static_cast<size_t>(4));
+  EXPECT_EQ(captured_resolve_usb_ids_[0].first, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_usb_ids_[0].second, "Some canonical reference");
+  EXPECT_EQ(captured_resolve_usb_ids_[1].first, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_usb_ids_[1].second,
+            "Some other canonical reference");
+  EXPECT_EQ(captured_resolve_usb_ids_[2].first, PpdProvider::NOT_FOUND);
+  EXPECT_EQ(captured_resolve_usb_ids_[2].second, "");
+  EXPECT_FALSE(captured_resolve_usb_ids_[3].first == PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_usb_ids_[3].second, "");
 }
 
 // For convenience a null ResolveManufacturers callback target.

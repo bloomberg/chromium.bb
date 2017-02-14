@@ -81,6 +81,12 @@ struct ManufacturerMetadata {
   std::unique_ptr<std::unordered_map<std::string, std::string>> printers;
 };
 
+// Data for an inflight USB metadata resolution.
+struct UsbDeviceId {
+  int vendor_id;
+  int device_id;
+};
+
 // A queued request to download printer information for a manufacturer.
 struct PrinterResolutionQueueEntry {
   // Localized manufacturer name
@@ -102,7 +108,8 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     FT_MANUFACTURERS,  // List of manufacturers metadata.
     FT_PRINTERS,       // List of printers from a manufacturer.
     FT_PPD_INDEX,      // Master ppd index.
-    FT_PPD             // A Ppd file.
+    FT_PPD,            // A Ppd file.
+    FT_USB_DEVICES     // USB device id to canonical name map.
   };
 
   PpdProviderImpl(
@@ -146,6 +153,12 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void MaybeStartFetch() {
     if (fetch_inflight_) {
       // We'll call this again when the outstanding fetch completes.
+      return;
+    }
+
+    if (!usb_resolution_queue_.empty()) {
+      StartFetch(GetUsbURL(usb_resolution_queue_.front().first.vendor_id),
+                 FT_USB_DEVICES);
       return;
     }
 
@@ -227,6 +240,13 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     }
   }
 
+  void ResolveUsbIds(int vendor_id,
+                     int device_id,
+                     const ResolveUsbIdsCallback& cb) override {
+    usb_resolution_queue_.push_back({{vendor_id, device_id}, cb});
+    MaybeStartFetch();
+  }
+
   bool GetPpdReference(const std::string& manufacturer,
                        const std::string& printer,
                        Printer::PpdReference* reference) const override {
@@ -287,6 +307,9 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       case FT_PPD:
         OnPpdFetchComplete();
         break;
+      case FT_USB_DEVICES:
+        OnUsbFetchComplete();
+        break;
       default:
         LOG(DFATAL) << "Unknown fetch source";
     }
@@ -298,6 +321,15 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // Return the URL used to look up the supported locales list.
   GURL GetLocalesURL() {
     return GURL(options_.ppd_server_root + "/metadata/locales.json");
+  }
+
+  GURL GetUsbURL(int vendor_id) {
+    DCHECK_GT(vendor_id, 0);
+    DCHECK_LE(vendor_id, 0xffff);
+
+    return GURL(base::StringPrintf("%s/metadata/usb-%04x.json",
+                                   options_.ppd_server_root.c_str(),
+                                   vendor_id));
   }
 
   // Return the URL used to get the index of ppd server key -> ppd.
@@ -384,7 +416,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // locale.
   void OnLocalesFetchComplete() {
     std::string contents;
-    if (!ValidateAndGetResponseAsString(&contents)) {
+    if (ValidateAndGetResponseAsString(&contents) != PpdProvider::SUCCESS) {
       FailQueuedMetadataResolutions(PpdProvider::SERVER_ERROR);
       return;
     }
@@ -527,7 +559,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void OnPpdFetchComplete() {
     DCHECK(!ppd_resolution_queue_.empty());
     std::string contents;
-    if (!ValidateAndGetResponseAsString(&contents) ||
+    if ((ValidateAndGetResponseAsString(&contents) != PpdProvider::SUCCESS) ||
         contents.size() > kMaxPpdSizeBytes) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(ppd_resolution_queue_.front().second,
@@ -535,12 +567,69 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     } else {
       ppd_cache_->Store(
           PpdReferenceToCacheKey(ppd_resolution_queue_.front().first), contents,
+
           base::Callback<void()>());
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(ppd_resolution_queue_.front().second,
                                 PpdProvider::SUCCESS, contents));
     }
     ppd_resolution_queue_.pop_front();
+  }
+
+  // Called when |fetcher_| should have just downloaded a usb device map
+  // for the vendor at the head of the |usb_resolution_queue_|.
+  void OnUsbFetchComplete() {
+    DCHECK(!usb_resolution_queue_.empty());
+    std::string contents;
+    std::string buffer;
+    PpdProvider::CallbackResultCode result =
+        ValidateAndGetResponseAsString(&buffer);
+    int desired_device_id = usb_resolution_queue_.front().first.device_id;
+    if (result == PpdProvider::SUCCESS) {
+      // Parse the JSON response.  This should be a list of the form
+      // [
+      //  [0x3141, "some canonical name"],
+      //  [0x5926, "some othercanonical name"]
+      // ]
+      // So we scan through the response looking for our desired device id.
+      auto top_list = base::ListValue::From(base::JSONReader::Read(buffer));
+
+      if (top_list.get() == nullptr) {
+        // We got something malformed back.
+        LOG(ERROR) << "Malformed top list";
+        result = PpdProvider::INTERNAL_ERROR;
+      } else {
+        // We'll set result to SUCCESS if we do find the device.
+        result = PpdProvider::NOT_FOUND;
+        for (const auto& entry : *top_list) {
+          int device_id;
+          base::ListValue* sub_list;
+
+          // Each entry should be a size-2 list with an integer and a string.
+          if (!entry->GetAsList(&sub_list) || sub_list->GetSize() != 2 ||
+              !sub_list->GetInteger(0, &device_id) ||
+              !sub_list->GetString(1, &contents) || device_id < 0 ||
+              device_id > 0xffff) {
+            // Malformed data.
+            LOG(ERROR) << "Malformed line in usb device list";
+            result = PpdProvider::INTERNAL_ERROR;
+            break;
+          }
+          if (device_id == desired_device_id) {
+            // Found it.
+            result = PpdProvider::SUCCESS;
+            break;
+          }
+        }
+      }
+    }
+    if (result != PpdProvider::SUCCESS) {
+      contents.clear();
+    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(usb_resolution_queue_.front().second, result, contents));
+    usb_resolution_queue_.pop_front();
   }
 
   // Something went wrong during metadata fetches.  Fail all queued metadata
@@ -646,13 +735,25 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // may have been done by |fetcher_|, or it may have been a file access, in
   // which case we want to look at |file_fetch_contents_|.  We distinguish
   // between the cases based on whether or not |fetcher_| is null.
-  bool ValidateAndGetResponseAsString(std::string* contents) {
-    bool ret;
+  //
+  // We return NOT_FOUND for 404 or file not found, SERVER_ERROR for other
+  // errors, SUCCESS if everything was good.
+  CallbackResultCode ValidateAndGetResponseAsString(std::string* contents) {
+    CallbackResultCode ret;
     if (fetcher_.get() != nullptr) {
-      ret =
-          ((fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS) &&
-           (fetcher_->GetResponseCode() == net::HTTP_OK) &&
-           fetcher_->GetResponseAsString(contents));
+      if (fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
+        ret = PpdProvider::SERVER_ERROR;
+      } else if (fetcher_->GetResponseCode() != net::HTTP_OK) {
+        if (fetcher_->GetResponseCode() == net::HTTP_NOT_FOUND) {
+          // A 404 means not found, everything else is a server error.
+          ret = PpdProvider::NOT_FOUND;
+        } else {
+          ret = PpdProvider::SERVER_ERROR;
+        }
+      } else {
+        fetcher_->GetResponseAsString(contents);
+        ret = PpdProvider::SUCCESS;
+      }
       fetcher_.reset();
     } else {
       // It's a file load.
@@ -661,7 +762,10 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       } else {
         contents->clear();
       }
-      ret = file_fetch_success_;
+      // A failure to load a file is always considered a NOT FOUND error (even
+      // if the underlying causes is lack of access or similar, this seems to be
+      // the best match for intent.
+      ret = file_fetch_success_ ? PpdProvider::SUCCESS : PpdProvider::NOT_FOUND;
       file_fetch_contents_.clear();
     }
     return ret;
@@ -676,8 +780,9 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       std::vector<std::pair<std::string, std::string>>* contents) {
     contents->clear();
     std::string buffer;
-    if (!ValidateAndGetResponseAsString(&buffer)) {
-      return PpdProvider::SERVER_ERROR;
+    auto tmp = ValidateAndGetResponseAsString(&buffer);
+    if (tmp != PpdProvider::SUCCESS) {
+      return tmp;
     }
     auto top_list = base::ListValue::From(base::JSONReader::Read(buffer));
 
@@ -753,6 +858,10 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // Queued ResolvePpd() requests.
   std::deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
       ppd_resolution_queue_;
+
+  // Queued ResolveUsbIds() requests.
+  std::deque<std::pair<UsbDeviceId, ResolveUsbIdsCallback>>
+      usb_resolution_queue_;
 
   // Locale we're using for grabbing stuff from the server.  Empty if we haven't
   // determined it yet.

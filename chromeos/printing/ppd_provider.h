@@ -75,6 +75,12 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   using ResolvePrintersCallback =
       base::Callback<void(CallbackResultCode, const std::vector<std::string>&)>;
 
+  // Result of a ResolveUsbIds call.  If the result code is SUCCESS, then the
+  // second argument contains the effective make and model of the printer.
+  // NOT_FOUND means we don't know about this Usb device.
+  using ResolveUsbIdsCallback =
+      base::Callback<void(CallbackResultCode, const std::string&)>;
+
   // Create and return a new PpdProvider with the given cache and options.
   // A references to |url_context_getter| is taken.
   static scoped_refptr<PpdProvider> Create(
@@ -98,6 +104,12 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePrinters(const std::string& manufacturer,
                                const ResolvePrintersCallback& cb) = 0;
+
+  // Given a usb vendor/device id, attempt to get an effective make and model
+  // string for the given printer.
+  virtual void ResolveUsbIds(int vendor_id,
+                             int device_id,
+                             const ResolveUsbIdsCallback& cb) = 0;
 
   // Given a |manufacturer| from ResolveManufacturers() and a |printer| from
   // a ResolvePrinters() call for that manufacturer, fill in |reference|
