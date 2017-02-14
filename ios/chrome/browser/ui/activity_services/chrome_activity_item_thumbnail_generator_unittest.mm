@@ -4,19 +4,22 @@
 
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/tabs/tab.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/test/ios/ui_image_test_utils.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
  protected:
   void SetUp() override {
-    tab_.reset([[OCMockObject niceMockForClass:[Tab class]] retain]);
+    tab_ = [OCMockObject niceMockForClass:[Tab class]];
 
     UIImage* snapshot = ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
         CGSizeMake(400, 300), [UIColor redColor]);
@@ -35,7 +38,7 @@ class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
   }
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<id> tab_;
+  id tab_;
 };
 
 TEST_F(ChromeActivityItemThumbnailGeneratorTest, ThumbnailForNonIncognitoTab) {

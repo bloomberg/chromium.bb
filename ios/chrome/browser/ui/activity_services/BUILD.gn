@@ -72,6 +72,7 @@ source_set("activity_services") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "activity_service_controller_unittest.mm",
