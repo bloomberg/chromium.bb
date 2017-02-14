@@ -474,11 +474,11 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     }
 
     if (index_modified) {
-      if (!index.SerializeToString(&body))
+      base::FilePath tmp_path = origin_path.AppendASCII("index.txt.tmp");
+      if (!index.SerializeToString(&body) ||
+          !WriteIndexWriteToFileInPool(tmp_path, index_path, body)) {
         return proto::CacheStorageIndex();
-      if (base::WriteFile(index_path, body.c_str(), body.size()) !=
-          base::checked_cast<int>(body.size()))
-        return proto::CacheStorageIndex();
+      }
     }
 
     return index;
