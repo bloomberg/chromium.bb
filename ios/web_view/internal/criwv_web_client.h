@@ -9,17 +9,17 @@
 #include "base/compiler_specific.h"
 #import "ios/web/public/web_client.h"
 
-@protocol CRIWVDelegate;
+@protocol CWVDelegate;
 
 namespace ios_web_view {
 class CRIWVBrowserState;
 class CRIWVWebMainParts;
 
 // CRIWV-specific implementation of WebClient.  Delegates some functionality to
-// CRIWVDelegate.
+// CWVDelegate.
 class CRIWVWebClient : public web::WebClient {
  public:
-  explicit CRIWVWebClient(id<CRIWVDelegate> delegate);
+  explicit CRIWVWebClient(id<CWVDelegate> delegate);
   ~CRIWVWebClient() override;
 
   // WebClient implementation.
@@ -34,7 +34,7 @@ class CRIWVWebClient : public web::WebClient {
 
  private:
   // This object's delegate.
-  __weak id<CRIWVDelegate> delegate_;
+  __weak id<CWVDelegate> delegate_;
 
   // The WebMainParts created by |CreateWebMainParts()|.
   CRIWVWebMainParts* web_main_parts_;

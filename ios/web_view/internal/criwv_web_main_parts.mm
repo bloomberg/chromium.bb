@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/criwv_browser_state.h"
-#import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/cwv_delegate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -19,7 +19,7 @@
 
 namespace ios_web_view {
 
-CRIWVWebMainParts::CRIWVWebMainParts(id<CRIWVDelegate> delegate) {
+CRIWVWebMainParts::CRIWVWebMainParts(id<CWVDelegate> delegate) {
   delegate_ = delegate;
 }
 

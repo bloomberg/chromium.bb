@@ -6,10 +6,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/cwv_delegate.h"
 
-// Shell-specific implementation of CRIWVDelegate.
-@interface ShellDelegate : NSObject<CRIWVDelegate>
+// Shell-specific implementation of CWVDelegate.
+@interface ShellDelegate : NSObject<CWVDelegate>
 @end
 
 #endif  // IOS_WEB_VIEW_SHELL_SHELL_DELEGATE_H_

@@ -8,7 +8,7 @@
 #include "ios/web/public/user_agent.h"
 #include "ios/web_view/internal/criwv_browser_state.h"
 #import "ios/web_view/internal/criwv_web_main_parts.h"
-#import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/cwv_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,7 +16,7 @@
 
 namespace ios_web_view {
 
-CRIWVWebClient::CRIWVWebClient(id<CRIWVDelegate> delegate)
+CRIWVWebClient::CRIWVWebClient(id<CWVDelegate> delegate)
     : delegate_(delegate), web_main_parts_(nullptr) {}
 
 CRIWVWebClient::~CRIWVWebClient() {}

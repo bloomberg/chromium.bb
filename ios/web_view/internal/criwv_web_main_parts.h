@@ -9,7 +9,7 @@
 
 #include <memory>
 
-@protocol CRIWVDelegate;
+@protocol CWVDelegate;
 
 namespace ios_web_view {
 class CRIWVBrowserState;
@@ -17,7 +17,7 @@ class CRIWVBrowserState;
 // CRIWV-specific implementation of WebMainParts.
 class CRIWVWebMainParts : public web::WebMainParts {
  public:
-  explicit CRIWVWebMainParts(id<CRIWVDelegate> delegate);
+  explicit CRIWVWebMainParts(id<CWVDelegate> delegate);
   ~CRIWVWebMainParts() override;
 
   // WebMainParts implementation.
@@ -33,7 +33,7 @@ class CRIWVWebMainParts : public web::WebMainParts {
 
  private:
   // This object's delegate.
-  __weak id<CRIWVDelegate> delegate_;
+  __weak id<CWVDelegate> delegate_;
 
   // The BrowserState for this embedder.
   std::unique_ptr<CRIWVBrowserState> browser_state_;

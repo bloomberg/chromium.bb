@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -23,7 +23,7 @@
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/translate/criwv_translate_accept_languages_factory.h"
 #import "ios/web_view/internal/translate/criwv_translate_manager_impl.h"
-#import "ios/web_view/public/criwv_translate_delegate.h"
+#import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
 
 DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::CRIWVTranslateClient);

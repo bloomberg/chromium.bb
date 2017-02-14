@@ -20,8 +20,8 @@
 #include "ios/web_view/internal/criwv_browser_state.h"
 #import "ios/web_view/internal/cwv_website_data_store_internal.h"
 #import "ios/web_view/internal/translate/criwv_translate_client.h"
-#import "ios/web_view/public/criwv_web_view_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
+#import "ios/web_view/public/cwv_web_view_delegate.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
@@ -139,13 +139,13 @@
                                        completionHandler:completionHandler];
 }
 
-- (void)setDelegate:(id<CRIWVWebViewDelegate>)delegate {
+- (void)setDelegate:(id<CWVWebViewDelegate>)delegate {
   _delegate = delegate;
 
   // Set up the translate delegate.
   ios_web_view::CRIWVTranslateClient* translateClient =
       ios_web_view::CRIWVTranslateClient::FromWebState(_webState.get());
-  id<CRIWVTranslateDelegate> translateDelegate = nil;
+  id<CWVTranslateDelegate> translateDelegate = nil;
   if ([_delegate respondsToSelector:@selector(translateDelegate)])
     translateDelegate = [_delegate translateDelegate];
   translateClient->set_translate_delegate(translateDelegate);

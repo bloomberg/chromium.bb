@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "ios/web/public/app/web_main_delegate.h"
 
-@protocol CRIWVDelegate;
+@protocol CWVDelegate;
 
 namespace ios_web_view {
 class CRIWVWebClient;
@@ -17,7 +17,7 @@ class CRIWVWebClient;
 // CRIWV-specific implementation of WebMainDelegate.
 class CRIWVWebMainDelegate : public web::WebMainDelegate {
  public:
-  explicit CRIWVWebMainDelegate(id<CRIWVDelegate> delegate);
+  explicit CRIWVWebMainDelegate(id<CWVDelegate> delegate);
   ~CRIWVWebMainDelegate() override;
 
   // WebMainDelegate implementation.
@@ -25,7 +25,7 @@ class CRIWVWebMainDelegate : public web::WebMainDelegate {
 
  private:
   // This object's delegate.
-  __weak id<CRIWVDelegate> delegate_;
+  __weak id<CWVDelegate> delegate_;
 
   // The content and web clients registered by this object.
   std::unique_ptr<CRIWVWebClient> web_client_;

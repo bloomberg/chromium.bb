@@ -172,7 +172,7 @@
   [_field setText:[[_webView visibleURL] absoluteString]];
 }
 
-#pragma mark CRIWVWebViewDelegate methods
+#pragma mark CWVWebViewDelegate methods
 
 - (void)webView:(CWVWebView*)webView
     didFinishLoadingWithURL:(NSURL*)url
@@ -197,7 +197,7 @@
   }
 }
 
-- (id<CRIWVTranslateDelegate>)translateDelegate {
+- (id<CWVTranslateDelegate>)translateDelegate {
   if (!_translateController)
     self.translateController = [[TranslateController alloc] init];
   return _translateController;

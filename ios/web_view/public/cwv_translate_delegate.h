@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_DELEGATE_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_DELEGATE_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_DELEGATE_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_DELEGATE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -18,11 +18,11 @@ typedef NS_ENUM(NSInteger, CRIWVTransateStep) {
 
 // Delegate interface for the CRIWVTranslate.  Embedders can implement the
 // functions in order to customize the behavior.
-@protocol CRIWVTranslateDelegate
+@protocol CWVTranslateDelegate
 
 - (void)translateStepChanged:(CRIWVTransateStep)step
                      manager:(id<CRIWVTranslateManager>)manager;
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_DELEGATE_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_DELEGATE_H_

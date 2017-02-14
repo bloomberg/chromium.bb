@@ -15,7 +15,7 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
-@protocol CRIWVTranslateDelegate;
+@protocol CWVTranslateDelegate;
 class PrefService;
 
 namespace translate {
@@ -37,7 +37,7 @@ class CRIWVTranslateClient
  public:
   // Sets the delegate passed by the embedder.
   // |delegate| is assumed to outlive this CRIWVTranslateClient.
-  void set_translate_delegate(id<CRIWVTranslateDelegate> delegate) {
+  void set_translate_delegate(id<CWVTranslateDelegate> delegate) {
     delegate_ = delegate;
   }
 
@@ -72,7 +72,7 @@ class CRIWVTranslateClient
   translate::IOSTranslateDriver translate_driver_;
 
   // Delegate provided by the embedder.
-  id<CRIWVTranslateDelegate> delegate_;  // Weak.
+  id<CWVTranslateDelegate> delegate_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(CRIWVTranslateClient);
 };

@@ -12,7 +12,7 @@
 #include "ios/web/public/app/web_main.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/internal/criwv_web_main_delegate.h"
-#import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/cwv_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
@@ -30,16 +30,16 @@ CRIWV* g_criwv = nil;
   std::unique_ptr<web::WebMain> _webMain;
 }
 
-@property(nonatomic, weak) id<CRIWVDelegate> delegate;
+@property(nonatomic, weak) id<CWVDelegate> delegate;
 
-- (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate;
+- (instancetype)initWithDelegate:(id<CWVDelegate>)delegate;
 @end
 
 @implementation CRIWV
 
 @synthesize delegate = _delegate;
 
-+ (void)configureWithDelegate:(id<CRIWVDelegate>)delegate {
++ (void)configureWithDelegate:(id<CWVDelegate>)delegate {
   g_criwv = [[CRIWV alloc] initWithDelegate:delegate];
 }
 
@@ -55,7 +55,7 @@ CRIWV* g_criwv = nil;
   return [[CWVWebView alloc] initWithFrame:frame configuration:configuration];
 }
 
-- (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate {
+- (instancetype)initWithDelegate:(id<CWVDelegate>)delegate {
   self = [super init];
   if (self) {
     _delegate = delegate;

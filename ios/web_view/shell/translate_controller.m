@@ -29,7 +29,7 @@
                                                   completion:nil];
 }
 
-#pragma mark CRIWVTranslateDelegate methods
+#pragma mark CWVTranslateDelegate methods
 
 - (void)translateStepChanged:(CRIWVTransateStep)step
                      manager:(id<CRIWVTranslateManager>)manager {

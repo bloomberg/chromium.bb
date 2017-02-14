@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/web_view/internal/criwv_web_client.h"
-#import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/cwv_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,7 +14,7 @@
 
 namespace ios_web_view {
 
-CRIWVWebMainDelegate::CRIWVWebMainDelegate(id<CRIWVDelegate> delegate)
+CRIWVWebMainDelegate::CRIWVWebMainDelegate(id<CWVDelegate> delegate)
     : delegate_(delegate) {}
 
 CRIWVWebMainDelegate::~CRIWVWebMainDelegate() {}

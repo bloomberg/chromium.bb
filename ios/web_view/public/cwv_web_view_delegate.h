@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_DELEGATE_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_DELEGATE_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_DELEGATE_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_DELEGATE_H_
 
 #import <Foundation/Foundation.h>
 
-@protocol CRIWVTranslateDelegate;
+@protocol CWVTranslateDelegate;
 @class CWVWebView;
 
 typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
@@ -18,7 +18,7 @@ typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
 
 // Delegate protocol for CRIWVWebViews.  Allows embedders to customize web view
 // behavior and receive updates on page load progress.
-@protocol CRIWVWebViewDelegate<NSObject>
+@protocol CWVWebViewDelegate<NSObject>
 
 @optional
 
@@ -29,8 +29,8 @@ typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
 - (void)webView:(CWVWebView*)webView
     didUpdateWithChanges:(CRIWVWebViewUpdateType)changes;
 
-- (id<CRIWVTranslateDelegate>)translateDelegate;
+- (id<CWVTranslateDelegate>)translateDelegate;
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_DELEGATE_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_DELEGATE_H_
