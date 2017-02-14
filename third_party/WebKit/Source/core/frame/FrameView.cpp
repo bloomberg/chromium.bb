@@ -1095,7 +1095,7 @@ void FrameView::performLayout(bool inSubtreeLayout) {
     if (hasOrthogonalWritingModeRoots() &&
         !RuntimeEnabledFeatures::layoutNGEnabled())
       layoutOrthogonalWritingModeRoots();
-    layoutFromRootObject(*layoutView());
+    layoutView()->layout();
   }
 
   m_frame->document()->fetcher()->updateAllImageResourcePriorities();

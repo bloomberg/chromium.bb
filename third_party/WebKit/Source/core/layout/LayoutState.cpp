@@ -38,7 +38,7 @@ LayoutState::LayoutState(LayoutView& view)
       m_flowThread(nullptr),
       m_next(nullptr),
       m_layoutObject(view) {
-  ASSERT(!view.layoutState());
+  DCHECK(!view.layoutState());
   view.pushLayoutState(*this);
 }
 
@@ -106,17 +106,14 @@ LayoutState::LayoutState(LayoutObject& root)
       m_flowThread(nullptr),
       m_next(root.view()->layoutState()),
       m_layoutObject(root) {
-  ASSERT(!m_next);
-  // We'll end up pushing in LayoutView itself, so don't bother adding it.
-  if (root.isLayoutView())
-    return;
-
+  DCHECK(!m_next);
+  DCHECK(!root.isLayoutView());
   root.view()->pushLayoutState(*this);
 }
 
 LayoutState::~LayoutState() {
   if (m_layoutObject.view()->layoutState()) {
-    ASSERT(m_layoutObject.view()->layoutState() == this);
+    DCHECK(m_layoutObject.view()->layoutState() == this);
     m_layoutObject.view()->popLayoutState();
   }
 }
