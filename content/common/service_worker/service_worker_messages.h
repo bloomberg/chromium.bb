@@ -472,12 +472,14 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
                      int /* registration_handle_id */)
 
 // Tells the child process to set the controller ServiceWorker for the given
-// provider.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetControllerServiceWorker,
+// provider. |used_features| is the set of features that the worker has used.
+// The values must be from blink::UseCounter::Feature enum.
+IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_SetControllerServiceWorker,
                      int /* thread_id */,
                      int /* provider_id */,
                      content::ServiceWorkerObjectInfo,
-                     bool /* should_notify_controllerchange */)
+                     bool /* should_notify_controllerchange */,
+                     std::set<uint32_t> /* used_features */)
 
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidEnableNavigationPreload,
                      int /* thread_id */,
@@ -508,6 +510,14 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
 // Sends MessageEvent to a client document (browser->renderer).
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_MessageToDocument,
                      ServiceWorkerMsg_MessageToDocument_Params)
+
+// Notifies a client that its controller used a feature, for UseCounter
+// purposes (browser->renderer). |feature| must be one of the values from
+// blink::UseCounter::Feature enum.
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CountFeature,
+                     int /* thread_id */,
+                     int /* provider_id */,
+                     uint32_t /* feature */)
 
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,

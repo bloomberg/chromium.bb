@@ -93,6 +93,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   void dispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
                             const WebString& message,
                             const WebMessagePortChannelArray&) override;
+  void countFeature(uint32_t feature) override;
 
   // EventTarget overrides.
   ExecutionContext* getExecutionContext() const override {

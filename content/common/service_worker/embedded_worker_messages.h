@@ -90,6 +90,12 @@ IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerStarted,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerStopped,
                      int /* embedded_worker_id */)
 
+// Renderer -> Browser message to count an API use. |feature| must be one of the
+// values from blink::UseCounter::Feature enum.
+IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_CountFeature,
+                     int64_t /* service_worker_version_id */,
+                     uint32_t /* feature */)
+
 // Renderer -> Browser message to report an exception.
 IPC_MESSAGE_CONTROL5(EmbeddedWorkerHostMsg_ReportException,
                      int /* embedded_worker_id */,

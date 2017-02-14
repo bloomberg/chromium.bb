@@ -636,6 +636,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const url::Origin kForeignFetchOrigin(GURL("https://example.com/"));
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
+  std::set<uint32_t> used_features = {124, 901, 1019};
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
@@ -673,6 +674,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       std::vector<GURL>(1, kForeignFetchScope));
   live_version->set_foreign_fetch_origins(
       std::vector<url::Origin>(1, kForeignFetchOrigin));
+  live_version->set_used_features(used_features);
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -686,6 +688,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             live_registration->resources_total_size_bytes());
   EXPECT_EQ(kResource1Size + kResource2Size,
             found_registration->resources_total_size_bytes());
+  EXPECT_EQ(used_features,
+            found_registration->waiting_version()->used_features());
   found_registration = NULL;
 
   // But FindRegistrationForPattern is always async.

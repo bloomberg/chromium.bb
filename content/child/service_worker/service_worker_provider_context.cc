@@ -187,9 +187,11 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
-    std::unique_ptr<ServiceWorkerHandleReference> controller) {
+    std::unique_ptr<ServiceWorkerHandleReference> controller,
+    const std::set<uint32_t>& used_features) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   delegate_->SetController(std::move(controller));
+  used_features_ = used_features;
 }
 
 void ServiceWorkerProviderContext::GetAssociatedRegistration(

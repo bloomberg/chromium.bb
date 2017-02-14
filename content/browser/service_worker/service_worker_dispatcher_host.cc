@@ -211,6 +211,7 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
                         OnWorkerStopped)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
                         OnReportException)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportConsoleMessage,
@@ -1482,6 +1483,16 @@ void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
   if (!registry->CanHandle(embedded_worker_id))
     return;
   registry->OnWorkerStopped(render_process_id_, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
+                                                 uint32_t feature) {
+  if (!GetContext())
+    return;
+  ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
+  if (!version)
+    return;
+  version->CountFeature(feature);
 }
 
 void ServiceWorkerDispatcherHost::OnReportException(

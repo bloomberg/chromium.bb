@@ -72,6 +72,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
             actual.resources_total_size_bytes);
   EXPECT_EQ(expected.foreign_fetch_scopes, actual.foreign_fetch_scopes);
   EXPECT_EQ(expected.foreign_fetch_origins, actual.foreign_fetch_origins);
+  EXPECT_EQ(expected.used_features, actual.used_features);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -623,6 +624,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   data.version_id = 200;
   data.resources_total_size_bytes = 10939 + 200;
   data.foreign_fetch_scopes.push_back(URL(origin, "/foo/bar"));
+  data.used_features = {124, 901, 1019};
 
   std::vector<Resource> resources;
   resources.push_back(CreateResource(1, URL(origin, "/resource1"), 10939));
@@ -762,6 +764,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.foreign_fetch_scopes.push_back(URL(origin, "/foo"));
   data.foreign_fetch_origins.push_back(
       url::Origin(GURL("https://chromium.org")));
+  data.used_features = {124, 901, 1019};
 
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, URL(origin, "/resource1"), 10));
@@ -794,6 +797,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   updated_data.foreign_fetch_scopes.clear();
   updated_data.foreign_fetch_origins.push_back(
       url::Origin(GURL("https://example.com")));
+  updated_data.used_features = {109, 421, 9101};
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));
   resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 13));

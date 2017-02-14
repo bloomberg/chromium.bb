@@ -86,9 +86,11 @@ class ServiceWorkerDispatcherTest : public testing::Test {
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info,
-                                    bool should_notify_controllerchange) {
+                                    bool should_notify_controllerchange,
+                                    const std::set<uint32_t>& used_features) {
     dispatcher_->OnSetControllerServiceWorker(thread_id, provider_id, info,
-                                              should_notify_controllerchange);
+                                              should_notify_controllerchange,
+                                              used_features);
   }
 
   void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params) {
@@ -142,6 +144,10 @@ class MockWebServiceWorkerProviderClientImpl
     is_dispatch_message_event_called_ = true;
   }
 
+  void countFeature(uint32_t feature) override {
+    used_features_.insert(feature);
+  }
+
   bool is_set_controlled_called() const { return is_set_controlled_called_; }
 
   bool is_dispatch_message_event_called() const {
@@ -153,6 +159,7 @@ class MockWebServiceWorkerProviderClientImpl
   bool is_set_controlled_called_ = false;
   bool is_dispatch_message_event_called_ = false;
   ServiceWorkerDispatcher* dispatcher_;
+  std::set<uint32_t> used_features_;
 };
 
 TEST_F(ServiceWorkerDispatcherTest, OnAssociateRegistration_NoProviderContext) {
@@ -259,7 +266,8 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   // the provider, the passed reference to the active worker should be adopted
   // but immediately released because there is no provider context to own it.
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
-                               should_notify_controllerchange);
+                               should_notify_controllerchange,
+                               std::set<uint32_t>());
   ASSERT_EQ(1UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -275,7 +283,8 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
   ipc_sink()->ClearMessages();
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
-                               should_notify_controllerchange);
+                               should_notify_controllerchange,
+                               std::set<uint32_t>());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Destruction of the provider context should release references to the
@@ -298,7 +307,8 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
   ASSERT_FALSE(provider_client->is_set_controlled_called());
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
-                               should_notify_controllerchange);
+                               should_notify_controllerchange,
+                               std::set<uint32_t>());
   EXPECT_TRUE(provider_client->is_set_controlled_called());
   ASSERT_EQ(3UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
@@ -323,7 +333,8 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   ASSERT_FALSE(provider_client->is_set_controlled_called());
   ipc_sink()->ClearMessages();
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
-                               should_notify_controllerchange);
+                               should_notify_controllerchange,
+                               std::set<uint32_t>());
   EXPECT_TRUE(provider_client->is_set_controlled_called());
   ASSERT_EQ(2UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
@@ -352,9 +363,9 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
   OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
 
   // Set the controller to kInvalidServiceWorkerHandle.
-  OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId,
-                               ServiceWorkerObjectInfo(),
-                               should_notify_controllerchange);
+  OnSetControllerServiceWorker(
+      kDocumentMainThreadId, kProviderId, ServiceWorkerObjectInfo(),
+      should_notify_controllerchange, std::set<uint32_t>());
 
   // Check that it became null.
   EXPECT_EQ(nullptr, provider_context->controller());

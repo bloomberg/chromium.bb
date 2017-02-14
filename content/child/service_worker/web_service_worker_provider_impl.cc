@@ -53,6 +53,10 @@ void WebServiceWorkerProviderImpl::setClient(
       GetDispatcher()->GetOrCreateServiceWorker(
           ServiceWorkerHandleReference::Create(context_->controller()->info(),
                                                thread_safe_sender_.get()));
+
+  // Sync the controllee's use counter with the service worker's one.
+  for (uint32_t feature : context_->used_features())
+    client->countFeature(feature);
   client->setController(WebServiceWorkerImpl::CreateHandle(controller),
                         false /* shouldNotifyControllerChange */);
 }

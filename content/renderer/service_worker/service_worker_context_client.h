@@ -123,6 +123,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void didInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void willDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void workerContextDestroyed() override;
+  void countFeature(uint32_t feature) override;
   void reportException(const blink::WebString& error_message,
                        int line_number,
                        int column_number,

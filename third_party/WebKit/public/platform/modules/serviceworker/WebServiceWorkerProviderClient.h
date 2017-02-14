@@ -55,6 +55,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerProviderClient {
       std::unique_ptr<WebServiceWorker::Handle>,
       const WebString& message,
       const WebMessagePortChannelArray& channels) = 0;
+
+  virtual void countFeature(uint32_t feature) = 0;
 };
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/id_map.h"
@@ -291,8 +292,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info,
-                                    bool should_notify_controllerchange);
+                                    bool should_notify_controllerchange,
+                                    const std::set<uint32_t>& used_features);
   void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params);
+  void OnCountFeature(int thread_id, int provider_id, uint32_t feature);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);

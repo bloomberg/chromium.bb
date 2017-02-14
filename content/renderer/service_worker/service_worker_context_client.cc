@@ -623,6 +623,11 @@ void ServiceWorkerContextClient::workerContextDestroyed() {
                  embedded_worker_id_));
 }
 
+void ServiceWorkerContextClient::countFeature(uint32_t feature) {
+  Send(new EmbeddedWorkerHostMsg_CountFeature(service_worker_version_id_,
+                                              feature));
+}
+
 void ServiceWorkerContextClient::reportException(
     const blink::WebString& error_message,
     int line_number,

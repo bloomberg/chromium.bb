@@ -156,6 +156,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void OnWorkerStarted(int embedded_worker_id);
   void OnWorkerStopped(int embedded_worker_id);
+  void OnCountFeature(int64_t version_id, uint32_t feature);
   void OnReportException(int embedded_worker_id,
                          const base::string16& error_message,
                          int line_number,

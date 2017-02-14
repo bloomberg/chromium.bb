@@ -100,6 +100,10 @@ class WebServiceWorkerContextClient {
   // Called when the worker context is initialized.
   virtual void didInitializeWorkerContext(v8::Local<v8::Context> context) {}
 
+  // Called when some API to be recorded in UseCounter is called on the worker
+  // global scope.
+  virtual void countFeature(uint32_t feature) {}
+
   // Called when the WorkerGlobalScope had an error or an exception.
   virtual void reportException(const WebString& errorMessage,
                                int lineNumber,

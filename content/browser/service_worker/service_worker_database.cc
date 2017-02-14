@@ -1291,6 +1291,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
       out->navigation_preload_state.header = state.header();
   }
 
+  for (uint32_t feature : data.used_features())
+    out->used_features.insert(feature);
+
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
@@ -1336,6 +1339,9 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
       data.mutable_navigation_preload_state();
   state->set_enabled(registration.navigation_preload_state.enabled);
   state->set_header(registration.navigation_preload_state.header);
+
+  for (uint32_t feature : registration.used_features)
+    data.add_used_features(feature);
 
   std::string value;
   bool success = data.SerializeToString(&value);

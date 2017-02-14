@@ -234,6 +234,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            const base::string16& message,
                            const std::vector<int>& sent_message_ports);
 
+  // Notifies the client that its controller used a feature, for UseCounter
+  // purposes. This can only be called if IsProviderForClient() is true.
+  void CountFeature(uint32_t feature);
+
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);

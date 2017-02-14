@@ -465,6 +465,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // for both A and B case. So the methods and attributes are available in JS.
   NavigationPreloadSupportStatus GetNavigationPreloadSupportStatus() const;
 
+  void CountFeature(uint32_t feature);
+  void set_used_features(const std::set<uint32_t>& used_features) {
+    used_features_ = used_features;
+  }
+  const std::set<uint32_t>& used_features() const { return used_features_; }
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
@@ -849,6 +855,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Keeps the first purpose of starting the worker for UMA. Cleared in
   // FinishStartWorker().
   base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
+
+  // This is the set of features that were used up until installation of this
+  // version completed, or used during the lifetime of |this|. The values must
+  // be from blink::UseCounter::Feature enum.
+  std::set<uint32_t> used_features_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

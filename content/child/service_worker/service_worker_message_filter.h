@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -61,7 +62,8 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
       int thread_id,
       int provider_id,
       const ServiceWorkerObjectInfo& info,
-      bool should_notify_controllerchange);
+      bool should_notify_controllerchange,
+      const std::set<uint32_t>& used_features);
   void OnStaleMessageToDocument(
       const ServiceWorkerMsg_MessageToDocument_Params& params);
 

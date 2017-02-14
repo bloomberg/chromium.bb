@@ -1104,6 +1104,13 @@ ServiceWorkerVersion::GetNavigationPreloadSupportStatus() const {
   return NavigationPreloadSupportStatus::NOT_SUPPORTED_FIELD_TRIAL_STOPPED;
 }
 
+void ServiceWorkerVersion::CountFeature(uint32_t feature) {
+  if (!used_features_.insert(feature).second)
+    return;
+  for (auto provider_host_by_uuid : controllee_map_)
+    provider_host_by_uuid.second->CountFeature(feature);
+}
+
 void ServiceWorkerVersion::OnSimpleEventResponse(
     int request_id,
     blink::WebServiceWorkerEventResult result,

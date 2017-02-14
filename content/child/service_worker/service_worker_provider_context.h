@@ -58,7 +58,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       std::unique_ptr<ServiceWorkerHandleReference> active);
   void OnDisassociateRegistration();
   void OnSetControllerServiceWorker(
-      std::unique_ptr<ServiceWorkerHandleReference> controller);
+      std::unique_ptr<ServiceWorkerHandleReference> controller,
+      const std::set<uint32_t>& used_features);
 
   // Called on the worker thread. Used for initializing
   // ServiceWorkerGlobalScope.
@@ -71,6 +72,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   int provider_id() const { return provider_id_; }
 
   ServiceWorkerHandleReference* controller();
+  const std::set<uint32_t>& used_features() const { return used_features_; }
 
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
@@ -90,6 +92,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   std::unique_ptr<Delegate> delegate_;
+
+  std::set<uint32_t> used_features_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
 };

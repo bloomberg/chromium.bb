@@ -417,6 +417,7 @@ void ServiceWorkerStorage::StoreRegistration(
   if (version->origin_trial_tokens())
     data.origin_trial_tokens = *version->origin_trial_tokens();
   data.navigation_preload_state = registration->navigation_preload_state();
+  data.used_features = version->used_features();
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -1324,6 +1325,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     version->set_foreign_fetch_origins(data.foreign_fetch_origins);
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
+    version->set_used_features(data.used_features);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)

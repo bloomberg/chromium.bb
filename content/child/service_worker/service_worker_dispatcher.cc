@@ -113,6 +113,7 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
                         OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -820,7 +821,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     int thread_id,
     int provider_id,
     const ServiceWorkerObjectInfo& info,
-    bool should_notify_controllerchange) {
+    bool should_notify_controllerchange,
+    const std::set<uint32_t>& used_features) {
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerDispatcher::OnSetControllerServiceWorker",
                "Thread ID", thread_id,
@@ -830,17 +832,26 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   // provider context if it exists.
   std::unique_ptr<ServiceWorkerHandleReference> handle_ref = Adopt(info);
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end())
-    provider->second->OnSetControllerServiceWorker(std::move(handle_ref));
+  if (provider != provider_contexts_.end()) {
+    provider->second->OnSetControllerServiceWorker(std::move(handle_ref),
+                                                   used_features);
+  }
 
   ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   if (found != provider_clients_.end()) {
+    // Sync the controllee's use counter with the service worker's one.
+    for (uint32_t feature : used_features)
+      found->second->countFeature(feature);
+
     // Get the existing worker object or create a new one with a new reference
     // to populate the .controller field.
     scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorker(
         ServiceWorkerHandleReference::Create(info, thread_safe_sender_.get()));
     found->second->setController(WebServiceWorkerImpl::CreateHandle(worker),
                                  should_notify_controllerchange);
+    // You must not access |found| after setController() because it may fire the
+    // controllerchange event that may remove the provider client, for example,
+    // by detaching an iframe.
   }
 }
 
@@ -873,6 +884,14 @@ void ServiceWorkerDispatcher::OnPostMessage(
   found->second->dispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker),
       blink::WebString::fromUTF16(params.message), ports);
+}
+
+void ServiceWorkerDispatcher::OnCountFeature(int thread_id,
+                                             int provider_id,
+                                             uint32_t feature) {
+  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
+  if (found != provider_clients_.end())
+    found->second->countFeature(feature);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

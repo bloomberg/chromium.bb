@@ -75,6 +75,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     std::vector<url::Origin> foreign_fetch_origins;
     base::Optional<TrialTokenValidator::FeatureToTokensMap> origin_trial_tokens;
     NavigationPreloadState navigation_preload_state;
+    std::set<uint32_t> used_features;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;
