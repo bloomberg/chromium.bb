@@ -52,8 +52,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableTranslate));
     EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_DEFAULT,
               prefs->GetInteger(prefs::kNetworkPredictionOptions));
-    EXPECT_TRUE(prefs->GetBoolean(
-        password_manager::prefs::kPasswordManagerSavingEnabled));
+    EXPECT_TRUE(
+        prefs->GetBoolean(password_manager::prefs::kCredentialsEnableService));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
@@ -72,8 +72,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableTranslate));
     EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_NEVER,
               prefs->GetInteger(prefs::kNetworkPredictionOptions));
-    EXPECT_FALSE(prefs->GetBoolean(
-        password_manager::prefs::kPasswordManagerSavingEnabled));
+    EXPECT_FALSE(
+        prefs->GetBoolean(password_manager::prefs::kCredentialsEnableService));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
@@ -123,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   prefs->SetBoolean(prefs::kEnableTranslate, false);
   prefs->SetInteger(prefs::kNetworkPredictionOptions,
                     chrome_browser_net::NETWORK_PREDICTION_NEVER);
-  prefs->SetBoolean(password_manager::prefs::kPasswordManagerSavingEnabled,
-                    false);
+  prefs->SetBoolean(password_manager::prefs::kCredentialsEnableService, false);
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
 #if BUILDFLAG(ENABLE_WEBRTC)

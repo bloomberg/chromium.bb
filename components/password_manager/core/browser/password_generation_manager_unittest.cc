@@ -113,7 +113,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     // indirectly cause those prefs to be immediately accessed.
     std::unique_ptr<TestingPrefServiceSimple> prefs(
         new TestingPrefServiceSimple());
-    prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
+    prefs->registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
                                            true);
     client_.reset(new MockPasswordManagerClient(std::move(prefs)));
   }
@@ -267,7 +267,7 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   // be disabled.
   EXPECT_CALL(*client_, IsOffTheRecord()).WillRepeatedly(testing::Return(true));
   PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
+  prefs->SetBoolean(prefs::kCredentialsEnableService, true);
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
 

@@ -372,7 +372,7 @@
     "can_be_recommended": true,
     "test_policy": { "PasswordManagerEnabled": false },
     "pref_mappings": [
-      { "pref": "profile.password_manager_enabled",
+      { "pref": "credentials_enable_service",
         "indicator_tests": [
           { "policy": { "PasswordManagerEnabled": false } }
         ]

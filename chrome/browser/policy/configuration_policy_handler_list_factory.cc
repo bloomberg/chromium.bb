@@ -143,7 +143,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kForceYouTubeRestrict,
     base::Value::Type::INTEGER},
   { key::kPasswordManagerEnabled,
-    password_manager::prefs::kPasswordManagerSavingEnabled,
+    password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
   { key::kPrintingEnabled,
     prefs::kPrintingEnabled,

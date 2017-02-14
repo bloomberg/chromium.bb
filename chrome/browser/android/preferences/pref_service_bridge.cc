@@ -239,7 +239,7 @@ static jboolean GetBlockThirdPartyCookiesManaged(
 static jboolean GetRememberPasswordsEnabled(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled);
+      password_manager::prefs::kCredentialsEnableService);
 }
 
 static jboolean GetPasswordManagerAutoSigninEnabled(
@@ -252,7 +252,7 @@ static jboolean GetPasswordManagerAutoSigninEnabled(
 static jboolean GetRememberPasswordsManaged(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kPasswordManagerSavingEnabled);
+      password_manager::prefs::kCredentialsEnableService);
 }
 
 static jboolean GetPasswordManagerAutoSigninManaged(
@@ -842,7 +842,7 @@ static void SetRememberPasswordsEnabled(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         jboolean allow) {
   GetPrefService()->SetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled, allow);
+      password_manager::prefs::kCredentialsEnableService, allow);
 }
 
 static void SetPasswordManagerAutoSigninEnabled(

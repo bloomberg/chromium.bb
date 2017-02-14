@@ -272,7 +272,7 @@ PasswordsAndFormsBrowserTest.prototype = {
           value: autofill,
         },
         {
-          key: 'profile.password_manager_enabled',
+          key: 'credentials_enable_service',
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: passwords,
         },

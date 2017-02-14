@@ -475,7 +475,7 @@ Polymer({
     // Ignore clicking on the toggle button and only expand if the manager is
     // enabled.
     if (Polymer.dom(event).localTarget != this.$.passwordToggle &&
-        this.getPref('profile.password_manager_enabled').value) {
+        this.getPref('credentials_enable_service').value) {
       settings.navigateTo(settings.Route.MANAGE_PASSWORDS);
     }
   },

@@ -289,7 +289,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   TestPasswordManagerClient()
       : driver_(new NiceMock<MockPasswordManagerDriver>) {
-    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
+    prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
                                            true);
   }
 

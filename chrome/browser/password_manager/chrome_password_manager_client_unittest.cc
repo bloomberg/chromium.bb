@@ -200,7 +200,7 @@ void ChromePasswordManagerClientTest::SetUp() {
                                        base::Unretained(&fake_agent_)));
 
   prefs_.registry()->RegisterBooleanPref(
-      password_manager::prefs::kPasswordManagerSavingEnabled, true);
+      password_manager::prefs::kCredentialsEnableService, true);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), nullptr);
 
@@ -326,10 +326,10 @@ TEST_F(ChromePasswordManagerClientTest,
   // Test that saving passwords depends on the password manager enabled
   // preference.
   ChromePasswordManagerClient* client = GetClient();
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(true));
   EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
 }
@@ -348,7 +348,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
 
   // Functionality disabled if there are SSL errors and the manager itself is
   // disabled.
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
@@ -357,7 +357,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // is disabled.
   EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
       .WillRepeatedly(Return(false));
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
@@ -366,7 +366,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // enabled.
   EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
       .WillRepeatedly(Return(false));
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(true));
   EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
@@ -378,7 +378,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
 
   // Functionality disabled in Incognito mode also when manager itself is
   // enabled.
-  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+  prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        new base::FundamentalValue(true));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
