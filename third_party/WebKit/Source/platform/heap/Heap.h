@@ -291,7 +291,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void visitPersistentRoots(Visitor*);
   void visitStackRoots(Visitor*);
   void enterSafePoint(ThreadState*);
-  void leaveSafePoint(ThreadState*, SafePointAwareMutexLocker*);
+  void leaveSafePoint();
 
   // Add a weak pointer callback to the weak callback work list.  General
   // object pointer callbacks are added to a thread local weak callback work

@@ -191,8 +191,7 @@ void ThreadHeap::detach(ThreadState* thread) {
     // thread local GC asserts. We enter a safepoint while waiting for the
     // lock to avoid a dead-lock where another thread has already requested
     // GC.
-    SafePointAwareMutexLocker locker(m_threadAttachMutex,
-                                     BlinkGC::NoHeapPointersOnStack);
+    MutexLocker locker(m_threadAttachMutex);
     thread->runTerminationGC();
     ASSERT(m_threads.contains(thread));
     m_threads.remove(thread);
@@ -577,9 +576,8 @@ void ThreadHeap::enterSafePoint(ThreadState* threadState) {
   m_safePointBarrier->enterSafePoint(threadState);
 }
 
-void ThreadHeap::leaveSafePoint(ThreadState* threadState,
-                                SafePointAwareMutexLocker* locker) {
-  m_safePointBarrier->leaveSafePoint(threadState, locker);
+void ThreadHeap::leaveSafePoint() {
+  m_safePointBarrier->leaveSafePoint();
 }
 
 BasePage* ThreadHeap::lookupPageForAddress(Address address) {

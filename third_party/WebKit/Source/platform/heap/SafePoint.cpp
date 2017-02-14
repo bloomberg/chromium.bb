@@ -24,9 +24,7 @@ void SafePointBarrier::enterSafePoint(ThreadState* state) {
   pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
 }
 
-void SafePointBarrier::leaveSafePoint(ThreadState* state,
-                                      SafePointAwareMutexLocker* locker) {
-}
+void SafePointBarrier::leaveSafePoint() {}
 
 void SafePointBarrier::doEnterSafePoint(ThreadState* state,
                                         intptr_t* stackEnd) {

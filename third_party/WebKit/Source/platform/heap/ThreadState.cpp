@@ -1220,10 +1220,10 @@ void ThreadState::enterSafePoint(BlinkGC::StackState stackState,
   m_heap->enterSafePoint(this);
 }
 
-void ThreadState::leaveSafePoint(SafePointAwareMutexLocker* locker) {
+void ThreadState::leaveSafePoint() {
   ASSERT(checkThread());
   ASSERT(m_atSafePoint);
-  m_heap->leaveSafePoint(this, locker);
+  m_heap->leaveSafePoint();
   m_atSafePoint = false;
   m_stackState = BlinkGC::HeapPointersOnStack;
   clearSafePointScopeMarker();

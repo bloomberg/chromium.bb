@@ -59,7 +59,6 @@ class GarbageCollectedMixinConstructorMarker;
 class PersistentNode;
 class PersistentRegion;
 class BaseArena;
-class SafePointAwareMutexLocker;
 class SafePointBarrier;
 class ThreadHeap;
 class ThreadState;
@@ -336,7 +335,7 @@ class PLATFORM_EXPORT ThreadState {
 
   // Mark current thread as running inside safepoint.
   void enterSafePoint(BlinkGC::StackState, void*);
-  void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
+  void leaveSafePoint();
   bool isAtSafePoint() const { return m_atSafePoint; }
 
   void addInterruptor(std::unique_ptr<BlinkGCInterruptor>);
@@ -624,7 +623,6 @@ class PLATFORM_EXPORT ThreadState {
     return m_interruptors;
   }
 
-  friend class SafePointAwareMutexLocker;
   friend class SafePointBarrier;
   friend class SafePointScope;
 

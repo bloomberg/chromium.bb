@@ -236,7 +236,7 @@ Database::Database(DatabaseContext* databaseContext,
     m_name = "";
 
   {
-    SafePointAwareMutexLocker locker(guidMutex());
+    MutexLocker locker(guidMutex());
     m_guid = guidForOriginAndName(getSecurityOrigin()->toString(), name);
     guidCount().add(m_guid);
   }
@@ -389,7 +389,7 @@ void Database::closeDatabase() {
   // See comment at the top this file regarding calling removeOpenDatabase().
   DatabaseTracker::tracker().removeOpenDatabase(this);
   {
-    SafePointAwareMutexLocker locker(guidMutex());
+    MutexLocker locker(guidMutex());
 
     ASSERT(guidCount().contains(m_guid));
     if (guidCount().remove(m_guid)) {
@@ -454,7 +454,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase,
 
   String currentVersion;
   {
-    SafePointAwareMutexLocker locker(guidMutex());
+    MutexLocker locker(guidMutex());
 
     GuidVersionMap::iterator entry = guidToVersionMap().find(m_guid);
     if (entry != guidToVersionMap().end()) {
@@ -668,13 +668,13 @@ void Database::setExpectedVersion(const String& version) {
 }
 
 String Database::getCachedVersion() const {
-  SafePointAwareMutexLocker locker(guidMutex());
+  MutexLocker locker(guidMutex());
   return guidToVersionMap().get(m_guid).isolatedCopy();
 }
 
 void Database::setCachedVersion(const String& actualVersion) {
   // Update the in memory database version map.
-  SafePointAwareMutexLocker locker(guidMutex());
+  MutexLocker locker(guidMutex());
   updateGuidVersionMap(m_guid, actualVersion);
 }
 
