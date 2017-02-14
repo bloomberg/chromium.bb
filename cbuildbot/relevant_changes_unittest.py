@@ -673,3 +673,136 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     self.assertItemsEqual(triage_changes.will_submit, set())
     self.assertItemsEqual(triage_changes.might_submit, set(self.changes))
     self.assertItemsEqual(triage_changes.will_not_submit, set())
+
+  def test_GetChangeToSlavesDict(self):
+    """Test _GetChangeToSlavesDict."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    triage_changes = self.GetTriageRelevantChanges()
+    slave_changes_dict = {
+        self.slaves[0]: set(self.changes[0:1]),
+        self.slaves[1]: set(self.changes[0:2]),
+        self.slaves[2]: set(self.changes[2:4]),
+        self.slaves[3]: set()
+    }
+    change_slaves_dict = triage_changes._GetChangeToSlavesDict(
+        slave_changes_dict)
+
+    expected_dict = {
+        self.changes[0]: set(self.slaves[0:2]),
+        self.changes[1]: set([self.slaves[1]]),
+        self.changes[2]: set([self.slaves[2]]),
+        self.changes[3]: set([self.slaves[2]])
+    }
+    self.assertDictEqual(change_slaves_dict, expected_dict)
+
+  def test_ChangeCanBeSubmittedOnStartedBuildReturnsFalse(self):
+    """_ChangeCanBeSubmitted Returns False on Started build."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.buildbucket_info_dict = {
+        self.slaves[0]: self.BuildbucketInfos.GetSuccessBuild(),
+        self.slaves[1]: self.BuildbucketInfos.GetStartedBuild()}
+    triage_changes = self.GetTriageRelevantChanges()
+    self.assertFalse(triage_changes._ChangeCanBeSubmitted(
+        self.changes[0], self.slaves[0:2], {}))
+
+  def test_ChangeCanBeSubmittedOnNotIgnorableChangeReturnsFalse(self):
+    """_ChangeCanBeSubmitted returns False for not ignorable change"""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.buildbucket_info_dict = {
+        self.slaves[0]: self.BuildbucketInfos.GetSuccessBuild(),
+        self.slaves[1]: self.BuildbucketInfos.GetFailureBuild()}
+    triage_changes = self.GetTriageRelevantChanges()
+    self.assertFalse(triage_changes._ChangeCanBeSubmitted(
+        self.changes[0], self.slaves[0:2], {}))
+
+  def test_ChangeCanBeSubmittedOnIgnorableChangeReturnsTrue(self):
+    """_CanIgnoreFailedBuildsForChange returns True for ignorable change."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.buildbucket_info_dict = {
+        self.slaves[0]: self.BuildbucketInfos.GetSuccessBuild(),
+        self.slaves[1]: self.BuildbucketInfos.GetFailureBuild()}
+    build_ignorable_changes_dict = {
+        'slave_1': set(self.changes[0:1]),
+        'slave_2': set(self.changes[1:3])
+    }
+    triage_changes = self.GetTriageRelevantChanges()
+    self.assertTrue(triage_changes._ChangeCanBeSubmitted(
+        self.changes[1], self.slaves[0:2], build_ignorable_changes_dict))
+
+  def _GetMockBuildbucketInfoForProcessMightSubmitChanges(self):
+    self.buildbucket_info_dict = {
+        self.slaves[0]: self.BuildbucketInfos.GetSuccessBuild(),
+        self.slaves[1]: self.BuildbucketInfos.GetSuccessBuild(),
+        self.slaves[2]: self.BuildbucketInfos.GetStartedBuild(),
+        self.slaves[3]: self.BuildbucketInfos.GetScheduledBuild()
+    }
+
+  def test_ProcessMightSubmitChanges(self):
+    """Test _ProcessMightSubmitChanges."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self._GetMockBuildbucketInfoForProcessMightSubmitChanges()
+    change_slaves_dict = {
+        self.changes[0]: set(self.slaves[0:2]),
+        self.changes[1]: set([self.slaves[1]]),
+        self.changes[2]: set([self.slaves[2]]),
+        self.changes[3]: set([self.slaves[2]])
+    }
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_GetChangeToSlavesDict',
+                     return_value=change_slaves_dict)
+    triage_changes = self.GetTriageRelevantChanges()
+    triage_changes._ProcessMightSubmitChanges()
+
+    self.assertSetEqual(triage_changes.will_submit, set(self.changes[0:2]))
+    self.assertSetEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertSetEqual(triage_changes.will_not_submit, set())
+
+  def test_ProcessMightSubmitChangesOnChangesWithoutRelevantSlaves(self):
+    """Test _ProcessMightSubmitChangesOnChanges without relevant slaves."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self._GetMockBuildbucketInfoForProcessMightSubmitChanges()
+    change_slaves_dict = {
+        self.changes[0]: set(self.slaves[0:4]),
+        self.changes[1]: set([self.slaves[2]]),
+        self.changes[2]: set([self.slaves[2]]),
+    }
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_GetChangeToSlavesDict',
+                     return_value=change_slaves_dict)
+    triage_changes = self.GetTriageRelevantChanges()
+    triage_changes._ProcessMightSubmitChanges()
+
+    self.assertSetEqual(triage_changes.will_submit, set([self.changes[3]]))
+    self.assertSetEqual(triage_changes.might_submit, set(self.changes[0:3]))
+    self.assertSetEqual(triage_changes.will_not_submit, set())
+
+  def testShouldWaitReturnsTrue(self):
+    """Test ShouldWait which returns True."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessCompletedBuilds')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessMightSubmitChanges')
+    triage_changes = self.GetTriageRelevantChanges()
+
+    self.assertTrue(triage_changes.ShouldWait())
+
+  def testShouldWaitReturnsFalse(self):
+    """Test ShouldWait which returns False."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessCompletedBuilds')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessMightSubmitChanges')
+    triage_changes = self.GetTriageRelevantChanges()
+    triage_changes.might_submit = set()
+
+    self.assertFalse(triage_changes.ShouldWait())

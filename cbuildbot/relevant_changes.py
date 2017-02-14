@@ -132,7 +132,7 @@ class RelevantChanges(object):
     return subsys_by_config
 
 class TriageRelevantChanges(object):
-  """Class to triage relevant changes.
+  """Class to triage relevant changes within a CQ run..
 
   This class keeps track of relevant_changes of a list slave builds of given a
   master build. With the build information fetched from Buildbucket and CIDB,
@@ -209,6 +209,10 @@ class TriageRelevantChanges(object):
     self.might_submit = set(self.changes)
     # A set of chagnes which won't be submitted by the master.
     self.will_not_submit = set()
+
+    # A dict mapping build config name to a set of changes which can ignore the
+    # failures in the build.
+    self.build_ignorable_changes_dict = {}
 
     self._UpdateSlaveInfo()
 
@@ -432,6 +436,7 @@ class TriageRelevantChanges(object):
                   build_config, self.version))
           ignorable_changes = self._GetIgnorableChanges(
               build_config, builder_status, relevant_changes)
+          self.build_ignorable_changes_dict[build_config] = ignorable_changes
           not_ignorable_changes = relevant_changes - ignorable_changes
           depend_changes = self.GetDependChanges(
               not_ignorable_changes, self.dependency_map)
@@ -445,9 +450,87 @@ class TriageRelevantChanges(object):
           # No need to process other completed builds, might_submit is empty.
           return
 
+  def _GetChangeToSlavesDict(self, slave_changes_dict):
+    """Get change to relevant slaves dict.
+
+    Args:
+      slave_changes_dict: A dict mapping all slave config names (strings) to
+        sets of changes (GerritPatch instances) which are relevant to the slave
+        builds (See return type of _GetRelevantChanges for details).
+
+    Returns:
+      A dict mapping changes (GerritPatch instances) to sets of slave config
+      names (strings) which are relevant to changes.
+    """
+    change_slaves_dict = {}
+    for slave, changes in slave_changes_dict.iteritems():
+      for change in changes:
+        change_slaves_dict.setdefault(change, set()).add(slave)
+
+    return change_slaves_dict
+
+  def _ChangeCanBeSubmitted(self, change, relevant_slave_configs,
+                            build_ignorable_changes_dict):
+    """Verify whether the change can be submitted given its relevant slaves.
+
+    A change can be submitted if it satisfies either of the conditions:
+    1) all of its relevant slaves successfully completed;
+    2) all of its relevant slaves completed, and the slaves marked as 'FAILURE'
+    either uploaded 'passed' BuilderStatus pickle to GS or only contain failures
+    which can be ignored by the change.
+
+    Args:
+      change: A change (GerritPatch instance) to check.
+      relevant_slave_configs: A list of relevant slave config names (string) of
+        this change.
+      build_ignorable_changes_dict: A dict mapping build config name (string) to
+        a set of changes (GerritPatch instances) which can ignore the failures
+        in the build.
+
+    Returns:
+      True if the change can be submitted given the statues of its relevant
+      slaves; else, False.
+    """
+    for slave_config in relevant_slave_configs:
+      bb_info = self.buildbucket_info_dict[slave_config]
+      if bb_info.status != constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED:
+        return False
+      if bb_info.result != constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS:
+        # If the build uploaded 'passed' BuilderStatus pickle or the build
+        # only contains failures which can be ignored by this change, change is
+        # in the value set for slave_config in build_ignorable_changes_dict.
+        if change not in build_ignorable_changes_dict.get(slave_config, set()):
+          return False
+
+    return True
+
   def _ProcessMightSubmitChanges(self):
-    """Process changes in might_submit set."""
-    logging.info('Processing changes might be submitted.')
+    """Process changes in might_submit set.
+
+    This method goes through all the changes in current might_submit set. For
+    each change, get a set of its relevant slaves. If all the relevant slaves
+    have completed with success, move the change to will_submit set.
+    """
+    if not self.might_submit:
+      return
+
+    logging.info('Processing changes which might be submitted.')
+    change_slaves_dict = self._GetChangeToSlavesDict(self.slave_changes_dict)
+    changes_to_submit = set()
+    for change in self.might_submit:
+      if self._ChangeCanBeSubmitted(
+          change, change_slaves_dict.get(change, set()),
+          self.build_ignorable_changes_dict):
+        changes_to_submit.add(change)
+
+    if changes_to_submit:
+      self.will_submit.update(changes_to_submit)
+      self.might_submit.difference_update(changes_to_submit)
+      logging.info('Moving %s to will_submit set, because their relevant builds'
+                   ' completed successfully or all failures are ignorable. '
+                   'will_submit now contains %d changes,',
+                   cros_patch.GetChangesAsString(changes_to_submit),
+                   len(self.will_submit))
 
   def ShouldWait(self):
     """Process builds and relevant changes, decide whether to wait on slaves.
