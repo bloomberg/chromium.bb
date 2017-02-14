@@ -32,8 +32,10 @@ AXAuraObjWrapper* AXWidgetObjWrapper::GetParent() {
 
 void AXWidgetObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
-  if (!widget_->IsVisible() || !widget_->GetRootView()->visible())
+  if (!widget_->IsVisible() || !widget_->GetRootView() ||
+      !widget_->GetRootView()->visible()) {
     return;
+  }
 
   out_children->push_back(
       AXAuraObjCache::GetInstance()->GetOrCreate(widget_->GetRootView()));

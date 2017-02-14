@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/accessibility/native_view_accessibility.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
@@ -156,6 +160,70 @@ TEST_F(NativeViewAccessibilityTest, CrashOnWidgetDestroyed) {
   child_accessible->SetParentWidget(parent_widget.get());
   parent_widget.reset();
 }
+
+#if defined(USE_AURA)
+class DerivedTestView : public View {
+ public:
+  DerivedTestView() : View() {}
+  ~DerivedTestView() override {}
+
+  void OnBlur() override { SetVisible(false); }
+};
+
+class AxTestViewsDelegate : public TestViewsDelegate {
+ public:
+  AxTestViewsDelegate() {}
+  ~AxTestViewsDelegate() override {}
+
+  void NotifyAccessibilityEvent(views::View* view,
+                                ui::AXEvent event_type) override {
+    AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
+    std::vector<AXAuraObjWrapper*> out_children;
+    AXAuraObjWrapper* ax_obj = ax->GetOrCreate(view->GetWidget());
+    ax_obj->GetChildren(&out_children);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AxTestViewsDelegate);
+};
+
+class AXViewTest : public ViewsTestBase {
+ public:
+  AXViewTest() {}
+  ~AXViewTest() override {}
+  void SetUp() override {
+    std::unique_ptr<TestViewsDelegate> views_delegate(
+        new AxTestViewsDelegate());
+    set_views_delegate(std::move(views_delegate));
+    views::ViewsTestBase::SetUp();
+  }
+};
+
+// Check if the destruction of the widget ends successfully if |view|'s
+// visibility changed during destruction.
+TEST_F(AXViewTest, LayoutCalledInvalidateRootView) {
+  std::unique_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+  widget->Show();
+
+  View* root = widget->GetRootView();
+  DerivedTestView* parent = new DerivedTestView();
+  DerivedTestView* child = new DerivedTestView();
+  root->AddChildView(parent);
+  parent->AddChildView(child);
+  child->SetFocusBehavior(DerivedTestView::FocusBehavior::ALWAYS);
+  parent->SetFocusBehavior(DerivedTestView::FocusBehavior::ALWAYS);
+  root->SetFocusBehavior(DerivedTestView::FocusBehavior::ALWAYS);
+  parent->RequestFocus();
+  // During the destruction of parent, OnBlur will be called and change the
+  // visibility to false.
+  parent->SetVisible(true);
+  AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
+  ax->GetOrCreate(widget.get());
+}
+#endif
 
 }  // namespace test
 }  // namespace views
