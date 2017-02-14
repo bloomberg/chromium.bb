@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.w3c.chromium_finder import absolute_chromium_dir, absolute_chromium_wpt_dir
 
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
@@ -35,46 +34,49 @@ class ChromiumCommit(object):
         self.sha = sha
         self.position = position
 
+        self.absolute_chromium_dir = absolute_chromium_dir(host)
+        self.absolute_chromium_wpt_dir = absolute_chromium_wpt_dir(host)
+
     def num_behind_master(self):
         """Returns the number of commits this commit is behind origin/master.
         It is inclusive of this commit and of the latest commit.
         """
         return len(self.host.executive.run_command([
             'git', 'rev-list', '{}..origin/master'.format(self.sha)
-        ], cwd=self.absolute_chromium_dir()).splitlines())
+        ], cwd=self.absolute_chromium_dir).splitlines())
 
     def position_to_sha(self, commit_position):
         return self.host.executive.run_command([
             'git', 'crrev-parse', commit_position
-        ], cwd=self.absolute_chromium_dir()).strip()
+        ], cwd=absolute_chromium_dir).strip()
 
     def subject(self):
         return self.host.executive.run_command([
             'git', 'show', '--format=%s', '--no-patch', self.sha
-        ], cwd=self.absolute_chromium_dir())
+        ], cwd=self.absolute_chromium_dir)
 
     def body(self):
         return self.host.executive.run_command([
             'git', 'show', '--format=%b', '--no-patch', self.sha
-        ], cwd=self.absolute_chromium_dir())
+        ], cwd=absolute_chromium_dir)
 
     def author(self):
         return self.host.executive.run_command([
             'git', 'show', '--format="%aN <%aE>"', '--no-patch', self.sha
-        ], cwd=self.absolute_chromium_dir())
+        ], cwd=self.absolute_chromium_dir)
 
     def message(self):
         """Returns a string with a commit's subject and body."""
         return self.host.executive.run_command([
             'git', 'show', '--format=%B', '--no-patch', self.sha
-        ], cwd=self.absolute_chromium_dir())
+        ], cwd=self.absolute_chromium_dir)
 
     def filtered_changed_files(self):
         """Makes a patch with just changes in files in the WPT dir for a given commit."""
         changed_files = self.host.executive.run_command([
             'git', 'diff-tree', '--name-only', '--no-commit-id', '-r', self.sha,
-            '--', self.absolute_chromium_wpt_dir()
-        ], cwd=self.absolute_chromium_dir()).splitlines()
+            '--', self.absolute_chromium_wpt_dir
+        ], cwd=self.absolute_chromium_dir).splitlines()
 
         blacklist = [
             'MANIFEST.json',
@@ -98,14 +100,4 @@ class ChromiumCommit(object):
 
         return self.host.executive.run_command([
             'git', 'format-patch', '-1', '--stdout', self.sha, '--'
-        ] + filtered_files, cwd=self.absolute_chromium_dir())
-
-    @memoized
-    def absolute_chromium_wpt_dir(self):
-        finder = WebKitFinder(self.host.filesystem)
-        return finder.path_from_webkit_base('LayoutTests', 'external', 'wpt')
-
-    @memoized
-    def absolute_chromium_dir(self):
-        finder = WebKitFinder(self.host.filesystem)
-        return finder.chromium_base()
+        ] + filtered_files, cwd=self.absolute_chromium_dir)

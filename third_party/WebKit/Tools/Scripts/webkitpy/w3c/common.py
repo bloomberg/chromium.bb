@@ -7,6 +7,7 @@
 import logging
 
 from webkitpy.w3c.chromium_commit import ChromiumCommit
+from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 
 
 WPT_DEST_NAME = 'wpt'
@@ -37,11 +38,15 @@ def exportable_commits_since(chromium_commit_hash, host, local_wpt):
         A list of ChromiumCommit objects for commits that are exportable after
         the given commit, in chronological order.
     """
-    chromium_repo_root = host.executive.run_command(['git', 'rev-parse', '--show-toplevel']).strip()
+    chromium_repo_root = host.executive.run_command([
+        'git', 'rev-parse', '--show-toplevel'
+    ], cwd=absolute_chromium_dir(host)).strip()
 
     wpt_path = chromium_repo_root + '/' + CHROMIUM_WPT_DIR
     commit_range = '{}..HEAD'.format(chromium_commit_hash)
-    commit_hashes = host.executive.run_command(['git', 'rev-list', commit_range, '--reverse', '--', wpt_path]).splitlines()
+    commit_hashes = host.executive.run_command([
+        'git', 'rev-list', commit_range, '--reverse', '--', wpt_path
+    ], cwd=absolute_chromium_dir(host)).splitlines()
     chromium_commits = [ChromiumCommit(host, sha=sha) for sha in commit_hashes]
     return [commit for commit in chromium_commits if is_exportable(commit, local_wpt)]
 
