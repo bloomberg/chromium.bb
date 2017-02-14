@@ -25,6 +25,9 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // TimeZoneResolver::Delegate overrides:
   bool ShouldSendWiFiGeolocationData() override;
 
+  // TimeZoneResolver::Delegate overrides:
+  bool ShouldSendCellularGeolocationData() override;
+
   // Starts or stops TimezoneResolver according to currect settings.
   void UpdateTimezoneResolver();
 
@@ -39,6 +42,8 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // Returns true if TimeZoneResolver should be running and taking in account
   // all configuration data.
   bool TimeZoneResolverShouldBeRunning();
+
+  int GetTimezoneManagementSetting();
 
   // This is non-null only after user logs in.
   PrefService* primary_user_prefs_;

@@ -50,6 +50,7 @@ options.AutomaticTimezoneDetectionType = {
   DISABLED: 1,
   IP_ONLY: 2,
   SEND_WIFI_ACCESS_POINTS: 3,
+  SEND_ALL_LOCATION_INFO: 4,
 };
 
 cr.define('options', function() {

@@ -119,9 +119,13 @@ class TimeZoneResolver::TimeZoneResolverImpl : public base::PowerObserver {
   base::WeakPtr<TimeZoneResolver::TimeZoneResolverImpl> AsWeakPtr();
 
   bool ShouldSendWiFiGeolocationData();
+  bool ShouldSendCellularGeolocationData();
 
  private:
   const TimeZoneResolver* resolver_;
+
+  // Helper to check timezone detection policy against expected value
+  bool CheckTimezoneManagementSetting(int expected_policy_value);
 
   // Returns delay to next timezone update request
   base::TimeDelta CalculateNextInterval();
@@ -186,6 +190,7 @@ void TZRequest::StartRequestOnNetworkAvailable() {
   resolver_->geolocation_provider()->RequestGeolocation(
       base::TimeDelta::FromSeconds(kRefreshTimeZoneTimeoutSeconds),
       resolver_->ShouldSendWiFiGeolocationData(),
+      resolver_->ShouldSendCellularGeolocationData(),
       base::Bind(&TZRequest::OnLocationResolved, AsWeakPtr()));
 }
 
@@ -373,6 +378,11 @@ bool TimeZoneResolver::TimeZoneResolverImpl::ShouldSendWiFiGeolocationData() {
   return resolver_->ShouldSendWiFiGeolocationData();
 }
 
+bool TimeZoneResolver::TimeZoneResolverImpl::
+    ShouldSendCellularGeolocationData() {
+  return resolver_->ShouldSendCellularGeolocationData();
+}
+
 base::WeakPtr<TimeZoneResolver::TimeZoneResolverImpl>
 TimeZoneResolver::TimeZoneResolverImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -438,6 +448,10 @@ void TimeZoneResolver::RegisterPrefs(PrefRegistrySimple* registry) {
 
 bool TimeZoneResolver::ShouldSendWiFiGeolocationData() const {
   return delegate_->ShouldSendWiFiGeolocationData();
+}
+
+bool TimeZoneResolver::ShouldSendCellularGeolocationData() const {
+  return delegate_->ShouldSendCellularGeolocationData();
 }
 
 }  // namespace chromeos

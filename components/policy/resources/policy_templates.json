@@ -8849,7 +8849,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
+        'enum': [ 0, 1, 2, 3, 4 ],
       },
       'items': [
         {
@@ -8870,7 +8870,12 @@
         {
           'name': 'TimezoneAutomaticDetectionSendWiFiAccessPoints',
           'value': 3,
-          'caption': '''Always send WiFi acess-points to server while resolving timezone.''',
+          'caption': '''Always send WiFi access-points to server while resolving timezone.''',
+        },
+        {
+          'name': 'TimezoneAutomaticDetectionSendAllLocationInfo',
+          'value': 4,
+          'caption': '''Always send any available location signals to the server while resolving timezone.''',
         },
       ],
       'supported_on': ['chrome_os:53-'],
@@ -8891,6 +8896,8 @@
       If set to TimezoneAutomaticDetectionIPOnly, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. Timezone detection will use IP-only method to resolve location.
 
       If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. The list of visible WiFi access-points will be always sent to Geolocation API server for fine-grained timezone detection.
+
+      If set to TimezoneAutomaticDetectionSendAllLocationInfo, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. Location information (such as WiFi access-points, reachable Cell Towers, GPS) will be sent to a server for fine-grained timezone detection.
 
       If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
 

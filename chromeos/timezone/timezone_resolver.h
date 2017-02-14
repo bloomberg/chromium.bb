@@ -42,6 +42,9 @@ class CHROMEOS_EXPORT TimeZoneResolver {
     // Returns true if TimeZoneResolver should include WiFi data in request.
     virtual bool ShouldSendWiFiGeolocationData() = 0;
 
+    // Returns true if TimeZoneResolver should include Cellular data in request.
+    virtual bool ShouldSendCellularGeolocationData() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
@@ -81,6 +84,9 @@ class CHROMEOS_EXPORT TimeZoneResolver {
 
   // Proxy call to Delegate::ShouldSendWiFiGeolocationData().
   bool ShouldSendWiFiGeolocationData() const;
+
+  // Proxy call to Delegate::ShouldSendCellularGeolocationData().
+  bool ShouldSendCellularGeolocationData() const;
 
   // Expose internal fuctions for testing.
   static int MaxRequestsCountForIntervalForTesting(

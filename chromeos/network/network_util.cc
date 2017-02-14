@@ -36,6 +36,12 @@ WifiAccessPoint::WifiAccessPoint(const WifiAccessPoint& other) = default;
 WifiAccessPoint::~WifiAccessPoint() {
 }
 
+CellTower::CellTower() {}
+
+CellTower::CellTower(const CellTower& other) = default;
+
+CellTower::~CellTower() {}
+
 CellularScanResult::CellularScanResult() {
 }
 

@@ -16,10 +16,15 @@
 
 namespace chromeos {
 
+namespace {
+
+constexpr const char* kDevicePropertyNames[] = {
+    shill::kGeoWifiAccessPointsProperty, shill::kGeoCellTowersProperty};
+
+}  // namespace
+
 GeolocationHandler::GeolocationHandler()
-    : wifi_enabled_(false),
-      weak_ptr_factory_(this) {
-}
+    : cellular_enabled_(false), wifi_enabled_(false), weak_ptr_factory_(this) {}
 
 GeolocationHandler::~GeolocationHandler() {
   ShillManagerClient* manager_client =
@@ -42,10 +47,10 @@ bool GeolocationHandler::GetWifiAccessPoints(
     int64_t* age_ms) {
   if (!wifi_enabled_)
     return false;
-  // Always request updated access points.
-  RequestWifiAccessPoints();
+  // Always request updated info.
+  RequestGeolocationObjects();
   // If no data has been received, return false.
-  if (geolocation_received_time_.is_null())
+  if (geolocation_received_time_.is_null() || wifi_access_points_.size() == 0)
     return false;
   if (access_points)
     *access_points = wifi_access_points_;
@@ -53,6 +58,27 @@ bool GeolocationHandler::GetWifiAccessPoints(
     base::TimeDelta dtime = base::Time::Now() - geolocation_received_time_;
     *age_ms = dtime.InMilliseconds();
   }
+  return true;
+}
+
+bool GeolocationHandler::GetNetworkInformation(
+    WifiAccessPointVector* access_points,
+    CellTowerVector* cell_towers) {
+  if (!cellular_enabled_ && !wifi_enabled_)
+    return false;
+
+  // Always request updated info.
+  RequestGeolocationObjects();
+
+  // If no data has been received, return false.
+  if (geolocation_received_time_.is_null())
+    return false;
+
+  if (cell_towers)
+    *cell_towers = cell_towers_;
+  if (access_points)
+    *access_points = wifi_access_points_;
+
   return true;
 }
 
@@ -67,7 +93,7 @@ void GeolocationHandler::OnPropertyChanged(const std::string& key,
 void GeolocationHandler::ManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   if (properties.Get(shill::kEnabledTechnologiesProperty, &value) && value)
     HandlePropertyChanged(shill::kEnabledTechnologiesProperty, *value);
 }
@@ -76,10 +102,12 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
                                                const base::Value& value) {
   if (key != shill::kEnabledTechnologiesProperty)
     return;
-  const base::ListValue* technologies = NULL;
+  const base::ListValue* technologies = nullptr;
   if (!value.GetAsList(&technologies) || !technologies)
     return;
   bool wifi_was_enabled = wifi_enabled_;
+  bool cellular_was_enabled = cellular_enabled_;
+  cellular_enabled_ = false;
   wifi_enabled_ = false;
   for (base::ListValue::const_iterator iter = technologies->begin();
        iter != technologies->end(); ++iter) {
@@ -87,14 +115,21 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
     (*iter)->GetAsString(&technology);
     if (technology == shill::kTypeWifi) {
       wifi_enabled_ = true;
-      break;
+    } else if (technology == shill::kTypeCellular) {
+      cellular_enabled_ = true;
     }
+    if (wifi_enabled_ && cellular_enabled_)
+      break;
   }
-  if (!wifi_was_enabled && wifi_enabled_)
-    RequestWifiAccessPoints();  // Request initial location data.
+
+  // Request initial location data.
+  if ((!wifi_was_enabled && wifi_enabled_) ||
+      (!cellular_was_enabled && cellular_enabled_)) {
+    RequestGeolocationObjects();
+  }
 }
 
-void GeolocationHandler::RequestWifiAccessPoints() {
+void GeolocationHandler::RequestGeolocationObjects() {
   DBusThreadManager::Get()->GetShillManagerClient()->GetNetworksForGeolocation(
       base::Bind(&GeolocationHandler::GeolocationCallback,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -108,48 +143,97 @@ void GeolocationHandler::GeolocationCallback(
     return;
   }
   wifi_access_points_.clear();
+  cell_towers_.clear();
   if (properties.empty())
     return;  // No enabled devices, don't update received time.
 
   // Dictionary<device_type, entry_list>
-  for (base::DictionaryValue::Iterator iter(properties);
-       !iter.IsAtEnd(); iter.Advance()) {
-    const base::ListValue* entry_list = NULL;
-    if (!iter.value().GetAsList(&entry_list)) {
-      LOG(WARNING) << "Geolocation dictionary value not a List: " << iter.key();
+  // Example dict returned from shill:
+  // {
+  //   kGeoWifiAccessPointsProperty: [ {kGeoMacAddressProperty: mac_value, ...},
+  //                                   ...
+  //                                 ],
+  //   kGeoCellTowersProperty: [ {kGeoCellIdProperty: cell_id_value, ...}, ... ]
+  // }
+  for (auto device_type : kDevicePropertyNames) {
+    if (!properties.HasKey(device_type)) {
       continue;
     }
+
+    const base::ListValue* entry_list = nullptr;
+    if (!properties.GetList(device_type, &entry_list)) {
+      LOG(WARNING) << "Geolocation dictionary value not a List: "
+                   << device_type;
+      continue;
+    }
+
     // List[Dictionary<key, value_str>]
     for (size_t i = 0; i < entry_list->GetSize(); ++i) {
-      const base::DictionaryValue* entry = NULL;
+      const base::DictionaryValue* entry = nullptr;
       if (!entry_list->GetDictionary(i, &entry) || !entry) {
         LOG(WARNING) << "Geolocation list value not a Dictionary: " << i;
         continue;
       }
-      // Docs: developers.google.com/maps/documentation/business/geolocation
-      WifiAccessPoint wap;
-      entry->GetString(shill::kGeoMacAddressProperty, &wap.mac_address);
-      std::string age_str;
-      if (entry->GetString(shill::kGeoAgeProperty, &age_str)) {
-        int64_t age_ms;
-        if (base::StringToInt64(age_str, &age_ms)) {
-          wap.timestamp =
-              base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
-        }
+      if (device_type == shill::kGeoWifiAccessPointsProperty) {
+        AddAccessPointFromDict(entry);
+      } else if (device_type == shill::kGeoCellTowersProperty) {
+        AddCellTowerFromDict(entry);
       }
-      std::string strength_str;
-      if (entry->GetString(shill::kGeoSignalStrengthProperty, &strength_str))
-        base::StringToInt(strength_str, &wap.signal_strength);
-      std::string signal_str;
-      if (entry->GetString(shill::kGeoSignalToNoiseRatioProperty, &signal_str))
-        base::StringToInt(signal_str, &wap.signal_to_noise);
-      std::string channel_str;
-      if (entry->GetString(shill::kGeoChannelProperty, &channel_str))
-        base::StringToInt(channel_str, &wap.channel);
-      wifi_access_points_.push_back(wap);
     }
   }
   geolocation_received_time_ = base::Time::Now();
+}
+
+void GeolocationHandler::AddAccessPointFromDict(
+    const base::DictionaryValue* entry) {
+  // Docs: developers.google.com/maps/documentation/business/geolocation
+  WifiAccessPoint wap;
+
+  std::string age_str;
+  if (entry->GetString(shill::kGeoAgeProperty, &age_str)) {
+    int64_t age_ms;
+    if (base::StringToInt64(age_str, &age_ms)) {
+      wap.timestamp =
+          base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
+    }
+  }
+  entry->GetString(shill::kGeoMacAddressProperty, &wap.mac_address);
+
+  std::string strength_str;
+  if (entry->GetString(shill::kGeoSignalStrengthProperty, &strength_str))
+    base::StringToInt(strength_str, &wap.signal_strength);
+
+  std::string signal_str;
+  if (entry->GetString(shill::kGeoSignalToNoiseRatioProperty, &signal_str)) {
+    base::StringToInt(signal_str, &wap.signal_to_noise);
+  }
+
+  std::string channel_str;
+  if (entry->GetString(shill::kGeoChannelProperty, &channel_str))
+    base::StringToInt(channel_str, &wap.channel);
+
+  wifi_access_points_.push_back(wap);
+}
+
+void GeolocationHandler::AddCellTowerFromDict(
+    const base::DictionaryValue* entry) {
+  // Docs: developers.google.com/maps/documentation/business/geolocation
+  CellTower ct;
+
+  std::string age_str;
+  if (entry->GetString(shill::kGeoAgeProperty, &age_str)) {
+    int64_t age_ms;
+    if (base::StringToInt64(age_str, &age_ms)) {
+      ct.timestamp =
+          base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
+    }
+  }
+  entry->GetString(shill::kGeoCellIdProperty, &ct.ci);
+  entry->GetString(shill::kGeoLocationAreaCodeProperty, &ct.lac);
+  entry->GetString(shill::kGeoMobileCountryCodeProperty, &ct.mcc);
+  entry->GetString(shill::kGeoMobileNetworkCodeProperty, &ct.mnc);
+
+  cell_towers_.push_back(ct);
 }
 
 }  // namespace chromeos

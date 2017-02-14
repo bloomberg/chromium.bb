@@ -43,6 +43,20 @@ struct CHROMEOS_EXPORT WifiAccessPoint {
   int channel;  // Wifi channel number.
 };
 
+// Struct for passing cellular location data
+// The age, signalStrength, and timingAdvance fields are currently unused:
+// https://developers.google.com/maps/documentation/geolocation/intro#cell_tower_object
+struct CHROMEOS_EXPORT CellTower {
+  CellTower();
+  CellTower(const CellTower& other);
+  ~CellTower();
+  std::string mcc;       // The mobile country code if available
+  std::string mnc;       // The mobile network code if available
+  std::string lac;       // The location area code if available
+  std::string ci;        // The cell id if availabe
+  base::Time timestamp;  // Timestamp when this location was detected.
+};
+
 // Struct for passing network scan result data.
 struct CHROMEOS_EXPORT CellularScanResult {
   CellularScanResult();
@@ -57,6 +71,7 @@ struct CHROMEOS_EXPORT CellularScanResult {
 };
 
 typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
+typedef std::vector<CellTower> CellTowerVector;
 
 // Describes whether there is an error and whether the error came from
 // the local system or from the server implementing the connect

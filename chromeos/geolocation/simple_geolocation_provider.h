@@ -36,10 +36,12 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
   virtual ~SimpleGeolocationProvider();
 
   // Initiates new request. If |send_wifi_access_points|, WiFi AP information
-  // will be added to the request. See SimpleGeolocationRequest for the
-  // description of the other parameters.
+  // will be added to the request, similarly for |send_cell_towers| and Cell
+  // Tower information. See SimpleGeolocationRequest for the description of
+  // the other parameters.
   void RequestGeolocation(base::TimeDelta timeout,
                           bool send_wifi_access_points,
+                          bool send_cell_towers,
                           SimpleGeolocationRequest::ResponseCallback callback);
 
   // Returns default geolocation service URL.

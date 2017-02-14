@@ -52,7 +52,8 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
                                                  channel);
         properties.SetStringWithoutPathExpansion(
             shill::kGeoSignalStrengthProperty, strength);
-        manager_test_->AddGeoNetwork(shill::kTypeWifi, properties);
+        manager_test_->AddGeoNetwork(shill::kGeoWifiAccessPointsProperty,
+                                     properties);
       }
     }
     base::RunLoop().RunUntilIdle();

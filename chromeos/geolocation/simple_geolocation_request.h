@@ -53,10 +53,12 @@ class CHROMEOS_EXPORT SimpleGeolocationRequest
   // |url| is the server address to which the request wil be sent.
   // |timeout| retry request on error until timeout.
   // If wifi_data is not null, it will be sent to the geolocation server.
+  // If cell_tower_data is not null, it will be sent to the geolocation server.
   SimpleGeolocationRequest(net::URLRequestContextGetter* url_context_getter,
                            const GURL& service_url,
                            base::TimeDelta timeout,
-                           std::unique_ptr<WifiAccessPointVector> wifi_data);
+                           std::unique_ptr<WifiAccessPointVector> wifi_data,
+                           std::unique_ptr<CellTowerVector> cell_tower_data);
 
   ~SimpleGeolocationRequest() override;
 
@@ -133,6 +135,7 @@ class CHROMEOS_EXPORT SimpleGeolocationRequest
   Geoposition position_;
 
   std::unique_ptr<WifiAccessPointVector> wifi_data_;
+  std::unique_ptr<CellTowerVector> cell_tower_data_;
 
   // Creation and destruction should happen on the same thread.
   base::ThreadChecker thread_checker_;

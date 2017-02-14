@@ -4381,6 +4381,11 @@ IN_PROC_BROWSER_TEST_F(ChromeOSPolicyTest, SystemTimezoneAutomaticDetection) {
   EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, true));
   EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
 
+  policy_value = 4 /* SEND_ALL_LOCATION_INFO */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, true));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
+
   policy_value = 1 /* DISABLED */;
   SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
   EXPECT_TRUE(CheckResolveTimezoneByGeolocation(false, true));

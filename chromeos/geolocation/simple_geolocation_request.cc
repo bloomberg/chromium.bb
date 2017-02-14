@@ -41,30 +41,38 @@ namespace chromeos {
 
 namespace {
 
-// The full request text. (no parameters are supported by now)
-const char kSimpleGeolocationRequestBody[] = "{\"considerIp\": \"true\"}";
+// Used if sending location signals (WiFi APs, cell towers, etc) is disabled.
+constexpr char kSimpleGeolocationRequestBody[] = "{\"considerIp\": \"true\"}";
 
-// Request data
-const char kConsiderIp[] = "considerIp";
-const char kWifiAccessPoints[] = "wifiAccessPoints";
-
+// Geolocation request field keys:
+// Top-level request data fields.
+constexpr char kConsiderIp[] = "considerIp";
+constexpr char kWifiAccessPoints[] = "wifiAccessPoints";
+constexpr char kCellTowers[] = "cellTowers";
+// Shared Wifi and Cell Tower objects.
+constexpr char kAge[] = "age";
+constexpr char kSignalStrength[] = "signalStrength";
 // WiFi access point objects.
-const char kMacAddress[] = "macAddress";
-const char kSignalStrength[] = "signalStrength";
-const char kAge[] = "age";
-const char kChannel[] = "channel";
-const char kSignalToNoiseRatio[] = "signalToNoiseRatio";
+constexpr char kMacAddress[] = "macAddress";
+constexpr char kChannel[] = "channel";
+constexpr char kSignalToNoiseRatio[] = "signalToNoiseRatio";
+// Cell tower objects.
+constexpr char kCellId[] = "cellId";
+constexpr char kLocationAreaCode[] = "locationAreaCode";
+constexpr char kMobileCountryCode[] = "mobileCountryCode";
+constexpr char kMobileNetworkCode[] = "mobileNetworkCode";
 
-// Response data.
-const char kLocationString[] = "location";
-const char kLatString[] = "lat";
-const char kLngString[] = "lng";
-const char kAccuracyString[] = "accuracy";
+// Geolocation response field keys:
+constexpr char kLocationString[] = "location";
+constexpr char kLatString[] = "lat";
+constexpr char kLngString[] = "lng";
+constexpr char kAccuracyString[] = "accuracy";
+
 // Error object and its contents.
-const char kErrorString[] = "error";
+constexpr char kErrorString[] = "error";
 // "errors" array in "erorr" object is ignored.
-const char kCodeString[] = "code";
-const char kMessageString[] = "message";
+constexpr char kCodeString[] = "code";
+constexpr char kMessageString[] = "message";
 
 // We are using "sparse" histograms for the number of retry attempts,
 // so we need to explicitly limit maximum value (in case something goes wrong).
@@ -291,6 +299,52 @@ bool GetGeolocationFromResponse(bool http_success,
 void ReportUmaHasWiFiAccessPoints(bool value) {
   UMA_HISTOGRAM_BOOLEAN("SimpleGeolocation.Request.HasWiFiAccessPoints", value);
 }
+void ReportUmaHasCellTowers(bool value) {
+  UMA_HISTOGRAM_BOOLEAN("SimpleGeolocation.Request.HasCellTowers", value);
+}
+
+// Helpers to reformat data into dictionaries for conversion to request JSON
+std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
+    WifiAccessPoint access_point) {
+  auto access_point_dictionary = base::MakeUnique<base::DictionaryValue>();
+
+  access_point_dictionary->SetStringWithoutPathExpansion(
+      kMacAddress, access_point.mac_address);
+  access_point_dictionary->SetIntegerWithoutPathExpansion(
+      kSignalStrength, access_point.signal_strength);
+  if (!access_point.timestamp.is_null()) {
+    access_point_dictionary->SetStringWithoutPathExpansion(
+        kAge,
+        base::Int64ToString(
+            (base::Time::Now() - access_point.timestamp).InMilliseconds()));
+  }
+
+  access_point_dictionary->SetIntegerWithoutPathExpansion(kChannel,
+                                                          access_point.channel);
+  access_point_dictionary->SetIntegerWithoutPathExpansion(
+      kSignalToNoiseRatio, access_point.signal_to_noise);
+
+  return access_point_dictionary;
+}
+
+std::unique_ptr<base::DictionaryValue> CreateCellTowerDictionary(
+    CellTower cell_tower) {
+  auto cell_tower_dictionary = base::MakeUnique<base::DictionaryValue>();
+  cell_tower_dictionary->SetStringWithoutPathExpansion(kCellId, cell_tower.ci);
+  cell_tower_dictionary->SetStringWithoutPathExpansion(kLocationAreaCode,
+                                                       cell_tower.lac);
+  cell_tower_dictionary->SetStringWithoutPathExpansion(kMobileCountryCode,
+                                                       cell_tower.mcc);
+  cell_tower_dictionary->SetStringWithoutPathExpansion(kMobileNetworkCode,
+                                                       cell_tower.mnc);
+
+  if (!cell_tower.timestamp.is_null()) {
+    cell_tower_dictionary->SetStringWithoutPathExpansion(
+        kAge, base::Int64ToString(
+                  (base::Time::Now() - cell_tower.timestamp).InMilliseconds()));
+  }
+  return cell_tower_dictionary;
+}
 
 }  // namespace
 
@@ -298,7 +352,8 @@ SimpleGeolocationRequest::SimpleGeolocationRequest(
     net::URLRequestContextGetter* url_context_getter,
     const GURL& service_url,
     base::TimeDelta timeout,
-    std::unique_ptr<WifiAccessPointVector> wifi_data)
+    std::unique_ptr<WifiAccessPointVector> wifi_data,
+    std::unique_ptr<CellTowerVector> cell_tower_data)
     : url_context_getter_(url_context_getter),
       service_url_(service_url),
       retry_sleep_on_server_error_(base::TimeDelta::FromSeconds(
@@ -307,7 +362,8 @@ SimpleGeolocationRequest::SimpleGeolocationRequest(
           kResolveGeolocationRetrySleepBadResponseSeconds)),
       timeout_(timeout),
       retries_(0),
-      wifi_data_(wifi_data.release()) {}
+      wifi_data_(wifi_data.release()),
+      cell_tower_data_(cell_tower_data.release()) {}
 
 SimpleGeolocationRequest::~SimpleGeolocationRequest() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -323,44 +379,51 @@ SimpleGeolocationRequest::~SimpleGeolocationRequest() {
 }
 
 std::string SimpleGeolocationRequest::FormatRequestBody() const {
-  if (!wifi_data_) {
+  if (!wifi_data_)
     ReportUmaHasWiFiAccessPoints(false);
+
+  if (!cell_tower_data_)
+    ReportUmaHasCellTowers(false);
+
+  if (!cell_tower_data_ && !wifi_data_)
     return std::string(kSimpleGeolocationRequestBody);
-  }
 
   std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue);
   request->SetBooleanWithoutPathExpansion(kConsiderIp, true);
 
-  base::ListValue* wifi_access_points(new base::ListValue);
-  request->SetWithoutPathExpansion(kWifiAccessPoints, wifi_access_points);
-
-  for (const WifiAccessPoint& access_point : *wifi_data_) {
-    auto access_point_dictionary = base::MakeUnique<base::DictionaryValue>();
-
-    access_point_dictionary->SetStringWithoutPathExpansion(
-        kMacAddress, access_point.mac_address);
-    access_point_dictionary->SetIntegerWithoutPathExpansion(
-        kSignalStrength, access_point.signal_strength);
-    if (!access_point.timestamp.is_null()) {
-      access_point_dictionary->SetStringWithoutPathExpansion(
-          kAge,
-          base::Int64ToString(
-              (base::Time::Now() - access_point.timestamp).InMilliseconds()));
+  if (wifi_data_) {
+    auto wifi_access_points = base::MakeUnique<base::ListValue>();
+    for (const WifiAccessPoint& access_point : *wifi_data_) {
+      wifi_access_points->Append(CreateAccessPointDictionary(access_point));
     }
-
-    access_point_dictionary->SetIntegerWithoutPathExpansion(
-        kChannel, access_point.channel);
-    access_point_dictionary->SetIntegerWithoutPathExpansion(
-        kSignalToNoiseRatio, access_point.signal_to_noise);
-
-    wifi_access_points->Append(std::move(access_point_dictionary));
+    request->SetWithoutPathExpansion(kWifiAccessPoints,
+                                     std::move(wifi_access_points));
   }
+
+  if (cell_tower_data_) {
+    auto cell_towers = base::MakeUnique<base::ListValue>();
+    for (const CellTower& cell_tower : *cell_tower_data_) {
+      cell_towers->Append(CreateCellTowerDictionary(cell_tower));
+    }
+    request->SetWithoutPathExpansion(kCellTowers, std::move(cell_towers));
+  }
+
   std::string result;
   if (!base::JSONWriter::Write(*request, &result)) {
-    ReportUmaHasWiFiAccessPoints(false);
+    // If there's no data for a network type, we will have already reported
+    // false above
+    if (wifi_data_)
+      ReportUmaHasWiFiAccessPoints(false);
+    if (cell_tower_data_)
+      ReportUmaHasCellTowers(false);
+
     return std::string(kSimpleGeolocationRequestBody);
   }
-  ReportUmaHasWiFiAccessPoints(wifi_data_->size());
+
+  if (wifi_data_)
+    ReportUmaHasWiFiAccessPoints(wifi_data_->size());
+  if (cell_tower_data_)
+    ReportUmaHasCellTowers(cell_tower_data_->size());
 
   return result;
 }
