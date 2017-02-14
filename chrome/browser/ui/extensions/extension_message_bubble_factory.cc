@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/feature_switch.h"
 
@@ -83,6 +84,14 @@ bool EnableProxyOverrideBubble() {
 bool EnableDevModeBubble() {
   if (extensions::FeatureSwitch::force_dev_mode_highlighting()->IsEnabled())
     return true;
+
+  // If an automated test is controlling the browser, we don't show the dev mode
+  // bubble because it interferes with focus. This isn't a security concern
+  // because we'll instead show an (even scarier) infobar. See also
+  // AutomationInfoBarDelegate.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableAutomation))
+    return false;
 
 #if defined(OS_WIN)
   if (chrome::GetChannel() >= version_info::Channel::BETA)

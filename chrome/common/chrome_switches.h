@@ -102,6 +102,7 @@ extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAddToShelf[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
+extern const char kEnableAutomation[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableClearBrowsingDataCounters[];

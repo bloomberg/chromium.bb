@@ -304,6 +304,9 @@ const char kEnableAddToShelf[] = "enable-add-to-shelf";
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";
 
+// Inform users that their browser is being controlled by an automated test.
+const char kEnableAutomation[] = "enable-automation";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

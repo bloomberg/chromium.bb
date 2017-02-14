@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/session_crashed_bubble.h"
+#include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
@@ -816,11 +817,19 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 #endif
   }
 
+  if (command_line_.HasSwitch(switches::kEnableAutomation))
+    AutomationInfoBarDelegate::Create();
+
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,
   // so we cannot add the info bars to the focused tabs here.
+  //
+  // These info bars are not shown when the browser is being controlled by
+  // automated tests, so that they don't interfere with tests that assume no
+  // info bars.
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP &&
-      !command_line_.HasSwitch(switches::kTestType)) {
+      !command_line_.HasSwitch(switches::kTestType) &&
+      !command_line_.HasSwitch(switches::kEnableAutomation)) {
     chrome::ShowBadFlagsPrompt(browser);
     GoogleApiKeysInfoBarDelegate::Create(InfoBarService::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents()));

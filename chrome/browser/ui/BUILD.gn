@@ -814,6 +814,8 @@ split_static_library("ui") {
       "signin_view_controller_delegate.h",
       "singleton_tabs.cc",
       "singleton_tabs.h",
+      "startup/automation_infobar_delegate.cc",
+      "startup/automation_infobar_delegate.h",
       "startup/bad_flags_prompt.cc",
       "startup/bad_flags_prompt.h",
       "startup/google_api_keys_infobar_delegate.cc",
