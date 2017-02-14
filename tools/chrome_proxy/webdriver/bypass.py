@@ -37,6 +37,25 @@ class Bypass(IntegrationTest):
       for response in t.GetHTTPResponses():
         self.assertNotHasChromeProxyViaHeader(response)
 
+  # Ensure Chrome does not use Data Saver for HTTPS requests.
+  def testHttpsBypass(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+
+      # Load HTTP page and check that Data Saver is used.
+      t.LoadURL('http://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
+      self.assertEqual(2, len(responses))
+      for response in t.GetHTTPResponses():
+        self.assertHasChromeProxyViaHeader(response)
+
+      # Load HTTPS page and check that Data Saver is not used.
+      t.LoadURL('https://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
+      self.assertEqual(2, len(responses))
+      for response in t.GetHTTPResponses():
+        self.assertNotHasChromeProxyViaHeader(response)
+
   # Verify that CORS requests receive a block-once from the data reduction
   # proxy by checking that those requests are retried without data reduction
   # proxy.
