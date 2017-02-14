@@ -329,8 +329,7 @@ var blacklistTile = function(tile) {
  */
 var isSchemeAllowed = function(url) {
   return url.startsWith('http://') || url.startsWith('https://') ||
-         url.startsWith('ftp://') || url.startsWith('file://') ||
-         url.startsWith('chrome-extension://');
+         url.startsWith('ftp://') || url.startsWith('chrome-extension://');
 };
 
 
@@ -424,43 +423,50 @@ var renderTile = function(data) {
   //   - null: waiting for load/error
   //   - false: error
   //   - a string: URL that loaded correctly.
-  // This is populated by acceptImage/rejectImage and loadBestImage
-  // decides the best one to load.
+  // This is populated by imageLoaded/imageLoadFailed, and selectBestImage
+  // selects the best one to display.
   var results = [];
   var thumb = tile.querySelector('.mv-thumb');
   var img = document.createElement('img');
   var loaded = false;
 
-  var loadBestImage = function() {
+  var selectBestImage = function() {
     if (loaded) {
       return;
     }
+    // |results| is ordered from best candidate to worst.
     for (var i = 0; i < results.length; ++i) {
       if (results[i] === null) {
+        // A better candidate is still waiting to be loaded; defer.
         return;
       }
       if (results[i] != false) {
+        // This is the best (non-failed) candidate. Use it!
         img.src = results[i];
         loaded = true;
         return;
       }
     }
+    // If we get here, then all candidates failed to load.
     thumb.classList.add('failed-img');
     thumb.removeChild(img);
+    // Usually we count the load once the img element gets either a 'load' or
+    // an 'error' event. Since we have removed the img element, instead count
+    // the load here.
     countLoad();
   };
 
-  var acceptImage = function(idx, url) {
+  var imageLoaded = function(idx, url) {
     return function(ev) {
       results[idx] = url;
-      loadBestImage();
+      selectBestImage();
     };
   };
 
-  var rejectImage = function(idx) {
+  var imageLoadFailed = function(idx) {
     return function(ev) {
       results[idx] = false;
-      loadBestImage();
+      selectBestImage();
     };
   };
 
@@ -487,10 +493,10 @@ var renderTile = function(data) {
       if (data.thumbnailUrls[i]) {
         var image = new Image();
         image.src = data.thumbnailUrls[i];
-        image.onload = acceptImage(i, data.thumbnailUrls[i]);
-        image.onerror = rejectImage(i);
+        image.onload = imageLoaded(i, data.thumbnailUrls[i]);
+        image.onerror = imageLoadFailed(i);
       } else {
-        rejectImage(i)(null);
+        imageLoadFailed(i)(/*ev=*/null);
       }
     }
   }
@@ -525,10 +531,13 @@ var renderTile = function(data) {
 
 
 /**
- * Do some initialization and parses the query arguments passed to the iframe.
+ * Does some initialization and parses the query arguments passed to the iframe.
  */
 var init = function() {
-  // Creates a new DOM element to hold the tiles.
+  // Create a new DOM element to hold the tiles. The tiles will be added
+  // one-by-one via addTile, and the whole thing will be inserted into the page
+  // in showTiles, after the parent has sent us the 'show' message, and all
+  // thumbnails and favicons have loaded.
   tiles = document.createElement('div');
 
   // Parse query arguments.
