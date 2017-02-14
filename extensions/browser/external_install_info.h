@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_EXTERNAL_INSTALL_INFO_H_
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_vector.h"
 #include "extensions/common/manifest.h"
 
 class GURL;

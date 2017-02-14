@@ -13,7 +13,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
@@ -113,7 +112,8 @@ class SpellcheckService : public KeyedService,
   void LoadHunspellDictionaries();
 
   // Returns the instance of the vector of Hunspell dictionaries.
-  const ScopedVector<SpellcheckHunspellDictionary>& GetHunspellDictionaries();
+  const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
+  GetHunspellDictionaries();
 
   // Returns the instance of the spelling service feedback sender.
   spellcheck::FeedbackSender* GetFeedbackSender();
@@ -185,7 +185,8 @@ class SpellcheckService : public KeyedService,
 
   std::unique_ptr<SpellcheckCustomDictionary> custom_dictionary_;
 
-  ScopedVector<SpellcheckHunspellDictionary> hunspell_dictionaries_;
+  std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>
+      hunspell_dictionaries_;
 
   std::unique_ptr<spellcheck::FeedbackSender> feedback_sender_;
 

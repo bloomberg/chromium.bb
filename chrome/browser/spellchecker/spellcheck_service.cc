@@ -188,7 +188,7 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   std::vector<SpellCheckBDictLanguage> bdict_languages;
 
-  for (const auto* hunspell_dictionary : hunspell_dictionaries_) {
+  for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
     bdict_languages.push_back(SpellCheckBDictLanguage());
     bdict_languages.back().language = hunspell_dictionary->GetLanguage();
     bdict_languages.back().file =
@@ -228,17 +228,18 @@ void SpellcheckService::LoadHunspellDictionaries() {
   for (const auto& dictionary_value : *dictionary_values) {
     std::string dictionary;
     dictionary_value->GetAsString(&dictionary);
-    hunspell_dictionaries_.push_back(new SpellcheckHunspellDictionary(
-        dictionary,
-        content::BrowserContext::GetDefaultStoragePartition(context_)->
-            GetURLRequestContext(),
-        this));
+    hunspell_dictionaries_.push_back(
+        base::MakeUnique<SpellcheckHunspellDictionary>(
+            dictionary,
+            content::BrowserContext::GetDefaultStoragePartition(context_)
+                ->GetURLRequestContext(),
+            this));
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }
 }
 
-const ScopedVector<SpellcheckHunspellDictionary>&
+const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
 SpellcheckService::GetHunspellDictionaries() {
   return hunspell_dictionaries_;
 }

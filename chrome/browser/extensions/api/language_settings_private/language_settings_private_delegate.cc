@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -179,9 +178,9 @@ void LanguageSettingsPrivateDelegate::RefreshDictionaries(
   if (!custom_dictionary_)
     custom_dictionary_ = service->GetCustomDictionary();
 
-  const ScopedVector<SpellcheckHunspellDictionary>& dictionaries(
-      service->GetHunspellDictionaries());
-  for (auto* dictionary : dictionaries) {
+  const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
+      dictionaries(service->GetHunspellDictionaries());
+  for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(dictionary->AsWeakPtr());
     if (should_listen)
       dictionary->AddObserver(this);
