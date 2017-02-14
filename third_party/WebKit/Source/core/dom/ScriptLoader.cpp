@@ -323,6 +323,28 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
       return false;
   }
 
+  // 22. "If the element does not have a src content attribute,
+  //      run these substeps:"
+
+  // 22.1. "Let source text be the value of the text IDL attribute."
+  // This step is done later:
+  // - in ScriptLoader::pendingScript() (Step 23, 6th Clause),
+  //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
+  // - in HTMLParserScriptRunner::processScriptElementInternal()
+  //   (Duplicated code of Step 23, 6th Clause),
+  //   as Element::textContent(),
+  // - in XMLDocumentParser::endElementNs() (Step 23, 5th Clause),
+  //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
+  // - PendingScript::getSource() (Indirectly used via
+  //   HTMLParserScriptRunner::processScriptElementInternal(),
+  //   Step 23, 5th Clause),
+  //   as Element::textContent().
+  // TODO(hiroshige): Make them merged or consistent.
+
+  // 22.2. "Switch on the script's type:"
+  // TODO(hiroshige): Clarify how Step 22.2 is implemented for "classic".
+  // TODO(hiroshige): Implement Step 22.2 for "module".
+
   // [Intervention]
   // Since the asynchronous, low priority fetch for doc.written blocked
   // script is not for execution, return early from here. Watch for its
@@ -468,6 +490,9 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Merge the duplicated code.
 
+  // This clause is executed only if the script's type is "classic"
+  // and the element doesn't have a src attribute.
+
   // Reset line numbering for nested writes.
   TextPosition position = elementDocument.isInDocumentWrite()
                               ? TextPosition()
@@ -475,6 +500,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted)
                        ? elementDocument.url()
                        : KURL();
+
   if (!executeScript(ScriptSourceCode(scriptContent(), scriptURL, position))) {
     dispatchErrorEvent();
     return false;
@@ -494,26 +520,47 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
     return false;
 
   DCHECK(!m_resource);
+  // 21. "If the element has a src content attribute, run these substeps:"
   if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
+    // 21.4. "Parse src relative to the element's node document."
     FetchRequest request(
         ResourceRequest(elementDocument->completeURL(sourceUrl)),
         m_element->localName());
 
+    // 15. "Let CORS setting be the current state of the element's
+    //      crossorigin content attribute."
     CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
         m_element->fastGetAttribute(HTMLNames::crossoriginAttr));
+
+    // 16. "Let module script credentials mode be determined by switching
+    //      on CORS setting:"
+    // TODO(hiroshige): Implement this step for "module".
+
+    // 21.6, "classic": "Fetch a classic script given ... CORS setting
+    //                   ... and encoding."
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(elementDocument->getSecurityOrigin(),
                                           crossOrigin);
+
     request.setCharset(encoding);
 
+    // 17. "If the script element has a nonce attribute,
+    //      then let cryptographic nonce be that attribute's value.
+    //      Otherwise, let cryptographic nonce be the empty string."
     if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
       request.setContentSecurityPolicyNonce(client()->nonce());
 
+    // 19. "Let parser state be "parser-inserted"
+    //      if the script element has been flagged as "parser-inserted",
+    //      and "not parser-inserted" otherwise."
     request.setParserDisposition(isParserInserted() ? ParserInserted
                                                     : NotParserInserted);
 
     request.setDefer(defer);
 
+    // 18. "If the script element has an integrity attribute,
+    //      then let integrity metadata be that attribute's value.
+    //      Otherwise, let integrity metadata be the empty string."
     String integrityAttr =
         m_element->fastGetAttribute(HTMLNames::integrityAttr);
     if (!integrityAttr.isEmpty()) {
@@ -523,6 +570,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
       request.setIntegrityMetadata(metadataSet);
     }
 
+    // [Intervention]
     if (m_documentWriteIntervention ==
         DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
       request.mutableResourceRequest().setHTTPHeaderField(
@@ -530,16 +578,43 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
           "<https://www.chromestatus.com/feature/5718547946799104>");
     }
 
+    // 21.6. "Switch on the script's type:"
+
+    // - "classic":
+    //   "Fetch a classic script given url, settings, cryptographic nonce,
+    //    integrity metadata, parser state, CORS setting, and encoding."
     m_resource = ScriptResource::fetch(request, elementDocument->fetcher());
 
+    // - "module":
+    //   "Fetch a module script graph given url, settings, "script",
+    //    cryptographic nonce, parser state, and
+    //    module script credentials mode."
+    // TODO(kouhei, hiroshige): Implement this.
+
+    // "When the chosen algorithm asynchronously completes, set
+    //  the script's script to the result. At that time, the script is ready."
+    // When the script is ready, PendingScriptClient::pendingScriptFinished()
+    // is used as the notification, and the action to take when
+    // the script is ready is specified later, in
+    // - ScriptLoader::prepareScript(), or
+    // - HTMLParserScriptRunner,
+    // depending on the conditions in Step 23 of "prepare a script".
+
+    // 21.3. "Set the element's from an external file flag."
     m_isExternalScript = true;
   }
 
   if (!m_resource) {
+    // 21.2. "If src is the empty string, queue a task to
+    //        fire an event named error at the element, and abort these steps."
+    // 21.5. "If the previous step failed, queue a task to
+    //        fire an event named error at the element, and abort these steps."
+    // TODO(hiroshige): Make this asynchronous.
     dispatchErrorEvent();
     return false;
   }
 
+  // [Intervention]
   if (m_createdDuringDocumentWrite &&
       m_resource->resourceRequest().getCachePolicy() ==
           WebCachePolicy::ReturnCacheDataDontLoad) {
