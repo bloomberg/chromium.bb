@@ -102,11 +102,41 @@ TEST_F(VideoFrameProviderClientImplTest, StartStopRendering) {
   StopRendering();
 }
 
+TEST_F(VideoFrameProviderClientImplTest, StopRenderingUpdateDamage) {
+  CreateActiveVideoLayer();
+  StartRendering();
+  EXPECT_EQ(gfx::Rect(), video_layer_impl_->update_rect());
+  StopRendering();
+  EXPECT_NE(gfx::Rect(), video_layer_impl_->update_rect());
+}
+
 TEST_F(VideoFrameProviderClientImplTest, StopUsingProvider) {
   ASSERT_TRUE(client_impl_->get_provider_for_testing());
   StartRendering();
   EXPECT_CALL(*this, RemoveVideoFrameController(_));
   client_impl_->StopUsingProvider();
+  ASSERT_FALSE(client_impl_->get_provider_for_testing());
+}
+
+TEST_F(VideoFrameProviderClientImplTest, StopUsingProviderUpdateDamage) {
+  CreateActiveVideoLayer();
+  ASSERT_TRUE(client_impl_->get_provider_for_testing());
+  StartRendering();
+  EXPECT_CALL(*this, RemoveVideoFrameController(_));
+  EXPECT_EQ(gfx::Rect(), video_layer_impl_->update_rect());
+  client_impl_->StopUsingProvider();
+  EXPECT_NE(gfx::Rect(), video_layer_impl_->update_rect());
+  ASSERT_FALSE(client_impl_->get_provider_for_testing());
+}
+
+TEST_F(VideoFrameProviderClientImplTest, StopNotUpdateDamage) {
+  CreateActiveVideoLayer();
+  ASSERT_TRUE(client_impl_->get_provider_for_testing());
+  StartRendering();
+  EXPECT_CALL(*this, RemoveVideoFrameController(_));
+  EXPECT_EQ(gfx::Rect(), video_layer_impl_->update_rect());
+  client_impl_->Stop();
+  EXPECT_EQ(gfx::Rect(), video_layer_impl_->update_rect());
   ASSERT_FALSE(client_impl_->get_provider_for_testing());
 }
 
