@@ -87,13 +87,14 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-#if defined(OS_IOS) || defined(OS_LINUX)
+#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow
 #endif
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
+// Crashes on Windows Dbg builds, disable there as well.
 // Disabled on Linux because failing Linux Valgrind bot, and Valgrind exclusions
 // are not currently read. See http://crbug.com/582398
 TEST(SecurityTest, MAYBE_NewOverflow) {
@@ -101,15 +102,16 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
   // We want something "dynamic" here, so that the compiler doesn't
   // immediately reject crazy arrays.
   const size_t kDynamicArraySize = HideValueFromCompiler(kArraySize);
-  const size_t kMaxSizeT = std::numeric_limits<size_t>::max();
+  // numeric_limits are still not constexpr until we switch to C++11, so we
+  // use an ugly cast.
+  const size_t kMaxSizeT = ~static_cast<size_t>(0);
+  ASSERT_EQ(numeric_limits<size_t>::max(), kMaxSizeT);
   const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
   const size_t kDynamicArraySize2 = HideValueFromCompiler(kArraySize2);
   {
     std::unique_ptr<char[][kArraySize]> array_pointer(
         new (nothrow) char[kDynamicArraySize2][kArraySize]);
-    // Prevent clang from optimizing away the whole test.
-    char* volatile p = reinterpret_cast<char*>(array_pointer.get());
-    OverflowTestsSoftExpectTrue(!p);
+    OverflowTestsSoftExpectTrue(!array_pointer);
   }
   // On windows, the compiler prevents static array sizes of more than
   // 0x7fffffff (error C2148).
@@ -119,9 +121,7 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
   {
     std::unique_ptr<char[][kArraySize2]> array_pointer(
         new (nothrow) char[kDynamicArraySize][kArraySize2]);
-    // Prevent clang from optimizing away the whole test.
-    char* volatile p = reinterpret_cast<char*>(array_pointer.get());
-    OverflowTestsSoftExpectTrue(!p);
+    OverflowTestsSoftExpectTrue(!array_pointer);
   }
 #endif  // !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
 }
