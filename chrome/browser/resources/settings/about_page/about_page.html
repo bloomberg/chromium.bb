@@ -91,12 +91,13 @@
               <span class="product-title">$i18n{aboutProductTitle}</span>
             </div>
             <div class="settings-box two-line">
+              <!-- TODO(dpapad): Investigate why vulcanize does not handle well
+                a new line after "getIconSrc_(", causes incorrect src URL -->
               <iron-icon
                   hidden="[[!showUpdateStatus_]]"
                   icon$="[[getIcon_(
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
-                  src="[[getIconSrc_(
-                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
+                  src="[[getIconSrc_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
               <div class="start">
                 <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]"

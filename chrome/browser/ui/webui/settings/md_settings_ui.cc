@@ -190,14 +190,20 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
+#if BUILDFLAG(USE_VULCANIZE)
+  html_source->AddResourcePath("crisper.js", IDR_MD_SETTINGS_CRISPER_JS);
+  html_source->SetDefaultResource(IDR_MD_SETTINGS_VULCANIZED_HTML);
+  html_source->UseGzip(std::unordered_set<std::string>());
+#else
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {
     html_source->AddResourcePath(kSettingsResources[i].name,
                                  kSettingsResources[i].value);
   }
+  html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
+#endif
 
   AddLocalizedStrings(html_source, profile);
-  html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);
