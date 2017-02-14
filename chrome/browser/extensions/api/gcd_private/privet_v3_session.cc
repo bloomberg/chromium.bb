@@ -19,6 +19,7 @@
 #include "crypto/p224_spake.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -171,7 +172,8 @@ net::URLFetcher* PrivetV3Session::FetcherDelegate::CreateURLFetcher(
     bool orphaned) {
   DCHECK(!url_fetcher_);
   DCHECK(session_);
-  url_fetcher_ = net::URLFetcher::Create(url, request_type, this);
+  url_fetcher_ = net::URLFetcher::Create(url, request_type, this,
+                                         NO_TRAFFIC_ANNOTATION_YET);
   auto timeout_task =
       orphaned ? base::Bind(&FetcherDelegate::OnTimeout, base::Owned(this))
                : base::Bind(&FetcherDelegate::OnTimeout,

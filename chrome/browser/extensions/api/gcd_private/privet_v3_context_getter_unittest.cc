@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +63,8 @@ class PrivetV3ContextGetterTest : public testing::Test,
     quit_ = run_loop.QuitClosure();
 
     fetcher_ = net::URLFetcher::Create(server_->GetURL("/simple.html"),
-                                       net::URLFetcher::GET, this);
+                                       net::URLFetcher::GET, this,
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
     fetcher_->SetRequestContext(context_getter_.get());
     fetcher_->Start();
 
