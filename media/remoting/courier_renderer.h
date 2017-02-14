@@ -136,7 +136,8 @@ class CourierRenderer : public Renderer {
 
   // Called to pass the newly-rendered interstitial VideoFrame to the
   // VideoRendererSink.
-  void PaintInterstitial(scoped_refptr<VideoFrame> frame);
+  void PaintInterstitial(scoped_refptr<VideoFrame> frame,
+                         InterstitialType type);
 
   // Called when |current_media_time_| is updated.
   void OnMediaTimeUpdated();
@@ -224,6 +225,9 @@ class CourierRenderer : public Renderer {
   // A timer that polls the DemuxerStreamAdapters periodically to measure
   // the data flow rates for metrics.
   base::RepeatingTimer data_flow_poll_timer_;
+
+  // Current type of the interstitial frame.
+  InterstitialType interstitial_type_ = InterstitialType::BETWEEN_SESSIONS;
 
   base::WeakPtrFactory<CourierRenderer> weak_factory_;
 

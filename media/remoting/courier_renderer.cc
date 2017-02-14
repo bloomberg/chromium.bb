@@ -102,6 +102,14 @@ CourierRenderer::~CourierRenderer() {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RpcBroker::UnregisterMessageReceiverCallback,
                             rpc_broker_, rpc_handle_));
+
+  // If the "between sessions" interstitial is not the one currently showing,
+  // paint a blank black frame to clear remoting messaging.
+  if (interstitial_type_ != InterstitialType::BETWEEN_SESSIONS) {
+    scoped_refptr<VideoFrame> frame =
+        VideoFrame::CreateBlackFrame(gfx::Size(1280, 720));
+    PaintInterstitial(frame, InterstitialType::BETWEEN_SESSIONS);
+  }
 }
 
 void CourierRenderer::Initialize(MediaResource* media_resource,
@@ -699,12 +707,14 @@ void CourierRenderer::RenderInterstitialAndShow(
     return;
   }
   media_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&CourierRenderer::PaintInterstitial, self, std::move(frame)));
+      FROM_HERE, base::Bind(&CourierRenderer::PaintInterstitial, self,
+                            std::move(frame), type));
 }
 
-void CourierRenderer::PaintInterstitial(scoped_refptr<VideoFrame> frame) {
+void CourierRenderer::PaintInterstitial(scoped_refptr<VideoFrame> frame,
+                                        InterstitialType type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  interstitial_type_ = type;
   if (!video_renderer_sink_)
     return;
   video_renderer_sink_->PaintSingleFrame(frame);
