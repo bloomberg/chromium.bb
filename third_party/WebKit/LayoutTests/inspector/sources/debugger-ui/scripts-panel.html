@@ -81,7 +81,7 @@ function test()
             var sourcesNavigatorView = createNavigatorView();
 
             var uiSourceCode = addNetworkFile("foo.js");
-            InspectorTest.waitForUISourceCode(onUISourceCode);
+            InspectorTest.waitForUISourceCode().then(onUISourceCode);
             InspectorTest.evaluateInPage("function foo() {}");
 
             function onUISourceCode(debuggerUISourceCode)

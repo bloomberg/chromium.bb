@@ -24,7 +24,7 @@ function test()
     const sourceURL = "http://127.0.0.1:8000/inspector/resources/example.scss";
     var styleSheetId;
 
-    InspectorTest.waitForUISourceCode(cssUISourceCodeAdded, styleSheetURL);
+    InspectorTest.waitForUISourceCode(styleSheetURL).then(cssUISourceCodeAdded);
     InspectorTest.evaluateInPage("addStyleSheet()");
 
     function locationsUpdated()
@@ -42,7 +42,7 @@ function test()
         styleSheetId = cssModel.styleSheetIdsForURL(styleSheetURL)[0];
         InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.TargetInfo.prototype, "_updateLocations", locationsUpdated, true);
         InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.url());
-        InspectorTest.waitForUISourceCode(scssUISourceCodeAdded, sourceURL);
+        InspectorTest.waitForUISourceCode(sourceURL).then(scssUISourceCodeAdded);
     }
 
     function rawLocationToUILocation(line, column)

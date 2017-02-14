@@ -21,8 +21,6 @@ Location checks passed. Requesting content
 
 Running: testSourceMapCouldNotBeLoaded
 Adding compiled.js
-compiled.js UISourceCode arrived
-compiled.js script found
-source-map.json_ UISourceCode arrived
+SourceMap Failed to load.
 debugger:///VM
 

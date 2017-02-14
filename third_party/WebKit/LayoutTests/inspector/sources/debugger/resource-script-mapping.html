@@ -30,7 +30,7 @@ function test()
         if (!--count) {
             InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptParsed);
             InspectorTest.addResult("Waiting for UISourceCode");
-            InspectorTest.waitForUISourceCode(onUISourceCode, url);
+            InspectorTest.waitForUISourceCode(url).then(onUISourceCode);
         }
     }
 

@@ -61,7 +61,7 @@ function test()
         function testDocumentResource(next)
         {
             InspectorTest.addResult("Creating resource.");
-            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "resources/syntax-error.html");
+            InspectorTest.waitForUISourceCode("resources/syntax-error.html").then(uiSourceCodeAdded);
             InspectorTest.evaluateInPage("addIframe()");
 
             function uiSourceCodeAdded(uiSourceCode)
@@ -74,7 +74,7 @@ function test()
         {
             InspectorTest.addResult("Creating script.");
             InspectorTest.evaluateInPage("var foo=1;\n//# sourceURL=foo.js\n");
-            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "foo.js");
+            InspectorTest.waitForUISourceCode("foo.js").then(uiSourceCodeAdded);
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -86,7 +86,7 @@ function test()
         {
             InspectorTest.addResult("Creating script resource.");
             InspectorTest.evaluateInPage("addScript()");
-            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "script1.js");
+            InspectorTest.waitForUISourceCode("script1.js").then(uiSourceCodeAdded);
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -96,7 +96,7 @@ function test()
 
         function testRemoveStyleSheetFromModel(next)
         {
-            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "style1.css");
+            InspectorTest.waitForUISourceCode("style1.css").then(uiSourceCodeAdded);
             InspectorTest.addResult("Creating stylesheet resource.");
             InspectorTest.evaluateInPage(`addStyleSheet()`);
 

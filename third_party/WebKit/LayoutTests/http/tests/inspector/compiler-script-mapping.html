@@ -29,7 +29,7 @@ function test()
             var debuggerModel = InspectorTest.debuggerModel;
 
             InspectorTest.addResult("Adding compiled.js");
-            InspectorTest.waitForUISourceCode(originalUISourceCodeAdded, "resources/compiled.js");
+            InspectorTest.waitForUISourceCode("resources/compiled.js").then(originalUISourceCodeAdded);
             InspectorTest.evaluateInPage("addScript('resources/compiled.js')");
 
             function originalUISourceCodeAdded(uiSourceCode)
@@ -42,13 +42,13 @@ function test()
                         script = s;
                     }
                 }
-                InspectorTest.waitForUISourceCode(firstUISourceCodeAdded, "source1.js");
+                InspectorTest.waitForUISourceCode("source1.js").then(firstUISourceCodeAdded);
             }
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
                 InspectorTest.addResult("source1.js UISourceCode arrived");
-                InspectorTest.waitForUISourceCode(secondUISourceCodeAdded, "source2.js");
+                InspectorTest.waitForUISourceCode("source2.js").then(secondUISourceCodeAdded);
             }
 
             function secondUISourceCodeAdded(uiSourceCode)
@@ -97,7 +97,7 @@ function test()
             var scriptSource = "\n//# sourceMappingURL=" + sourceMapURL + "\n";
 
             InspectorTest.addResult("Adding compiled.js");
-            InspectorTest.waitForUISourceCode(compiledUISourceCodeAdded);
+            InspectorTest.waitForUISourceCode().then(compiledUISourceCodeAdded);
             InspectorTest.evaluateInPage(scriptSource);
 
             var target = InspectorTest.mainTarget;
@@ -113,7 +113,7 @@ function test()
                         script = s;
                     }
                 }
-                InspectorTest.waitForUISourceCode(originalUISourceCodeAdded, "source3.js");
+                InspectorTest.waitForUISourceCode("source3.js").then(originalUISourceCodeAdded);
             }
 
             function originalUISourceCodeAdded(uiSourceCode)
@@ -136,31 +136,16 @@ function test()
         function testSourceMapCouldNotBeLoaded(next)
         {
             InspectorTest.addResult("Adding compiled.js");
-            InspectorTest.waitForUISourceCode(compiledUISourceCodeAdded);
             InspectorTest.evaluateInPage("\n//# sourceMappingURL=http://127.0.0.1:8000/inspector/resources/source-map.json_\n");
+            InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapLoaded", onSourceMapLoaded);
 
-            var script;
-            var consoleError = console.error;
-            console.error = function() {}; // Error message is platform dependent.
-
-            function compiledUISourceCodeAdded(uiSourceCode)
+            function onSourceMapLoaded(script, uiSourceCodePath, sourceMap)
             {
-                InspectorTest.addResult("compiled.js UISourceCode arrived");
-                for (var s of Object.values(InspectorTest.debuggerModel.scripts)) {
-                    if (s.sourceMapURL === "http://127.0.0.1:8000/inspector/resources/source-map.json_") {
-                        InspectorTest.addResult("compiled.js script found");
-                        script = s;
-                    }
-                }
-                InspectorTest.waitForUISourceCode(sourceMapUISourceCodeAdded, undefined, Workspace.projectTypes.Service);
-            }
-
-            function sourceMapUISourceCodeAdded()
-            {
-                InspectorTest.addResult("source-map.json_ UISourceCode arrived");
+                if (script.sourceMapURL !== "http://127.0.0.1:8000/inspector/resources/source-map.json_")
+                    return;
+                InspectorTest.addResult("SourceMap Failed to load.");
                 var location = uiLocation(script, 0, 0);
                 InspectorTest.addResult(location.uiSourceCode.url().replace(/VM\d+/g, "VM"));
-                console.error = consoleError;
                 next();
             }
         }

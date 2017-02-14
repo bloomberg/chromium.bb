@@ -11,7 +11,11 @@ function test()
 {
     UI.viewManager.showView("sources.search");
     var scope = new Sources.SourcesSearchScope();
-    InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
+    Promise.all([
+        InspectorTest.waitForUISourceCode("search.html"),
+        InspectorTest.waitForUISourceCode("search.js"),
+        InspectorTest.waitForUISourceCode("search.css"),
+    ]).then(step2);
 
     function step2()
     {

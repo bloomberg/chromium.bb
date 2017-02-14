@@ -74,7 +74,7 @@ function test()
     InspectorTest.waitUntilMessageReceived(waitForUISourceCode);
     function waitForUISourceCode()
     {
-        InspectorTest.waitForUISourceCode(dumpMessages, "stack-with-sourceMap.coffee");
+        InspectorTest.waitForUISourceCode("stack-with-sourceMap.coffee").then(dumpMessages);
     }
 
     function dumpMessages()
