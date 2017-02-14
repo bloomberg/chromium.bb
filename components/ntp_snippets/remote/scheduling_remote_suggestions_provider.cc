@@ -25,6 +25,14 @@ namespace ntp_snippets {
 
 namespace {
 
+// The FetchingInterval enum specifies overlapping time intervals that are used
+// for scheduling the next remote suggestion fetch. Therefore a timer is created
+// for each interval. Initially all the timers are started at the same time.
+// Fetches are
+// only performed when certain conditions associated with the intervals are
+// met. If a fetch failed, then only the corresponding timer is reset. The
+// other timers are not touched.
+// TODO(markusheintz): Describe the individual intervals.
 enum class FetchingInterval {
   PERSISTENT_FALLBACK,
   PERSISTENT_WIFI,
@@ -32,13 +40,19 @@ enum class FetchingInterval {
   COUNT
 };
 
-// Default values for fetching intervals, fallback and wifi.
-const double kDefaultFetchingIntervalRareNtpUser[] = {48.0, 24.0, 12.0};
-const double kDefaultFetchingIntervalActiveNtpUser[] = {24.0, 6.0, 2.0};
-const double kDefaultFetchingIntervalActiveSuggestionsConsumer[] = {24.0, 6.0,
-                                                                    2.0};
+// The following arrays specify default values for remote suggestions fetch
+// intervals corresponding to individual user classes. The user classes are
+// defined by the user classifier. There must be an array for each user class.
+// The values of each array specify a default time interval for the intervals
+// defined by the enum FetchingInterval. The default time intervals defined in
+// the arrays can be overridden using different variation parameters.
+const double kDefaultFetchingIntervalHoursRareNtpUser[] = {48.0, 24.0, 12.0};
+const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {24.0, 6.0, 2.0};
+const double kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[] = {
+    24.0, 6.0, 2.0};
 
-// Variation parameters than can the default fetching intervals.
+// Variation parameters than can be used to override the default fetching
+// intervals.
 const char* kFetchingIntervalParamNameRareNtpUser[] = {
     "fetching_interval_hours-fallback-rare_ntp_user",
     "fetching_interval_hours-wifi-rare_ntp_user",
@@ -54,11 +68,11 @@ const char* kFetchingIntervalParamNameActiveSuggestionsConsumer[] = {
 
 static_assert(
     static_cast<unsigned int>(FetchingInterval::COUNT) ==
-            arraysize(kDefaultFetchingIntervalRareNtpUser) &&
+            arraysize(kDefaultFetchingIntervalHoursRareNtpUser) &&
         static_cast<unsigned int>(FetchingInterval::COUNT) ==
-            arraysize(kDefaultFetchingIntervalActiveNtpUser) &&
+            arraysize(kDefaultFetchingIntervalHoursActiveNtpUser) &&
         static_cast<unsigned int>(FetchingInterval::COUNT) ==
-            arraysize(kDefaultFetchingIntervalActiveSuggestionsConsumer) &&
+            arraysize(kDefaultFetchingIntervalHoursActiveSuggestionsConsumer) &&
         static_cast<unsigned int>(FetchingInterval::COUNT) ==
             arraysize(kFetchingIntervalParamNameRareNtpUser) &&
         static_cast<unsigned int>(FetchingInterval::COUNT) ==
@@ -74,6 +88,8 @@ const char* kTriggerTypeNames[] = {"persistent_scheduler_wake_up", "ntp_opened",
 const char* kTriggerTypesParamName = "scheduler_trigger_types";
 const char* kTriggerTypesParamValueForEmptyList = "-";
 
+// Returns the time interval to use for scheduling remote suggestion fetches for
+// the given provider state (|interval|) and user_class.
 base::TimeDelta GetDesiredFetchingInterval(
     FetchingInterval interval,
     UserClassifier::UserClass user_class) {
@@ -81,21 +97,23 @@ base::TimeDelta GetDesiredFetchingInterval(
 
   DCHECK(interval != FetchingInterval::COUNT);
   const unsigned int index = static_cast<unsigned int>(interval);
-  DCHECK(index < arraysize(kDefaultFetchingIntervalRareNtpUser));
+  DCHECK(index < arraysize(kDefaultFetchingIntervalHoursRareNtpUser));
 
   const char* param_name = nullptr;
+  // TODO(markusheintz): Figure out whether the switch statment should contain a
+  // default branch with a DCHECK.
   switch (user_class) {
     case UserClassifier::UserClass::RARE_NTP_USER:
-      default_value_hours = kDefaultFetchingIntervalRareNtpUser[index];
+      default_value_hours = kDefaultFetchingIntervalHoursRareNtpUser[index];
       param_name = kFetchingIntervalParamNameRareNtpUser[index];
       break;
     case UserClassifier::UserClass::ACTIVE_NTP_USER:
-      default_value_hours = kDefaultFetchingIntervalActiveNtpUser[index];
+      default_value_hours = kDefaultFetchingIntervalHoursActiveNtpUser[index];
       param_name = kFetchingIntervalParamNameActiveNtpUser[index];
       break;
     case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
       default_value_hours =
-          kDefaultFetchingIntervalActiveSuggestionsConsumer[index];
+          kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[index];
       param_name = kFetchingIntervalParamNameActiveSuggestionsConsumer[index];
       break;
   }
@@ -134,9 +152,11 @@ bool SchedulingRemoteSuggestionsProvider::FetchingSchedule::is_empty() const {
          interval_soft_on_usage_event.is_zero();
 }
 
-// These values are written to logs. New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused. When adding new
-// entries, also update the array |kTriggerTypeNames| above.
+// The TriggerType enum specifies values for the events that can trigger
+// fetching remote suggestions. These values are written to logs. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused. When adding new entries, also update the array
+// |kTriggerTypeNames| above.
 enum class SchedulingRemoteSuggestionsProvider::TriggerType {
   PERSISTENT_SCHEDULER_WAKE_UP = 0,
   NTP_OPENED = 1,
