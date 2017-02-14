@@ -27,6 +27,7 @@ static_library("tether") {
   deps = [
     "//base",
     "//chromeos",
+    "//chromeos/components/tether/proto",
     "//components/cryptauth",
     "//components/proximity_auth/logging",
     "//device/bluetooth",
@@ -72,6 +73,7 @@ source_set("unit_tests") {
     ":tether",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos/components/tether/proto",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
     "//device/bluetooth",
