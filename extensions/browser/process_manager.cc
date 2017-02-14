@@ -472,7 +472,7 @@ const Extension* ProcessManager::GetExtensionForWebContents(
 
 int ProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
-    return 0;
+    return -1;
 
   return background_page_data_[extension->id()].lazy_keepalive_count;
 }

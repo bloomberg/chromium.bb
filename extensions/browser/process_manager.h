@@ -117,6 +117,7 @@ class ProcessManager : public KeyedService,
   // the count of how many outstanding "things" are keeping the page alive.
   // When this reaches 0, we will begin the process of shutting down the page.
   // "Things" include pending events, resource loads, and API calls.
+  // Returns -1 if |extension| does not have a lazy background page.
   int GetLazyKeepaliveCount(const Extension* extension);
   void IncrementLazyKeepaliveCount(const Extension* extension);
   void DecrementLazyKeepaliveCount(const Extension* extension);
