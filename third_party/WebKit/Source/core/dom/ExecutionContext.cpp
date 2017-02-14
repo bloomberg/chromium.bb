@@ -98,7 +98,10 @@ bool ExecutionContext::shouldSanitizeScriptError(
     AccessControlStatus corsStatus) {
   if (corsStatus == OpaqueResource)
     return true;
-  return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) ||
+  const KURL& url = completeURL(sourceURL);
+  if (url.protocolIsData())
+    return false;
+  return !(getSecurityOrigin()->canRequestNoSuborigin(url) ||
            corsStatus == SharableCrossOrigin);
 }
 
