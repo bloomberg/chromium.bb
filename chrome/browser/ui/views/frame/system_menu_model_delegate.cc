@@ -45,13 +45,18 @@ bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
   if (command_id != IDC_RESTORE_TAB)
     return true;
 
+  sessions::TabRestoreService* trs =
+      TabRestoreServiceFactory::GetForProfile(browser_->profile());
+
+  // The Service is not available in Guest Profiles or Incognito mode.
+  if (!trs)
+    return false;
+
   // chrome::IsCommandEnabled(IDC_RESTORE_TAB) returns true if TabRestoreService
   // hasn't been loaded yet. Return false if this is the case as we don't have
   // a good way to dynamically update the menu when TabRestoreService finishes
   // loading.
   // TODO(sky): add a way to update menu.
-  sessions::TabRestoreService* trs =
-      TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (!trs->IsLoaded()) {
     trs->LoadTabsFromLastSession();
     return false;
@@ -77,8 +82,9 @@ base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
   if (IsCommandIdEnabled(command_id)) {
     sessions::TabRestoreService* trs =
         TabRestoreServiceFactory::GetForProfile(browser_->profile());
+    DCHECK(trs);
     trs->LoadTabsFromLastSession();
-    if (trs && !trs->entries().empty() &&
+    if (!trs->entries().empty() &&
         trs->entries().front()->type == sessions::TabRestoreService::WINDOW)
       string_id = IDS_RESTORE_WINDOW;
   }
