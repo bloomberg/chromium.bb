@@ -34,7 +34,7 @@ void SyntheticGestureTargetAndroid::TouchSetPointer(
 
 void SyntheticGestureTargetAndroid::TouchSetScrollDeltas(
     JNIEnv* env, int x, int y, int dx, int dy) {
-  TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchSetPointer");
+  TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchSetScrollDeltas");
   Java_MotionEventSynthesizer_setScrollDeltas(env, touch_event_synthesizer_, x,
                                               y, dx, dy);
 }
