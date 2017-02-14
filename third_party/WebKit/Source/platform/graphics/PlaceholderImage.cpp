@@ -43,7 +43,8 @@ sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame(
 
   m_imageForCurrentFrame = SkImage::MakeFromPicture(
       ToSkPicture(builder.endRecording()),
-      SkISize::Make(m_size.width(), m_size.height()), nullptr, nullptr);
+      SkISize::Make(m_size.width(), m_size.height()), nullptr, nullptr,
+      SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 
   return m_imageForCurrentFrame;
 }

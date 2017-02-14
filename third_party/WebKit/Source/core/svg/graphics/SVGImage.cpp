@@ -346,7 +346,7 @@ sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(
   return SkImage::MakeFromPicture(
       ToSkPicture(recorder.finishRecordingAsPicture()),
       SkISize::Make(containerSize.width(), containerSize.height()), nullptr,
-      nullptr);
+      nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 }
 
 static bool drawNeedsLayer(const PaintFlags& flags) {
