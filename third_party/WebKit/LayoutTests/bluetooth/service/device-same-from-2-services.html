@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('TwoHeartRateServicesAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryServices('heart_rate'))
+    .then(services => {
+      assert_equals(services[0].device, services[1].device);
+    });
+}, "Same parent device returned from multiple services.");
+</script>

@@ -9,10 +9,9 @@
 [
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTDescriptor  {
-
-    readonly attribute BluetoothRemoteGATTCharacteristic characteristic;
-    readonly attribute UUID                              uuid;
-    readonly attribute DataView?                         value;
-    [CallWith=ScriptState] Promise<DataView>             readValue();
-    [CallWith=ScriptState] Promise<void>                 writeValue(BufferSource value);
+    [SameObject] readonly attribute BluetoothRemoteGATTCharacteristic characteristic;
+    readonly attribute UUID uuid;
+    readonly attribute DataView? value;
+    [CallWith=ScriptState] Promise<DataView> readValue();
+    [CallWith=ScriptState] Promise<void> writeValue(BufferSource value);
 };

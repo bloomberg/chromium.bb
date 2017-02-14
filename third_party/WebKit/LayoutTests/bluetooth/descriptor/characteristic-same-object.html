@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['health_thermometer']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
+    .then(service => service.getCharacteristic('measurement_interval'))
+    .then(characteristic => characteristic.getDescriptor('gatt.characteristic_user_description'))
+    .then(descriptor => {
+      assert_equals(descriptor.characteristic, descriptor.characteristic);
+    });
+}, "[SameObject] test for BluetoothRemoteGATTDescriptor's characteristic.");
+</script>

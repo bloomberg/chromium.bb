@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => service.getCharacteristic('body_sensor_location'))
+    .then(characteristic => {
+      assert_equals(characteristic.service, characteristic.service);
+    });
+}, "[SameObject] test for BluetoothRemoteGATTCharacteristic's service.");
+</script>

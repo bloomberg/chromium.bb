@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => {
+      return Promise.all([service.getCharacteristic('body_sensor_location'),
+                          service.getCharacteristic('heart_rate_measurement')]);
+    }).then(characteristics => {
+      assert_equals(characteristics[0].service, characteristics[1].service);
+    });
+}, "Same parent service returned from multiple characteristics.");
+</script>
