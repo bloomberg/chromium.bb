@@ -258,6 +258,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_AAA
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_SCALARMUL
+#define SK_SUPPORT_LEGACY_SCALARMUL
+#endif
+
 // ===== End Chrome-specific definitions =====
 
 #endif
