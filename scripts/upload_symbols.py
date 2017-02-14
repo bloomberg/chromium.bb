@@ -79,7 +79,7 @@ STAGING_UPLOAD_URL = 'http://clients2.google.com/cr/staging_symbol'
 
 
 # The crash server rejects files that are this big.
-CRASH_SERVER_FILE_LIMIT = 500 * 1024 * 1024
+CRASH_SERVER_FILE_LIMIT = 700 * 1024 * 1024
 # Give ourselves a little breathing room from what the server expects.
 DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
 

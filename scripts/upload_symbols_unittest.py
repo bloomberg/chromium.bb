@@ -526,7 +526,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
 
     # Timeout for 300M file.
     large = self.createSymbolFile('large.sym', size=(300 * 1024 * 1024))
-    self.assertEqual(upload_symbols.GetUploadTimeout(large), 1080)
+    self.assertEqual(upload_symbols.GetUploadTimeout(large), 771)
 
   def testUploadSymbolFile(self):
     upload_symbols.UploadSymbolFile('fake_url', self.sym_initial, 'product')
