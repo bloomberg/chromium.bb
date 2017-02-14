@@ -154,8 +154,6 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
 
 }  // namespace
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-
 // Basic test to check the Share method calls the callback with the expected
 // parameters.
 TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
@@ -264,8 +262,6 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 
   run_loop.Run();
 }
-
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
 
 // Replace various numbers of placeholders in various orders. Placeholders are
 // adjacent to eachother; there are no padding characters.

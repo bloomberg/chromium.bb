@@ -123,30 +123,18 @@ void ShareServiceImpl::ShowPickerDialog(
     const std::vector<std::pair<base::string16, GURL>>& targets,
     const base::Callback<void(base::Optional<std::string>)>& callback) {
 // TODO(mgiuca): Get the browser window as |parent_window|.
-#if defined(OS_LINUX) || defined(OS_WIN)
   chrome::ShowWebShareTargetPickerDialog(nullptr /* parent_window */, targets,
                                          callback);
-#else
-  callback.Run(base::nullopt);
-#endif
 }
 
 Browser* ShareServiceImpl::GetBrowser() {
-// TODO(constantina): Prevent this code from being run/compiled in android.
-#if defined(OS_LINUX) || defined(OS_WIN)
   return BrowserList::GetInstance()->GetLastActive();
-#else
-  return nullptr;
-#endif
 }
 
 void ShareServiceImpl::OpenTargetURL(const GURL& target_url) {
-// TODO(constantina): Prevent this code from being run/compiled in android.
-#if defined(OS_LINUX) || defined(OS_WIN)
   Browser* browser = GetBrowser();
   chrome::AddTabAt(browser, target_url,
                    browser->tab_strip_model()->active_index() + 1, true);
-#endif
 }
 
 std::string ShareServiceImpl::GetTargetTemplate(
@@ -162,24 +150,14 @@ std::string ShareServiceImpl::GetTargetTemplate(
 }
 
 PrefService* ShareServiceImpl::GetPrefService() {
-// TODO(constantina): Prevent this code from being run/compiled in android.
-#if defined(OS_LINUX) || defined(OS_WIN)
   return GetBrowser()->profile()->GetPrefs();
-#else
-  return nullptr;
-#endif
 }
 
 blink::mojom::EngagementLevel ShareServiceImpl::GetEngagementLevel(
     const GURL& url) {
-// TODO(constantina): Prevent this code from being run/compiled in android.
-#if defined(OS_LINUX) || defined(OS_WIN)
   SiteEngagementService* site_engagement_service =
       SiteEngagementService::Get(GetBrowser()->profile());
   return site_engagement_service->GetEngagementLevel(url);
-#else
-  return blink::mojom::EngagementLevel::NONE;
-#endif
 }
 
 // static
@@ -216,14 +194,9 @@ void ShareServiceImpl::Share(const std::string& title,
                              const ShareCallback& callback) {
   std::unique_ptr<base::DictionaryValue> share_targets;
 
-// TODO(constantina): Prevent this code from being run/compiled in android.
-#if defined(OS_LINUX) || defined(OS_WIN)
   share_targets = GetPrefService()
                       ->GetDictionary(prefs::kWebShareVisitedTargets)
                       ->CreateDeepCopy();
-#else
-  return;
-#endif
 
   std::vector<std::pair<base::string16, GURL>> sufficiently_engaged_targets =
       GetTargetsWithSufficientEngagement(*share_targets);

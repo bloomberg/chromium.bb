@@ -40,9 +40,8 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   Browser* GetBrowser();
 
   // Returns the URL template of the target identified by |target_url|
-  std::string GetTargetTemplate(
-      const std::string& target_url,
-      const base::DictionaryValue& share_targets);
+  std::string GetTargetTemplate(const std::string& target_url,
+                                const base::DictionaryValue& share_targets);
 
   // Virtual for testing purposes.
   virtual PrefService* GetPrefService();
