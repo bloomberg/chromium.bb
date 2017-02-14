@@ -435,7 +435,7 @@ class BidirectionalStreamQuicImplTest
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      PRIVACY_MODE_DISABLED),
-        kQuicYieldAfterPacketsRead,
+        /*require_confirmation=*/false, kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
         "CONNECTION_UNKNOWN", dns_start, dns_end, &push_promise_index_, nullptr,
@@ -443,8 +443,7 @@ class BidirectionalStreamQuicImplTest
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
     TestCompletionCallback callback;
-    session_->CryptoConnect(/*require_confirmation=*/false,
-                            callback.callback());
+    session_->CryptoConnect(callback.callback());
     EXPECT_TRUE(session_->IsEncryptionEstablished());
   }
 

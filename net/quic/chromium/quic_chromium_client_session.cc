@@ -235,6 +235,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     TransportSecurityState* transport_security_state,
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicServerId& server_id,
+    bool require_confirmation,
     int yield_after_packets,
     QuicTime::Delta yield_after_duration,
     int cert_verify_flags,
@@ -250,7 +251,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     NetLog* net_log)
     : QuicClientSessionBase(connection, push_promise_index, config),
       server_id_(server_id),
-      require_confirmation_(false),
+      require_confirmation_(require_confirmation),
       stream_factory_(stream_factory),
       transport_security_state_(transport_security_state),
       server_info_(std::move(server_info)),
@@ -663,9 +664,7 @@ Error QuicChromiumClientSession::GetTokenBindingSignature(
 }
 
 int QuicChromiumClientSession::CryptoConnect(
-    bool require_confirmation,
     const CompletionCallback& callback) {
-  require_confirmation_ = require_confirmation;
   connect_timing_.connect_start = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   DCHECK(flow_controller());
