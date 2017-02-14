@@ -275,8 +275,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // the decoder thread. Thread safe.
   State GetState();
 
-  // Starts the thread used for decoding.
-  void StartDecoderThread();
+  // Starts the thread used for decoding. Returns true on success.
+  bool StartDecoderThread();
 
   // Returns if we have output samples waiting to be processed. We only
   // allow one output sample to be present in the output queue at any given

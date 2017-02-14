@@ -627,8 +627,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   SetState(kNormal);
 
-  StartDecoderThread();
-  return true;
+  return StartDecoderThread();
 }
 
 bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
@@ -1161,7 +1160,9 @@ void DXVAVideoDecodeAccelerator::Reset() {
                  weak_ptr_, std::move(pending_input_buffers_)));
   pending_input_buffers_.clear();
 
-  StartDecoderThread();
+  RETURN_AND_NOTIFY_ON_FAILURE(StartDecoderThread(),
+                               "Failed to start decoder thread.",
+                               PLATFORM_FAILURE, );
   SetState(kNormal);
 }
 
@@ -2344,10 +2345,15 @@ void DXVAVideoDecodeAccelerator::SetState(State new_state) {
   DCHECK_EQ(state_, new_state);
 }
 
-void DXVAVideoDecodeAccelerator::StartDecoderThread() {
+bool DXVAVideoDecodeAccelerator::StartDecoderThread() {
   decoder_thread_.init_com_with_mta(true);
   decoder_thread_.Start();
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
+  if (!decoder_thread_task_runner_) {
+    LOG(ERROR) << "Failed to initialize decoder thread";
+    return false;
+  }
+  return true;
 }
 
 bool DXVAVideoDecodeAccelerator::OutputSamplesPresent() {
