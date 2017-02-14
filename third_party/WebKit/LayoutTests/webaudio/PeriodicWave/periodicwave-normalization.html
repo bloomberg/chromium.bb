@@ -2,16 +2,14 @@
 <html>
   <head>
     <title>Test PeriodicWave Normalization</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test PeriodicWave Normalization");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       var renderFrames = 6000;
       var context;
@@ -210,24 +208,10 @@
           var test = testSet[k];
           audit.defineTask(actualTestName(test.name, k), defineTest(test));
         }
-
-        // Explicitly define the last test to finish up everything.
-        audit.defineTask(actualTestName("finish-tests", testSet.length), function (done) {
-          finishJSTest();
-          done();
-        });
       }
 
-      // Run all of the tests defined in testSet.
-      function runAuditTests() {
-        var tests = testSet.map(function (value, index) {
-          return actualTestName(value.name, index);
-        }).concat(actualTestName("finish-tests", testSet.length));
-        audit.runTasks.apply(audit, tests);
-      };
-
       defineTasks();
-      runAuditTests();
+      audit.runTasks();
 
       successfullyParsed = true;
     </script>

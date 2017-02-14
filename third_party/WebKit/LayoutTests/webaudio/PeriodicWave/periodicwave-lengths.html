@@ -2,16 +2,14 @@
 <html>
   <head>
     <title>Test Different PeriodicWave Lengths at Different Sample Rates</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test Different PeriodicWave Lengths at Different Sample Rates");
-      window.jsTestIsAsync = true;
-
       // Test PeriodicWave objects with varying number of coefficients at different sample rates.
       // Basically, verify that the coefficients are used at the appropriate sample rates.  This is
       // done by comparing the outputs of two periodic waves used in oscillators.  The output should
@@ -147,10 +145,8 @@
       function resultShouldBeZero(sampleRate, bigLength, smallLength) {
         return function (buffer) {
           var prefix = generatePrefix(sampleRate, bigLength, smallLength);
-          if (isBufferZero(buffer))
-            testPassed(prefix + "identical as expected.");
-          else
-            testFailed(prefix + "unexpectedly differ.");
+          Should(prefix + "are identical", isBufferZero(buffer))
+            .beEqualTo(true);
         }
       }
 
@@ -159,10 +155,8 @@
       function resultShouldBeNonZero(sampleRate, bigLength, smallLength) {
         return function (buffer) {
           var prefix = generatePrefix(sampleRate, bigLength, smallLength);
-          if (!isBufferZero(buffer))
-            testPassed(prefix + "differ as expected.");
-          else
-            testFailed(prefix + "unexpectedly are identical.");
+          Should(prefix + "are different", !isBufferZero(buffer))
+            .beEqualTo(true);
         }
       }
 
@@ -247,11 +241,6 @@
           audit.defineTask(actualName,
             createAuditTestFunction(test.sampleRate, test.bigWave, test.smallWave, test.verifier));
         }
-        // Define the finish test last.
-        audit.defineTask(actualTestName("finish-tests", testSet.length), function (done) {
-          finishJSTest();
-          done();
-        });
       }
 
       defineAuditTests();
