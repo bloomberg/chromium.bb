@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @protocol CRIWVDelegate;
-@class CRIWVWebView;
+@class CWVWebView;
 
 // Main interface for the CRIWV library.
 __attribute__((visibility("default")))
@@ -24,7 +24,7 @@ __attribute__((visibility("default")))
 + (void)shutDown;
 
 // Creates and returns a web view.
-+ (CRIWVWebView*)webViewWithFrame:(CGRect)frame;
++ (CWVWebView*)webViewWithFrame:(CGRect)frame;
 
 @end
 

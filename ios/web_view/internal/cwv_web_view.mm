@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/public/criwv_web_view.h"
+#import "ios/web_view/public/cwv_web_view.h"
 
 #include <memory>
 #include <utility>
@@ -31,7 +31,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CRIWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
+@interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   CRIWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
@@ -41,7 +41,7 @@
 
 @end
 
-@implementation CRIWVWebView
+@implementation CWVWebView
 
 @synthesize delegate = _delegate;
 @synthesize loadProgress = _loadProgress;

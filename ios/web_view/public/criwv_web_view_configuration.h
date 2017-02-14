@@ -9,7 +9,7 @@
 
 @class CRIWVWebsiteDataStore;
 
-// Configuration used for creation of a CRIWVWebView.
+// Configuration used for creation of a CWVWebView.
 @interface CRIWVWebViewConfiguration : NSObject<NSCopying>
 
 // Data store defining persistance of website data. Default is

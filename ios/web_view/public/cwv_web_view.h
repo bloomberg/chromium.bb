@@ -1,8 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -16,7 +16,7 @@
 // Customizable Context Menus, and maybe more.
 //
 // Concrete instances can be created through CRIWV.
-@interface CRIWVWebView : UIView
+@interface CWVWebView : UIView
 
 // The view used to display web content.
 @property(nonatomic, readonly) UIView* view;
@@ -71,4 +71,4 @@
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_WEB_VIEW_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_H_

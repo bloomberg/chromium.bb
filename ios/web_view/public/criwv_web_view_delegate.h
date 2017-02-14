@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @protocol CRIWVTranslateDelegate;
-@class CRIWVWebView;
+@class CWVWebView;
 
 typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
   CRIWVWebViewUpdateTypeProgress = 1 << 0,
@@ -22,11 +22,11 @@ typedef NS_OPTIONS(NSUInteger, CRIWVWebViewUpdateType) {
 
 @optional
 
-- (void)webView:(CRIWVWebView*)webView
+- (void)webView:(CWVWebView*)webView
     didFinishLoadingWithURL:(NSURL*)url
                 loadSuccess:(BOOL)loadSuccess;
 
-- (void)webView:(CRIWVWebView*)webView
+- (void)webView:(CWVWebView*)webView
     didUpdateWithChanges:(CRIWVWebViewUpdateType)changes;
 
 - (id<CRIWVTranslateDelegate>)translateDelegate;

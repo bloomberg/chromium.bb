@@ -5,7 +5,7 @@
 #import "ios/web_view/shell/shell_view_controller.h"
 
 #import "ios/web_view/public/criwv.h"
-#import "ios/web_view/public/criwv_web_view.h"
+#import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/shell/translate_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,7 +20,7 @@
 // Toolbar containing navigation buttons and |field|.
 @property(nonatomic, strong) UIToolbar* toolbar;
 // CRIWV view which renders the web page.
-@property(nonatomic, strong) CRIWVWebView* webView;
+@property(nonatomic, strong) CWVWebView* webView;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) TranslateController* translateController;
 
@@ -174,7 +174,7 @@
 
 #pragma mark CRIWVWebViewDelegate methods
 
-- (void)webView:(CRIWVWebView*)webView
+- (void)webView:(CWVWebView*)webView
     didFinishLoadingWithURL:(NSURL*)url
                 loadSuccess:(BOOL)loadSuccess {
   // TODO(crbug.com/679895): Add some visual indication that the page load has
@@ -182,7 +182,7 @@
   [self updateToolbar];
 }
 
-- (void)webView:(CRIWVWebView*)webView
+- (void)webView:(CWVWebView*)webView
     didUpdateWithChanges:(CRIWVWebViewUpdateType)changes {
   if (changes & CRIWVWebViewUpdateTypeProgress) {
     // TODO(crbug.com/679895): Add a progress indicator.
