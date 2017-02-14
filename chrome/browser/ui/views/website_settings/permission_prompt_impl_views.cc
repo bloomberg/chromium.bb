@@ -26,15 +26,11 @@
 const int kFullscreenLeftMargin = 40;
 
 views::View* PermissionPromptImpl::GetAnchorView() {
+  if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return nullptr;  // Fall back to GetAnchorPoint().
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return browser_view->GetLocationBarView()
-        ->location_icon_view()
-        ->GetImageView();
-
-  // Fall back to GetAnchorPoint().
-  return nullptr;
+  return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
 }
 
 gfx::Point PermissionPromptImpl::GetAnchorPoint() {

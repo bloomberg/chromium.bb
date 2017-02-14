@@ -75,6 +75,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -363,12 +364,18 @@ void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
 }
 
-gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
+gfx::Point LocationBarView::GetInfoBarAnchorPoint() const {
   const views::ImageView* image = location_icon_view_->GetImageView();
   const gfx::Rect image_bounds(image->GetImageBounds());
   gfx::Point point(image_bounds.CenterPoint().x(), image_bounds.bottom());
   ConvertPointToTarget(image, this, &point);
   return point;
+}
+
+views::View* LocationBarView::GetSecurityBubbleAnchorView() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return this;
+  return location_icon_view()->GetImageView();
 }
 
 void LocationBarView::GetOmniboxPopupPositioningInfo(

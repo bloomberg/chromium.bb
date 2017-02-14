@@ -197,9 +197,13 @@ class LocationBarView : public LocationBar,
 
   LocationIconView* location_icon_view() { return location_icon_view_; }
 
-  // Return the point suitable for anchoring location-bar-anchored bubbles at.
-  // The point will be returned in the coordinates of the LocationBarView.
-  gfx::Point GetLocationBarAnchorPoint() const;
+  // Where InfoBar arrows should point. The point will be returned in the
+  // coordinates of the LocationBarView.
+  gfx::Point GetInfoBarAnchorPoint() const;
+
+  // The anchor view for security-related bubbles. That is, those anchored to
+  // the leading edge of the Omnibox, under the padlock.
+  views::View* GetSecurityBubbleAnchorView();
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
