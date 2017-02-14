@@ -528,7 +528,7 @@ void PingLoader::sendViolationReport(LocalFrame* frame,
                                  : "application/json");
   request.setHTTPBody(std::move(report));
   finishPingRequestInitialization(request, frame,
-                                  WebURLRequest::RequestContextPing);
+                                  WebURLRequest::RequestContextCSPReport);
 
   StoredCredentials credentialsAllowed =
       SecurityOrigin::create(reportURL)->isSameSchemeHostPort(
