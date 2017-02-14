@@ -7,7 +7,8 @@
 namespace image_fetcher {
 
 bool operator==(const RequestMetadata& lhs, const RequestMetadata& rhs) {
-  return lhs.mime_type == rhs.mime_type;
+  return lhs.mime_type == rhs.mime_type &&
+         lhs.response_code == rhs.response_code;
 }
 
 bool operator!=(const RequestMetadata& lhs, const RequestMetadata& rhs) {

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -64,6 +65,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
+  expected_metadata.response_code = net::HTTP_OK;
   EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
                                         expected_metadata));
 
@@ -73,6 +75,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   test_url_fetcher->SetResponseString(kURLResponseData);
+  test_url_fetcher->set_response_code(net::HTTP_OK);
 
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
@@ -94,6 +97,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
+  expected_metadata.response_code = net::HTTP_NOT_FOUND;
   // For 404, expect an empty result even though correct image data is sent.
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
@@ -124,6 +128,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
                  base::Unretained(this)));
 
   RequestMetadata expected_metadata;
+  expected_metadata.response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
   EXPECT_CALL(
       *this, OnImageDataFetchedFailedRequest(std::string(), expected_metadata));
 

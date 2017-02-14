@@ -183,14 +183,6 @@ CRWWebViewProxyType TestWebState::GetWebViewProxy() const {
   return nullptr;
 }
 
-int TestWebState::DownloadImage(const GURL& url,
-                                bool is_favicon,
-                                uint32_t max_bitmap_size,
-                                bool bypass_cache,
-                                const ImageDownloadCallback& callback) {
-  return 0;
-}
-
 service_manager::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
   return nullptr;
 }

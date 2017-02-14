@@ -43,7 +43,6 @@ struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class NavigationManager;
-class ImageDataFetcher;
 class WebInterstitialImpl;
 class WebStateFacadeDelegate;
 class WebStatePolicyDecider;
@@ -227,11 +226,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                 const std::string& command_prefix) override;
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
-  int DownloadImage(const GURL& url,
-                    bool is_favicon,
-                    uint32_t max_bitmap_size,
-                    bool bypass_cache,
-                    const ImageDownloadCallback& callback) override;
   service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
@@ -354,9 +348,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Mojo interface registry for this WebState.
   std::unique_ptr<service_manager::InterfaceRegistry> mojo_interface_registry_;
-
-  // Image Fetcher used to images.
-  std::unique_ptr<ImageDataFetcher> image_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

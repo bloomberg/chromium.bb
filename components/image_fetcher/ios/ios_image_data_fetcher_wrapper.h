@@ -23,7 +23,9 @@ class GURL;
 
 namespace image_fetcher {
 
-// Callback that informs of the download of an image encoded in |data|.
+// Callback that informs of the download of an image encoded in |data| and the
+// associated metadata. If an error prevented a http response,
+// |metadata.http_response_code| will be RESPONSE_CODE_INVALID.
 using IOSImageDataFetcherCallback = void (^)(NSData* data,
                                              const RequestMetadata& metadata);
 
