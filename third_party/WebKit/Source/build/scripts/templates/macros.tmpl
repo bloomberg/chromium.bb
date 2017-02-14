@@ -55,3 +55,8 @@ case {{ length }}:
 {% endfor %}
 }
 {% endmacro %}
+
+
+{% macro print_if(predicate, str) -%}
+{% if predicate %}{{str}}{% endif %}
+{%- endmacro %}
