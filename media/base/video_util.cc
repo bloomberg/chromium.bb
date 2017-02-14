@@ -11,7 +11,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "media/base/video_frame.h"
-#include "media/base/yuv_convert.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace media {
@@ -338,20 +337,15 @@ void CopyRGBToVideoFrame(const uint8_t* source,
     LetterboxYUV(frame, region_in_frame);
   }
 
-  const int y_offset = region_in_frame.x()
-                     + (region_in_frame.y() * frame->stride(kY));
-  const int uv_offset = region_in_frame.x() / 2
-                      + (region_in_frame.y() / 2 * uv_stride);
+  const int y_offset =
+      region_in_frame.x() + (region_in_frame.y() * frame->stride(kY));
+  const int uv_offset =
+      region_in_frame.x() / 2 + (region_in_frame.y() / 2 * uv_stride);
 
-  ConvertRGB32ToYUV(source,
-                    frame->data(kY) + y_offset,
-                    frame->data(kU) + uv_offset,
-                    frame->data(kV) + uv_offset,
-                    region_in_frame.width(),
-                    region_in_frame.height(),
-                    stride,
-                    frame->stride(kY),
-                    uv_stride);
+  libyuv::ARGBToI420(source, stride, frame->data(kY) + y_offset,
+                     frame->stride(kY), frame->data(kU) + uv_offset, uv_stride,
+                     frame->data(kV) + uv_offset, uv_stride,
+                     region_in_frame.width(), region_in_frame.height());
 }
 
 scoped_refptr<VideoFrame> WrapAsI420VideoFrame(

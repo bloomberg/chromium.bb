@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
-#include "media/base/yuv_convert.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"

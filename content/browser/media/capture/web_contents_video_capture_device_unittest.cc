@@ -34,7 +34,6 @@
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/base/yuv_convert.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
@@ -42,6 +41,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
@@ -85,8 +85,8 @@ void RunCurrentLoopWithDeadline() {
 
 SkColor ConvertRgbToYuv(SkColor rgb) {
   uint8_t yuv[3];
-  media::ConvertRGB32ToYUV(reinterpret_cast<uint8_t*>(&rgb), yuv, yuv + 1,
-                           yuv + 2, 1, 1, 1, 1, 1);
+  libyuv::ARGBToI420(reinterpret_cast<uint8_t*>(&rgb), 1, yuv, 1, yuv + 1, 1,
+                     yuv + 2, 1, 1, 1);
   return SkColorSetRGB(yuv[0], yuv[1], yuv[2]);
 }
 

@@ -215,12 +215,6 @@ target(link_target_type, "base") {
     "serial_runner.h",
     "silent_sink_suspender.cc",
     "silent_sink_suspender.h",
-    "simd/convert_rgb_to_yuv.h",
-    "simd/convert_rgb_to_yuv_c.cc",
-    "simd/convert_yuv_to_rgb.h",
-    "simd/convert_yuv_to_rgb_c.cc",
-    "simd/filter_yuv.h",
-    "simd/filter_yuv_c.cc",
     "sinc_resampler.cc",
     "sinc_resampler.h",
     "stream_parser.cc",
@@ -265,8 +259,6 @@ target(link_target_type, "base") {
     "video_util.h",
     "wall_clock_time_source.cc",
     "wall_clock_time_source.h",
-    "yuv_convert.cc",
-    "yuv_convert.h",
   ]
 
   allow_circular_includes_from = []
@@ -335,16 +327,6 @@ target(link_target_type, "base") {
     sources += [ "user_input_monitor_win.cc" ]
   } else {
     defines += [ "DISABLE_USER_INPUT_MONITOR" ]
-  }
-
-  if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [
-      "simd/convert_rgb_to_yuv_sse2.cc",
-      "simd/convert_rgb_to_yuv_ssse3.cc",
-      "simd/convert_yuv_to_rgb_x86.cc",
-      "simd/filter_yuv_sse2.cc",
-    ]
-    deps += [ ":media_yasm" ]
   }
 
   if (is_linux || is_win) {
@@ -457,7 +439,6 @@ source_set("unit_tests") {
     "video_frame_unittest.cc",
     "video_util_unittest.cc",
     "wall_clock_time_source_unittest.cc",
-    "yuv_convert_unittest.cc",
   ]
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -473,6 +454,7 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libyuv",
   ]
 
   # Even if FFmpeg is enabled on Android we don't want these.
@@ -491,9 +473,6 @@ source_set("unit_tests") {
     ]
   }
 
-  if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [ "simd/convert_rgb_to_yuv_unittest.cc" ]
-  }
   if (is_linux || is_win) {
     sources += [ "keyboard_event_counter_unittest.cc" ]
   }
@@ -523,7 +502,6 @@ source_set("perftests") {
     "run_all_perftests.cc",
     "sinc_resampler_perftest.cc",
     "vector_math_perftest.cc",
-    "yuv_convert_perftest.cc",
   ]
   configs += [ "//media:media_config" ]
   deps = [
@@ -534,75 +512,10 @@ source_set("perftests") {
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
-    "//third_party/libyuv",
   ]
 
   if (media_use_ffmpeg) {
     sources += [ "demuxer_perftest.cc" ]
-  }
-}
-
-if (current_cpu == "x86" || current_cpu == "x64") {
-  import("//third_party/yasm/yasm_assemble.gni")
-  yasm_assemble("media_yasm") {
-    sources = [
-      "simd/convert_rgb_to_yuv_ssse3.asm",
-      "simd/convert_yuv_to_rgb_sse.asm",
-      "simd/convert_yuva_to_argb_mmx.asm",
-      "simd/empty_register_state_mmx.asm",
-      "simd/linear_scale_yuv_to_rgb_mmx.asm",
-      "simd/linear_scale_yuv_to_rgb_sse.asm",
-      "simd/scale_yuv_to_rgb_mmx.asm",
-      "simd/scale_yuv_to_rgb_sse.asm",
-    ]
-
-    yasm_flags = [
-      "-DCHROMIUM",
-
-      # In addition to the same path as source asm, let yasm %include
-      # search path be relative to src/ per Chromium policy.
-      "-I",
-      rebase_path("..", root_build_dir),
-    ]
-
-    if (is_component_build) {
-      yasm_flags += [ "-DEXPORT_SYMBOLS" ]
-    }
-
-    inputs = [
-      "//third_party/x86inc/x86inc.asm",
-      "simd/convert_rgb_to_yuv_ssse3.inc",
-      "simd/convert_yuv_to_rgb_mmx.inc",
-      "simd/convert_yuva_to_argb_mmx.inc",
-      "simd/linear_scale_yuv_to_rgb_mmx.inc",
-      "simd/media_export.asm",
-      "simd/scale_yuv_to_rgb_mmx.inc",
-    ]
-
-    if (current_cpu == "x86") {
-      yasm_flags += [ "-DARCH_X86_32" ]
-    } else if (current_cpu == "x64") {
-      yasm_flags += [ "-DARCH_X86_64" ]
-      sources += [
-        "simd/linear_scale_yuv_to_rgb_mmx_x64.asm",
-        "simd/scale_yuv_to_rgb_sse2_x64.asm",
-      ]
-    }
-
-    if (is_mac || is_ios) {
-      yasm_flags += [
-        "-DPREFIX",
-        "-DMACHO",
-      ]
-    } else {
-      if (is_posix) {
-        yasm_flags += [ "-DELF" ]
-        if (current_cpu == "x64") {
-          # TODO(ajwong): Why isn't this true in mac?
-          yasm_flags += [ "-DPIC" ]
-        }
-      }
-    }
   }
 }
 

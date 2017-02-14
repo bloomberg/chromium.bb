@@ -15,7 +15,6 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
-#include "media/base/yuv_convert.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/c/ppb_video_frame.h"
@@ -110,20 +109,17 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                          dst_size.width(),
                          dst_size.height());
     } else {
-      media::ScaleYUVToRGB32(src->visible_data(VideoFrame::kYPlane),
-                             src->visible_data(VideoFrame::kUPlane),
-                             src->visible_data(VideoFrame::kVPlane),
-                             dst,
-                             src->visible_rect().width(),
-                             src->visible_rect().height(),
-                             dst_size.width(),
-                             dst_size.height(),
-                             src->stride(VideoFrame::kYPlane),
-                             src->stride(VideoFrame::kUPlane),
-                             dst_size.width() * 4,
-                             media::YV12,
-                             media::ROTATE_0,
-                             media::FILTER_BILINEAR);
+      libyuv::YUVToARGBScaleClip(
+          src->visible_data(VideoFrame::kYPlane),
+          src->stride(VideoFrame::kYPlane),
+          src->visible_data(VideoFrame::kUPlane),
+          src->stride(VideoFrame::kUPlane),
+          src->visible_data(VideoFrame::kVPlane),
+          src->stride(VideoFrame::kVPlane), libyuv::FOURCC_YV12,
+          src->visible_rect().width(), src->visible_rect().height(), dst,
+          dst_size.width() * 4, libyuv::FOURCC_ARGB, dst_size.width(),
+          dst_size.height(), 0, 0, dst_size.width(), dst_size.height(),
+          kFilterMode);
     }
   } else if (dst_format == PP_VIDEOFRAME_FORMAT_YV12 ||
              dst_format == PP_VIDEOFRAME_FORMAT_I420) {
