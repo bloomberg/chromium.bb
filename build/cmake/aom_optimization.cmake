@@ -12,13 +12,13 @@
 # Translate $flag to one which MSVC understands, and write the new flag to the
 # variable named by $translated_flag (or unset it, when MSVC needs no flag).
 function (get_msvc_intrinsic_flag flag translated_flag)
-  if ("${flag}" STREQUAL "-msse2")
-    # MSVC does not require a flag for SSE2 (as of MSVS 14).
-    unset(${translated_flag} PARENT_SCOPE)
+  if ("${flag}" STREQUAL "-mavx")
+    set(${translated_flag} "/arch:AVX" PARENT_SCOPE)
   elseif ("${flag}" STREQUAL "-mavx2")
     set(${translated_flag} "/arch:AVX2" PARENT_SCOPE)
   else ()
-    set(${translated_flag} "/arch:AVX" PARENT_SCOPE)
+    # MSVC does not need flags for intrinsics flavors other than AVX/AVX2.
+    unset(${translated_flag} PARENT_SCOPE)
   endif ()
 endfunction ()
 
