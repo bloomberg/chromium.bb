@@ -21,5 +21,6 @@
 
     <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="org.chromium.webview_ui_test"
-        android:label="Tests for org.chromium.webview_ui_test"/>
+        android:label="Tests for org.chromium.webview_ui_test"
+        chromium-junit4="true"/>
 </manifest>
