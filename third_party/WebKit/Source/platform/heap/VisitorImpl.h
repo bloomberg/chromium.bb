@@ -56,17 +56,6 @@ inline void Visitor::registerDelayedMarkNoTracing(const void* objectPointer) {
                                  &markNoTracingCallback);
 }
 
-inline void Visitor::registerWeakMembers(const void* closure,
-                                         const void* objectPointer,
-                                         WeakCallback callback) {
-  DCHECK(getMarkingMode() != WeakProcessing);
-  // We don't want to run weak processings when taking a snapshot.
-  if (getMarkingMode() == SnapshotMarking)
-    return;
-  heap().pushThreadLocalWeakCallback(
-      const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
-}
-
 inline void Visitor::registerWeakTable(
     const void* closure,
     EphemeronCallback iterationCallback,
@@ -99,13 +88,13 @@ inline bool Visitor::ensureMarked(const void* objectPointer) {
   return true;
 }
 
-inline void Visitor::registerWeakCellWithCallback(void** cell,
-                                                  WeakCallback callback) {
+inline void Visitor::registerWeakCallback(void* closure,
+                                          WeakCallback callback) {
   DCHECK(getMarkingMode() != WeakProcessing);
   // We don't want to run weak processings when taking a snapshot.
   if (getMarkingMode() == SnapshotMarking)
     return;
-  heap().pushGlobalWeakCallback(cell, callback);
+  heap().pushWeakCallback(closure, callback);
 }
 
 inline void Visitor::registerBackingStoreReference(void* slot) {

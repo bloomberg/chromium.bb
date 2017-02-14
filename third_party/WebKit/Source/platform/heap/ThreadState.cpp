@@ -117,7 +117,6 @@ ThreadState::ThreadState()
       m_gcMixinMarker(nullptr),
       m_shouldFlushHeapDoesNotContainCache(false),
       m_gcState(NoGCScheduled),
-      m_threadLocalWeakCallbackStack(CallbackStack::create()),
       m_isolate(nullptr),
       m_traceDOMWrappers(nullptr),
       m_invalidateDeadObjectsInWrappersMarkingDeque(nullptr),
@@ -304,57 +303,6 @@ ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t numObjectTypes)
       deadCount(Vector<int>(numObjectTypes)),
       liveSize(Vector<size_t>(numObjectTypes)),
       deadSize(Vector<size_t>(numObjectTypes)) {}
-
-void ThreadState::pushThreadLocalWeakCallback(void* object,
-                                              WeakCallback callback) {
-  CallbackStack::Item* slot = m_threadLocalWeakCallbackStack->allocateEntry();
-  *slot = CallbackStack::Item(object, callback);
-}
-
-bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor) {
-  ASSERT(checkThread());
-  if (CallbackStack::Item* item = m_threadLocalWeakCallbackStack->pop()) {
-    item->call(visitor);
-    return true;
-  }
-  return false;
-}
-
-void ThreadState::threadLocalWeakProcessing() {
-  ASSERT(checkThread());
-  ASSERT(!sweepForbidden());
-  TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-  double startTime = WTF::currentTimeMS();
-
-  SweepForbiddenScope sweepForbiddenScope(this);
-  ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
-
-  // Disallow allocation during weak processing.
-  // It would be technically safe to allow allocations, but it is unsafe
-  // to mutate an object graph in a way in which a dead object gets
-  // resurrected or mutate a HashTable (because HashTable's weak processing
-  // assumes that the HashTable hasn't been mutated since the latest marking).
-  // Due to the complexity, we just forbid allocations.
-  NoAllocationScope noAllocationScope(this);
-
-  GCForbiddenScope gcForbiddenScope(this);
-  std::unique_ptr<Visitor> visitor =
-      Visitor::create(this, Visitor::WeakProcessing);
-
-  // Perform thread-specific weak processing.
-  while (popAndInvokeThreadLocalWeakCallback(visitor.get())) {
-  }
-
-  m_threadLocalWeakCallbackStack->decommit();
-
-  if (isMainThread()) {
-    double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, timeForWeakHistogram,
-        ("BlinkGC.TimeForThreadLocalWeakProcessing", 1, 10 * 1000, 50));
-    timeForWeakHistogram.count(timeForThreadLocalWeakProcessing);
-  }
-}
 
 size_t ThreadState::totalMemorySize() {
   return m_heap->heapStats().allocatedObjectSize() +
@@ -910,29 +858,14 @@ void ThreadState::preGC() {
   makeConsistentForGC();
   flushHeapDoesNotContainCacheIfNeeded();
   clearArenaAges();
-
-  // It is possible, albeit rare, for a thread to be kept
-  // at a safepoint across multiple GCs, as resuming all attached
-  // threads after the "global" GC phases will contend for the shared
-  // safepoint barrier mutexes etc, which can additionally delay
-  // a thread. Enough so that another thread may initiate
-  // a new GC before this has happened.
-  //
-  // In which case the parked thread's ThreadState will have unprocessed
-  // entries on its local weak callback stack when that later GC goes
-  // ahead. Clear out and invalidate the stack now, as the thread
-  // should only process callbacks that's found to be reachable by
-  // the latest GC, when it eventually gets to next perform
-  // thread-local weak processing.
-  m_threadLocalWeakCallbackStack->decommit();
-  m_threadLocalWeakCallbackStack->commit();
 }
 
 void ThreadState::postGC(BlinkGC::GCType gcType) {
   if (m_invalidateDeadObjectsInWrappersMarkingDeque)
     m_invalidateDeadObjectsInWrappersMarkingDeque(m_isolate);
 
-  ASSERT(isInGC());
+  DCHECK(isInGC());
+  DCHECK(checkThread());
   for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
     m_arenas[i]->prepareForSweep();
 
@@ -949,10 +882,6 @@ void ThreadState::postGC(BlinkGC::GCType gcType) {
     m_gcState = NoGCScheduled;
     return;
   }
-
-  ASSERT(checkThread());
-
-  threadLocalWeakProcessing();
 }
 
 void ThreadState::preSweep(BlinkGC::GCType gcType) {

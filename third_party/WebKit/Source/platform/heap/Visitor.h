@@ -220,7 +220,7 @@ class PLATFORM_EXPORT Visitor {
   // threads are stopped during weak cell callbacks.
   template <typename T>
   void registerWeakCell(T** cell) {
-    registerWeakCellWithCallback(
+    registerWeakCallback(
         reinterpret_cast<void**>(
             const_cast<typename std::remove_const<T>::type**>(cell)),
         &handleWeakCell<T>);
@@ -228,12 +228,10 @@ class PLATFORM_EXPORT Visitor {
 
   template <typename T, void (T::*method)(Visitor*)>
   void registerWeakMembers(const T* obj) {
-    registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
+    registerWeakCallback(const_cast<T*>(obj),
+                         &TraceMethodDelegate<T, method>::trampoline);
   }
 
-  void registerWeakMembers(const void* object, WeakCallback callback) {
-    registerWeakMembers(object, object, callback);
-  }
 
   inline void registerBackingStoreReference(void* slot);
 
@@ -270,17 +268,7 @@ class PLATFORM_EXPORT Visitor {
   // that even removing things from HeapHashSet or HeapHashMap can cause
   // an allocation if the backing store resizes, but these collections know
   // how to remove WeakMember elements safely.
-  //
-  // The weak pointer callbacks are run on the thread that owns the
-  // object and other threads are not stopped during the
-  // callbacks. Since isAlive is used in the callback to determine
-  // if objects pointed to are alive it is crucial that the object
-  // pointed to belong to the same thread as the object receiving
-  // the weak callback. Since other threads have been resumed the
-  // mark bits are not valid for objects from other threads.
-  inline void registerWeakMembers(const void* closure,
-                                  const void* pointer,
-                                  WeakCallback);
+  inline void registerWeakCallback(void* closure, WeakCallback);
 
   inline void registerWeakTable(const void* closure,
                                 EphemeronCallback iterationCallback,
@@ -291,8 +279,6 @@ class PLATFORM_EXPORT Visitor {
 #endif
 
   inline bool ensureMarked(const void* pointer);
-
-  inline void registerWeakCellWithCallback(void** cell, WeakCallback);
 
   inline void markNoTracing(const void* pointer) {
     mark(pointer, reinterpret_cast<TraceCallback>(0));

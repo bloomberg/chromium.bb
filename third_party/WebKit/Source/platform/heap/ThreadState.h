@@ -54,7 +54,6 @@ class Isolate;
 namespace blink {
 
 class BasePage;
-class CallbackStack;
 class GarbageCollectedMixinConstructorMarker;
 class PersistentNode;
 class PersistentRegion;
@@ -186,9 +185,7 @@ class PLATFORM_EXPORT ThreadState {
   static ThreadState* fromObject(const void*);
 
   bool isMainThread() const { return this == mainThreadState(); }
-#if DCHECK_IS_ON()
   bool checkThread() const { return m_thread == currentThread(); }
-#endif
 
   ThreadHeap& heap() const { return *m_heap; }
 
@@ -388,10 +385,6 @@ class PLATFORM_EXPORT ThreadState {
     Vector<size_t> liveSize;
     Vector<size_t> deadSize;
   };
-
-  void pushThreadLocalWeakCallback(void*, WeakCallback);
-  bool popAndInvokeThreadLocalWeakCallback(Visitor*);
-  void threadLocalWeakProcessing();
 
   size_t objectPayloadSizeForTesting();
 
@@ -663,8 +656,6 @@ class PLATFORM_EXPORT ThreadState {
 
   bool m_shouldFlushHeapDoesNotContainCache;
   GCState m_gcState;
-
-  std::unique_ptr<CallbackStack> m_threadLocalWeakCallbackStack;
 
   using PreFinalizerCallback = bool (*)(void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;

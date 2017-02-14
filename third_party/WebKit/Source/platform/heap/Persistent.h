@@ -196,11 +196,7 @@ class PersistentBase {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
     if (weaknessConfiguration == WeakPersistentConfiguration) {
-      if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
-        visitor->registerWeakCellWithCallback(reinterpret_cast<void**>(this),
-                                              handleWeakPersistent);
-      else
-        visitor->registerWeakMembers(this, m_raw, handleWeakPersistent);
+      visitor->registerWeakCallback(this, handleWeakPersistent);
     } else {
       visitor->mark(m_raw);
     }

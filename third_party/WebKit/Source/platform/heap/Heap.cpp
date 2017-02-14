@@ -301,16 +301,7 @@ bool ThreadHeap::popAndInvokePostMarkingCallback(Visitor* visitor) {
   return false;
 }
 
-void ThreadHeap::pushGlobalWeakCallback(void** cell, WeakCallback callback) {
-  ASSERT(ThreadState::current()->isInGC());
-
-  CallbackStack::Item* slot = m_globalWeakCallbackStack->allocateEntry();
-  *slot = CallbackStack::Item(cell, callback);
-}
-
-void ThreadHeap::pushThreadLocalWeakCallback(void* closure,
-                                             void* object,
-                                             WeakCallback callback) {
+void ThreadHeap::pushWeakCallback(void* closure, WeakCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
   CallbackStack::Item* slot = m_globalWeakCallbackStack->allocateEntry();

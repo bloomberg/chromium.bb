@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class CallbackStack;
 class PagePool;
 
 class PLATFORM_EXPORT HeapAllocHooks {
@@ -293,17 +294,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void enterSafePoint(ThreadState*);
   void leaveSafePoint();
 
-  // Add a weak pointer callback to the weak callback work list.  General
-  // object pointer callbacks are added to a thread local weak callback work
-  // list and the callback is called on the thread that owns the object, with
-  // the closure pointer as an argument.  Most of the time, the closure and
-  // the containerObject can be the same thing, but the containerObject is
-  // constrained to be on the heap, since the heap is used to identify the
-  // correct thread.
-  void pushThreadLocalWeakCallback(void* closure,
-                                   void* containerObject,
-                                   WeakCallback);
-
   static RecursiveMutex& allHeapsMutex();
   static HashSet<ThreadHeap*>& allHeaps();
 
@@ -348,11 +338,9 @@ class PLATFORM_EXPORT ThreadHeap {
   // iteration).
   void pushPostMarkingCallback(void*, TraceCallback);
 
-  // Similar to the more general pushThreadLocalWeakCallback, but cell
-  // pointer callbacks are added to a static callback work list and the weak
-  // callback is performed on the thread performing garbage collection.  This
-  // is OK because cells are just cleared and no deallocation can happen.
-  void pushGlobalWeakCallback(void** cell, WeakCallback);
+  // Push a weak callback. The weak callback is called when the object
+  // doesn't get marked in the current GC.
+  void pushWeakCallback(void*, WeakCallback);
 
   // Pop the top of a marking stack and call the callback with the visitor
   // and the object.  Returns false when there is nothing more to do.
