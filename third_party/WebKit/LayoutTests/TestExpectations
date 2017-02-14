@@ -757,8 +757,6 @@ crbug.com/676432 fullscreen/full-screen-iframe-zIndex.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 
-crbug.com/625533 paint/selection/selection-drag-image-in-iframe.html  [ NeedsRebaseline ]
-
 crbug.com/657946 [ Mac ] virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
 crbug.com/671048 [ Linux Win ] virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
 

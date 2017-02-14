@@ -25,8 +25,6 @@
 
 #include "core/editing/SelectionEditor.h"
 
-#include "core/dom/NodeWithIndex.h"
-#include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SelectionAdjuster.h"
@@ -34,30 +32,20 @@
 
 namespace blink {
 
-SelectionEditor::SelectionEditor(LocalFrame& frame) : m_frame(frame) {
+SelectionEditor::SelectionEditor(LocalFrame& frame)
+    : m_frame(frame), m_observingVisibleSelection(false) {
   clearVisibleSelection();
 }
 
 SelectionEditor::~SelectionEditor() {}
 
-void SelectionEditor::assertSelectionValid() const {
-#if DCHECK_IS_ON()
-  // Since We don't track dom tree version during attribute changes, we can't
-  // use it for validity of |m_selection|.
-  const_cast<SelectionEditor*>(this)->m_selection.m_domTreeVersion =
-      document().domTreeVersion();
-#endif
-  m_selection.assertValidFor(document());
-}
-
 void SelectionEditor::clearVisibleSelection() {
-  m_selection = SelectionInDOMTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cacheIsDirty = false;
+  m_selection = VisibleSelection();
+  m_selectionInFlatTree = VisibleSelectionInFlatTree();
   if (!shouldAlwaysUseDirectionalSelection())
     return;
-  m_selection.m_isDirectional = true;
+  m_selection.setIsDirectional(true);
+  m_selectionInFlatTree.setIsDirectional(true);
 }
 
 void SelectionEditor::dispose() {
@@ -66,114 +54,89 @@ void SelectionEditor::dispose() {
   clearVisibleSelection();
 }
 
-Document& SelectionEditor::document() const {
-  DCHECK(lifecycleContext());
-  return *lifecycleContext();
+const Document& SelectionEditor::document() const {
+  DCHECK(m_document);
+  return *m_document;
 }
 
 template <>
 const VisibleSelection& SelectionEditor::visibleSelection<EditingStrategy>()
     const {
-  return computeVisibleSelectionInDOMTree();
+  DCHECK_EQ(frame()->document(), document());
+  DCHECK_EQ(frame(), document().frame());
+  if (m_selection.isNone())
+    return m_selection;
+  DCHECK_EQ(m_selection.base().document(), document());
+  return m_selection;
 }
 
 template <>
 const VisibleSelectionInFlatTree&
 SelectionEditor::visibleSelection<EditingInFlatTreeStrategy>() const {
-  return computeVisibleSelectionInFlatTree();
-}
-
-const VisibleSelection& SelectionEditor::computeVisibleSelectionInDOMTree()
-    const {
   DCHECK_EQ(frame()->document(), document());
   DCHECK_EQ(frame(), document().frame());
-  updateCachedVisibleSelectionIfNeeded();
-  if (m_cachedVisibleSelectionInDOMTree.isNone())
-    return m_cachedVisibleSelectionInDOMTree;
-  DCHECK_EQ(m_cachedVisibleSelectionInDOMTree.base().document(), document());
-  return m_cachedVisibleSelectionInDOMTree;
+  if (m_selectionInFlatTree.isNone())
+    return m_selectionInFlatTree;
+  DCHECK_EQ(m_selectionInFlatTree.base().document(), document());
+  return m_selectionInFlatTree;
 }
 
-const VisibleSelectionInFlatTree&
-SelectionEditor::computeVisibleSelectionInFlatTree() const {
-  DCHECK_EQ(frame()->document(), document());
-  DCHECK_EQ(frame(), document().frame());
-  updateCachedVisibleSelectionIfNeeded();
-  if (m_cachedVisibleSelectionInFlatTree.isNone())
-    return m_cachedVisibleSelectionInFlatTree;
-  DCHECK_EQ(m_cachedVisibleSelectionInFlatTree.base().document(), document());
-  return m_cachedVisibleSelectionInFlatTree;
-}
-
-const SelectionInDOMTree& SelectionEditor::selectionInDOMTree() const {
-  assertSelectionValid();
-  return m_selection;
-}
-
-bool SelectionEditor::hasEditableStyle() const {
-  return computeVisibleSelectionInDOMTree().hasEditableStyle();
-}
-
-bool SelectionEditor::isContentEditable() const {
-  return computeVisibleSelectionInDOMTree().isContentEditable();
-}
-
-bool SelectionEditor::isContentRichlyEditable() const {
-  return computeVisibleSelectionInDOMTree().isContentRichlyEditable();
-}
-
-void SelectionEditor::markCacheDirty() {
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cacheIsDirty = true;
-}
-
-void SelectionEditor::setSelection(const SelectionInDOMTree& newSelection) {
-  newSelection.assertValidFor(document());
-  if (m_selection == newSelection)
-    return;
+void SelectionEditor::setVisibleSelection(
+    const VisibleSelection& newSelection,
+    FrameSelection::SetSelectionOptions options) {
+  DCHECK(newSelection.isValidFor(document())) << newSelection;
   resetLogicalRange();
   clearDocumentCachedRange();
-  markCacheDirty();
+
   m_selection = newSelection;
-}
-
-void SelectionEditor::didChangeChildren(const ContainerNode&) {
-  markCacheDirty();
-  didFinishDOMMutation();
-}
-
-void SelectionEditor::didFinishTextChange(const Position& newBase,
-                                          const Position& newExtent) {
-  if (newBase == m_selection.m_base && newExtent == m_selection.m_extent) {
-    didFinishDOMMutation();
+  if (options & FrameSelection::DoNotAdjustInFlatTree) {
+    m_selectionInFlatTree.setWithoutValidation(
+        toPositionInFlatTree(m_selection.base()),
+        toPositionInFlatTree(m_selection.extent()));
     return;
   }
-  m_selection.m_base = newBase;
-  m_selection.m_extent = newExtent;
-  markCacheDirty();
-  didFinishDOMMutation();
+
+  SelectionAdjuster::adjustSelectionInFlatTree(&m_selectionInFlatTree,
+                                               m_selection);
 }
 
-void SelectionEditor::didFinishDOMMutation() {
-  assertSelectionValid();
+void SelectionEditor::setVisibleSelection(
+    const VisibleSelectionInFlatTree& newSelection,
+    FrameSelection::SetSelectionOptions options) {
+  DCHECK(newSelection.isValidFor(document())) << newSelection;
+  DCHECK(!(options & FrameSelection::DoNotAdjustInFlatTree));
+  resetLogicalRange();
+  clearDocumentCachedRange();
+
+  m_selectionInFlatTree = newSelection;
+  SelectionAdjuster::adjustSelectionInDOMTree(&m_selection,
+                                              m_selectionInFlatTree);
+}
+
+void SelectionEditor::setWithoutValidation(const Position& base,
+                                           const Position& extent) {
+  resetLogicalRange();
+  if (base.isNotNull())
+    DCHECK_EQ(base.document(), document());
+  if (extent.isNotNull())
+    DCHECK_EQ(extent.document(), document());
+  clearDocumentCachedRange();
+
+  m_selection.setWithoutValidation(base, extent);
+  m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(base),
+                                             toPositionInFlatTree(extent));
 }
 
 void SelectionEditor::documentAttached(Document* document) {
   DCHECK(document);
-  DCHECK(!lifecycleContext()) << lifecycleContext();
-  m_styleVersion = static_cast<uint64_t>(-1);
-  clearVisibleSelection();
-  setContext(document);
+  DCHECK(!m_document) << m_document;
+  m_document = document;
 }
 
-void SelectionEditor::contextDestroyed(Document*) {
+void SelectionEditor::documentDetached(const Document& document) {
+  DCHECK_EQ(m_document, &document);
   dispose();
-  m_styleVersion = static_cast<uint64_t>(-1);
-  m_selection = SelectionInDOMTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cacheIsDirty = false;
+  m_document = nullptr;
 }
 
 void SelectionEditor::resetLogicalRange() {
@@ -194,7 +157,7 @@ void SelectionEditor::setLogicalRange(Range* range) {
 Range* SelectionEditor::firstRange() const {
   if (m_logicalRange)
     return m_logicalRange->cloneRange();
-  return firstRangeOf(computeVisibleSelectionInDOMTree());
+  return firstRangeOf(m_selection);
 }
 
 bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
@@ -202,37 +165,10 @@ bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
 }
 
 void SelectionEditor::updateIfNeeded() {
-  // TODO(yosin): We should unify |SelectionEditor::updateIfNeeded()| and
-  // |updateCachedVisibleSelectionIfNeeded()|
-  updateCachedVisibleSelectionIfNeeded();
-}
-
-bool SelectionEditor::needsUpdateVisibleSelection() const {
-  return m_cacheIsDirty || m_styleVersion != document().styleVersion();
-}
-
-void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
-  // Note: Since we |FrameCaret::updateApperance()| is called from
-  // |FrameView::performPostLayoutTasks()|, we check lifecycle against
-  // |AfterPerformLayout| instead of |LayoutClean|.
-  DCHECK_GE(document().lifecycle().state(),
-            DocumentLifecycle::AfterPerformLayout);
-  assertSelectionValid();
-  if (!needsUpdateVisibleSelection())
-    return;
-
-  m_cachedVisibleSelectionInDOMTree = createVisibleSelection(m_selection);
-  m_cachedVisibleSelectionInFlatTree = createVisibleSelection(
-      SelectionInFlatTree::Builder()
-          .setBaseAndExtent(toPositionInFlatTree(m_selection.base()),
-                            toPositionInFlatTree(m_selection.extent()))
-          .setAffinity(m_selection.affinity())
-          .setHasTrailingWhitespace(m_selection.hasTrailingWhitespace())
-          .setGranularity(m_selection.granularity())
-          .setIsDirectional(m_selection.isDirectional())
-          .build());
-  m_styleVersion = document().styleVersion();
-  m_cacheIsDirty = false;
+  DCHECK(m_selection.isValidFor(document())) << m_selection;
+  DCHECK(m_selectionInFlatTree.isValidFor(document())) << m_selection;
+  m_selection.updateIfNeeded();
+  m_selectionInFlatTree.updateIfNeeded();
 }
 
 void SelectionEditor::cacheRangeOfDocument(Range* range) {
@@ -248,13 +184,12 @@ void SelectionEditor::clearDocumentCachedRange() {
 }
 
 DEFINE_TRACE(SelectionEditor) {
+  visitor->trace(m_document);
   visitor->trace(m_frame);
   visitor->trace(m_selection);
-  visitor->trace(m_cachedVisibleSelectionInDOMTree);
-  visitor->trace(m_cachedVisibleSelectionInFlatTree);
+  visitor->trace(m_selectionInFlatTree);
   visitor->trace(m_logicalRange);
   visitor->trace(m_cachedRange);
-  SynchronousMutationObserver::trace(visitor);
 }
 
 }  // namespace blink

@@ -15,6 +15,8 @@ test(() => {
             selection.document.querySelector('i').remove();
             selection.document.execCommand('redo');
         },
-        '<div contenteditable>^foo|<br></div>');
+        navigator.platform.indexOf('Mac') == 0
+            ? '<div contenteditable>^foo|<br></div>'
+            : '<div contenteditable>^foo<br>|</div>');
 });
 </script>

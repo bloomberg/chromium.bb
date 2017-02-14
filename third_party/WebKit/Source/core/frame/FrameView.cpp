@@ -1979,8 +1979,7 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame,
   if (!frame.view() || frame.view()->shouldThrottleRendering())
     return false;
 
-  const VisibleSelection& visibleSelection =
-      frame.selection().computeVisibleSelectionInDOMTree();
+  const VisibleSelection& visibleSelection = frame.selection().selection();
   if (visibleSelection.isNone() || !frame.selection().isHandleVisible())
     return false;
 

@@ -27,9 +27,7 @@
 #ifndef SelectionEditor_h
 #define SelectionEditor_h
 
-#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
 #include "core/events/EventDispatchResult.h"
 
 namespace blink {
@@ -37,10 +35,9 @@ namespace blink {
 // TODO(yosin): We will rename |SelectionEditor| to appropriate name since
 // it is no longer have a changing selection functionality, it was moved to
 // |SelectionModifier| class.
-class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
-                              public SynchronousMutationObserver {
+class SelectionEditor final
+    : public GarbageCollectedFinalized<SelectionEditor> {
   WTF_MAKE_NONCOPYABLE(SelectionEditor);
-  USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 
  public:
   static SelectionEditor* create(LocalFrame& frame) {
@@ -49,19 +46,28 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   virtual ~SelectionEditor();
   void dispose();
 
-  bool hasEditableStyle() const;
-  bool isContentEditable() const;
-  bool isContentRichlyEditable() const;
+  bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
+  bool isContentEditable() const { return m_selection.isContentEditable(); }
+  bool isContentRichlyEditable() const {
+    return m_selection.isContentRichlyEditable();
+  }
+
+  bool setSelectedRange(const EphemeralRange&,
+                        TextAffinity,
+                        SelectionDirectionalMode,
+                        FrameSelection::SetSelectionOptions);
 
   template <typename Strategy>
   const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
-  const SelectionInDOMTree& selectionInDOMTree() const;
+  void setVisibleSelection(const VisibleSelection&,
+                           FrameSelection::SetSelectionOptions);
+  void setVisibleSelection(const VisibleSelectionInFlatTree&,
+                           FrameSelection::SetSelectionOptions);
 
-  const VisibleSelection& computeVisibleSelectionInDOMTree() const;
-  const VisibleSelectionInFlatTree& computeVisibleSelectionInFlatTree() const;
-  void setSelection(const SelectionInDOMTree&);
+  void setWithoutValidation(const Position& base, const Position& extent);
 
   void documentAttached(Document*);
+  void documentDetached(const Document&);
 
   // If this FrameSelection has a logical range which is still valid, this
   // function return its clone. Otherwise, the return value from underlying
@@ -85,38 +91,18 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
  private:
   explicit SelectionEditor(LocalFrame&);
 
-  Document& document() const;
+  const Document& document() const;
   LocalFrame* frame() const { return m_frame.get(); }
 
-  void assertSelectionValid() const;
   void clearVisibleSelection();
-  void markCacheDirty();
   bool shouldAlwaysUseDirectionalSelection() const;
 
-  // VisibleSelection cache related
-  bool needsUpdateVisibleSelection() const;
-  void updateCachedVisibleSelectionIfNeeded() const;
-
-  void didFinishTextChange(const Position& base, const Position& extent);
-  void didFinishDOMMutation();
-
-  // Implementation of |SynchronousMutationObsderver| member functions.
-  void contextDestroyed(Document*) final;
-  void didChangeChildren(const ContainerNode&) final;
-  void didMergeTextNodes(const Text& mergedNode,
-                         const NodeWithIndex& nodeToBeRemovedWithIndex,
-                         unsigned oldLength) final;
-  void didSplitTextNode(const Text&) final;
-  void didUpdateCharacterData(CharacterData*,
-                              unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength) final;
-  void nodeChildrenWillBeRemoved(ContainerNode&) final;
-  void nodeWillBeRemoved(Node&) final;
-
+  Member<Document> m_document;
   Member<LocalFrame> m_frame;
 
-  SelectionInDOMTree m_selection;
+  VisibleSelection m_selection;
+  VisibleSelectionInFlatTree m_selectionInFlatTree;
+  bool m_observingVisibleSelection;
 
   // TODO(editing-dev): Removing |m_logicalRange|
   // The range specified by the user, which may not be visually canonicalized
@@ -124,15 +110,9 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   // |VisibleSelection| changes. If that happens, this variable will
   // become |nullptr|, in which case logical positions == visible positions.
   Member<Range> m_logicalRange;
-
   // If document is root, document.getSelection().addRange(range) is cached on
   // this.
   Member<Range> m_cachedRange;
-
-  mutable VisibleSelection m_cachedVisibleSelectionInDOMTree;
-  mutable VisibleSelectionInFlatTree m_cachedVisibleSelectionInFlatTree;
-  mutable uint64_t m_styleVersion = static_cast<uint64_t>(-1);
-  mutable bool m_cacheIsDirty = false;
 };
 
 }  // namespace blink
