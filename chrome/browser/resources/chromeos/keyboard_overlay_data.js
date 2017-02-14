@@ -15774,7 +15774,6 @@ var keyboardOverlayData = {
     '0<>CTRL': 'keyboardOverlayResetZoom',
     '0<>CTRL<>SHIFT': 'keyboardOverlayResetScreenZoom',
     '0<>SEARCH': 'keyboardOverlayF10',
-    '0<>SEARCH<>SHIFT': 'keyboardOverlayContextMenu',
     '1<>ALT': 'keyboardOverlayActivateShelfItem1',
     '1<>CTRL': 'keyboardOverlayActivateTab1',
     '1<>SEARCH': 'keyboardOverlayF1',
