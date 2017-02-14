@@ -49,12 +49,12 @@ void ResetGlobalValues() {
   g_wait_cancel_runner = new MessageLoopRunner();
 }
 
-class FakeVibrationManager : public device::VibrationManager {
+class FakeVibrationManager : public device::mojom::VibrationManager {
  public:
   FakeVibrationManager() {}
   ~FakeVibrationManager() override {}
 
-  static void Create(device::VibrationManagerRequest request) {
+  static void Create(device::mojom::VibrationManagerRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<FakeVibrationManager>(),
                             std::move(request));
   }

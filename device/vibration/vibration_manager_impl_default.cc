@@ -13,7 +13,7 @@ namespace device {
 
 namespace {
 
-class VibrationManagerEmptyImpl : public VibrationManager {
+class VibrationManagerEmptyImpl : public mojom::VibrationManager {
  public:
   VibrationManagerEmptyImpl() {}
   ~VibrationManagerEmptyImpl() override {}
@@ -28,7 +28,7 @@ class VibrationManagerEmptyImpl : public VibrationManager {
 }  // namespace
 
 // static
-void VibrationManagerImpl::Create(VibrationManagerRequest request) {
+void VibrationManagerImpl::Create(mojom::VibrationManagerRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<VibrationManagerEmptyImpl>(),
                           std::move(request));
 }

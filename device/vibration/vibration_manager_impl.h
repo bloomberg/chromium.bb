@@ -13,7 +13,7 @@ namespace device {
 class VibrationManagerImpl {
  public:
   DEVICE_VIBRATION_EXPORT static void Create(
-      mojo::InterfaceRequest<VibrationManager> request);
+      mojo::InterfaceRequest<mojom::VibrationManager> request);
 };
 
 }  // namespace device
