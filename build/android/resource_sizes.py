@@ -189,7 +189,7 @@ def GetStaticInitializers(so_path):
   return output.splitlines()
 
 
-def _NormalizeResourcesArsc(apk_path, num_supported_configs):
+def _NormalizeResourcesArsc(apk_path):
   """Estimates the expected overhead of untranslated strings in resources.arsc.
 
   See http://crbug.com/677966 for why this is necessary.
@@ -201,8 +201,10 @@ def _NormalizeResourcesArsc(apk_path, num_supported_configs):
   en_strings = _CreateResourceIdValueMap(aapt_output, 'en-rGB')
   fr_strings = _CreateResourceIdValueMap(aapt_output, 'fr')
 
-  # en-US and en-GB configs will never be translated.
-  config_count = num_supported_configs - 2
+  # Chrome supports 44 locales (en-US and en-GB will never be translated).
+  # This can be changed to |translations.GetNumEntries()| when Chrome and
+  # WebView support the same set of locales (http://crbug.com/369218).
+  config_count = 42
 
   size = 0
   for res_id, string_val in en_strings.iteritems():
@@ -435,8 +437,7 @@ def PrintApkAnalysis(apk_filename, chartjson=None):
     # is relative to the average locale .pak.
     normalized_apk_size += int(
         english_pak.compress_size * num_translations * 1.17)
-    normalized_apk_size += int(
-        _NormalizeResourcesArsc(apk_filename, num_translations))
+    normalized_apk_size += int(_NormalizeResourcesArsc(apk_filename))
 
   ReportPerfResult(chartjson, apk_basename + '_Specifics',
                    'normalized apk size', normalized_apk_size, 'bytes')
