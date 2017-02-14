@@ -326,10 +326,10 @@ bool WebPagePopupImpl::initializePage() {
 
   RefPtr<SharedBuffer> data = SharedBuffer::create();
   m_popupClient->writeDocument(data.get());
+  frame->setPageZoomFactor(m_popupClient->zoomFactor());
   frame->loader().load(FrameLoadRequest(
       0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(),
                                     ForceSynchronousLoad)));
-  frame->setPageZoomFactor(m_popupClient->zoomFactor());
   return true;
 }
 
