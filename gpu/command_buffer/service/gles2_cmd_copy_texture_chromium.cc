@@ -796,21 +796,13 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
     bool premultiply_alpha,
     bool unpremultiply_alpha,
     CopyTextureMethod method) {
-  bool use_gl_copy_tex_sub_image_2d = true;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
-  // although opposite in Android.
-  // TODO(dshwang): After Mesa fixes this issue, remove this hack.
-  // https://bugs.freedesktop.org/show_bug.cgi?id=98478 crbug.com/535198
-  use_gl_copy_tex_sub_image_2d = false;
-#endif
   bool premultiply_alpha_change = premultiply_alpha ^ unpremultiply_alpha;
   GLenum dest_binding_target =
       gpu::gles2::GLES2Util::GLFaceTargetToTextureTarget(dest_target);
 
   // GL_TEXTURE_RECTANGLE_ARB on FBO is supported by OpenGL, not GLES2,
   // so restrict this to GL_TEXTURE_2D and GL_TEXTURE_CUBE_MAP.
-  if (use_gl_copy_tex_sub_image_2d && source_target == GL_TEXTURE_2D &&
+  if (source_target == GL_TEXTURE_2D &&
       (dest_binding_target == GL_TEXTURE_2D ||
        dest_binding_target == GL_TEXTURE_CUBE_MAP) &&
       !flip_y && !premultiply_alpha_change && method == DIRECT_COPY) {

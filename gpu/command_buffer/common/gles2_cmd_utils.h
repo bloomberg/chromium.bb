@@ -243,8 +243,11 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static bool IsIntegerFormat(uint32_t internal_format);
   static bool IsFloatFormat(uint32_t internal_format);
   static uint32_t ConvertToSizedFormat(uint32_t format, uint32_t type);
-
   static bool IsSizedColorFormat(uint32_t internal_format);
+
+  // Infer color encoding from internalformat
+  static int GetColorEncodingFromInternalFormat(uint32_t internalformat);
+
   static void GetColorFormatComponentSizes(
       uint32_t internal_format, uint32_t type, int* r, int* g, int* b, int* a);
 

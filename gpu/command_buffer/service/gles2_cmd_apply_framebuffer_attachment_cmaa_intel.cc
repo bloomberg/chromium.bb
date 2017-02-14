@@ -256,10 +256,42 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
       if (do_copy) {
         ApplyCMAAEffectTexture(source_texture, rgba8_texture_, do_copy);
 
+        // Source format for DoCopySubTexture is always GL_RGBA8.
+        CopyTextureMethod method = DIRECT_COPY;
+        bool copy_tex_image_format_valid =
+            !GLES2Util::IsIntegerFormat(internal_format) &&
+            GLES2Util::GetColorEncodingFromInternalFormat(internal_format) !=
+                GL_SRGB &&
+            internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT;
+        if (GLES2Util::IsSizedColorFormat(internal_format)) {
+          int dr, dg, db, da;
+          GLES2Util::GetColorFormatComponentSizes(internal_format, 0, &dr, &dg,
+                                                  &db, &da);
+          if ((dr > 0 && dr != 8) || (dg > 0 && dg != 8) ||
+              (db > 0 && db != 8) || (da > 0 && da != 8)) {
+            copy_tex_image_format_valid = false;
+          }
+        }
+        if (!copy_tex_image_format_valid)
+          method = DIRECT_DRAW;
+        bool color_renderable =
+            Texture::ColorRenderable(decoder->GetFeatureInfo(), internal_format,
+                                     texture->texture()->IsImmutable());
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+        // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
+        // although opposite in Android.
+        // TODO(dshwang): After Mesa fixes this issue, remove this hack.
+        // https://bugs.freedesktop.org/show_bug.cgi?id=98478, crbug.com/535198.
+        if (color_renderable)
+          method = DIRECT_DRAW;
+#endif
+        if (method == DIRECT_DRAW && !color_renderable)
+          method = DRAW_AND_COPY;
+
         copier->DoCopySubTexture(
             decoder, GL_TEXTURE_2D, rgba8_texture_, 0, GL_RGBA8, GL_TEXTURE_2D,
             source_texture, 0, internal_format, 0, 0, 0, 0, width_, height_,
-            width_, height_, width_, height_, false, false, false, DIRECT_DRAW);
+            width_, height_, width_, height_, false, false, false, method);
       } else {
         ApplyCMAAEffectTexture(source_texture, source_texture, do_copy);
       }
