@@ -213,7 +213,7 @@ struct macroblock {
 
 // Converts block_index for given transform size to index of the block in raster
 // order.
-static inline int av1_block_index_to_raster_order(TX_SIZE tx_size,
+static INLINE int av1_block_index_to_raster_order(TX_SIZE tx_size,
                                                   int block_idx) {
   // For transform size 4x8, the possible block_idx values are 0 & 2, because
   // block_idx values are incremented in steps of size 'tx_width_unit x
@@ -225,7 +225,7 @@ static inline int av1_block_index_to_raster_order(TX_SIZE tx_size,
 
 // Inverse of above function.
 // Note: only implemented for transform sizes 4x4, 4x8 and 8x4 right now.
-static inline int av1_raster_order_to_block_index(TX_SIZE tx_size,
+static INLINE int av1_raster_order_to_block_index(TX_SIZE tx_size,
                                                   int raster_order) {
   assert(tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
   // We ensure that block indices are 0 & 2 if tx size is 4x8 or 8x4.
