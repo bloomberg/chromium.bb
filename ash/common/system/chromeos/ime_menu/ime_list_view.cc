@@ -105,7 +105,8 @@ class ImeListItemView : public ActionableView {
     // |kMenuIconSize| is not enough. The label will trigger eliding as "I..."
     // or "...". So we shrink the font size until it fits within the bounds.
     int size_delta = -1;
-    while (id_label->GetPreferredSize().width() > kMenuIconSize &&
+    while ((id_label->GetPreferredSize().width() -
+            id_label->GetInsets().width()) > kMenuIconSize &&
            size_delta >= kMinFontSizeDelta) {
       id_label->SetFontList(base_font_list.DeriveWithSizeDelta(size_delta));
       --size_delta;
