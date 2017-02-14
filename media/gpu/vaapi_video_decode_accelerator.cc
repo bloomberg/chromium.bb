@@ -951,8 +951,8 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 
   base::AutoLock auto_lock(lock_);
   if (state_ != kDecoding) {
-    DCHECK_EQ(state_, kDestroying);
-    return;  // We could've gotten destroyed already.
+    DCHECK(state_ == kDestroying || state_ == kResetting) << state_;
+    return;
   }
 
   // Still waiting for textures from client to finish outputting all pending
