@@ -188,6 +188,10 @@ struct drm_backend {
 
 	void *repaint_data;
 
+	/* Connector and CRTC IDs not used by any enabled output. */
+	struct wl_array unused_connectors;
+	struct wl_array unused_crtcs;
+
 	int cursors_are_broken;
 
 	bool universal_planes;
@@ -385,6 +389,26 @@ struct drm_output {
 static struct gl_renderer_interface *gl_renderer;
 
 static const char default_seat[] = "seat0";
+
+static void
+wl_array_remove_uint32(struct wl_array *array, uint32_t elm)
+{
+	uint32_t *pos, *end;
+
+	end = (uint32_t *) ((char *) array->data + array->size);
+
+	wl_array_for_each(pos, array) {
+		if (*pos != elm)
+			continue;
+
+		array->size -= sizeof(*pos);
+		if (pos + 1 == end)
+			break;
+
+		memmove(pos, pos + 1, (char *) end -  (char *) (pos + 1));
+		break;
+	}
+}
 
 static inline struct drm_output *
 to_drm_output(struct weston_output *base)
@@ -1694,7 +1718,6 @@ drm_output_repaint(struct weston_output *output_base,
 						   pending_state,
 						   DRM_OUTPUT_STATE_CLEAR_PLANES);
 
-
 	/* If disable_planes is set then assign_planes() wasn't
 	 * called for this render, so we could still have a stale
 	 * cursor plane set up.
@@ -1709,6 +1732,10 @@ drm_output_repaint(struct weston_output *output_base,
 	scanout_state = drm_output_state_get_plane(state, scanout_plane);
 	if (!scanout_state || !scanout_state->fb)
 		goto err;
+
+	wl_array_remove_uint32(&backend->unused_connectors,
+			       output->connector_id);
+	wl_array_remove_uint32(&backend->unused_crtcs, output->crtc_id);
 
 	/* The legacy SetCrtc API doesn't allow us to do scaling, and the
 	 * legacy PageFlip API doesn't allow us to do clipping either. */
@@ -3989,6 +4016,7 @@ drm_output_deinit(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+	uint32_t *unused;
 
 	if (b->use_pixman)
 		drm_output_fini_pixman(output);
@@ -4010,6 +4038,11 @@ drm_output_deinit(struct weston_output *base)
 			drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 		}
 	}
+
+	unused = wl_array_add(&b->unused_connectors, sizeof(*unused));
+	*unused = output->connector_id;
+	unused = wl_array_add(&b->unused_crtcs, sizeof(*unused));
+	*unused = output->crtc_id;
 }
 
 static void
@@ -4103,6 +4136,51 @@ drm_output_disable(struct weston_output *base)
 	output->state_cur = drm_output_state_alloc(output, NULL);
 
 	return 0;
+}
+
+/**
+ * Update the list of unused connectors and CRTCs
+ *
+ * This keeps the unused_connectors and unused_crtcs arrays up to date.
+ *
+ * @param b Weston backend structure
+ * @param resources DRM resources for this device
+ */
+static void
+drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
+{
+	int i;
+
+	wl_array_release(&b->unused_connectors);
+	wl_array_init(&b->unused_connectors);
+
+	for (i = 0; i < resources->count_connectors; i++) {
+		struct drm_output *output;
+		uint32_t *connector_id;
+
+		output = drm_output_find_by_connector(b, resources->connectors[i]);
+		if (output && output->base.enabled)
+			continue;
+
+		connector_id = wl_array_add(&b->unused_connectors,
+					    sizeof(*connector_id));
+		*connector_id = resources->connectors[i];
+	}
+
+	wl_array_release(&b->unused_crtcs);
+	wl_array_init(&b->unused_crtcs);
+
+	for (i = 0; i < resources->count_crtcs; i++) {
+		struct drm_output *output;
+		uint32_t *crtc_id;
+
+		output = drm_output_find_by_crtc(b, resources->crtcs[i]);
+		if (output && output->base.enabled)
+			continue;
+
+		crtc_id = wl_array_add(&b->unused_crtcs, sizeof(*crtc_id));
+		*crtc_id = resources->crtcs[i];
+	}
 }
 
 /**
@@ -4265,6 +4343,8 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		}
 	}
 
+	drm_backend_update_unused_outputs(b, resources);
+
 	if (wl_list_empty(&b->compositor->output_list) &&
 	    wl_list_empty(&b->compositor->pending_output_list))
 		weston_log("No currently active connector found.\n");
@@ -4356,6 +4436,8 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		drm_output_destroy(&output->base);
 	}
 
+	drm_backend_update_unused_outputs(b, resources);
+
 	free(connected);
 	drmModeFreeResources(resources);
 }
@@ -4421,6 +4503,9 @@ drm_destroy(struct weston_compositor *ec)
 	udev_unref(b->udev);
 
 	weston_launcher_destroy(ec->launcher);
+
+	wl_array_release(&b->unused_crtcs);
+	wl_array_release(&b->unused_connectors);
 
 	close(b->drm.fd);
 	free(b);
@@ -4854,6 +4939,8 @@ drm_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->drm.fd = -1;
+	wl_array_init(&b->unused_crtcs);
+	wl_array_init(&b->unused_connectors);
 
 	/*
 	 * KMS support for hardware planes cannot properly synchronize
