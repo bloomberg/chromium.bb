@@ -1,0 +1,33 @@
+<!doctype html>
+<script src="../resources/runner.js"></script>
+<div id="sample"></div>
+<script>
+const kCount = 10;
+const kElements = 10000;
+
+const metaElements = (() => {
+  const result = [];
+  for (let count = 0; count < kElements; ++count)
+    result.push('<meta>', '</meta>');
+  return result;
+})();
+const sample = document.getElementById('sample');
+sample.innerHTML =   [
+  '<div hiddent>', ...metaElements, '</div>',
+  '<h1 id="target">first line of renderered text</h1>',
+  '<div hiddent>', ...metaElements, '</div>',
+].join('');
+
+const selection = window.getSelection();
+const target = document.getElementById('target');
+
+PerfTestRunner.measureRunsPerSecond({
+  description: 'Measures performance of move-up through non-renderered elements',
+  run: () => {
+    selection.collapse(target, 0);
+    selection.extend(target, target.childNodes.length);
+    for (let counter = 0; counter < kCount; ++counter)
+      selection.modify('move', 'backward', 'line');
+    },
+});
+</script>
