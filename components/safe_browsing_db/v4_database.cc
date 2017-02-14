@@ -217,10 +217,12 @@ bool V4Database::AreStoresAvailable(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const ListIdentifier& identifier : stores_to_check) {
     const auto& store_pair = store_map_->find(identifier);
-    if (store_pair == store_map_->end())
+    if (store_pair == store_map_->end()) {
       return false;  // Store not in our list
-    if (!store_pair->second->HasValidData())
+    }
+    if (!store_pair->second->HasValidData()) {
       return false;  // Store never properly populated.
+    }
   }
   return true;
 }

@@ -98,7 +98,9 @@ namespace safe_browsing {
 
 namespace {
 
+const char kBlacklistResource[] = "/blacklisted/script.js";
 const char kEmptyPage[] = "/empty.html";
+const char kMaliciousResource[] = "/malware/script.js";
 const char kMalwareFile[] = "/downloads/dangerous/dangerous.exe";
 const char kMalwarePage[] = "/safe_browsing/malware.html";
 const char kMalwareDelayedLoadsPage[] =
@@ -1439,10 +1441,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckResourceUrl) {
-  const char* kBlacklistResource = "/blacklisted/script.js";
   GURL blacklist_resource = embedded_test_server()->GetURL(kBlacklistResource);
   std::string blacklist_resource_hash;
-  const char* kMaliciousResource = "/malware/script.js";
   GURL malware_resource = embedded_test_server()->GetURL(kMaliciousResource);
   std::string malware_resource_hash;
 
@@ -1817,6 +1817,8 @@ class TestV4Store : public V4Store {
               const base::FilePath& store_path)
       : V4Store(task_runner, store_path, 0) {}
 
+  bool HasValidData() const override { return true; }
+
   void MarkPrefixAsBad(HashPrefix prefix) {
     hash_prefix_map_[prefix.size()] = prefix;
   }
@@ -1914,6 +1916,9 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
     sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
+    store_factory_ = new TestV4StoreFactory();
+    V4Database::RegisterStoreFactoryForTest(base::WrapUnique(store_factory_));
+
     v4_db_factory_ = new TestV4DatabaseFactory();
     V4Database::RegisterDatabaseFactoryForTest(
         base::WrapUnique(v4_db_factory_));
@@ -1921,6 +1926,7 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
     v4_get_hash_factory_ = new TestV4GetHashProtocolManagerFactory();
     V4GetHashProtocolManager::RegisterFactory(
         base::WrapUnique(v4_get_hash_factory_));
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -1931,17 +1937,24 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
     // (which destructs SafeBrowsingService).
     V4GetHashProtocolManager::RegisterFactory(nullptr);
     V4Database::RegisterDatabaseFactoryForTest(nullptr);
+    V4Database::RegisterStoreFactoryForTest(nullptr);
     SafeBrowsingService::RegisterFactory(nullptr);
   }
 
-  // Returns a FullHashInfo info for the basic host+path pattern for a given URL
-  // after canonicalization.
-  FullHashInfo GetFullHashInfo(const GURL& url, const ListIdentifier& list_id) {
+  // Returns a FullHash for the basic host+path pattern for a given URL after
+  // canonicalization.
+  FullHash GetFullHash(const GURL& url) {
     std::string host;
     std::string path;
     V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path, nullptr);
 
-    return FullHashInfo(crypto::SHA256HashString(host + path), list_id,
+    return crypto::SHA256HashString(host + path);
+  }
+
+  // Returns FullHashInfo object for the basic host+path pattern for a given URL
+  // after canonicalization.
+  FullHashInfo GetFullHashInfo(const GURL& url, const ListIdentifier& list_id) {
+    return FullHashInfo(GetFullHash(url), list_id,
                         base::Time::Now() + base::TimeDelta::FromMinutes(5));
   }
 
@@ -1971,13 +1984,15 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
-  // prefixes for the given URL.
+  // prefixes for the given URL in the UwS store.
   void MarkUrlForUwsUnexpired(const GURL& bad_url) {
     FullHashInfo full_hash_info = GetFullHashInfo(bad_url, GetUrlUwsId());
     v4_db_factory_->MarkPrefixAsBad(GetUrlUwsId(), full_hash_info.full_hash);
     v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
   }
 
+  // Sets up the prefix database and the full hash cache to match one of the
+  // prefixes for the given URL in the phishing store.
   void MarkUrlForPhishingUnexpired(const GURL& bad_url,
                                    ThreatPatternType threat_pattern_type) {
     FullHashInfo full_hash_info = GetFullHashInfoWithMetadata(
@@ -1987,11 +2002,31 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
     v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
   }
 
+  // Sets up the prefix database and the full hash cache to match one of the
+  // prefixes for the given URL in the malware binary store.
+  void MarkUrlForMalwareBinaryUnexpired(const GURL& bad_url) {
+    FullHashInfo full_hash_info = GetFullHashInfo(bad_url, GetUrlMalBinId());
+    v4_db_factory_->MarkPrefixAsBad(GetUrlMalBinId(), full_hash_info.full_hash);
+    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+  }
+
+  // Sets up the prefix database and the full hash cache to match one of the
+  // prefixes for the given URL in the client incident store.
+  void MarkUrlForResourceUnexpired(const GURL& bad_url) {
+    FullHashInfo full_hash_info =
+        GetFullHashInfo(bad_url, GetChromeUrlClientIncidentId());
+    v4_db_factory_->MarkPrefixAsBad(GetChromeUrlClientIncidentId(),
+                                    full_hash_info.full_hash);
+    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+  }
+
  private:
   // Owned by the V4Database.
   TestV4DatabaseFactory* v4_db_factory_;
   // Owned by the V4GetHashProtocolManager.
   TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
+  // Owned by the V4Database.
+  TestV4StoreFactory* store_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceTest);
 };
@@ -2012,11 +2047,13 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, UnwantedImgIgnored) {
   EXPECT_FALSE(got_hit_report());
 }
 
+// Proceeding through an interstitial should cause it to get whitelisted for
+// that user.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWithWhitelist) {
   GURL url = embedded_test_server()->GetURL(kEmptyPage);
 
-  // After adding the url to safebrowsing database and getfullhash result,
-  // we should see the interstitial page.
+  // After adding the URL to SafeBrowsing database and full hash cache, we
+  // should see the interstitial page.
   MarkUrlForMalwareUnexpired(url);
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
 
@@ -2041,8 +2078,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWithWhitelist) {
   EXPECT_FALSE(ShowingInterstitialPage());
 }
 
-// This test confirms that prefetches don't themselves get the
-// interstitial treatment.
+// This test confirms that prefetches don't themselves get the interstitial
+// treatment.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, Prefetch) {
   GURL url = embedded_test_server()->GetURL(kPrefetchMalwarePage);
   GURL malware_url = embedded_test_server()->GetURL(kMalwarePage);
@@ -2067,6 +2104,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, Prefetch) {
   Mock::VerifyAndClear(&observer_);
 }
 
+// Ensure that the referrer information is preserved in the hit report.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
@@ -2361,6 +2399,163 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   content::WaitForInterstitialDetach(new_tab_contents);
   EXPECT_FALSE(ShowingInterstitialPage());
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// START: These tests use SafeBrowsingService::Client to directly interact with
+// SafeBrowsingService.
+///////////////////////////////////////////////////////////////////////////////
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrl) {
+  GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
+  std::vector<GURL> badbin_urls(1, badbin_url);
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Since badbin_url is not in database, it is considered to be safe.
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
+
+  MarkUrlForMalwareBinaryUnexpired(badbin_url);
+
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Now, the badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+}
+
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckUnwantedSoftwareUrl) {
+  const GURL bad_url = embedded_test_server()->GetURL(kMalwareFile);
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+
+    // Since bad_url is not in database, it is considered to be
+    // safe.
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
+
+    MarkUrlForUwsUnexpired(bad_url);
+
+    // Now, the bad_url is not safe since it is added to download
+    // database.
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED, client->GetThreatType());
+  }
+
+  // The unwantedness should survive across multiple clients.
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED, client->GetThreatType());
+  }
+
+  // An unwanted URL also marked as malware should be flagged as malware.
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+
+    MarkUrlForMalwareUnexpired(bad_url);
+
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, client->GetThreatType());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckBrowseUrl) {
+  const GURL bad_url = embedded_test_server()->GetURL(kMalwareFile);
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+
+    // Since bad_url is not in database, it is considered to be
+    // safe.
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
+
+    MarkUrlForMalwareUnexpired(bad_url);
+
+    // Now, the bad_url is not safe since it is added to download
+    // database.
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, client->GetThreatType());
+  }
+
+  // The unwantedness should survive across multiple clients.
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, client->GetThreatType());
+  }
+
+  // Adding the unwanted state to an existing malware URL should have no impact
+  // (i.e. a malware hit should still prevail).
+  {
+    scoped_refptr<TestSBClient> client(new TestSBClient);
+
+    MarkUrlForUwsUnexpired(bad_url);
+
+    client->CheckBrowseUrl(bad_url);
+    EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, client->GetThreatType());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
+  GURL original_url = embedded_test_server()->GetURL(kEmptyPage);
+  GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
+  GURL final_url = embedded_test_server()->GetURL(kEmptyPage);
+  std::vector<GURL> badbin_urls;
+  badbin_urls.push_back(original_url);
+  badbin_urls.push_back(badbin_url);
+  badbin_urls.push_back(final_url);
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Since badbin_url is not in database, it is considered to be safe.
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
+
+  MarkUrlForMalwareBinaryUnexpired(badbin_url);
+
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Now, the badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+}
+
+#if defined(GOOGLE_CHROME_BUILD)
+// This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
+// that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
+  GURL blacklist_url = embedded_test_server()->GetURL(kBlacklistResource);
+  GURL malware_url = embedded_test_server()->GetURL(kMaliciousResource);
+  std::string blacklist_url_hash, malware_url_hash;
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  {
+    MarkUrlForResourceUnexpired(blacklist_url);
+    blacklist_url_hash = GetFullHash(blacklist_url);
+
+    client->CheckResourceUrl(blacklist_url);
+    EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE, client->GetThreatType());
+    EXPECT_EQ(blacklist_url_hash, client->GetThreatHash());
+  }
+  {
+    MarkUrlForMalwareUnexpired(malware_url);
+    MarkUrlForResourceUnexpired(malware_url);
+    malware_url_hash = GetFullHash(malware_url);
+
+    // Since we're checking a resource url, we should receive result that it's
+    // a blacklisted resource, not a malware.
+    client = new TestSBClient;
+    client->CheckResourceUrl(malware_url);
+    EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE, client->GetThreatType());
+    EXPECT_EQ(malware_url_hash, client->GetThreatHash());
+  }
+
+  client->CheckResourceUrl(embedded_test_server()->GetURL(kEmptyPage));
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
+}
+#endif
+///////////////////////////////////////////////////////////////////////////////
+// END: These tests use SafeBrowsingService::Client to directly interact with
+// SafeBrowsingService.
+///////////////////////////////////////////////////////////////////////////////
 
 // TODO(vakh): Add test for UnwantedMainFrame.
 
