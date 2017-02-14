@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/common/session/session_controller.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
@@ -190,11 +189,11 @@ void WindowManager::CreateShell(
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  WmShellMus* wm_shell =
-      new WmShellMus(WmWindow::Get(window_tree_host->window()),
-                     base::MakeUnique<ShellDelegateMus>(
-                         connector_, std::move(system_tray_delegate_for_test_)),
-                     this, pointer_watcher_event_router_.get());
+  WmShellMus* wm_shell = new WmShellMus(
+      WmWindow::Get(window_tree_host->window()),
+      shell_delegate_for_test_ ? std::move(shell_delegate_for_test_)
+                               : base::MakeUnique<ShellDelegateMus>(connector_),
+      this, pointer_watcher_event_router_.get());
   init_params.primary_window_tree_host = window_tree_host.release();
   init_params.wm_shell = wm_shell;
   init_params.blocking_pool = blocking_pool_.get();

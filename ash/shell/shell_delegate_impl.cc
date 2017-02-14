@@ -163,8 +163,7 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
 ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
-  shelf_delegate_ = new test::TestShelfDelegate(model);
-  return shelf_delegate_;
+  return new test::TestShelfDelegate();
 }
 
 SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {

@@ -952,9 +952,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ProcessInController(ui::Accelerator(ui::VKEY_T, ui::EF_CONTROL_DOWN)));
 
   // New incognito window
-  // TODO(sky): this should be true but fails because WmTestBase is not using
-  // TestShellDelegate: http://crbug.com/632211.
-  EXPECT_FALSE(ProcessInController(
+  EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
 
   // New window

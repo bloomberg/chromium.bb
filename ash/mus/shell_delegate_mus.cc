@@ -84,12 +84,8 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus(
-    service_manager::Connector* connector,
-    std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test)
-    : connector_(connector),
-      system_tray_delegate_for_test_(std::move(system_tray_delegate_for_test)) {
-}
+ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
+    : connector_(connector) {}
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
@@ -148,8 +144,6 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
-  if (system_tray_delegate_for_test_)
-    return system_tray_delegate_for_test_.release();
   return new SystemTrayDelegateMus();
 }
 

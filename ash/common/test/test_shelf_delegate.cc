@@ -7,9 +7,13 @@
 #include <utility>
 
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/test/test_shelf_item_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
+#include "ash/root_window_controller.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {
@@ -17,7 +21,31 @@ namespace test {
 
 TestShelfDelegate* TestShelfDelegate::instance_ = nullptr;
 
-TestShelfDelegate::TestShelfDelegate(ShelfModel* model) : model_(model) {
+// A ShellObserver that sets the shelf alignment and auto hide behavior when the
+// shelf is created, to simulate ChromeLauncherController's behavior.
+class ShelfInitializer : public ShellObserver {
+ public:
+  ShelfInitializer() { WmShell::Get()->AddShellObserver(this); }
+  ~ShelfInitializer() override { WmShell::Get()->RemoveShellObserver(this); }
+
+  // ShellObserver:
+  void OnShelfCreatedForRootWindow(WmWindow* root_window) override {
+    WmShelf* shelf = root_window->GetRootWindowController()->GetShelf();
+    // Do not override the custom initialization performed by some unit tests.
+    if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED &&
+        shelf->auto_hide_behavior() == SHELF_AUTO_HIDE_ALWAYS_HIDDEN) {
+      shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+      shelf->UpdateVisibilityState();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfInitializer);
+};
+
+TestShelfDelegate::TestShelfDelegate()
+    : shelf_initializer_(base::MakeUnique<ShelfInitializer>()) {
   CHECK(!instance_);
   instance_ = this;
 }
@@ -43,13 +71,14 @@ void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
     item.type = TYPE_APP_PANEL;
   else
     item.type = TYPE_APP;
-  ShelfID id = model_->next_id();
+  ShelfModel* model = WmShell::Get()->shelf_model();
+  ShelfID id = model->next_id();
   item.status = status;
-  model_->Add(item);
+  model->Add(item);
   window->AddObserver(this);
 
-  model_->SetShelfItemDelegate(id,
-                               base::MakeUnique<TestShelfItemDelegate>(window));
+  model->SetShelfItemDelegate(id,
+                              base::MakeUnique<TestShelfItemDelegate>(window));
   window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
 }
 
@@ -57,9 +86,10 @@ void TestShelfDelegate::RemoveShelfItemForWindow(WmWindow* window) {
   ShelfID shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   if (shelf_id == 0)
     return;
-  int index = model_->ItemIndexByID(shelf_id);
+  ShelfModel* model = WmShell::Get()->shelf_model();
+  int index = model->ItemIndexByID(shelf_id);
   DCHECK_NE(-1, index);
-  model_->RemoveItemAt(index);
+  model->RemoveItemAt(index);
   window->RemoveObserver(this);
   if (HasShelfIDToAppIDMapping(shelf_id)) {
     const std::string& app_id = GetAppIDForShelfID(shelf_id);

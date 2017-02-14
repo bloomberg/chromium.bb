@@ -18,9 +18,7 @@ namespace ash {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  ShellDelegateMus(
-      service_manager::Connector* connector,
-      std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test);
+  explicit ShellDelegateMus(service_manager::Connector* connector);
   ~ShellDelegateMus() override;
 
   // ShellDelegate:
@@ -54,7 +52,6 @@ class ShellDelegateMus : public ShellDelegate {
  private:
   // |connector_| may be null in tests.
   service_manager::Connector* connector_;
-  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };

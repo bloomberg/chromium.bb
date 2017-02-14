@@ -52,8 +52,6 @@ class ShellDelegateImpl : public ShellDelegate {
   void UpdateTouchscreenStatusFromPrefs() override;
 
  private:
-  ShelfDelegate* shelf_delegate_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };
 

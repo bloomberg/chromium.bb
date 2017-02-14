@@ -163,12 +163,12 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // hierarchy. Null before login and in secondary display init.
   ShelfView* shelf_view_ = nullptr;
 
+  // These initial values hide the shelf until user preferences are available.
   ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
 
   // Sets shelf alignment to bottom during login and screen lock.
   std::unique_ptr<ShelfLockingManager> shelf_locking_manager_;
-
-  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   base::ObserverList<WmShelfObserver> observers_;
 

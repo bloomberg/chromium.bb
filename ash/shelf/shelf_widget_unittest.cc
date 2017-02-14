@@ -354,6 +354,7 @@ class ShelfInitializer : public ShellObserver {
     WmShelf* shelf = root_window->GetRootWindowController()->GetShelf();
     shelf->SetAlignment(alignment_);
     shelf->SetAutoHideBehavior(auto_hide_);
+    shelf->UpdateVisibilityState();
   }
 
  private:

@@ -243,7 +243,7 @@ TEST_F(WmShelfObserverIconTest, BoundsChanged) {
 // A ShelfDelegate test double that will always convert between ShelfIDs and app
 // ids. This does not support pinning and unpinning operations and the return
 // value of IsAppPinned(...) is configurable.
-class TestShelfDelegateForShelfView : public ShelfDelegate {
+class TestShelfDelegateForShelfView : public TestShelfDelegate {
  public:
   TestShelfDelegateForShelfView() {}
   ~TestShelfDelegateForShelfView() override {}
@@ -255,11 +255,6 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
     ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));
     return id;
-  }
-
-  ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
-                                        const std::string& launch_id) override {
-    return GetShelfIDForAppID(app_id);
   }
 
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return true; }
@@ -684,6 +679,8 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void ReplaceShelfDelegate() {
+    // Clear the value first to avoid TestShelfDelegate's singleton check.
+    WmShell::Get()->SetShelfDelegateForTesting(nullptr);
     shelf_delegate_ = new TestShelfDelegateForShelfView();
     test_api_->SetShelfDelegate(shelf_delegate_);
     WmShell::Get()->SetShelfDelegateForTesting(
@@ -736,10 +733,6 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
  public:
   ShelfViewTextDirectionTest() : text_direction_change_(GetParam()) {}
   virtual ~ShelfViewTextDirectionTest() {}
-
-  void SetUp() override { ShelfViewTest::SetUp(); }
-
-  void TearDown() override { ShelfViewTest::TearDown(); }
 
  private:
   ScopedTextDirectionChange text_direction_change_;

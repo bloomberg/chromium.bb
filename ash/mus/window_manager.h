@@ -43,7 +43,7 @@ namespace ash {
 
 class RootWindowController;
 class ScreenMus;
-class SystemTrayDelegate;
+class ShellDelegate;
 
 namespace mus {
 
@@ -194,12 +194,8 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-  // If non-null this is used as the return value from
-  // ShellDelegateMus::CreateSystemTrayDelegate(). This is only set in tests.
-  //
-  // TODO(jamescook): Pass a TestShellDelegate into WindowManager and use it to
-  // create the various test delegates rather than a member.
-  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test_;
+  // Only set in tests. If non-null this is used as the shell delegate.
+  std::unique_ptr<ShellDelegate> shell_delegate_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

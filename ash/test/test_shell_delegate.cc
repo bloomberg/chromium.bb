@@ -75,7 +75,7 @@ keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
 
 ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {
-  return new TestShelfDelegate(model);
+  return new TestShelfDelegate();
 }
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {

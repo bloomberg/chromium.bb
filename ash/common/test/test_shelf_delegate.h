@@ -14,16 +14,15 @@
 #include "base/macros.h"
 
 namespace ash {
-
-class ShelfModel;
-
 namespace test {
+
+class ShelfInitializer;
 
 // Test implementation of ShelfDelegate.
 // Tests may create icons for windows by calling AddShelfItem().
 class TestShelfDelegate : public ShelfDelegate, public WmWindowObserver {
  public:
-  explicit TestShelfDelegate(ShelfModel* model);
+  TestShelfDelegate();
   ~TestShelfDelegate() override;
 
   // Adds a ShelfItem for the given |window|. The ShelfItem's status will be
@@ -69,7 +68,7 @@ class TestShelfDelegate : public ShelfDelegate, public WmWindowObserver {
 
   static TestShelfDelegate* instance_;
 
-  ShelfModel* model_;
+  std::unique_ptr<ShelfInitializer> shelf_initializer_;
 
   std::set<std::string> pinned_apps_;
 

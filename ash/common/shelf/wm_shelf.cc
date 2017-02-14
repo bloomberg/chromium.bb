@@ -133,9 +133,6 @@ void WmShelf::CreateShelfView() {
   DCHECK(!shelf_view_);
   shelf_view_ = shelf_widget_->CreateShelfView();
   shelf_locking_manager_.reset(new ShelfLockingManager(this));
-  // When the shelf is created the alignment is unlocked. Chrome will update the
-  // alignment later from preferences.
-  alignment_ = SHELF_ALIGNMENT_BOTTOM;
   WmShell::Get()->shelf_controller()->NotifyShelfCreated(this);
 }
 
