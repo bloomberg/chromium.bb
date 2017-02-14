@@ -91,7 +91,9 @@ GearMenuController.prototype.refreshRemainingSpace_ =
 
   // TODO(mtomasz): Add support for remaining space indication for provided
   // file systems.
-  if (currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.PROVIDED) {
+  if (currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.PROVIDED ||
+      currentVolumeInfo.volumeType ==
+          VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
     this.gearMenu_.setSpaceInfo(null, false);
     return;
   }
