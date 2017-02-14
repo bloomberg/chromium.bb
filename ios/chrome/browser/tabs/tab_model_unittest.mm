@@ -196,9 +196,9 @@ class TabModelTest : public PlatformTest {
   web::ScopedTestingWebClient web_client_;
   base::scoped_nsobject<SessionWindowIOS> session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  base::mac::ScopedNSAutoreleasePool pool_;
   base::scoped_nsobject<TabModel> tab_model_;
   base::scoped_nsobject<TabModelObserverPong> tab_model_observer_;
-  base::mac::ScopedNSAutoreleasePool pool_;
 };
 
 TEST_F(TabModelTest, IsEmpty) {
