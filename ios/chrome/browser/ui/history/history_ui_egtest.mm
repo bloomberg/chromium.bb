@@ -273,8 +273,7 @@ void MockSignIn() {
 }
 
 // Tests that history is not changed after performing back navigation.
-// TODO(crbug.com/688047): Enable this test.
-- (void)DISABLED_testHistoryUpdateAfterBackNavigation {
+- (void)testHistoryUpdateAfterBackNavigation {
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey loadURL:_URL2];
 
