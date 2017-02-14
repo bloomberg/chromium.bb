@@ -684,7 +684,7 @@ FileGrid.setThumbnailImage_ = function(
     thumbnail.style.backgroundSize = 'cover';
 
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-  thumbnail.addEventListener('webkitAnimationEnd', function() {
+  thumbnail.addEventListener('animationend', function() {
     // Remove animation css once animation is completed in order not to animate
     // again when an item is attached to the dom again.
     thumbnail.classList.remove('animate');

@@ -399,11 +399,11 @@ html[dir=rtl] .main-pane {
 }
 
 .custom-icon-spinner {
-  -webkit-animation: easy-unlock-spinner-animation 2s steps(45) infinite;
+  animation: easy-unlock-spinner-animation 2s steps(45) infinite;
   background-image: url(chrome://theme/IDR_EASY_UNLOCK_SPINNER);
 }
 
-@-webkit-keyframes easy-unlock-spinner-animation {
+@keyframes easy-unlock-spinner-animation {
   from { background-position: 0 }
   to { background-position: -1215px }
 }
@@ -440,9 +440,9 @@ html[dir=rtl] .main-pane {
 
 .pod[auth-type='onlineSignIn'] .reauth-hint-container {
   display: flex;
+  justify-content: center;
   margin-top: 8px;
   width: 100%;
-  justify-content: center;
 }
 
 .reauth-hint-container .reauth-warning {
@@ -961,10 +961,10 @@ html[dir=rtl] .expanded-pane-contents {
 
 /* Animations for the animated ellipsis: */
 .animated-ellipsis-component0 {
-  -webkit-animation: ellipsis-component0 1.5s infinite;
+  animation: ellipsis-component0 1.5s infinite;
 }
 
-@-webkit-keyframes ellipsis-component0 {
+@keyframes ellipsis-component0 {
   0% { opacity: 0; }
   25% { opacity: 1; }
   50% { opacity: 1; }
@@ -973,10 +973,10 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .animated-ellipsis-component1 {
-  -webkit-animation: ellipsis-component1 1.5s infinite;
+  animation: ellipsis-component1 1.5s infinite;
 }
 
-@-webkit-keyframes ellipsis-component1 {
+@keyframes ellipsis-component1 {
   0% { opacity: 0; }
   25% { opacity: 0; }
   50% { opacity: 1; }
@@ -985,10 +985,10 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .animated-ellipsis-component2 {
-  -webkit-animation: ellipsis-component2 1.5s infinite;
+  animation: ellipsis-component2 1.5s infinite;
 }
 
-@-webkit-keyframes ellipsis-component2 {
+@keyframes ellipsis-component2 {
   0% { opacity: 0; }
   25% { opacity: 0; }
   50% { opacity: 0; }

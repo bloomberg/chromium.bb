@@ -1086,7 +1086,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   height: 0;
 }
 
-@-webkit-keyframes heightAnimation {
+@keyframes heightAnimation {
   0% {
     display: flex;
     height: 0;
@@ -1095,8 +1095,8 @@ html[dir='rtl'] .breadcrumbs .separator {
 
 /* Drive space warning banner. */
 .volume-warning {
-  -webkit-animation: heightAnimation 70ms linear;
   align-items: center;
+  animation: heightAnimation 70ms linear;
   background-color: rgb(79, 129, 232);
   color: white;
   display: flex;
@@ -1302,7 +1302,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid .img-container > .thumbnail.animate {
-  -webkit-animation: fadeIn 250ms linear;
+  animation: fadeIn 250ms linear;
 }
 
 .thumbnail-grid .shield {
@@ -1422,10 +1422,10 @@ html[dir='rtl'] .badge {
 #directory-tree .tree-item.accepts > .tree-row,
 #list-container list > li.accepts,
 #list-container grid > li.accepts {
-  -webkit-animation: acceptsBlink 200ms linear 1s 3;
+  animation: acceptsBlink 200ms linear 1s 3;
 }
 
-@-webkit-keyframes acceptsBlink {
+@keyframes acceptsBlink {
   0% {
     color: rgb(90, 90, 90);
     background-color: transparent;
@@ -1495,7 +1495,7 @@ li[renaming=''] .badge {
   justify-content: flex-end;
 }
 
-@-webkit-keyframes fadeIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -1504,7 +1504,7 @@ li[renaming=''] .badge {
   }
 }
 
-@-webkit-keyframes fadeOut {
+@keyframes fadeOut {
   from {
     opacity: 1;
   }
@@ -1666,13 +1666,13 @@ body.check-select #list-container li[selected] .detail-checkmark {
 }
 
 #list-container list li .detail-thumbnail > .thumbnail.animate {
-  -webkit-animation: fadeIn 220ms ease;
+  animation: fadeIn 220ms ease;
 }
 
 body.check-select #list-container list li[selected] .detail-thumbnail
 > .thumbnail {
   /* Fade out after checkmark fades in. */
-  -webkit-animation: fadeOut 0ms 220ms ease backwards;
+  animation: fadeOut 0ms 220ms ease backwards;
   opacity: 0;
 }
 
@@ -2056,7 +2056,7 @@ list.autocomplete-suggestions > [lead] {
 
 /* Progress center */
 
-@-webkit-keyframes progress-center-toggle {
+@keyframes progress-center-toggle {
   /* Height values of each frame are set by script.
    * Keep the animation sync with JS. */
   from {
@@ -2075,7 +2075,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center.animated {
-  -webkit-animation: progress-center-toggle 300ms ease-out;
+  animation: progress-center-toggle 300ms ease-out;
 }
 
 #progress-center-open-view {

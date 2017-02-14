@@ -36,7 +36,7 @@
   outline: none;
 }
 
-@-webkit-keyframes pulse {
+@keyframes pulse {
  0% {
    transform: scale(1);
  }
@@ -52,24 +52,24 @@
 }
 
 .cr-dialog-frame.pulse {
-  -webkit-animation-duration: 180ms;
-  -webkit-animation-iteration-count: 1;
-  -webkit-animation-name: pulse;
-  -webkit-animation-timing-function: ease-in-out;
+  animation-duration: 180ms;
+  animation-iteration-count: 1;
+  animation-name: pulse;
+  animation-timing-function: ease-in-out;
 }
 
 .shown > .cr-dialog-frame {
-  transform: perspective(500px) scale(1)
-                     translateY(0) rotateX(0);
   opacity: 1;
+  transform: perspective(500px) scale(1)
+             translateY(0) rotateX(0);
 }
 
 .cr-dialog-frame {
-  transform: perspective(500px) scale(0.99)
-                     translateY(-20px) rotateX(5deg);
   -webkit-transition: all 180ms;
   -webkit-transition-duration: 250ms;
   opacity: 0;
+  transform: perspective(500px) scale(0.99)
+             translateY(-20px) rotateX(5deg);
 }
 
 .cr-dialog-shield {

@@ -42,19 +42,19 @@
       }
 
       /* Rotating the whole thing */
-      @-webkit-keyframes rotate {
+      @keyframes rotate {
         from {transform: rotate(0deg);}
         to {transform: rotate(360deg);}
       }
       .qp-circular-loader {
-        -webkit-animation-name: rotate;
-        -webkit-animation-duration: 1568.63ms; /* 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
-        -webkit-animation-iteration-count: infinite;
-        -webkit-animation-timing-function: linear;
+        animation-duration: 1568.63ms; /* 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        animation-iteration-count: infinite;
+        animation-name: rotate;
+        animation-timing-function: linear;
       }
 
       /* Filling and unfilling the arc */
-      @-webkit-keyframes fillunfill {
+      @keyframes fillunfill {
         from {
           stroke-dashoffset: 32.3 /* 2*RADIUS*PI * ARCSIZE/360 - 0.1 */
                                   /* 0.1 a bit of a magic constant here */
@@ -67,7 +67,7 @@
                                    /* 0.5 a bit of a magic constant here */
         }
       }
-      @-webkit-keyframes rot {
+      @keyframes rot {
         from {
           transform: rotate(0deg);
         }
@@ -75,7 +75,7 @@
           transform: rotate(-360deg);
         }
       }
-      @-webkit-keyframes colors {
+      @keyframes colors {
         from {
           stroke: #4285f4;
         }
@@ -84,12 +84,12 @@
         }
       }
       .qp-circular-loader-path {
-        -webkit-animation-name: fillunfill, rot, colors;
-        -webkit-animation-duration: 1333ms, 5332ms, 5332ms; /* ARCTIME, 4*ARCTIME, 4*ARCTIME */
-        -webkit-animation-iteration-count: infinite, infinite, infinite;
-        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1), steps(4), linear;
-        -webkit-animation-play-state: running, running, running;
-        -webkit-animation-fill-mode: forwards;
+        animation-duration: 1333ms, 5332ms, 5332ms; /* ARCTIME, 4*ARCTIME, 4*ARCTIME */
+        animation-fill-mode: forwards;
+        animation-iteration-count: infinite, infinite, infinite;
+        animation-name: fillunfill, rot, colors;
+        animation-play-state: running, running, running;
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1), steps(4), linear;
       }
 
   </style>

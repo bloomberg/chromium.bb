@@ -128,7 +128,7 @@ cr.define('cr.ui.overlay', function() {
       if (overlayPage)
         overlayPage.classList.add('pulse');
     });
-    overlay.addEventListener('webkitAnimationEnd', function(e) {
+    overlay.addEventListener('animationend', function(e) {
       e.target.classList.remove('pulse');
     });
   }

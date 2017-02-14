@@ -260,7 +260,7 @@ function ProgressCenterPanel(element) {
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
   element.addEventListener(
-      'webkitAnimationEnd', this.onToggleAnimationEnd_.bind(this));
+      'animationend', this.onToggleAnimationEnd_.bind(this));
   element.addEventListener(
       ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT,
       this.onItemAnimationEnd_.bind(this));

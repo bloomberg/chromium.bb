@@ -48,7 +48,6 @@
     }
 
     #value[loading]:after {
-      -webkit-animation: ellipsis steps(4,end) 900ms infinite;
       animation: ellipsis steps(4,end) 900ms infinite;
       content: "\2026"; /* ascii code for the ellipsis character */
       display: inline-block;
@@ -63,7 +62,7 @@
       }
     }
 
-    @-webkit-keyframes ellipsis {
+    @keyframes ellipsis {
       to {
         width: 1.25em;
       }

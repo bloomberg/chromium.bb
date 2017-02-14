@@ -50,7 +50,7 @@
 }
 
 /* keyframes used to pulse the overlay */
-@-webkit-keyframes pulse {
+@keyframes pulse {
  0% {
    transform: scale(1);
  }
@@ -66,10 +66,10 @@
 }
 
 .overlay .page.pulse {
-  -webkit-animation-duration: 180ms;
-  -webkit-animation-iteration-count: 1;
-  -webkit-animation-name: pulse;
-  -webkit-animation-timing-function: ease-in-out;
+  animation-duration: 180ms;
+  animation-iteration-count: 1;
+  animation-name: pulse;
+  animation-timing-function: ease-in-out;
 }
 
 .overlay .page > .close-button {

@@ -27,7 +27,7 @@ body[show-alt] img:not([aria-hidden=true]):not([role=presentation]):not([alt='']
     clear: both;
 }
 
-@-webkit-keyframes slideDown {
+@keyframes slideDown {
     from {
       transform: translateY(-150%);
     }
@@ -36,7 +36,7 @@ body[show-alt] img:not([aria-hidden=true]):not([role=presentation]):not([alt='']
     }
 }
 
-@-webkit-keyframes slideUp {
+@keyframes slideUp {
     from {
       transform: translateY(0%);
     }
@@ -46,26 +46,27 @@ body[show-alt] img:not([aria-hidden=true]):not([role=presentation]):not([alt='']
 }
 
 body[show-alt] .show-alt-infobar {
-    -webkit-animation-name: slideDown;
-    -webkit-animation-duration: 0.5s;
-    -webkit-animation-delay: 0.5s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-timing-function: ease;
-    -webkit-animation-direction: forwards;
+    animation-delay: 0.5s;
+    animation-direction: forwards;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+    animation-name: slideDown;
+    animation-timing-function: ease;
     transform: translateY(0%);
 }
 
 body:not([show-alt]) .show-alt-infobar {
-    -webkit-animation-name: slideUp;
-    -webkit-animation-duration: 0.5s;
-    -webkit-animation-delay: 0.5s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-timing-function: ease;
-    -webkit-animation-direction: forwards;
+    animation-delay: 0.5s;
+    animation-direction: forwards;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+    animation-name: slideUp;
+    animation-timing-function: ease;
     transform: translateY(-150%);
 }
 
 .show-alt-infobar {
+    animation-fill-mode: backwards;
     top: 0;
     left: 0;
     right: 0;
@@ -76,10 +77,8 @@ body:not([show-alt]) .show-alt-infobar {
     line-height: 2.0;
     overflow: hidden;
     box-shadow: 0 0 5px black;
-    box-shadow:         0 0 5px black;
     font-family: Arial, sans-serif !important;
     font-size: 12pt !important;
-    -webkit-animation-fill-mode: backwards;
 }
 
 .show-alt-infobar .content {

@@ -51,8 +51,8 @@ html[dir='rtl'] .bubble .pointer {
 }
 
 .bubble .pointer.bottom {
-  transform: rotate(180deg);
   bottom: -11px;
+  transform: rotate(180deg);
 }
 
 .bubble .close-x {
@@ -464,10 +464,10 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .gallery .image-wrapper > img:not(.cached) {
-  -webkit-animation: fadeIn 500ms ease-in;
+  animation: fadeIn 500ms ease-in;
 }
 
-@-webkit-keyframes fadeIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -571,8 +571,8 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .gallery .edit-mode-toolbar .saved[highlighted] {
-  transform: scaleX(1.1) scaleY(1.1) rotate(0);
   opacity: 1;
+  transform: scaleX(1.1) scaleY(1.1) rotate(0);
 }
 
 /* Editor buttons. */

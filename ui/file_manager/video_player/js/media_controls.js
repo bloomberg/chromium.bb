@@ -1038,9 +1038,9 @@ VideoControls.prototype.showIconFeedback_ = function() {
       if (stateIcon.getAttribute('state') === state)
         stateIcon.removeAttribute('state');
 
-      stateIcon.removeEventListener('webkitAnimationEnd', onAnimationEnd);
+      stateIcon.removeEventListener('animationend', onAnimationEnd);
     }.bind(null, newState);
-    stateIcon.addEventListener('webkitAnimationEnd', onAnimationEnd);
+    stateIcon.addEventListener('animationend', onAnimationEnd);
 
     // Shows the icon with animation.
     stateIcon.setAttribute('state', newState);
@@ -1060,10 +1060,10 @@ VideoControls.prototype.showTextBanner_ = function(identifier) {
   setTimeout(function() {
     var onAnimationEnd = function(event) {
       this.textBanner_.removeEventListener(
-          'webkitAnimationEnd', onAnimationEnd);
+          'animationend', onAnimationEnd);
       this.textBanner_.removeAttribute('visible');
     }.bind(this);
-    this.textBanner_.addEventListener('webkitAnimationEnd', onAnimationEnd);
+    this.textBanner_.addEventListener('animationend', onAnimationEnd);
 
     this.textBanner_.setAttribute('visible', 'true');
   }.bind(this), 0);
