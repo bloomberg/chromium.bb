@@ -146,7 +146,11 @@ void ServerWindow::Remove(ServerWindow* child) {
 
   for (auto& observer : child->observers_)
     observer.OnWillChangeWindowHierarchy(child, nullptr, this);
+
   RemoveImpl(child);
+
+  if (GetRoot() != nullptr)
+    child->ProcessRootChanged(GetRoot(), nullptr);
 
   // Stack the child properly if it is a transient child of a sibling.
   if (child->transient_parent_ && child->transient_parent_->parent() == this)
