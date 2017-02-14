@@ -30,6 +30,17 @@ namespace content {
 
 namespace {
 
+// Resolutions used if the source doesn't support capability enumeration.
+struct {
+  int width;
+  int height;
+} const kFallbackVideoResolutions[] = {{1920, 1080}, {1280, 720}, {960, 720},
+                                       {640, 480},   {640, 360},  {320, 240},
+                                       {320, 180}};
+
+// Frame rates for sources with no support for capability enumeration.
+const int kFallbackVideoFrameRates[] = {30, 60};
+
 MediaDeviceInfo TranslateDeviceInfo(bool has_permission,
                                     const std::string& device_id_salt,
                                     const std::string& group_id_salt,
@@ -359,6 +370,17 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
         ::mojom::VideoInputDeviceCapabilities::New();
     capabilities->device_id = std::move(hmac_device_id);
     capabilities->formats = GetVideoInputFormats(descriptor.device_id);
+    if (capabilities->formats.empty()) {
+      // The device does not seem to support capability enumeration. Compose
+      // a fallback list of capabilities.
+      for (const auto& resolution : kFallbackVideoResolutions) {
+        for (const auto frame_rate : kFallbackVideoFrameRates) {
+          capabilities->formats.push_back(media::VideoCaptureFormat(
+              gfx::Size(resolution.width, resolution.height), frame_rate,
+              media::PIXEL_FORMAT_I420));
+        }
+      }
+    }
     capabilities->facing_mode = ToFacingMode(descriptor.facing);
 #if defined(OS_ANDROID)
     // On Android, the facing mode is not available in the |facing| field,
