@@ -20,35 +20,6 @@ blink_platform_msa_files = [ "graphics/cpu/mips/WebGLImageConversionMSA.h" ]
 
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
 
-component("blink_common") {
-  visibility = []  # Allow re-assignment of list.
-  visibility = [ "//third_party/WebKit/*" ]
-  sources = [
-    "exported/WebString.cpp",
-  ]
-
-  defines = [
-    "BLINK_COMMON_IMPLEMENTATION=1",
-    "INSIDE_BLINK",
-  ]
-
-  configs += [
-    "//build/config/compiler:wexit_time_destructors",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
-  ]
-
-  deps = [
-    "//base",
-    "//third_party/WebKit/Source/wtf",
-    "//url",
-  ]
-
-  public_deps = [
-    "//skia",
-  ]
-}
-
 action("font_family_names") {
   script = "../build/scripts/make_names.py"
 
@@ -182,7 +153,6 @@ group("make_platform_generated") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/Source/*" ]
   public_deps = [
-    ":blink_common",
     ":character_data",
     ":color_data",
     ":font_family_names",
@@ -573,6 +543,7 @@ component("platform") {
     "exported/WebSpeechSynthesizerClientImpl.cpp",
     "exported/WebSpeechSynthesizerClientImpl.h",
     "exported/WebStorageQuotaCallbacks.cpp",
+    "exported/WebString.cpp",
     "exported/WebTextRun.cpp",
     "exported/WebThreadSafeData.cpp",
     "exported/WebURL.cpp",
@@ -1460,7 +1431,6 @@ component("platform") {
     "//v8",
   ]
   deps = [
-    ":blink_common",
     "//cc/surfaces:surfaces",
     "//components/link_header_util:link_header_util",
     "//components/mime_util:mime_util",
@@ -1870,7 +1840,6 @@ test("blink_platform_unittests") {
   ]
 
   deps = [
-    ":blink_common",
     ":platform",
     ":test_support",
     "//base",
@@ -1912,7 +1881,6 @@ test("image_decode_bench") {
   ]
 
   deps = [
-    ":blink_common",
     ":platform",
     "//third_party/WebKit/Source/wtf",
     "//ui/gfx:test_support",
@@ -1941,7 +1909,6 @@ test("blink_platform_perftests") {
   ]
 
   deps = [
-    ":blink_common",
     ":platform",
     "//base",
     "//base/test:test_support",
@@ -1964,7 +1931,6 @@ group("blink_platform_unittests_data") {
 if (current_cpu == "arm") {
   source_set("blink_arm_neon") {
     sources = blink_platform_neon_files
-
     # The *NEON.cpp files fail to compile when -mthumb is passed. Force
     # them to build in ARM mode.
     # See https://bugs.webkit.org/show_bug.cgi?id=62916.
@@ -1975,28 +1941,18 @@ if (current_cpu == "arm") {
     #        'cflags!': ['-mthumb'],
     #      }],
     #    ],
-
-    deps = [
-      ":blink_common",
-    ]
   }
 }
 
 if (current_cpu == "mipsel" || current_cpu == "mips64el") {
   source_set("blink_mips_msa") {
     sources = blink_platform_msa_files
-    deps = [
-      ":blink_common",
-    ]
   }
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
   source_set("blink_x86_sse") {
     sources = blink_platform_sse_files
-    deps = [
-      ":blink_common",
-    ]
   }
 }
 

@@ -39,10 +39,6 @@
 #define BLINK_PLATFORM_IMPLEMENTATION 0
 #endif
 
-#if !defined(BLINK_COMMON_IMPLEMENTATION)
-#define BLINK_COMMON_IMPLEMENTATION 0
-#endif
-
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 #if BLINK_IMPLEMENTATION
@@ -55,20 +51,13 @@
 #else  // BLINK_PLATFORM_IMPLEMENTATION
 #define BLINK_PLATFORM_EXPORT __declspec(dllimport)
 #endif
-#if BLINK_COMMON_IMPLEMENTATION
-#define BLINK_COMMON_EXPORT __declspec(dllexport)
-#else  // BLINK_COMMON_IMPLEMENTATION
-#define BLINK_COMMON_EXPORT __declspec(dllimport)
-#endif
 #else  // defined(WIN32)
 #define BLINK_EXPORT __attribute__((visibility("default")))
 #define BLINK_PLATFORM_EXPORT __attribute__((visibility("default")))
-#define BLINK_COMMON_EXPORT __attribute__((visibility("default")))
 #endif
 #else  // defined(COMPONENT_BUILD)
 #define BLINK_EXPORT
 #define BLINK_PLATFORM_EXPORT
-#define BLINK_COMMON_EXPORT
 #endif
 
 // -----------------------------------------------------------------------------
