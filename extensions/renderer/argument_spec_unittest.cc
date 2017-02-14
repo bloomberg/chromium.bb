@@ -290,6 +290,31 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     }
     ExpectFailure(spec, "1");
   }
+  {
+    const char kAnySpec[] = "{ 'type': 'any' }";
+    ArgumentSpec spec(*ValueFromString(kAnySpec));
+    ExpectSuccess(spec, "42", "42");
+    ExpectSuccess(spec, "'foo'", "'foo'");
+    ExpectSuccess(spec, "({prop1:'bar'})", "{'prop1':'bar'}");
+    ExpectSuccess(spec, "[1, 2, 3]", "[1,2,3]");
+    ExpectSuccess(spec, "[1, 'a']", "[1,'a']");
+    ExpectSuccess(spec, "null", base::Value());
+    ExpectSuccess(spec, "({prop1: 'alpha', prop2: null})",
+                  "{'prop1':'alpha','prop2':null}");
+    ExpectSuccess(spec,
+                  "x = {alpha: 'alpha'};\n"
+                  "y = {beta: 'beta', x: x};\n"
+                  "y;",
+                  "{'beta':'beta','x':{'alpha':'alpha'}}");
+    // We don't serialize undefined.
+    // TODO(devlin): This matches current behavior, but should it? Part of the
+    // problem is that base::Values don't differentiate between undefined and
+    // null, which is a potentially important distinction. However, this means
+    // that in serialization of an object {a: 1, foo:undefined}, we lose the
+    // 'foo' property.
+    ExpectFailure(spec, "undefined");
+    ExpectSuccess(spec, "({prop1: 1, prop2: undefined})", "{'prop1':1}");
+  }
 }
 
 TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
