@@ -116,6 +116,7 @@ class PermissionIDSet {
   using const_iterator = std::set<PermissionID>::const_iterator;
 
   PermissionIDSet();
+  PermissionIDSet(std::initializer_list<APIPermission::ID> permissions);
   PermissionIDSet(const PermissionIDSet& other);
   virtual ~PermissionIDSet();
 
@@ -132,6 +133,7 @@ class PermissionIDSet {
   std::vector<base::string16> GetAllPermissionParameters() const;
 
   // Check if the set contains a permission with the given ID.
+  bool ContainsID(PermissionID permission_id) const;
   bool ContainsID(APIPermission::ID permission_id) const;
 
   // Check if the set contains permissions with all the given IDs.
@@ -139,6 +141,7 @@ class PermissionIDSet {
 
   // Check if the set contains any permission with one of the given IDs.
   bool ContainsAnyID(const std::set<APIPermission::ID>& permission_ids) const;
+  bool ContainsAnyID(const PermissionIDSet& other) const;
 
   // Returns all the permissions in this set with the given ID.
   PermissionIDSet GetAllPermissionsWithID(

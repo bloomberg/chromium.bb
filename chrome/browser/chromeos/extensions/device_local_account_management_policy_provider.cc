@@ -565,9 +565,10 @@ const char* const kSafePermissionStrings[] = {
     // icon and won't extract any data.
     "notifications",
 
-    // Captures page content, so block. Alternatively: Allow, but either (1)
-    // prompt user or (2) return blank content.
-    // "pageCapture",
+    // User is prompted (allow/deny) when an extension requests pageCapture for
+    // the first time in a session. The request is made via
+    // chrome.pageCapture.saveAsMHTML call.
+    "pageCapture",
 
     // Allows to use machine crypto keys - these would be provisioned by the
     // admin anyways.
