@@ -510,7 +510,7 @@ PASS extend() forwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild
 FAIL extend() backwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 1 [paras[0].firstChild, 0] assert_equals: Sanity check: endOffset must be correct expected 1 but got 2
 PASS extend() forwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 2 [paras[0].firstChild, 1] 
 FAIL extend() backwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 2 [paras[0].firstChild, 1] assert_equals: Sanity check: endOffset must be correct expected 1 but got 2
-FAIL extend() forwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 3 [paras[0].firstChild, 2] assert_equals: focusOffset must be the offset passed to extend() expected 2 but got 1
+PASS extend() forwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 3 [paras[0].firstChild, 2] 
 FAIL extend() backwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 3 [paras[0].firstChild, 2] assert_equals: Sanity check: endOffset must be correct expected 1 but got 2
 PASS extend() forwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 4 [paras[0].firstChild, 8] 
 FAIL extend() backwards with range 2 [paras[0].firstChild, 0, paras[0].firstChild, 1] and point 4 [paras[0].firstChild, 8] assert_equals: Sanity check: endOffset must be correct expected 1 but got 2
@@ -1063,7 +1063,7 @@ PASS extend() forwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild
 FAIL extend() backwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 4 [paras[0].firstChild, 8] assert_equals: Sanity check: endOffset must be correct expected 9 but got 10
 PASS extend() forwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 5 [paras[0].firstChild, 9] 
 FAIL extend() backwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 5 [paras[0].firstChild, 9] assert_equals: Sanity check: endOffset must be correct expected 9 but got 10
-FAIL extend() forwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 6 [paras[0].firstChild, 10] assert_equals: focusOffset must be the offset passed to extend() expected 10 but got 9
+PASS extend() forwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 6 [paras[0].firstChild, 10] 
 FAIL extend() backwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 6 [paras[0].firstChild, 10] assert_equals: Sanity check: endOffset must be correct expected 9 but got 10
 PASS extend() forwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 7 [paras[0].firstChild, 65535] 
 FAIL extend() backwards with range 4 [paras[0].firstChild, 2, paras[0].firstChild, 9] and point 7 [paras[0].firstChild, 65535] assert_equals: Sanity check: endOffset must be correct expected 9 but got 10
@@ -1307,11 +1307,16 @@ FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and 
 " but got Element node <p id="c">Qrstuvwx</p>
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 7 [paras[0].firstChild, 65535] 
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 8 [paras[1].firstChild, -1] 
-PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 9 [paras[1].firstChild, 0] 
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must be the offset passed to extend() expected 1 but got 0
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must be the offset passed to extend() expected 2 but got 0
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must be the offset passed to extend() expected 8 but got 0
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must be the offset passed to extend() expected 9 but got 0
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 9 [paras[1].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 10 [paras[1].firstChild, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 11 [paras[1].firstChild, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 12 [paras[1].firstChild, 8] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 13 [paras[1].firstChild, 9] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 14 [paras[1].firstChild, 10] 
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 15 [paras[1].firstChild, 65535] 
 FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 16 [detachedPara1.firstChild, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected Text node "Opqrstuv" but got Text node "Ijklmnop
@@ -1353,12 +1358,10 @@ FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and 
 FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 36 [paras[0], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
 " but got Element node <p id="c">Qrstuvwx</p>
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 37 [paras[0], 2] 
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 38 [paras[1], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
-FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 39 [paras[1], 1] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 38 [paras[1], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
+FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 39 [paras[1], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 40 [paras[1], 2] 
 FAIL extend() with range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0] and point 41 [detachedPara1, 0] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected Element node <p>Opqrstuv</p> but got Text node "Ijklmnop
 "
@@ -1478,19 +1481,24 @@ FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChil
 PASS extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 8 [paras[1].firstChild, -1] 
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 8 [paras[1].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must be the offset passed to extend() expected 0 but got 1
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 9 [paras[1].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 9 [paras[1].firstChild, 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-PASS extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 10 [paras[1].firstChild, 1] 
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 10 [paras[1].firstChild, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 10 [paras[1].firstChild, 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must be the offset passed to extend() expected 2 but got 1
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 11 [paras[1].firstChild, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 11 [paras[1].firstChild, 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must be the offset passed to extend() expected 8 but got 1
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 12 [paras[1].firstChild, 8] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 12 [paras[1].firstChild, 8] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must be the offset passed to extend() expected 9 but got 1
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 13 [paras[1].firstChild, 9] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 13 [paras[1].firstChild, 9] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 14 [paras[1].firstChild, 10] 
@@ -1582,14 +1590,12 @@ FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChil
 PASS extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 37 [paras[0], 2] 
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 37 [paras[0], 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 38 [paras[1], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 38 [paras[1], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 38 [paras[1], 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 39 [paras[1], 1] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 39 [paras[1], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 39 [paras[1], 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1] and point 40 [paras[1], 2] 
@@ -1807,19 +1813,24 @@ FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChil
 PASS extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 8 [paras[1].firstChild, -1] 
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 8 [paras[1].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must be the offset passed to extend() expected 0 but got 8
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 9 [paras[1].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 9 [paras[1].firstChild, 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must be the offset passed to extend() expected 1 but got 8
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 10 [paras[1].firstChild, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 10 [paras[1].firstChild, 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must be the offset passed to extend() expected 2 but got 8
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 11 [paras[1].firstChild, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 11 [paras[1].firstChild, 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-PASS extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 12 [paras[1].firstChild, 8] 
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 12 [paras[1].firstChild, 8] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 12 [paras[1].firstChild, 8] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 13 [paras[1].firstChild, 9] assert_equals: focusOffset must be the offset passed to extend() expected 9 but got 8
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 13 [paras[1].firstChild, 9] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 13 [paras[1].firstChild, 9] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 14 [paras[1].firstChild, 10] 
@@ -1911,14 +1922,12 @@ FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChil
 PASS extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 37 [paras[0], 2] 
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 37 [paras[0], 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 38 [paras[1], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 38 [paras[1], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 38 [paras[1], 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 39 [paras[1], 1] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 39 [paras[1], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 39 [paras[1], 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8] and point 40 [paras[1], 2] 
@@ -2136,19 +2145,24 @@ FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChil
 PASS extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 8 [paras[1].firstChild, -1] 
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 8 [paras[1].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 9 [paras[1].firstChild, 0] assert_equals: focusOffset must be the offset passed to extend() expected 0 but got 9
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 9 [paras[1].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 9 [paras[1].firstChild, 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 10 [paras[1].firstChild, 1] assert_equals: focusOffset must be the offset passed to extend() expected 1 but got 9
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 10 [paras[1].firstChild, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 10 [paras[1].firstChild, 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 11 [paras[1].firstChild, 2] assert_equals: focusOffset must be the offset passed to extend() expected 2 but got 9
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 11 [paras[1].firstChild, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 11 [paras[1].firstChild, 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 12 [paras[1].firstChild, 8] assert_equals: focusOffset must be the offset passed to extend() expected 8 but got 9
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 12 [paras[1].firstChild, 8] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 12 [paras[1].firstChild, 8] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-PASS extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 13 [paras[1].firstChild, 9] 
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 13 [paras[1].firstChild, 9] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 13 [paras[1].firstChild, 9] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 14 [paras[1].firstChild, 10] 
@@ -2240,14 +2254,12 @@ FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChil
 PASS extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 37 [paras[0], 2] 
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 37 [paras[0], 2] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 38 [paras[1], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 38 [paras[1], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 38 [paras[1], 0] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
-FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 39 [paras[1], 1] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+FAIL extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 39 [paras[1], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 FAIL extend() backwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 39 [paras[1], 1] assert_equals: Sanity check: startContainer must be correct expected Text node "Ijklmnop
 " but got Text node "Qrstuvwx"
 PASS extend() forwards with range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9] and point 40 [paras[1], 2] 
@@ -3316,9 +3328,9 @@ PASS extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 0 [paras[0].firstChild, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 1 [paras[0].firstChild, 0] assert_equals: focusNode must be the node passed to extend() expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 1 [paras[0].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 1 [paras[0].firstChild, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3440,11 +3452,15 @@ PASS extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 24 [document.documentElement, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 25 [document.documentElement, 0] assert_equals: focusOffset must be the offset passed to extend() expected 0 but got 1
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 25 [document.documentElement, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 25 [document.documentElement, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-PASS extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 26 [document.documentElement, 1] 
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 26 [document.documentElement, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 26 [document.documentElement, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3458,9 +3474,9 @@ PASS extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 28 [document.documentElement, 7] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 29 [document.head, 1] assert_equals: focusNode must be the node passed to extend() expected Element node <head><title>Selection extend() tests</title>
-<meta chars... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 29 [document.head, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 29 [document.head, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3490,9 +3506,9 @@ FAIL extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 34 [foreignDoc.body, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 35 [paras[0], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p> but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 35 [paras[0], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 35 [paras[0], 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3532,9 +3548,9 @@ FAIL extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 42 [detachedPara1, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 43 [testDiv, 0] assert_equals: focusNode must be the node passed to extend() expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 43 [testDiv, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 43 [testDiv, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3548,13 +3564,15 @@ PASS extend() forwards with range 15 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 45 [document, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 46 [document, 0] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 46 [document, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 46 [document, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 47 [document, 1] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 47 [document, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 15 [document.documentElement, 0, document.documentElement, 1] and point 47 [document, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3893,7 +3911,9 @@ FAIL extend() forwards with range 16 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 26 [document.documentElement, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-PASS extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 27 [document.documentElement, 2] 
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 27 [document.documentElement, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 27 [document.documentElement, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3907,9 +3927,9 @@ FAIL extend() forwards with range 16 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 29 [document.head, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: focusNode must be the node passed to extend() expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -3981,9 +4001,9 @@ FAIL extend() forwards with range 16 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 43 [testDiv, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: focusNode must be the node passed to extend() expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4003,8 +4023,9 @@ FAIL extend() forwards with range 16 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 47 [document, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 48 [document, 2] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 48 [document, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 48 [document, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4016,13 +4037,15 @@ PASS extend() forwards with range 16 [document.documentElement, 0, document.docu
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 50 [comment, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 51 [comment, 0] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 51 [comment, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 51 [comment, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 52 [comment, 4] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 52 [comment, 4] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 16 [document.documentElement, 0, document.documentElement, 2] and point 52 [comment, 4] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4335,7 +4358,9 @@ FAIL extend() forwards with range 17 [document.documentElement, 1, document.docu
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 26 [document.documentElement, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-PASS extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 27 [document.documentElement, 2] 
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 27 [document.documentElement, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 27 [document.documentElement, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4349,9 +4374,9 @@ FAIL extend() forwards with range 17 [document.documentElement, 1, document.docu
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 29 [document.head, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: focusNode must be the node passed to extend() expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 30 [document.body, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4423,9 +4448,9 @@ FAIL extend() forwards with range 17 [document.documentElement, 1, document.docu
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 43 [testDiv, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: focusNode must be the node passed to extend() expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 44 [testDiv, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4445,8 +4470,9 @@ FAIL extend() forwards with range 17 [document.documentElement, 1, document.docu
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 47 [document, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 48 [document, 2] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 48 [document, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 48 [document, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4458,13 +4484,15 @@ PASS extend() forwards with range 17 [document.documentElement, 1, document.docu
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 50 [comment, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 51 [comment, 0] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 51 [comment, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 51 [comment, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 52 [comment, 4] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <html><head><title>Selection extend() tests</title>
-<meta...
+FAIL extend() forwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 52 [comment, 4] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <html><head><title>Selection extend() tests</title>
+<meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 17 [document.documentElement, 1, document.documentElement, 2] and point 52 [comment, 4] assert_equals: Sanity check: startContainer must be correct expected Element node <html><head><title>Selection extend() tests</title>
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4638,9 +4666,9 @@ FAIL extend() backwards with range 17 [document.documentElement, 1, document.doc
 <meta... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() with range 18 [document.head, 1, document.head, 1] and point 0 [paras[0].firstChild, -1] 
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 1 [paras[0].firstChild, 0] assert_equals: focusNode must be the node passed to extend() expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 1 [paras[0].firstChild, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 2 [paras[0].firstChild, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4690,17 +4718,19 @@ FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 22 [f
 <meta chars...
 PASS extend() with range 18 [document.head, 1, document.head, 1] and point 23 [foreignPara1.firstChild, 9] 
 PASS extend() with range 18 [document.head, 1, document.head, 1] and point 24 [document.documentElement, -1] 
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 25 [document.documentElement, 0] assert_equals: focusNode must be the node passed to extend() expected Element node <html><head><title>Selection extend() tests</title>
-<meta... but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 26 [document.documentElement, 1] assert_equals: focusNode must be the node passed to extend() expected Element node <html><head><title>Selection extend() tests</title>
-<meta... but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 25 [document.documentElement, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 26 [document.documentElement, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 27 [document.documentElement, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() with range 18 [document.head, 1, document.head, 1] and point 28 [document.documentElement, 7] 
-PASS extend() with range 18 [document.head, 1, document.head, 1] and point 29 [document.head, 1] 
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 29 [document.head, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 30 [document.body, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4712,9 +4742,9 @@ FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 33 [f
 <meta chars...
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 34 [foreignDoc.body, 1] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected Element node <body><p>Efghijkl</p><p>Mnopqrst</p>I admit that I harbor... but got Element node <head><title>Selection extend() tests</title>
 <meta chars...
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 35 [paras[0], 0] assert_equals: focusNode must be the node passed to extend() expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p> but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 35 [paras[0], 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 36 [paras[0], 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4730,17 +4760,19 @@ FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 41 [d
 <meta chars...
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 42 [detachedPara1, 1] assert_equals: anchorNode must be the node passed to extend() if it has a different root from the original range expected Element node <p>Opqrstuv</p> but got Element node <head><title>Selection extend() tests</title>
 <meta chars...
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 43 [testDiv, 0] assert_equals: focusNode must be the node passed to extend() expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 43 [testDiv, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 44 [testDiv, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
 PASS extend() with range 18 [document.head, 1, document.head, 1] and point 45 [document, -1] 
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 46 [document, 0] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
-FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 47 [document, 1] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <head><title>Selection extend() tests</title>
-<meta chars...
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 46 [document, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 47 [document, 1] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
+<meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() with range 18 [document.head, 1, document.head, 1] and point 48 [document, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <head><title>Selection extend() tests</title>
 <meta chars... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4956,9 +4988,9 @@ FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and po
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 26 [document.documentElement, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 27 [document.documentElement, 2] assert_equals: focusNode must be the node passed to extend() expected Element node <html><head><title>Selection extend() tests</title>
-<meta... but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 27 [document.documentElement, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 27 [document.documentElement, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -4972,7 +5004,9 @@ FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and po
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 29 [document.head, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 30 [document.body, 3] assert_equals: focusOffset must be the offset passed to extend() expected 3 but got 1
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 30 [document.body, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 30 [document.body, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -5044,9 +5078,9 @@ FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and po
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 43 [testDiv, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 44 [testDiv, 3] assert_equals: focusNode must be the node passed to extend() expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 44 [testDiv, 3] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 44 [testDiv, 3] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -5066,8 +5100,9 @@ FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and po
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 47 [document, 1] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 48 [document, 2] assert_equals: focusNode must be the node passed to extend() expected Document node with 2 children but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 48 [document, 2] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 48 [document, 2] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
@@ -5079,13 +5114,15 @@ PASS extend() forwards with range 19 [document.body, 0, document.body, 1] and po
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 50 [comment, -1] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 51 [comment, 0] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 51 [comment, 0] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 51 [comment, 0] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 52 [comment, 4] assert_equals: focusNode must be the node passed to extend() expected Comment node <!--Alphabet soup?--> but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+FAIL extend() forwards with range 19 [document.body, 0, document.body, 1] and point 52 [comment, 4] assert_equals: anchorNode must not change if the node passed to extend() has the same root as the original range expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 FAIL extend() backwards with range 19 [document.body, 0, document.body, 1] and point 52 [comment, 4] assert_equals: Sanity check: startContainer must be correct expected Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "

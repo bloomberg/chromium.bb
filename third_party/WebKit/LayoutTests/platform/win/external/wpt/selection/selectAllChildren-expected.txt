@@ -571,8 +571,7 @@ FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 0 paras[0] a
 "
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 1 paras[0].firstChild 
 FAIL Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
+</p> but got Text node "Qrstuvwx"
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 3 paras[1].firstChild 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 4 foreignPara1 
 PASS Range 5 [paras[1].firstChild, 0, paras[1].firstChild, 0], node 5 foreignPara1.firstChild 
@@ -616,9 +615,9 @@ FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 0 paras[0] a
 "
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 1 paras[0].firstChild 
 FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
-FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 3 paras[1].firstChild assert_equals: After selectAllChildren, focusOffset must be the given node's number of children expected 0 but got 1
+</p> but got Text node "Qrstuvwx"
+FAIL Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 4 foreignPara1 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 5 foreignPara1.firstChild 
 PASS Range 6 [paras[1].firstChild, 0, paras[1].firstChild, 1], node 6 detachedPara1 
@@ -661,9 +660,9 @@ FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 0 paras[0] a
 "
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 1 paras[0].firstChild 
 FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
-FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorOffset must be 0 expected 0 but got 2
+</p> but got Text node "Qrstuvwx"
+FAIL Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 4 foreignPara1 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 5 foreignPara1.firstChild 
 PASS Range 7 [paras[1].firstChild, 2, paras[1].firstChild, 8], node 6 detachedPara1 
@@ -706,9 +705,9 @@ FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 0 paras[0] a
 "
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 1 paras[0].firstChild 
 FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
-</p> but got Text node "Ijklmnop
-"
-FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorOffset must be 0 expected 0 but got 2
+</p> but got Text node "Qrstuvwx"
+FAIL Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
+" but got Text node "Qrstuvwx"
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 4 foreignPara1 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 5 foreignPara1.firstChild 
 PASS Range 8 [paras[1].firstChild, 2, paras[1].firstChild, 9], node 6 detachedPara1 
@@ -1019,8 +1018,7 @@ PASS Range 14 [foreignPara1.firstChild, 2, foreignPara1.firstChild, 8], node 37 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 1 paras[0].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
+PASS Range 15 [document.documentElement, 0, document.documentElement, 1], node 1 paras[0].firstChild 
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
 </p> but got Text node "Qrstuvwx"
 FAIL Range 15 [document.documentElement, 0, document.documentElement, 1], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
@@ -1077,8 +1075,10 @@ PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 7
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 8 detachedPara1 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 9 detachedPara1.firstChild 
 FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
-FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 16 [document.documentElement, 0, document.documentElement, 2], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 12 detachedDiv 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 13 detachedPara2 
 PASS Range 16 [document.documentElement, 0, document.documentElement, 2], node 14 foreignDoc 
@@ -1120,8 +1120,10 @@ PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 7
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 8 detachedPara1 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 9 detachedPara1.firstChild 
 FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
-FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 17 [document.documentElement, 1, document.documentElement, 2], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 12 detachedDiv 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 13 detachedPara2 
 PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 14 foreignDoc 
@@ -1151,9 +1153,7 @@ PASS Range 17 [document.documentElement, 1, document.documentElement, 2], node 3
 FAIL Range 18 [document.head, 1, document.head, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 18 [document.head, 1, document.head, 1], node 1 paras[0].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <head><title>Selection.selectAllChildren tests</title>
-<m...
+PASS Range 18 [document.head, 1, document.head, 1], node 1 paras[0].firstChild 
 FAIL Range 18 [document.head, 1, document.head, 1], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
 </p> but got Text node "Qrstuvwx"
 FAIL Range 18 [document.head, 1, document.head, 1], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
@@ -1210,10 +1210,10 @@ PASS Range 19 [document.body, 0, document.body, 1], node 7 detachedPara1.firstCh
 PASS Range 19 [document.body, 0, document.body, 1], node 8 detachedPara1 
 PASS Range 19 [document.body, 0, document.body, 1], node 9 detachedPara1.firstChild 
 FAIL Range 19 [document.body, 0, document.body, 1], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
-FAIL Range 19 [document.body, 0, document.body, 1], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Element node <body><div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id...
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 19 [document.body, 0, document.body, 1], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 19 [document.body, 0, document.body, 1], node 12 detachedDiv 
 PASS Range 19 [document.body, 0, document.body, 1], node 13 detachedPara2 
 PASS Range 19 [document.body, 0, document.body, 1], node 14 foreignDoc 
@@ -1378,9 +1378,7 @@ PASS Range 22 [foreignDoc.body, 0, foreignDoc.body, 0], node 37 xmlDoctype
 FAIL Range 23 [paras[0], 0, paras[0], 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 23 [paras[0], 0, paras[0], 0], node 1 paras[0].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p>
+PASS Range 23 [paras[0], 0, paras[0], 0], node 1 paras[0].firstChild 
 FAIL Range 23 [paras[0], 0, paras[0], 0], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
 </p> but got Text node "Qrstuvwx"
 FAIL Range 23 [paras[0], 0, paras[0], 0], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
@@ -1828,8 +1826,7 @@ PASS Range 32 [testDiv, 1, paras[2].firstChild, 5], node 37 xmlDoctype
 FAIL Range 33 [document.documentElement, 1, document.body, 0], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 33 [document.documentElement, 1, document.body, 0], node 1 paras[0].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Element node <html><head><title>Selection.selectAllChildren tests</tit...
+PASS Range 33 [document.documentElement, 1, document.body, 0], node 1 paras[0].firstChild 
 FAIL Range 33 [document.documentElement, 1, document.body, 0], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
 </p> but got Text node "Qrstuvwx"
 FAIL Range 33 [document.documentElement, 1, document.body, 0], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
@@ -1919,8 +1916,7 @@ PASS Range 34 [foreignDoc.documentElement, 1, foreignDoc.body, 0], node 37 xmlDo
 FAIL Range 35 [document, 0, document, 1], node 0 paras[0] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p> but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 35 [document, 0, document, 1], node 1 paras[0].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Äb̈c̈d̈ëf̈g̈ḧ
-" but got Document node with 2 children
+PASS Range 35 [document, 0, document, 1], node 1 paras[0].firstChild 
 FAIL Range 35 [document, 0, document, 1], node 2 paras[1] assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <p id="b" style="display:none">Ijklmnop
 </p> but got Text node "Qrstuvwx"
 FAIL Range 35 [document, 0, document, 1], node 3 paras[1].firstChild assert_equals: After selectAllChildren, anchorNode must be the given node expected Text node "Ijklmnop
@@ -1977,7 +1973,8 @@ PASS Range 36 [document, 0, document, 2], node 7 detachedPara1.firstChild
 PASS Range 36 [document, 0, document, 2], node 8 detachedPara1 
 PASS Range 36 [document, 0, document, 2], node 9 detachedPara1.firstChild 
 FAIL Range 36 [document, 0, document, 2], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Document node with 2 children
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 36 [document, 0, document, 2], node 11 document 
 PASS Range 36 [document, 0, document, 2], node 12 detachedDiv 
 PASS Range 36 [document, 0, document, 2], node 13 detachedPara2 
@@ -2020,8 +2017,10 @@ PASS Range 37 [document, 1, document, 2], node 7 detachedPara1.firstChild
 PASS Range 37 [document, 1, document, 2], node 8 detachedPara1 
 PASS Range 37 [document, 1, document, 2], node 9 detachedPara1.firstChild 
 FAIL Range 37 [document, 1, document, 2], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Document node with 2 children
-FAIL Range 37 [document, 1, document, 2], node 11 document assert_equals: After selectAllChildren, anchorOffset must be 0 expected 0 but got 1
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 37 [document, 1, document, 2], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 37 [document, 1, document, 2], node 12 detachedDiv 
 PASS Range 37 [document, 1, document, 2], node 13 detachedPara2 
 PASS Range 37 [document, 1, document, 2], node 14 foreignDoc 
@@ -2062,9 +2061,11 @@ PASS Range 38 [testDiv, 0, comment, 5], node 6 detachedPara1
 PASS Range 38 [testDiv, 0, comment, 5], node 7 detachedPara1.firstChild 
 PASS Range 38 [testDiv, 0, comment, 5], node 8 detachedPara1 
 PASS Range 38 [testDiv, 0, comment, 5], node 9 detachedPara1.firstChild 
-PASS Range 38 [testDiv, 0, comment, 5], node 10 testDiv 
-FAIL Range 38 [testDiv, 0, comment, 5], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s...
+FAIL Range 38 [testDiv, 0, comment, 5], node 10 testDiv assert_equals: After selectAllChildren, anchorNode must be the given node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
+FAIL Range 38 [testDiv, 0, comment, 5], node 11 document assert_equals: After selectAllChildren, anchorNode must be the given node expected Document node with 2 children but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
+"
 PASS Range 38 [testDiv, 0, comment, 5], node 12 detachedDiv 
 PASS Range 38 [testDiv, 0, comment, 5], node 13 detachedPara2 
 PASS Range 38 [testDiv, 0, comment, 5], node 14 foreignDoc 
@@ -2169,7 +2170,7 @@ PASS Range 40 [paras[3], 1, comment, 8], node 22 xmlTextNode
 PASS Range 40 [paras[3], 1, comment, 8], node 23 detachedXmlTextNode 
 PASS Range 40 [paras[3], 1, comment, 8], node 24 processingInstruction 
 PASS Range 40 [paras[3], 1, comment, 8], node 25 detachedProcessingInstruction 
-FAIL Range 40 [paras[3], 1, comment, 8], node 26 comment assert_equals: After selectAllChildren, anchorNode must be the given node expected Comment node <!--Alphabet soup?--> but got Element node <p id="d" style="display:none">Yzabcdef</p>
+FAIL Range 40 [paras[3], 1, comment, 8], node 26 comment assert_equals: After selectAllChildren, anchorNode must be the given node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 PASS Range 40 [paras[3], 1, comment, 8], node 27 detachedComment 
 PASS Range 40 [paras[3], 1, comment, 8], node 28 foreignComment 
 PASS Range 40 [paras[3], 1, comment, 8], node 29 detachedForeignComment 
