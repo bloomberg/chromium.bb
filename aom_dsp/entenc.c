@@ -390,6 +390,7 @@ void od_ec_encode_cdf_unscaled_dyadic(od_ec_enc *enc, int s,
                    cdf[s] << (15 - ftb));
 }
 
+#if CONFIG_RAWBITS
 /*Encodes a raw unsigned integer in the stream.
   fl: The integer to encode.
   ft: The number of integers that can be encoded (one more than the max).
@@ -463,6 +464,7 @@ void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb) {
   enc->end_window = end_window;
   enc->nend_bits = nend_bits;
 }
+#endif
 
 /*Overwrites a few bits at the very start of an existing stream, after they
    have already been encoded.

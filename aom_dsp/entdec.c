@@ -411,6 +411,7 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   return od_ec_decode_cdf_unscaled_dyadic(dec, cdf, nsyms, 15);
 }
 
+#if CONFIG_RAWBITS
 /*Extracts a raw unsigned integer with a non-power-of-2 range from the stream.
   The integer must have been encoded with od_ec_enc_uint().
   ft: The number of integers that can be decoded (one more than the max).
@@ -471,6 +472,7 @@ uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb) {
   dec->nend_bits = available;
   return ret;
 }
+#endif
 
 /*Returns the number of bits "used" by the decoded symbols so far.
   This same number can be computed in either the encoder or the decoder, and is

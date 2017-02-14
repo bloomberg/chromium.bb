@@ -94,7 +94,6 @@ static INLINE void aom_write(aom_writer *br, int bit, int probability) {
 #if CONFIG_ANS
   buf_rabs_write(br, bit, probability);
 #elif CONFIG_DAALA_EC
-  // Note this uses raw bits and is not the same as aom_daala_write(r, 128);
   aom_daala_write(br, bit, probability);
 #else
   aom_dk_write(br, bit, probability);
@@ -114,7 +113,8 @@ static INLINE void aom_write_record(aom_writer *br, int bit, int probability,
 static INLINE void aom_write_bit(aom_writer *w, int bit) {
 #if CONFIG_ANS
   buf_rabs_write_bit(w, bit);
-#elif CONFIG_DAALA_EC
+#elif CONFIG_DAALA_EC && CONFIG_RAWBITS
+  // Note this uses raw bits and is not the same as aom_daala_write(r, 128);
   aom_daala_write_bit(w, bit);
 #else
   aom_write(w, bit, 128);  // aom_prob_half
