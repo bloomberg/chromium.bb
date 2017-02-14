@@ -13,7 +13,6 @@
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
-#include "third_party/webrtc/base/common.h"
 #include "third_party/webrtc/base/gunit.h"
 
 using buzz::QName;
@@ -34,17 +33,13 @@ class XmlParserTestHandler : public XmlParseHandler {
     ss_ << ") ";
   }
   virtual void EndElement(XmlParseContext * pctx, const char * name) {
-    RTC_UNUSED(pctx);
-    RTC_UNUSED(name);
     ss_ << "END ";
   }
   virtual void CharacterData(XmlParseContext * pctx,
                              const char * text, int len) {
-    RTC_UNUSED(pctx);
     ss_ << "TEXT (" << std::string(text, len) << ") ";
   }
   virtual void Error(XmlParseContext * pctx, XML_Error code) {
-    RTC_UNUSED(pctx);
     ss_ << "ERROR (" << static_cast<int>(code) << ") ";
   }
   virtual ~XmlParserTestHandler() {

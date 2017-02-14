@@ -14,7 +14,6 @@
 #include <vector>
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/base/common.h"
 
 namespace buzz {
 
@@ -90,8 +89,6 @@ XmlBuilder::StartElement(XmlParseContext * pctx,
 
 void
 XmlBuilder::EndElement(XmlParseContext * pctx, const char * name) {
-  RTC_UNUSED(pctx);
-  RTC_UNUSED(name);
   pelCurrent_ = pvParents_->back();
   pvParents_->pop_back();
 }
@@ -99,7 +96,6 @@ XmlBuilder::EndElement(XmlParseContext * pctx, const char * name) {
 void
 XmlBuilder::CharacterData(XmlParseContext * pctx,
                                const char * text, int len) {
-  RTC_UNUSED(pctx);
   if (pelCurrent_) {
     pelCurrent_->AddParsedText(text, len);
   }
@@ -107,8 +103,6 @@ XmlBuilder::CharacterData(XmlParseContext * pctx,
 
 void
 XmlBuilder::Error(XmlParseContext * pctx, XML_Error err) {
-  RTC_UNUSED(pctx);
-  RTC_UNUSED(err);
   pelRoot_.reset(NULL);
   pelCurrent_ = NULL;
   pvParents_->clear();

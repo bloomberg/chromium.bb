@@ -15,7 +15,6 @@
 #include <string>
 
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
-#include "third_party/webrtc/base/common.h"
 #include "third_party/webrtc/base/gunit.h"
 
 using buzz::NS_XML;

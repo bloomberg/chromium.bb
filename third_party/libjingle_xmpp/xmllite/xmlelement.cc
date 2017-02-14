@@ -20,7 +20,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlprinter.h"
-#include "third_party/webrtc/base/common.h"
+#include "third_party/webrtc/base/checks.h"
 
 namespace buzz {
 
@@ -358,7 +358,7 @@ void XmlElement::RemoveChildAfter(XmlChild* predecessor) {
 }
 
 void XmlElement::AddAttr(const QName& name, const std::string& value) {
-  ASSERT(!HasAttr(name));
+  RTC_DCHECK(!HasAttr(name));
 
   XmlAttr ** pprev = last_attr_ ? &(last_attr_->next_attr_) : &first_attr_;
   last_attr_ = (*pprev = new XmlAttr(name, value));

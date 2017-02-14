@@ -17,7 +17,6 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
-#include "third_party/webrtc/base/common.h"
 
 namespace buzz {
 

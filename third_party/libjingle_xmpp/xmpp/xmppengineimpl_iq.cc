@@ -12,7 +12,6 @@
 #include <vector>
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengineimpl.h"
-#include "third_party/webrtc/base/common.h"
 
 namespace buzz {
 

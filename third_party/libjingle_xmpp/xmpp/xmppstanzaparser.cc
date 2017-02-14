@@ -12,7 +12,6 @@
 
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc/base/common.h"
 #ifdef EXPAT_RELATIVE_PATH
 #include "expat.h"
 #else
@@ -81,8 +80,6 @@ XmppStanzaParser::IncomingEndElement(
 void
 XmppStanzaParser::IncomingError(
     XmlParseContext * pctx, XML_Error errCode) {
-  RTC_UNUSED(pctx);
-  RTC_UNUSED(errCode);
   psph_->XmlError();
 }
 

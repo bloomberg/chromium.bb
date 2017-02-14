@@ -19,7 +19,6 @@
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengineimpl.h"
 #include "third_party/webrtc/base/base64.h"
-#include "third_party/webrtc/base/common.h"
 
 using rtc::ConstantLabel;
 

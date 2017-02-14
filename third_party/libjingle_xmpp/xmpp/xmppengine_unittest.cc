@@ -19,7 +19,6 @@
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/base/common.h"
 #include "third_party/webrtc/base/gunit.h"
 
 using buzz::Jid;

@@ -14,7 +14,6 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlbuilder.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
-#include "third_party/webrtc/base/common.h"
 #include "third_party/webrtc/base/gunit.h"
 
 using buzz::XmlBuilder;
@@ -174,4 +173,3 @@ TEST(XmlBuilderTest, TestAttrCollision3) {
       "</testing>");
   EXPECT_TRUE(NULL == builder.BuiltElement());
 }
-

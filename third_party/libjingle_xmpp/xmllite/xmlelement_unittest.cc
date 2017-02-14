@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/base/common.h"
 #include "third_party/webrtc/base/gunit.h"
 #include "third_party/webrtc/base/thread.h"
 

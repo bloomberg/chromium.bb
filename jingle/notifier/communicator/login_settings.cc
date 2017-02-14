@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "jingle/notifier/base/server_information.h"
 #include "net/cert/cert_verifier.h"
-#include "webrtc/base/common.h"
 #include "webrtc/base/socketaddress.h"
 
 namespace notifier {
