@@ -165,6 +165,7 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
         !GtkVersionCheck(3, 15, 4)) {
       g_object_ref(parent);
       gtk_style_context_set_parent(context, nullptr);
+      g_object_unref(context);
     } else {
       g_object_unref(context);
       return;

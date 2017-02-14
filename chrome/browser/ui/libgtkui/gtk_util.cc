@@ -305,8 +305,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
       {"visited", GTK_STATE_FLAG_VISITED},
       {"checked", GTK_STATE_FLAG_CHECKED},
   };
-  GtkStateFlags state =
-      context ? gtk_style_context_get_state(context) : GTK_STATE_FLAG_NORMAL;
+  GtkStateFlags state = GTK_STATE_FLAG_NORMAL;
   base::StringTokenizer t(css_node, ".:#");
   t.set_options(base::StringTokenizer::RETURN_DELIMS);
   while (t.GetNext()) {
@@ -374,9 +373,26 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   // widgets specially if they want to.
   gtk_widget_path_iter_add_class(path, -1, "chromium");
 
+  if (GtkVersionCheck(3, 14)) {
+    static auto* _gtk_widget_path_iter_set_state =
+        reinterpret_cast<void (*)(GtkWidgetPath*, gint, GtkStateFlags)>(
+            dlsym(GetGtk3SharedLibrary(), "gtk_widget_path_iter_set_state"));
+    DCHECK(_gtk_widget_path_iter_set_state);
+    _gtk_widget_path_iter_set_state(path, -1, state);
+  }
+
   ScopedStyleContext child_context(gtk_style_context_new());
   gtk_style_context_set_path(child_context, path);
-  gtk_style_context_set_state(child_context, state);
+  if (GtkVersionCheck(3, 14)) {
+    gtk_style_context_set_state(child_context, state);
+  } else {
+    GtkStateFlags child_state = state;
+    if (context) {
+      child_state = static_cast<GtkStateFlags>(
+          child_state | gtk_style_context_get_state(context));
+    }
+    gtk_style_context_set_state(child_context, child_state);
+  }
   gtk_style_context_set_parent(child_context, context);
   gtk_widget_path_unref(path);
   return child_context;

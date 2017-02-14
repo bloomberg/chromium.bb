@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/debug/leak_annotations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon_menu.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
@@ -19,7 +20,16 @@ namespace libgtkui {
 Gtk2StatusIcon::Gtk2StatusIcon(const gfx::ImageSkia& image,
                                const base::string16& tool_tip) {
   GdkPixbuf* pixbuf = GdkPixbufFromSkBitmap(*image.bitmap());
-  gtk_status_icon_ = gtk_status_icon_new_from_pixbuf(pixbuf);
+  {
+#if GTK_MAJOR_VERSION == 3
+    // Gtk3 has a bug that leaks 384 bytes when creating a
+    // GtkStatusIcon.  It will not be fixed since the status icon was
+    // deprectaed in version 3.14.  Luckily, Chromium doesn't need to
+    // create a status icon very often, if at all.
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+#endif
+    gtk_status_icon_ = gtk_status_icon_new_from_pixbuf(pixbuf);
+  }
   g_object_unref(pixbuf);
 
   g_signal_connect(gtk_status_icon_, "activate", G_CALLBACK(OnClickThunk),
