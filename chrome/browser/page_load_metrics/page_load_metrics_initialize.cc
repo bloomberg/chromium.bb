@@ -25,6 +25,7 @@
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -81,6 +82,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         base::WrapUnique(new previews::PreviewsPageLoadMetricsObserver()));
     tracker->AddObserver(
         base::MakeUnique<ServiceWorkerPageLoadMetricsObserver>());
+    tracker->AddObserver(base::MakeUnique<SubresourceFilterMetricsObserver>());
     tracker->AddObserver(
         base::MakeUnique<HttpsEngagementPageLoadMetricsObserver>(
             web_contents_->GetBrowserContext()));

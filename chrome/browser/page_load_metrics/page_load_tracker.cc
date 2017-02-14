@@ -254,6 +254,8 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
                                      const PageLoadTiming& new_timing,
                                      const PageLoadMetadata& last_metadata,
                                      const PageLoadExtraInfo& extra_info) {
+  if (extra_info.metadata.behavior_flags != last_metadata.behavior_flags)
+    observer->OnLoadingBehaviorObserved(extra_info);
   if (last_timing != new_timing)
     observer->OnTimingUpdate(new_timing, extra_info);
   if (new_timing.dom_content_loaded_event_start &&
@@ -277,8 +279,6 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnParseStart(new_timing, extra_info);
   if (new_timing.parse_stop && !last_timing.parse_stop)
     observer->OnParseStop(new_timing, extra_info);
-  if (extra_info.metadata.behavior_flags != last_metadata.behavior_flags)
-    observer->OnLoadingBehaviorObserved(extra_info);
 }
 
 }  // namespace
