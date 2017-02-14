@@ -250,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, RotateImageOnDownloads) {
 }
 
 // http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
+// http://crbug.com/690983 (Chrome OS debug build)
+#if defined(MEMORY_SANITIZER) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_RotateImageOnDrive DISABLED_RotateImageOnDrive
 #else
 #define MAYBE_RotateImageOnDrive RotateImageOnDrive
