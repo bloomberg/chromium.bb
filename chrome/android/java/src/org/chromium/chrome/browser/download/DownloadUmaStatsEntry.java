@@ -10,6 +10,9 @@ import org.chromium.base.Log;
  * SharedPreferences entries for for helping report UMA stats. A download may require several
  * browser sessions to complete, we need to store them in SharedPreferences in case browser is
  * killed.
+ * In the first version, there are 5 fields: useDownloadManager, isPaused, downloadStartTime,
+ * numInterruptions, id.
+ * In the 2nd version, there are 2 more fieds: lastBytesReceived and bytesWasted
  */
 public class DownloadUmaStatsEntry {
     private static final String TAG = "DownloadUmaStats";
@@ -18,33 +21,47 @@ public class DownloadUmaStatsEntry {
     public final boolean useDownloadManager;
     public int numInterruptions;
     public boolean isPaused;
+    public long lastBytesReceived;
+    public long bytesWasted;
 
     DownloadUmaStatsEntry(String id, long downloadStartTime, int numInterruptions,
-            boolean isPaused, boolean useDownloadManager) {
+            boolean isPaused, boolean useDownloadManager, long lastBytesReceived,
+            long bytesWasted) {
         this.id = id;
         this.downloadStartTime = downloadStartTime;
         this.numInterruptions = numInterruptions;
         this.isPaused = isPaused;
         this.useDownloadManager = useDownloadManager;
+        this.lastBytesReceived = lastBytesReceived;
+        this.bytesWasted = bytesWasted;
     }
 
     /**
      * Parse the UMA entry from a String object in SharedPrefs.
+     * For first versions, there are only 5 fields, the latest version have 7 fields (
+     * lastBytesReceived and mBytesWasted).
      *
      * @param sharedPrefString String from SharedPreference.
      * @return a DownloadUmaStatsEntry object.
      */
     static DownloadUmaStatsEntry parseFromString(String sharedPrefString) {
-        String[] values = sharedPrefString.split(",", 5);
-        if (values.length == 5) {
+        String[] values = sharedPrefString.split(",", 7);
+        if (values.length == 5 || values.length == 7) {
             try {
                 boolean useDownloadManager = "1".equals(values[0]);
                 boolean isPaused = "1".equals(values[1]);
                 long downloadStartTime = Long.parseLong(values[2]);
                 int numInterruptions = Integer.parseInt(values[3]);
                 String id = values[4];
+                long lastReceived = 0;
+                long wasted = 0;
+                if (values.length == 7) {
+                    lastReceived = Long.parseLong(values[5].trim());
+                    wasted = Integer.parseInt(values[6].trim());
+                }
                 return new DownloadUmaStatsEntry(
-                        id, downloadStartTime, numInterruptions, isPaused, useDownloadManager);
+                        id, downloadStartTime, numInterruptions, isPaused, useDownloadManager,
+                        lastReceived, wasted);
             } catch (NumberFormatException nfe) {
                 Log.w(TAG, "Exception while parsing UMA entry:" + sharedPrefString);
             }
@@ -57,7 +74,8 @@ public class DownloadUmaStatsEntry {
      */
     String getSharedPreferenceString() {
         return (useDownloadManager ? "1" : "0") + "," + (isPaused ? "1" : "0") + ","
-                + downloadStartTime + "," + numInterruptions + "," + id;
+                + downloadStartTime + "," + numInterruptions + "," + id + "," + lastBytesReceived
+                + "," + bytesWasted;
     }
 
     /**
@@ -70,7 +88,8 @@ public class DownloadUmaStatsEntry {
         if (useDownloadManager) {
             item.setSystemDownloadId(Long.parseLong(id));
         } else {
-            DownloadInfo info = new DownloadInfo.Builder().setDownloadGuid(id).build();
+            DownloadInfo info = new DownloadInfo.Builder().setDownloadGuid(id)
+                    .setBytesReceived(lastBytesReceived).build();
             item.setDownloadInfo(info);
         }
         return item;

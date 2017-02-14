@@ -157,6 +157,7 @@ public class DownloadSharedPreferenceEntry {
                 .setDownloadGuid(downloadGuid)
                 .setFileName(fileName)
                 .setIsOffTheRecord(isOffTheRecord)
+                .setBytesReceived(DownloadManagerService.UNKNOWN_BYTES_RECEIVED)
                 .build();
         return new DownloadItem(false, info);
     }
