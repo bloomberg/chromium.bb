@@ -51,6 +51,7 @@ my %config = ();
 while (<CONFIG_FILE>) {
   next if !/^(?:CONFIG_|HAVE_)/;
   chomp;
+  s/\r$//;
   my @pair = split /=/;
   $config{$pair[0]} = $pair[1];
 }
