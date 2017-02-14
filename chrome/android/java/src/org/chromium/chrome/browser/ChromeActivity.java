@@ -103,6 +103,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.browser.share.OptionalShareTargetsManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
@@ -1157,15 +1158,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
-        PrintingController printingController = PrintingControllerImpl.getInstance();
-        if (printingController != null && !currentTab.isNativePage() && !printingController.isBusy()
-                && PrefServiceBridge.getInstance().isPrintingEnabled()) {
-            PrintShareActivity.enablePrintShareOption(this, new Runnable() {
-                @Override
-                public void run() {
-                    triggerShare(currentTab, shareDirectly, isIncognito);
-                }
-            });
+        if (PrintShareActivity.printingIsEnabled(currentTab)) {
+            List<Class<? extends Activity>> classesToEnable = new ArrayList<>(1);
+            classesToEnable.add(PrintShareActivity.class);
+            OptionalShareTargetsManager.enableOptionalShareActivities(
+                    this, classesToEnable, new Runnable() {
+                        @Override
+                        public void run() {
+                            triggerShare(currentTab, shareDirectly, isIncognito);
+                        }
+                    });
             return;
         }
 
