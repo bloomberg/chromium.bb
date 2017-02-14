@@ -192,34 +192,9 @@ test(function() {
 }, 'Shipping type should be \'pickup\' if shipping type is specified as \'pickup\'.');
 
 test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'invalid'});
-    assert_equals('shipping', request.shippingType);
-}, 'Shipping type should be \'shipping\' if shipping type is specified as invalid string.');
-
-test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': null});
-    assert_equals('shipping', request.shippingType);
-}, 'Shipping type should be \'shipping\' if shipping type is specified as null.');
-
-test(function() {
     var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': undefined});
     assert_equals('shipping', request.shippingType);
 }, 'Shipping type should be \'shipping\' if shipping type is specified as undefined.');
-
-test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': []});
-    assert_equals('shipping', request.shippingType);
-}, 'Shipping type should be \'shipping\' if shipping type is specified as [].');
-
-test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': {}});
-    assert_equals('shipping', request.shippingType);
-}, 'Shipping type should be \'shipping\' if shipping type is specified as {}.');
-
-test(function() {
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 0});
-    assert_equals('shipping', request.shippingType);
-}, 'Shipping type should be \'shipping\' if shipping type is specified as a number.');
 
 test(function() {
     new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': undefined});
@@ -349,6 +324,21 @@ generate_tests(assert_throws, [
     }],
     ['Null shipping options should throw', new TypeError(), function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': null});
+    }],
+    ['Undefined PaymentShippingType value for shppingType should throw a TypeError', new TypeError(), function() {
+        var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'invalid'});
+    }],
+    ['Null for shppingType should throw a TypeError', new TypeError(), function() {
+        var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': null});
+    }],
+    ['Array value for shppingType should throw a TypeError', new TypeError(), function() {
+        var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': []});
+    }],
+    ['Object value for shppingType should throw a TypeError', new TypeError(), function() {
+        var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': {}});
+    }],
+    ['Numeric value for shppingType should throw a TypeError', new TypeError(), function() {
+        var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 0});
     }],
 
     // Payment method specific data should be a JSON-serializable object.
