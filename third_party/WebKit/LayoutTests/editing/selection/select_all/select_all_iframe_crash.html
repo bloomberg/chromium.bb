@@ -16,8 +16,8 @@ iframe.onload = function () {
             var selection = window.getSelection();
             assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
             assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-            assert_equals(selection.focusNode, sample, 'focusNode');
-            assert_equals(selection.focusOffset, 1, 'focusOffset');
+            assert_equals(selection.focusNode, sample.firstChild, 'focusNode');
+            assert_equals(selection.focusOffset, 3, 'focusOffset');
         });
         test.done();
     }, 0);

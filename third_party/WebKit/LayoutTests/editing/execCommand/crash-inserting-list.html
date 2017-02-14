@@ -45,11 +45,10 @@ test(() => assert_selection(
       '* { float:left; }',
       '.class0 { content: url(); }',
       '</style>',
-      '<ul class="class0">',
-        '<li id="r1">',
-          '<li id="r0"></li>',
-        '</li>',
+      '<ul>',
+        '<li id="r1"></li>',
       '</ul>',
+      '<ol><li><br></li></ol>',
       '^<hr>|',
     ].join('')));
 </script>

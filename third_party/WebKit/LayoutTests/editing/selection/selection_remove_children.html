@@ -14,7 +14,7 @@ test(() => assert_selection(
             sample.firstChild.focus();
             sample.innerHTML = '';
         },
-        '<div id="sample">|</div>'),
+        '|<div id="sample"></div>'),
         'Select by blur');
 
 test(() => assert_selection(
@@ -25,6 +25,6 @@ test(() => assert_selection(
             () => selection.selectAllChildren(sample), true);
         sample.innerHTML = '';
     },
-    '<div id="sample">|</div>'),
+    '|<div id="sample"></div>'),
     'Select by mutation event');
 </script>

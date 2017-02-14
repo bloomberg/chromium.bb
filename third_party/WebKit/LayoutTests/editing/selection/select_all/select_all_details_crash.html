@@ -16,9 +16,9 @@ test(() => {
             selection.document.designMode = 'on';
         },
         [
-            '<legend style="all: initial">^foo</legend>',
+            '<legend style="all: initial">^foo|</legend>',
             '<details style="display: inline"></details>',
-            '<textarea></textarea>|',
+            '<textarea></textarea>',
         ].join(''));
 }, 'selectAll on DETAILS should not crash');
 </script>

@@ -81,20 +81,14 @@ inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame) {
 }
 
 void FrameCaret::updateAppearance() {
+  DCHECK_GE(m_frame->document()->lifecycle().state(),
+            DocumentLifecycle::LayoutClean);
   // Paint a block cursor instead of a caret in overtype mode unless the caret
   // is at the end of a line (in this case the FrameSelection will paint a
   // blinking caret as usual).
-  bool paintBlockCursor = m_shouldShowBlockCursor && isActive();
-  if (paintBlockCursor) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  see http://crbug.com/590369 for more details.
-    // In the long term, we should defer the update of the caret's appearance
-    // to prevent synchronous layout.
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    if (isLogicalEndOfLine(createVisiblePosition(caretPosition())))
-      paintBlockCursor = false;
-  }
+  const bool paintBlockCursor =
+      m_shouldShowBlockCursor && isActive() &&
+      !isLogicalEndOfLine(createVisiblePosition(caretPosition()));
 
   bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
@@ -135,7 +129,8 @@ void FrameCaret::setCaretVisibility(CaretVisibility visibility) {
 
   m_caretVisibility = visibility;
 
-  updateAppearance();
+  if (visibility == CaretVisibility::Hidden)
+    stopCaretBlinkTimer();
   scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
@@ -148,6 +143,9 @@ void FrameCaret::layoutBlockWillBeDestroyed(const LayoutBlock& block) {
 }
 
 void FrameCaret::updateStyleAndLayoutIfNeeded() {
+  DCHECK_GE(m_frame->document()->lifecycle().state(),
+            DocumentLifecycle::LayoutClean);
+  updateAppearance();
   bool shouldPaintCaret =
       m_shouldPaintCaret && isActive() &&
       m_caretVisibility == CaretVisibility::Visible &&
@@ -199,10 +197,7 @@ IntRect FrameCaret::absoluteCaretBounds() const {
 
 void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor) {
   m_shouldShowBlockCursor = shouldShowBlockCursor;
-
-  m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  updateAppearance();
+  scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
 bool FrameCaret::shouldPaintCaret(const LayoutBlock& block) const {

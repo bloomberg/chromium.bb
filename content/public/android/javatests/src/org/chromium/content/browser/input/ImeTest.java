@@ -799,12 +799,11 @@ public class ImeTest extends ContentShellTestBase {
 
         paste();
         // Paste is a two step process when there is a non-zero selection.
-        waitAndVerifyUpdateSelection(2, 3, 3, -1, -1);
-        waitAndVerifyUpdateSelection(3, 8, 8, -1, -1);
+        waitAndVerifyUpdateSelection(2, 8, 8, -1, -1);
         assertTextsAroundCursor("blablarg", null, "");
 
         paste();
-        waitAndVerifyUpdateSelection(4, 13, 13, -1, -1);
+        waitAndVerifyUpdateSelection(3, 13, 13, -1, -1);
         assertTextsAroundCursor("blablargblarg", null, "");
     }
 
@@ -1328,8 +1327,7 @@ public class ImeTest extends ContentShellTestBase {
         deleteSurroundingText(1, 1);
         waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
         // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
-        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange,"
-                + "selectionchange,selectionchange");
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange");
     }
 
     @MediumTest
@@ -1348,8 +1346,7 @@ public class ImeTest extends ContentShellTestBase {
         deleteSurroundingText(1, 1);
         waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
         // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
-        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange,"
-                + "selectionchange,selectionchange");
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange");
     }
 
     @MediumTest
