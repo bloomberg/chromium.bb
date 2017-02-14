@@ -18,7 +18,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
@@ -348,11 +347,7 @@ class TestCastSocket : public CastSocketImpl {
 
 class CastSocketTest : public testing::Test {
  public:
-  CastSocketTest()
-      : logger_(
-            new Logger(base::WrapUnique<base::Clock>(new base::SimpleTestClock),
-                       base::Time())),
-        delegate_(new MockDelegate) {}
+  CastSocketTest() : logger_(new Logger()), delegate_(new MockDelegate) {}
   ~CastSocketTest() override {}
 
   void SetUp() override { EXPECT_CALL(*delegate_, OnMessage(_)).Times(0); }

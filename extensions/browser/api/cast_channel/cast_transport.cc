@@ -20,7 +20,6 @@
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -169,9 +168,6 @@ void CastTransportImpl::SendMessage(const CastMessage& message,
   DCHECK(CalledOnValidThread());
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
-    logger_->LogSocketEventForMessage(channel_id_, proto::SEND_MESSAGE_FAILED,
-                                      message.namespace_(),
-                                      "Error when serializing message.");
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     return;
@@ -180,9 +176,6 @@ void CastTransportImpl::SendMessage(const CastMessage& message,
       message.namespace_(), serialized_message, callback);
 
   write_queue_.push(write_request);
-  logger_->LogSocketEventForMessage(
-      channel_id_, proto::MESSAGE_ENQUEUED, message.namespace_(),
-      base::StringPrintf("Queue size: %" PRIuS, write_queue_.size()));
   if (write_state_ == WRITE_STATE_IDLE) {
     SetWriteState(WRITE_STATE_WRITE);
     OnWriteResult(net::OK);
@@ -206,17 +199,13 @@ CastTransportImpl::WriteRequest::~WriteRequest() {
 }
 
 void CastTransportImpl::SetReadState(ReadState read_state) {
-  if (read_state_ != read_state) {
+  if (read_state_ != read_state)
     read_state_ = read_state;
-    logger_->LogSocketReadState(channel_id_, ReadStateToProto(read_state_));
-  }
 }
 
 void CastTransportImpl::SetWriteState(WriteState write_state) {
-  if (write_state_ != write_state) {
+  if (write_state_ != write_state)
     write_state_ = write_state;
-    logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
-  }
 }
 
 void CastTransportImpl::SetErrorState(ChannelError error_state) {
@@ -267,15 +256,11 @@ void CastTransportImpl::OnWriteResult(int result) {
     }
   } while (rv != net::ERR_IO_PENDING && !IsTerminalWriteState(write_state_));
 
-  if (IsTerminalWriteState(write_state_)) {
-    logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
-
-    if (write_state_ == WRITE_STATE_ERROR) {
-      FlushWriteQueue();
-      DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
-      VLOG_WITH_CONNECTION(2) << "Sending OnError().";
-      delegate_->OnError(error_state_);
-    }
+  if (write_state_ == WRITE_STATE_ERROR) {
+    FlushWriteQueue();
+    DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
+    VLOG_WITH_CONNECTION(2) << "Sending OnError().";
+    delegate_->OnError(error_state_);
   }
 }
 
@@ -298,8 +283,8 @@ int CastTransportImpl::DoWrite() {
 int CastTransportImpl::DoWriteComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoWriteComplete result=" << result;
   DCHECK(!write_queue_.empty());
-  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, result);
   if (result <= 0) {  // NOTE that 0 also indicates an error
+    logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, result);
     SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     SetWriteState(WRITE_STATE_HANDLE_ERROR);
     return result == 0 ? net::ERR_FAILED : result;
@@ -323,10 +308,6 @@ int CastTransportImpl::DoWriteCallback() {
   DCHECK(!write_queue_.empty());
 
   WriteRequest& request = write_queue_.front();
-  int bytes_consumed = request.io_buffer->BytesConsumed();
-  logger_->LogSocketEventForMessage(
-      channel_id_, proto::MESSAGE_WRITTEN, request.message_namespace,
-      base::StringPrintf("Bytes: %d", bytes_consumed));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(request.callback, net::OK));
 
@@ -399,7 +380,6 @@ void CastTransportImpl::OnReadResult(int result) {
 
   if (IsTerminalReadState(read_state_)) {
     DCHECK_EQ(READ_STATE_ERROR, read_state_);
-    logger_->LogSocketReadState(channel_id_, ReadStateToProto(read_state_));
     VLOG_WITH_CONNECTION(2) << "Sending OnError().";
     delegate_->OnError(error_state_);
   }
@@ -421,8 +401,8 @@ int CastTransportImpl::DoRead() {
 
 int CastTransportImpl::DoReadComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoReadComplete result = " << result;
-  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_READ, result);
   if (result <= 0) {
+    logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_READ, result);
     VLOG_WITH_CONNECTION(1) << "Read error, peer closed the socket.";
     SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     SetReadState(READ_STATE_HANDLE_ERROR);
@@ -435,10 +415,6 @@ int CastTransportImpl::DoReadComplete(int result) {
   current_message_ = framer_->Ingest(result, &message_size, &framing_error);
   if (current_message_.get() && (framing_error == CHANNEL_ERROR_NONE)) {
     DCHECK_GT(message_size, static_cast<size_t>(0));
-    logger_->LogSocketEventForMessage(
-        channel_id_, proto::MESSAGE_READ, current_message_->namespace_(),
-        base::StringPrintf("Message size: %u",
-                           static_cast<uint32_t>(message_size)));
     SetReadState(READ_STATE_DO_CALLBACK);
   } else if (framing_error != CHANNEL_ERROR_NONE) {
     DCHECK(!current_message_);

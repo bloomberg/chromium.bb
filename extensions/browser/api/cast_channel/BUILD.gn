@@ -20,8 +20,6 @@ source_set("cast_channel") {
     "keep_alive_delegate.h",
     "logger.cc",
     "logger.h",
-    "logger_util.cc",
-    "logger_util.h",
   ]
 
   deps = [
@@ -29,6 +27,5 @@ source_set("cast_channel") {
     "//extensions/common/api",
     "//extensions/common/api/cast_channel:cast_channel_proto",
     "//net",
-    "//third_party/zlib",
   ]
 }

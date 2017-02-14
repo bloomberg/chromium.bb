@@ -214,15 +214,6 @@ class CastChannelAPITest : public ExtensionApiTest {
     return cast_channel_send_function;
   }
 
-  extensions::CastChannelSetAuthorityKeysFunction*
-  CreateSetAuthorityKeysFunction(scoped_refptr<Extension> extension) {
-    extensions::CastChannelSetAuthorityKeysFunction*
-        cast_channel_set_authority_keys_function =
-            new extensions::CastChannelSetAuthorityKeysFunction;
-    cast_channel_set_authority_keys_function->set_extension(extension.get());
-    return cast_channel_set_authority_keys_function;
-  }
-
   MockCastSocket* mock_cast_socket_;
   base::MockTimer* timeout_timer_;
   net::IPEndPoint ip_endpoint_;
@@ -336,20 +327,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
   CallOnMessage("some-message");
   CallOnMessage("some-message");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// TODO(imcheng): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TestGetLogs DISABLED_TestGetLogs
-#else
-#define MAYBE_TestGetLogs TestGetLogs
-#endif
-// Test loading extension, execute a open-send-close sequence, then get logs.
-IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestGetLogs) {
-  SetUpOpenSendClose();
-
-  EXPECT_TRUE(RunExtensionSubtest("cast_channel/api", "test_get_logs.html"));
 }
 
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
@@ -467,105 +444,4 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"destinationId\": \"\", \"data\": \"data\"}]",
       browser());
   EXPECT_EQ(error, "message_info.destination_id is required");
-}
-
-IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysInvalid) {
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
-  scoped_refptr<extensions::CastChannelSetAuthorityKeysFunction>
-      cast_channel_set_authority_keys_function;
-  // TODO(eroman): crbug.com/601171: Delete this test once the API has
-  // been removed. The API is deprecated and will trivially return
-  // success. So this is just testing that it succeeds for all inputs
-  // (even invalid ones).
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 "[\"\", \"signature\"]", browser(),
-                                 utils::NONE));
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 "[\"keys\", \"\"]", browser(), utils::NONE));
-
-  std::string keys =
-      "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
-      "2A9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEg"
-      "mVDN7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZv"
-      "tYVMBeOcf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0g"
-      "QBLx3SXr1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk"
-      "0K48YcqZP6OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQ==";
-  std::string signature =
-      "chCUHZKkykcwU8HzU+hm027fUTBL0dqPMtrzppwExQwK9+"
-      "XlmCjJswfce2sUUfhR1OL1tyW4hWFwu4JnuQCJ+CvmSmAh2bzRpnuSKzBfgvIDjNOAGUs7"
-      "ADaNSSWPLxp+6ko++2Dn4S9HpOt8N1v6gMWqj3Ru5IqFSQPZSvGH2ois6uE50CFayPcjQE"
-      "OVZt41noQdFd15RmKTvocoCC5tHNlaikeQ52yi0IScOlad1B1lMhoplW3rWophQaqxMumr"
-      "OcHIZ+Y+p858x5f8Pny/kuqUClmFh9B/vF07NsUHwoSL9tA5t5jCY3L5iUc/v7o3oFcW/T"
-      "gojKkX2Kg7KQ86QA==";
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 "[\"" + keys + "\", \"signature\"]", browser(),
-                                 utils::NONE));
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 "[\"keys\", \"" + signature + "\"]", browser(),
-                                 utils::NONE));
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 "[\"" + keys + "\", \"" + signature + "\"]",
-                                 browser(), utils::NONE));
-}
-
-IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysValid) {
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
-  scoped_refptr<extensions::CastChannelSetAuthorityKeysFunction>
-      cast_channel_set_authority_keys_function;
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  std::string keys =
-      "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
-      "2A9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEg"
-      "mVDN7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZv"
-      "tYVMBeOcf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0g"
-      "QBLx3SXr1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk"
-      "0K48YcqZP6OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQqzAgog"
-      "okjC6FTmVqVt6CMfHuF1b9vkB/n+1GUNYMxay2URxyASjgIwggEKAoIBAQCwDl4HOt+kX2"
-      "j3Icdk27Z27+6Lk/j2G4jhk7cX8BUeflJVdzwCjXtKbNO91sGccsizFc8RwfVGxNUgR/sw"
-      "9ORhDGjwXqs3jpvhvIHDcIp41oM0MpwZYuvknO3jZGxBHZzSi0hMI5CVs+dS6gVXzGCzuh"
-      "TkugA55EZVdM5ajnpnI9poCvrEhB60xaGianMfbsguL5qeqLEO/Yemj009SwXVNVp0TbyO"
-      "gkSW9LWVYE6l3yc9QVwHo7Q1WrOe8gUkys0xWg0mTNTT/VDhNOlMgVgwssd63YGJptQ6OI"
-      "QDtzSedz//eAdbmcGyHzVWbjo8DCXhV/aKfknAzIMRNeeRbS5lAgMBAAE=";
-  std::string signature =
-      "o83oku3jP+xjTysNBalqp/ZfJRPLt8R+IUhZMepbARFSRVizLoeFW5XyUwe6lQaC+PFFQH"
-      "SZeGZyeeGRpwCJ/lef0xh6SWJlVMWNTk5+z0U84GQdizJP/CTCeHpIwMobN+kyDajgOyfD"
-      "DLhktc6LHmSlFGG6J7B8W67oziS8ZFEdrcT9WSXFrjLVyURHjvidZD5iFtuImI6k9R9OoX"
-      "LR6SyAwpjdrL+vlHMk3Gol6KQ98YpF0ghHnN3/FFW4ibvIwjmRbp+tUV3h8TRcCOjlXVGp"
-      "bzPtNRRlTqfv7Rxm5YXkZMLmJJMZiTs5+o8FMRMTQZT4hRR3DQ+A/jofViyTGA==";
-
-  std::string args = "[\"" + keys + "\", \"" + signature + "\"]";
-  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
-                                 args, browser(), utils::NONE));
-}
-
-// TODO(vadimgo): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TestSetAuthorityKeys DISABLED_TestSetAuthorityKeys
-#else
-#define MAYBE_TestSetAuthorityKeys TestSetAuthorityKeys
-#endif
-// Test loading extension, opening a channel with ConnectInfo, adding a
-// listener, writing, reading, and closing.
-IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestSetAuthorityKeys) {
-  EXPECT_TRUE(
-      RunExtensionSubtest("cast_channel/api", "test_authority_keys.html"));
 }

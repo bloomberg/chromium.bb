@@ -18,7 +18,6 @@
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_test_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -147,10 +146,7 @@ class MockSocket : public net::Socket {
 
 class CastTransportTest : public testing::Test {
  public:
-  CastTransportTest()
-      : logger_(
-            new Logger(base::WrapUnique<base::Clock>(new base::SimpleTestClock),
-                       base::Time())) {
+  CastTransportTest() : logger_(new Logger()) {
     delegate_ = new MockCastTransportDelegate;
     transport_.reset(new CastTransportImpl(&mock_socket_, kChannelId,
                                            CreateIPEndPointForTest(),

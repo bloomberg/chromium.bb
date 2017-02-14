@@ -241,6 +241,7 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
   ~CastChannelCloseFunction() override;
 
   // AsyncApiFunction:
+  bool PrePrepare() override;
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -250,48 +251,9 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
   void OnClose(int result);
 
   std::unique_ptr<cast_channel::Close::Params> params_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastChannelCloseFunction);
-};
-
-class CastChannelGetLogsFunction : public CastChannelAsyncApiFunction {
- public:
-  CastChannelGetLogsFunction();
-
- protected:
-  ~CastChannelGetLogsFunction() override;
-
-  // AsyncApiFunction:
-  bool PrePrepare() override;
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
- private:
-  DECLARE_EXTENSION_FUNCTION("cast.channel.getLogs", CAST_CHANNEL_GETLOGS)
-
   CastChannelAPI* api_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastChannelGetLogsFunction);
-};
-
-// TODO(eroman): crbug.com/601171: Delete this entire extension API. It
-// is currently deprecated and calling the function has no effect.
-class CastChannelSetAuthorityKeysFunction : public CastChannelAsyncApiFunction {
- public:
-  CastChannelSetAuthorityKeysFunction();
-
- protected:
-  ~CastChannelSetAuthorityKeysFunction() override;
-
-  // AsyncApiFunction:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
- private:
-  DECLARE_EXTENSION_FUNCTION("cast.channel.setAuthorityKeys",
-                             CAST_CHANNEL_SETAUTHORITYKEYS)
-
-  DISALLOW_COPY_AND_ASSIGN(CastChannelSetAuthorityKeysFunction);
+  DISALLOW_COPY_AND_ASSIGN(CastChannelCloseFunction);
 };
 
 }  // namespace extensions

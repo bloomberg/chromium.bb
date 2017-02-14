@@ -168,16 +168,6 @@ namespace cast.channel {
   // Callback holding the result of a channel operation.
   callback ChannelInfoCallback = void (ChannelInfo result);
 
-  // Callback from <code>getLogs</code> method.
-  // |log|: compressed serialized raw bytes containing the logs.
-  // The log is formatted using protocol buffer.
-  // See extensions/browser/api/cast_channel/logging.proto for definition.
-  // Compression is in gzip format.
-  callback GetLogsCallback = void (ArrayBuffer log);
-
-  // Callback from <code>setAuthorityKeys</code> method.
-  callback SetAuthorityKeysCallback = void ();
-
   interface Functions {
     // Opens a new channel to the Cast receiver specified by connectInfo.  Only
     // one channel may be connected to same receiver from the same extension at
@@ -205,19 +195,6 @@ namespace cast.channel {
     // and channel.errorState will be set to the error condition.
     static void close(ChannelInfo channel,
                       ChannelInfoCallback callback);
-
-    // Get logs in compressed serialized format. See GetLogsCallback for
-    // details.
-    // |callback|: If successful, |callback| is invoked with data. Otherwise,
-    // an error will be raised.
-    static void getLogs(GetLogsCallback callback);
-
-    // Sets trusted certificate authorities where |signature| is a base64
-    // encoded RSA-PSS signature and |keys| is base64 encoded AuthorityKeys
-    // protobuf.
-    static void setAuthorityKeys(DOMString keys,
-                                 DOMString signature,
-                                 SetAuthorityKeysCallback callback);
   };
 
   // Events on the channel.
