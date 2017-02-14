@@ -94,55 +94,6 @@ cr.define('settings_toggle_button', function() {
         assertTrue(testElement.checked);
         assertEquals(1, prefNum.value);
       });
-
-      test('numerical pref with custom values', function() {
-        var prefNum = {
-          key: 'test',
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: 5
-        };
-
-        testElement.numericUncheckedValue = 5;
-
-        testElement.set('pref', prefNum);
-        assertFalse(testElement.checked);
-
-        testElement.setAttribute('checked', '');
-        assertTrue(testElement.checked);
-        assertEquals(1, prefNum.value);
-
-        testElement.removeAttribute('checked');
-        assertFalse(testElement.checked);
-        assertEquals(5, prefNum.value);
-      });
-
-      test('numerical pref with unknown inital value', function() {
-        prefNum = {
-          key: 'test',
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: 3
-        };
-
-        testElement.numericUncheckedValue = 5;
-
-        testElement.set('pref', prefNum);
-
-        // Unknown value should still count as checked.
-        assertTrue(testElement.checked);
-
-        // The control should not clobber an existing unknown value.
-        assertEquals(3, prefNum.value);
-
-        // Unchecking should still send the unchecked value to prefs.
-        testElement.removeAttribute('checked');
-        assertFalse(testElement.checked);
-        assertEquals(5, prefNum.value);
-
-        // Checking should still send the normal checked value to prefs.
-        testElement.setAttribute('checked', '');
-        assertTrue(testElement.checked);
-        assertEquals(1, prefNum.value);
-      });
     });
   }
 
