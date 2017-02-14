@@ -997,11 +997,15 @@ void AddMultiProfilesStrings(content::WebUIDataSource* html_source,
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   const user_manager::User* primary_user = user_manager->GetPrimaryUser();
-  html_source->AddString("primaryUserEmail",
-                         primary_user->GetAccountId().GetUserEmail());
+  std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
+  html_source->AddString("primaryUserEmail", primary_user_email);
   html_source->AddBoolean(
       "isSecondaryUser",
       user && user->GetAccountId() != primary_user->GetAccountId());
+  html_source->AddString(
+      "secondaryUserBannerText",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
+                                 base::ASCIIToUTF16(primary_user_email)));
 }
 #endif
 

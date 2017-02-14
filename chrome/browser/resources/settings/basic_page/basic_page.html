@@ -49,6 +49,25 @@
         padding: 0 12px;
       }
 
+      #secondaryUserBanner {
+        @apply(--shadow-elevation-2dp);
+        background-color: white;
+        border-radius: 2px;
+        margin: 21px 0;
+      }
+
+      #secondaryUserIcon {
+        /* TODO(stevenjb): Replace this with the correct variable or color once
+         * established by UX, see crbug.com/687749. */
+        background-color : rgb(210, 210, 212);
+        background-image: url(chrome://theme/IDR_SECONDARY_USER_SETTINGS);
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 55px;
+        margin: 18px;
+        width: 58px;
+      }
+
       #toggleContainer {
         align-items: center;
         display: flex;
@@ -73,6 +92,13 @@
           <settings-reset-profile-banner on-reset-done="onResetDone_">
           </settings-reset-profile-banner>
         </template>
+<if expr="chromeos">
+        <div id="secondaryUserBanner" class="layout horizontal center"
+            hidden="[[!showSecondaryUserBanner_]]">
+          <div id="secondaryUserIcon"></div>
+          <div class="flex">$i18n{secondaryUserBannerText}</div>
+        </div>
+</if>
 <if expr="chromeos">
         <template is="dom-if" if="[[showPage(pageVisibility.internet)]]"
             restamp>

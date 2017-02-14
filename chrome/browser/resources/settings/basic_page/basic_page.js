@@ -53,6 +53,18 @@ Polymer({
       },
     },
 
+// <if expr="chromeos">
+    /**
+     * Whether the user is a secondary user. Computed so that it is calculated
+     * correctly after loadTimeData is available.
+     * @private
+     */
+    showSecondaryUserBanner_: {
+      type: Boolean,
+      computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
+    },
+// </if>
+
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
   },
@@ -107,6 +119,17 @@ Polymer({
 
     return whenSearchDone;
   },
+
+// <if expr="chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowSecondaryUserBanner_: function() {
+    return !this.hasExpandedSection_ &&
+        loadTimeData.getBoolean('isSecondaryUser');
+  },
+// </if>
 
   /** @private */
   onResetDone_: function() {
@@ -171,8 +194,8 @@ Polymer({
    *     both routing and search state.
    * @private
    */
-  showAdvancedPage_: function(currentRoute, inSearchMode, hasExpandedSection,
-                              advancedToggleExpanded) {
+  showAdvancedPage_: function(
+      currentRoute, inSearchMode, hasExpandedSection, advancedToggleExpanded) {
     return hasExpandedSection ?
         settings.Route.ADVANCED.contains(currentRoute) :
         advancedToggleExpanded || inSearchMode;

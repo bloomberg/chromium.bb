@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
+  <!-- Main Page -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
+      Some settings belonging to <ph name="PRIMARY_EMAIL">$1<ex>john@google.com</ex></ph> are being shared with you. These settings only affect your account when using multiple sign-in.
+    </message>
+  </if>
+
   <!-- About Page -->
   <message name="IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION" desc="The text label describing the version of the browser, example: Version 57.0.2937.0 (Developer Build) unknown (64-bit)">
     Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph> (<ph name="PRODUCT_CHANNEL">$2<ex>Developer Build</ex></ph>) <ph name="PRODUCT_MODIFIER">$3</ph> <ph name="PRODUCT_VERSION_BITS">$4</ph>
