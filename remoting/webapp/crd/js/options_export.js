@@ -20,11 +20,17 @@ remoting.OptionsExporter = function() {
 
 remoting.OptionsExporter.migrateSettings_ = function() {
   var result = new base.Deferred();
-  chrome.storage.local.get('remoting-host-options', function(options) {
+  chrome.storage.local.get(KEY_NAME, function(options) {
+    // If there are no host options stored, reformat the message response so
+    // that the sender doesn't interpret it as an error.
+    if (Object.keys(options).length == 0) {
+      options[KEY_NAME] = '{}';
+    }
     result.resolve(options);
   })
   return result.promise();
 };
 
+var KEY_NAME = 'remoting-host-options';
 
 }());
