@@ -139,7 +139,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
-  SkColor GetOpaqueBorderColor(bool incognito);
+  SkColor GetOpaqueBorderColor(bool incognito) const;
 
   // Returns the color to be used for security text in the context of
   // |security_level|.
@@ -256,7 +256,7 @@ class LocationBarView : public LocationBar,
   int IncrementalMinimumWidth(views::View* view) const;
 
   // The border color, drawn on top of the toolbar.
-  SkColor GetBorderColor();
+  SkColor GetBorderColor() const;
 
   // Returns the thickness of any visible edge, in pixels.
   int GetHorizontalEdgeThickness() const;

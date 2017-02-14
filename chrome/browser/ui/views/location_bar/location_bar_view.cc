@@ -291,7 +291,7 @@ SkColor LocationBarView::GetColor(
   return gfx::kPlaceholderColor;
 }
 
-SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) {
+SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
   return color_utils::GetResultingPaintColor(
       GetBorderColor(), ThemeProperties::GetDefaultColor(
                             ThemeProperties::COLOR_TOOLBAR, incognito));
@@ -662,7 +662,7 @@ int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
                          : 0;
 }
 
-SkColor LocationBarView::GetBorderColor() {
+SkColor LocationBarView::GetBorderColor() const {
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_LOCATION_BAR_BORDER);
 }
