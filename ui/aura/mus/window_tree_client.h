@@ -418,10 +418,7 @@ class AURA_EXPORT WindowTreeClient
   void AddActivationParent(Window* window) override;
   void RemoveActivationParent(Window* window) override;
   void ActivateNextWindow() override;
-  void SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      Window* window,
-      const gfx::Vector2d& offset,
-      const gfx::Insets& hit_area) override;
+  void SetExtendedHitArea(Window* window, const gfx::Insets& hit_area) override;
   void RequestClose(Window* window) override;
 
   // Overriden from WindowTreeHostMusDelegate:

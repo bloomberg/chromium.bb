@@ -319,14 +319,11 @@ NonClientFrameController::NonClientFrameController(
 
   widget_->ShowInactive();
 
-  const int shadow_inset =
-      Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
   WmWindow* wm_window = WmWindow::Get(window_);
   const gfx::Insets extended_hit_region =
       wm_window->ShouldUseExtendedHitRegion() ? GetExtendedHitRegion()
                                               : gfx::Insets();
-  window_manager_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      window_, gfx::Vector2d(shadow_inset, shadow_inset), extended_hit_region);
+  window_manager_client_->SetExtendedHitArea(window_, extended_hit_region);
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
 }

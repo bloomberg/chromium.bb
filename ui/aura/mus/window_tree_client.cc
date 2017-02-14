@@ -1621,17 +1621,12 @@ void WindowTreeClient::ActivateNextWindow() {
     window_manager_internal_client_->ActivateNextWindow();
 }
 
-void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
-    Window* window,
-    const gfx::Vector2d& offset,
-    const gfx::Insets& hit_area) {
+void WindowTreeClient::SetExtendedHitArea(Window* window,
+                                          const gfx::Insets& hit_area) {
   if (window_manager_internal_client_) {
     float device_scale_factor = ScaleFactorForDisplay(window);
-    gfx::Vector2dF offset_in_pixels =
-        gfx::ScaleVector2d(offset, device_scale_factor);
-    window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-        WindowMus::Get(window)->server_id(), offset_in_pixels.x(),
-        offset_in_pixels.y(),
+    window_manager_internal_client_->SetExtendedHitArea(
+        WindowMus::Get(window)->server_id(),
         gfx::ConvertInsetsToPixel(device_scale_factor, hit_area));
   }
 }

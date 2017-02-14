@@ -1938,16 +1938,17 @@ void WindowTree::ActivateNextWindow() {
   (*displays.begin())->ActivateNextWindow();
 }
 
-void WindowTree::SetUnderlaySurfaceOffsetAndExtendedHitArea(
-    Id window_id,
-    int32_t x_offset,
-    int32_t y_offset,
-    const gfx::Insets& hit_area) {
+void WindowTree::SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  if (!window)
+  // Extended hit test region should only be set by the owner of the window.
+  if (!window) {
+    DVLOG(1) << "SetExtendedHitArea supplied unknown window";
     return;
-
-  window->SetUnderlayOffset(gfx::Vector2d(x_offset, y_offset));
+  }
+  if (window->id().client_id != id_) {
+    DVLOG(1) << "SetExtendedHitArea supplied window that client does not own";
+    return;
+  }
   window->set_extended_hit_test_region(hit_area);
 }
 

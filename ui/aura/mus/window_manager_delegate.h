@@ -27,7 +27,6 @@ class Display;
 namespace gfx {
 class Insets;
 class Rect;
-class Vector2d;
 }
 
 namespace ui {
@@ -55,10 +54,8 @@ class AURA_EXPORT WindowManagerClient {
   virtual void AddActivationParent(Window* window) = 0;
   virtual void RemoveActivationParent(Window* window) = 0;
   virtual void ActivateNextWindow() = 0;
-  virtual void SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      Window* window,
-      const gfx::Vector2d& offset,
-      const gfx::Insets& hit_area) = 0;
+  virtual void SetExtendedHitArea(Window* window,
+                                  const gfx::Insets& hit_area) = 0;
 
   // Requests the client embedded in |window| to close the window. Only
   // applicable to top-level windows. If a client is not embedded in |window|,

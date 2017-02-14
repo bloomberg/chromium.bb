@@ -228,14 +228,10 @@ interface WindowManagerClient {
 
   ActivateNextWindow();
 
-  // Sets the underlay surface offset for the specified window and additional
-  // hit area. The underlay surface is drawn at the bounds of the window minus
-  // the offset. The hit area is extended from the bounds of the window by
-  // |hit_area|.
-  SetUnderlaySurfaceOffsetAndExtendedHitArea(uint32 window_id,
-                                             int32 x_offset,
-                                             int32 y_offset,
-                                             gfx.mojom.Insets hit_area);
+  // Sets the additional hit area. The hit area is extended from the bounds of
+  // the window by |hit_area|. This is used to allow for resizes to start
+  // outside the bounds of the window.
+  SetExtendedHitArea(uint32 window_id, gfx.mojom.Insets hit_area);
 
   // Add and remove accelerators. When accelerators are registered the
   // WindowManager receives the event via OnAccelerator() rather than the
