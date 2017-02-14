@@ -6,3 +6,7 @@
   border: 0;
   box-shadow: none;
 }
+
+.overlay {
+  padding: 0;
+}

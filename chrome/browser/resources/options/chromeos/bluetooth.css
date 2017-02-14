@@ -2,25 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.overlay {
-  padding: 0;
-}
-
-.overlay .page {
+#bluetooth-pairing {
   max-width: 480px;
   width: 100%;
 }
 
-.overlay .page h1 {
+#bluetooth-pairing h1 {
   border-bottom: 1px solid #c0c0c0;
   font-size: 15px;
 }
 
-.overlay .page > .close-button {
+#bluetooth-pairing > .close-button {
   padding: 8px 16px;
 }
 
-.overlay .page .button-strip button {
+#bluetooth-pairing .button-strip button {
   background-color: rgb(66, 133, 244);
   background-image: none;
   border: none;
