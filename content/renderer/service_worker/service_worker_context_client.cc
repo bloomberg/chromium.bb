@@ -660,6 +660,9 @@ void ServiceWorkerContextClient::sendDevToolsMessage(
     int call_id,
     const blink::WebString& message,
     const blink::WebString& state_cookie) {
+  // Return if this context has been stopped.
+  if (!embedded_worker_client_)
+    return;
   embedded_worker_client_->devtools_agent()->SendMessage(
       sender_.get(), session_id, call_id, message.utf8(), state_cookie.utf8());
 }

@@ -304,7 +304,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // This is bound on the worker thread.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
 
-  // Renderer-side object corresponding to WebEmbeddedWorkerInstance
+  // Renderer-side object corresponding to WebEmbeddedWorkerInstance.
+  // This is valid from the ctor to workerContextDestroyed.
   std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;
 
   // Initialized on the worker thread in workerContextStarted and
