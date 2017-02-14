@@ -1854,8 +1854,11 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
     setFlowAwareLocationForChild(*child, childLocation);
     mainAxisOffset += childMainExtent + flowAwareMarginEndForChild(*child);
 
-    mainAxisOffset += justifyContentSpaceBetweenChildren(
-        availableFreeSpace, distribution, children.size());
+    if (i != children.size() - 1) {
+      // The last item does not get extra space added.
+      mainAxisOffset += justifyContentSpaceBetweenChildren(
+          availableFreeSpace, distribution, children.size());
+    }
 
     if (isPaginated)
       updateFragmentationInfoForChild(*child);
