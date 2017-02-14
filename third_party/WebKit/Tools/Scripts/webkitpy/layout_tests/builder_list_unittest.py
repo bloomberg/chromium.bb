@@ -45,47 +45,53 @@ class BuilderListTest(unittest.TestCase):
         })
 
     def test_all_builder_names(self):
-        b = self.sample_builder_list()
-        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'Try A', 'Try B'], b.all_builder_names())
+        builders = self.sample_builder_list()
+        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'Try A', 'Try B'], builders.all_builder_names())
 
     def test_all_continuous_builder_names(self):
-        b = self.sample_builder_list()
-        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)'], b.all_continuous_builder_names())
+        builders = self.sample_builder_list()
+        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)'], builders.all_continuous_builder_names())
 
     def test_all_try_builder_names(self):
-        b = self.sample_builder_list()
-        self.assertEqual(['Try A', 'Try B'], b.all_try_builder_names())
+        builders = self.sample_builder_list()
+        self.assertEqual(['Try A', 'Try B'], builders.all_try_builder_names())
 
     def test_all_port_names(self):
-        b = self.sample_builder_list()
-        self.assertEqual(['port-a', 'port-b', 'port-c'], b.all_port_names())
+        builders = self.sample_builder_list()
+        self.assertEqual(['port-a', 'port-b', 'port-c'], builders.all_port_names())
 
     def test_port_name_for_builder_name(self):
-        b = self.sample_builder_list()
-        self.assertEqual('port-b', b.port_name_for_builder_name('Blink B'))
+        builders = self.sample_builder_list()
+        self.assertEqual('port-b', builders.port_name_for_builder_name('Blink B'))
 
     def test_specifiers_for_builder(self):
-        b = self.sample_builder_list()
-        self.assertEqual(['B', 'Release'], b.specifiers_for_builder('Blink B'))
+        builders = self.sample_builder_list()
+        self.assertEqual(['B', 'Release'], builders.specifiers_for_builder('Blink B'))
 
     def test_port_name_for_builder_name_with_missing_builder(self):
-        b = self.sample_builder_list()
+        builders = self.sample_builder_list()
         with self.assertRaises(KeyError):
-            b.port_name_for_builder_name('Blink_B')
+            builders.port_name_for_builder_name('Blink_B')
 
     def test_specifiers_for_builder_with_missing_builder(self):
-        b = self.sample_builder_list()
+        builders = self.sample_builder_list()
         with self.assertRaises(KeyError):
-            b.specifiers_for_builder('Blink_B')
+            builders.specifiers_for_builder('Blink_B')
 
     def test_builder_name_for_port_name_with_no_debug_builder(self):
-        b = self.sample_builder_list()
-        self.assertEqual('Blink A', b.builder_name_for_port_name('port-a'))
+        builders = self.sample_builder_list()
+        self.assertEqual('Blink A', builders.builder_name_for_port_name('port-a'))
 
     def test_builder_name_for_port_name_with_debug_builder(self):
-        b = self.sample_builder_list()
-        self.assertEqual('Blink B', b.builder_name_for_port_name('port-b'))
+        builders = self.sample_builder_list()
+        self.assertEqual('Blink B', builders.builder_name_for_port_name('port-b'))
 
     def test_builder_name_for_port_name_with_only_debug_builder(self):
-        b = self.sample_builder_list()
-        self.assertEqual('Blink C (dbg)', b.builder_name_for_port_name('port-c'))
+        builders = self.sample_builder_list()
+        self.assertEqual('Blink C (dbg)', builders.builder_name_for_port_name('port-c'))
+
+    def test_version_specifier_for_port_name(self):
+        builders = self.sample_builder_list()
+        self.assertEqual('A', builders.version_specifier_for_port_name('port-a'))
+        self.assertEqual('B', builders.version_specifier_for_port_name('port-b'))
+        self.assertIsNone(builders.version_specifier_for_port_name('port-x'))

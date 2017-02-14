@@ -13,10 +13,11 @@ import argparse
 import copy
 import logging
 
+from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
+from webkitpy.layout_tests.models.test_expectations import TestExpectationLine, TestExpectations
 from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
@@ -73,6 +74,8 @@ class WPTExpectationsUpdater(object):
 
     def get_try_bots(self):
         """Returns try bot names. Can be replaced in unit tests."""
+        # TODO(qyearsley): This method is unnecessary; unit tests can set up
+        # a BuilderList with try builder names, instead of overriding this.
         return self.host.builders.all_try_builder_names()
 
     def get_failing_results_dict(self, build):
@@ -127,17 +130,6 @@ class WPTExpectationsUpdater(object):
                 }
             }
         return test_dict
-
-    def _port_name_to_platform_specifier(self, port_name):
-        """Maps a port name to the platform specifier used in expectation lines.
-
-        For example:
-            linux-trusty -> Trusty
-            mac-mac10.11 -> Mac10.11.
-        """
-        builder_name = self.host.builders.builder_name_for_port_name(port_name)
-        specifiers = self.host.builders.specifiers_for_builder(builder_name)
-        return specifiers[0]
 
     def merge_dicts(self, target, source, path=None):
         """Recursively merges nested dictionaries.
@@ -261,24 +253,95 @@ class WPTExpectationsUpdater(object):
 
         Returns:
             A list of test expectations lines with the format:
-            ['BUG_URL [PLATFORM(S)] TEST_MAME [EXPECTATION(S)]']
+            ['BUG_URL [PLATFORM(S)] TEST_NAME [EXPECTATION(S)]']
         """
         line_list = []
         for test_name, port_results in merged_results.iteritems():
-            for port_names in port_results:
+            for port_names in sorted(port_results):
                 if test_name.startswith('external'):
-                    bug_part = port_results[port_names]['bug']
-                    specifier_part = '[ %s ]' % ' '.join(self.to_list(port_names))
-                    expectations_part = '[ %s ]' % ' '.join(self.get_expectations(port_results[port_names]))
-                    line = ' '.join([bug_part, specifier_part, test_name, expectations_part])
-                    line_list.append(line)
+                    line_parts = [port_results[port_names]['bug']]
+                    specifier_part = self.specifier_part(self.to_list(port_names), test_name)
+                    if specifier_part:
+                        line_parts.append(specifier_part)
+                    line_parts.append(test_name)
+                    line_parts.append('[ %s ]' % ' '.join(self.get_expectations(port_results[port_names])))
+                    line_list.append(' '.join(line_parts))
         return line_list
+
+    def specifier_part(self, port_names, test_name):
+        """Returns the specifier part for a new test expectations line.
+
+        Args:
+            port_names: A list of full port names that the line should apply to.
+            test_name: The test name for the expectation line.
+
+        Returns:
+            The specifier part of the new expectation line, e.g. "[ Mac ]".
+            This will be an empty string if the line should apply to all platforms.
+        """
+        specifiers = []
+        for name in sorted(port_names):
+            specifiers.append(self.host.builders.version_specifier_for_port_name(name))
+        port = self.host.port_factory.get()
+        specifiers = self.simplify_specifiers(specifiers, port.configuration_specifier_macros())
+        specifiers.extend(self.skipped_specifiers(test_name))
+        if not specifiers:
+            return ''
+        return '[ %s ]' % ' '.join(specifiers)
 
     @staticmethod
     def to_list(tuple_or_value):
+        """Converts a tuple to a list, and a string value to a one-item list."""
         if isinstance(tuple_or_value, tuple):
             return list(tuple_or_value)
         return [tuple_or_value]
+
+    def skipped_specifiers(self, test_name):
+        """Returns a list of platform specifiers for which the test is skipped."""
+        # TODO(qyearsley): Change Port.skips_test so that this can be simplified.
+        specifiers = []
+        for port in self.all_try_builder_ports():
+            generic_expectations = TestExpectations(port, tests=[test_name], include_overrides=False)
+            full_expectations = TestExpectations(port, tests=[test_name], include_overrides=True)
+            if port.skips_test(test_name, generic_expectations, full_expectations):
+                specifiers.append(self.host.builders.version_specifier_for_port_name(port.name()))
+        return specifiers
+
+    @memoized
+    def all_try_builder_ports(self):
+        """Returns a list of Port objects for all try builders."""
+        return [self.host.port_factory.get_from_builder_name(name) for name in self.get_try_bots()]
+
+    @staticmethod
+    def simplify_specifiers(specifiers, configuration_specifier_macros):  # pylint: disable=unused-argument
+        """Converts some collection of specifiers to an equivalent and maybe shorter list.
+
+        The input strings are all case-insensitive, but the strings in the
+        return value will all be capitalized.
+
+        Args:
+            specifiers: A collection of lower-case specifiers.
+            configuration_specifier_macros: A dict mapping "macros" for
+                groups of specifiers to lists of specific specifiers. In
+                practice, this is a dict mapping operating systems to
+                supported versions, e.g. {"win": ["win7", "win10"]}.
+
+        Returns:
+            A shortened list of specifiers. For example, ["win7", "win10"]
+            would be converted to ["Win"]. If the given list covers all
+            supported platforms, then an empty list is returned.
+            This list will be sorted and have capitalized specifier strings.
+        """
+        specifiers = {specifier.lower() for specifier in specifiers}
+        for macro_specifier, version_specifiers in configuration_specifier_macros.iteritems():
+            macro_specifier = macro_specifier.lower()
+            version_specifiers = {specifier.lower() for specifier in version_specifiers}
+            if version_specifiers.issubset(specifiers):
+                specifiers -= version_specifiers
+                specifiers.add(macro_specifier)
+        if specifiers == set(configuration_specifier_macros):
+            return []
+        return sorted(specifier.capitalize() for specifier in specifiers)
 
     def write_to_test_expectations(self, line_list):
         """Writes to TestExpectations.

@@ -931,6 +931,7 @@ class Port(object):
         return tests_to_skip
 
     def _expectations_from_skipped_files(self, skipped_file_paths):
+        # TODO(qyearsley): Remove this if there are no more "Skipped" files.
         tests_to_skip = []
         for search_path in skipped_file_paths:
             filename = self._filesystem.join(self._absolute_baseline_path(search_path), "Skipped")

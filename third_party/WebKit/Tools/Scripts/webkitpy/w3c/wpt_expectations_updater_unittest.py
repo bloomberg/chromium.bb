@@ -21,18 +21,37 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         super(WPTExpectationsUpdaterTest, self).setUp()
         host = MockHost()
         host.builders = BuilderList({
-            'MOCK Mac10.10': {'port_name': 'test-mac-mac10.10', 'specifiers': ['Mac10.10', 'Release']},
-            'MOCK Mac10.11': {'port_name': 'test-mac-mac10.11', 'specifiers': ['Mac10.11', 'Release']},
-            'MOCK Trusty': {'port_name': 'test-linux-trusty', 'specifiers': ['Trusty', 'Release']},
-            'MOCK Win10': {'port_name': 'test-win-win10', 'specifiers': ['Win10', 'Release']},
-            'MOCK Win7': {'port_name': 'test-win-win7', 'specifiers': ['Win7', 'Release']},
-            'MOCK Android': {'port_name': 'test-android', 'specifiers': ['Android', 'Release']},
+            'MOCK Try Mac10.10': {
+                'port_name': 'test-mac-mac10.10',
+                'specifiers': ['Mac10.10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac10.11': {
+                'port_name': 'test-mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Trusty': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Win10': {
+                'port_name': 'test-win-win10',
+                'specifiers': ['Win10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Win7': {
+                'port_name': 'test-win-win7',
+                'specifiers': ['Win7', 'Release'],
+                'is_try_builder': True,
+            },
         })
         return host
 
     def test_get_failing_results_dict_only_passing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
             'tests': {
                 'x': {
                     'passing-test.html': {
@@ -43,18 +62,18 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             },
         }))
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Mac10.10', 123)), {})
+        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_no_results(self):
         host = self.mock_host()
         host.buildbot = MockBuildBot()
-        host.buildbot.set_results(Build('MOCK Mac10.10', 123), None)
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), None)
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Mac10.10', 123)), {})
+        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_some_failing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
             'tests': {
                 'x': {
                     'failing-test.html': {
@@ -66,7 +85,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             },
         }))
         updater = WPTExpectationsUpdater(host)
-        results_dict = updater.get_failing_results_dict(Build('MOCK Mac10.10', 123))
+        results_dict = updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123))
         self.assertEqual(
             results_dict,
             {
@@ -135,18 +154,42 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
             'external/fake/test/path.html': {
-                'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
-                'two': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/test'},
-                'three': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
+                'test-linux-trusty': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
+                'test-mac-mac10.10': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
+                'test-mac-mac10.11': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/test'},
             }
         }
         self.assertEqual(
             updater.create_line_list(results),
             [
-                'crbug.com/test [ three ] external/fake/test/path.html [ Pass ]',
-                'crbug.com/test [ two ] external/fake/test/path.html [ Timeout ]',
-                'crbug.com/test [ one ] external/fake/test/path.html [ Pass ]',
+                'crbug.com/test [ Linux ] external/fake/test/path.html [ Pass ]',
+                'crbug.com/test [ Mac10.10 ] external/fake/test/path.html [ Pass ]',
+                'crbug.com/test [ Mac10.11 ] external/fake/test/path.html [ Timeout ]',
             ])
+
+    def test_specifier_part(self):
+        updater = WPTExpectationsUpdater(self.mock_host())
+        self.assertEqual(updater.specifier_part(['test-mac-mac10.10'], 'x/y.html'), '[ Mac10.10 ]')
+
+    def test_skipped_specifiers_when_test_is_wontfix(self):
+        host = self.mock_host()
+        expectations_path = '/test.checkout/LayoutTests/NeverFixTests'
+        host.filesystem.files[expectations_path] = 'crbug.com/111 [ Trusty ] external/wpt/test.html [ WontFix ]\n'
+        host.filesystem.files['/test.checkout/LayoutTests/external/wpt/test.html'] = ''
+        updater = WPTExpectationsUpdater(host)
+        self.assertEqual(updater.skipped_specifiers('external/wpt/test.html'), ['Trusty'])
+
+    def test_simplify_specifiers(self):
+        macros = {
+            'mac': ['Mac10.10', 'mac10.11'],
+            'win': ['Win7', 'win10'],
+            'linux': ['Trusty'],
+        }
+        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
+        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty'], macros), ['Linux', 'Mac'])
+        self.assertEqual(
+            WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
+        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['a', 'b', 'c'], {}), ['A', 'B', 'C'])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -218,27 +261,27 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         host.filesystem.files[expectations_path] = MARKER_COMMENT + '\n'
         updater = WPTExpectationsUpdater(host)
-        line_list = ['crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]']
+        line_list = ['crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]']
         updater.write_to_test_expectations(line_list)
         value = updater.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
             (MARKER_COMMENT + '\n'
-             'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n'))
+             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n'))
 
     def test_write_to_test_expectations_with_no_marker_comment(self):
         host = self.mock_host()
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
-        host.filesystem.files[expectations_path] = 'crbug.com/111 [ FakePlatform ]\n'
+        host.filesystem.files[expectations_path] = 'crbug.com/111 [ Trusty ]\n'
         updater = WPTExpectationsUpdater(host)
-        line_list = ['crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]']
+        line_list = ['crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]']
         updater.write_to_test_expectations(line_list)
         value = host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
-            ('crbug.com/111 [ FakePlatform ]\n'
+            ('crbug.com/111 [ Trusty ]\n'
              '\n' + MARKER_COMMENT + '\n'
-             'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]'))
+             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]'))
 
     def test_write_to_test_expectations_skips_existing_lines(self):
         host = self.mock_host()
@@ -262,14 +305,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         host.filesystem.files[expectations_path] = (
             MARKER_COMMENT + '\n'
-            'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n')
+            'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n')
         updater = WPTExpectationsUpdater(host)
         updater.write_to_test_expectations([])
         value = updater.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
             (MARKER_COMMENT + '\n'
-             'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n'))
+             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n'))
 
     def test_is_js_test_true(self):
         host = self.mock_host()

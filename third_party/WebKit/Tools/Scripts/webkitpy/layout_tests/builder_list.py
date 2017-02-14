@@ -40,9 +40,10 @@ class BuilderList(object):
     def __init__(self, builders_dict):
         """The given dictionary maps builder names to dicts with the keys:
             "port_name": A fully qualified port name.
-            "specifiers": TestExpectations specifiers for that config. Valid values are found in
-                  TestExpectationsParser._configuration_tokens_list. specifiers is a list whose
-                  first item is the version string and second item is the build type.
+            "specifiers": A two-item list: [version specifier, build type specifier].
+                Valid values for the version specifier can be found in
+                TestExpectationsParser._configuration_tokens_list, and valid
+                values for the build type specifier include "Release" and "Debug".
 
         Possible refactoring note: Potentially, it might make sense to use
         webkitpy.common.buildbot.Builder and add port_name and specifiers
@@ -63,20 +64,20 @@ class BuilderList(object):
         return sorted({b["port_name"] for b in self._builders.values()})
 
     def port_name_for_builder_name(self, builder_name):
-        return self._builders[builder_name]["port_name"]
+        return self._builders[builder_name]['port_name']
 
     def specifiers_for_builder(self, builder_name):
-        return self._builders[builder_name]["specifiers"]
+        return self._builders[builder_name]['specifiers']
 
     def builder_name_for_port_name(self, target_port_name):
         """Returns a builder name for the given port name.
 
         Multiple builders can have the same port name; this function only
         returns builder names for non-try-bot builders, and it gives preference
-        to non-debug builders.
+        to non-debug builders. If no builder is found, None is returned.
         """
         debug_builder_name = None
-        for builder_name, builder_info in self._builders.items():
+        for builder_name, builder_info in self._builders.iteritems():
             if builder_info.get('is_try_builder'):
                 continue
             if builder_info['port_name'] == target_port_name:
@@ -86,16 +87,30 @@ class BuilderList(object):
                     return builder_name
         return debug_builder_name
 
+    def version_specifier_for_port_name(self, target_port_name):
+        """Returns the OS version specifier for a given port name.
+
+        This just uses information in the builder list, and it returns
+        the version specifier for the first builder that matches, even
+        if it's a try bot builder.
+        """
+        for _, builder_info in sorted(self._builders.iteritems()):
+            if builder_info['port_name'] == target_port_name:
+                return builder_info['specifiers'][0]
+        return None
+
     def builder_name_for_specifiers(self, version, build_type):
         """Returns the builder name for a give version and build type.
 
         Args:
-            version: A string with the OS version specifier. e.g. "win7", "precise", "mac10.10".
-            build_type: A string with the build type. e.g. "debug" or "release".
+            version: A string with the OS version specifier. e.g. "Trusty", "Win10".
+            build_type: A string with the build type. e.g. "Debug" or "Release".
+
+        Returns:
+            The builder name if found, or an empty string if no match was found.
         """
         for builder_name, info in sorted(self._builders.items()):
             specifiers = info['specifiers']
             if specifiers[0].lower() == version.lower() and specifiers[1].lower() == build_type.lower():
                 return builder_name
-
         return ''
