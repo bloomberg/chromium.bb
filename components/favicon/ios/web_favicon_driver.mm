@@ -5,6 +5,7 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 
 #include "base/bind.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon/ios/favicon_url_util.h"
 #include "ios/web/public/browser_state.h"
@@ -12,9 +13,20 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_thread.h"
+#include "skia/ext/skia_utils_ios.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 DEFINE_WEB_STATE_USER_DATA_KEY(favicon::WebFaviconDriver);
+
+// Callback for the download of favicon.
+using ImageDownloadCallback =
+    base::Callback<void(int image_id,
+                        int http_status_code,
+                        const GURL& image_url,
+                        const std::vector<SkBitmap>& bitmaps,
+                        const std::vector<gfx::Size>& sizes)>;
 
 namespace favicon {
 
@@ -55,10 +67,33 @@ int WebFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
     return 0;
   }
 
-  return web_state()->DownloadImage(
-      url, true, max_image_size, false,
-      base::Bind(&FaviconDriverImpl::DidDownloadFavicon,
-                 base::Unretained(this)));
+  static int downloaded_image_count = 0;
+  int local_download_id = ++downloaded_image_count;
+
+  ImageDownloadCallback local_image_callback = base::Bind(
+      &FaviconDriverImpl::DidDownloadFavicon, base::Unretained(this));
+  GURL local_url(url);
+
+  image_fetcher::IOSImageDataFetcherCallback local_callback =
+      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
+        if (metadata.response_code ==
+            image_fetcher::ImageDataFetcher::RESPONSE_CODE_INVALID)
+          return;
+
+        std::vector<SkBitmap> frames;
+        std::vector<gfx::Size> sizes;
+        if (data) {
+          frames = skia::ImageDataToSkBitmaps(data);
+          for (const auto& frame : frames) {
+            sizes.push_back(gfx::Size(frame.width(), frame.height()));
+          }
+        }
+        local_image_callback.Run(local_download_id, metadata.response_code,
+                                 local_url, frames, sizes);
+      };
+  image_fetcher_.FetchImageDataWebpDecoded(url, local_callback);
+
+  return downloaded_image_count;
 }
 
 bool WebFaviconDriver::IsOffTheRecord() {
@@ -96,8 +131,9 @@ WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
                                    history::HistoryService* history_service,
                                    bookmarks::BookmarkModel* bookmark_model)
     : web::WebStateObserver(web_state),
-      FaviconDriverImpl(favicon_service, history_service, bookmark_model) {
-}
+      FaviconDriverImpl(favicon_service, history_service, bookmark_model),
+      image_fetcher_(web_state->GetBrowserState()->GetRequestContext(),
+                     web::WebThread::GetBlockingPool()) {}
 
 WebFaviconDriver::~WebFaviconDriver() {
 }
