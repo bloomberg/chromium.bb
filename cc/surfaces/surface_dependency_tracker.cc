@@ -115,10 +115,9 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   pending_surfaces_.erase(surface);
   surface->RemoveObserver(this);
 
-  // TODO(fsamuel): We should consider removing this surface as a dependency on
-  // other surfaces. This dependency will be removed when the deadline hits
-  // anyway but maybe we should try to actiate these frames early (see
-  // https://crbug.com/689725).
+  // Pretend that the discarded surface's SurfaceId is now available to unblock
+  // dependencies because we now know the surface will never activate.
+  NotifySurfaceIdAvailable(surface->surface_id());
 }
 
 void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {

@@ -573,5 +573,44 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id));
 }
 
+// The parent Surface is blocked on |child_id2| which is blocked on |child_id3|.
+// child_support1 evicts its blocked Surface. The parent surface should
+// activate.
+TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithPendingFrame) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  // Submit a CompositorFrame that depends on |child_id1|.
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeCompositorFrame({child_id1}));
+
+  // Verify that the CompositorFrame is blocked on |child_id1|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+              UnorderedElementsAre(child_id1));
+
+  // Submit a CompositorFrame that depends on |child_id2|.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeCompositorFrame({child_id2}));
+
+  // Verify that the CompositorFrame is blocked on |child_id2|.
+  EXPECT_FALSE(child_surface1()->HasActiveFrame());
+  EXPECT_TRUE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+              UnorderedElementsAre(child_id2));
+
+  // Evict child_support1's current Surface.
+  // TODO(fsamuel): EvictFrame => EvictCurrentSurface.
+  child_support1().EvictFrame();
+
+  // The parent Surface should immediately activate.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+}
+
 }  // namespace test
 }  // namespace cc
