@@ -301,6 +301,9 @@ void FocusManager::SetFocusedViewWithReason(
     View* view, FocusChangeReason reason) {
   if (focused_view_ == view)
     return;
+  // TODO(oshima|achuith): This is to diagnose crbug.com/687232.
+  // Change this to DCHECK once it's resolved.
+  CHECK(!view || ContainsView(view));
 
 #if !defined(OS_MACOSX)
   // TODO(warx): There are some AccessiblePaneViewTest failed on macosx.
