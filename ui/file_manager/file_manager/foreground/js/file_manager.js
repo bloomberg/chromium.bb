@@ -815,6 +815,9 @@ FileManager.prototype = /** @struct */ {
       }
     }
 
+    var writableOnly =
+        this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
+
     // VolumeManagerWrapper hides virtual file system related event and data
     // even depends on the value of |supportVirtualPath|. If it is
     // VirtualPathSupport.NO_VIRTUAL_PATH, it hides Drive even if Drive is
@@ -825,7 +828,7 @@ FileManager.prototype = /** @struct */ {
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
     this.volumeManager_ = new VolumeManagerWrapper(
-        allowedPaths, this.backgroundPage_);
+        allowedPaths, writableOnly, this.backgroundPage_);
   };
 
   /**

@@ -4,8 +4,9 @@
 
 /**
  * Thin wrapper for VolumeManager. This should be an interface proxy to talk
- * to VolumeManager. This class also filters Drive related data/events if
- * driveEnabled is set to false.
+ * to VolumeManager. This class also filters some "disallowed" volumes;
+ * for example, Drive volumes are dropped if Drive is disabled, and read-only
+ * volumes are dropped in save-as dialogs.
  *
  * @constructor
  * @extends {cr.EventTarget}
@@ -13,15 +14,17 @@
  *
  * @param {!AllowedPaths} allowedPaths Which paths are supported in the Files
  *     app dialog.
+ * @param {boolean} writableOnly If true, only writable volumes are returned.
  * @param {Window=} opt_backgroundPage Window object of the background
  *     page. If this is specified, the class skips to get background page.
  *     TOOD(hirono): Let all clients of the class pass the background page and
  *     make the argument not optional.
  */
-function VolumeManagerWrapper(allowedPaths, opt_backgroundPage) {
+function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {
   cr.EventTarget.call(this);
 
   this.allowedPaths_ = allowedPaths;
+  this.writableOnly_ = writableOnly;
   this.volumeInfoList = new cr.ui.ArrayDataModel([]);
 
   this.volumeManager_ = null;
@@ -62,25 +65,40 @@ function VolumeManagerWrapper(allowedPaths, opt_backgroundPage) {
 VolumeManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
+ * Checks if a volume type is allowed.
+ *
+ * Note that even if a volume type is allowed, a volume of that type might be
+ * disallowed for other restrictions. To check if a specific volume is allowed
+ * or not, use isAllowedVolume_() instead.
+ *
  * @param {VolumeManagerCommon.VolumeType} volumeType
  * @return {boolean}
  */
-VolumeManagerWrapper.prototype.isAllowedVolume_ = function(volumeType) {
-  if (this.allowedPaths_ === AllowedPaths.ANY_PATH)
-    return true;
-
-  if (this.allowedPaths_ === AllowedPaths.NATIVE_OR_DRIVE_PATH &&
-      (VolumeManagerCommon.VolumeType.isNative(volumeType) ||
-       volumeType == VolumeManagerCommon.VolumeType.DRIVE)) {
-    return true;
+VolumeManagerWrapper.prototype.isAllowedVolumeType_ = function(volumeType) {
+  switch (this.allowedPaths_) {
+    case AllowedPaths.ANY_PATH:
+      return true;
+    case AllowedPaths.NATIVE_OR_DRIVE_PATH:
+      return (VolumeManagerCommon.VolumeType.isNative(volumeType) ||
+              volumeType == VolumeManagerCommon.VolumeType.DRIVE);
+    case AllowedPaths.NATIVE_PATH:
+      return VolumeManagerCommon.VolumeType.isNative(volumeType);
   }
-
-  if (this.allowedPaths_ === AllowedPaths.NATIVE_PATH &&
-      VolumeManagerCommon.VolumeType.isNative(volumeType)) {
-    return true;
-  }
-
   return false;
+};
+
+/**
+ * Checks if a volume is allowed.
+ *
+ * @param {!VolumeInfo} volumeInfo
+ * @return {boolean}
+ */
+VolumeManagerWrapper.prototype.isAllowedVolume_ = function(volumeInfo) {
+  if (!this.isAllowedVolumeType_(volumeInfo.volumeType))
+    return false;
+  if (this.writableOnly_ && volumeInfo.isReadOnly)
+    return false;
+  return true;
 };
 
 /**
@@ -110,7 +128,7 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
   for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
     var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
     // TODO(hidehiko): Filter mounted volumes located on Drive File System.
-    if (!this.isAllowedVolume_(volumeInfo.volumeType))
+    if (!this.isAllowedVolume_(volumeInfo))
       continue;
     volumeInfoList.push(volumeInfo);
   }
@@ -154,19 +172,17 @@ VolumeManagerWrapper.prototype.dispose = function() {
  * @private
  */
 VolumeManagerWrapper.prototype.onEvent_ = function(event) {
-  var eventVolumeType;
   switch (event.type) {
     case 'drive-connection-changed':
-      eventVolumeType = VolumeManagerCommon.VolumeType.DRIVE;
+      if (this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE))
+        this.dispatchEvent(event);
       break;
     case 'externally-unmounted':
       event = /** @type {!ExternallyUnmountedEvent} */ (event);
-      eventVolumeType = event.volumeInfo.volumeType;
+      if (this.isAllowedVolume_(event.volumeInfo))
+        this.dispatchEvent(event);
       break;
   }
-
-  if (eventVolumeType && this.isAllowedVolume_(eventVolumeType))
-    this.dispatchEvent(event);
 };
 
 /**
@@ -175,32 +191,25 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
  * @private
  */
 VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
-  if (this.allowedPaths_ === AllowedPaths.ANY_PATH) {
-    // Apply the splice as is.
-    this.volumeInfoList.splice.apply(
-         this.volumeInfoList,
-         [event.index, event.removed.length].concat(event.added));
-    return;
-  }
-
-  // Filters Drive related volumes.
+  // Filters some volumes.
   var index = event.index;
   for (var i = 0; i < event.index; i++) {
-    var volumeType = this.volumeManager_.volumeInfoList.item(i).volumeType;
-    if (!this.isAllowedVolume_(volumeType))
+    var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
+    if (!this.isAllowedVolume_(volumeInfo))
       index--;
   }
 
   var numRemovedVolumes = 0;
   for (var i = 0; i < event.removed.length; i++) {
-    if (this.isAllowedVolume_(event.removed[i].volumeType))
+    var volumeInfo = event.removed[i];
+    if (this.isAllowedVolume_(volumeInfo))
       numRemovedVolumes++;
   }
 
   var addedVolumes = [];
   for (var i = 0; i < event.added.length; i++) {
     var volumeInfo = event.added[i];
-    if (this.isAllowedVolume_(volumeInfo.volumeType)) {
+    if (this.isAllowedVolume_(volumeInfo)) {
       addedVolumes.push(volumeInfo);
     }
   }
@@ -237,7 +246,7 @@ VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
  *     state.
  */
 VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
-  if (!this.isAllowedVolume_(VolumeManagerCommon.VolumeType.DRIVE) ||
+  if (!this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE) ||
       !this.volumeManager_) {
     return {
       type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
@@ -250,7 +259,7 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
 
 /** @override */
 VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
-  return this.filterDisabledVolume_(
+  return this.filterDisallowedVolume_(
       this.volumeManager_ && this.volumeManager_.getVolumeInfo(entry));
 };
 
@@ -261,7 +270,7 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  */
 VolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
     function(volumeType) {
-  return this.filterDisabledVolume_(
+  return this.filterDisallowedVolume_(
       this.volumeManager_ &&
       this.volumeManager_.getCurrentProfileVolumeInfo(volumeType));
 };
@@ -294,7 +303,7 @@ VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
       this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
   if (!locationInfo)
     return null;
-  if (!this.filterDisabledVolume_(locationInfo.volumeInfo))
+  if (!this.filterDisallowedVolume_(locationInfo.volumeInfo))
     return null;
   return locationInfo;
 };
@@ -355,16 +364,16 @@ VolumeManagerWrapper.prototype.configure = function(volumeInfo) {
 };
 
 /**
- * Filters volume info by referring allowedPaths_.
+ * Filters volume info by isAllowedVolume_().
  *
  * @param {VolumeInfo} volumeInfo Volume info.
- * @return {VolumeInfo} Null if the volume is disabled. Otherwise just returns
+ * @return {VolumeInfo} Null if the volume is disallowed. Otherwise just returns
  *     the volume.
  * @private
  */
-VolumeManagerWrapper.prototype.filterDisabledVolume_ =
+VolumeManagerWrapper.prototype.filterDisallowedVolume_ =
     function(volumeInfo) {
-  if (volumeInfo && this.isAllowedVolume_(volumeInfo.volumeType)) {
+  if (volumeInfo && this.isAllowedVolume_(volumeInfo)) {
     return volumeInfo;
   } else {
     return null;
