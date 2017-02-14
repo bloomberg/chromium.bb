@@ -31,6 +31,7 @@ class AudioManager;
 
 namespace content {
 
+// Should be used on IO thread only.
 class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
  public:
   // Calling Start() with this kFakeOpenSessionId will open the default device,
@@ -45,12 +46,9 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // is not opened, otherwise the opened device. Called on IO thread.
   const StreamDeviceInfo* GetOpenedDeviceInfoById(int session_id);
 
-  void Unregister();
-
-  // MediaStreamProvider implementation, called on IO thread.
-  void Register(MediaStreamProviderListener* listener,
-                const scoped_refptr<base::SingleThreadTaskRunner>&
-                    device_task_runner) override;
+  // MediaStreamProvider implementation.
+  void RegisterListener(MediaStreamProviderListener* listener) override;
+  void UnregisterListener() override;
   int Open(const StreamDeviceInfo& device) override;
   void Close(int session_id) override;
 
@@ -60,7 +58,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // inactivates the keyboard mic accordingly. The (in)activation is done on the
   // UI thread and for the register case a callback must therefor be provided
   // which is called when activated.
-  // Called on the IO thread.
   void RegisterKeyboardMicStream(const base::Closure& callback);
   void UnregisterKeyboardMicStream();
 #endif

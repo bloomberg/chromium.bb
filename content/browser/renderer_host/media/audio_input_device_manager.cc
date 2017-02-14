@@ -33,12 +33,13 @@ const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
 
 AudioInputDeviceManager::AudioInputDeviceManager(
     media::AudioManager* audio_manager)
-    : listener_(NULL),
+    : listener_(nullptr),
       next_capture_session_id_(kFirstSessionId),
 #if defined(OS_CHROMEOS)
       keyboard_mic_streams_count_(0),
 #endif
-      audio_manager_(audio_manager) {
+      audio_manager_(audio_manager),
+      device_task_runner_(audio_manager_->GetTaskRunner()) {
 }
 
 AudioInputDeviceManager::~AudioInputDeviceManager() {
@@ -49,24 +50,23 @@ const StreamDeviceInfo* AudioInputDeviceManager::GetOpenedDeviceInfoById(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StreamDeviceList::iterator device = GetDevice(session_id);
   if (device == devices_.end())
-    return NULL;
+    return nullptr;
 
   return &(*device);
 }
 
-void AudioInputDeviceManager::Register(
-    MediaStreamProviderListener* listener,
-    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
+void AudioInputDeviceManager::RegisterListener(
+    MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listener_);
-  DCHECK(!device_task_runner_.get());
+  DCHECK(device_task_runner_);
   listener_ = listener;
-  device_task_runner_ = device_task_runner;
 }
 
-void AudioInputDeviceManager::Unregister() {
+void AudioInputDeviceManager::UnregisterListener() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listener_);
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {

@@ -327,8 +327,10 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
 }
 
 VideoCaptureManager::VideoCaptureManager(
-    std::unique_ptr<media::VideoCaptureDeviceFactory> factory)
-    : listener_(nullptr),
+    std::unique_ptr<media::VideoCaptureDeviceFactory> factory,
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
+    : device_task_runner_(std::move(device_task_runner)),
+      listener_(nullptr),
       new_capture_session_id_(1),
       video_capture_device_factory_(std::move(factory)) {}
 
@@ -337,14 +339,12 @@ VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(device_start_queue_.empty());
 }
 
-void VideoCaptureManager::Register(
-    MediaStreamProviderListener* listener,
-    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
+void VideoCaptureManager::RegisterListener(
+    MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listener_);
-  DCHECK(!device_task_runner_.get());
+  DCHECK(device_task_runner_);
   listener_ = listener;
-  device_task_runner_ = device_task_runner;
 #if defined(OS_ANDROID)
   application_state_has_running_activities_ = true;
   app_status_listener_.reset(new base::android::ApplicationStatusListener(
@@ -353,7 +353,8 @@ void VideoCaptureManager::Register(
 #endif
 }
 
-void VideoCaptureManager::Unregister() {
+void VideoCaptureManager::UnregisterListener() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listener_);
   listener_ = nullptr;
 }

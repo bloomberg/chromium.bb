@@ -71,8 +71,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
-    manager_->Register(audio_input_listener_.get(),
-                       audio_manager_->GetTaskRunner());
+    manager_->RegisterListener(audio_input_listener_.get());
 
     // Use fake devices.
     devices_.emplace_back(MEDIA_DEVICE_AUDIO_CAPTURE, "Fake Device 1",
@@ -84,9 +83,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override {
-    manager_->Unregister();
-  }
+  void TearDown() override { manager_->UnregisterListener(); }
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<AudioInputDeviceManager> manager_;

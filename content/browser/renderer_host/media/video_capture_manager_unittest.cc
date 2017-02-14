@@ -175,12 +175,13 @@ class VideoCaptureManagerTest : public testing::Test {
     listener_.reset(new MockMediaStreamProviderListener());
     vcm_ = new VideoCaptureManager(
         std::unique_ptr<media::VideoCaptureDeviceFactory>(
-            new WrappedDeviceFactory()));
+            new WrappedDeviceFactory()),
+        base::ThreadTaskRunnerHandle::Get());
     video_capture_device_factory_ = static_cast<WrappedDeviceFactory*>(
         vcm_->video_capture_device_factory());
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->set_number_of_devices(kNumberOfFakeDevices);
-    vcm_->Register(listener_.get(), base::ThreadTaskRunnerHandle::Get());
+    vcm_->RegisterListener(listener_.get());
     frame_observer_.reset(new MockFrameObserver());
 
     base::RunLoop run_loop;
@@ -290,7 +291,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 TEST_F(VideoCaptureManagerTest, CreateAndCloseMultipleTimes) {
@@ -307,7 +308,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndCloseMultipleTimes) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Try to open, start, and abort a device.
@@ -327,7 +328,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Open the same device twice.
@@ -348,7 +349,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Connect and disconnect devices.
@@ -374,7 +375,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
   run_loop2.Run();
   ASSERT_EQ(devices_.size(), 3u);
 
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
   video_capture_device_factory_->set_number_of_devices(number_of_devices_keep);
 }
 
@@ -435,7 +436,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
 
   vcm_->Close(video_session_id);
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Enumerate devices, then check the list of supported formats. Then open and
@@ -499,7 +500,7 @@ TEST_F(VideoCaptureManagerTest,
 
   vcm_->Close(video_session_id);
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Enumerate devices and open the first, then check the formats currently in
@@ -541,7 +542,7 @@ TEST_F(VideoCaptureManagerTest, StartDeviceAndGetDeviceFormatInUse) {
 
   vcm_->Close(video_session_id);
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Enumerate devices and open the first, then check the formats currently in
@@ -588,7 +589,7 @@ TEST_F(VideoCaptureManagerTest,
 
   vcm_->Close(video_session_id);
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Open two different devices.
@@ -608,7 +609,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Try open a non-existing device.
@@ -632,7 +633,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->Close(session_id);
   base::RunLoop().RunUntilIdle();
 
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Start a device without calling Open, using a non-magic ID.
@@ -641,7 +642,7 @@ TEST_F(VideoCaptureManagerTest, StartInvalidSession) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Open and start a device, close it before calling Stop.
@@ -661,7 +662,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
 
   // Wait to check callbacks before removing the listener
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 // Try to open, start, pause and resume a device. Confirm the device is
@@ -700,7 +701,7 @@ TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 
 #if defined(OS_ANDROID)
@@ -731,7 +732,7 @@ TEST_F(VideoCaptureManagerTest, PauseAndResumeDevice) {
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
-  vcm_->Unregister();
+  vcm_->UnregisterListener();
 }
 #endif
 

@@ -19,10 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace content {
 
 enum MediaStreamProviderError {
@@ -58,10 +54,11 @@ class CONTENT_EXPORT MediaStreamProviderListener {
 class CONTENT_EXPORT MediaStreamProvider
     : public base::RefCountedThreadSafe<MediaStreamProvider> {
  public:
-  // Registers a listener and a device message loop.
-  virtual void Register(MediaStreamProviderListener* listener,
-                        const scoped_refptr<base::SingleThreadTaskRunner>&
-                            device_task_runner) = 0;
+  // Registers a listener.
+  virtual void RegisterListener(MediaStreamProviderListener* listener) = 0;
+
+  // Unregisters a previously registered listener.
+  virtual void UnregisterListener() = 0;
 
   // Opens the specified device. The device is not started and it is still
   // possible for other applications to open the device before the device is
