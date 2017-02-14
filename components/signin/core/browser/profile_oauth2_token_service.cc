@@ -4,18 +4,6 @@
 
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
-void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
-    const std::string& account_id) {
-  CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
-}
-
-void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
-    const std::string& account_id) {
-  CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
-}
-
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
     : OAuth2TokenService(std::move(delegate)) {
@@ -49,4 +37,16 @@ void ProfileOAuth2TokenService::RevokeCredentials(
 
 const net::BackoffEntry* ProfileOAuth2TokenService::GetDelegateBackoffEntry() {
   return GetDelegate()->BackoffEntry();
+}
+
+void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  CancelRequestsForAccount(account_id);
+  ClearCacheForAccount(account_id);
+}
+
+void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
+    const std::string& account_id) {
+  CancelRequestsForAccount(account_id);
+  ClearCacheForAccount(account_id);
 }
