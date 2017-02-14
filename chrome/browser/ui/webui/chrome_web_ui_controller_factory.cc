@@ -435,7 +435,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<extensions::ExtensionsUI>;
   }
   // Material Design history is on its own host, rather than on an Uber page.
-  if (MdHistoryUI::IsEnabled(profile) &&
+  if (base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
       url.host_piece() == chrome::kChromeUIHistoryHost) {
     return &NewWebUI<MdHistoryUI>;
   }

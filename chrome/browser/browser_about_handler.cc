@@ -97,7 +97,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
 #else
     // Material design history is handled on the top-level chrome://history
     // host.
-    if (MdHistoryUI::IsEnabled(Profile::FromBrowserContext(browser_context))) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignHistory)) {
       host = chrome::kChromeUIHistoryHost;
       path = url->path();
     } else {

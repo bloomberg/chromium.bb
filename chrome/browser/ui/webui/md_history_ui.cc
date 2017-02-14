@@ -16,8 +16,6 @@
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -232,11 +230,6 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 MdHistoryUI::~MdHistoryUI() {}
-
-// static
-bool MdHistoryUI::IsEnabled(Profile* profile) {
-  return base::FeatureList::IsEnabled(features::kMaterialDesignHistory);
-}
 
 // static
 base::RefCountedMemory* MdHistoryUI::GetFaviconResourceBytes(
