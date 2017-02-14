@@ -148,7 +148,7 @@ class APIPermission {
     kNativeMessaging,
     kNetworkingConfig,
     kNetworkingPrivate,
-    kNotificationProvider,
+    kDeleted_NotificationProvider,
     kNotifications,
     kOverrideEscFullscreen,
     kPageCapture,

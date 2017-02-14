@@ -626,10 +626,6 @@
       "extension", "legacy_packaged_app", "platform_app"
     ]
   },
-  "notificationProvider": {
-    "channel": "trunk",
-    "extension_types": ["extension", "platform_app"]
-  },
   "notifications": {
     // The chrome.notifications functionality listed in notifications.idl is
     // available only to extension/platform_app types. The implementation of

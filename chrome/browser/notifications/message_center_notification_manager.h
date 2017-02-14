@@ -79,12 +79,6 @@ class MessageCenterNotificationManager
       const std::string& delegate_id, Profile* profile);
 
  private:
-  // Adds |profile_notification| to an alternative provider extension or app.
-  void AddNotificationToAlternateProvider(
-      const Notification& notification,
-      Profile* profile,
-      const std::string& extension_id) const;
-
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
                            ManuallyCloseMessageCenter);
 
@@ -104,10 +98,6 @@ class MessageCenterNotificationManager
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.
   ProfileNotification* FindProfileNotification(const std::string& id) const;
-
-  // Get the extension ID of the extension that the user chose to take over
-  // Chorme Notification Center.
-  std::string GetExtensionTakingOverNotifications(Profile* profile);
 
   std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 

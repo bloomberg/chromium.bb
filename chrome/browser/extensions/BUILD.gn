@@ -321,8 +321,6 @@ static_library("extensions") {
     "api/networking_private/networking_private_ui_delegate_factory_impl.h",
     "api/networking_private/networking_private_verify_delegate_factory_impl.cc",
     "api/networking_private/networking_private_verify_delegate_factory_impl.h",
-    "api/notification_provider/notification_provider_api.cc",
-    "api/notification_provider/notification_provider_api.h",
     "api/notifications/notifications_api.cc",
     "api/notifications/notifications_api.h",
     "api/omnibox/omnibox_api.cc",

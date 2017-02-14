@@ -51,7 +51,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
       {APIPermission::kNotifications, "notifications"},
       {APIPermission::kGcdPrivate, "gcdPrivate"},
       {APIPermission::kGcm, "gcm"},
-      {APIPermission::kNotificationProvider, "notificationProvider"},
 
       // Register extension permissions.
       {APIPermission::kAccessibilityFeaturesModify,
