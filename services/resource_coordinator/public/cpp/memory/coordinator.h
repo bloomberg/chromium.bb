@@ -5,7 +5,7 @@
 #ifndef SERVICES_MEMORY_INSTRUMENTATION_PUBLIC_CPP_COORDINATOR_H_
 #define SERVICES_MEMORY_INSTRUMENTATION_PUBLIC_CPP_COORDINATOR_H_
 
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace memory_instrumentation {
 

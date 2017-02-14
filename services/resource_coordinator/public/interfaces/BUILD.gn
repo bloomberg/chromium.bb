@@ -2,4 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//services/memory_instrumentation/public/cpp/memory_instrumentation.typemap" ]
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("interfaces") {
+  sources = [
+    "memory/memory_instrumentation.mojom",
+  ]
+}

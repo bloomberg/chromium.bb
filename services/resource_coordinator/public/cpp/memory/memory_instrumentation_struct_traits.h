@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_INFRA_TRAITS_H_
-#define SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_INFRA_TRAITS_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_
 
 #include "base/trace_event/memory_dump_request_args.h"
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace mojo {
 
-template<>
+template <>
 struct EnumTraits<memory_instrumentation::mojom::DumpType,
                   base::trace_event::MemoryDumpType> {
   static memory_instrumentation::mojom::DumpType ToMojom(
@@ -19,7 +19,7 @@ struct EnumTraits<memory_instrumentation::mojom::DumpType,
                         base::trace_event::MemoryDumpType* out);
 };
 
-template<>
+template <>
 struct EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
                   base::trace_event::MemoryDumpLevelOfDetail> {
   static memory_instrumentation::mojom::LevelOfDetail ToMojom(
@@ -28,7 +28,7 @@ struct EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
                         base::trace_event::MemoryDumpLevelOfDetail* out);
 };
 
-template<>
+template <>
 struct StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
                     base::trace_event::MemoryDumpRequestArgs> {
   static uint64_t dump_guid(
@@ -49,4 +49,4 @@ struct StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_INFRA_TRAITS_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_

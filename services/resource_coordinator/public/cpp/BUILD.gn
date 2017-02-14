@@ -4,9 +4,9 @@
 
 source_set("cpp") {
   sources = [
-    "coordinator.h",
-    "memory_dump_manager_delegate_impl.cc",
-    "memory_dump_manager_delegate_impl.h",
+    "memory/coordinator.h",
+    "memory/memory_dump_manager_delegate_impl.cc",
+    "memory/memory_dump_manager_delegate_impl.h",
   ]
 
   deps = [
@@ -16,19 +16,19 @@ source_set("cpp") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/memory_instrumentation/public/interfaces",
+    "//services/resource_coordinator/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }
 
 source_set("struct_traits") {
   sources = [
-    "memory_instrumentation_traits.cc",
-    "memory_instrumentation_traits.h",
+    "memory/memory_instrumentation_struct_traits.cc",
+    "memory/memory_instrumentation_struct_traits.h",
   ]
 
   public_deps = [
     "//base",
-    "//services/memory_instrumentation/public/interfaces",
+    "//services/resource_coordinator/public/interfaces",
   ]
 }

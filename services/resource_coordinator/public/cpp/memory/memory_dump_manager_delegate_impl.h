@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
-#define SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
 
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/memory_instrumentation/public/cpp/coordinator.h"
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory/coordinator.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace memory_instrumentation {
@@ -48,4 +48,4 @@ class MemoryDumpManagerDelegateImpl
 
 }  // namespace memory_instrumentation
 
-#endif  // SERVICES_MEMORY_INFRA_PUBLIC_CPP_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_

@@ -4,14 +4,14 @@
 
 source_set("lib") {
   sources = [
-    "coordinator_impl.cc",
-    "coordinator_impl.h",
+    "memory/coordinator/coordinator_impl.cc",
+    "memory/coordinator/coordinator_impl.h",
   ]
 
   public_deps = [
     "//base",
-    "//services/memory_instrumentation/public/cpp",
-    "//services/memory_instrumentation/public/interfaces",
+    "//services/resource_coordinator/public/cpp",
+    "//services/resource_coordinator/public/interfaces",
   ]
 }
 
@@ -19,7 +19,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "coordinator_impl_unittest.cc",
+    "memory/coordinator/coordinator_impl_unittest.cc",
   ]
 
   deps = [

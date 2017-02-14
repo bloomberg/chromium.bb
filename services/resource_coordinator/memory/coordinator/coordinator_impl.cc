@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/memory_instrumentation/coordinator_impl.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace memory_instrumentation {
 
@@ -32,8 +32,7 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
 // This is how the global MemoryDumpManager gets a reference to the delegate on
 // the service (read the browser) process for service process memory dumps. This
 // can be done when the delegate implementation is landed.
-CoordinatorImpl::CoordinatorImpl()
-    : failed_memory_dump_count_(0) {}
+CoordinatorImpl::CoordinatorImpl() : failed_memory_dump_count_(0) {}
 
 CoordinatorImpl::~CoordinatorImpl() {}
 
@@ -92,8 +91,7 @@ void CoordinatorImpl::RegisterProcessLocalDumpManager(
 
   process_manager.set_connection_error_handler(
       base::Bind(&CoordinatorImpl::UnregisterProcessLocalDumpManager,
-                 base::Unretained(this),
-                 process_manager.get()));
+                 base::Unretained(this), process_manager.get()));
   auto result = process_managers_.insert(
       std::make_pair<mojom::ProcessLocalDumpManager*,
                      mojom::ProcessLocalDumpManagerPtr>(
@@ -110,8 +108,7 @@ void CoordinatorImpl::UnregisterProcessLocalDumpManager(
       pending_process_managers_.end()) {
     DCHECK(!queued_memory_dump_requests_.empty());
     OnProcessMemoryDumpResponse(
-        process_manager,
-        queued_memory_dump_requests_.front().args.dump_guid,
+        process_manager, queued_memory_dump_requests_.front().args.dump_guid,
         false /* success */);
   }
 }
@@ -129,10 +126,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   for (const auto& key_value : process_managers_) {
     pending_process_managers_.insert(key_value.first);
     key_value.second->RequestProcessMemoryDump(
-        args,
-        base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
-                   base::Unretained(this),
-                   key_value.first));
+        args, base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
+                         base::Unretained(this), key_value.first));
   }
   // Run the callback in case there are no process-local managers.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -177,9 +172,8 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   if (!queued_memory_dump_requests_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &CoordinatorImpl::PerformNextQueuedGlobalMemoryDump,
-            base::Unretained(this)));
+        base::Bind(&CoordinatorImpl::PerformNextQueuedGlobalMemoryDump,
+                   base::Unretained(this)));
   }
 }
 

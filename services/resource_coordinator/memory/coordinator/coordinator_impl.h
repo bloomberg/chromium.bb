@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_MEMORY_INSTRUMENTATION_COORDINATOR_IMPL_H_
-#define SERVICES_MEMORY_INSTRUMENTATION_COORDINATOR_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_COORDINATOR_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_COORDINATOR_IMPL_H_
 
 #include <list>
 #include <set>
@@ -15,8 +15,8 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/memory_instrumentation/public/cpp/coordinator.h"
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory/coordinator.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace memory_instrumentation {
 
@@ -32,9 +32,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   friend struct base::DefaultLazyInstanceTraits<CoordinatorImpl>;
 
   struct QueuedMemoryDumpRequest {
-    QueuedMemoryDumpRequest(
-        const base::trace_event::MemoryDumpRequestArgs args,
-        const RequestGlobalMemoryDumpCallback callback);
+    QueuedMemoryDumpRequest(const base::trace_event::MemoryDumpRequestArgs args,
+                            const RequestGlobalMemoryDumpCallback callback);
     ~QueuedMemoryDumpRequest();
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
@@ -71,7 +70,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
   // Registered ProcessLocalDumpManagers.
   std::unordered_map<mojom::ProcessLocalDumpManager*,
-                     mojom::ProcessLocalDumpManagerPtr> process_managers_;
+                     mojom::ProcessLocalDumpManagerPtr>
+      process_managers_;
 
   // Pending process managers for RequestGlobalMemoryDump.
   std::set<mojom::ProcessLocalDumpManager*> pending_process_managers_;
@@ -84,4 +84,4 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 };
 
 }  // namespace memory_instrumentation
-#endif  // SERVICES_MEMORY_INFSTRUMENTATION_COORDINATOR_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_COORDINATOR_IMPL_H_

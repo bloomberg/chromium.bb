@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/memory_instrumentation/public/cpp/memory_dump_manager_delegate_impl.h"
+#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
 
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/memory_instrumentation/public/cpp/coordinator.h"
-#include "services/memory_instrumentation/public/interfaces/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory/coordinator.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace memory_instrumentation {
@@ -21,7 +21,8 @@ MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
 }
 
 MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
-    Coordinator* coordinator) : is_coordinator_(true), binding_(this) {
+    Coordinator* coordinator)
+    : is_coordinator_(true), binding_(this) {
   coordinator->BindCoordinatorRequest(mojo::MakeRequest(&coordinator_));
   coordinator_->RegisterProcessLocalDumpManager(
       binding_.CreateInterfacePtrAndBind());

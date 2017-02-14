@@ -2,10 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
-
-mojom("interfaces") {
-  sources = [
-    "memory_instrumentation.mojom",
-  ]
-}
+typemaps = [ "//services/resource_coordinator/public/cpp/memory/memory_instrumentation.typemap" ]
