@@ -19,7 +19,6 @@
 #include "ash/mus/frame/detached_title_area_renderer.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/property_util.h"
-#include "ash/mus/shadow.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_properties.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
@@ -202,29 +201,10 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     return new CustomFrameViewMus(GetWidget(), immersive_delegate_.get(),
                                   enable_immersive_);
   }
-  void InitNativeWidget(const views::Widget::InitParams& params) override {
-    views::NativeWidgetAura::InitNativeWidget(params);
-    // TODO(sky): shadow should be determined by window type and shadow type.
-    shadow_ = base::MakeUnique<Shadow>();
-    shadow_->Init(Shadow::STYLE_INACTIVE);
-    aura::Window* window = GetNativeWindow();
-    shadow_->Install(window);
-    window->layer()->Add(shadow_->layer());
-    shadow_->layer()->parent()->StackAtBottom(shadow_->layer());
-  }
-  void OnBoundsChanged(const gfx::Rect& old_bounds,
-                       const gfx::Rect& new_bounds) override {
-    views::NativeWidgetAura::OnBoundsChanged(old_bounds, new_bounds);
-    if (shadow_)
-      shadow_->SetContentBounds(gfx::Rect(new_bounds.size()));
-  }
 
  private:
   const bool remove_standard_frame_;
   const bool enable_immersive_;
-
-  // The shadow, may be null.
-  std::unique_ptr<Shadow> shadow_;
 
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 

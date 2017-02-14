@@ -20,7 +20,6 @@
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/screen_mus.h"
-#include "ash/mus/shadow_controller.h"
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_properties.h"
@@ -99,8 +98,6 @@ void WindowManager::Init(
   pointer_watcher_event_router_ =
       base::MakeUnique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());
-
-  shadow_controller_ = base::MakeUnique<ShadowController>();
 
   ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
       ui::mojom::FrameDecorationValues::New();
@@ -253,7 +250,6 @@ void WindowManager::Shutdown() {
   Shell::DeleteInstance();
 
   lookup_.reset();
-  shadow_controller_.reset();
 
   pointer_watcher_event_router_.reset();
 

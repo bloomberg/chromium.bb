@@ -48,7 +48,6 @@ class ShellDelegate;
 namespace mus {
 
 class AcceleratorHandler;
-class ShadowController;
 class WmLookupMus;
 class WmTestHelper;
 
@@ -178,8 +177,6 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   std::unique_ptr<views::PointerWatcherEventRouter>
       pointer_watcher_event_router_;
-
-  std::unique_ptr<ShadowController> shadow_controller_;
 
   RootWindowControllers root_window_controllers_;
 
