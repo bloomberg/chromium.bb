@@ -367,7 +367,7 @@ void MarkKeyboardLoadFinished() {
   if (!logged) {
     // Log the delta only once.
     UMA_HISTOGRAM_TIMES(
-        "VirtualKeyboard.FirstLoadTime",
+        "VirtualKeyboard.InitLatency.FirstLoad",
         base::Time::Now() - g_keyboard_load_time_start.Get());
     logged = true;
   }
