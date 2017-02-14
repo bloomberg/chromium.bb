@@ -499,6 +499,28 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
+    kContentSuggestionsCategoryOrderFeatureVariationGeneral[] = {
+        {ntp_snippets::kCategoryOrderParameter,
+         ntp_snippets::kCategoryOrderGeneral},
+};
+
+const FeatureEntry::FeatureParam
+    kContentSuggestionsCategoryOrderFeatureVariationEMOriented[] = {
+        {ntp_snippets::kCategoryOrderParameter,
+         ntp_snippets::kCategoryOrderEmergingMarketsOriented},
+};
+
+const FeatureEntry::FeatureVariation
+    kContentSuggestionsCategoryOrderFeatureVariations[] = {
+        {"(general)", kContentSuggestionsCategoryOrderFeatureVariationGeneral,
+         arraysize(kContentSuggestionsCategoryOrderFeatureVariationGeneral),
+         nullptr},
+        {"(emerging markets oriented)",
+         kContentSuggestionsCategoryOrderFeatureVariationEMOriented,
+         arraysize(kContentSuggestionsCategoryOrderFeatureVariationEMOriented),
+         nullptr}};
+
+const FeatureEntry::FeatureParam
     kContentSuggestionsCategoryRankerFeatureVariationConstant[] = {
         {ntp_snippets::kCategoryRankerParameter,
          ntp_snippets::kCategoryRankerConstantRanker},
@@ -1832,6 +1854,16 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
 #endif  // ENABLE_EXTENSIONS
 #if defined(OS_ANDROID)
+    // TODO(vitaliii): Use ntp_snippets::kStudyName as the feature trial.
+    // Currently, only a single FEATURE_WITH_VARIATIONS_VALUE_TYPE can use a
+    // given study name. See crbug.com/690450.
+    {"content-suggestions-category-order",
+     IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_NAME,
+     IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_DESCRIPTION, kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         ntp_snippets::kCategoryOrder,
+         kContentSuggestionsCategoryOrderFeatureVariations,
+         "content-suggestions-category-order-feature-trial")},
     {"content-suggestions-category-ranker",
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_NAME,
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION, kOsAndroid,

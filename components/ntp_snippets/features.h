@@ -46,9 +46,8 @@ extern const base::Feature kPreferAmpUrlsFeature;
 // Feature to choose a category ranker.
 extern const base::Feature kCategoryRanker;
 
-// Parameter for a kCategoryRanker feature flag.
+// Parameter and its values for the kCategoryRanker feature flag.
 extern const char kCategoryRankerParameter[];
-// Possible values of the parameter above.
 extern const char kCategoryRankerConstantRanker[];
 extern const char kCategoryRankerClickBasedRanker[];
 
@@ -64,6 +63,22 @@ CategoryRankerChoice GetSelectedCategoryRanker();
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
     std::unique_ptr<base::Clock> clock);
+
+// Feature to choose a default category order.
+extern const base::Feature kCategoryOrder;
+
+// Parameter and its values for the kCategoryOrder feature flag.
+extern const char kCategoryOrderParameter[];
+extern const char kCategoryOrderGeneral[];
+extern const char kCategoryOrderEmergingMarketsOriented[];
+
+enum class CategoryOrderChoice {
+  GENERAL,
+  EMERGING_MARKETS_ORIENTED,
+};
+
+// Returns which category order to use according to kCategoryOrder feature.
+CategoryOrderChoice GetSelectedCategoryOrder();
 
 }  // namespace ntp_snippets
 

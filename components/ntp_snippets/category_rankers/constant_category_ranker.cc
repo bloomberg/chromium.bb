@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 
 #include "base/stl_util.h"
+#include "components/ntp_snippets/features.h"
 
 namespace ntp_snippets {
 
@@ -68,24 +69,33 @@ void ConstantCategoryRanker::OnCategoryDismissed(Category category) {
 std::vector<KnownCategories>
 ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
   std::vector<KnownCategories> categories;
+  CategoryOrderChoice choice = GetSelectedCategoryOrder();
+  switch (choice) {
+    case CategoryOrderChoice::GENERAL:
+      categories.push_back(KnownCategories::PHYSICAL_WEB_PAGES);
+      categories.push_back(KnownCategories::DOWNLOADS);
+      categories.push_back(KnownCategories::RECENT_TABS);
+      categories.push_back(KnownCategories::FOREIGN_TABS);
+      categories.push_back(KnownCategories::BOOKMARKS);
+      categories.push_back(KnownCategories::ARTICLES);
+      break;
+    case CategoryOrderChoice::EMERGING_MARKETS_ORIENTED:
+      categories.push_back(KnownCategories::ARTICLES);
+      categories.push_back(KnownCategories::DOWNLOADS);
+      categories.push_back(KnownCategories::BOOKMARKS);
 
-  // Add all local categories in a fixed order.
-  categories.push_back(KnownCategories::PHYSICAL_WEB_PAGES);
-  categories.push_back(KnownCategories::DOWNLOADS);
-  categories.push_back(KnownCategories::RECENT_TABS);
-  categories.push_back(KnownCategories::FOREIGN_TABS);
-  categories.push_back(KnownCategories::BOOKMARKS);
+      categories.push_back(KnownCategories::PHYSICAL_WEB_PAGES);
+      categories.push_back(KnownCategories::RECENT_TABS);
+      categories.push_back(KnownCategories::FOREIGN_TABS);
+      break;
+  }
 
-  DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
-            categories.size());
+  static_assert(
+      static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT) == 5,
+      "All local KnownCategories must be present in all orders.");
 
-  // Known remote categories come after. Other remote categories will be ordered
-  // after these depending on when providers notify us about them using
-  // AppendCategoryIfNecessary.
-  // TODO(treib): Consider not adding ARTICLES here, so that providers can
-  // define the order themselves.
-  categories.push_back(KnownCategories::ARTICLES);
-
+  // Other remote categories will be ordered after these depending on when
+  // providers notify us about them using AppendCategoryIfNecessary.
   return categories;
 }
 
