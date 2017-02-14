@@ -15,6 +15,29 @@ const char kLeader[] = "$i18n";
 const size_t kLeaderSize = arraysize(kLeader) - 1;
 const char kKeyOpen = '{';
 const char kKeyClose = '}';
+
+// Escape quotes and backslashes ('"\) with backslashes.
+std::string BackslashEscape(const std::string& in_string) {
+  std::string out;
+  out.reserve(in_string.size() * 2);
+  for (const char c : in_string) {
+    switch (c) {
+      case '\\':
+        out.append("\\\\");
+        break;
+      case '\'':
+        out.append("\\'");
+        break;
+      case '"':
+        out.append("\\\"");
+        break;
+      default:
+        out += c;
+    }
+  }
+  return out;
+}
+
 }  // namespace
 
 namespace ui {
@@ -77,6 +100,9 @@ std::string ReplaceTemplateExpressions(
       replacement = net::EscapeForHTML(replacement);
     } else if (context == "Raw") {
       // Pass the replacement through unchanged.
+    } else if (context == "Polymer") {
+      // Escape quotes and backslash for '$i18nPolymer{}' use (i.e. quoted).
+      replacement = BackslashEscape(replacement);
     } else {
       CHECK(false) << "Unknown context " << context;
     }
