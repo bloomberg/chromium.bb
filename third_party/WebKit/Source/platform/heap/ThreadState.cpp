@@ -619,30 +619,27 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds) {
                "ThreadState::performIdleLazySweep", "idleDeltaInSeconds",
                deadlineSeconds - monotonicallyIncreasingTime());
 
-  bool sweepCompleted = true;
   SweepForbiddenScope scope(this);
-  {
-    double startTime = WTF::currentTimeMS();
-    ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
+  ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
-    for (int i = 0; i < BlinkGC::NumberOfArenas; i++) {
-      // lazySweepWithDeadline() won't check the deadline until it sweeps
-      // 10 pages. So we give a small slack for safety.
-      double slack = 0.001;
-      double remainingBudget =
-          deadlineSeconds - slack - monotonicallyIncreasingTime();
-      if (remainingBudget <= 0 ||
-          !m_arenas[i]->lazySweepWithDeadline(deadlineSeconds)) {
-        // We couldn't finish the sweeping within the deadline.
-        // We request another idle task for the remaining sweeping.
-        scheduleIdleLazySweep();
-        sweepCompleted = false;
-        break;
-      }
+  double startTime = WTF::currentTimeMS();
+  bool sweepCompleted = true;
+  for (int i = 0; i < BlinkGC::NumberOfArenas; i++) {
+    // lazySweepWithDeadline() won't check the deadline until it sweeps
+    // 10 pages. So we give a small slack for safety.
+    double slack = 0.001;
+    double remainingBudget =
+        deadlineSeconds - slack - monotonicallyIncreasingTime();
+    if (remainingBudget <= 0 ||
+        !m_arenas[i]->lazySweepWithDeadline(deadlineSeconds)) {
+      // We couldn't finish the sweeping within the deadline.
+      // We request another idle task for the remaining sweeping.
+      scheduleIdleLazySweep();
+      sweepCompleted = false;
+      break;
     }
-
-    accumulateSweepingTime(WTF::currentTimeMS() - startTime);
   }
+  accumulateSweepingTime(WTF::currentTimeMS() - startTime);
 
   if (sweepCompleted)
     postSweep();
@@ -981,25 +978,23 @@ void ThreadState::completeSweep() {
     return;
 
   SweepForbiddenScope scope(this);
-  {
-    ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
+  ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
-    TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
-    double startTime = WTF::currentTimeMS();
+  TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
+  double startTime = WTF::currentTimeMS();
 
-    static_assert(BlinkGC::EagerSweepArenaIndex == 0,
-                  "Eagerly swept arenas must be processed first.");
-    for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
-      m_arenas[i]->completeSweep();
+  static_assert(BlinkGC::EagerSweepArenaIndex == 0,
+                "Eagerly swept arenas must be processed first.");
+  for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
+    m_arenas[i]->completeSweep();
 
-    double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
-    accumulateSweepingTime(timeForCompleteSweep);
+  double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
+  accumulateSweepingTime(timeForCompleteSweep);
 
-    if (isMainThread()) {
-      DEFINE_STATIC_LOCAL(CustomCountHistogram, completeSweepHistogram,
-                          ("BlinkGC.CompleteSweep", 1, 10 * 1000, 50));
-      completeSweepHistogram.count(timeForCompleteSweep);
-    }
+  if (isMainThread()) {
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, completeSweepHistogram,
+                        ("BlinkGC.CompleteSweep", 1, 10 * 1000, 50));
+    completeSweepHistogram.count(timeForCompleteSweep);
   }
 
   postSweep();
@@ -1275,11 +1270,11 @@ void ThreadState::invokePreFinalizers() {
   ASSERT(!sweepForbidden());
   TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
 
+  SweepForbiddenScope sweepForbidden(this);
+  ScriptForbiddenIfMainThreadScope scriptForbidden;
+
   double startTime = WTF::currentTimeMS();
   if (!m_orderedPreFinalizers.isEmpty()) {
-    SweepForbiddenScope sweepForbidden(this);
-    ScriptForbiddenIfMainThreadScope scriptForbidden;
-
     // Call the prefinalizers in the opposite order to their registration.
     //
     // The prefinalizer callback wrapper returns |true| when its associated
