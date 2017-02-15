@@ -1848,7 +1848,6 @@ crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
 
 # 2017-02-14: These directories were just imported but expectations and baselines haven't been set yet.
 crbug.com/692105 external/wpt/referrer-policy [ Skip ]
-crbug.com/692105 external/wpt/subresource-integrity [ Skip ]
 crbug.com/692105 external/wpt/service-workers/service-worker/multi-globals [ Skip ]
 crbug.com/692105 external/wpt/mixed-content [ Skip ]
 
