@@ -2394,7 +2394,7 @@
             ]
         }
     ],
-    "SiteIsolationForExtensions": [
+    "SiteIsolationExtensions": [
         {
             "platforms": [
                 "chromeos",

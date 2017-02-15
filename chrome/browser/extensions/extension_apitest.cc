@@ -151,7 +151,8 @@ ExtensionApiTest::ExtensionApiTest() {
 
 ExtensionApiTest::~ExtensionApiTest() {}
 
-void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
+void ExtensionApiTest::SetUpOnMainThread() {
+  ExtensionBrowserTest::SetUpOnMainThread();
   DCHECK(!test_config_.get()) << "Previous test did not clear config state.";
   test_config_.reset(new base::DictionaryValue());
   test_config_->SetString(kTestDataDirectory,
@@ -163,7 +164,8 @@ void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
       test_config_.get());
 }
 
-void ExtensionApiTest::TearDownInProcessBrowserTestFixture() {
+void ExtensionApiTest::TearDownOnMainThread() {
+  ExtensionBrowserTest::TearDownOnMainThread();
   extensions::TestGetConfigFunction::set_test_config_state(NULL);
   test_config_.reset(NULL);
 }

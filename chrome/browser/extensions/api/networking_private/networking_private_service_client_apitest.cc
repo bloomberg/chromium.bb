@@ -104,7 +104,7 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
 
   void TearDownOnMainThread() override {
     content::RunAllPendingInMessageLoop();
-    ExtensionApiTest::SetUpOnMainThread();
+    ExtensionApiTest::TearDownOnMainThread();
   }
 
  protected:

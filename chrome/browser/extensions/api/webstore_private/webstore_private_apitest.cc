@@ -110,18 +110,14 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
         "http://www.example.com/extensions/api_test");
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
 
     // Start up the test server and get us ready for calling the install
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
     extensions::ExtensionInstallUI::set_disable_failure_ui_for_tests();
-  }
-
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
 
     auto_confirm_install_.reset(
         new ScopedTestDialogAutoConfirm(ScopedTestDialogAutoConfirm::ACCEPT));

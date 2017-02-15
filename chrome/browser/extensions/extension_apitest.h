@@ -65,8 +65,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
  protected:
   // InProcessBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override;
-  void TearDownInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
