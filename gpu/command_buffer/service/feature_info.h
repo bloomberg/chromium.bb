@@ -70,7 +70,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool enable_shader_name_hashing = false;
     bool enable_samplers = false;
     bool ext_draw_buffers = false;
-    bool nv_draw_buffers = false;
     bool ext_frag_depth = false;
     bool ext_shader_texture_lod = false;
     bool use_async_readpixels = false;
