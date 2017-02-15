@@ -200,6 +200,7 @@ class WebSettings {
   virtual void setMaxTouchPoints(int) = 0;
   virtual void setMediaControlsOverlayPlayButtonEnabled(bool) = 0;
   virtual void setMediaPlaybackRequiresUserGesture(bool) = 0;
+  virtual void setMediaPlaybackGestureWhitelistScope(const WebString&) = 0;
   virtual void setPresentationRequiresUserGesture(bool) = 0;
   virtual void setMinimumAccelerated2dCanvasSize(int) = 0;
   virtual void setMinimumFontSize(int) = 0;

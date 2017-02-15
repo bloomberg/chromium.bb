@@ -293,11 +293,26 @@ bool isDocumentCrossOrigin(Document& document) {
   return frame && frame->isCrossOriginSubframe();
 }
 
+bool isDocumentWhitelisted(Document& document) {
+  DCHECK(document.settings());
+
+  const String& whitelistScope =
+      document.settings()->getMediaPlaybackGestureWhitelistScope();
+  if (whitelistScope.isNull() || whitelistScope.isEmpty())
+    return false;
+
+  return document.url().getString().startsWith(whitelistScope);
+}
+
 // Return true if and only if the document settings specifies media playback
 // requires user gesture.
 bool computeLockedPendingUserGesture(Document& document) {
   if (!document.settings())
     return false;
+
+  if (isDocumentWhitelisted(document)) {
+    return false;
+  }
 
   if (document.settings()->getCrossOriginMediaPlaybackRequiresUserGesture() &&
       isDocumentCrossOrigin(document)) {

@@ -1028,6 +1028,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMediaControlsOverlayPlayButtonEnabled(true);
   settings->setMediaPlaybackRequiresUserGesture(
       prefs.user_gesture_required_for_media_playback);
+  settings->setMediaPlaybackGestureWhitelistScope(
+      blink::WebString::fromUTF8(prefs.media_playback_gesture_whitelist_scope));
   settings->setDefaultVideoPosterURL(
       WebString::fromASCII(prefs.default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(

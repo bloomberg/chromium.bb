@@ -223,6 +223,10 @@
       name: "mediaPlaybackRequiresUserGesture",
       initial: false,
     },
+    {
+      name: "mediaPlaybackGestureWhitelistScope",
+      type: "String",
+    },
 
     // This flags overrides mediaPlaybackRequiresUserGesture
     {

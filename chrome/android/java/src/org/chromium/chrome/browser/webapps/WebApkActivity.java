@@ -47,6 +47,9 @@ public class WebApkActivity extends WebappActivity {
             getActivityTab().loadUrl(
                     new LoadUrlParams(overrideUrl, PageTransition.AUTO_TOPLEVEL));
         }
+        if (isInitialized()) {
+            getActivityTab().setWebappManifestScope(mWebappInfo.scopeUri().toString());
+        }
     }
 
     @Override
@@ -114,6 +117,13 @@ public class WebApkActivity extends WebappActivity {
                 return new WebApkBrowserControlsDelegate(WebApkActivity.this, tab);
             }
         };
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+        if (!isInitialized()) return;
+        getActivityTab().setWebappManifestScope(mWebappInfo.scopeUri().toString());
     }
 
     @Override

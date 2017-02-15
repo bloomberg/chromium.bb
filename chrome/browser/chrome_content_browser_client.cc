@@ -268,6 +268,7 @@
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "components/payments/payment_request.mojom.h"
 #include "content/public/browser/android/java_interfaces.h"
@@ -2580,6 +2581,18 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
+
+#if defined(OS_ANDROID)
+  content::WebContents* contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (contents) {
+    TabAndroid* tab_android = TabAndroid::FromWebContents(contents);
+    if (tab_android) {
+      web_prefs->media_playback_gesture_whitelist_scope =
+          tab_android->GetWebappManifestScope();
+    }
+  }
+#endif  // defined(OS_ANDROID)
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);

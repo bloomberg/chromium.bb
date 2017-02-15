@@ -629,6 +629,11 @@ void WebSettingsImpl::setMediaPlaybackRequiresUserGesture(bool required) {
   m_settings->setMediaPlaybackRequiresUserGesture(required);
 }
 
+void WebSettingsImpl::setMediaPlaybackGestureWhitelistScope(
+    const WebString& scope) {
+  m_settings->setMediaPlaybackGestureWhitelistScope(scope);
+}
+
 void WebSettingsImpl::setPresentationRequiresUserGesture(bool required) {
   m_settings->setPresentationRequiresUserGesture(required);
 }

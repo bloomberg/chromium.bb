@@ -745,6 +745,17 @@ void TabAndroid::SetInterceptNavigationDelegate(
       base::MakeUnique<ChromeInterceptNavigationDelegate>(env, delegate));
 }
 
+void TabAndroid::SetWebappManifestScope(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        const JavaParamRef<jstring>& scope) {
+  webapp_manifest_scope_ = base::android::ConvertJavaStringToUTF8(scope);
+
+  if (!web_contents() || !web_contents()->GetRenderViewHost())
+    return;
+
+  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+}
+
 void TabAndroid::AttachToTabContentManager(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
