@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_feature_checker.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
@@ -49,7 +49,7 @@ void ChromeRequirementsChecker::Check(
 
   if (requirements.webgl) {
     ++pending_requirement_checks_;
-    webgl_checker_ = new GPUFeatureChecker(
+    webgl_checker_ = content::GpuFeatureChecker::Create(
         gpu::GPU_FEATURE_TYPE_WEBGL,
         base::Bind(&ChromeRequirementsChecker::SetWebGLAvailability,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -65,7 +65,7 @@ void ChromeRequirementsChecker::Check(
   // Running the GPU checkers down here removes any race condition that arises
   // from the use of pending_requirement_checks_.
   if (webgl_checker_.get())
-    webgl_checker_->CheckGPUFeatureAvailability();
+    webgl_checker_->CheckGpuFeatureAvailability();
 }
 
 void ChromeRequirementsChecker::SetWebGLAvailability(bool available) {

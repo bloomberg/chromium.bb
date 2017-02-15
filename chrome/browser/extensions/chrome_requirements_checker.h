@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/requirements_checker.h"
 
-class GPUFeatureChecker;
+namespace content {
+class GpuFeatureChecker;
+}
 
 namespace extensions {
 class Extension;
@@ -32,7 +34,7 @@ class ChromeRequirementsChecker : public RequirementsChecker {
   void Check(const scoped_refptr<const Extension>& extension,
              const RequirementsCheckedCallback& callback) override;
 
-  // Callbacks for the GPUFeatureChecker.
+  // Callbacks for the GpuFeatureChecker.
   void SetWebGLAvailability(bool available);
 
   void MaybeRunCallback();
@@ -43,7 +45,7 @@ class ChromeRequirementsChecker : public RequirementsChecker {
   // this counter. When the counter is depleted, the callback will be run.
   int pending_requirement_checks_;
 
-  scoped_refptr<GPUFeatureChecker> webgl_checker_;
+  scoped_refptr<content::GpuFeatureChecker> webgl_checker_;
 
   RequirementsCheckedCallback callback_;
 

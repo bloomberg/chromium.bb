@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -32,6 +31,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -544,17 +544,16 @@ ExtensionFunction::ResponseAction WebstorePrivateSetStoreLoginFunction::Run() {
 }
 
 WebstorePrivateGetWebGLStatusFunction::WebstorePrivateGetWebGLStatusFunction()
-  : feature_checker_(new GPUFeatureChecker(
-        gpu::GPU_FEATURE_TYPE_WEBGL,
-        base::Bind(&WebstorePrivateGetWebGLStatusFunction::OnFeatureCheck,
-                   base::Unretained(this)))) {
-}
+    : feature_checker_(content::GpuFeatureChecker::Create(
+          gpu::GPU_FEATURE_TYPE_WEBGL,
+          base::Bind(&WebstorePrivateGetWebGLStatusFunction::OnFeatureCheck,
+                     base::Unretained(this)))) {}
 
 WebstorePrivateGetWebGLStatusFunction::
     ~WebstorePrivateGetWebGLStatusFunction() {}
 
 ExtensionFunction::ResponseAction WebstorePrivateGetWebGLStatusFunction::Run() {
-  feature_checker_->CheckGPUFeatureAvailability();
+  feature_checker_->CheckGpuFeatureAvailability();
   return RespondLater();
 }
 

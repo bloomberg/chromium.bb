@@ -1,37 +1,42 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gpu/gpu_feature_checker.h"
+#include "content/browser/gpu/gpu_feature_checker_impl.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 
+namespace content {
+
 namespace {
 
 // A false return value is always valid, but a true one is only valid if full
 // GPU info has been collected in a GPU process.
-bool IsFeatureAllowed(content::GpuDataManager* manager,
-                      gpu::GpuFeatureType feature) {
+bool IsFeatureAllowed(GpuDataManager* manager, gpu::GpuFeatureType feature) {
   return (manager->GpuAccessAllowed(NULL) &&
           !manager->IsFeatureBlacklisted(feature));
 }
 
 }  // namespace
 
-GPUFeatureChecker::GPUFeatureChecker(gpu::GpuFeatureType feature,
-                                     FeatureAvailableCallback callback)
-    : feature_(feature),
-      callback_(callback) {
+// static
+scoped_refptr<GpuFeatureChecker> GpuFeatureChecker::Create(
+    gpu::GpuFeatureType feature,
+    FeatureAvailableCallback callback) {
+  return new GpuFeatureCheckerImpl(feature, callback);
 }
 
-GPUFeatureChecker::~GPUFeatureChecker() {
-}
+GpuFeatureCheckerImpl::GpuFeatureCheckerImpl(gpu::GpuFeatureType feature,
+                                             FeatureAvailableCallback callback)
+    : feature_(feature), callback_(callback) {}
 
-void GPUFeatureChecker::CheckGPUFeatureAvailability() {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+GpuFeatureCheckerImpl::~GpuFeatureCheckerImpl() {}
+
+void GpuFeatureCheckerImpl::CheckGpuFeatureAvailability() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool finalized = true;
 #if defined(OS_LINUX)
@@ -41,7 +46,7 @@ void GPUFeatureChecker::CheckGPUFeatureAvailability() {
   finalized = false;
 #endif
 
-  content::GpuDataManager* manager = content::GpuDataManager::GetInstance();
+  GpuDataManager* manager = GpuDataManager::GetInstance();
   if (manager->IsEssentialGpuInfoAvailable())
     finalized = true;
 
@@ -60,12 +65,14 @@ void GPUFeatureChecker::CheckGPUFeatureAvailability() {
   }
 }
 
-void GPUFeatureChecker::OnGpuInfoUpdate() {
-  content::GpuDataManager* manager = content::GpuDataManager::GetInstance();
+void GpuFeatureCheckerImpl::OnGpuInfoUpdate() {
+  GpuDataManager* manager = GpuDataManager::GetInstance();
   manager->RemoveObserver(this);
   bool feature_allowed = IsFeatureAllowed(manager, feature_);
   callback_.Run(feature_allowed);
 
-  // Matches the AddRef in HasFeature().
+  // Matches the AddRef in CheckGpuFeatureAvailability().
   Release();
 }
+
+}  // namespace content

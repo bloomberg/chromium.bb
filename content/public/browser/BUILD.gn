@@ -117,6 +117,8 @@ source_set("browser_sources") {
     "global_request_id.h",
     "gpu_data_manager.h",
     "gpu_data_manager_observer.h",
+    "gpu_feature_checker.cc",
+    "gpu_feature_checker.h",
     "gpu_service_registry.cc",
     "gpu_service_registry.h",
     "gpu_utils.cc",
