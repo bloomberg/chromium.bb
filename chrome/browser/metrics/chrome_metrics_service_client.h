@@ -87,6 +87,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
+  bool IsHistorySyncEnabledOnAllProfiles() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;

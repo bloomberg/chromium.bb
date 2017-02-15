@@ -375,3 +375,7 @@ void IOSChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
   // Signal service manager to enable/disable UKM based on new state.
   UpdateRunningServices();
 }
+
+bool IOSChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
+  return SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles();
+}

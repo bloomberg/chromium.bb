@@ -77,6 +77,7 @@ class IOSChromeMetricsServiceClient
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
   void OnRendererProcessCrash() override;
+  bool IsHistorySyncEnabledOnAllProfiles() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
