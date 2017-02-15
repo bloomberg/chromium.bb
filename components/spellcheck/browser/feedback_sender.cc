@@ -37,6 +37,7 @@
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -376,10 +377,9 @@ void FeedbackSender::RandBytes(void* p, size_t len) {
 }
 
 void FeedbackSender::OnURLFetchComplete(const net::URLFetcher* source) {
-  for (ScopedVector<net::URLFetcher>::iterator sender_it = senders_.begin();
-       sender_it != senders_.end();
+  for (auto sender_it = senders_.begin(); sender_it != senders_.end();
        ++sender_it) {
-    if (*sender_it == source) {
+    if ((*sender_it).get() == source) {
       senders_.erase(sender_it);
       return;
     }
@@ -449,7 +449,7 @@ void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
   sender->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
   sender->SetUploadData("application/json", feedback);
-  senders_.push_back(sender);
+  senders_.push_back(base::WrapUnique<net::URLFetcher>(sender));
 
   // Request context is nullptr in testing.
   if (request_context_.get()) {
