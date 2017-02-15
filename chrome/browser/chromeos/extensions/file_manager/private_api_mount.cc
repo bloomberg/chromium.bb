@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -32,7 +33,7 @@ namespace extensions {
 namespace {
 
 // Does chmod o+r for the given path to ensure the file is readable from avfs.
-void EnsureReadableFilePermissionOnBlockingPool(
+void EnsureReadableFilePermissionAsync(
     const base::FilePath& path,
     const base::Callback<void(drive::FileError, const base::FilePath&)>&
         callback) {
@@ -99,15 +100,14 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
     if (is_under_downloads) {
       // For files under downloads, change the file permission and make it
       // readable from avfs/fuse if needed.
-      BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(&EnsureReadableFilePermissionOnBlockingPool,
-                     path,
+      base::PostTaskWithTraits(
+          FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                         base::TaskPriority::USER_BLOCKING),
+          base::Bind(&EnsureReadableFilePermissionAsync, path,
                      google_apis::CreateRelayCallback(
                          base::Bind(&FileManagerPrivateAddMountFunction::
                                         RunAfterMarkCacheFileAsMounted,
-                                    this,
-                                    path.BaseName()))));
+                                    this, path.BaseName()))));
     } else {
       RunAfterMarkCacheFileAsMounted(
           path.BaseName(), drive::FILE_ERROR_OK, path);
