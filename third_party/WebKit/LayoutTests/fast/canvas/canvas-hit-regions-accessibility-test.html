@@ -1,8 +1,6 @@
-<!DOCTYPE HTML>
 <head>
-<title>Canvas Hit Regions: accessibility test</title>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
 <canvas id="canvas">
   <button id="button1"></button>
@@ -18,67 +16,77 @@
     <button id="button6"></button>
   </div>
 </canvas>
-<div id="console"></div>
 <script>
 
-  var canvas = document.getElementById("canvas");
-  var context = canvas.getContext("2d");
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
 
-  function drawRectAndAddHitRegion(control, x, y, width, height) {
-    if (window.accessibilityController)
-      window["ax" + control] = accessibilityController.accessibleElementById(control);
+function drawRectAndAddHitRegion(testItem) {
+  var control = testItem['control'];
+  var x = testItem['x'];
+  var y = testItem['y'];
+  var width = testItem['width'];
+  var height = testItem['height'];
+  if (window.accessibilityController)
+    window["ax" + control] = accessibilityController.accessibleElementById(control);
 
-    context.beginPath();
-    context.rect(x, y, width, height);
-    context.fill();
-    context.addHitRegion({
-      id : control,
-      control : document.getElementById(control)
-    });
-  }
+  context.beginPath();
+  context.rect(x, y, width, height);
+  context.fill();
+  context.addHitRegion({
+    id : control,
+    control : document.getElementById(control)
+  });
+}
 
-  function testAccessibilityRect(control, x, y, width, height) {
+function testAccessibilityRect(testItem) {
+  var control = testItem['control'];
+  var x = testItem['x'];
+  var y = testItem['y'];
+  var width = testItem['width'];
+  var height = testItem['height'];
 
-    if (window.accessibilityController && !window["ax" + control])
-      window["ax" + control] = accessibilityController.accessibleElementById(control);
+  if (window.accessibilityController && !window["ax" + control])
+    window["ax" + control] = accessibilityController.accessibleElementById(control);
 
-    shouldBe("ax" + control + ".x", x.toString());
-    shouldBe("ax" + control + ".y", y.toString());
-    shouldBe("ax" + control + ".width", width.toString());
-    shouldBe("ax" + control + ".height", height.toString());
-  }
+  assert_equals(eval("ax" + control + ".x"), x);
+  assert_equals(eval("ax" + control + ".y"), y);
+  assert_equals(eval("ax" + control + ".width"), width);
+  assert_equals(eval("ax" + control + ".height"), height);
+}
 
-  drawRectAndAddHitRegion("button1", 0, 0, 200, 200);
-  drawRectAndAddHitRegion("button2", 0, 0, 100, 50);
-  drawRectAndAddHitRegion("button3", 40, 20, 50, 70);
-  drawRectAndAddHitRegion("button4", 0, 0, 100, 50);
-  drawRectAndAddHitRegion("button5", 40, 20, 50, 70);
-  drawRectAndAddHitRegion("button6", 20, 10, 140, 30);
-  drawRectAndAddHitRegion("button7", 0, 0, 200, 200);
+var drawRectAndAddHitRegionTests = [
+  ['drawRectAndAddHitRegion 1', {control: "button1", x: 0, y: 0, width: 200, height: 200}],
+  ['drawRectAndAddHitRegion 2', {control: "button2", x: 0, y: 0, width: 100, height: 50}],
+  ['drawRectAndAddHitRegion 3', {control: "button3", x: 40, y: 20, width: 50, height: 70}],
+  ['drawRectAndAddHitRegion 4', {control: "button4", x: 0, y: 0, width: 100, height: 50}],
+  ['drawRectAndAddHitRegion 5', {control: "button5", x: 40, y: 20, width: 50, height: 70}],
+  ['drawRectAndAddHitRegion 6', {control: "button6", x: 20, y: 10, width: 140, height: 30}],
+  ['drawRectAndAddHitRegion 7', {control: "button7", x: 0, y: 0, width: 200, height: 200}],
+];
 
-  debug("Just one button tests.");
-  testAccessibilityRect("button1", 8, 8, 200, 200);
-  debug("");
+var accessibilityRectTests = [
+  // Just one button tests.
+  ['testAccessibilityRect 1', {control: "button1", x: 8, y: 8, width: 200, height: 200}],
+  // The container1 has two buttons.
+  ['testAccessibilityRect 2', {control: "button2", x: 8, y: 8, width: 100, height: 50}],
+  ['testAccessibilityRect 3', {control: "button3", x: 48, y: 28, width: 50, height: 70}],
+  ['testAccessibilityRect 4', {control: "container1", x: 8, y: 8, width: 100, height: 90}],
+  // After removing button2 from the container1.
+  ['testAccessibilityRect 5', {control: "container1", x: 48, y: 28, width: 50, height: 70}],
+  // Depth-two container tests.
+  ['testAccessibilityRect 6', {control: "button4", x: 8, y: 8, width: 100, height: 50}],
+  ['testAccessibilityRect 7', {control: "button5", x: 48, y: 28, width: 50, height: 70}],
+  ['testAccessibilityRect 8', {control: "button6", x: 28, y: 18, width: 140, height: 30}],
+  ['testAccessibilityRect 9', {control: "container2", x: 8, y: 8, width: 160, height: 90}],
+  ['testAccessibilityRect 10', {control: "container3", x: 8, y: 8, width: 100, height: 90}],
+];
 
-  debug("The container1 has two buttons.");
-  testAccessibilityRect("button2", 8, 8, 100, 50);
-  testAccessibilityRect("button3", 48, 28, 50, 70);
-  testAccessibilityRect("container1", 8, 8, 100, 90);
-  debug("");
+generate_tests(drawRectAndAddHitRegion, drawRectAndAddHitRegionTests);
 
-  debug("Remove the button2 from the container1.");
-  document.getElementById("container1").removeChild(document.getElementById("button2"));
-  testAccessibilityRect("container1", 48, 28, 50, 70);
-  debug("");
+generate_tests(testAccessibilityRect, accessibilityRectTests.slice(0,4));
 
-  debug("Depth-two container tests.");
-  testAccessibilityRect("button4", 8, 8, 100, 50);
-  testAccessibilityRect("button5", 48, 28, 50, 70);
-  testAccessibilityRect("button6", 28, 18, 140, 30);
-  testAccessibilityRect("container2", 8, 8, 160, 90);
-  testAccessibilityRect("container3", 8, 8, 100, 90);
-  debug("");
-
+document.getElementById("container1").removeChild(document.getElementById("button2"));
+generate_tests(testAccessibilityRect, accessibilityRectTests.slice(4));;
 </script>
 </body>
-</html>

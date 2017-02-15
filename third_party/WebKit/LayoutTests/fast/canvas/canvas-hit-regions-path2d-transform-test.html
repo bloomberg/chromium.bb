@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Canvas Hit Regions: path2d with transform test</title>
-  <script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
 <canvas id="canvas" width="400" height="400"></canvas>
 <script src="./resources/canvas-hit-region-event.js"></script>
 <script>
+test(function(t) {
 
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
@@ -15,22 +12,11 @@
 
   function clickTests(message, tests)
   {
-    testSet.push({
-      type : "debug",
-      message : message
-    });
-
     for (var i = 0; i < tests.length; i++)
       testSet.push({
-        type : "shouldBe",
         actual : clickCanvas(tests[i].x, tests[i].y),
         expected : tests[i].expected
       });
-
-    testSet.push({
-      type : "debug",
-      message : ""
-    });
   }
 
   function createHitRegion(transformMethod, isRect)
@@ -158,19 +144,10 @@
 
   for (var i = 0; i < testSet.length; i++) {
     var test = testSet[i];
-
-    if (test.type == "debug") {
-      debug(test.message);
-    }
-    else if (test.type == "shouldBe") {
-      window.region = test.expected;
-      if (test.expected == null)
-        shouldBe("region", String(test.actual));
-      else
-        shouldBe("region", "'" + test.actual + "'");
-    }
+    window.region = test.expected;
+    assert_equals(region, test.actual);
   }
 
+}, 'Canvas Hit Regions: path2d with transform test');
 </script>
 </body>
-</html>

@@ -1,76 +1,69 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Canvas Hit Regions: fillRule test</title>
-  <script src="../../resources/js-test.js"></script>
-</head>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
 <body>
-<canvas id="canvas" width="400" height="400">
+<canvas id='canvas' width='400' height='400'>
 </canvas>
-<script src="./resources/canvas-hit-region-event.js"></script>
+<script src='./resources/canvas-hit-region-event.js'></script>
 <script>
+test(function(t) {
 
-  var canvas = document.getElementById("canvas");
-  var context = canvas.getContext("2d");
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext('2d');
 
   context.rect(20, 20, 60, 60);
   context.rect(0, 0, 100, 100);
   context.addHitRegion({
-    id : "nonzero"
+    id : 'nonzero'
     // default fillRule
   });
 
-  debug("default fillRule(nonzero):");
-  shouldBe("clickCanvas(1, 1)", "'nonzero'");
-  shouldBe("clickCanvas(99, 98)", "'nonzero'");
-  shouldBe("clickCanvas(21, 21)", "'nonzero'");
-  shouldBe("clickCanvas(50, 50)", "'nonzero'");
-  debug("");
+  // default fillRule(nonzero)
+  assert_equals(clickCanvas(1, 1), 'nonzero');
+  assert_equals(clickCanvas(99, 98), 'nonzero');
+  assert_equals(clickCanvas(21, 21), 'nonzero');
+  assert_equals(clickCanvas(50, 50), 'nonzero');
 
-  context.removeHitRegion("nonzero");
+  context.removeHitRegion('nonzero');
 
   context.addHitRegion({
-    id : "evenodd",
-    fillRule : "evenodd"
+    id : 'evenodd',
+    fillRule : 'evenodd'
   });
 
-  debug("fillRule = evenodd:");
-  shouldBe("clickCanvas(1, 1)", "'evenodd'");
-  shouldBe("clickCanvas(99, 98)", "'evenodd'");
-  shouldBe("clickCanvas(21, 21)", "null");
-  shouldBe("clickCanvas(50, 50)", "null");
-  debug("");
+  // fillRule = evenodd
+  assert_equals(clickCanvas(1, 1), 'evenodd');
+  assert_equals(clickCanvas(99, 98), 'evenodd');
+  assert_equals(clickCanvas(21, 21), null);
+  assert_equals(clickCanvas(50, 50), null);
 
-  context.removeHitRegion("evenodd");
+  context.removeHitRegion('evenodd');
 
   context.addHitRegion({
-    id : "nonzero",
-    fillRule : "nonzero"
+    id : 'nonzero',
+    fillRule : 'nonzero'
   });
 
-  debug("fillRule = nonzero:");
-  shouldBe("clickCanvas(1, 1)", "'nonzero'");
-  shouldBe("clickCanvas(99, 98)", "'nonzero'");
-  shouldBe("clickCanvas(21, 21)", "'nonzero'");
-  shouldBe("clickCanvas(50, 50)", "'nonzero'");
-  debug("");
+  // fillRule = nonzero
+  assert_equals(clickCanvas(1, 1), 'nonzero');
+  assert_equals(clickCanvas(99, 98), 'nonzero');
+  assert_equals(clickCanvas(21, 21), 'nonzero');
+  assert_equals(clickCanvas(50, 50), 'nonzero');
 
-  context.removeHitRegion("nonzero");
+  context.removeHitRegion('nonzero');
 
-  shouldThrow('context.addHitRegion({id : "nonzero", fillRule : null });');
+  assert_throws(null, function() {context.addHitRegion({id : 'nonzero', fillRule : null });});
 
   context.addHitRegion({
-    id : "nonzero",
+    id : 'nonzero',
     fillRule : undefined
   });
 
-  debug("fillRule = undefined, falls back to default (nonzero):");
-  shouldBe("clickCanvas(1, 1)", "'nonzero'");
-  shouldBe("clickCanvas(99, 98)", "'nonzero'");
-  shouldBe("clickCanvas(21, 21)", "'nonzero'");
-  shouldBe("clickCanvas(50, 50)", "'nonzero'");
-  debug("");
+  // fillRule = undefined, falls back to default (nonzero):');
+  assert_equals(clickCanvas(1, 1), 'nonzero');
+  assert_equals(clickCanvas(99, 98), 'nonzero');
+  assert_equals(clickCanvas(21, 21), 'nonzero');
+  assert_equals(clickCanvas(50, 50), 'nonzero');
 
+}, 'Canvas Hit Regions: fillRule test');
 </script>
 </body>
-</html>
