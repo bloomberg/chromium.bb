@@ -231,6 +231,28 @@
             ]
         }
     ],
+    "BackgroundVideoOptimizations": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "BackgroundOptimizationEnabled5sOrLess",
+                    "params": {
+                        "max_keyframe_distance_ms": "5000"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                }
+            ]
+        }
+    ],
     "BrowserBlacklist": [
         {
             "platforms": [
