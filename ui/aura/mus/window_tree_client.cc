@@ -468,8 +468,8 @@ void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
       &WindowTreeClient::OnConnectionLost, weak_factory_.GetWeakPtr()));
 
   if (window_manager_delegate_) {
-    tree_ptr_->GetWindowManagerClient(MakeRequest(
-        &window_manager_internal_client_, tree_ptr_.associated_group()));
+    tree_ptr_->GetWindowManagerClient(
+        MakeRequest(&window_manager_internal_client_));
   }
 }
 
@@ -857,8 +857,8 @@ void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
   is_from_embed_ = true;
 
   if (window_manager_delegate_) {
-    tree_ptr_->GetWindowManagerClient(MakeRequest(
-        &window_manager_internal_client_, tree_ptr_.associated_group()));
+    tree_ptr_->GetWindowManagerClient(
+        MakeRequest(&window_manager_internal_client_));
   }
 
   OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data), display_id,

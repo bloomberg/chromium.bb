@@ -45,12 +45,10 @@ FrameGenerator::~FrameGenerator() {
 void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
-  auto associated_group =
-      root_window_->delegate()->GetDisplayCompositorAssociatedGroup();
   cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request =
-      mojo::MakeRequest(&compositor_frame_sink_, associated_group);
+      mojo::MakeRequest(&compositor_frame_sink_);
   cc::mojom::DisplayPrivateAssociatedRequest display_request =
-      mojo::MakeRequest(&display_private_, associated_group);
+      mojo::MakeRequest(&display_private_);
   root_window_->CreateDisplayCompositorFrameSink(
       widget, std::move(sink_request), binding_.CreateInterfacePtrAndBind(),
       std::move(display_request));

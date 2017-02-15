@@ -49,8 +49,7 @@ mojom::WindowTreePtr DefaultWindowTreeBinding::CreateInterfacePtrAndBind() {
 }
 
 mojom::WindowManager* DefaultWindowTreeBinding::GetWindowManager() {
-  client_->GetWindowManager(
-      MakeRequest(&window_manager_internal_, client_.associated_group()));
+  client_->GetWindowManager(MakeRequest(&window_manager_internal_));
   return window_manager_internal_.get();
 }
 

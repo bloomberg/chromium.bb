@@ -107,12 +107,10 @@ class AssociatedBinding : public AssociatedBindingBase {
   explicit AssociatedBinding(ImplPointerType impl) { stub_.set_sink(impl); }
 
   // Constructs a completed associated binding of |impl|. The output |ptr_info|
-  // should be passed through the message pipe endpoint referred to by
-  // |associated_group| to setup the corresponding asssociated interface
-  // pointer. |impl| must outlive this object.
+  // should be sent by another interface. |impl| must outlive this object.
   AssociatedBinding(ImplPointerType impl,
                     AssociatedInterfacePtrInfo<Interface>* ptr_info,
-                    AssociatedGroup* associated_group,
+                    AssociatedGroup* associated_group = nullptr,
                     scoped_refptr<base::SingleThreadTaskRunner> runner =
                         base::ThreadTaskRunnerHandle::Get())
       : AssociatedBinding(std::move(impl)) {
@@ -132,16 +130,14 @@ class AssociatedBinding : public AssociatedBindingBase {
   ~AssociatedBinding() {}
 
   // Creates an associated inteface and sets up this object as the
-  // implementation side. The output |ptr_info| should be passed through the
-  // message pipe endpoint referred to by |associated_group| to setup the
-  // corresponding asssociated interface pointer.
+  // implementation side. The output |ptr_info| should be sent by another
+  // interface.
   void Bind(AssociatedInterfacePtrInfo<Interface>* ptr_info,
-            AssociatedGroup* associated_group,
+            AssociatedGroup* associated_group = nullptr,
             scoped_refptr<base::SingleThreadTaskRunner> runner =
                 base::ThreadTaskRunnerHandle::Get()) {
-    AssociatedInterfaceRequest<Interface> request;
-    associated_group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_PTR,
-                                                ptr_info, &request);
+    auto request = MakeRequest(ptr_info);
+    ptr_info->set_version(Interface::Version_);
     Bind(std::move(request), std::move(runner));
   }
 

@@ -17,11 +17,6 @@ cc::mojom::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
   return nullptr;
 }
 
-mojo::AssociatedGroup*
-TestServerWindowDelegate::GetDisplayCompositorAssociatedGroup() {
-  return nullptr;
-}
-
 ServerWindow* TestServerWindowDelegate::GetRootWindow(
     const ServerWindow* window) {
   return root_window_;

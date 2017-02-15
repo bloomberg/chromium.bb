@@ -23,12 +23,6 @@ class ServerWindowDelegate {
   // DisplayCompositor running in the system.
   virtual cc::mojom::DisplayCompositor* GetDisplayCompositor() = 0;
 
-  // Returns the AssociatedGroup of DisplayCompositor which is used for
-  // creating interfaces that share the same MessagePipe with DisplayCompositor.
-  // Messages from interfaces that use the same AssociatedGroup will be
-  // delivered in the same order they were sent.
-  virtual mojo::AssociatedGroup* GetDisplayCompositorAssociatedGroup() = 0;
-
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.
   virtual ServerWindow* GetRootWindow(const ServerWindow* window) = 0;

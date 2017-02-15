@@ -432,8 +432,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     window_manager_binding_ =
         base::MakeUnique<mojo::AssociatedBinding<mojom::WindowManager>>(
             this, std::move(internal));
-    tree_->GetWindowManagerClient(
-        MakeRequest(&window_manager_client_, tree_.associated_group()));
+    tree_->GetWindowManagerClient(MakeRequest(&window_manager_client_));
   }
 
   // mojom::WindowManager:

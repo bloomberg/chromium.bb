@@ -184,7 +184,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_context(1);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(MakeRequest(&ping_a, provider.associated_group()));
+    provider->GetPing(MakeRequest(&ping_a));
     loop.Run();
   }
 
@@ -193,7 +193,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_context(2);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(MakeRequest(&ping_b, provider.associated_group()));
+    provider->GetPing(MakeRequest(&ping_b));
     loop.Run();
   }
 
@@ -243,7 +243,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_handler(
         Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
-    provider_a->GetPing(MakeRequest(&ping, provider_a.associated_group()));
+    provider_a->GetPing(MakeRequest(&ping));
     loop.Run();
   }
 
@@ -252,7 +252,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_handler(
         Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
-    provider_b->GetPing(MakeRequest(&ping, provider_b.associated_group()));
+    provider_b->GetPing(MakeRequest(&ping));
     loop.Run();
   }
 
@@ -343,7 +343,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
           run_loop.QuitClosure()));
 
   PingServiceAssociatedPtr ptr;
-  master_ptr->GetPing(MakeRequest(&ptr, master_ptr.associated_group()));
+  master_ptr->GetPing(MakeRequest(&ptr));
 
   ptr.ResetWithReason(2048u, "bye");
 

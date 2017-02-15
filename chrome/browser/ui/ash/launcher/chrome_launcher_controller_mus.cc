@@ -24,11 +24,11 @@ class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
         controller_(controller) {}
   ~ChromeShelfItemDelegate() override {}
 
-  ash::mojom::ShelfItemDelegateAssociatedPtrInfo CreateInterfacePtrInfoAndBind(
-      mojo::AssociatedGroup* associated_group) {
+  ash::mojom::ShelfItemDelegateAssociatedPtrInfo
+  CreateInterfacePtrInfoAndBind() {
     DCHECK(!item_delegate_binding_.is_bound());
     ash::mojom::ShelfItemDelegateAssociatedPtrInfo ptr_info;
-    item_delegate_binding_.Bind(&ptr_info, associated_group);
+    item_delegate_binding_.Bind(&ptr_info);
     return ptr_info;
   }
 
@@ -294,8 +294,7 @@ void ChromeLauncherControllerMus::PinAppsFromPrefs() {
     std::unique_ptr<ChromeShelfItemDelegate> delegate(
         new ChromeShelfItemDelegate(app_id, this));
     shelf_controller()->PinItem(std::move(item),
-                                delegate->CreateInterfacePtrInfoAndBind(
-                                    shelf_controller().associated_group()));
+                                delegate->CreateInterfacePtrInfoAndBind());
     app_id_to_item_delegate_.insert(
         std::make_pair(app_id, std::move(delegate)));
 

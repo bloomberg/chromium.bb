@@ -27,7 +27,6 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
  private:
   // ServerWindowDelegate:
   cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
-  mojo::AssociatedGroup* GetDisplayCompositorAssociatedGroup() override;
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
   ServerWindow* root_window_ = nullptr;

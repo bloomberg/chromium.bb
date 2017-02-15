@@ -81,9 +81,8 @@ void ServiceContext::DestroyService() {
 void ServiceContext::OnStart(const ServiceInfo& info,
                              const OnStartCallback& callback) {
   local_info_ = info;
-  callback.Run(
-      std::move(pending_connector_request_),
-      mojo::MakeRequest(&service_control_, binding_.associated_group()));
+  callback.Run(std::move(pending_connector_request_),
+               mojo::MakeRequest(&service_control_));
 
   service_->set_context(this);
   service_->OnStart();

@@ -30,7 +30,7 @@ void ChromeLauncherController::Init() {
   // Start observing the shelf controller.
   if (ConnectToShelfController()) {
     ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(&ptr_info, shelf_controller_.associated_group());
+    observer_binding_.Bind(&ptr_info);
     shelf_controller_->AddObserver(std::move(ptr_info));
   }
   OnInit();
