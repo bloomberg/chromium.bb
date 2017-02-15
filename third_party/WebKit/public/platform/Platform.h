@@ -669,6 +669,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebTrialTokenValidator* trialTokenValidator() { return nullptr; }
 
+  // Memory ------------------------------------------------------------
+
+  // Requests purging memory. The platform may or may not purge memory,
+  // depending on memory pressure.
+  virtual void requestPurgeMemory() {}
+
  protected:
   Platform();
   virtual ~Platform() {}

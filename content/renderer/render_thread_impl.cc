@@ -1124,8 +1124,8 @@ void RenderThreadImpl::InitializeWebKit(
       ->SetRuntimeFeaturesDefaultsBeforeBlinkInitialization();
 
   blink_platform_impl_.reset(new RendererBlinkPlatformImpl(
-      renderer_scheduler_.get(),
-      GetRemoteInterfaces()->GetWeakPtr()));
+      renderer_scheduler_.get(), GetRemoteInterfaces()->GetWeakPtr(),
+      memory_coordinator_.get()));
   blink::initialize(blink_platform_impl_.get());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();

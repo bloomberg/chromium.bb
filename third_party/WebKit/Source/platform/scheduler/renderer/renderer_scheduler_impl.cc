@@ -24,6 +24,7 @@
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 namespace scheduler {
@@ -1574,6 +1575,7 @@ void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {
 
   MainThreadOnly().timer_queue_suspended_when_backgrounded = true;
   ForceUpdatePolicy();
+  Platform::current()->requestPurgeMemory();
 }
 
 void RendererSchedulerImpl::ResumeTimerQueueWhenForegroundedOrResumed() {

@@ -239,7 +239,8 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::RendererScheduler* renderer_scheduler,
-    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
+    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces,
+    content::ChildMemoryCoordinatorImpl* memory_coordinator)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
@@ -251,7 +252,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       renderer_scheduler_(renderer_scheduler),
       blink_interface_provider_(
-          new BlinkInterfaceProviderImpl(remote_interfaces)) {
+          new BlinkInterfaceProviderImpl(remote_interfaces)),
+      memory_coordinator_(memory_coordinator) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -1287,6 +1289,12 @@ void RendererBlinkPlatformImpl::workerContextCreated(
     const v8::Local<v8::Context>& worker) {
   GetContentClient()->renderer()->DidInitializeWorkerContextOnWorkerThread(
       worker);
+}
+
+//------------------------------------------------------------------------------
+void RendererBlinkPlatformImpl::requestPurgeMemory() {
+  DCHECK(memory_coordinator_);
+  memory_coordinator_->PurgeMemory();
 }
 
 }  // namespace content

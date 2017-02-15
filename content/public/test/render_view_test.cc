@@ -119,7 +119,7 @@ class RendererBlinkPlatformImplTestOverrideImpl
  public:
   RendererBlinkPlatformImplTestOverrideImpl(
       blink::scheduler::RendererScheduler* scheduler)
-      : RendererBlinkPlatformImpl(scheduler, nullptr) {}
+      : RendererBlinkPlatformImpl(scheduler, nullptr, nullptr) {}
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.

@@ -50,6 +50,7 @@ class InterfaceProvider;
 
 namespace content {
 class BlinkInterfaceProviderImpl;
+class ChildMemoryCoordinatorImpl;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
@@ -62,7 +63,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   RendererBlinkPlatformImpl(
       blink::scheduler::RendererScheduler* renderer_scheduler,
-      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
+      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces,
+      ChildMemoryCoordinatorImpl* memory_coordinator);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.
@@ -231,6 +233,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   blink::WebURLLoader* createURLLoader() override;
 
+  void requestPurgeMemory() override;
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
@@ -296,6 +300,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
   mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
+
+  ChildMemoryCoordinatorImpl* memory_coordinator_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };
