@@ -333,15 +333,6 @@ fuzzer_test("v8_wasm_types_section_fuzzer") {
   libfuzzer_options = [ "max_len=500" ]
 }
 
-fuzzer_test("third_party_re2_fuzzer") {
-  sources = [
-    "re2_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/re2:re2",
-  ]
-}
-
 fuzzer_test("libxml_xml_regexp_compile_fuzzer") {
   sources = [
     "libxml_xml_regexp_compile_fuzzer.cc",
