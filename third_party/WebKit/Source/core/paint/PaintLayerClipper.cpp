@@ -444,7 +444,6 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
     const ClipRectsContext& context,
     bool isForeground) const {
   DCHECK(m_geometryMapper);
-  LayoutRect source(LayoutRect::infiniteIntRect());
   const auto* properties = m_layer.layoutObject()->paintProperties();
   // TODO(chrishtr): fix the underlying bug that causes this situation.
   DCHECK(properties && properties->localBorderBoxProperties());
@@ -476,8 +475,8 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   }
 
   FloatClipRect clippedRectInRootLayerSpace =
-      m_geometryMapper->sourceToDestinationVisualRect(
-          FloatRect(source), propertyTreeState, destinationPropertyTreeState);
+      m_geometryMapper->sourceToDestinationClipRect(
+          propertyTreeState, destinationPropertyTreeState);
   ClipRect clipRect(LayoutRect(clippedRectInRootLayerSpace.rect()));
   if (clippedRectInRootLayerSpace.hasRadius())
     clipRect.setHasRadius(true);

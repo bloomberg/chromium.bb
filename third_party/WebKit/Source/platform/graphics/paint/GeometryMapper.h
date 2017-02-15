@@ -12,34 +12,6 @@
 
 namespace blink {
 
-// Maps from a descendant clip node to its equivalent "clip visual rect" in
-// the space of the ancestor. The clip visual rect is defined as the
-// intersection of all clips between the descendant and the ancestor (*not*
-// including the ancestor) in the clip tree, individually transformed from
-// their localTransformSpace into the ancestor's localTransformSpace.
-// If one of the clip that contributes to it has a border radius, the
-// hasRadius() field is set to true.
-typedef HashMap<const ClipPaintPropertyNode*, FloatClipRect> ClipCache;
-
-// Maps from a transform node that is a descendant of the ancestor to the
-// combined transform between the descendant's and the ancestor's coordinate
-typedef HashMap<const TransformPaintPropertyNode*, TransformationMatrix>
-    TransformCache;
-
-struct PrecomputedDataForAncestor {
-  TransformCache toAncestorTransforms;
-
-  // There can be multiple clips within the same transform space. This
-  // maps from the desired destination clip within the same transform
-  // space to its corresponding ClipCache.
-  HashMap<const ClipPaintPropertyNode*, std::unique_ptr<ClipCache>>
-      precomputedClips;
-
-  static std::unique_ptr<PrecomputedDataForAncestor> create() {
-    return WTF::makeUnique<PrecomputedDataForAncestor>();
-  }
-};
-
 // GeometryMapper is a helper class for fast computations of transformed and
 // visual rects in different PropertyTreeStates. The design document has a
 // number of details on use cases, algorithmic definitions, and running times.
@@ -139,6 +111,12 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState);
 
+  // Like localToAncestorClipRect, except it can handle destination transform
+  // spaces which are not direct ancestors of the source transform space.
+  FloatClipRect sourceToDestinationClipRect(
+      const PropertyTreeState& sourceState,
+      const PropertyTreeState& destinationState);
+
   // Returns the lowest common ancestor in the paint property tree.
   template <typename NodeType>
   static PLATFORM_EXPORT const NodeType* lowestCommonAncestor(const NodeType*,
@@ -179,8 +157,14 @@ class PLATFORM_EXPORT GeometryMapper {
       bool& success);
 
   FloatClipRect localToAncestorClipRectInternal(
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
+      const ClipPaintPropertyNode* descendant,
+      const ClipPaintPropertyNode* ancestorClip,
+      const TransformPaintPropertyNode* ancestorTransform,
+      bool& success);
+
+  FloatClipRect sourceToDestinationClipRectInternal(
+      const PropertyTreeState& sourceState,
+      const PropertyTreeState& destinationState,
       bool& success);
 
   FloatClipRect slowLocalToAncestorVisualRectWithEffects(
@@ -189,24 +173,43 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& ancestorState,
       bool& success);
 
-  // Returns the precomputed data if already set, or adds and memoizes a new
-  // PrecomputedDataForAncestor otherwise.
-  PrecomputedDataForAncestor& getPrecomputedDataForAncestor(
-      const TransformPaintPropertyNode*);
+  // Maps from a transform node that is a descendant of the implied ancestor
+  // transform node to the combined transform between the descendant's and the
+  // ancestor's coordinate space.
+  // The "implied ancestor" is the key of the m_transformCache object for which
+  // this TransformCache is a value.
+  using TransformCache =
+      HashMap<const TransformPaintPropertyNode*, TransformationMatrix>;
 
   // Returns the transform cache for the given ancestor transform node.
-  TransformCache& getTransformCache(const TransformPaintPropertyNode*);
+  TransformCache& getTransformCache(const TransformPaintPropertyNode* ancestor);
 
-  // Returns the clip cache for the given ancestor clip node.
-  ClipCache& getClipCache(const TransformPaintPropertyNode*,
-                          const ClipPaintPropertyNode*);
+  // Maps from a descendant clip node to its equivalent "clip visual rect" in
+  // the local transform space of the implied ancestor clip node. The clip
+  // visual rect is defined as the intersection of all clips between the
+  // descendant and the ancestor (*not* including the ancestor) in the clip
+  // tree, individually transformed from their localTransformSpace into the
+  // ancestor's localTransformSpace. If one of the clips that contributes to it
+  // has a border radius, the hasRadius() field is set to true.
+  // The "implied ancestor" is the key of the TransformToClip cachefor which
+  // this ClipCache is a value.
+  using ClipCache = HashMap<const ClipPaintPropertyNode*, FloatClipRect>;
+
+  using TransformToClip =
+      HashMap<const TransformPaintPropertyNode*, std::unique_ptr<ClipCache>>;
+
+  // Returns the clip cache for the given transform space relative to the
+  // given ancestor clip node.
+  ClipCache& getClipCache(const ClipPaintPropertyNode* ancestorClip,
+                          const TransformPaintPropertyNode* ancestorTransform);
 
   friend class GeometryMapperTest;
   friend class PaintLayerClipperTest;
 
-  HashMap<const TransformPaintPropertyNode*,
-          std::unique_ptr<PrecomputedDataForAncestor>>
-      m_data;
+  HashMap<const TransformPaintPropertyNode*, std::unique_ptr<TransformCache>>
+      m_transformCache;
+  HashMap<const ClipPaintPropertyNode*, std::unique_ptr<TransformToClip>>
+      m_clipCache;
 
   const TransformationMatrix m_identity;
 

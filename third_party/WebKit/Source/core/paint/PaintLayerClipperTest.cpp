@@ -33,7 +33,8 @@ class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
   }
 
   bool geometryMapperCacheEmpty(const PaintLayerClipper& clipper) {
-    return clipper.m_geometryMapper->m_data.isEmpty();
+    return clipper.m_geometryMapper->m_transformCache.isEmpty() &&
+           clipper.m_geometryMapper->m_clipCache.isEmpty();
   }
 };
 
