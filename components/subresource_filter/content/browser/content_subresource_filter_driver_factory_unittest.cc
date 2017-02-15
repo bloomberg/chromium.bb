@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/histogram_tester.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,20 +136,6 @@ const ActivationLevelTestData kActivationLevelTestData[] = {
     {false /* expected_activation */, kActivationLevelDisabled},
 };
 
-class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
- public:
-  explicit MockSubresourceFilterDriver(
-      content::RenderFrameHost* render_frame_host)
-      : ContentSubresourceFilterDriver(render_frame_host) {}
-
-  ~MockSubresourceFilterDriver() override = default;
-
-  MOCK_METHOD2(ActivateForNextCommittedLoad, void(ActivationLevel, bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
-};
-
 class MockSubresourceFilterClient : public SubresourceFilterClient {
  public:
   MockSubresourceFilterClient() {}
@@ -176,22 +163,12 @@ class ContentSubresourceFilterDriverFactoryTest
     client_ = new MockSubresourceFilterClient();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
         web_contents(), base::WrapUnique(client()));
-    driver_ = new MockSubresourceFilterDriver(main_rfh());
-    SetDriverForFrameHostForTesting(main_rfh(), driver());
+
     // Add a subframe.
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->InitializeRenderFrameIfNeeded();
     subframe_rfh_ = rfh_tester->AppendChild("Child");
-    subframe_driver_ = new MockSubresourceFilterDriver(subframe_rfh());
-    SetDriverForFrameHostForTesting(subframe_rfh(), subframe_driver());
-  }
-
-  void SetDriverForFrameHostForTesting(
-      content::RenderFrameHost* render_frame_host,
-      ContentSubresourceFilterDriver* driver) {
-    factory()->SetDriverForFrameHostForTesting(render_frame_host,
-                                               base::WrapUnique(driver));
   }
 
   ContentSubresourceFilterDriverFactory* factory() {
@@ -200,10 +177,23 @@ class ContentSubresourceFilterDriverFactoryTest
   }
 
   MockSubresourceFilterClient* client() { return client_; }
-  MockSubresourceFilterDriver* driver() { return driver_; }
-
-  MockSubresourceFilterDriver* subframe_driver() { return subframe_driver_; }
   content::RenderFrameHost* subframe_rfh() { return subframe_rfh_; }
+
+  void ExpectActivationSignalForFrame(content::RenderFrameHost* rfh,
+                                      bool expect_activation) {
+    content::MockRenderProcessHost* render_process_host =
+        static_cast<content::MockRenderProcessHost*>(rfh->GetProcess());
+    const IPC::Message* message =
+        render_process_host->sink().GetFirstMessageMatching(
+            SubresourceFilterMsg_ActivateForNextCommittedLoad::ID);
+    ASSERT_EQ(expect_activation, !!message);
+    if (expect_activation) {
+      std::tuple<ActivationLevel, bool> args;
+      SubresourceFilterMsg_ActivateForNextCommittedLoad::Read(message, &args);
+      EXPECT_NE(ActivationLevel::DISABLED, std::get<0>(args));
+    }
+    render_process_host->sink().ClearMessages();
+  }
 
   void SimulateNavigationCommit(content::RenderFrameHost* rfh,
                                 const GURL& url,
@@ -249,12 +239,9 @@ class ContentSubresourceFilterDriverFactoryTest
       rfh_tester->SimulateRedirect(url);
     }
 
-    EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(
-                               ::testing::_, expected_measure_performance()))
-        .Times(expected_activation);
     SimulateNavigationCommit(main_rfh(), navigation_chain.back(), referrer,
                              transition);
-    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ExpectActivationSignalForFrame(main_rfh(), expected_activation);
 
     if (expected_pattern != EMPTY) {
       EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName),
@@ -272,17 +259,13 @@ class ContentSubresourceFilterDriverFactoryTest
   }
 
   void NavigateAndCommitSubframe(const GURL& url, bool expected_activation) {
-    EXPECT_CALL(*subframe_driver(),
-                ActivateForNextCommittedLoad(::testing::_,
-                                             expected_measure_performance()))
-        .Times(expected_activation);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
     content::RenderFrameHostTester::For(subframe_rfh())
         ->SimulateNavigationStart(url);
     SimulateNavigationCommit(subframe_rfh(), url, content::Referrer(),
                              ui::PAGE_TRANSITION_LINK);
-    ::testing::Mock::VerifyAndClearExpectations(subframe_driver());
+    ExpectActivationSignalForFrame(subframe_rfh(), expected_activation);
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
@@ -323,9 +306,6 @@ class ContentSubresourceFilterDriverFactoryTest
 
   void EmulateFailedNavigationAndExpectNoActivation(const GURL& url) {
     EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
-    EXPECT_CALL(*driver(),
-                ActivateForNextCommittedLoad(::testing::_, ::testing::_))
-        .Times(0);
 
     // ReadyToCommitNavigation with browser-side navigation disabled is not
     // called in production code for failed navigations (e.g. network errors).
@@ -335,7 +315,7 @@ class ContentSubresourceFilterDriverFactoryTest
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->SimulateNavigationStart(url);
     rfh_tester->SimulateNavigationError(url, 403);
-    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ExpectActivationSignalForFrame(main_rfh(), false);
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
@@ -352,13 +332,10 @@ class ContentSubresourceFilterDriverFactoryTest
 
     NavigateAndExpectActivation(blacklisted_urls, {GURL(kExampleUrl)},
                                 expected_pattern, expected_activation);
-    EXPECT_CALL(*driver(),
-                ActivateForNextCommittedLoad(::testing::_, ::testing::_))
-        .Times(0);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
     content::RenderFrameHostTester::For(main_rfh())
         ->SimulateNavigationCommit(GURL(kExampleUrl));
-    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ExpectActivationSignalForFrame(main_rfh(), false);
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
@@ -372,10 +349,8 @@ class ContentSubresourceFilterDriverFactoryTest
 
   // Owned by the factory.
   MockSubresourceFilterClient* client_;
-  MockSubresourceFilterDriver* driver_;
 
   content::RenderFrameHost* subframe_rfh_;
-  MockSubresourceFilterDriver* subframe_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryTest);
 };
