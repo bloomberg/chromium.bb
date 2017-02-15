@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/test_suite.h"
+#include "ash/test/ash_test_suite.h"
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 
@@ -11,13 +11,13 @@
 #endif
 
 int main(int argc, char** argv) {
-  ash::test::AuraShellTestSuite test_suite(argc, argv);
+  ash::test::AshTestSuite test_suite(argc, argv);
 
 #if !defined(OS_IOS)
   mojo::edk::Init();
 #endif
 
   return base::LaunchUnitTestsSerially(
-      argc, argv, base::Bind(&ash::test::AuraShellTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc, argv,
+      base::Bind(&ash::test::AshTestSuite::Run, base::Unretained(&test_suite)));
 }

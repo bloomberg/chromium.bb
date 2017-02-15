@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/test_suite.h"
+#include "ash/test/ash_test_suite.h"
 
 #include "ash/test/ash_test_environment.h"
 #include "base/command_line.h"
@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
@@ -20,12 +19,11 @@
 namespace ash {
 namespace test {
 
-AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
-    : TestSuite(argc, argv) {}
+AshTestSuite::AshTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
-AuraShellTestSuite::~AuraShellTestSuite() {}
+AshTestSuite::~AshTestSuite() {}
 
-void AuraShellTestSuite::Initialize() {
+void AshTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
@@ -60,7 +58,7 @@ void AuraShellTestSuite::Initialize() {
   env_ = aura::Env::CreateInstance();
 }
 
-void AuraShellTestSuite::Shutdown() {
+void AshTestSuite::Shutdown() {
   env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
