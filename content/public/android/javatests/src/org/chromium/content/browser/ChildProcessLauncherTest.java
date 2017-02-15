@@ -444,6 +444,21 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertTrue(retryConn.getService().bindToCaller());
     }
 
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testWarmUp() {
+        Context context = getInstrumentation().getTargetContext();
+        ChildProcessLauncher.warmUp(context); // Not on UI thread.
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+
+        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(context,
+                new String[0], new FileDescriptorInfo[0],
+                getDefaultChildProcessCreationParams(context.getPackageName()));
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount()); // Used warmup connection.
+
+        ChildProcessLauncher.stop(conn.getPid());
+    }
+
     private ChildProcessConnectionImpl startConnection() {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
