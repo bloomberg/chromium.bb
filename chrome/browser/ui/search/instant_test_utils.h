@@ -61,6 +61,9 @@ class InstantTestBase {
   bool GetIntFromJS(content::WebContents* contents,
                     const std::string& script,
                     int* result) WARN_UNUSED_RESULT;
+  bool GetDoubleFromJS(content::WebContents* contents,
+                       const std::string& script,
+                       double* result) WARN_UNUSED_RESULT;
   bool GetStringFromJS(content::WebContents* contents,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT;

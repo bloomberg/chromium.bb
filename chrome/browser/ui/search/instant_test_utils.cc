@@ -118,6 +118,13 @@ bool InstantTestBase::GetIntFromJS(content::WebContents* contents,
       contents, WrapScript(script), result);
 }
 
+bool InstantTestBase::GetDoubleFromJS(content::WebContents* contents,
+                                      const std::string& script,
+                                      double* result) {
+  return content::ExecuteScriptAndExtractDouble(contents, WrapScript(script),
+                                                result);
+}
+
 bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
                                       const std::string& script,
                                       std::string* result) {
