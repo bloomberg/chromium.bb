@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_loop.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/audio_decoder.h"

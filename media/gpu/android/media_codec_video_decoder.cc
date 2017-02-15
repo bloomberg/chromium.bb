@@ -5,8 +5,8 @@
 #include "media/gpu/android/media_codec_video_decoder.h"
 
 #include "base/logging.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 

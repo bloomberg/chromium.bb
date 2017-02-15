@@ -10,7 +10,7 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/gpu/avda_shared_state.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_context.h"

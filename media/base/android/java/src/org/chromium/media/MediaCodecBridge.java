@@ -24,25 +24,20 @@ import org.chromium.media.MediaCodecUtil.MimeTypes;
 import java.nio.ByteBuffer;
 
 /**
- * A wrapper of the MediaCodec class to facilitate exception capturing and
- * audio rendering.
+ * A MediaCodec wrapper for adapting the API and catching exceptions.
  */
 @JNINamespace("media")
 class MediaCodecBridge {
     private static final String TAG = "cr_MediaCodecBridge";
 
-    // Error code for MediaCodecBridge. Keep this value in sync with
-    // MediaCodecStatus in media_codec_bridge.h.
+    // Status codes. Keep these in sync with MediaCodecStatus in media_codec_bridge.h.
     private static final int MEDIA_CODEC_OK = 0;
     private static final int MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER = 1;
     private static final int MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER = 2;
     private static final int MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED = 3;
     private static final int MEDIA_CODEC_OUTPUT_FORMAT_CHANGED = 4;
-    private static final int MEDIA_CODEC_INPUT_END_OF_STREAM = 5;
-    private static final int MEDIA_CODEC_OUTPUT_END_OF_STREAM = 6;
-    private static final int MEDIA_CODEC_NO_KEY = 7;
-    private static final int MEDIA_CODEC_ABORT = 8;
-    private static final int MEDIA_CODEC_ERROR = 9;
+    private static final int MEDIA_CODEC_NO_KEY = 5;
+    private static final int MEDIA_CODEC_ERROR = 6;
 
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase
@@ -241,10 +236,12 @@ class MediaCodecBridge {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 codecName = mMediaCodec.getName();
             }
-            Log.w(TAG, "calling MediaCodec.release() on " + codecName);
+            // This logging is to help us identify hung MediaCodecs in crash reports.
+            Log.w(TAG, "Releasing: " + codecName);
             mMediaCodec.release();
+            Log.w(TAG, "Codec released");
         } catch (IllegalStateException e) {
-            // The MediaCodec is stuck in a wrong state, possibly due to losing
+            // The MediaCodec is stuck in a bad state, possibly due to losing
             // the surface.
             Log.e(TAG, "Cannot release media codec", e);
         }

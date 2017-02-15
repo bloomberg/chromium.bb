@@ -9,7 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"

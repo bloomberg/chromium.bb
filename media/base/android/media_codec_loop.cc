@@ -11,23 +11,14 @@
 #include "media/base/timestamp_constants.h"
 
 namespace media {
+namespace {
 
-// Declaring these as constexpr variables doesn't work in windows -- they
-// always are 0.  The exception is FromMicroseconds, which doesn't do any
-// conversion.  However, declaring these as constexpr functions seesm to work
-// fine everywhere.  We care that this works in windows because our unit tests
-// run on non-android platforms.
-constexpr base::TimeDelta DecodePollDelay() {
-  return base::TimeDelta::FromMilliseconds(10);
-}
+constexpr base::TimeDelta kDecodePollDelay =
+    base::TimeDelta::FromMilliseconds(10);
+constexpr base::TimeDelta kNoWaitTimeout = base::TimeDelta::FromMicroseconds(0);
+constexpr base::TimeDelta kIdleTimerTimeout = base::TimeDelta::FromSeconds(1);
 
-constexpr base::TimeDelta NoWaitTimeout() {
-  return base::TimeDelta::FromMicroseconds(0);
-}
-
-constexpr base::TimeDelta IdleTimerTimeout() {
-  return base::TimeDelta::FromSeconds(1);
-}
+}  // namespace
 
 MediaCodecLoop::InputData::InputData() {}
 
@@ -157,7 +148,7 @@ MediaCodecLoop::InputBuffer MediaCodecLoop::DequeueInputBuffer() {
   int input_buf_index = kInvalidBufferIndex;
 
   media::MediaCodecStatus status =
-      media_codec_->DequeueInputBuffer(NoWaitTimeout(), &input_buf_index);
+      media_codec_->DequeueInputBuffer(kNoWaitTimeout, &input_buf_index);
   switch (status) {
     case media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
       break;
@@ -257,8 +248,8 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
 
   OutputBuffer out;
   MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-      NoWaitTimeout(), &out.index, &out.offset, &out.size, &out.pts,
-      &out.is_eos, &out.is_key_frame);
+      kNoWaitTimeout, &out.index, &out.offset, &out.size, &out.pts, &out.is_eos,
+      &out.is_key_frame);
 
   bool did_work = false;
   switch (status) {
@@ -324,12 +315,12 @@ void MediaCodecLoop::ManageTimer(bool did_work) {
     idle_time_begin_ = now;
   } else {
     // Make sure that we have done work recently enough, else stop the timer.
-    if (now - idle_time_begin_ > IdleTimerTimeout())
+    if (now - idle_time_begin_ > kIdleTimerTimeout)
       should_be_running = false;
   }
 
   if (should_be_running && !io_timer_.IsRunning()) {
-    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
+    io_timer_.Start(FROM_HERE, kDecodePollDelay, this,
                     &MediaCodecLoop::DoPendingWork);
   } else if (!should_be_running && io_timer_.IsRunning()) {
     io_timer_.Stop();

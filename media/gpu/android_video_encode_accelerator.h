@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
 

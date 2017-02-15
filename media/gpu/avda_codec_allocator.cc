@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/limits.h"
 #include "media/base/media.h"
 #include "media/base/timestamp_constants.h"

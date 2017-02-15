@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/android/sdk_media_codec_bridge.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,6 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
@@ -97,8 +96,7 @@ static const size_t kDecodedAudioLengthInBytes = 9216u;
 
 namespace media {
 
-// Helper macro to skip the test if MediaCodecBridge isn't available.
-#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
+#define SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE()               \
   do {                                                            \
     if (!MediaCodecUtil::IsMediaCodecAvailable()) {               \
       VLOG(0) << "Could not run test - not supported on device."; \
@@ -148,8 +146,8 @@ void DecodeMediaFrame(VideoCodecBridge* media_codec,
   }
 }
 
-TEST(SdkMediaCodecBridgeTest, Initialize) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+TEST(MediaCodecBridgeTest, Initialize) {
+  SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
   std::unique_ptr<media::MediaCodecBridge> media_codec;
   media_codec.reset(VideoCodecBridge::CreateDecoder(
@@ -157,8 +155,8 @@ TEST(SdkMediaCodecBridgeTest, Initialize) {
       std::vector<uint8_t>(), std::vector<uint8_t>()));
 }
 
-TEST(SdkMediaCodecBridgeTest, DoNormal) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+TEST(MediaCodecBridgeTest, DoNormal) {
+  SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
   std::unique_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
@@ -216,8 +214,8 @@ TEST(SdkMediaCodecBridgeTest, DoNormal) {
   ASSERT_LE(input_pts, kMaxInputPts);
 }
 
-TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
+  SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
   std::unique_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecVorbis));
@@ -246,8 +244,8 @@ TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
   delete[] very_large_header;
 }
 
-TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+TEST(MediaCodecBridgeTest, InvalidOpusHeader) {
+  SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
   std::unique_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecOpus));
@@ -271,7 +269,7 @@ TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
                                      sizeof(dummy_extra_data), 0, -1, nullptr));
 }
 
-TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
+TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
   SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   std::unique_ptr<VideoCodecBridge> media_codec(VideoCodecBridge::CreateDecoder(
@@ -299,7 +297,7 @@ TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                    base::TimeDelta::FromMicroseconds(4900000));
 }
 
-TEST(SdkMediaCodecBridgeTest, CreateUnsupportedCodec) {
+TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
   EXPECT_EQ(nullptr, AudioCodecBridge::Create(kUnknownAudioCodec));
   EXPECT_EQ(nullptr,
             VideoCodecBridge::CreateDecoder(

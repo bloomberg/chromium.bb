@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 
 #include <algorithm>
 #include <limits>
@@ -36,6 +36,7 @@ using base::android::ScopedJavaLocalRef;
   } while (0)
 
 namespace media {
+namespace {
 
 enum {
   kBufferFlagSyncFrame = 1,    // BUFFER_FLAG_SYNC_FRAME
@@ -43,14 +44,7 @@ enum {
   kConfigureFlagEncode = 1,    // CONFIGURE_FLAG_ENCODE
 };
 
-static ScopedJavaLocalRef<jintArray>
-ToJavaIntArray(JNIEnv* env, std::unique_ptr<jint[]> native_array, int size) {
-  ScopedJavaLocalRef<jintArray> j_array(env, env->NewIntArray(size));
-  env->SetIntArrayRegion(j_array.obj(), 0, size, native_array.get());
-  return j_array;
-}
-
-static const std::string AudioCodecToAndroidMimeType(const AudioCodec& codec) {
+const std::string AudioCodecToAndroidMimeType(const AudioCodec& codec) {
   switch (codec) {
     case kCodecMP3:
       return "audio/mpeg";
@@ -69,7 +63,7 @@ static const std::string AudioCodecToAndroidMimeType(const AudioCodec& codec) {
   }
 }
 
-static const std::string VideoCodecToAndroidMimeType(const VideoCodec& codec) {
+const std::string VideoCodecToAndroidMimeType(const VideoCodec& codec) {
   switch (codec) {
     case kCodecH264:
       return "video/avc";
@@ -84,10 +78,19 @@ static const std::string VideoCodecToAndroidMimeType(const VideoCodec& codec) {
   }
 }
 
-SdkMediaCodecBridge::SdkMediaCodecBridge(const std::string& mime,
-                                         bool is_secure,
-                                         MediaCodecDirection direction,
-                                         bool require_software_codec) {
+static ScopedJavaLocalRef<jintArray>
+ToJavaIntArray(JNIEnv* env, std::unique_ptr<jint[]> native_array, int size) {
+  ScopedJavaLocalRef<jintArray> j_array(env, env->NewIntArray(size));
+  env->SetIntArrayRegion(j_array.obj(), 0, size, native_array.get());
+  return j_array;
+}
+
+}  // namespace
+
+MediaCodecBridgeImpl::MediaCodecBridgeImpl(const std::string& mime,
+                                           bool is_secure,
+                                           MediaCodecDirection direction,
+                                           bool require_software_codec) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(!mime.empty());
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
@@ -95,29 +98,29 @@ SdkMediaCodecBridge::SdkMediaCodecBridge(const std::string& mime,
       env, j_mime, is_secure, direction, require_software_codec));
 }
 
-SdkMediaCodecBridge::~SdkMediaCodecBridge() {
+MediaCodecBridgeImpl::~MediaCodecBridgeImpl() {
   JNIEnv* env = AttachCurrentThread();
   if (j_media_codec_.obj())
     Java_MediaCodecBridge_release(env, j_media_codec_);
 }
 
-bool SdkMediaCodecBridge::Start() {
+bool MediaCodecBridgeImpl::Start() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_start(env, j_media_codec_);
 }
 
-void SdkMediaCodecBridge::Stop() {
+void MediaCodecBridgeImpl::Stop() {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_stop(env, j_media_codec_);
 }
 
-MediaCodecStatus SdkMediaCodecBridge::Flush() {
+MediaCodecStatus MediaCodecBridgeImpl::Flush() {
   JNIEnv* env = AttachCurrentThread();
   return static_cast<MediaCodecStatus>(
       Java_MediaCodecBridge_flush(env, j_media_codec_));
 }
 
-MediaCodecStatus SdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {
+MediaCodecStatus MediaCodecBridgeImpl::GetOutputSize(gfx::Size* size) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result =
       Java_MediaCodecBridge_getOutputFormat(env, j_media_codec_);
@@ -130,7 +133,7 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {
   return status;
 }
 
-MediaCodecStatus SdkMediaCodecBridge::GetOutputSamplingRate(
+MediaCodecStatus MediaCodecBridgeImpl::GetOutputSamplingRate(
     int* sampling_rate) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result =
@@ -142,7 +145,7 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputSamplingRate(
   return status;
 }
 
-MediaCodecStatus SdkMediaCodecBridge::GetOutputChannelCount(
+MediaCodecStatus MediaCodecBridgeImpl::GetOutputChannelCount(
     int* channel_count) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result =
@@ -154,12 +157,12 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputChannelCount(
   return status;
 }
 
-MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
+MediaCodecStatus MediaCodecBridgeImpl::QueueInputBuffer(
     int index,
     const uint8_t* data,
     size_t data_size,
     base::TimeDelta presentation_time) {
-  DVLOG(3) << __func__ << index << ": " << data_size;
+  DVLOG(3) << __func__ << " " << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -172,19 +175,16 @@ MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
       presentation_time.InMicroseconds(), 0));
 }
 
-// TODO(timav): Combine this and above methods together keeping only the first
-// interface after we switch to Spitzer pipeline.
-MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
+MediaCodecStatus MediaCodecBridgeImpl::QueueSecureInputBuffer(
     int index,
     const uint8_t* data,
     size_t data_size,
-    const std::vector<char>& key_id,
-    const std::vector<char>& iv,
-    const SubsampleEntry* subsamples,
-    int subsamples_size,
+    const std::string& key_id,
+    const std::string& iv,
+    const std::vector<SubsampleEntry>& subsamples,
     const EncryptionScheme& encryption_scheme,
     base::TimeDelta presentation_time) {
-  DVLOG(3) << __func__ << index << ": " << data_size;
+  DVLOG(3) << __func__ << " " << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -198,23 +198,20 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
   ScopedJavaLocalRef<jbyteArray> j_iv = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(iv.data()), iv.size());
 
-  // MediaCodec.CryptoInfo documentations says passing NULL for |clear_array|
+  // The MediaCodec.CryptoInfo documentation says to pass NULL for |clear_array|
   // to indicate that all data is encrypted. But it doesn't specify what
-  // |cypher_array| and |subsamples_size| should be in that case. Passing
+  // |cypher_array| and |subsamples_size| should be in that case. We pass
   // one subsample here just to be on the safe side.
-  int new_subsamples_size = subsamples_size == 0 ? 1 : subsamples_size;
+  int num_subsamples = std::max(static_cast<size_t>(1), subsamples.size());
 
-  std::unique_ptr<jint[]> native_clear_array(new jint[new_subsamples_size]);
-  std::unique_ptr<jint[]> native_cypher_array(new jint[new_subsamples_size]);
+  std::unique_ptr<jint[]> native_clear_array(new jint[num_subsamples]);
+  std::unique_ptr<jint[]> native_cypher_array(new jint[num_subsamples]);
 
-  if (subsamples_size == 0) {
-    DCHECK(!subsamples);
+  if (subsamples.empty()) {
     native_clear_array[0] = 0;
     native_cypher_array[0] = data_size;
   } else {
-    DCHECK_GT(subsamples_size, 0);
-    DCHECK(subsamples);
-    for (int i = 0; i < subsamples_size; ++i) {
+    for (size_t i = 0; i < subsamples.size(); ++i) {
       DCHECK(subsamples[i].clear_bytes <= std::numeric_limits<uint16_t>::max());
       if (subsamples[i].cypher_bytes >
           static_cast<uint32_t>(std::numeric_limits<jint>::max())) {
@@ -227,28 +224,28 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
   }
 
   ScopedJavaLocalRef<jintArray> clear_array =
-      ToJavaIntArray(env, std::move(native_clear_array), new_subsamples_size);
+      ToJavaIntArray(env, std::move(native_clear_array), num_subsamples);
   ScopedJavaLocalRef<jintArray> cypher_array =
-      ToJavaIntArray(env, std::move(native_cypher_array), new_subsamples_size);
+      ToJavaIntArray(env, std::move(native_cypher_array), num_subsamples);
 
   return static_cast<MediaCodecStatus>(
       Java_MediaCodecBridge_queueSecureInputBuffer(
           env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
-          clear_array, cypher_array, new_subsamples_size,
+          clear_array, cypher_array, num_subsamples,
           static_cast<int>(encryption_scheme.mode()),
           static_cast<int>(encryption_scheme.pattern().encrypt_blocks()),
           static_cast<int>(encryption_scheme.pattern().skip_blocks()),
           presentation_time.InMicroseconds()));
 }
 
-void SdkMediaCodecBridge::QueueEOS(int input_buffer_index) {
+void MediaCodecBridgeImpl::QueueEOS(int input_buffer_index) {
   DVLOG(3) << __func__ << ": " << input_buffer_index;
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_queueInputBuffer(
       env, j_media_codec_, input_buffer_index, 0, 0, 0, kBufferFlagEndOfStream);
 }
 
-MediaCodecStatus SdkMediaCodecBridge::DequeueInputBuffer(
+MediaCodecStatus MediaCodecBridgeImpl::DequeueInputBuffer(
     base::TimeDelta timeout,
     int* index) {
   JNIEnv* env = AttachCurrentThread();
@@ -261,7 +258,7 @@ MediaCodecStatus SdkMediaCodecBridge::DequeueInputBuffer(
   return status;
 }
 
-MediaCodecStatus SdkMediaCodecBridge::DequeueOutputBuffer(
+MediaCodecStatus MediaCodecBridgeImpl::DequeueOutputBuffer(
     base::TimeDelta timeout,
     int* index,
     size_t* offset,
@@ -295,15 +292,15 @@ MediaCodecStatus SdkMediaCodecBridge::DequeueOutputBuffer(
   return status;
 }
 
-void SdkMediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
+void MediaCodecBridgeImpl::ReleaseOutputBuffer(int index, bool render) {
   DVLOG(3) << __func__ << ": " << index;
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_releaseOutputBuffer(env, j_media_codec_, index, render);
 }
 
-MediaCodecStatus SdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
-                                                     uint8_t** data,
-                                                     size_t* capacity) {
+MediaCodecStatus MediaCodecBridgeImpl::GetInputBuffer(int input_buffer_index,
+                                                      uint8_t** data,
+                                                      size_t* capacity) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_buffer(Java_MediaCodecBridge_getInputBuffer(
       env, j_media_codec_, input_buffer_index));
@@ -316,7 +313,22 @@ MediaCodecStatus SdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
   return MEDIA_CODEC_OK;
 }
 
-MediaCodecStatus SdkMediaCodecBridge::GetOutputBufferAddress(
+MediaCodecStatus MediaCodecBridgeImpl::CopyFromOutputBuffer(int index,
+                                                            size_t offset,
+                                                            void* dst,
+                                                            size_t num) {
+  const uint8_t* src_data = nullptr;
+  size_t src_capacity = 0;
+  MediaCodecStatus status =
+      GetOutputBufferAddress(index, offset, &src_data, &src_capacity);
+  if (status == MEDIA_CODEC_OK) {
+    CHECK_GE(src_capacity, num);
+    memcpy(dst, src_data, num);
+  }
+  return status;
+}
+
+MediaCodecStatus MediaCodecBridgeImpl::GetOutputBufferAddress(
     int index,
     size_t offset,
     const uint8_t** addr,
@@ -335,13 +347,34 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputBufferAddress(
   return MEDIA_CODEC_OK;
 }
 
-std::string SdkMediaCodecBridge::GetName() {
+std::string MediaCodecBridgeImpl::GetName() {
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 18)
     return "";
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_name =
       Java_MediaCodecBridge_getName(env, j_media_codec_);
   return ConvertJavaStringToUTF8(env, j_name);
+}
+
+bool MediaCodecBridgeImpl::FillInputBuffer(int index,
+                                           const uint8_t* data,
+                                           size_t size) {
+  uint8_t* dst = nullptr;
+  size_t capacity = 0;
+  if (GetInputBuffer(index, &dst, &capacity) != MEDIA_CODEC_OK) {
+    LOG(ERROR) << "GetInputBuffer failed";
+    return false;
+  }
+  CHECK(dst);
+
+  if (size > capacity) {
+    LOG(ERROR) << "Input buffer size " << size
+               << " exceeds MediaCodec input buffer capacity: " << capacity;
+    return false;
+  }
+
+  memcpy(dst, data, size);
+  return true;
 }
 
 // static
@@ -369,7 +402,7 @@ bool AudioCodecBridge::IsKnownUnaccelerated(const AudioCodec& codec) {
 AudioCodecBridge::AudioCodecBridge(const std::string& mime)
     // Audio codec doesn't care about security level and there is no need for
     // audio encoding yet.
-    : SdkMediaCodecBridge(mime, false, MEDIA_CODEC_DECODER, false) {}
+    : MediaCodecBridgeImpl(mime, false, MEDIA_CODEC_DECODER, false) {}
 
 bool AudioCodecBridge::ConfigureAndStart(const AudioDecoderConfig& config,
                                          jobject media_crypto) {
@@ -657,7 +690,7 @@ VideoCodecBridge::VideoCodecBridge(const std::string& mime,
                                    bool is_secure,
                                    MediaCodecDirection direction,
                                    bool require_software_codec)
-    : SdkMediaCodecBridge(mime, is_secure, direction, require_software_codec),
+    : MediaCodecBridgeImpl(mime, is_secure, direction, require_software_codec),
       adaptive_playback_supported_for_testing_(-1) {}
 
 bool VideoCodecBridge::SetSurface(jobject surface) {

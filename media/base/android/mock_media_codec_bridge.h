@@ -14,51 +14,47 @@ namespace media {
 class MockMediaCodecBridge : public MediaCodecBridge {
  public:
   MockMediaCodecBridge();
-  ~MockMediaCodecBridge();
+  ~MockMediaCodecBridge() override;
 
   MOCK_METHOD0(Start, bool());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Flush, MediaCodecStatus());
-  MOCK_METHOD1(GetOutputSize, MediaCodecStatus(gfx::Size*));
-  MOCK_METHOD1(GetOutputSamplingRate, MediaCodecStatus(int*));
-  MOCK_METHOD1(GetOutputChannelCount, MediaCodecStatus(int*));
+  MOCK_METHOD1(GetOutputSize, MediaCodecStatus(gfx::Size* size));
+  MOCK_METHOD1(GetOutputSamplingRate, MediaCodecStatus(int* sampling_rate));
+  MOCK_METHOD1(GetOutputChannelCount, MediaCodecStatus(int* channel_count));
   MOCK_METHOD4(QueueInputBuffer,
-               MediaCodecStatus(int, const uint8_t*, size_t, base::TimeDelta));
+               MediaCodecStatus(int index,
+                                const uint8_t* data,
+                                size_t data_size,
+                                base::TimeDelta presentation_time));
   MOCK_METHOD8(QueueSecureInputBuffer,
-               MediaCodecStatus(int,
-                                const uint8_t*,
-                                size_t,
-                                const std::string&,
-                                const std::string&,
-                                const std::vector<SubsampleEntry>&,
+               MediaCodecStatus(int index,
+                                const uint8_t* data,
+                                size_t data_size,
+                                const std::string& key_id,
+                                const std::string& iv,
+                                const std::vector<SubsampleEntry>& subsamples,
                                 const EncryptionScheme& encryption_scheme,
-                                base::TimeDelta));
-  MOCK_METHOD9(QueueSecureInputBuffer,
-               MediaCodecStatus(int,
-                                const uint8_t*,
-                                size_t,
-                                const std::vector<char>&,
-                                const std::vector<char>&,
-                                const SubsampleEntry*,
-                                int,
-                                const EncryptionScheme& encryption_scheme,
-                                base::TimeDelta));
-  MOCK_METHOD1(QueueEOS, void(int));
-  MOCK_METHOD2(DequeueInputBuffer, MediaCodecStatus(base::TimeDelta, int*));
+                                base::TimeDelta presentation_time));
+  MOCK_METHOD1(QueueEOS, void(int input_buffer_index));
+  MOCK_METHOD2(DequeueInputBuffer,
+               MediaCodecStatus(base::TimeDelta timeout, int* index));
   MOCK_METHOD7(DequeueOutputBuffer,
-               MediaCodecStatus(base::TimeDelta,
-                                int*,
-                                size_t*,
-                                size_t*,
-                                base::TimeDelta*,
-                                bool*,
-                                bool*));
-  MOCK_METHOD2(ReleaseOutputBuffer, void(int, bool));
-  MOCK_METHOD3(GetInputBuffer, MediaCodecStatus(int, uint8_t**, size_t*));
-  MOCK_METHOD4(GetOutputBufferAddress,
-               MediaCodecStatus(int, size_t, const uint8_t**, size_t*));
-  MOCK_METHOD4(CopyFromOutputBuffer,
-               MediaCodecStatus(int, size_t, void*, size_t));
+               MediaCodecStatus(base::TimeDelta timeout,
+                                int* index,
+                                size_t* offset,
+                                size_t* size,
+                                base::TimeDelta* presentation_time,
+                                bool* end_of_stream,
+                                bool* key_frame));
+  MOCK_METHOD2(ReleaseOutputBuffer, void(int index, bool render));
+  MOCK_METHOD3(GetInputBuffer,
+               MediaCodecStatus(int input_buffer_index,
+                                uint8_t** data,
+                                size_t* capacity));
+  MOCK_METHOD4(
+      CopyFromOutputBuffer,
+      MediaCodecStatus(int index, size_t offset, void* dst, size_t num));
   MOCK_METHOD0(GetName, std::string());
 };
 

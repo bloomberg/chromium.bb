@@ -449,7 +449,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//gpu/command_buffer/common",
     "//media",
-    "//media/base/android:anywhere_unit_tests",
     "//ppapi/features",
     "//skia",
     "//testing/gmock",

@@ -18,7 +18,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/gpu_channel.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/gpu/avda_codec_image.h"
 #include "media/gpu/avda_shared_state.h"
 #include "ui/gl/android/surface_texture.h"
