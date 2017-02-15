@@ -64,6 +64,7 @@
       <entry name="fullscreen" value="4" summary="fullscreen window state"/>
       <entry name="pinned" value="5" summary="pinned window state"/>
       <entry name="trusted_pinned" value="6" summary="trusted pinned window state"/>
+      <entry name="moving" value="7" summary="moving window state"/>
     </enum>
 
     <enum name="error">
@@ -369,8 +370,8 @@
 
     <event name="state_type_changed">
       <description summary="surface state type changed">
-	The state_type_changed event is sent by the compositor when the surface
-	state changed.
+	[Deprecated] The state_type_changed event is sent by the compositor when
+	the surface state changed.
 
 	This is an event to notify that the window state changed in compositor.
 	The state change may be triggered by a client's request, or some user
@@ -410,6 +411,9 @@
 	displays. The client must offset window positions in set_window_geometry
 	requests by this origin in order to convert between coordinate spaces.
 
+	The states listed in the event are state_type values, and might change
+	due to a client request or an event directly handled by the compositor.
+
 	Clients should arrange their surface for the new state, and then send an
 	ack_configure request with the serial sent in this configure event at
 	some point before committing the new surface.
@@ -419,6 +423,7 @@
       </description>
       <arg name="origin_x" type="int"/>
       <arg name="origin_y" type="int"/>
+      <arg name="states" type="array"/>
       <arg name="serial" type="uint"/>
     </event>
 
@@ -447,20 +452,18 @@
       <arg name="serial" type="uint" summary="the serial from the configure event"/>
     </request>
 
-    <request name="set_moving" since="3">
-      <description summary="interactive move started">
-	Notifies the compositor when an interactive, user-driven move of the
-	surface starts. The compositor may assume that subsequent
-	set_window_geometry requests are position updates until it receives a
-	unset_moving request.
-      </description>
-    </request>
+    <request name="move" since="3">
+      <description summary="start an interactive move">
+	Start an interactive, user-driven move of the surface.
 
-    <request name="unset_moving" since="3">
-      <description summary="interactive move stopped">
-	Notifies the compositor when an interactive, user-driven move of the
-	surface stops. The compositor may choose to stop the move regardless
-	of this request.
+	The compositor responds to this request with a configure event that
+	transitions to the "moving" state. The client must only initiate motion
+	after acknowledging the state change. The compositor can assume that
+	subsequent set_window_geometry requests are position updates until the
+	next state transition is acknowledged.
+
+	The compositor may ignore move requests depending on the state of the
+	surface, e.g. fullscreen or maximized.
       </description>
     </request>
 

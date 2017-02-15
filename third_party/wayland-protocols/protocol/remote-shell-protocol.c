@@ -89,19 +89,18 @@ static const struct wl_message zcr_remote_surface_v1_requests[] = {
 	{ "unset_system_modal", "", types + 0 },
 	{ "set_rectangular_surface_shadow", "2iiii", types + 0 },
 	{ "ack_configure", "3u", types + 0 },
-	{ "set_moving", "3", types + 0 },
-	{ "unset_moving", "3", types + 0 },
+	{ "move", "3", types + 0 },
 };
 
 static const struct wl_message zcr_remote_surface_v1_events[] = {
 	{ "close", "", types + 0 },
 	{ "state_type_changed", "u", types + 0 },
-	{ "configure", "3iiu", types + 0 },
+	{ "configure", "3iiau", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
 	"zcr_remote_surface_v1", 3,
-	22, zcr_remote_surface_v1_requests,
+	21, zcr_remote_surface_v1_requests,
 	3, zcr_remote_surface_v1_events,
 };
 

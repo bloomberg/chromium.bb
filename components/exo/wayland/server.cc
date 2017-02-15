@@ -1979,11 +1979,7 @@ void remote_surface_ack_configure(wl_client* client,
   NOTIMPLEMENTED();
 }
 
-void remote_surface_set_moving(wl_client* client, wl_resource* resource) {
-  NOTIMPLEMENTED();
-}
-
-void remote_surface_unset_moving(wl_client* client, wl_resource* resource) {
+void remote_surface_move(wl_client* client, wl_resource* resource) {
   NOTIMPLEMENTED();
 }
 
@@ -2008,8 +2004,7 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_unset_system_modal,
     remote_surface_set_rectangular_surface_shadow,
     remote_surface_ack_configure,
-    remote_surface_set_moving,
-    remote_surface_unset_moving};
+    remote_surface_move};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
