@@ -298,6 +298,37 @@ void ImageResourceContent::clearImage() {
   m_sizeAvailable = Image::SizeUnavailable;
 }
 
+// Determines if |response| likely contains the entire resource for the purposes
+// of determining whether or not to show a placeholder, e.g. if the server
+// responded with a full 200 response or if the full image is smaller than the
+// requested range.
+static bool isEntireResource(const ResourceResponse& response) {
+  if (response.httpStatusCode() != 206)
+    return true;
+
+  int64_t firstBytePosition = -1, lastBytePosition = -1, instanceLength = -1;
+  return parseContentRangeHeaderFor206(
+             response.httpHeaderField("Content-Range"), &firstBytePosition,
+             &lastBytePosition, &instanceLength) &&
+         firstBytePosition == 0 && lastBytePosition + 1 == instanceLength;
+}
+
+static bool shouldShowFullImageInsteadOfPlaceholder(
+    const ResourceResponse& response,
+    const Image* image) {
+  if (!isEntireResource(response))
+    return false;
+  if (image && !image->isNull())
+    return true;
+
+  // Don't treat a complete and broken image as a placeholder if the response
+  // code is something other than a 4xx or 5xx error. This is done to prevent
+  // reissuing the request in cases like "204 No Content" responses to tracking
+  // requests triggered by <img> tags, and <img> tags used to preload non-image
+  // resources.
+  return response.httpStatusCode() < 400 || response.httpStatusCode() >= 600;
+}
+
 void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
                                        UpdateImageOption updateImageOption,
                                        bool allDataReceived) {
@@ -337,22 +368,17 @@ void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
       if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
         return;
 
-      if (m_info->isPlaceholder() && allDataReceived && m_image &&
-          !m_image->isNull()) {
-        if (m_sizeAvailable == Image::SizeAvailable) {
-          // TODO(sclittle): Show the original image if the response consists of
-          // the entire image, such as if the entire image response body is
-          // smaller than the requested range.
+      if (m_info->isPlaceholder() && allDataReceived) {
+        if (shouldShowFullImageInsteadOfPlaceholder(response(),
+                                                    m_image.get())) {
+          m_info->setIsPlaceholder(false);
+        } else if (m_image && !m_image->isNull()) {
           IntSize dimensions = m_image->size();
-
           clearImage();
           m_image = PlaceholderImage::create(this, dimensions);
-        } else {
-          // Clear the image so that it gets treated like a decoding error,
-          // since the attempt to build a placeholder image failed.
-          clearImage();
         }
       }
+
       if (!m_image || m_image->isNull()) {
         clearImage();
         m_info->decodeError(allDataReceived);

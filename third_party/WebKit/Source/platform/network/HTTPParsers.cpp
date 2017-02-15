@@ -876,4 +876,13 @@ std::unique_ptr<JSONArray> parseJSONHeader(const String& header,
   return JSONArray::from(std::move(headerValue));
 }
 
+bool parseContentRangeHeaderFor206(const String& contentRange,
+                                   int64_t* firstBytePosition,
+                                   int64_t* lastBytePosition,
+                                   int64_t* instanceLength) {
+  return net::HttpUtil::ParseContentRangeHeaderFor206(
+      StringUTF8Adaptor(contentRange).asStringPiece(), firstBytePosition,
+      lastBytePosition, instanceLength);
+}
+
 }  // namespace blink

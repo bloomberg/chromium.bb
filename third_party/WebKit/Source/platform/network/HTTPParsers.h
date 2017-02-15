@@ -39,6 +39,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
+#include <stdint.h>
 #include <memory>
 
 namespace blink {
@@ -157,6 +158,18 @@ PLATFORM_EXPORT bool parseMultipartHeadersFromBody(const char* bytes,
 // cause an empty return value.
 PLATFORM_EXPORT std::unique_ptr<JSONArray> parseJSONHeader(const String& header,
                                                            int maxParseDepth);
+
+// Extracts the values in a Content-Range header and returns true if all three
+// values are present and valid for a 206 response; otherwise returns false.
+// The following values will be outputted:
+// |*first_byte_position| = inclusive position of the first byte of the range
+// |*last_byte_position| = inclusive position of the last byte of the range
+// |*instance_length| = size in bytes of the object requested
+// If this method returns false, then all of the outputs will be -1.
+PLATFORM_EXPORT bool parseContentRangeHeaderFor206(const String& contentRange,
+                                                   int64_t* firstBytePosition,
+                                                   int64_t* lastBytePosition,
+                                                   int64_t* instanceLength);
 
 }  // namespace blink
 
