@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -444,6 +445,12 @@ bool DisplayInfoProviderChromeOS::SetInfo(
     const std::string& display_id_str,
     const system_display::DisplayProperties& info,
     std::string* error) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    *error = "Not implemented for mash.";
+    return false;
+  }
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ash::DisplayConfigurationController* display_configuration_controller =
@@ -512,6 +519,11 @@ bool DisplayInfoProviderChromeOS::SetInfo(
 
 bool DisplayInfoProviderChromeOS::SetDisplayLayout(
     const DisplayLayoutList& layouts) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return false;
+  }
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   display::DisplayLayoutBuilder builder(
@@ -554,6 +566,11 @@ bool DisplayInfoProviderChromeOS::SetDisplayLayout(
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,
     system_display::DisplayUnitInfo* unit) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return;
+  }
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
@@ -585,12 +602,22 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
 }
 
 void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return;
+  }
   ash::Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
       enable);
 }
 
 DisplayInfoProvider::DisplayUnitInfoList
 DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return DisplayInfoProvider::DisplayUnitInfoList();
+  }
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   if (!display_manager->IsInUnifiedMode())
@@ -614,6 +641,11 @@ DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
 
 DisplayInfoProvider::DisplayLayoutList
 DisplayInfoProviderChromeOS::GetDisplayLayout() {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return DisplayInfoProvider::DisplayLayoutList();
+  }
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
@@ -642,6 +674,11 @@ DisplayInfoProviderChromeOS::GetDisplayLayout() {
 
 bool DisplayInfoProviderChromeOS::OverscanCalibrationStart(
     const std::string& id) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return false;
+  }
   VLOG(1) << "OverscanCalibrationStart: " << id;
   const display::Display display = GetDisplay(id);
   if (display.id() == display::kInvalidDisplayId)
@@ -691,6 +728,11 @@ bool DisplayInfoProviderChromeOS::OverscanCalibrationComplete(
 bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
     const std::string& id, std::string* error,
     const DisplayInfoProvider::TouchCalibrationCallback& callback) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return false;
+  }
   VLOG(1) << "StartNativeTouchCalibration: " << id;
 
   // If a custom calibration is already running, then throw an error.
@@ -712,6 +754,11 @@ bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
 bool DisplayInfoProviderChromeOS::StartCustomTouchCalibration(
     const std::string& id,
     std::string* error) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return false;
+  }
   VLOG(1) << "StartCustomTouchCalibration: " << id;
   const display::Display display = GetDisplay(id);
   if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
@@ -732,6 +779,11 @@ bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
     const api::system_display::TouchCalibrationPairQuad& pairs,
     const api::system_display::Bounds& bounds,
     std::string* error) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    return false;
+  }
   VLOG(1) << "CompleteCustomTouchCalibration: " << touch_calibration_target_id_;
 
   ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
@@ -790,6 +842,12 @@ bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
 
 bool DisplayInfoProviderChromeOS::ClearTouchCalibration(const std::string& id,
                                                         std::string* error) {
+  if (chrome::IsRunningInMash()) {
+    // TODO(crbug.com/682402): Mash support.
+    NOTIMPLEMENTED();
+    *error = "Not implemented for mash.";
+    return false;
+  }
   const display::Display display = GetDisplay(id);
 
   if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
