@@ -1352,42 +1352,42 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to validate input parameters for uniform functions.
   bool validateUniformParameters(const char* functionName,
                                  const WebGLUniformLocation*,
-                                 DOMFloat32Array*,
-                                 GLsizei mod);
-  bool validateUniformParameters(const char* functionName,
-                                 const WebGLUniformLocation*,
-                                 DOMInt32Array*,
-                                 GLsizei mod);
-  bool validateUniformParameters(const char* functionName,
-                                 const WebGLUniformLocation*,
                                  void*,
                                  GLsizei,
-                                 GLsizei mod);
+                                 GLsizei mod,
+                                 GLuint srcOffset,
+                                 GLuint srcLength);
   bool validateUniformMatrixParameters(const char* functionName,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        DOMFloat32Array*,
-                                       GLsizei mod);
+                                       GLsizei mod,
+                                       GLuint srcOffset,
+                                       GLuint srcLength);
   bool validateUniformMatrixParameters(const char* functionName,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        void*,
                                        GLsizei,
-                                       GLsizei mod);
+                                       GLsizei mod,
+                                       GLuint srcOffset,
+                                       GLuint srcLength);
 
   template <typename WTFTypedArray>
   bool validateUniformParameters(
       const char* functionName,
       const WebGLUniformLocation* location,
       const TypedFlexibleArrayBufferView<WTFTypedArray>& v,
-      GLsizei requiredMinSize) {
+      GLsizei requiredMinSize,
+      GLuint srcOffset,
+      GLuint srcLength) {
     if (!v.dataMaybeOnStack()) {
       synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
       return false;
     }
-    return validateUniformMatrixParameters(functionName, location, false,
-                                           v.dataMaybeOnStack(), v.length(),
-                                           requiredMinSize);
+    return validateUniformMatrixParameters(
+        functionName, location, false, v.dataMaybeOnStack(), v.length(),
+        requiredMinSize, srcOffset, srcLength);
   }
 
   // Helper function to validate the target for bufferData and

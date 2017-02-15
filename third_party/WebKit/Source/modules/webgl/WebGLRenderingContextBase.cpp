@@ -5646,7 +5646,7 @@ void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
   if (isContextLost() ||
       !validateUniformParameters<WTF::Float32Array>("uniform1fv", location, v,
-                                                    1))
+                                                    1, 0, v.length()))
     return;
 
   contextGL()->Uniform1fv(location->location(), v.length(),
@@ -5656,7 +5656,8 @@ void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location,
                                            Vector<GLfloat>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform1fv", location, v.data(), v.size(), 1))
+      !validateUniformParameters("uniform1fv", location, v.data(), v.size(), 1,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform1fv(location->location(), v.size(), v.data());
@@ -5679,7 +5680,8 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
   if (isContextLost() ||
-      !validateUniformParameters<WTF::Int32Array>("uniform1iv", location, v, 1))
+      !validateUniformParameters<WTF::Int32Array>("uniform1iv", location, v, 1,
+                                                  0, v.length()))
     return;
 
   contextGL()->Uniform1iv(location->location(), v.length(),
@@ -5689,7 +5691,8 @@ void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location,
                                            Vector<GLint>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform1iv", location, v.data(), v.size(), 1))
+      !validateUniformParameters("uniform1iv", location, v.data(), v.size(), 1,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform1iv(location->location(), v.size(), v.data());
@@ -5714,7 +5717,7 @@ void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
   if (isContextLost() ||
       !validateUniformParameters<WTF::Float32Array>("uniform2fv", location, v,
-                                                    2))
+                                                    2, 0, v.length()))
     return;
 
   contextGL()->Uniform2fv(location->location(), v.length() >> 1,
@@ -5724,7 +5727,8 @@ void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
                                            Vector<GLfloat>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform2fv", location, v.data(), v.size(), 2))
+      !validateUniformParameters("uniform2fv", location, v.data(), v.size(), 2,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform2fv(location->location(), v.size() >> 1, v.data());
@@ -5748,7 +5752,8 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
   if (isContextLost() ||
-      !validateUniformParameters<WTF::Int32Array>("uniform2iv", location, v, 2))
+      !validateUniformParameters<WTF::Int32Array>("uniform2iv", location, v, 2,
+                                                  0, v.length()))
     return;
 
   contextGL()->Uniform2iv(location->location(), v.length() >> 1,
@@ -5758,7 +5763,8 @@ void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
                                            Vector<GLint>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform2iv", location, v.data(), v.size(), 2))
+      !validateUniformParameters("uniform2iv", location, v.data(), v.size(), 2,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform2iv(location->location(), v.size() >> 1, v.data());
@@ -5784,7 +5790,7 @@ void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
   if (isContextLost() ||
       !validateUniformParameters<WTF::Float32Array>("uniform3fv", location, v,
-                                                    3))
+                                                    3, 0, v.length()))
     return;
 
   contextGL()->Uniform3fv(location->location(), v.length() / 3,
@@ -5794,7 +5800,8 @@ void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location,
                                            Vector<GLfloat>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform3fv", location, v.data(), v.size(), 3))
+      !validateUniformParameters("uniform3fv", location, v.data(), v.size(), 3,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform3fv(location->location(), v.size() / 3, v.data());
@@ -5819,7 +5826,8 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
   if (isContextLost() ||
-      !validateUniformParameters<WTF::Int32Array>("uniform3iv", location, v, 3))
+      !validateUniformParameters<WTF::Int32Array>("uniform3iv", location, v, 3,
+                                                  0, v.length()))
     return;
 
   contextGL()->Uniform3iv(location->location(), v.length() / 3,
@@ -5829,7 +5837,8 @@ void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location,
                                            Vector<GLint>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform3iv", location, v.data(), v.size(), 3))
+      !validateUniformParameters("uniform3iv", location, v.data(), v.size(), 3,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform3iv(location->location(), v.size() / 3, v.data());
@@ -5856,7 +5865,7 @@ void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
   if (isContextLost() ||
       !validateUniformParameters<WTF::Float32Array>("uniform4fv", location, v,
-                                                    4))
+                                                    4, 0, v.length()))
     return;
 
   contextGL()->Uniform4fv(location->location(), v.length() >> 2,
@@ -5866,7 +5875,8 @@ void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
                                            Vector<GLfloat>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform4fv", location, v.data(), v.size(), 4))
+      !validateUniformParameters("uniform4fv", location, v.data(), v.size(), 4,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform4fv(location->location(), v.size() >> 2, v.data());
@@ -5892,7 +5902,8 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
   if (isContextLost() ||
-      !validateUniformParameters<WTF::Int32Array>("uniform4iv", location, v, 4))
+      !validateUniformParameters<WTF::Int32Array>("uniform4iv", location, v, 4,
+                                                  0, v.length()))
     return;
 
   contextGL()->Uniform4iv(location->location(), v.length() >> 2,
@@ -5902,7 +5913,8 @@ void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
                                            Vector<GLint>& v) {
   if (isContextLost() ||
-      !validateUniformParameters("uniform4iv", location, v.data(), v.size(), 4))
+      !validateUniformParameters("uniform4iv", location, v.data(), v.size(), 4,
+                                 0, v.size()))
     return;
 
   contextGL()->Uniform4iv(location->location(), v.size() >> 2, v.data());
@@ -5914,7 +5926,7 @@ void WebGLRenderingContextBase::uniformMatrix2fv(
     DOMFloat32Array* v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose,
-                                       v, 4))
+                                       v, 4, 0, v->length()))
     return;
   contextGL()->UniformMatrix2fv(location->location(), v->length() >> 2,
                                 transpose, v->data());
@@ -5926,7 +5938,7 @@ void WebGLRenderingContextBase::uniformMatrix2fv(
     Vector<GLfloat>& v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose,
-                                       v.data(), v.size(), 4))
+                                       v.data(), v.size(), 4, 0, v.size()))
     return;
   contextGL()->UniformMatrix2fv(location->location(), v.size() >> 2, transpose,
                                 v.data());
@@ -5938,7 +5950,7 @@ void WebGLRenderingContextBase::uniformMatrix3fv(
     DOMFloat32Array* v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix3fv", location, transpose,
-                                       v, 9))
+                                       v, 9, 0, v->length()))
     return;
   contextGL()->UniformMatrix3fv(location->location(), v->length() / 9,
                                 transpose, v->data());
@@ -5950,7 +5962,7 @@ void WebGLRenderingContextBase::uniformMatrix3fv(
     Vector<GLfloat>& v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix3fv", location, transpose,
-                                       v.data(), v.size(), 9))
+                                       v.data(), v.size(), 9, 0, v.size()))
     return;
   contextGL()->UniformMatrix3fv(location->location(), v.size() / 9, transpose,
                                 v.data());
@@ -5962,7 +5974,7 @@ void WebGLRenderingContextBase::uniformMatrix4fv(
     DOMFloat32Array* v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose,
-                                       v, 16))
+                                       v, 16, 0, v->length()))
     return;
   contextGL()->UniformMatrix4fv(location->location(), v->length() >> 4,
                                 transpose, v->data());
@@ -5974,7 +5986,7 @@ void WebGLRenderingContextBase::uniformMatrix4fv(
     Vector<GLfloat>& v) {
   if (isContextLost() ||
       !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose,
-                                       v.data(), v.size(), 16))
+                                       v.data(), v.size(), 16, 0, v.size()))
     return;
   contextGL()->UniformMatrix4fv(location->location(), v.size() >> 4, transpose,
                                 v.data());
@@ -7159,37 +7171,13 @@ bool WebGLRenderingContextBase::validateCapability(const char* functionName,
 bool WebGLRenderingContextBase::validateUniformParameters(
     const char* functionName,
     const WebGLUniformLocation* location,
-    DOMFloat32Array* v,
-    GLsizei requiredMinSize) {
-  if (!v) {
-    synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
-    return false;
-  }
-  return validateUniformMatrixParameters(
-      functionName, location, false, v->data(), v->length(), requiredMinSize);
-}
-
-bool WebGLRenderingContextBase::validateUniformParameters(
-    const char* functionName,
-    const WebGLUniformLocation* location,
-    DOMInt32Array* v,
-    GLsizei requiredMinSize) {
-  if (!v) {
-    synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
-    return false;
-  }
-  return validateUniformMatrixParameters(
-      functionName, location, false, v->data(), v->length(), requiredMinSize);
-}
-
-bool WebGLRenderingContextBase::validateUniformParameters(
-    const char* functionName,
-    const WebGLUniformLocation* location,
     void* v,
     GLsizei size,
-    GLsizei requiredMinSize) {
+    GLsizei requiredMinSize,
+    GLuint srcOffset,
+    GLuint srcLength) {
   return validateUniformMatrixParameters(functionName, location, false, v, size,
-                                         requiredMinSize);
+                                         requiredMinSize, srcOffset, srcLength);
 }
 
 bool WebGLRenderingContextBase::validateUniformMatrixParameters(
@@ -7197,14 +7185,16 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(
     const WebGLUniformLocation* location,
     GLboolean transpose,
     DOMFloat32Array* v,
-    GLsizei requiredMinSize) {
+    GLsizei requiredMinSize,
+    GLuint srcOffset,
+    GLuint srcLength) {
   if (!v) {
     synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
     return false;
   }
   return validateUniformMatrixParameters(functionName, location, transpose,
                                          v->data(), v->length(),
-                                         requiredMinSize);
+                                         requiredMinSize, srcOffset, srcLength);
 }
 
 bool WebGLRenderingContextBase::validateUniformMatrixParameters(
@@ -7213,7 +7203,10 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(
     GLboolean transpose,
     void* v,
     GLsizei size,
-    GLsizei requiredMinSize) {
+    GLsizei requiredMinSize,
+    GLuint srcOffset,
+    GLuint srcLength) {
+  DCHECK(size >= 0 && requiredMinSize > 0);
   if (!location)
     return false;
   if (location->program() != m_currentProgram) {
@@ -7229,7 +7222,20 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(
     synthesizeGLError(GL_INVALID_VALUE, functionName, "transpose not FALSE");
     return false;
   }
-  if (size < requiredMinSize || (size % requiredMinSize)) {
+  if (srcOffset >= static_cast<GLuint>(size)) {
+    synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid srcOffset");
+    return false;
+  }
+  GLsizei actualSize = size - srcOffset;
+  if (srcLength > 0) {
+    if (srcLength > static_cast<GLuint>(actualSize)) {
+      synthesizeGLError(GL_INVALID_VALUE, functionName,
+                        "invalid srcOffset + srcLength");
+      return false;
+    }
+    actualSize = srcLength;
+  }
+  if (actualSize < requiredMinSize || (actualSize % requiredMinSize)) {
     synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid size");
     return false;
   }
