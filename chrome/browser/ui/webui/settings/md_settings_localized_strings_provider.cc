@@ -330,6 +330,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothDisconnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT},
       {"bluetoothDismiss", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR},
       {"bluetoothEnabled", IDS_SETTINGS_BLUETOOTH_ENABLED},
+      {"bluetoothToggleA11yLabel",
+       IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL},
       {"bluetoothExpandA11yLabel",
        IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL},
       {"bluetoothNoDevices", IDS_SETTINGS_BLUETOOTH_NO_DEVICES},

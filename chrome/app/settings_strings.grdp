@@ -500,6 +500,9 @@
     <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for Bluetooth section when disabled.">
       Disabled
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle .">
+      Bluetooth enable
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
       Show available Bluetooth devices
     </message>
