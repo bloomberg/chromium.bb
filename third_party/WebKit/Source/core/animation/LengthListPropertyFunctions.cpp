@@ -41,15 +41,12 @@ FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style) {
 
 struct FillLayerMethods {
   FillLayerMethods(CSSPropertyID property) {
-    isSet = nullptr;
-    getLength = nullptr;
-    setLength = nullptr;
-    clear = nullptr;
     switch (property) {
       case CSSPropertyBackgroundPositionX:
       case CSSPropertyWebkitMaskPositionX:
         isSet = &FillLayer::isXPositionSet;
         getLength = &FillLayer::xPosition;
+        getEdge = &FillLayer::backgroundXOrigin;
         setLength = &FillLayer::setXPosition;
         clear = &FillLayer::clearXPosition;
         break;
@@ -57,6 +54,7 @@ struct FillLayerMethods {
       case CSSPropertyWebkitMaskPositionY:
         isSet = &FillLayer::isYPositionSet;
         getLength = &FillLayer::yPosition;
+        getEdge = &FillLayer::backgroundYOrigin;
         setLength = &FillLayer::setYPosition;
         clear = &FillLayer::clearYPosition;
         break;
@@ -66,10 +64,11 @@ struct FillLayerMethods {
     }
   }
 
-  bool (FillLayer::*isSet)() const;
-  const Length& (FillLayer::*getLength)() const;
-  void (FillLayer::*setLength)(const Length&);
-  void (FillLayer::*clear)();
+  bool (FillLayer::*isSet)() const = nullptr;
+  const Length& (FillLayer::*getLength)() const = nullptr;
+  BackgroundEdgeOrigin (FillLayer::*getEdge)() const = nullptr;
+  void (FillLayer::*setLength)(const Length&) = nullptr;
+  void (FillLayer::*clear)() = nullptr;
 };
 
 }  // namespace
@@ -164,6 +163,14 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property,
       FillLayerMethods fillLayerMethods(property);
       while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
         result.push_back((fillLayer->*fillLayerMethods.getLength)());
+        switch ((fillLayer->*fillLayerMethods.getEdge)()) {
+          case RightEdge:
+          case BottomEdge:
+            result.back() = result.back().subtractFromOneHundredPercent();
+            break;
+          default:
+            break;
+        }
         fillLayer = fillLayer->next();
       }
       return true;
