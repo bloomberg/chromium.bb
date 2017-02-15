@@ -1088,6 +1088,7 @@ source_set("unit_tests") {
     "events/TouchEventTest.cpp",
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
+    "frame/DOMTimerTest.cpp",
     "frame/FeaturePolicyInFrameTest.cpp",
     "frame/FrameViewTest.cpp",
     "frame/HistoryTest.cpp",

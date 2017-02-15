@@ -159,6 +159,9 @@ void DOMTimer::fired() {
 
     // No access to member variables after this point, it can delete the timer.
     m_action->execute(context);
+
+    context->timers()->setTimerNestingLevel(0);
+
     return;
   }
 
