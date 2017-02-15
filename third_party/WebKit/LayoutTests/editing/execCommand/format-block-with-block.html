@@ -1,32 +1,44 @@
-<!DOCTYPE html>
-<html>
-<body>
-<script src="../../resources/dump-as-markup.js"></script>
-<div id="testBlock" contenteditable>
-<div style="color: green">hello</div>
-</div>
-<div id="testBlockWithBR" contenteditable>
-<div style="color: green"><br></div>
-</div>
-<div id="testInline" contenteditable>
-<span style="color: green">hello</span>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function verify(id)
-{
-    var testElement = document.getElementById(id);
-    window.getSelection().selectAllChildren(testElement);
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<div style="color: green">hello</div>|',
+    '</div>',
+  ].join(''),
+  'formatBlock h1',
+  [
+    '<div contenteditable>',
+      '<h1 style="color: green">^hello|</h1>',
+    '</div>',
+  ].join('')), 'Block');
 
-    Markup.dump(testElement, 'Before FormatBlock');
-    document.execCommand('FormatBlock', false, 'h1');
-    Markup.dump(testElement, 'After FormatBlock');
-}
-Markup.description("This test verifies that formatBlock adds the containing block element's inline style to the block-style element that replaces it.");
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<div style="color: green"><br></div>|',
+    '</div>',
+  ].join(''),
+  'formatBlock h1',
+  [
+    '<div contenteditable>',
+      '<h1 style="color: green">|<br></h1>',
+    '</div>',
+  ].join('')), 'Block with BR');
 
-verify("testBlock");
-verify("testBlockWithBR");
-verify("testInline");
-    
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<span style="color: green">hello</span>|',
+    '</div>',
+  ].join(''),
+  'formatBlock h1',
+  [
+    '<div contenteditable>',
+      '<h1><span style="color: green">^hello|</span></h1>',
+    '</div>',
+  ].join('')), 'Inline');
 </script>
-</body>
-</html>
