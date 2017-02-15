@@ -1081,6 +1081,18 @@ bool LocationBarView::GetBookmarkStarVisibility() {
   return star_view_->visible();
 }
 
+bool LocationBarView::TestContentSettingImagePressed(size_t index) {
+  if (index >= content_setting_views_.size())
+    return false;
+
+  // This up-cast is necessary since the descendant class moved OnKeyPressed
+  // to the protected section.
+  views::View* image_view = content_setting_views_[index];
+  image_view->OnKeyReleased(
+      ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE));
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private views::View implementation:
 

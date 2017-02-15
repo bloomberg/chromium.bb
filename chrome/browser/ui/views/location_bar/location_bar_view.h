@@ -360,6 +360,7 @@ class LocationBarView : public LocationBar,
   ExtensionAction* GetVisiblePageAction(size_t index) override;
   void TestPageActionPressed(size_t index) override;
   bool GetBookmarkStarVisibility() override;
+  bool TestContentSettingImagePressed(size_t index) override;
 
   // views::View:
   const char* GetClassName() const override;

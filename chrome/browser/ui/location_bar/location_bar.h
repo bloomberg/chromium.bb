@@ -129,6 +129,10 @@ class LocationBarTesting {
   // Returns whether or not the bookmark star decoration is visible.
   virtual bool GetBookmarkStarVisibility() = 0;
 
+  // Invokes the content setting image at |index|, displaying the bubble.
+  // Returns false if there is none.
+  virtual bool TestContentSettingImagePressed(size_t index) = 0;
+
  protected:
   virtual ~LocationBarTesting() {}
 };

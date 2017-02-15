@@ -92,7 +92,6 @@ class ContentSettingMIDISysExImageModel
   ContentSettingMIDISysExImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMIDISysExImageModel);
 };
@@ -125,6 +124,24 @@ const ContentSettingsImageDetails kImageDetails[] = {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
      gfx::VectorIconId::FILE_DOWNLOAD, IDS_BLOCKED_DOWNLOAD_TITLE,
      IDS_BLOCKED_DOWNLOADS_EXPLANATION, IDS_ALLOWED_DOWNLOAD_TITLE},
+};
+
+// The ordering of the models here influences the order in which icons are
+// shown in the omnibox.
+constexpr ContentSettingsType kContentTypeIconOrder[] = {
+    CONTENT_SETTINGS_TYPE_COOKIES,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+    CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,  // Note: also handles mic.
+    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
 
 const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
@@ -525,33 +542,46 @@ ContentSettingImageModel::ContentSettingImageModel()
 std::vector<std::unique_ptr<ContentSettingImageModel>>
 ContentSettingImageModel::GenerateContentSettingImageModels() {
   std::vector<std::unique_ptr<ContentSettingImageModel>> result;
+  std::unique_ptr<ContentSettingImageModel> model;
 
-  // The ordering of the models here influences the order in which icons are
-  // shown in the omnibox.
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_COOKIES));
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_IMAGES));
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_PLUGINS));
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_POPUPS));
-  result.push_back(base::MakeUnique<ContentSettingGeolocationImageModel>());
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
-  result.push_back(base::MakeUnique<ContentSettingRPHImageModel>());
-  result.push_back(base::MakeUnique<ContentSettingMediaImageModel>());
-  result.push_back(
-      base::MakeUnique<ContentSettingSubresourceFilterImageModel>());
-  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
-  result.push_back(base::MakeUnique<ContentSettingMIDISysExImageModel>());
-
+  for (auto icon : kContentTypeIconOrder) {
+    switch (icon) {
+      case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+        model = base::MakeUnique<ContentSettingGeolocationImageModel>();
+        break;
+      case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+        model = base::MakeUnique<ContentSettingRPHImageModel>();
+        break;
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+        model = base::MakeUnique<ContentSettingMediaImageModel>();
+        break;
+      case CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER:
+        model = base::MakeUnique<ContentSettingSubresourceFilterImageModel>();
+        break;
+      case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+        model = base::MakeUnique<ContentSettingMIDISysExImageModel>();
+        break;
+      default:
+        // All other content settings types use ContentSettingBlockedImageModel.
+        model = base::MakeUnique<ContentSettingBlockedImageModel>(icon);
+        break;
+    }
+    result.push_back(std::move(model));
+  }
   return result;
+}
+
+// static
+size_t ContentSettingImageModel::GetContentSettingImageModelIndexForTesting(
+    ContentSettingsType content_type) {
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+    content_type = CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+  for (size_t i = 0; i < arraysize(kContentTypeIconOrder); ++i) {
+    if (content_type == kContentTypeIconOrder[i])
+      return i;
+  }
+  NOTREACHED();
+  return arraysize(kContentTypeIconOrder);
 }
 
 #if defined(OS_MACOSX)

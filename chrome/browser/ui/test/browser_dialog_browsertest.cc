@@ -8,6 +8,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_switches.h"
 
@@ -66,6 +67,16 @@ TEST(BrowserDialogTest, Invoke) {
     command.AppendSwitchASCII(switches::kTestLauncherTimeout,
                               TestTimeouts::kNoTimeoutSwitchValue);
     command.AppendSwitch(switches::kEnablePixelOutputInTests);
+#if defined(OS_WIN)
+    // Under Windows, the child process won't launch without the wait option.
+    // See http://crbug.com/688534.
+    options.wait = true;
+    // Under Windows, dialogs (but not the browser window) created in the
+    // spawned browser_test process are invisible for some unknown reason.
+    // Pass in --disable-gpu to resolve this for now. See
+    // http://crbug.com/687387.
+    command.AppendSwitch(switches::kDisableGpu);
+#endif
   } else {
     options.wait = true;
   }

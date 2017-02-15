@@ -31,6 +31,11 @@ class ContentSettingImageModel {
   static std::vector<std::unique_ptr<ContentSettingImageModel>>
   GenerateContentSettingImageModels();
 
+  // Returns the corresponding index into the above vector for the given
+  // ContentSettingsType. For testing.
+  static size_t GetContentSettingImageModelIndexForTesting(
+      ContentSettingsType content_type);
+
   // Notifies this model that its setting might have changed and it may need to
   // update its visibility, icon and tooltip.
   virtual void UpdateFromWebContents(content::WebContents* web_contents) = 0;

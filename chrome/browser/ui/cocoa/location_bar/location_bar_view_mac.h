@@ -83,6 +83,7 @@ class LocationBarViewMac : public LocationBar,
   ExtensionAction* GetVisiblePageAction(size_t index) override;
   void TestPageActionPressed(size_t index) override;
   bool GetBookmarkStarVisibility() override;
+  bool TestContentSettingImagePressed(size_t index) override;
 
   // Set/Get the editable state of the field.
   void SetEditable(bool editable);

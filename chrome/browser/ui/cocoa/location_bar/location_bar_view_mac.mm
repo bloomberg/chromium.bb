@@ -332,6 +332,19 @@ bool LocationBarViewMac::GetBookmarkStarVisibility() {
   return star_decoration_->IsVisible();
 }
 
+bool LocationBarViewMac::TestContentSettingImagePressed(size_t index) {
+  if (index >= content_setting_decorations_.size())
+    return false;
+
+  // TODO(tapted): Use OnAccessibilityViewAction() here. Currently it's broken.
+  ContentSettingDecoration* decoration =
+      content_setting_decorations_[index].get();
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
+  decoration->OnMousePressed(frame, NSZeroPoint);
+  return true;
+}
+
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateBookmarkStarVisibility();
