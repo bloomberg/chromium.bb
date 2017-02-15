@@ -207,9 +207,8 @@ class PopularSitesFactoryForTest {
         url_request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         worker_pool_owner_(/*max_threads=*/2, "PopularSitesFactoryForTest.") {
+    PopularSitesImpl::RegisterProfilePrefs(pref_service->registry());
     if (enabled) {
-      PopularSitesImpl::RegisterProfilePrefs(pref_service->registry());
-
       prefs_->SetString(prefs::kPopularSitesOverrideCountry, "IN");
       prefs_->SetString(prefs::kPopularSitesOverrideVersion, "7");
 

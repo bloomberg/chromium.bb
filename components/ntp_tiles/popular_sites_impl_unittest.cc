@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
@@ -22,6 +23,7 @@
 #include "base/values.h"
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/pref_names.h"
+#include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
@@ -53,6 +55,14 @@ using TestPopularSiteVector = std::vector<TestPopularSite>;
   return ::testing::Eq(GURL(s));
 }
 
+size_t GetNumberOfDefaultPopularSitesForPlatform() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return 8ul;
+#else
+  return 0;
+#endif
+}
+
 class PopularSitesTest : public ::testing::Test {
  protected:
   PopularSitesTest()
@@ -73,6 +83,8 @@ class PopularSitesTest : public ::testing::Test {
         },
         worker_pool_owner_(2, "PopularSitesTest."),
         url_fetcher_factory_(nullptr) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableNTPPopularSites);
     PopularSitesImpl::RegisterProfilePrefs(prefs_.registry());
     CHECK(scoped_cache_dir_.CreateUniqueTempDir());
     cache_dir_ = scoped_cache_dir_.GetPath();
@@ -117,15 +129,12 @@ class PopularSitesTest : public ::testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()));
-    PopularSitesImpl popular_sites(worker_pool_owner_.pool().get(), &prefs_,
-                                   /*template_url_service=*/nullptr,
-                                   /*variations_service=*/nullptr,
-                                   url_request_context.get(), cache_dir_,
-                                   base::Bind(JsonUnsafeParser::Parse));
+    std::unique_ptr<PopularSites> popular_sites =
+        CreatePopularSites(url_request_context.get());
 
     base::RunLoop loop;
     base::Optional<bool> save_success;
-    if (popular_sites.MaybeStartFetch(
+    if (popular_sites->MaybeStartFetch(
             force_download, base::Bind(
                                 [](base::Optional<bool>* save_success,
                                    base::RunLoop* loop, bool success) {
@@ -135,8 +144,17 @@ class PopularSitesTest : public ::testing::Test {
                                 &save_success, &loop))) {
       loop.Run();
     }
-    *sites = popular_sites.sites();
+    *sites = popular_sites->sites();
     return save_success;
+  }
+
+  std::unique_ptr<PopularSites> CreatePopularSites(
+      net::URLRequestContextGetter* context) {
+    return base::MakeUnique<PopularSitesImpl>(
+        worker_pool_owner_.pool().get(), &prefs_,
+        /*template_url_service=*/nullptr,
+        /*variations_service=*/nullptr, context, cache_dir_,
+        base::Bind(JsonUnsafeParser::Parse));
   }
 
   const TestPopularSite kWikipedia;
@@ -169,6 +187,15 @@ TEST_F(PopularSitesTest, Basic) {
   EXPECT_THAT(sites[0].favicon_url, URLEq(""));
 }
 
+TEST_F(PopularSitesTest, ContainsDefaultTilesRightAfterConstruction) {
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+
+  EXPECT_THAT(CreatePopularSites(url_request_context.get())->sites().size(),
+              Eq(GetNumberOfDefaultPopularSitesForPlatform()));
+}
+
 TEST_F(PopularSitesTest, Fallback) {
   SetCountryAndVersion("ZZ", "9");
   RespondWith404(
@@ -194,7 +221,7 @@ TEST_F(PopularSitesTest, Fallback) {
               URLEq("https://www.chromium.org/favicon.ico"));
 }
 
-TEST_F(PopularSitesTest, Failure) {
+TEST_F(PopularSitesTest, PopulatesWithDefaultResoucesOnFailure) {
   SetCountryAndVersion("ZZ", "9");
   RespondWith404(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json");
@@ -204,7 +231,43 @@ TEST_F(PopularSitesTest, Failure) {
   PopularSites::SitesVector sites;
   EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
               Eq(base::Optional<bool>(false)));
-  ASSERT_THAT(sites, IsEmpty());
+  EXPECT_THAT(sites.size(), Eq(GetNumberOfDefaultPopularSitesForPlatform()));
+}
+
+TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {
+  SetCountryAndVersion("ZZ", "9");
+  RespondWithJSON(
+      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
+      {kWikipedia});
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<PopularSites> popular_sites =
+      CreatePopularSites(url_request_context.get());
+
+  base::RunLoop loop;
+  base::Optional<bool> save_success = false;
+
+  bool callback_was_scheduled = popular_sites->MaybeStartFetch(
+      /*force_download=*/true, base::Bind(
+                                   [](base::Optional<bool>* save_success,
+                                      base::RunLoop* loop, bool success) {
+                                     save_success->emplace(success);
+                                     loop->Quit();
+                                   },
+                                   &save_success, &loop));
+
+  // Assert that callback was scheduled so we can wait for its completion.
+  ASSERT_TRUE(callback_was_scheduled);
+  // There should be 8 default sites as nothing was fetched yet.
+  EXPECT_THAT(popular_sites->sites().size(),
+              Eq(GetNumberOfDefaultPopularSitesForPlatform()));
+
+  loop.Run();  // Wait for the fetch to finish and the callback to return.
+
+  EXPECT_TRUE(save_success.value());
+  // The 1 fetched site should replace the default sites.
+  EXPECT_THAT(popular_sites->sites().size(), Eq(1ul));
 }
 
 TEST_F(PopularSitesTest, ClearsCacheFileFromOldVersions) {

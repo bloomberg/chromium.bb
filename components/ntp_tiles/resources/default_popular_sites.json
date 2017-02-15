@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Facebook - Log In or Sign Up",
+    "url": "https://m.facebook.com/",
+    "large_icon_url": "https://static.xx.fbcdn.net/rsrc.php/v3/ya/r/O2aKM2iSbOw.png"
+  },
+  {
+    "title": "YouTube",
+    "url": "https://m.youtube.com/",
+    "large_icon_url": "https://s.ytimg.com/yts/mobile/img/apple-touch-icon-144x144-precomposed-vflwq-hLZ.png"
+  },
+  {
+    "title": "Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs \u0026 more",
+    "url": "https://www.amazon.com/",
+    "large_icon_url": "https://images-na.ssl-images-amazon.com/images/G/01/anywhere/a_smile_196x196._CB368246573_.png"
+  },
+  {
+    "title": "Wikipedia, the free encyclopedia",
+    "url": "https://en.m.wikipedia.org/",
+    "large_icon_url": "https://en.m.wikipedia.org/static/apple-touch/wikipedia.png"
+  },
+  {
+    "title": "ESPN: The Worldwide Leader in Sports",
+    "url": "http://www.espn.com/",
+    "large_icon_url": "http://a.espncdn.com/wireless/mw5/r1/images/bookmark-icons/espn_icon-152x152.min.png"
+  },
+  {
+    "title": "Yahoo",
+    "url": "https://www.yahoo.com/",
+    "large_icon_url": "https://s.yimg.com/dh/ap/default/130909/y_200_a.png"
+  },
+  {
+    "title": "Instagram",
+    "url": "https://www.instagram.com/",
+    "large_icon_url": "https://instagramstatic-a.akamaihd.net/h1/images/ico/favicon-192.png/b407fa101800.png"
+  },
+  {
+    "title": "Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay",
+    "url": "http://m.ebay.com/",
+    "large_icon_url": "http://ir.ebaystatic.com/pictures/aw/pics/mobile/images/apple-touch-icon.png"
+  }
+]

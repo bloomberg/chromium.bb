@@ -53,10 +53,12 @@ static_library("ntp_tiles") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/rappor/public",
+    "//components/resources",
     "//components/search_engines",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/service",
+    "//ui/base",
   ]
 
   if (is_android) {

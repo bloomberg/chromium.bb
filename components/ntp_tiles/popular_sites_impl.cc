@@ -19,6 +19,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -29,6 +30,12 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "base/json/json_reader.h"
+#include "components/grit/components_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#endif
 
 #if defined(OS_IOS)
 #include "components/ntp_tiles/country_code_ios.h"
@@ -125,6 +132,19 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
   return sites;
 }
 
+// Creates the list of popular sites based on a snapshot available for mobile.
+std::unique_ptr<base::ListValue> DefaultPopularSites() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  std::unique_ptr<base::ListValue> sites =
+      base::ListValue::From(base::JSONReader().ReadToValue(
+          ResourceBundle::GetSharedInstance().GetRawDataResource(
+              IDR_DEFAULT_POPULAR_SITES_JSON)));
+  DCHECK(sites);
+  return sites;
+#endif
+  return base::MakeUnique<base::ListValue>();
+}
+
 }  // namespace
 
 PopularSites::Site::Site(const base::string16& title,
@@ -158,6 +178,7 @@ PopularSitesImpl::PopularSitesImpl(
       download_context_(download_context),
       parse_json_(std::move(parse_json)),
       is_fallback_(false),
+      sites_(ParseSiteList(*prefs->GetList(kPopularSitesJsonPref))),
       weak_ptr_factory_(this) {
   // If valid path provided, remove local files created by older versions.
   if (!directory.empty() && blocking_runner_) {
@@ -194,17 +215,7 @@ bool PopularSitesImpl::MaybeStartFetch(bool force_download,
     FetchPopularSites();
     return true;
   }
-
-  const base::ListValue* json = prefs_->GetList(kPopularSitesJsonPref);
-  if (!json) {
-    // Cache didn't exist.
-    FetchPopularSites();
-    return true;
-  } else {
-    // Note that we don't run the callback.
-    sites_ = ParseSiteList(*json);
-    return false;
-  }
+  return false;
 }
 
 const PopularSites::SitesVector& PopularSitesImpl::sites() const {
@@ -289,7 +300,8 @@ void PopularSitesImpl::RegisterProfilePrefs(
 
   user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
   user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
-  user_prefs->RegisterListPref(kPopularSitesJsonPref);
+  user_prefs->RegisterListPref(kPopularSitesJsonPref,
+                               DefaultPopularSites().release());
 }
 
 void PopularSitesImpl::FetchPopularSites() {

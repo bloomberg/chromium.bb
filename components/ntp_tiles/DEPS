@@ -3,6 +3,7 @@ include_rules = [
   "+components/favicon",
   "+components/favicon_base",
   "+components/google/core/browser",
+  "+components/grit",
   "+components/image_fetcher",
   "+components/history/core/browser",
   "+components/pref_registry",
@@ -16,4 +17,5 @@ include_rules = [
   "+jni",
   "+net",
   "+ui/gfx",
+  "+ui/base/resource",
 ]

@@ -337,7 +337,8 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   size_t num_popular_sites_tiles = num_sites_ - num_tiles;
   NTPTilesVector popular_sites_tiles;
 
-  if (num_popular_sites_tiles > 0 && popular_sites_) {
+  if (num_popular_sites_tiles > 0 && popular_sites_ &&
+      ShouldShowPopularSites()) {
     std::set<std::string> hosts;
     for (const auto& tile : personal_tiles)
       hosts.insert(tile.url.host());
@@ -417,9 +418,6 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
     LOG(WARNING) << "Download of popular sites failed";
     return;
   }
-
-  // Re-build the tile list. Once done, this will notify the observer.
-  BuildCurrentTiles();
 }
 
 void MostVisitedSites::OnIconMadeAvailable(const GURL& site_url,
