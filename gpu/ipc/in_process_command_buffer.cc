@@ -465,6 +465,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     sync_point_order_data_ = nullptr;
   }
   gl_share_group_ = nullptr;
+  context_group_ = nullptr;
 
   base::AutoLock lock(task_queue_lock_);
   std::queue<std::unique_ptr<GpuTask>> empty;
