@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/time_zone_monitor/android/time_zone_monitor_jni_registrar.h"
+#include "services/device/time_zone_monitor/android/time_zone_monitor_jni_registrar.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "device/time_zone_monitor/time_zone_monitor_android.h"
+#include "services/device/time_zone_monitor/time_zone_monitor_android.h"
 
 namespace device {
 namespace android {

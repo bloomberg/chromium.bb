@@ -55,7 +55,6 @@ template("implement_content_app") {
       "//device/geolocation",
       "//device/power_save_blocker",
       "//device/sensors",
-      "//device/time_zone_monitor",
       "//device/usb",
       "//device/vibration",
       "//gpu",

@@ -5,6 +5,10 @@
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("lib") {
   sources = [
     "device_service.cc",
@@ -13,17 +17,17 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//device/time_zone_monitor",
     "//services/device/power_monitor",
+    "//services/device/time_zone_monitor",
     "//services/service_manager/public/cpp",
   ]
 
-  public_deps = [
-    # TODO(blundell): This dep shouldn't be necessary at all,
-    # but content_shell fails to link in the component build if
-    # this isn't here as a public_dep.
-    "//device/time_zone_monitor/public/interfaces",
-  ]
+  if (is_android) {
+    sources += [
+      "//services/device/android/register_jni.cc",
+      "//services/device/android/register_jni.h",
+    ]
+  }
 }
 
 source_set("tests") {
@@ -47,4 +51,13 @@ source_set("tests") {
 service_manifest("manifest") {
   name = "device"
   source = "manifest.json"
+}
+
+if (is_android) {
+  android_library("java") {
+    java_files = [ "time_zone_monitor/android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java" ]
+    deps = [
+      "//base:base_java",
+    ]
+  }
 }

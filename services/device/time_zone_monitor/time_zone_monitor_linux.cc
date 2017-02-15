@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/time_zone_monitor/time_zone_monitor.h"
+#include "services/device/time_zone_monitor/time_zone_monitor.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -76,9 +76,7 @@ class TimeZoneMonitorLinuxImpl
  private:
   friend class base::RefCountedThreadSafe<TimeZoneMonitorLinuxImpl>;
 
-  ~TimeZoneMonitorLinuxImpl() {
-    DCHECK(!owner_);
-  }
+  ~TimeZoneMonitorLinuxImpl() { DCHECK(!owner_); }
 
   void StartWatchingOnFileThread() {
     base::ThreadRestrictions::AssertIOAllowed();

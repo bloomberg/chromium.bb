@@ -11,7 +11,6 @@ blink_modules_sources("time_zone_monitor") {
   ]
 
   deps = [
-    "//device/time_zone_monitor/public/interfaces:interfaces_blink",
     "//mojo/public/cpp/bindings",
     "//services/device/public/interfaces:interfaces_blink",
     "//services/service_manager/public/interfaces:interfaces_blink",

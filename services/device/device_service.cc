@@ -8,15 +8,26 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
+#include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+
+#if defined(OS_ANDROID)
+#include "services/device/android/register_jni.h"
+#endif
 
 namespace device {
 
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+#if defined(OS_ANDROID)
+  if (!EnsureJniRegistered()) {
+    DLOG(ERROR) << "Failed to register JNI for Device Service";
+    return nullptr;
+  }
+#endif
+
   return base::MakeUnique<DeviceService>(std::move(file_task_runner));
 }
 

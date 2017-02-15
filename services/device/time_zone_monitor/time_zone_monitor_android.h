@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_
-#define CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_
+#ifndef SERVICES_DEVICE_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_ANDROID_H_
+#define SERVICES_DEVICE_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_ANDROID_H_
 
-#include "device/time_zone_monitor/time_zone_monitor.h"
+#include "services/device/time_zone_monitor/time_zone_monitor.h"
 
 #include <jni.h>
 
@@ -36,4 +36,4 @@ class TimeZoneMonitorAndroid : public TimeZoneMonitor {
 
 }  // namespace device
 
-#endif  // CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_
+#endif  // SERVICES_DEVICE_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_ANDROID_H_
