@@ -48,6 +48,9 @@ class AutofillProfile;
 @property(nonatomic, weak) id<ShippingAddressSelectionCoordinatorDelegate>
     delegate;
 
+// Stops the spinner and displays the error provided in the payment details.
+- (void)stopSpinnerAndDisplayError;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_SHIPPING_ADDRESS_SELECTION_COORDINATOR_H_

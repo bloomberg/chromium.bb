@@ -14,6 +14,12 @@
   base::scoped_nsobject<PaymentMethodSelectionViewController> _viewController;
 }
 
+// Called when the user selects a payment method. The cell is checked, the
+// UI is locked so that the user can't interact with it, then the delegate is
+// notified. The delay is here to let the user get a visual feedback of the
+// selection before this view disappears.
+- (void)delayedNotifyDelegateOfSelection:(autofill::CreditCard*)paymentMethod;
+
 @end
 
 @implementation PaymentMethodSelectionCoordinator
@@ -52,13 +58,31 @@
             (PaymentMethodSelectionViewController*)controller
                       didSelectPaymentMethod:
                           (autofill::CreditCard*)paymentMethod {
-  [_delegate paymentMethodSelectionCoordinator:self
-                        didSelectPaymentMethod:paymentMethod];
+  [self delayedNotifyDelegateOfSelection:paymentMethod];
 }
 
 - (void)paymentMethodSelectionViewControllerDidReturn:
     (PaymentMethodSelectionViewController*)controller {
   [_delegate paymentMethodSelectionCoordinatorDidReturn:self];
+}
+
+- (void)delayedNotifyDelegateOfSelection:(autofill::CreditCard*)paymentMethod {
+  _viewController.get().view.userInteractionEnabled = NO;
+  base::WeakNSObject<PaymentMethodSelectionCoordinator> weakSelf(self);
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW,
+                    static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        base::scoped_nsobject<PaymentMethodSelectionCoordinator> strongSelf(
+            [weakSelf retain]);
+        // Early return if the coordinator has been deallocated.
+        if (!strongSelf)
+          return;
+
+        _viewController.get().view.userInteractionEnabled = YES;
+        [_delegate paymentMethodSelectionCoordinator:self
+                              didSelectPaymentMethod:paymentMethod];
+      });
 }
 
 @end

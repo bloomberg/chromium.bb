@@ -229,7 +229,11 @@ var SerializedPaymentResponse;
           updateEvent = null;
         })
         .catch(function() {
-          // TODO(crbug.com/602666): Handle the reject scenario.
+          var message = {
+            'command': 'paymentRequest.requestCancel',
+          };
+          __gCrWeb.message.invokeOnHost(message);
+
           updateEvent = null;
         });
   };

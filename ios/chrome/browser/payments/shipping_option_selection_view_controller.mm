@@ -55,6 +55,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // pointer and should outlive this class.
   PaymentRequest* _paymentRequest;
 
+  // The currently selected item. May be nil.
   CollectionViewTextItem* _selectedItem;
 }
 
@@ -209,7 +210,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self reconfigureCellsForItems:@[ newlySelectedItem ]
            inSectionWithIdentifier:SectionIdentifierShippingOption];
 
-    // Update the reference to the the selected item.
+    // Update the reference to the selected item.
     _selectedItem = newlySelectedItem;
 
     // Notify the delegate of the selection.
@@ -217,7 +218,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     DCHECK(index < (NSInteger)_paymentRequest->shipping_options().size());
     [_delegate
         shippingOptionSelectionViewController:self
-                       selectedShippingOption:_paymentRequest
+                      didSelectShippingOption:_paymentRequest
                                                   ->shipping_options()[index]];
   }
 }

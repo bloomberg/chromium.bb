@@ -19,8 +19,8 @@
 // Notifies the delegate that the user has selected a shipping option.
 - (void)shippingOptionSelectionViewController:
             (ShippingOptionSelectionViewController*)controller
-                       selectedShippingOption:
-                           (web::PaymentShippingOption*)shippingOption;
+                      didSelectShippingOption:
+                          (web::PaymentShippingOption*)shippingOption;
 
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.

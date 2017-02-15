@@ -23,8 +23,8 @@ class AutofillProfile;
 // Notifies the delegate that the user has selected a shipping address.
 - (void)shippingAddressSelectionViewController:
             (ShippingAddressSelectionViewController*)controller
-                       selectedShippingAddress:
-                           (autofill::AutofillProfile*)shippingAddress;
+                      didSelectShippingAddress:
+                          (autofill::AutofillProfile*)shippingAddress;
 
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.

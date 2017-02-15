@@ -6,6 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
@@ -55,12 +56,25 @@
   _viewController.reset();
 }
 
+- (void)stopSpinnerAndDisplayError {
+  // Re-enable user interactions that were disabled earlier in
+  // delayedNotifyDelegateOfSelection.
+  _viewController.get().view.userInteractionEnabled = YES;
+
+  [_viewController setIsLoading:NO];
+  [_viewController
+      setErrorMessage:base::SysUTF16ToNSString(
+                          _paymentRequest->payment_details().error)];
+  [_viewController loadModel];
+  [[_viewController collectionView] reloadData];
+}
+
 #pragma mark - ShippingAddressSelectionViewControllerDelegate
 
 - (void)shippingAddressSelectionViewController:
             (ShippingAddressSelectionViewController*)controller
-                       selectedShippingAddress:
-                           (autofill::AutofillProfile*)shippingAddress {
+                      didSelectShippingAddress:
+                          (autofill::AutofillProfile*)shippingAddress {
   [self delayedNotifyDelegateOfSelection:shippingAddress];
 }
 
@@ -74,7 +88,8 @@
   _viewController.get().view.userInteractionEnabled = NO;
   base::WeakNSObject<ShippingAddressSelectionCoordinator> weakSelf(self);
   dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.2 * NSEC_PER_SEC)),
+      dispatch_time(DISPATCH_TIME_NOW,
+                    static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
         base::scoped_nsobject<ShippingAddressSelectionCoordinator> strongSelf(
             [weakSelf retain]);
@@ -82,7 +97,10 @@
         if (!strongSelf)
           return;
 
-        _viewController.get().view.userInteractionEnabled = YES;
+        [_viewController setIsLoading:YES];
+        [_viewController loadModel];
+        [[_viewController collectionView] reloadData];
+
         [_delegate shippingAddressSelectionCoordinator:self
                               didSelectShippingAddress:shippingAddress];
       });

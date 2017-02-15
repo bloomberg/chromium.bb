@@ -6,6 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 
 @interface ShippingOptionSelectionCoordinator ()<
@@ -53,12 +54,25 @@
   _viewController.reset();
 }
 
+- (void)stopSpinnerAndDisplayError {
+  // Re-enable user interactions that were disabled earlier in
+  // delayedNotifyDelegateOfSelection.
+  _viewController.get().view.userInteractionEnabled = YES;
+
+  [_viewController setIsLoading:NO];
+  [_viewController
+      setErrorMessage:base::SysUTF16ToNSString(
+                          _paymentRequest->payment_details().error)];
+  [_viewController loadModel];
+  [[_viewController collectionView] reloadData];
+}
+
 #pragma mark - ShippingOptionSelectionViewControllerDelegate
 
 - (void)shippingOptionSelectionViewController:
             (ShippingOptionSelectionViewController*)controller
-                       selectedShippingOption:
-                           (web::PaymentShippingOption*)shippingOption {
+                      didSelectShippingOption:
+                          (web::PaymentShippingOption*)shippingOption {
   [self delayedNotifyDelegateOfSelection:shippingOption];
 }
 
@@ -72,15 +86,18 @@
   _viewController.get().view.userInteractionEnabled = NO;
   base::WeakNSObject<ShippingOptionSelectionCoordinator> weakSelf(self);
   dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.2 * NSEC_PER_SEC)),
+      dispatch_time(DISPATCH_TIME_NOW,
+                    static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
         base::scoped_nsobject<ShippingOptionSelectionCoordinator> strongSelf(
             [weakSelf retain]);
         // Early return if the coordinator has been deallocated.
         if (!strongSelf)
           return;
+        [_viewController setIsLoading:YES];
+        [_viewController loadModel];
+        [[_viewController collectionView] reloadData];
 
-        _viewController.get().view.userInteractionEnabled = YES;
         [_delegate shippingOptionSelectionCoordinator:self
                               didSelectShippingOption:shippingOption];
       });

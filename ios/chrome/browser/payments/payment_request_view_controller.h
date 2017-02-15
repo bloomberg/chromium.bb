@@ -11,10 +11,6 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
-namespace autofill {
-class AutofillProfile;
-}
-
 extern NSString* const kPaymentRequestCollectionViewId;
 
 @class PaymentRequestViewController;
@@ -64,16 +60,19 @@ extern NSString* const kPaymentRequestCollectionViewId;
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
 
-// Updates the payment summary section UI.
-- (void)updatePaymentSummarySection;
+// Updates the payment summary section UI. If |totalValueChanged| is YES,
+// adds a label to the total amount item indicating that the total amount was
+// updated.
+- (void)updatePaymentSummaryWithTotalValueChanged:(BOOL)totalValueChanged;
 
-// Sets the selected shipping address and updates the UI.
-- (void)updateSelectedShippingAddress:
-    (autofill::AutofillProfile*)shippingAddress;
+// Updates the selected shipping address.
+- (void)updateSelectedShippingAddressUI;
 
-// Sets the selected shipping option and updates the UI.
-- (void)updateSelectedShippingOption:
-    (web::PaymentShippingOption*)shippingOption;
+// Updates the selected shipping option.
+- (void)updateSelectedShippingOptionUI;
+
+// Updates the selected payment method.
+- (void)updateSelectedPaymentMethodUI;
 
 // Initializes this object with an instance of PaymentRequest which owns an
 // instance of web::PaymentRequest as provided by the page invoking the Payment

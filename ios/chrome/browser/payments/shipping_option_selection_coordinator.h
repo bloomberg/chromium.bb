@@ -45,6 +45,9 @@
 @property(nonatomic, weak) id<ShippingOptionSelectionCoordinatorDelegate>
     delegate;
 
+// Stops the spinner and displays the error provided in the payment details.
+- (void)stopSpinnerAndDisplayError;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_SHIPPING_OPTION_SELECTION_COORDINATOR_H_

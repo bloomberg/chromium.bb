@@ -184,10 +184,13 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 }
 
 - (void)cancelRequest {
+  [self cancelRequestWithErrorMessage:@"Request canceled."];
+}
+
+- (void)cancelRequestWithErrorMessage:(NSString*)errorMessage {
   [self dismissUI];
-  [_paymentRequestJsManager
-      rejectRequestPromiseWithErrorMessage:@"Request cancelled by user."
-                         completionHandler:nil];
+  [_paymentRequestJsManager rejectRequestPromiseWithErrorMessage:errorMessage
+                                               completionHandler:nil];
 }
 
 - (void)close {
@@ -263,6 +266,9 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   if (command == "paymentRequest.requestShow") {
     return [self handleRequestShow:JSONCommand];
   }
+  if (command == "paymentRequest.requestCancel") {
+    return [self handleRequestCancel];
+  }
   if (command == "paymentRequest.responseComplete") {
     return [self handleResponseComplete];
   }
@@ -310,6 +316,17 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   [_paymentRequestCoordinator setDelegate:self];
 
   [_paymentRequestCoordinator start];
+
+  return YES;
+}
+
+- (BOOL)handleRequestCancel {
+  // TODO(crbug.com/602666): Check that there is already a pending request.
+
+  [_unblockEventQueueTimer invalidate];
+  [_paymentResponseTimeoutTimer invalidate];
+
+  [self cancelRequestWithErrorMessage:@"Request canceled by the page."];
 
   return YES;
 }
@@ -393,7 +410,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
-  [self cancelRequest];
+  [self cancelRequestWithErrorMessage:@"Request canceled by user."];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator

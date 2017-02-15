@@ -939,9 +939,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAYMENT_REQUEST_CANCEL_BUTTON" desc="Label of the button to cancel the request for payment presented to the user [iOS only].">
         Cancel
       </message>
-      <message name="IDS_IOS_PAYMENT_REQUEST_METHOD_SELECTION_BUTTON" desc="Label of the button to select a payment method (credit card) [iOS only].">
-        Select
-      </message>
       <message name="IDS_IOS_PAYMENT_REQUEST_METHOD_SELECTION_TITLE" desc="Title of the view that allows the user to select the payment method (available credit cards or payment apps) for satisfying a payment request [iOS only].">
         Payment
       </message>
@@ -983,6 +980,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER" desc="Label of the header of the section which displays the total charge for a payment request [iOS only].">
         Total
+      </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_TOTAL_UPDATED_LABEL" desc="Label placed on the section which displays the total charge for a payment request, indicating that the total charge was updated. [iOS only].">
+        Updated
       </message>
       <message name="IDS_IOS_PHOTO_LIBRARY_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's photo library while the app is in use [Length: unlimited] [iOS only].">
         This lets you save and upload photos.

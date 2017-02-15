@@ -59,6 +59,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // pointer and should outlive this class.
   PaymentRequest* _paymentRequest;
 
+  // The currently selected item. May be nil.
   ShippingAddressItem* _selectedItem;
 }
 
@@ -224,15 +225,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self reconfigureCellsForItems:@[ newlySelectedItem ]
            inSectionWithIdentifier:SectionIdentifierShippingAddress];
 
-    // Update the reference to the the selected item.
+    // Update the reference to the selected item.
     _selectedItem = newlySelectedItem;
 
     // Notify the delegate of the selection.
     NSInteger index = [model indexInItemTypeForIndexPath:indexPath];
     DCHECK(index < (NSInteger)_paymentRequest->shipping_profiles().size());
     [_delegate shippingAddressSelectionViewController:self
-                              selectedShippingAddress:
-                                  _paymentRequest->shipping_profiles()[index]];
+                             didSelectShippingAddress:
+                                 _paymentRequest->shipping_profiles()[index]];
   }
   // TODO(crbug.com/602666): Present a shipping address addition UI when
   // itemType == ItemTypeAddShippingAddress.

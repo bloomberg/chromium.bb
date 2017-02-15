@@ -10,6 +10,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -38,7 +39,10 @@
 
 @end
 
-@implementation PaymentRequestCoordinator
+@implementation PaymentRequestCoordinator {
+  // The selected shipping address, pending approval from the page.
+  autofill::AutofillProfile* _pendingShippingAddress;
+}
 
 @synthesize paymentRequest = _paymentRequest;
 @synthesize pageFavicon = _pageFavicon;
@@ -128,8 +132,46 @@
 }
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
+  BOOL totalValueChanged =
+      (_paymentRequest->payment_details().total != paymentDetails.total);
   _paymentRequest->set_payment_details(paymentDetails);
-  [_viewController updatePaymentSummarySection];
+
+  if (!paymentDetails.error.empty()) {
+    // Display error in the shipping address/option selection view.
+    if (_shippingAddressSelectionCoordinator) {
+      _paymentRequest->set_selected_shipping_profile(nil);
+      [_shippingAddressSelectionCoordinator stopSpinnerAndDisplayError];
+    } else if (_shippingOptionSelectionCoordinator) {
+      [_shippingOptionSelectionCoordinator stopSpinnerAndDisplayError];
+    }
+    // Update the payment request summary view.
+    [_viewController loadModel];
+    [[_viewController collectionView] reloadData];
+  } else {
+    // Update the payment summary section.
+    [_viewController
+        updatePaymentSummaryWithTotalValueChanged:totalValueChanged];
+
+    if (_shippingAddressSelectionCoordinator) {
+      // Set the selected shipping address and update the selected shipping
+      // address in the payment request summary view.
+      _paymentRequest->set_selected_shipping_profile(_pendingShippingAddress);
+      _pendingShippingAddress = nil;
+      [_viewController updateSelectedShippingAddressUI];
+
+      // Dismiss the shipping address selection view.
+      [_shippingAddressSelectionCoordinator stop];
+      _shippingAddressSelectionCoordinator.reset();
+    } else if (_shippingOptionSelectionCoordinator) {
+      // Update the selected shipping option in the payment request summary
+      // view. The updated selection is already reflected in |_paymentRequest|.
+      [_viewController updateSelectedShippingOptionUI];
+
+      // Dismiss the shipping option selection view.
+      [_shippingOptionSelectionCoordinator stop];
+      _shippingOptionSelectionCoordinator.reset();
+    }
+  }
 }
 
 #pragma mark - PaymentRequestViewControllerDelegate
@@ -190,6 +232,9 @@
 
 - (void)paymentItemsDisplayCoordinatorDidReturn:
     (PaymentItemsDisplayCoordinator*)coordinator {
+  // Clear the 'Updated' label on the payment summary item, if there is one.
+  [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
+
   [_itemsDisplayCoordinator stop];
   _itemsDisplayCoordinator.reset();
 }
@@ -205,19 +250,18 @@
             (ShippingAddressSelectionCoordinator*)coordinator
                    didSelectShippingAddress:
                        (autofill::AutofillProfile*)shippingAddress {
-  _paymentRequest->set_selected_shipping_profile(shippingAddress);
-  [_viewController updateSelectedShippingAddress:shippingAddress];
+  _pendingShippingAddress = shippingAddress;
 
   web::PaymentAddress address =
       payment_request_utils::PaymentAddressFromAutofillProfile(shippingAddress);
   [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
-
-  [_shippingAddressSelectionCoordinator stop];
-  _shippingAddressSelectionCoordinator.reset();
 }
 
 - (void)shippingAddressSelectionCoordinatorDidReturn:
     (ShippingAddressSelectionCoordinator*)coordinator {
+  // Clear the 'Updated' label on the payment summary item, if there is one.
+  [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
+
   [_shippingAddressSelectionCoordinator stop];
   _shippingAddressSelectionCoordinator.reset();
 }
@@ -228,17 +272,15 @@
             (ShippingOptionSelectionCoordinator*)coordinator
                    didSelectShippingOption:
                        (web::PaymentShippingOption*)shippingOption {
-  [_viewController updateSelectedShippingOption:shippingOption];
-
   [_delegate paymentRequestCoordinator:self
                didSelectShippingOption:*shippingOption];
-
-  [_shippingOptionSelectionCoordinator stop];
-  _shippingOptionSelectionCoordinator.reset();
 }
 
 - (void)shippingOptionSelectionCoordinatorDidReturn:
     (ShippingAddressSelectionCoordinator*)coordinator {
+  // Clear the 'Updated' label on the payment summary item, if there is one.
+  [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
+
   [_shippingOptionSelectionCoordinator stop];
   _shippingOptionSelectionCoordinator.reset();
 }
@@ -250,8 +292,10 @@
                    didSelectPaymentMethod:(autofill::CreditCard*)creditCard {
   _paymentRequest->set_selected_credit_card(creditCard);
 
-  [_viewController loadModel];
-  [[_viewController collectionView] reloadData];
+  [_viewController updateSelectedPaymentMethodUI];
+
+  // Clear the 'Updated' label on the payment summary item, if there is one.
+  [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_methodSelectionCoordinator stop];
   _methodSelectionCoordinator.reset();
@@ -259,6 +303,9 @@
 
 - (void)paymentMethodSelectionCoordinatorDidReturn:
     (PaymentMethodSelectionCoordinator*)coordinator {
+  // Clear the 'Updated' label on the payment summary item, if there is one.
+  [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
+
   [_methodSelectionCoordinator stop];
   _methodSelectionCoordinator.reset();
 }
