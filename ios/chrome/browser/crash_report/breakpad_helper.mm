@@ -50,7 +50,6 @@ NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
 // Multiple state information are combined into one CrachReportMultiParameter
 // to save limited and finite number of ReportParameters.
 // These are the values grouped in the user_application_state parameter.
-NSString* const kDataProxyIsEnabled = @"dataproxy";
 NSString* const kOrientationState = @"orient";
 NSString* const kHorizontalSizeClass = @"sizeclass";
 NSString* const kSignedIn = @"signIn";
@@ -288,17 +287,6 @@ void SetCurrentlySignedIn(bool signedIn) {
                                                      withValue:1];
   } else {
     [[CrashReportUserApplicationState sharedInstance] removeValue:kSignedIn];
-  }
-}
-
-void SetDataReductionProxyIsEnabled(bool value) {
-  if (value) {
-    [[CrashReportUserApplicationState sharedInstance]
-         setValue:kDataProxyIsEnabled
-        withValue:value];
-  } else {
-    [[CrashReportUserApplicationState sharedInstance]
-        removeValue:kDataProxyIsEnabled];
   }
 }
 

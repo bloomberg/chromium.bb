@@ -70,9 +70,6 @@ void SetCurrentFreeMemoryInKB(int value);
 // the key as getting no free disk space is important information.
 void SetCurrentFreeDiskInKB(int value);
 
-// Sets a key indicating application is using Flywheel Data Reduction Proxy.
-void SetDataReductionProxyIsEnabled(bool value);
-
 // Increases a key indicating the number of PDF tabs opened. If value is TRUE,
 // the counter is increased. If value is FALSE, the counter is decreased. If
 // counter falls to 0, the entry is removed. This function does not keep
