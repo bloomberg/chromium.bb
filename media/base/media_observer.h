@@ -11,6 +11,19 @@
 
 namespace media {
 
+class MEDIA_EXPORT MediaObserverClient {
+ public:
+  virtual ~MediaObserverClient() {}
+
+  // Requests to restart the media pipeline and create a new renderer as soon as
+  // possible. |disable_pipeline_auto_suspend| indicates whether to disable
+  // any optimizations that might suspend the media pipeline.
+  virtual void SwitchRenderer(bool disable_pipeline_auto_suspend) = 0;
+
+  // Requests to activate monitoring changes on viewport intersection.
+  virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;
+};
+
 // This class is an observer of media player events.
 class MEDIA_EXPORT MediaObserver {
  public:
@@ -45,6 +58,9 @@ class MEDIA_EXPORT MediaObserver {
   // Called when a poster image URL is set, which happens when media is loaded
   // or the poster attribute is changed.
   virtual void OnSetPoster(const GURL& poster) = 0;
+
+  // Set the MediaObserverClient.
+  virtual void SetClient(MediaObserverClient* client) = 0;
 };
 
 }  // namespace media

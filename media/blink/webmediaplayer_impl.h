@@ -88,6 +88,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
       public NON_EXPORTED_BASE(WebMediaPlayerDelegate::Observer),
       public NON_EXPORTED_BASE(Pipeline::Client),
+      public MediaObserverClient,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
@@ -214,18 +215,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetUseFallbackPath(bool use_fallback_path);
 #endif
 
+  // MediaObserverClient implementation.
+  void SwitchRenderer(bool disable_pipeline_auto_suspend) override;
+  void ActivateViewportIntersectionMonitoring(bool activate) override;
+
   // Called from WebMediaPlayerCast.
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
-
-  // Restart the player/pipeline as soon as possible. This will destroy the
-  // current renderer, if any, and create a new one via the RendererFactory; and
-  // then seek to resume playback at the current position.
-  void ScheduleRestart();
-
-  // Called when requests to activate monitoring changes on viewport
-  // intersection.
-  void ActivateViewportIntersectionMonitoring(bool activate);
 
   // Distinct states that |delegate_| can be in. (Public for testing.)
   enum class DelegateState {
@@ -297,6 +293,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
 
+  // Restart the player/pipeline as soon as possible. This will destroy the
+  // current renderer, if any, and create a new one via the RendererFactory; and
+  // then seek to resume playback at the current position.
+  void ScheduleRestart();
+
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state);
@@ -340,7 +341,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_remote,
-                                             bool is_streaming,
+                                             bool can_auto_suspend,
                                              bool is_suspended,
                                              bool is_backgrounded);
   void SetDelegateState(DelegateState new_state, bool is_idle);
@@ -689,6 +690,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether the pipeline is being resumed at the moment.
   bool is_pipeline_resuming_ = false;
+
+  // When this is true, pipeline will not be auto suspended.
+  bool disable_pipeline_auto_suspend_ = false;
 
   // Pipeline statistics overridden by tests.
   base::Optional<PipelineStatistics> pipeline_statistics_for_test_;

@@ -252,23 +252,23 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState() {
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_FrameHidden() {
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Suspended() {
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Remote() {
-    return wmpi_->UpdatePlayState_ComputePlayState(true, false, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(true, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_BackgroundedStreaming() {
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }

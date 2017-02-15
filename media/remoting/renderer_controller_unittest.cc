@@ -45,7 +45,8 @@ PipelineMetadata EncryptedMetadata() {
 
 }  // namespace
 
-class RendererControllerTest : public ::testing::Test {
+class RendererControllerTest : public ::testing::Test,
+                               public MediaObserverClient {
  public:
   RendererControllerTest() {}
   ~RendererControllerTest() override {}
@@ -54,8 +55,14 @@ class RendererControllerTest : public ::testing::Test {
 
   static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
-  void ToggleRenderer() {
+  // MediaObserverClient implementation.
+  void SwitchRenderer(bool disable_pipeline_auto_suspend) override {
     is_rendering_remotely_ = controller_->remote_rendering_started();
+    disable_pipeline_suspend_ = disable_pipeline_auto_suspend;
+  }
+
+  void ActivateViewportIntersectionMonitoring(bool activate) override {
+    activate_viewport_intersection_monitoring_ = activate;
   }
 
   void CreateCdm(bool is_remoting) { is_remoting_cdm_ = is_remoting; }
@@ -66,6 +73,8 @@ class RendererControllerTest : public ::testing::Test {
   std::unique_ptr<RendererController> controller_;
   bool is_rendering_remotely_ = false;
   bool is_remoting_cdm_ = false;
+  bool activate_viewport_intersection_monitoring_ = false;
+  bool disable_pipeline_suspend_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererControllerTest);
@@ -76,13 +85,16 @@ TEST_F(RendererControllerTest, ToggleRendererOnFullscreenChange) {
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   shared_session->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   controller_->OnEnteredFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
@@ -95,11 +107,14 @@ TEST_F(RendererControllerTest, ToggleRendererOnFullscreenChange) {
   controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(disable_pipeline_suspend_);
 
   // Leaving fullscreen should shut down remoting.
   controller_->OnExitedFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
@@ -107,8 +122,7 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   controller_->OnMetadataChanged(DefaultMetadata());
@@ -123,6 +137,8 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   controller_->OnEnteredFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   // An available sink that does not support remote rendering should not cause
   // the controller to toggle remote rendering on.
   shared_session->OnSinkAvailable(mojom::RemotingSinkCapabilities::NONE);
@@ -131,14 +147,20 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   shared_session->OnSinkGone();  // Bye-bye useless sink!
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   // A sink that *does* support remote rendering *does* cause the controller to
   // toggle remote rendering on.
   shared_session->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
   controller_->OnExitedFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
@@ -146,8 +168,7 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   controller_->OnRemotePlaybackDisabled(true);
@@ -156,6 +177,8 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   shared_session->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   controller_->OnMetadataChanged(DefaultMetadata());
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
@@ -168,12 +191,16 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
 
   // If the page disables remote playback (e.g., by setting the
   // disableRemotePlayback attribute), this should shut down remoting.
   controller_->OnRemotePlaybackDisabled(true);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, StartFailed) {
@@ -181,13 +208,14 @@ TEST_F(RendererControllerTest, StartFailed) {
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(true);
   controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   shared_session->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
   controller_->OnEnteredFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
@@ -200,14 +228,14 @@ TEST_F(RendererControllerTest, StartFailed) {
   controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
   EXPECT_FALSE(is_rendering_remotely_);
   controller_ = base::MakeUnique<RendererController>(
       FakeRemoterFactory::CreateSharedSession(false));
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   controller_->OnMetadataChanged(EncryptedMetadata());
@@ -261,8 +289,7 @@ TEST_F(RendererControllerTest, EncryptedWithLocalCdm) {
   const scoped_refptr<SharedSession> initial_shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   controller_ = base::MakeUnique<RendererController>(initial_shared_session);
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   initial_shared_session->OnSinkAvailable(kAllCapabilities);
@@ -297,8 +324,7 @@ TEST_F(RendererControllerTest, EncryptedWithFailedRemotingCdm) {
   EXPECT_FALSE(is_rendering_remotely_);
   controller_ = base::MakeUnique<RendererController>(
       FakeRemoterFactory::CreateSharedSession(false));
-  controller_->SetSwitchRendererCallback(base::Bind(
-      &RendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  controller_->SetClient(this);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   controller_->OnEnteredFullscreen();

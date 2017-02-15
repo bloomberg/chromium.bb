@@ -44,10 +44,7 @@ class RendererController final : public SharedSession::Client,
   void OnPlaying() override;
   void OnPaused() override;
   void OnSetPoster(const GURL& poster) override;
-
-  void SetSwitchRendererCallback(const base::Closure& cb);
-  void SetRemoteSinkAvailableChangedCallback(
-      const base::Callback<void(bool)>& cb);
+  void SetClient(MediaObserverClient* client) override;
 
   using ShowInterstitialCallback = base::Callback<
       void(const SkBitmap&, const gfx::Size&, InterstitialType type)>;
@@ -172,12 +169,6 @@ class RendererController final : public SharedSession::Client,
   // and never start again for the lifetime of this controller.
   bool encountered_renderer_fatal_error_ = false;
 
-  // The callback to switch the media renderer.
-  base::Closure switch_renderer_cb_;
-
-  // Called when remoting sink availability is changed.
-  base::Callback<void(bool)> sink_available_changed_cb_;
-
   // This is initially the SharedSession passed to the ctor, and might be
   // replaced with a different instance later if OnSetCdm() is called.
   scoped_refptr<SharedSession> session_;
@@ -212,6 +203,9 @@ class RendererController final : public SharedSession::Client,
 
   // Records session events of interest.
   SessionMetricsRecorder metrics_recorder_;
+
+  // Not own by this class. Can only be set once by calling SetClient().
+  MediaObserverClient* client_ = nullptr;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 
