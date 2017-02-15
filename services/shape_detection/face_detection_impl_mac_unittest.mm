@@ -76,24 +76,12 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
   const int num_bytes = size.GetArea() * 4 /* bytes per pixel */;
   ASSERT_EQ(num_bytes, image->computeSize64());
 
-  // Generate a new ScopedSharedBufferHandle of the aproppriate size, map it and
-  // copy the image pixels into it.
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::SharedBufferHandle::Create(num_bytes);
-  ASSERT_TRUE(handle->is_valid());
-
-  mojo::ScopedSharedBufferMapping mapping = handle->Map(num_bytes);
-  ASSERT_TRUE(mapping);
-
-  memcpy(mapping.get(), image->getPixels(), num_bytes);
-
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image to Detect() and expect the response in callback.
   EXPECT_CALL(*this, Detection(1)).WillOnce(RunClosure(quit_closure));
-  impl_->Detect(std::move(handle), size.width(), size.height(),
-                base::Bind(&FaceDetectionImplMacTest::DetectCallback,
-                           base::Unretained(this)));
+  impl_->Detect(*image, base::Bind(&FaceDetectionImplMacTest::DetectCallback,
+                                   base::Unretained(this)));
 
   run_loop.Run();
 }

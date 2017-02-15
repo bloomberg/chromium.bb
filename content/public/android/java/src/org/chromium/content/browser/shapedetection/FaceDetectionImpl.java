@@ -12,11 +12,10 @@ import android.media.FaceDetector.Face;
 import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
 import org.chromium.shape_detection.mojom.FaceDetectorOptions;
+import org.chromium.skia.mojom.ColorType;
 
 import java.nio.ByteBuffer;
 
@@ -36,29 +35,42 @@ public class FaceDetectionImpl implements FaceDetection {
     }
 
     @Override
-    public void detect(
-            SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
+    public void detect(org.chromium.skia.mojom.Bitmap bitmapData, DetectResponse callback) {
+        int width = bitmapData.width;
+        int height = bitmapData.height;
         final long numPixels = (long) width * height;
         // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
-        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
+        if (bitmapData.pixelData == null || width <= 0 || height <= 0
+                || numPixels > (Long.MAX_VALUE / 4)) {
             Log.d(TAG, "Invalid argument(s).");
             callback.call(new FaceDetectionResult());
             return;
         }
 
-        ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
-        if (imageBuffer.capacity() <= 0) {
-            Log.d(TAG, "Failed to map from SharedBufferHandle.");
+        // TODO(junwei.fu): Consider supporting other bitmap pixel formats,
+        // https://crbug.com/684921.
+        if (bitmapData.colorType != ColorType.RGBA_8888
+                && bitmapData.colorType != ColorType.BGRA_8888) {
+            Log.e(TAG, "Unsupported bitmap pixel format");
             callback.call(new FaceDetectionResult());
             return;
         }
 
+        ByteBuffer imageBuffer = ByteBuffer.wrap(bitmapData.pixelData);
+        if (imageBuffer.capacity() <= 0) {
+            Log.d(TAG, "Failed to wrap from Bitmap.");
+            callback.call(new FaceDetectionResult());
+            return;
+        }
+
+        // TODO(junwei.fu): Use |bitmapData| directly for |unPremultipliedBitmap| to spare a copy
+        // if the bitmap pixel format is RGB_565, the ARGB_8888 Bitmap doesn't need to be created
+        // in this case, https://crbug.com/684930.
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         // An int array is needed to construct a Bitmap. However the Bytebuffer
-        // we get from |sharedBufferHandle| is directly allocated and does not
-        // have a supporting array. Therefore we need to copy from |imageBuffer|
-        // to create this intermediate Bitmap.
+        // we get from |bitmapData| is directly allocated and does not have a supporting array.
+        // Therefore we need to copy from |imageBuffer| to create this intermediate Bitmap.
         // TODO(xianglu): Consider worker pool as appropriate threads.
         // http://crbug.com/655814
         bitmap.copyPixelsFromBuffer(imageBuffer);

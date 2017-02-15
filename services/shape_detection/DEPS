@@ -1,5 +1,6 @@
 include_rules = [
   "+media/capture/video/scoped_result_callback.h",
+  "+skia/ext/skia_utils_mac.h",
   "+third_party/skia/include",
   "+ui/gfx/codec",
   "+ui/gl/gl_switches.h"
