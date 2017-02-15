@@ -254,7 +254,8 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
   CrosSettings::Get()->SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+// Flaky, see http://crbug/692364.
+IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
   PrepareOfflineLogin();
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
