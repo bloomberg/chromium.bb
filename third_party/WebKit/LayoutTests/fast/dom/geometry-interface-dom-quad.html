@@ -66,4 +66,14 @@ test(() => {
   assert_dom_point_equals(quad.p4, expect_p4, "p4");
 }, "DOMQuad() fromQuad - parameter of fromQuad function does not have any point.");
 
+test(() => {
+  var p1 = new DOMPoint(40, 25, 0, 1);
+  var p2 = new DOMPoint(180, 8, 0, 1);
+  var p3 = new DOMPoint(210, 150, 0, 1);
+  var p4 = new DOMPoint(10, 180, 0, 1);
+  var expect_rect = new DOMRect(10, 8, 200, 172);
+  var quad = new DOMQuad(p1, p2, p3, p4);
+  assert_dom_rect_equals(quad.getBounds(), expect_rect);
+}, "DOMQuad() getBounds");
+
 </script>
