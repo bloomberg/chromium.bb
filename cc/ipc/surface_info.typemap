@@ -5,7 +5,4 @@
 mojom = "//cc/ipc/surface_info.mojom"
 public_headers = [ "//cc/surfaces/surface_info.h" ]
 traits_headers = [ "//cc/ipc/surface_info_struct_traits.h" ]
-deps = [
-  "//cc/ipc:struct_traits",
-]
 type_mappings = [ "cc.mojom.SurfaceInfo=cc::SurfaceInfo" ]

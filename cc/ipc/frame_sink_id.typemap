@@ -5,7 +5,4 @@
 mojom = "//cc/ipc/frame_sink_id.mojom"
 public_headers = [ "//cc/surfaces/frame_sink_id.h" ]
 traits_headers = [ "//cc/ipc/frame_sink_id_struct_traits.h" ]
-deps = [
-  "//cc/ipc:struct_traits",
-]
 type_mappings = [ "cc.mojom.FrameSinkId=cc::FrameSinkId" ]

@@ -6,6 +6,6 @@ mojom = "//cc/ipc/transferable_resource.mojom"
 public_headers = [ "//cc/resources/transferable_resource.h" ]
 traits_headers = [ "//cc/ipc/transferable_resource_struct_traits.h" ]
 sources = [
-  "//cc/ipc:struct_traits",
+  "transferable_resource_struct_traits.cc",
 ]
 type_mappings = [ "cc.mojom.TransferableResource=cc::TransferableResource" ]

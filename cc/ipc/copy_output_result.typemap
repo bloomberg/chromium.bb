@@ -10,6 +10,6 @@ public_deps = [
   "//skia/public/interfaces:struct_traits",
 ]
 sources = [
-  "//cc/ipc:struct_traits",
+  "copy_output_result_struct_traits.cc",
 ]
 type_mappings = [ "cc.mojom.CopyOutputResult=std::unique_ptr<cc::CopyOutputResult>[move_only]" ]

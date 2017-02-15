@@ -6,7 +6,7 @@ mojom = "//cc/ipc/compositor_frame.mojom"
 public_headers = [ "//cc/output/compositor_frame.h" ]
 traits_headers = [ "//cc/ipc/compositor_frame_struct_traits.h" ]
 sources = [
-  "//cc/ipc:struct_traits",
+  "compositor_frame_struct_traits.cc",
 ]
 deps = [
   "//cc",

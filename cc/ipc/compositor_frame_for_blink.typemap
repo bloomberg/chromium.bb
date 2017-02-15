@@ -24,11 +24,9 @@ traits_headers = [
   "//ui/gfx/mojo/transform_struct_traits.h",
   "//ui/events/mojo/latency_info_struct_traits.h",
 ]
-sources = [
-  "//cc/ipc:struct_traits",
-]
 public_deps = [
   "//cc",
+  "//cc/ipc:interfaces",
   "//gpu/ipc/common:interfaces",
   "//mojo/common:common_custom_types",
   "//skia/public/interfaces",

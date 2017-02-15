@@ -12,6 +12,7 @@ traits_headers = [
   "//cc/ipc/render_pass_struct_traits.h",
 ]
 sources = [
-  "//cc/ipc:struct_traits",
+  "quads_struct_traits.cc",
+  "render_pass_struct_traits.cc",
 ]
 type_mappings = [ "cc.mojom.RenderPass=std::unique_ptr<cc::RenderPass>[move_only,nullable_is_same_type]" ]

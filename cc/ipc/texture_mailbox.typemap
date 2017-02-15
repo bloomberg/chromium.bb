@@ -5,7 +5,4 @@
 mojom = "//cc/ipc/texture_mailbox.mojom"
 public_headers = [ "//cc/resources/texture_mailbox.h" ]
 traits_headers = [ "//cc/ipc/texture_mailbox_struct_traits.h" ]
-sources = [
-  "//cc/ipc:struct_traits",
-]
 type_mappings = [ "cc.mojom.TextureMailbox=cc::TextureMailbox" ]
