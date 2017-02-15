@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -19,12 +20,16 @@
 
 namespace syncer {
 
+class ModelTypeSyncBridge;
 class SyncClient;
 struct ActivationContext;
 
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
+  using BridgeProvider = base::Callback<base::WeakPtr<ModelTypeSyncBridge>()>;
+  using BridgeTask = base::Callback<void(ModelTypeSyncBridge*)>;
+
   ModelTypeController(
       ModelType type,
       SyncClient* sync_client,
@@ -60,6 +65,15 @@ class ModelTypeController : public DataTypeController {
   // is called on the UI thread.
   void OnProcessorStarted(
       std::unique_ptr<ActivationContext> activation_context);
+
+  // Bridge accessor that can be overridden. This will be called on the UI
+  // thread, but the callback will only be run on the model thread.
+  virtual BridgeProvider GetBridgeProvider();
+
+  // Post the given task that requires the bridge object to run to the model
+  // thread, where the bridge lives.
+  void PostBridgeTask(const tracked_objects::Location& location,
+                      const BridgeTask& task);
 
   // The sync client, which provides access to this type's ModelTypeSyncBridge.
   SyncClient* const sync_client_;

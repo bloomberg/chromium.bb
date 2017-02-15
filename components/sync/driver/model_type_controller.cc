@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,47 +23,16 @@
 
 namespace syncer {
 
+using BridgeProvider = ModelTypeController::BridgeProvider;
+using BridgeTask = ModelTypeController::BridgeTask;
+
 namespace {
 
-void CallOnSyncStartingHelper(
-    SyncClient* sync_client,
-    ModelType type,
+void OnSyncStartingHelper(
     const ModelErrorHandler& error_handler,
-    ModelTypeChangeProcessor::StartCallback callback) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client->GetSyncBridgeForModelType(type);
-  if (bridge) {
-    bridge->OnSyncStarting(std::move(error_handler), callback);
-  }
-}
-
-void CallGetAllNodesHelper(SyncClient* sync_client,
-                           ModelType type,
-                           DataTypeController::AllNodesCallback callback) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client->GetSyncBridgeForModelType(type);
-  if (bridge) {
-    ModelTypeDebugInfo::GetAllNodes(bridge, callback);
-  }
-}
-
-void CallGetStatusCountersHelper(
-    SyncClient* sync_client,
-    ModelType type,
-    const DataTypeController::StatusCountersCallback& callback) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client->GetSyncBridgeForModelType(type);
-  if (bridge) {
-    ModelTypeDebugInfo::GetStatusCounters(bridge, callback);
-  }
-}
-
-void CallDisableSyncHelper(SyncClient* sync_client, ModelType type) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client->GetSyncBridgeForModelType(type);
-  if (bridge) {
-    bridge->DisableSync();
-  }
+    const ModelTypeChangeProcessor::StartCallback& callback,
+    ModelTypeSyncBridge* bridge) {
+  bridge->OnSyncStarting(std::move(error_handler), std::move(callback));
 }
 
 void ReportError(ModelType model_type,
@@ -75,6 +43,20 @@ void ReportError(ModelType model_type,
                             ModelTypeToHistogramInt(model_type),
                             MODEL_TYPE_COUNT);
   ui_thread->PostTask(error.location(), base::Bind(error_handler, error));
+}
+
+// This function allows us to return a Callback using Bind that returns the
+// given |arg|. This function itself does nothing.
+base::WeakPtr<ModelTypeSyncBridge> ReturnCapturedBridge(
+    base::WeakPtr<ModelTypeSyncBridge> arg) {
+  return arg;
+}
+
+void RunBridgeTask(const BridgeProvider& bridge_provider,
+                   const BridgeTask& task) {
+  if (base::WeakPtr<ModelTypeSyncBridge> bridge = bridge_provider.Run()) {
+    task.Run(bridge.get());
+  }
 }
 
 }  // namespace
@@ -125,9 +107,9 @@ void ModelTypeController::LoadModels(
                  base::AsWeakPtr(this)));
 
   // Start the type processor on the model thread.
-  model_thread_->PostTask(
-      FROM_HERE, base::Bind(&CallOnSyncStartingHelper, sync_client_, type(),
-                            std::move(error_handler), std::move(callback)));
+  PostBridgeTask(FROM_HERE,
+                 base::Bind(&OnSyncStartingHelper, std::move(error_handler),
+                            std::move(callback)));
 }
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
@@ -228,8 +210,7 @@ void ModelTypeController::Stop() {
       sync_prefs_.GetPreferredDataTypes(ModelTypeSet(type()));
   if ((state() == MODEL_LOADED || state() == RUNNING) &&
       (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
-    model_thread_->PostTask(
-        FROM_HERE, base::Bind(&CallDisableSyncHelper, sync_client_, type()));
+    PostBridgeTask(FROM_HERE, base::Bind(&ModelTypeSyncBridge::DisableSync));
   }
 
   state_ = NOT_RUNNING;
@@ -245,16 +226,14 @@ DataTypeController::State ModelTypeController::state() const {
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  model_thread_->PostTask(
-      FROM_HERE, base::Bind(&CallGetAllNodesHelper, sync_client_, type(),
-                            BindToCurrentThread(callback)));
+  PostBridgeTask(FROM_HERE,
+                 base::Bind(&ModelTypeDebugInfo::GetAllNodes, callback));
 }
 
 void ModelTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
-  model_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&CallGetStatusCountersHelper, sync_client_, type(), callback));
+  PostBridgeTask(FROM_HERE,
+                 base::Bind(&ModelTypeDebugInfo::GetStatusCounters, callback));
 }
 
 void ModelTypeController::ReportModelError(const ModelError& error) {
@@ -275,4 +254,17 @@ void ModelTypeController::RecordStartFailure(ConfigureResult result) const {
 #undef PER_DATA_TYPE_MACRO
 }
 
+BridgeProvider ModelTypeController::GetBridgeProvider() {
+  // Get the bridge eagerly, and capture the weak pointer.
+  base::WeakPtr<ModelTypeSyncBridge> bridge =
+      sync_client_->GetSyncBridgeForModelType(type());
+  return base::Bind(&ReturnCapturedBridge, bridge);
+}
+
+void ModelTypeController::PostBridgeTask(
+    const tracked_objects::Location& location,
+    const BridgeTask& task) {
+  model_thread_->PostTask(
+      location, base::Bind(&RunBridgeTask, GetBridgeProvider(), task));
+}
 }  // namespace syncer

@@ -35,6 +35,7 @@ using syncer::EntityDataMap;
 using syncer::MetadataChangeList;
 using syncer::ModelError;
 using syncer::ModelTypeChangeProcessor;
+using syncer::ModelTypeSyncBridge;
 using syncer::MutableDataBatch;
 
 namespace autofill {
@@ -291,10 +292,11 @@ void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
 }
 
 // static
-AutocompleteSyncBridge* AutocompleteSyncBridge::FromWebDataService(
+base::WeakPtr<ModelTypeSyncBridge> AutocompleteSyncBridge::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutocompleteSyncBridge*>(
-      web_data_service->GetDBUserData()->GetUserData(UserDataKey()));
+             web_data_service->GetDBUserData()->GetUserData(UserDataKey()))
+      ->AsWeakPtr();
 }
 
 AutocompleteSyncBridge::AutocompleteSyncBridge(

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -25,16 +24,16 @@ class ModelTypeDebugInfo {
   // Returns a ListValue representing all nodes for the type to |callback|.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   static void GetAllNodes(
-      const base::WeakPtr<ModelTypeSyncBridge>& bridge,
       const base::Callback<void(const ModelType,
-                                std::unique_ptr<base::ListValue>)>& callback);
+                                std::unique_ptr<base::ListValue>)>& callback,
+      ModelTypeSyncBridge* bridge);
 
   // Returns StatusCounters for the type to |callback|.
   // Used for updating data type counters in chrome://sync-internals.
   static void GetStatusCounters(
-      const base::WeakPtr<ModelTypeSyncBridge>& bridge,
       const base::Callback<void(const ModelType, const StatusCounters&)>&
-          callback);
+          callback,
+      ModelTypeSyncBridge* bridge);
 
  private:
   ModelTypeDebugInfo();

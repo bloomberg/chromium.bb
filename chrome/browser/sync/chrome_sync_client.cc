@@ -449,8 +449,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
-                 web_data_service_.get())
-          ->AsWeakPtr();
+          web_data_service_.get());
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
       return chromeos::PrintersManagerFactory::GetForBrowserContext(profile_)
