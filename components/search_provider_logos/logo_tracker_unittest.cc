@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
@@ -16,7 +17,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -699,13 +699,14 @@ TEST_F(LogoTrackerTest, DeleteExpiredCachedLogo) {
 
 // Tests that deal with multiple listeners.
 
-void EnqueueObservers(LogoTracker* logo_tracker,
-                      const ScopedVector<MockLogoObserver>& observers,
-                      size_t start_index) {
+void EnqueueObservers(
+    LogoTracker* logo_tracker,
+    const std::vector<std::unique_ptr<MockLogoObserver>>& observers,
+    size_t start_index) {
   if (start_index >= observers.size())
     return;
 
-  logo_tracker->GetLogo(observers[start_index]);
+  logo_tracker->GetLogo(observers[start_index].get());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EnqueueObservers, logo_tracker,
                             base::ConstRef(observers), start_index + 1));
@@ -722,11 +723,11 @@ TEST_F(LogoTrackerTest, SupportOverlappingLogoRequests) {
   SetServerResponseWhenFingerprint(cached_logo.metadata.fingerprint, response);
 
   const int kNumListeners = 10;
-  ScopedVector<MockLogoObserver> listeners;
+  std::vector<std::unique_ptr<MockLogoObserver>> listeners;
   for (int i = 0; i < kNumListeners; ++i) {
     MockLogoObserver* listener = new MockLogoObserver();
     listener->ExpectCachedAndFreshLogos(&cached_logo, &fresh_logo);
-    listeners.push_back(listener);
+    listeners.push_back(base::WrapUnique(listener));
   }
   EnqueueObservers(logo_tracker_, listeners, 0);
 
