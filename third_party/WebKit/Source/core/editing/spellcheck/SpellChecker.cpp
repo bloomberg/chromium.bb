@@ -846,17 +846,14 @@ void SpellChecker::replaceMisspelledRange(const String& text) {
 
   // Dispatch 'beforeinput'.
   Element* const target = frame().editor().findEventTargetFromSelection();
-  Range* const range = createRange(markerRange);
-  RangeVector* const ranges = new RangeVector(1, range);
   DataTransfer* const dataTransfer = DataTransfer::create(
       DataTransfer::DataTransferType::InsertReplacementText,
       DataTransferAccessPolicy::DataTransferReadable,
       DataObject::createFromString(text));
 
-  const bool cancel =
-      dispatchBeforeInputDataTransfer(
-          target, InputEvent::InputType::InsertReplacementText, dataTransfer,
-          ranges) != DispatchEventResult::NotCanceled;
+  const bool cancel = dispatchBeforeInputDataTransfer(
+                          target, InputEvent::InputType::InsertReplacementText,
+                          dataTransfer) != DispatchEventResult::NotCanceled;
 
   // 'beforeinput' event handler may destroy target frame.
   if (currentDocument != frame().document())

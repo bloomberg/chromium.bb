@@ -2042,7 +2042,14 @@ bool isTextSecurityNode(const Node* node) {
          node->layoutObject()->style()->textSecurity() != TSNONE;
 }
 
-DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target,
+const RangeVector* targetRangesForInputEvent(const Node& node) {
+  if (!hasRichlyEditableStyle(node))
+    return nullptr;
+  return new RangeVector(
+      1, firstRangeOf(node.document().frame()->selection().selection()));
+}
+
+DispatchEventResult dispatchBeforeInputInsertText(Node* target,
                                                   const String& data) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
     return DispatchEventResult::NotCanceled;
@@ -2050,15 +2057,16 @@ DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target,
     return DispatchEventResult::NotCanceled;
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
-  InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      InputEvent::InputType::InsertText, data,
-      InputEvent::EventCancelable::IsCancelable,
-      InputEvent::EventIsComposing::NotComposing, nullptr);
+  InputEvent* beforeInputEvent =
+      InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data,
+                                    InputEvent::EventCancelable::IsCancelable,
+                                    InputEvent::EventIsComposing::NotComposing,
+                                    targetRangesForInputEvent(*target));
   return target->dispatchEvent(beforeInputEvent);
 }
 
 DispatchEventResult dispatchBeforeInputEditorCommand(
-    EventTarget* target,
+    Node* target,
     InputEvent::InputType inputType,
     const RangeVector* ranges) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
@@ -2072,10 +2080,9 @@ DispatchEventResult dispatchBeforeInputEditorCommand(
 }
 
 DispatchEventResult dispatchBeforeInputDataTransfer(
-    EventTarget* target,
+    Node* target,
     InputEvent::InputType inputType,
-    DataTransfer* dataTransfer,
-    const RangeVector* ranges) {
+    DataTransfer* dataTransfer) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
     return DispatchEventResult::NotCanceled;
   if (!target)
@@ -2092,14 +2099,16 @@ DispatchEventResult dispatchBeforeInputDataTransfer(
   if (hasRichlyEditableStyle(*(target->toNode())) || !dataTransfer) {
     beforeInputEvent = InputEvent::createBeforeInput(
         inputType, dataTransfer, InputEvent::EventCancelable::IsCancelable,
-        InputEvent::EventIsComposing::NotComposing, ranges);
+        InputEvent::EventIsComposing::NotComposing,
+        targetRangesForInputEvent(*target));
   } else {
     const String& data = dataTransfer->getData(mimeTypeTextPlain);
     // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
     // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
     beforeInputEvent = InputEvent::createBeforeInput(
         inputType, data, InputEvent::EventCancelable::IsCancelable,
-        InputEvent::EventIsComposing::NotComposing, nullptr);
+        InputEvent::EventIsComposing::NotComposing,
+        targetRangesForInputEvent(*target));
   }
   return target->dispatchEvent(beforeInputEvent);
 }

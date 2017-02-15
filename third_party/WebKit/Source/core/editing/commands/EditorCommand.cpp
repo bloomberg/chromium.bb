@@ -2709,8 +2709,9 @@ int Editor::Command::idForHistogram() const {
   return isSupported() ? static_cast<int>(m_command->commandType) : 0;
 }
 
-RangeVector* Editor::Command::getTargetRanges() const {
-  if (!isSupported() || !m_frame)
+const RangeVector* Editor::Command::getTargetRanges() const {
+  const Node* target = eventTargetNodeForDocument(m_frame->document());
+  if (!isSupported() || !m_frame || !target || !hasRichlyEditableStyle(*target))
     return nullptr;
 
   switch (m_command->commandType) {
@@ -2740,7 +2741,7 @@ RangeVector* Editor::Command::getTargetRanges() const {
       return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionForward,
                                                      WordGranularity);
     default:
-      return nullptr;
+      return targetRangesForInputEvent(*target);
   }
 }
 

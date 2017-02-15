@@ -648,7 +648,8 @@ bool Editor::deleteSelectionAfterDraggingWithEvents(
   // Dispatch 'beforeinput'.
   const bool shouldDelete = dispatchBeforeInputEditorCommand(
                                 dragSource, InputEvent::InputType::DeleteByDrag,
-                                nullptr) == DispatchEventResult::NotCanceled;
+                                targetRangesForInputEvent(*dragSource)) ==
+                            DispatchEventResult::NotCanceled;
 
   // 'beforeinput' event handler may destroy frame, return false to cancel
   // remaining actions;
@@ -680,8 +681,8 @@ bool Editor::replaceSelectionAfterDraggingWithEvents(
   dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
   const bool shouldInsert =
       dispatchBeforeInputDataTransfer(
-          dropTarget, InputEvent::InputType::InsertFromDrop, dataTransfer,
-          nullptr) == DispatchEventResult::NotCanceled;
+          dropTarget, InputEvent::InputType::InsertFromDrop, dataTransfer) ==
+      DispatchEventResult::NotCanceled;
 
   // 'beforeinput' event handler may destroy frame, return false to cancel
   // remaining actions;
@@ -1082,7 +1083,7 @@ void Editor::cut(EditorCommandSource source) {
     if (source == CommandFromMenuOrKeyBinding) {
       if (dispatchBeforeInputDataTransfer(findEventTargetFromSelection(),
                                           InputEvent::InputType::DeleteByCut,
-                                          nullptr, nullptr) !=
+                                          nullptr) !=
           DispatchEventResult::NotCanceled)
         return;
       // 'beforeinput' event handler may destroy target frame.
@@ -1144,7 +1145,7 @@ void Editor::paste(EditorCommandSource source) {
 
     if (dispatchBeforeInputDataTransfer(findEventTargetFromSelection(),
                                         InputEvent::InputType::InsertFromPaste,
-                                        dataTransfer, nullptr) !=
+                                        dataTransfer) !=
         DispatchEventResult::NotCanceled)
       return;
     // 'beforeinput' event handler may destroy target frame.

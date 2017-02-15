@@ -7,6 +7,7 @@
 </head>
 <body>
 <p id="sample" contentEditable="true"></p>
+<textarea id="textarea1"></textarea>
 <div id="log"></div>
 <script>
 test(function() {
@@ -74,6 +75,77 @@ test(function() {
     // |getRanges| should be cleared after dispatch.
     assert_equals(lastEvent.getTargetRanges().length, 0);
 }, 'Testing getTargetRanges() cleared after dispatch.');
+
+test(function() {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    // Setup data.
+    const sample = document.getElementById('sample');
+    sample.innerHTML = 'hello';
+
+    // Move caret right after 'hello'.
+    const selection = window.getSelection();
+    selection.collapse(sample.firstChild, 0);
+    selection.modify('move', 'forward', 'word');
+
+    // Record target ranges.
+    let lastRangeString = '';
+    const handler = function(event) {
+        const range = event.getTargetRanges()[0];
+        lastRangeString = `${range.startContainer.textContent}-${range.startOffset}-${range.endContainer.textContent}-${range.endOffset}`;
+    };
+    sample.addEventListener('beforeinput', handler);
+
+    // Type 'a' at the end of text.
+    eventSender.keyDown('a');
+    assert_equals(sample.textContent, 'helloa');
+    assert_equals(lastRangeString, 'hello-5-hello-5');
+
+    // Select all text and type 'b'.
+    selection.modify('extend', 'backward', 'word');
+    eventSender.keyDown('b');
+    assert_equals(sample.textContent, 'b');
+    assert_equals(lastRangeString, 'helloa-0-helloa-6');
+
+    // Select all text and bold.
+    selection.modify('extend', 'backward', 'word');
+    testRunner.execCommand('bold');
+    assert_equals(sample.textContent, 'b');
+    assert_equals(lastRangeString, 'b-0-b-1');
+
+    sample.removeEventListener('beforeinput', handler);
+}, 'Actions other than deletion should have current selection as target ranges.');
+
+test(function() {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+
+    // Setup data.
+    const textarea1 = document.getElementById('textarea1');
+    textarea1.value = 'hello';
+    textarea1.focus();
+
+    // Record range count.
+    let lastRangeCount = -1;
+    const handler = function(event) {
+        lastRangeCount = event.getTargetRanges().length;
+    };
+    textarea1.addEventListener('beforeinput', handler);
+
+    // Type 'a' at the end of text.
+    lastRangeCount = -1;
+    eventSender.keyDown('a');
+    assert_equals(textarea1.value, 'helloa');
+    assert_equals(lastRangeCount, 0);
+
+    // Press backspace.
+    lastRangeCount = -1;
+    eventSender.keyDown('Backspace');
+    assert_equals(textarea1.value, 'hello');
+    assert_equals(lastRangeCount, 0);
+
+    textarea1.removeEventListener('beforeinput', handler);
+}, 'Textarea should have empty target range.');
 </script>
 </body>
 </html>

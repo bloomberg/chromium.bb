@@ -413,15 +413,14 @@ const String& nonBreakingSpaceString();
 // -------------------------------------------------------------------------
 
 // Functions dispatch InputEvent
-DispatchEventResult dispatchBeforeInputInsertText(EventTarget*,
-                                                  const String& data);
-DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget*,
+const RangeVector* targetRangesForInputEvent(const Node&);
+DispatchEventResult dispatchBeforeInputInsertText(Node*, const String& data);
+DispatchEventResult dispatchBeforeInputEditorCommand(Node*,
                                                      InputEvent::InputType,
                                                      const RangeVector*);
-DispatchEventResult dispatchBeforeInputDataTransfer(EventTarget*,
+DispatchEventResult dispatchBeforeInputDataTransfer(Node*,
                                                     InputEvent::InputType,
-                                                    DataTransfer*,
-                                                    const RangeVector*);
+                                                    DataTransfer*);
 
 InputEvent::InputType deletionInputTypeFromTextGranularity(DeleteDirection,
                                                            TextGranularity);

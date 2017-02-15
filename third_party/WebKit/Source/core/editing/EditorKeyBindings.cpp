@@ -73,7 +73,7 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt) {
   }
 
   // Return true to prevent default action. e.g. Space key scroll.
-  if (dispatchBeforeInputInsertText(evt->target(), keyEvent->text) !=
+  if (dispatchBeforeInputInsertText(evt->target()->toNode(), keyEvent->text) !=
       DispatchEventResult::NotCanceled)
     return true;
 
