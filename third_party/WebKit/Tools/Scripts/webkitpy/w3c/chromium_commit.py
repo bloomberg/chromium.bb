@@ -20,6 +20,8 @@ class ChromiumCommit(object):
                     'refs/heads/master@{#431915}'
         """
         self.host = host
+        self.absolute_chromium_dir = absolute_chromium_dir(host)
+        self.absolute_chromium_wpt_dir = absolute_chromium_wpt_dir(host)
 
         assert sha or position, 'requires sha or position'
         assert not (sha and position), 'cannot accept both sha and position'
@@ -34,9 +36,6 @@ class ChromiumCommit(object):
         self.sha = sha
         self.position = position
 
-        self.absolute_chromium_dir = absolute_chromium_dir(host)
-        self.absolute_chromium_wpt_dir = absolute_chromium_wpt_dir(host)
-
     def num_behind_master(self):
         """Returns the number of commits this commit is behind origin/master.
         It is inclusive of this commit and of the latest commit.
@@ -48,7 +47,7 @@ class ChromiumCommit(object):
     def position_to_sha(self, commit_position):
         return self.host.executive.run_command([
             'git', 'crrev-parse', commit_position
-        ], cwd=absolute_chromium_dir).strip()
+        ], cwd=self.absolute_chromium_dir).strip()
 
     def subject(self):
         return self.host.executive.run_command([
@@ -58,7 +57,7 @@ class ChromiumCommit(object):
     def body(self):
         return self.host.executive.run_command([
             'git', 'show', '--format=%b', '--no-patch', self.sha
-        ], cwd=absolute_chromium_dir)
+        ], cwd=self.absolute_chromium_dir)
 
     def author(self):
         return self.host.executive.run_command([
