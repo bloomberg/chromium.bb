@@ -16,6 +16,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
@@ -179,7 +180,9 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
     }
 
     /** Tests the full pathway. */
-    @MediumTest
+    // Flaky, see http://crbug/666815.
+    // @MediumTest
+    @DisabledTest
     public void testFullMigration() throws Exception {
         final CallbackHelper copyStartedCallback = new CallbackHelper();
         final CallbackHelper copyCallback = new CallbackHelper();
