@@ -197,6 +197,13 @@ PermissionID::~PermissionID() {
 PermissionIDSet::PermissionIDSet() {
 }
 
+PermissionIDSet::PermissionIDSet(
+    std::initializer_list<APIPermission::ID> permissions) {
+  for (auto permission : permissions) {
+    permissions_.insert(PermissionID(permission));
+  }
+}
+
 PermissionIDSet::PermissionIDSet(const PermissionIDSet& other) = default;
 
 PermissionIDSet::~PermissionIDSet() {
@@ -236,9 +243,13 @@ std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
   return params;
 }
 
+bool PermissionIDSet::ContainsID(PermissionID permission_id) const {
+  auto it = permissions_.lower_bound(permission_id);
+  return it != permissions_.end() && it->id() == permission_id.id();
+}
+
 bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) const {
-  auto it = permissions_.lower_bound(PermissionID(permission_id));
-  return it != permissions_.end() && it->id() == permission_id;
+  return ContainsID(PermissionID(permission_id));
 }
 
 bool PermissionIDSet::ContainsAllIDs(
@@ -254,6 +265,14 @@ bool PermissionIDSet::ContainsAllIDs(
 bool PermissionIDSet::ContainsAnyID(
     const std::set<APIPermission::ID>& permission_ids) const {
   for (APIPermission::ID id : permission_ids) {
+    if (ContainsID(id))
+      return true;
+  }
+  return false;
+}
+
+bool PermissionIDSet::ContainsAnyID(const PermissionIDSet& other) const {
+  for (const auto& id : other) {
     if (ContainsID(id))
       return true;
   }

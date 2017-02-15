@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/public_session_media_access_handler.h"
+#include "chrome/browser/media/public_session_tab_capture_access_handler.h"
 
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,55 +18,51 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 
-PublicSessionMediaAccessHandler::PublicSessionMediaAccessHandler() {}
+PublicSessionTabCaptureAccessHandler::PublicSessionTabCaptureAccessHandler() {}
 
-PublicSessionMediaAccessHandler::~PublicSessionMediaAccessHandler() {}
+PublicSessionTabCaptureAccessHandler::~PublicSessionTabCaptureAccessHandler() {}
 
-bool PublicSessionMediaAccessHandler::SupportsStreamType(
+bool PublicSessionTabCaptureAccessHandler::SupportsStreamType(
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
-  return extension_media_access_handler_.SupportsStreamType(type, extension);
+  return tab_capture_access_handler_.SupportsStreamType(type, extension);
 }
 
-bool PublicSessionMediaAccessHandler::CheckMediaAccessPermission(
+bool PublicSessionTabCaptureAccessHandler::CheckMediaAccessPermission(
     content::WebContents* web_contents,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
-  return extension_media_access_handler_.CheckMediaAccessPermission(
+  return tab_capture_access_handler_.CheckMediaAccessPermission(
       web_contents, security_origin, type, extension);
 }
 
-void PublicSessionMediaAccessHandler::HandleRequest(
+void PublicSessionTabCaptureAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
   // This class handles requests for Public Sessions only, outside of them just
   // pass the request through to the original class.
-  if (!profiles::IsPublicSession() || !extension->is_platform_app()) {
-    return extension_media_access_handler_.HandleRequest(web_contents, request,
-                                                         callback, extension);
+  if (!profiles::IsPublicSession() || !extension ||
+      (request.audio_type != content::MEDIA_TAB_AUDIO_CAPTURE &&
+       request.video_type != content::MEDIA_TAB_VIDEO_CAPTURE)) {
+    return tab_capture_access_handler_.HandleRequest(web_contents, request,
+                                                     callback, extension);
   }
 
   // This Unretained is safe because the lifetime of this object is until
   // process exit (living inside a base::Singleton object).
   auto prompt_resolved_callback = base::Bind(
-      &PublicSessionMediaAccessHandler::ChainHandleRequest,
+      &PublicSessionTabCaptureAccessHandler::ChainHandleRequest,
       base::Unretained(this), web_contents, request, callback, extension);
 
-  extensions::PermissionIDSet requested_permissions;
-  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
-    requested_permissions.insert(extensions::APIPermission::kAudioCapture);
-  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE)
-    requested_permissions.insert(extensions::APIPermission::kVideoCapture);
-
   extensions::permission_helper::HandlePermissionRequest(
-      *extension, requested_permissions, web_contents, prompt_resolved_callback,
-      extensions::permission_helper::PromptFactory());
+      *extension, {extensions::APIPermission::kTabCapture}, web_contents,
+      prompt_resolved_callback, extensions::permission_helper::PromptFactory());
 }
 
-void PublicSessionMediaAccessHandler::ChainHandleRequest(
+void PublicSessionTabCaptureAccessHandler::ChainHandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
@@ -75,14 +70,14 @@ void PublicSessionMediaAccessHandler::ChainHandleRequest(
     const extensions::PermissionIDSet& allowed_permissions) {
   content::MediaStreamRequest request_copy(request);
 
-  // If the user denies audio or video capture, here it gets filtered out from
-  // the request before being passed on to the actual implementation.
-  if (!allowed_permissions.ContainsID(extensions::APIPermission::kAudioCapture))
+  // If the user denied tab capture, here the request gets filtered out before
+  // being passed on to the actual implementation.
+  if (!allowed_permissions.ContainsID(extensions::APIPermission::kTabCapture)) {
     request_copy.audio_type = content::MEDIA_NO_SERVICE;
-  if (!allowed_permissions.ContainsID(extensions::APIPermission::kVideoCapture))
     request_copy.video_type = content::MEDIA_NO_SERVICE;
+  }
 
   // Pass the request through to the original class.
-  extension_media_access_handler_.HandleRequest(web_contents, request_copy,
-                                                callback, extension);
+  tab_capture_access_handler_.HandleRequest(web_contents, request_copy,
+                                            callback, extension);
 }

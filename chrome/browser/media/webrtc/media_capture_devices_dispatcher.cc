@@ -37,7 +37,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "chrome/browser/media/public_session_media_access_handler.h"
-#include "chrome/browser/media/webrtc/public_session_tab_capture_access_handler.h"
+#include "chrome/browser/media/public_session_tab_capture_access_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
