@@ -35,6 +35,8 @@ class WMState;
 namespace ui {
 namespace demo {
 
+class WindowTreeData;
+
 // A simple MUS Demo service. This service connects to the service:ui, adds a
 // new window to the root Window, and draws a spinning square in the center of
 // the window. Provides a simple way to demonstrate that the graphic stack works
@@ -102,7 +104,6 @@ class MusDemo : public service_manager::Service,
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 
-  class WindowTreeData;
   std::unique_ptr<WindowTreeData> window_tree_data_;
 
   DISALLOW_COPY_AND_ASSIGN(MusDemo);
