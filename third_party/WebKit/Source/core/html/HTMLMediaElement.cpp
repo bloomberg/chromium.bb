@@ -412,7 +412,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_playing(false),
       m_shouldDelayLoadEvent(false),
       m_haveFiredLoadedData(false),
-      m_autoplaying(true),
+      m_canAutoplay(true),
       m_muted(false),
       m_paused(true),
       m_seeking(false),
@@ -863,9 +863,9 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
   // attribute.
   setPlaybackRate(defaultPlaybackRate());
 
-  // 8 - Set the error attribute to null and the autoplaying flag to true.
+  // 8 - Set the error attribute to null and the can autoplay flag to true.
   m_error = nullptr;
-  m_autoplaying = true;
+  m_canAutoplay = true;
 
   // 9 - Invoke the media element's resource selection algorithm.
   invokeResourceSelectionAlgorithm();
@@ -1751,7 +1751,7 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
           m_paused = false;
           scheduleEvent(EventTypeNames::play);
           scheduleNotifyPlaying();
-          m_autoplaying = false;
+          m_canAutoplay = false;
         }
       } else {
         m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
@@ -2098,7 +2098,7 @@ bool HTMLMediaElement::autoplay() const {
 bool HTMLMediaElement::shouldAutoplay() {
   if (document().isSandboxed(SandboxAutomaticFeatures))
     return false;
-  return m_autoplaying && m_paused && autoplay();
+  return m_canAutoplay && m_paused && autoplay();
 }
 
 String HTMLMediaElement::preload() const {
@@ -2247,6 +2247,11 @@ Nullable<ExceptionCode> HTMLMediaElement::play() {
   if (m_error && m_error->code() == MediaError::kMediaErrSrcNotSupported)
     return NotSupportedError;
 
+  if (m_autoplayVisibilityObserver) {
+    m_autoplayVisibilityObserver->stop();
+    m_autoplayVisibilityObserver = nullptr;
+  }
+
   playInternal();
 
   return nullptr;
@@ -2284,7 +2289,7 @@ void HTMLMediaElement::playInternal() {
     scheduleResolvePlayPromises();
   }
 
-  m_autoplaying = false;
+  m_canAutoplay = false;
 
   setIgnorePreloadNone();
   updatePlayState();
@@ -2299,6 +2304,11 @@ void HTMLMediaElement::pause() {
     webMediaPlayer()->setBufferingStrategy(
         WebMediaPlayer::BufferingStrategy::Aggressive);
 
+  if (m_autoplayVisibilityObserver) {
+    m_autoplayVisibilityObserver->stop();
+    m_autoplayVisibilityObserver = nullptr;
+  }
+
   pauseInternal();
 }
 
@@ -2308,7 +2318,7 @@ void HTMLMediaElement::pauseInternal() {
   if (m_networkState == kNetworkEmpty)
     invokeResourceSelectionAlgorithm();
 
-  m_autoplaying = false;
+  m_canAutoplay = false;
 
   if (!m_paused) {
     m_paused = true;
@@ -4001,24 +4011,21 @@ EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const {
 }
 
 void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible) {
-  if (!isVisible)
+  if (!isVisible) {
+    if (m_canAutoplay && autoplay()) {
+      pauseInternal();
+      m_canAutoplay = true;
+    }
     return;
+  }
 
   if (shouldAutoplay()) {
     m_paused = false;
     scheduleEvent(EventTypeNames::play);
     scheduleNotifyPlaying();
-    m_autoplaying = false;
 
     updatePlayState();
   }
-
-  // TODO(zqzhang): There's still flaky leak if onVisibilityChangedForAutoplay()
-  // is never called.  The leak comes from either ElementVisibilityObserver or
-  // IntersectionObserver. Should keep an eye on it.  See
-  // https://crbug.com/627539
-  m_autoplayVisibilityObserver->stop();
-  m_autoplayVisibilityObserver = nullptr;
 }
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor) {
