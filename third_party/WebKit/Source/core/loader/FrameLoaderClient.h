@@ -60,7 +60,6 @@ class Document;
 class DocumentLoader;
 struct FrameLoadRequest;
 class HTMLFormElement;
-class HTMLFrameElementBase;
 class HTMLFrameOwnerElement;
 class HTMLMediaElement;
 class HTMLPlugInElement;
@@ -280,7 +279,7 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
                                            ContentSecurityPolicyHeaderType,
                                            ContentSecurityPolicyHeaderSource) {}
 
-  virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) {}
+  virtual void didChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
 
   virtual void dispatchWillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}

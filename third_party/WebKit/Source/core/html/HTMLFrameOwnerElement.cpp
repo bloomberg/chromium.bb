@@ -221,6 +221,13 @@ void HTMLFrameOwnerElement::disposeWidgetSoon(Widget* widget) {
   widget->dispose();
 }
 
+void HTMLFrameOwnerElement::frameOwnerPropertiesChanged() {
+  // Don't notify about updates if contentFrame() is null, for example when
+  // the subframe hasn't been created yet.
+  if (contentFrame())
+    document().frame()->loader().client()->didChangeFrameOwnerProperties(this);
+}
+
 void HTMLFrameOwnerElement::dispatchLoad() {
   dispatchScopedEvent(Event::create(EventTypeNames::load));
 }
@@ -243,6 +250,15 @@ void HTMLFrameOwnerElement::setWidget(Widget* widget) {
   if (widget == m_widget)
     return;
 
+  Document* doc = contentDocument();
+  if (doc && doc->frame()) {
+    bool willBeDisplayNone = !widget;
+    if (isDisplayNone() != willBeDisplayNone) {
+      doc->willChangeFrameOwnerProperties(marginWidth(), marginHeight(),
+                                          scrollingMode(), willBeDisplayNone);
+    }
+  }
+
   if (m_widget) {
     if (m_widget->parent())
       moveWidgetToParentSoon(m_widget.get(), 0);
@@ -250,6 +266,7 @@ void HTMLFrameOwnerElement::setWidget(Widget* widget) {
   }
 
   m_widget = widget;
+  frameOwnerPropertiesChanged();
 
   LayoutPart* layoutPart = toLayoutPart(layoutObject());
   LayoutPartItem layoutPartItem = LayoutPartItem(layoutPart);

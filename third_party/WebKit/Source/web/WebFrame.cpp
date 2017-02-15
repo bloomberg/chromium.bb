@@ -149,7 +149,8 @@ void WebFrame::setFrameOwnerProperties(
   if (frame->isLocalFrame()) {
     toLocalFrame(frame)->document()->willChangeFrameOwnerProperties(
         properties.marginWidth, properties.marginHeight,
-        static_cast<ScrollbarMode>(properties.scrollingMode));
+        static_cast<ScrollbarMode>(properties.scrollingMode),
+        properties.isDisplayNone);
   }
 
   owner->setBrowsingContextContainerName(properties.name);
@@ -158,6 +159,7 @@ void WebFrame::setFrameOwnerProperties(
   owner->setMarginHeight(properties.marginHeight);
   owner->setAllowFullscreen(properties.allowFullscreen);
   owner->setAllowPaymentRequest(properties.allowPaymentRequest);
+  owner->setIsDisplayNone(properties.isDisplayNone);
   owner->setCsp(properties.requiredCsp);
   owner->setDelegatedpermissions(properties.delegatedPermissions);
 }

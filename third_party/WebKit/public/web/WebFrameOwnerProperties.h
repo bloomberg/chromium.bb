@@ -22,6 +22,7 @@ struct WebFrameOwnerProperties {
   int marginHeight;
   bool allowFullscreen;
   bool allowPaymentRequest;
+  bool isDisplayNone;
   WebString requiredCsp;
   WebVector<mojom::PermissionName> delegatedPermissions;
 
@@ -30,7 +31,8 @@ struct WebFrameOwnerProperties {
         marginWidth(-1),
         marginHeight(-1),
         allowFullscreen(false),
-        allowPaymentRequest(false) {}
+        allowPaymentRequest(false),
+        isDisplayNone(false) {}
 
 #if INSIDE_BLINK
   WebFrameOwnerProperties(
@@ -40,6 +42,7 @@ struct WebFrameOwnerProperties {
       int marginHeight,
       bool allowFullscreen,
       bool allowPaymentRequest,
+      bool isDisplayNone,
       const WebString& requiredCsp,
       const WebVector<mojom::PermissionName>& delegatedPermissions)
       : name(name),
@@ -48,6 +51,7 @@ struct WebFrameOwnerProperties {
         marginHeight(marginHeight),
         allowFullscreen(allowFullscreen),
         allowPaymentRequest(allowPaymentRequest),
+        isDisplayNone(isDisplayNone),
         requiredCsp(requiredCsp),
         delegatedPermissions(delegatedPermissions) {}
 #endif

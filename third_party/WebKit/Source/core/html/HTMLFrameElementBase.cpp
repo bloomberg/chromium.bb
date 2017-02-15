@@ -118,13 +118,6 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem) {
       .executeScriptIfJavaScriptURL(scriptURL, this);
 }
 
-void HTMLFrameElementBase::frameOwnerPropertiesChanged() {
-  // Don't notify about updates if contentFrame() is null, for example when
-  // the subframe hasn't been created yet.
-  if (contentFrame())
-    document().frame()->loader().client()->didChangeFrameOwnerProperties(this);
-}
-
 void HTMLFrameElementBase::parseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
@@ -260,7 +253,7 @@ void HTMLFrameElementBase::setScrollingMode(ScrollbarMode scrollbarMode) {
 
   if (contentDocument()) {
     contentDocument()->willChangeFrameOwnerProperties(
-        m_marginWidth, m_marginHeight, scrollbarMode);
+        m_marginWidth, m_marginHeight, scrollbarMode, isDisplayNone());
   }
   m_scrollingMode = scrollbarMode;
   frameOwnerPropertiesChanged();
@@ -272,7 +265,7 @@ void HTMLFrameElementBase::setMarginWidth(int marginWidth) {
 
   if (contentDocument()) {
     contentDocument()->willChangeFrameOwnerProperties(
-        marginWidth, m_marginHeight, m_scrollingMode);
+        marginWidth, m_marginHeight, m_scrollingMode, isDisplayNone());
   }
   m_marginWidth = marginWidth;
   frameOwnerPropertiesChanged();
@@ -284,7 +277,7 @@ void HTMLFrameElementBase::setMarginHeight(int marginHeight) {
 
   if (contentDocument()) {
     contentDocument()->willChangeFrameOwnerProperties(
-        m_marginWidth, marginHeight, m_scrollingMode);
+        m_marginWidth, marginHeight, m_scrollingMode, isDisplayNone());
   }
   m_marginHeight = marginHeight;
   frameOwnerPropertiesChanged();
