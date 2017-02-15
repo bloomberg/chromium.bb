@@ -64,11 +64,11 @@ bool ReadRemoteData(base::ProcessHandle process, uint64_t address, T* data) {
   const void* typed_address =
       reinterpret_cast<const void*>(static_cast<uintptr_t>(address));
   SIZE_T bytes_read = 0;
-  if (!::ReadProcessMemory(process, typed_address, data, sizeof(data),
+  if (!::ReadProcessMemory(process, typed_address, data, sizeof(*data),
                            &bytes_read)) {
     return false;
   }
-  if (bytes_read != sizeof(data))
+  if (bytes_read != sizeof(*data))
     return false;
   return true;
 }
