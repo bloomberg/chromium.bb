@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/http/http_response_headers.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_mutex.h"
 #include "net/quic/platform/api/quic_url.h"
@@ -88,7 +87,10 @@ class QuicHttpResponseCache {
 
     void Read();
 
+    // |base| is |file_name_| with |cache_directory| prefix stripped.
     void SetHostPathFromBase(base::StringPiece base);
+
+    const std::string& file_name() { return file_name_string_; }
 
     base::StringPiece host() { return host_; }
     void set_host(base::StringPiece host) { host_ = host; }
@@ -101,8 +103,6 @@ class QuicHttpResponseCache {
     base::StringPiece body() { return body_; }
 
     const std::vector<base::StringPiece>& push_urls() { return push_urls_; }
-
-    const std::string& file_name() { return file_name_string_; }
 
    protected:
     void HandleXOriginalUrl();

@@ -107,28 +107,28 @@ int32_t FLAGS_initial_mtu = 0;
 class FakeProofVerifier : public ProofVerifier {
  public:
   net::QuicAsyncStatus VerifyProof(
-      const string& hostname,
-      const uint16_t port,
-      const string& server_config,
-      net::QuicVersion quic_version,
-      StringPiece chlo_hash,
-      const std::vector<string>& certs,
-      const string& cert_sct,
-      const string& signature,
-      const net::ProofVerifyContext* context,
-      string* error_details,
-      std::unique_ptr<net::ProofVerifyDetails>* details,
-      std::unique_ptr<net::ProofVerifierCallback> callback) override {
+      const string& /*hostname*/,
+      const uint16_t /*port*/,
+      const string& /*server_config*/,
+      net::QuicVersion /*quic_version*/,
+      StringPiece /*chlo_hash*/,
+      const std::vector<string>& /*certs*/,
+      const string& /*cert_sct*/,
+      const string& /*signature*/,
+      const net::ProofVerifyContext* /*context*/,
+      string* /*error_details*/,
+      std::unique_ptr<net::ProofVerifyDetails>* /*details*/,
+      std::unique_ptr<net::ProofVerifierCallback> /*callback*/) override {
     return net::QUIC_SUCCESS;
   }
 
   net::QuicAsyncStatus VerifyCertChain(
-      const std::string& hostname,
-      const std::vector<std::string>& certs,
-      const net::ProofVerifyContext* verify_context,
-      std::string* error_details,
-      std::unique_ptr<net::ProofVerifyDetails>* verify_details,
-      std::unique_ptr<net::ProofVerifierCallback> callback) override {
+      const std::string& /*hostname*/,
+      const std::vector<std::string>& /*certs*/,
+      const net::ProofVerifyContext* /*verify_context*/,
+      std::string* /*error_details*/,
+      std::unique_ptr<net::ProofVerifyDetails>* /*verify_details*/,
+      std::unique_ptr<net::ProofVerifierCallback> /*callback*/) override {
     return net::QUIC_SUCCESS;
   }
 };
@@ -339,6 +339,13 @@ int main(int argc, char* argv[]) {
       cout << "body: " << body << endl;
     }
     cout << endl;
+
+    if (!client.preliminary_response_headers().empty()) {
+      cout << "Preliminary response headers: "
+           << client.preliminary_response_headers() << endl;
+      cout << endl;
+    }
+
     cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
     string response_body = client.latest_response_body();

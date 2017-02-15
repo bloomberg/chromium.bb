@@ -60,16 +60,13 @@ QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16_t port) {
   return client;
 }
 
-TEST(QuicClientTest, DoNotLeakFDs) {
+TEST(QuicClientTest, DoNotLeakSocketFDs) {
   // Make sure that the QuicClient doesn't leak socket FDs. Doing so could cause
   // port exhaustion in long running processes which repeatedly create clients.
 
   // Create a ProofVerifier before counting the number of open FDs to work
   // around some ASAN weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
-
-  // Make sure that the QuicClient doesn't leak FDs. Doing so could cause port
-  // exhaustion in long running processes which repeatedly create clients.
 
   // Record initial number of FDs, after creation of EpollServer.
   EpollServer eps;

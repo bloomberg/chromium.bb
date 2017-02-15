@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
@@ -34,7 +33,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
-using testing::StrictMock;
 using testing::_;
 using testing::AtLeast;
 using testing::InSequence;

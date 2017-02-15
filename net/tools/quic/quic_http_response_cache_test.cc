@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include "net/tools/quic/quic_http_response_cache.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
-#include "net/spdy/spdy_framer.h"
-#include "net/tools/quic/quic_http_response_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using net::SpdyHeaderBlock;
 using std::string;
 
 namespace net {
@@ -190,6 +186,7 @@ TEST_F(QuicHttpResponseCacheTest, AddSimpleResponseWithServerPushResources) {
 
   cache_.AddSimpleResponseWithServerPushResources(
       request_host, "/", 200, response_body, push_resources);
+
   string request_url = request_host + "/";
   std::list<ServerPushInfo> resources =
       cache_.GetServerPushResources(request_url);
