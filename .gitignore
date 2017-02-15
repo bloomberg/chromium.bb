@@ -180,6 +180,7 @@ TAGS
 /tests/hyphenate_alderen
 /tests/hyphenate_straightforward
 /tests/hyphenate_xxx
+/tests/infiniteTranslationLoop
 /tests/inpos
 /tests/inpos_compbrl
 /tests/inpos_match_replace
