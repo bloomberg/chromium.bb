@@ -1677,6 +1677,11 @@ crbug.com/674317 virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-backg
 crbug.com/674317 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Timeout ]
 crbug.com/674317 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Timeout ]
 crbug.com/674317 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Timeout ]
+crbug.com/674317 virtual/threaded/transitions/extra-transition.html [ Timeout ]
+crbug.com/674317 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
+crbug.com/674317 virtual/threaded/transitions/opacity-transition-zindex.html [ Timeout ]
+crbug.com/674317 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
+crbug.com/674317 virtual/threaded/transitions/unprefixed-transform.html [ Timeout ]
 
 # Compositor Worker logic has not yet been fully ported to SPv2.
 crbug.com/686897 virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]
@@ -1696,4 +1701,3 @@ Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers.html [
 Bug(none) virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Failure ]
 Bug(none) virtual/threaded/compositing/webgl/webgl-reflection.html [ Failure ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
-Bug(none) virtual/threaded/transitions/ [ Skip ]
