@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
+#if defined(__has_feature) && __has_feature(objc_arc)
+#error "This file must not be compiled with ARC."
 #endif
 
 // This test verifies assumptions about the murky world of interaction between
@@ -17,7 +17,7 @@
 
 namespace {
 
-using BlockTest = PlatformTest;
+using NoArcBlockTest = PlatformTest;
 
 class RefCountedObject : public base::RefCounted<RefCountedObject> {
  public:
@@ -43,7 +43,7 @@ class RefCountedObject : public base::RefCounted<RefCountedObject> {
   virtual ~RefCountedObject() {}
 };
 
-TEST_F(BlockTest, BlockAndCPlusPlus) {
+TEST_F(NoArcBlockTest, BlockAndCPlusPlus) {
   RefCountedObject* object = new RefCountedObject();
   object->AddRef();
   EXPECT_TRUE(object->HasOneRef());
@@ -55,23 +55,22 @@ TEST_F(BlockTest, BlockAndCPlusPlus) {
   }
   EXPECT_TRUE(object->HasOneRef());
 
-  @autoreleasepool {
-    void (^heap_block)(int) = nil;
-    {
-      scoped_refptr<RefCountedObject> object_ptr(object);
-      EXPECT_EQ(2, object->refcount());
-      void* object_void_ptr = (void*)object;
+  void (^heap_block)(int) = nil;
+  {
+    scoped_refptr<RefCountedObject> object_ptr(object);
+    EXPECT_EQ(2, object->refcount());
+    void* object_void_ptr = (void*)object;
 
-      void (^stack_block)(int) = ^(int expected) {
-        EXPECT_EQ(object_void_ptr, object_ptr.get());
-        EXPECT_EQ(expected, object_ptr.get()->refcount());
-      };
-      stack_block(4);
-      heap_block = [stack_block copy];
-      stack_block(4);
-    }
-    heap_block(2);
+    void (^stack_block)(int) = ^(int expected) {
+      EXPECT_EQ(object_void_ptr, object_ptr.get());
+      EXPECT_EQ(expected, object_ptr.get()->refcount());
+    };
+    stack_block(3);
+    heap_block = [stack_block copy];
+    stack_block(4);
   }
+  heap_block(2);
+  [heap_block release];
   EXPECT_TRUE(object->HasOneRef());
   {
     scoped_refptr<RefCountedObject> object_test2_ptr(object);
@@ -81,7 +80,7 @@ TEST_F(BlockTest, BlockAndCPlusPlus) {
   object->Release();
 }
 
-TEST_F(BlockTest, BlockAndVectors) {
+TEST_F(NoArcBlockTest, BlockAndVectors) {
   void (^heap_block)(void) = nil;
   {
     std::vector<int> vector;
@@ -101,6 +100,7 @@ TEST_F(BlockTest, BlockAndVectors) {
     stack_block();
   }
   heap_block();
+  [heap_block release];
 }
 
 }  // namespace
