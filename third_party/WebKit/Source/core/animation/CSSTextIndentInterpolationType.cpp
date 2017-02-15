@@ -198,11 +198,10 @@ PairwiseInterpolationValue CSSTextIndentInterpolationType::maybeMergeSingles(
       LengthInterpolationFunctions::mergeSingles(
           InterpolationValue(
               std::move(start.interpolableValue),
-              std::move(
-                  startNonInterpolableValue.lengthNonInterpolableValue())),
+              startNonInterpolableValue.lengthNonInterpolableValue()),
           InterpolationValue(
               std::move(end.interpolableValue),
-              std::move(endNonInterpolableValue.lengthNonInterpolableValue())));
+              endNonInterpolableValue.lengthNonInterpolableValue()));
   result.nonInterpolableValue = CSSTextIndentNonInterpolableValue::create(
       std::move(result.nonInterpolableValue), startNonInterpolableValue.mode());
   return result;
