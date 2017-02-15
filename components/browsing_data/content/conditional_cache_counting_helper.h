@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 

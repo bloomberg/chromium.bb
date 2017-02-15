@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/tracked_objects.h"
 #include "components/memory_pressure/memory_pressure_stats_collector.h"

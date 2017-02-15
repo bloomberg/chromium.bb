@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/sessions/core/sessions_export.h"
 #include "url/gurl.h"
 

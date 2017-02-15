@@ -15,6 +15,10 @@
 #include "net/http/bidirectional_stream.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace net {
 class HttpRequestHeaders;
 class WrappedIOBuffer;
