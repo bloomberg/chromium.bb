@@ -33,6 +33,7 @@ TEST(ThreadLoadTrackerTest, RecordTasks) {
   ThreadLoadTracker thread_load_tracker(
       SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+  thread_load_tracker.Resume(SecondsToTime(1));
 
   // We should discard first ten seconds of information.
   thread_load_tracker.RecordTaskTime(SecondsToTime(1), SecondsToTime(3));
@@ -67,6 +68,7 @@ TEST(ThreadLoadTrackerTest, PauseAndResume) {
   ThreadLoadTracker thread_load_tracker(
       SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+  thread_load_tracker.Resume(SecondsToTime(1));
 
   thread_load_tracker.RecordTaskTime(SecondsToTime(3), SecondsToTime(4));
   thread_load_tracker.Pause(SecondsToTime(5));
@@ -89,6 +91,26 @@ TEST(ThreadLoadTrackerTest, PauseAndResume) {
                                   std::make_pair(SecondsToTime(22), 0.1),
                                   std::make_pair(SecondsToTime(23), 0),
                                   std::make_pair(SecondsToTime(27), 0.1)));
+}
+
+TEST(ThreadLoadTrackerTest, DisabledByDefault) {
+  std::vector<std::pair<base::TimeTicks, double>> result;
+  ThreadLoadTracker thread_load_tracker(
+      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+
+  // ThreadLoadTracker should be disabled and these tasks should be
+  // ignored.
+  thread_load_tracker.RecordTaskTime(SecondsToTime(13), SecondsToTime(14));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(15), SecondsToTime(16));
+
+  thread_load_tracker.Resume(SecondsToTime(17));
+
+  thread_load_tracker.RecordTaskTime(SecondsToTime(28), SecondsToTime(29));
+
+  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(27), 0),
+                                  std::make_pair(SecondsToTime(28), 0),
+                                  std::make_pair(SecondsToTime(29), 1)));
 }
 
 }  // namespace scheduler

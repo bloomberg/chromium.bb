@@ -14,7 +14,7 @@ ThreadLoadTracker::ThreadLoadTracker(base::TimeTicks now,
                                      base::TimeDelta reporting_interval,
                                      base::TimeDelta waiting_period)
     : time_(now),
-      thread_state_(ThreadState::ACTIVE),
+      thread_state_(ThreadState::PAUSED),
       last_state_change_time_(now),
       waiting_period_(waiting_period),
       reporting_interval_(reporting_interval),

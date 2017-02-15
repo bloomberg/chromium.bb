@@ -224,7 +224,9 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       in_idle_period_for_testing(false),
       use_virtual_time(false),
       is_audio_playing(false),
-      rail_mode_observer(nullptr) {}
+      rail_mode_observer(nullptr) {
+  foreground_main_thread_load_tracker.Resume(now);
+}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
