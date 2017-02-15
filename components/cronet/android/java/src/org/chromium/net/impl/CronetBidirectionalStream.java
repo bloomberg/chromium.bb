@@ -546,6 +546,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         assert byteBuffers.length == initialPositions.length;
         assert byteBuffers.length == initialLimits.length;
         synchronized (mNativeStreamLock) {
+            if (isDoneLocked()) return;
             mWriteState = State.WAITING_FOR_FLUSH;
             // Flush if there is anything in the flush queue mFlushData.
             if (!mFlushData.isEmpty()) {

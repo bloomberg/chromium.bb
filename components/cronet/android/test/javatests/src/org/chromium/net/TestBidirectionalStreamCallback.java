@@ -69,6 +69,10 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     // Buffers that we yet to receive the corresponding onWriteCompleted callback.
     private final ArrayList<WriteBuffer> mWriteBuffersToBeAcked = new ArrayList<WriteBuffer>();
 
+    // Whether to use a direct executor.
+    private final boolean mUseDirectExecutor;
+    private final DirectExecutor mDirectExecutor;
+
     private class ExecutorThreadFactory implements ThreadFactory {
         public Thread newThread(Runnable r) {
             mExecutorThread = new Thread(r);
@@ -82,6 +86,13 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         public WriteBuffer(ByteBuffer buffer, boolean flush) {
             mBuffer = buffer;
             mFlush = flush;
+        }
+    }
+
+    private static class DirectExecutor implements Executor {
+        @Override
+        public void execute(Runnable task) {
+            task.run();
         }
     }
 
@@ -105,6 +116,16 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         // the cancellation task.
         CANCEL_ASYNC_WITHOUT_PAUSE,
         THROW_SYNC
+    }
+
+    public TestBidirectionalStreamCallback() {
+        mUseDirectExecutor = false;
+        mDirectExecutor = null;
+    }
+
+    public TestBidirectionalStreamCallback(boolean useDirectExecutor) {
+        mUseDirectExecutor = useDirectExecutor;
+        mDirectExecutor = new DirectExecutor();
     }
 
     public void setAutoAdvance(boolean autoAdvance) {
@@ -131,10 +152,16 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     }
 
     public Executor getExecutor() {
+        if (mUseDirectExecutor) {
+            return mDirectExecutor;
+        }
         return mExecutorService;
     }
 
     public void shutdownExecutor() {
+        if (mUseDirectExecutor) {
+            throw new UnsupportedOperationException("DirectExecutor doesn't support shutdown");
+        }
         mExecutorService.shutdown();
     }
 
@@ -152,7 +179,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     @Override
     public void onStreamReady(BidirectionalStream stream) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertFalse(stream.isDone());
         assertEquals(ResponseStep.NOTHING, mResponseStep);
         assertNull(mError);
@@ -165,7 +192,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     @Override
     public void onResponseHeadersReceived(BidirectionalStream stream, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertFalse(stream.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
                 || mResponseStep == ResponseStep.ON_STREAM_READY
@@ -183,7 +210,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     @Override
     public void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
             ByteBuffer byteBuffer, boolean endOfStream) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertFalse(stream.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                 || mResponseStep == ResponseStep.ON_READ_COMPLETED
@@ -217,7 +244,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     @Override
     public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
             ByteBuffer buffer, boolean endOfStream) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertFalse(stream.isDone());
         assertNull(mError);
         mResponseStep = ResponseStep.ON_WRITE_COMPLETED;
@@ -235,7 +262,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     @Override
     public void onResponseTrailersReceived(BidirectionalStream stream, UrlResponseInfo info,
             UrlResponseInfo.HeaderBlock trailers) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertFalse(stream.isDone());
         assertNull(mError);
         mResponseStep = ResponseStep.ON_TRAILERS;
@@ -248,7 +275,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     @Override
     public void onSucceeded(BidirectionalStream stream, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertTrue(stream.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                 || mResponseStep == ResponseStep.ON_READ_COMPLETED
@@ -268,7 +295,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     @Override
     public void onFailed(BidirectionalStream stream, UrlResponseInfo info, CronetException error) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertTrue(stream.isDone());
         // Shouldn't happen after success.
         assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
@@ -287,7 +314,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     @Override
     public void onCanceled(BidirectionalStream stream, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkOnValidThread();
         assertTrue(stream.isDone());
         // Should happen at most once for a single stream.
         assertFalse(mOnCanceledCalled);
@@ -372,5 +399,14 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
             task.run();
         }
         return mFailureType != FailureType.CANCEL_ASYNC_WITHOUT_PAUSE;
+    }
+
+    /**
+     * Checks whether callback methods are invoked on the correct thread.
+     */
+    private void checkOnValidThread() {
+        if (!mUseDirectExecutor) {
+            assertEquals(mExecutorThread, Thread.currentThread());
+        }
     }
 }
