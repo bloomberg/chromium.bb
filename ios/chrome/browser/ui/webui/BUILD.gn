@@ -83,6 +83,7 @@ source_set("webui_internal") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "web_ui_egtest.mm",

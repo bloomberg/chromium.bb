@@ -23,6 +23,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/scheme_host_port.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
 using chrome_test_util::StaticHtmlViewContainingText;
@@ -61,11 +65,11 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     [description appendText:base::SysUTF8ToNSString(text)];
   };
 
-  return grey_allOf(chrome_test_util::Omnibox(),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      chrome_test_util::Omnibox(),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 }  // namespace
