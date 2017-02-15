@@ -104,7 +104,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
 
  private:
   class SharedWorkerPendingInstance;
-  class SharedWorkerReserver;
 
   friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
@@ -146,7 +145,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   void RenderProcessReserveFailedCallback(int pending_instance_id,
                                           int worker_process_id,
                                           int worker_route_id,
-                                          bool is_new_worker);
+                                          bool is_new_worker,
+                                          bool pause_on_start);
 
   // Returns nullptr if there is no host for given ids.
   SharedWorkerHost* FindSharedWorkerHost(int render_process_id,
