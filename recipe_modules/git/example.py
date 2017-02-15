@@ -59,7 +59,8 @@ def RunSteps(api):
 
   # If you need to run more arbitrary git commands, you can use api.git itself,
   # which behaves like api.step(), but automatically sets the name of the step.
-  api.git('status', cwd=api.path['checkout'])
+  with api.step.context({'cwd': api.path['checkout']}):
+    api.git('status')
 
   api.git('status', name='git status can_fail_build',
           can_fail_build=True)

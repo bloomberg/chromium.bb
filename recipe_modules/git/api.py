@@ -18,8 +18,6 @@ class GitApi(recipe_api.RecipeApi):
     """Return a git command step."""
     name = kwargs.pop('name', 'git ' + args[0])
     infra_step = kwargs.pop('infra_step', True)
-    if 'cwd' not in kwargs:
-      kwargs.setdefault('cwd', self.m.path['checkout'])
     git_cmd = ['git']
     if self.m.platform.is_win:
       self.ensure_win_git_tooling()
@@ -29,8 +27,12 @@ class GitApi(recipe_api.RecipeApi):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
     can_fail_build = kwargs.pop('can_fail_build', True)
     try:
-      return self.m.step(name, git_cmd + list(args), infra_step=infra_step,
-                         **kwargs)
+      context = {}
+      if not self.m.step.get_from_context('cwd') and self.m.path['checkout']:
+        context['cwd'] = self.m.path['checkout']
+      with self.m.step.context(context):
+        return self.m.step(name, git_cmd + list(args), infra_step=infra_step,
+                           **kwargs)
     except self.m.step.StepFailure as f:
       if can_fail_build:
         raise
@@ -41,13 +43,13 @@ class GitApi(recipe_api.RecipeApi):
     """Ensures that depot_tools/git.bat actually exists."""
     if not self.m.platform.is_win or self.initialized_win_git:
       return
-    self.m.python(
-        'ensure git tooling on windows',
-        self.package_repo_resource('bootstrap', 'win', 'git_bootstrap.py'),
-        ['--verbose'],
-        infra_step=True,
-        cwd=self.package_repo_resource(),
-        timeout=300)
+    with self.m.step.context({'cwd': self.package_repo_resource()}):
+      self.m.python(
+          'ensure git tooling on windows',
+          self.package_repo_resource('bootstrap', 'win', 'git_bootstrap.py'),
+          ['--verbose'],
+          infra_step=True,
+          timeout=300)
     self.initialized_win_git = True
 
   def fetch_tags(self, remote_name=None, **kwargs):
@@ -213,135 +215,124 @@ class GitApi(recipe_api.RecipeApi):
     path = self.m.path.pathsep.join([
         str(self.package_repo_resource()), '%(PATH)s'])
 
-    if use_git_cache:
-      with self.m.step.context({'env': {'PATH': path}}):
-        self('retry', 'cache', 'populate', '-c',
-             self.m.infra_paths.default_git_cache_dir, url,
+    with self.m.step.context({'cwd': dir_path}):
+      if use_git_cache:
+        with self.m.step.context({'env': {'PATH': path}}):
+          self('retry', 'cache', 'populate', '-c',
+               self.m.infra_paths.default_git_cache_dir, url,
 
-             name='populate cache',
-             can_fail_build=can_fail_build,
-             cwd=dir_path)
-        dir_cmd = self(
-            'cache', 'exists', '--quiet',
-            '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
-            can_fail_build=can_fail_build,
-            stdout=self.m.raw_io.output(),
-            step_test_data=lambda:
-                self.m.raw_io.test_api.stream_output('mirror_dir'),
-            cwd=dir_path)
-        mirror_dir = dir_cmd.stdout.strip()
-        self('remote', 'set-url', 'origin', mirror_dir,
-             can_fail_build=can_fail_build,
-             cwd=dir_path)
+               name='populate cache',
+               can_fail_build=can_fail_build)
+          dir_cmd = self(
+              'cache', 'exists', '--quiet',
+              '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
+              can_fail_build=can_fail_build,
+              stdout=self.m.raw_io.output(),
+              step_test_data=lambda:
+                  self.m.raw_io.test_api.stream_output('mirror_dir'))
+          mirror_dir = dir_cmd.stdout.strip()
+          self('remote', 'set-url', 'origin', mirror_dir,
+               can_fail_build=can_fail_build)
 
-    # There are five kinds of refs we can be handed:
-    # 0) None. In this case, we default to properties['branch'].
-    # 1) A 40-character SHA1 hash.
-    # 2) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
-    # 3) A fully qualified branch name, e.g. 'refs/heads/master'.
-    #    Chop off 'refs/heads' and now it matches case (4).
-    # 4) A branch name, e.g. 'master'.
-    # Note that 'FETCH_HEAD' can be many things (and therefore not a valid
-    # checkout target) if many refs are fetched, but we only explicitly fetch
-    # one ref here, so this is safe.
-    fetch_args = []
-    if not ref:                                  # Case 0
-      fetch_remote = remote_name
-      fetch_ref = self.m.properties.get('branch') or 'master'
-      checkout_ref = 'FETCH_HEAD'
-    elif self._GIT_HASH_RE.match(ref):        # Case 1.
-      fetch_remote = remote_name
-      fetch_ref = ''
-      checkout_ref = ref
-    elif ref.startswith('refs/heads/'):       # Case 3.
-      fetch_remote = remote_name
-      fetch_ref = ref[len('refs/heads/'):]
-      checkout_ref = 'FETCH_HEAD'
-    else:                                     # Cases 2 and 4.
-      fetch_remote = remote_name
-      fetch_ref = ref
-      checkout_ref = 'FETCH_HEAD'
+      # There are five kinds of refs we can be handed:
+      # 0) None. In this case, we default to properties['branch'].
+      # 1) A 40-character SHA1 hash.
+      # 2) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
+      # 3) A fully qualified branch name, e.g. 'refs/heads/master'.
+      #    Chop off 'refs/heads' and now it matches case (4).
+      # 4) A branch name, e.g. 'master'.
+      # Note that 'FETCH_HEAD' can be many things (and therefore not a valid
+      # checkout target) if many refs are fetched, but we only explicitly fetch
+      # one ref here, so this is safe.
+      fetch_args = []
+      if not ref:                                  # Case 0
+        fetch_remote = remote_name
+        fetch_ref = self.m.properties.get('branch') or 'master'
+        checkout_ref = 'FETCH_HEAD'
+      elif self._GIT_HASH_RE.match(ref):        # Case 1.
+        fetch_remote = remote_name
+        fetch_ref = ''
+        checkout_ref = ref
+      elif ref.startswith('refs/heads/'):       # Case 3.
+        fetch_remote = remote_name
+        fetch_ref = ref[len('refs/heads/'):]
+        checkout_ref = 'FETCH_HEAD'
+      else:                                     # Cases 2 and 4.
+        fetch_remote = remote_name
+        fetch_ref = ref
+        checkout_ref = 'FETCH_HEAD'
 
-    fetch_args = [x for x in (fetch_remote, fetch_ref) if x]
-    if recursive:
-      fetch_args.append('--recurse-submodules')
+      fetch_args = [x for x in (fetch_remote, fetch_ref) if x]
+      if recursive:
+        fetch_args.append('--recurse-submodules')
 
-    fetch_env = {'PATH': path}
-    fetch_stderr = None
-    if curl_trace_file:
-      fetch_env['GIT_CURL_VERBOSE'] = '1'
-      fetch_stderr = self.m.raw_io.output(leak_to=curl_trace_file)
+      fetch_env = {'PATH': path}
+      fetch_stderr = None
+      if curl_trace_file:
+        fetch_env['GIT_CURL_VERBOSE'] = '1'
+        fetch_stderr = self.m.raw_io.output(leak_to=curl_trace_file)
 
-    fetch_step_name = 'git fetch%s' % step_suffix
-    if display_fetch_size:
-      count_objects_before_fetch = self.count_objects(
-          name='count-objects before %s' % fetch_step_name,
-          cwd=dir_path,
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output(
-              self.test_api.count_objects_output(1000)))
-    self('retry', 'fetch', *fetch_args,
-      cwd=dir_path,
-      name=fetch_step_name,
-      env=fetch_env,
-      stderr=fetch_stderr,
-      can_fail_build=can_fail_build)
-    if display_fetch_size:
-      self.count_objects(
-          name='count-objects after %s' % fetch_step_name,
-          cwd=dir_path,
-          previous_result=count_objects_before_fetch,
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output(
-              self.test_api.count_objects_output(2000)))
+      fetch_step_name = 'git fetch%s' % step_suffix
+      if display_fetch_size:
+        count_objects_before_fetch = self.count_objects(
+            name='count-objects before %s' % fetch_step_name,
+            step_test_data=lambda: self.m.raw_io.test_api.stream_output(
+                self.test_api.count_objects_output(1000)))
+      self('retry', 'fetch', *fetch_args,
+        name=fetch_step_name,
+        env=fetch_env,
+        stderr=fetch_stderr,
+        can_fail_build=can_fail_build)
+      if display_fetch_size:
+        self.count_objects(
+            name='count-objects after %s' % fetch_step_name,
+            previous_result=count_objects_before_fetch,
+            step_test_data=lambda: self.m.raw_io.test_api.stream_output(
+                self.test_api.count_objects_output(2000)))
 
-    if file_name:
-      self('checkout', '-f', checkout_ref, '--', file_name,
-        cwd=dir_path,
-        name='git checkout%s' % step_suffix,
+      if file_name:
+        self('checkout', '-f', checkout_ref, '--', file_name,
+          name='git checkout%s' % step_suffix,
+          can_fail_build=can_fail_build)
+
+      else:
+        self('checkout', '-f', checkout_ref,
+          name='git checkout%s' % step_suffix,
+          can_fail_build=can_fail_build)
+
+      rev_parse_step = self('rev-parse', 'HEAD',
+                           name='read revision',
+                           stdout=self.m.raw_io.output(),
+                           can_fail_build=False,
+                           step_test_data=lambda:
+                              self.m.raw_io.test_api.stream_output('deadbeef'))
+
+      if rev_parse_step.presentation.status == 'SUCCESS':
+        sha = rev_parse_step.stdout.strip()
+        retVal = sha
+        rev_parse_step.presentation.step_text = "<br/>checked out %r<br/>" % sha
+        if set_got_revision:
+          rev_parse_step.presentation.properties['got_revision'] = sha
+
+      clean_args = list(itertools.chain(
+          *[('-e', path) for path in keep_paths or []]))
+
+      self('clean', '-f', '-d', '-x', *clean_args,
+        name='git clean%s' % step_suffix,
         can_fail_build=can_fail_build)
 
-    else:
-      self('checkout', '-f', checkout_ref,
-        cwd=dir_path,
-        name='git checkout%s' % step_suffix,
-        can_fail_build=can_fail_build)
-
-    rev_parse_step = self('rev-parse', 'HEAD',
-                         cwd=dir_path,
-                         name='read revision',
-                         stdout=self.m.raw_io.output(),
-                         can_fail_build=False,
-                         step_test_data=lambda:
-                            self.m.raw_io.test_api.stream_output('deadbeef'))
-
-    if rev_parse_step.presentation.status == 'SUCCESS':
-      sha = rev_parse_step.stdout.strip()
-      retVal = sha
-      rev_parse_step.presentation.step_text = "<br/>checked out %r<br/>" % sha
-      if set_got_revision:
-        rev_parse_step.presentation.properties['got_revision'] = sha
-
-    clean_args = list(itertools.chain(
-        *[('-e', path) for path in keep_paths or []]))
-
-    self('clean', '-f', '-d', '-x', *clean_args,
-      name='git clean%s' % step_suffix,
-      cwd=dir_path,
-      can_fail_build=can_fail_build)
-
-    if submodules:
-      self('submodule', 'sync',
-        name='submodule sync%s' % step_suffix,
-        cwd=dir_path,
-        can_fail_build=can_fail_build)
-      submodule_update = ['submodule', 'update', '--init']
-      if submodule_update_recursive:
-        submodule_update.append('--recursive')
-      if submodule_update_force:
-        submodule_update.append('--force')
-      self(*submodule_update,
-        name='submodule update%s' % step_suffix,
-        cwd=dir_path,
-        can_fail_build=can_fail_build)
+      if submodules:
+        self('submodule', 'sync',
+          name='submodule sync%s' % step_suffix,
+          can_fail_build=can_fail_build)
+        submodule_update = ['submodule', 'update', '--init']
+        if submodule_update_recursive:
+          submodule_update.append('--recursive')
+        if submodule_update_force:
+          submodule_update.append('--force')
+        self(*submodule_update,
+          name='submodule update%s' % step_suffix,
+          can_fail_build=can_fail_build)
 
     return retVal
 
@@ -364,13 +355,14 @@ class GitApi(recipe_api.RecipeApi):
     remote_name (str): the remote name to rebase from if not origin
     """
     remote_name = remote_name or 'origin'
-    try:
-      self('rebase', '%s/master' % remote_name,
-          name="%s rebase" % name_prefix, cwd=dir_path, **kwargs)
-    except self.m.step.StepFailure:
-      self('rebase', '--abort', name='%s rebase abort' % name_prefix,
-          cwd=dir_path, **kwargs)
-      raise
+    with self.m.step.context({'cwd': dir_path}):
+      try:
+        self('rebase', '%s/master' % remote_name,
+             name="%s rebase" % name_prefix, **kwargs)
+      except self.m.step.StepFailure:
+        self('rebase', '--abort', name='%s rebase abort' % name_prefix,
+             **kwargs)
+        raise
 
   def config_get(self, prop_name, **kwargs):
     """Returns: (str) The Git config output, or None if no output was generated.

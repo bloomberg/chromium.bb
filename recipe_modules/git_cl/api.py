@@ -14,12 +14,12 @@ class GitClApi(recipe_api.RecipeApi):
     if kwargs.get('suffix'):
       name = name + ' (%s)' % kwargs.pop('suffix')
 
-    if 'cwd' not in kwargs:
-      kwargs['cwd'] = (self.c and self.c.repo_location) or None
-
-    return self.m.step(
-        name, [self.package_repo_resource('git_cl.py'), subcmd] + args,
-        **kwargs)
+    with self.m.step.context({
+        'cwd': self.m.step.get_from_context(
+            'cwd', (self.c and self.c.repo_location) or None)}):
+      return self.m.step(
+          name, [self.package_repo_resource('git_cl.py'), subcmd] + args,
+          **kwargs)
 
   def get_description(self, patch=None, codereview=None, **kwargs):
     args = ['-d']

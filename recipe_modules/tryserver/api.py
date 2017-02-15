@@ -84,12 +84,10 @@ class TryserverApi(recipe_api.RecipeApi):
     patch_path = patch_dir.join('patch.diff')
 
     self.m.python('patch git setup', git_setup_py, git_setup_args)
-    self.m.git('fetch', 'origin', patch_ref,
-                name='patch fetch', cwd=patch_dir)
-    self.m.git('clean', '-f', '-d', '-x',
-                name='patch clean', cwd=patch_dir)
-    self.m.git('checkout', '-f', 'FETCH_HEAD',
-                name='patch git checkout', cwd=patch_dir)
+    with self.m.step.context({'cwd': patch_dir}):
+      self.m.git('fetch', 'origin', patch_ref, name='patch fetch')
+      self.m.git('clean', '-f', '-d', '-x', name='patch clean')
+      self.m.git('checkout', '-f', 'FETCH_HEAD', name='patch git checkout')
     self._apply_patch_step(patch_file=patch_path, root=cwd)
     self.m.step('remove patch', ['rm', '-rf', patch_dir])
 
@@ -140,14 +138,15 @@ class TryserverApi(recipe_api.RecipeApi):
     # removed.
     if patch_root is None:
       return self._old_get_files_affected_by_patch()
-    if not kwargs.get('cwd'):
-      kwargs['cwd'] = self.m.path['start_dir'].join(patch_root)
-    step_result = self.m.git('diff', '--cached', '--name-only',
-                             name='git diff to analyze patch',
-                             stdout=self.m.raw_io.output(),
-                             step_test_data=lambda:
-                               self.m.raw_io.test_api.stream_output('foo.cc'),
-                             **kwargs)
+    with self.m.step.context({
+        'cwd': self.m.step.get_from_context(
+            'cwd', self.m.path['start_dir'].join(patch_root))}):
+      step_result = self.m.git('diff', '--cached', '--name-only',
+                               name='git diff to analyze patch',
+                               stdout=self.m.raw_io.output(),
+                               step_test_data=lambda:
+                                 self.m.raw_io.test_api.stream_output('foo.cc'),
+                               **kwargs)
     paths = [self.m.path.join(patch_root, p) for p in
              step_result.stdout.split()]
     if self.m.platform.is_win:
@@ -159,16 +158,16 @@ class TryserverApi(recipe_api.RecipeApi):
 
 
   def _old_get_files_affected_by_patch(self):
-    git_diff_kwargs = {}
+    context = {}
     issue_root = self.m.rietveld.calculate_issue_root()
     if issue_root:
-      git_diff_kwargs['cwd'] = self.m.path['checkout'].join(issue_root)
-    step_result = self.m.git('diff', '--cached', '--name-only',
-                             name='git diff to analyze patch',
-                             stdout=self.m.raw_io.output(),
-                             step_test_data=lambda:
-                               self.m.raw_io.test_api.stream_output('foo.cc'),
-                             **git_diff_kwargs)
+      context['cwd'] = self.m.path['checkout'].join(issue_root)
+    with self.m.step.context(context):
+      step_result = self.m.git('diff', '--cached', '--name-only',
+                               name='git diff to analyze patch',
+                               stdout=self.m.raw_io.output(),
+                               step_test_data=lambda:
+                                 self.m.raw_io.test_api.stream_output('foo.cc'))
     paths = step_result.stdout.split()
     if issue_root:
       paths = [self.m.path.join(issue_root, path) for path in paths]
