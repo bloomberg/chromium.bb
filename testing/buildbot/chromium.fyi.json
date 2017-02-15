@@ -11508,7 +11508,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 5
         },
         "test": "browser_tests"
       },
