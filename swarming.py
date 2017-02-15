@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.9'
+__version__ = '0.8.10'
 
 import collections
 import datetime
@@ -15,6 +15,7 @@ import optparse
 import os
 import subprocess
 import sys
+import textwrap
 import threading
 import time
 import urllib
@@ -1408,18 +1409,35 @@ def CMDquery_list(parser, args):
     help_url = (
       'https://apis-explorer.appspot.com/apis-explorer/?base=%s/_ah/api#p/' %
       options.swarming)
-    for api_id, api in sorted(apis.iteritems()):
+    for i, (api_id, api) in enumerate(sorted(apis.iteritems())):
+      if i:
+        print('')
       print api_id
-      print '  ' + api['description']
-      for resource_name, resource in sorted(api['resources'].iteritems()):
-        print ''
-        for method_name, method in sorted(resource['methods'].iteritems()):
+      print '  ' + api['description'].strip()
+      if 'resources' in api:
+        # Old.
+        for j, (resource_name, resource) in enumerate(
+            sorted(api['resources'].iteritems())):
+          if j:
+            print('')
+          for method_name, method in sorted(resource['methods'].iteritems()):
+            # Only list the GET ones.
+            if method['httpMethod'] != 'GET':
+              continue
+            print '- %s.%s: %s' % (
+                resource_name, method_name, method['path'])
+            print('\n'.join(
+                '  ' + l for l in textwrap.wrap(method['description'], 78)))
+            print '  %s%s%s' % (help_url, api['servicePath'], method['id'])
+      else:
+        # New.
+        for method_name, method in sorted(api['methods'].iteritems()):
           # Only list the GET ones.
           if method['httpMethod'] != 'GET':
             continue
-          print '- %s.%s: %s' % (
-              resource_name, method_name, method['path'])
-          print '  ' + method['description']
+          print '- %s: %s' % (method['id'], method['path'])
+          print('\n'.join(
+              '  ' + l for l in textwrap.wrap(method['description'], 78)))
           print '  %s%s%s' % (help_url, api['servicePath'], method['id'])
   return 0
 
