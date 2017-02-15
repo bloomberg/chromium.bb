@@ -23,6 +23,7 @@ target(link_target_type, "renderer") {
   # internal content ones) should depend on the public one.
   visibility = [
     ":for_content_tests",
+    "//content/app:*",
     "//content/public/renderer:renderer_sources",
   ]
 

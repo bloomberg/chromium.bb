@@ -30,7 +30,6 @@ template("implement_content_app") {
     "//services/service_manager/public/interfaces",
     "//mojo/edk/system",
     "//ppapi/features",
-    "//third_party/WebKit/public:mojo_bindings",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -47,8 +46,6 @@ template("implement_content_app") {
       "//content/browser",
       "//content/child",
       "//content/public/android:jni",
-      "//content/browser",
-      "//content/child",
       "//device/bluetooth",
       "//device/gamepad",
       "//device/generic_sensor",
@@ -74,10 +71,6 @@ template("implement_content_app") {
     content_app_deps += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
   }
 
-  if (!is_multi_dll_chrome) {
-    content_app_deps += [ "//content/gpu:gpu_sources" ]
-  }
-
   # Compile content_main_runner.cc in a separate target to exempt from GN
   # header checking without exempting any other source file. This file includes
   # headers of all process types and varies significantly per platform in
@@ -96,6 +89,9 @@ template("implement_content_app") {
 
     configs += extra_configs
     deps = content_app_deps
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     forward_variables_from(invoker, [ "defines" ])
   }
@@ -137,6 +133,21 @@ template("implement_content_app") {
   }
 }
 
+group("content_app_browser_deps") {
+  deps = [
+    "//content/browser",
+    "//content/public/browser:browser_sources",
+  ]
+}
+
+group("content_app_child_deps") {
+  deps = [
+    "//content/public/gpu:gpu_sources",
+    "//content/public/renderer:renderer_sources",
+    "//content/public/utility:utility_sources",
+  ]
+}
+
 # This includes the app sources for both the browser and child processes.
 implement_content_app("both") {
   # Only the public target should depend on this. All other targets (even
@@ -144,6 +155,13 @@ implement_content_app("both") {
   visibility = [
     ":both_for_content_tests",  # See top of //content/BUILD.gn for why.
     "//content/public/app:*",
+  ]
+  deps = [
+    ":content_app_browser_deps",
+    ":content_app_child_deps",
+    "//content/gpu:gpu_sources",
+    "//content/renderer",
+    "//content/utility",
   ]
 }
 
@@ -164,10 +182,16 @@ if (is_multi_dll_chrome) {
   implement_content_app("browser") {
     visibility = [ "//content/public/app:browser" ]
     defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    deps = [
+      ":content_app_browser_deps",
+    ]
   }
 
   implement_content_app("child") {
     visibility = [ "//content/public/app:child" ]
     defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
+    deps = [
+      ":content_app_child_deps",
+    ]
   }
 }

@@ -46,26 +46,16 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/app/mojo/mojo_init.h"
-#include "content/browser/browser_main.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host_impl.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
-#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/gpu/content_gpu_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/public/utility/content_utility_client.h"
-#include "content/renderer/in_process_renderer_thread.h"
-#include "content/utility/in_process_utility_thread.h"
 #include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
 #include "ppapi/features/features.h"
@@ -114,8 +104,24 @@
 #include "crypto/nss_util.h"
 #endif
 
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#include "content/public/gpu/content_gpu_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
+#endif
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+#include "content/browser/browser_main.h"
+#include "content/public/browser/content_browser_client.h"
+#endif
+
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
 #include "content/browser/gpu/gpu_main_thread_factory.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
+#include "content/gpu/in_process_gpu_thread.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)

@@ -15,12 +15,9 @@ source_set("browser") {
   # internal content ones) should depend on the public one.
   visibility = [
     ":for_content_tests",  # See top of //content/BUILD.gn for why.
+    "//content/app:*",
     "//content/public/browser:browser_sources",
   ]
-  if (is_android) {
-    # See comment in content/app/BUILD.gn above content_app_deps.
-    visibility += [ "//content/app:*" ]
-  }
 
   configs += [
     "//build/config:precompiled_headers",
