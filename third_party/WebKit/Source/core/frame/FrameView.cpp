@@ -542,6 +542,13 @@ void FrameView::setFrameRect(const IntRect& newRect) {
 
   updateParentScrollableAreaSet();
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    // The overflow clip property depends on the frame size and the pre
+    // translation property depends on the frame location.
+    setNeedsPaintPropertyUpdate();
+  }
+
   if (frameSizeChanged) {
     viewportSizeChanged(newRect.width() != oldRect.width(),
                         newRect.height() != oldRect.height());
@@ -3776,11 +3783,6 @@ void FrameView::frameRectsChanged() {
   if (layoutSizeFixedToFrameSize())
     setLayoutSizeInternal(frameRect().size());
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    // The overflow clip property depends on the frame rect.
-    setNeedsPaintPropertyUpdate();
-  }
-
   for (const auto& child : m_children)
     child->frameRectsChanged();
 }
@@ -4281,6 +4283,12 @@ void FrameView::scrollContents(const IntSize& scrollDelta) {
   if (!scrollContentsFastPath(-scrollDelta))
     scrollContentsSlowPath();
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    // Need to update scroll translation property.
+    setNeedsPaintPropertyUpdate();
+  }
+
   // This call will move children with native widgets (plugins) and invalidate
   // them as well.
   frameRectsChanged();
@@ -4633,7 +4641,8 @@ void FrameView::show() {
       scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
     updateParentScrollableAreaSet();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // The existance of scrolling properties depends on visibility through
       // isScrollable() so ensure properties are updated if visibility changes.
       setNeedsPaintPropertyUpdate();
@@ -4659,7 +4668,8 @@ void FrameView::hide() {
       scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
     updateParentScrollableAreaSet();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // The existance of scrolling properties depends on visibility through
       // isScrollable() so ensure properties are updated if visibility changes.
       setNeedsPaintPropertyUpdate();
