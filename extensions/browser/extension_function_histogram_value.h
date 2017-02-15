@@ -1220,6 +1220,7 @@ enum HistogramValue {
   SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION,
   AUDIO_GETMUTE,
   AUDIO_SETMUTE,
+  AUDIO_GETDEVICES,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -4,7 +4,7 @@
 
 chrome.test.runTests([
   function waitForDeviceChangedEventTests() {
-    chrome.test.listenOnce(chrome.audio.OnDevicesChanged, function (devices) {
+    chrome.test.listenOnce(chrome.audio.onDeviceListChanged, function(devices) {
       var deviceList = devices.map(function(device) {
         return {
           id: device.id,

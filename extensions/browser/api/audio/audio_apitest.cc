@@ -113,19 +113,7 @@ class AudioApiTest : public ShellApiTest {
   chromeos::FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
 };
 
-IN_PROC_BROWSER_TEST_F(AudioApiTest, AudioV1StableId) {
-  // Set up the audio nodes for testing.
-  AudioNodeList audio_nodes = {
-      CreateAudioNode(kJabraSpeaker1, 1), CreateAudioNode(kJabraSpeaker2, 1),
-      CreateAudioNode(kHDMIOutput, 1),    CreateAudioNode(kJabraMic1, 1),
-      CreateAudioNode(kJabraMic2, 1),     CreateAudioNode(kUSBCameraMic, 1)};
-
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
-
-  EXPECT_TRUE(RunAppTest("api_test/audio")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(AudioApiTest, AudioV2StableId) {
+IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
   // Set up the audio nodes for testing.
   AudioNodeList audio_nodes = {
       CreateAudioNode(kJabraSpeaker1, 2), CreateAudioNode(kJabraSpeaker2, 2),

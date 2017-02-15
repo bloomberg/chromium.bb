@@ -4,9 +4,9 @@
 
 chrome.test.runTests([
   function waitForLevelChangedEventTests() {
-    chrome.test.listenOnce(chrome.audio.OnLevelChanged, function (id, level) {
-      chrome.test.assertEq('30001', id);
-      chrome.test.assertEq(60, level);
+    chrome.test.listenOnce(chrome.audio.onLevelChanged, function (evt) {
+      chrome.test.assertEq('30001', evt.deviceId);
+      chrome.test.assertEq(60, evt.level);
     });
   }
 ]);

@@ -17,6 +17,8 @@ class AudioServiceImpl : public AudioService {
 
   // Start to query audio device information.
   bool GetInfo(OutputInfo* output_info_out, InputInfo* input_info_out) override;
+  bool GetDevices(const api::audio::DeviceFilter* filter,
+                  DeviceInfoList* devices_out) override;
   void SetActiveDevices(const DeviceIdList& device_list) override;
   bool SetActiveDeviceLists(
       const std::unique_ptr<DeviceIdList>& input_devices,
@@ -44,6 +46,11 @@ AudioService* AudioService::CreateInstance() {
 bool AudioServiceImpl::GetInfo(OutputInfo* output_info_out,
                                InputInfo* input_info_out) {
   // TODO: implement this for platforms other than Chrome OS.
+  return false;
+}
+
+bool AudioServiceImpl::GetDevices(const api::audio::DeviceFilter* filter,
+                                  DeviceInfoList* devices_out) {
   return false;
 }
 

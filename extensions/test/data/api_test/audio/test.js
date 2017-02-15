@@ -44,8 +44,9 @@ function assertDevicesMatch(expectedDevices, devices) {
 
 /**
  *
- * @param {Array.<Object>} devices List of devices returned by getInfo
- * @returns {Object.<string, Object>} List of devices formatted as map of
+ * @param {Array.<Object>} devices List of devices returned by
+ *    chrome.audio.getInfo or chrome.audio.getDevices.
+ * @return {Object.<string, Object>} List of devices formatted as map of
  *      expected devices used to assert devices match expectation.
  */
 function deviceListToExpectedDevicesMap(devices) {
@@ -56,14 +57,13 @@ function deviceListToExpectedDevicesMap(devices) {
   return expectedDevicesMap;
 }
 
-function getActiveDeviceIds(deviceList) {
-  return deviceList
-      .filter(function(device) {return device.isActive;})
-      .map(function(device) {return device.id});
-}
-
-function getDevices(callback) {
-  chrome.audio.getInfo(chrome.test.callbackPass(callback));
+/**
+ * @param {Array.<Object>} devices List of devices returned by
+ *    chrome.audio.getInfo or chrome.audio.getDevices.
+ * @return {Array.<string>} Sorted list devices IDs for devices in |devices|.
+ */
+function getDeviceIds(devices) {
+  return devices.map(function(device) {return device.id;}).sort();
 }
 
 chrome.test.runTests([
@@ -100,15 +100,228 @@ chrome.test.runTests([
       }
     };
 
-    getDevices(function(outputInfo, inputInfo) {
-      assertDevicesMatch(kTestOutputDevices, outputInfo);
-      assertDevicesMatch(kTestInputDevices, inputInfo);
-    });
+    chrome.audio.getInfo(chrome.test.callbackPass(
+        function(outputInfo, inputInfo) {
+          assertDevicesMatch(kTestOutputDevices, outputInfo);
+          assertDevicesMatch(kTestInputDevices, inputInfo);
+        }));
+  },
+
+  function getDevicesTest() {
+    // Test output devices. Maps device ID -> tested device properties.
+    var kTestDevices = {
+      '30001': {
+        id: '30001',
+        stableDeviceId: '116606',
+        displayName: 'Jabra Speaker 1',
+        deviceName: 'Jabra Speaker',
+        streamType: 'OUTPUT'
+      },
+      '30002': {
+        id: '30002',
+        stableDeviceId: '116605',
+        displayName: 'Jabra Speaker 2',
+        deviceName: 'Jabra Speaker',
+        streamType: 'OUTPUT'
+      },
+      '30003': {
+        id: '30003',
+        stableDeviceId: '116604',
+        displayName: 'HDA Intel MID',
+        deviceName: 'HDMI output',
+        streamType: 'OUTPUT'
+      },
+      '40001': {
+        id: '40001',
+        stableDeviceId: '106606',
+        displayName: 'Jabra Mic 1',
+        deviceName: 'Jabra Mic',
+        streamType: 'INPUT'
+      },
+      '40002': {
+        id: '40002',
+        stableDeviceId: '106605',
+        displayName: 'Jabra Mic 2',
+        deviceName: 'Jabra Mic',
+        streamType: 'INPUT'
+      },
+      '40003': {
+        id: '40003',
+        stableDeviceId: '106604',
+        displayName: 'Logitech Webcam',
+        deviceName: 'Webcam Mic',
+        streamType: 'INPUT'
+      }
+    };
+
+    chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+      assertDevicesMatch(kTestDevices, devices);
+    }));
+  },
+
+  function getDevicesWithEmptyFilterTest() {
+    // Test output devices. Maps device ID -> tested device properties.
+    var kTestDevices = {
+      '30001': {
+        id: '30001',
+        stableDeviceId: '116606',
+        displayName: 'Jabra Speaker 1',
+        deviceName: 'Jabra Speaker',
+        streamType: 'OUTPUT'
+      },
+      '30002': {
+        id: '30002',
+        stableDeviceId: '116605',
+        displayName: 'Jabra Speaker 2',
+        deviceName: 'Jabra Speaker',
+        streamType: 'OUTPUT'
+      },
+      '30003': {
+        id: '30003',
+        stableDeviceId: '116604',
+        displayName: 'HDA Intel MID',
+        deviceName: 'HDMI output',
+        streamType: 'OUTPUT'
+      },
+      '40001': {
+        id: '40001',
+        stableDeviceId: '106606',
+        displayName: 'Jabra Mic 1',
+        deviceName: 'Jabra Mic',
+        streamType: 'INPUT'
+      },
+      '40002': {
+        id: '40002',
+        stableDeviceId: '106605',
+        displayName: 'Jabra Mic 2',
+        deviceName: 'Jabra Mic',
+        streamType: 'INPUT'
+      },
+      '40003': {
+        id: '40003',
+        stableDeviceId: '106604',
+        displayName: 'Logitech Webcam',
+        deviceName: 'Webcam Mic',
+        streamType: 'INPUT'
+      }
+    };
+
+    chrome.audio.getDevices({}, chrome.test.callbackPass(function(devices) {
+      assertDevicesMatch(kTestDevices, devices);
+    }));
+  },
+
+  function getInputDevicesTest() {
+    var kTestDevices = {
+      '40001': {
+        id: '40001',
+        streamType: 'INPUT'
+      },
+      '40002': {
+        id: '40002',
+        streamType: 'INPUT'
+      },
+      '40003': {
+        id: '40003',
+        streamType: 'INPUT'
+      }
+    };
+
+    chrome.audio.getDevices({
+      streamTypes: ['INPUT']
+    }, chrome.test.callbackPass(function(devices) {
+      assertDevicesMatch(kTestDevices, devices);
+    }));
+  },
+
+  function getOutputDevicesTest() {
+    var kTestDevices = {
+      '30001': {
+        id: '30001',
+        streamType: 'OUTPUT'
+      },
+      '30002': {
+        id: '30002',
+        streamType: 'OUTPUT'
+      },
+      '30003': {
+        id: '30003',
+        streamType: 'OUTPUT'
+      },
+    };
+
+    chrome.audio.getDevices({
+      streamTypes: ['OUTPUT']
+    }, chrome.test.callbackPass(function(devices) {
+      assertDevicesMatch(kTestDevices, devices);
+    }));
+  },
+
+  function getActiveDevicesTest() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var initialActiveDevices = initial.filter(function(device) {
+        return device.isActive;
+      });
+      chrome.test.assertTrue(initialActiveDevices.length > 0);
+
+      chrome.audio.getDevices({
+        isActive: true
+      }, chrome.test.callbackPass(function(devices) {
+        assertDevicesMatch(
+            deviceListToExpectedDevicesMap(initialActiveDevices),
+            devices);
+     }));
+
+      var initialActiveInputs = initialActiveDevices.filter(function(device) {
+        return device.streamType === 'INPUT';
+      });
+      chrome.test.assertTrue(initialActiveInputs.length > 0);
+
+      chrome.audio.getDevices({
+        isActive: true,
+        streamTypes: ['INPUT']
+      }, chrome.test.callbackPass(function(devices) {
+        assertDevicesMatch(
+            deviceListToExpectedDevicesMap(initialActiveInputs),
+            devices);
+      }));
+
+      var initialActiveOutputs = initialActiveDevices.filter(function(device) {
+        return device.streamType === 'OUTPUT';
+      });
+      chrome.test.assertTrue(initialActiveOutputs.length > 0);
+
+      chrome.audio.getDevices({
+        isActive: true,
+        streamTypes: ['OUTPUT']
+      }, chrome.test.callbackPass(function(devices) {
+        assertDevicesMatch(
+            deviceListToExpectedDevicesMap(initialActiveOutputs),
+            devices);
+      }));
+    }));
+  },
+
+  function getInactiveDevicesTest() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var initialInactiveDevices = initial.filter(function(device) {
+        return !device.isActive;
+      });
+      chrome.test.assertTrue(initialInactiveDevices.length > 0);
+
+      chrome.audio.getDevices({
+        isActive: false
+      }, chrome.test.callbackPass(function(devices) {
+        assertDevicesMatch(
+            deviceListToExpectedDevicesMap(initialInactiveDevices),
+            devices);
+      }));
+    }));
   },
 
   function deprecatedSetActiveDevicesTest() {
     //Test output devices. Maps device ID -> tested device properties.
-    var kTestOutputDevices = {
+    var kTestDevices = {
       '30001': {
         id: '30001',
         isActive: false
@@ -120,11 +333,7 @@ chrome.test.runTests([
       '30003': {
         id: '30003',
         isActive: true
-      }
-    };
-
-    // Test input devices. Maps device ID -> tested device properties.
-    var kTestInputDevices = {
+      },
       '40001': {
         id: '40001',
         isActive: false
@@ -143,31 +352,29 @@ chrome.test.runTests([
       '30003',
       '40002'
     ], chrome.test.callbackPass(function() {
-      getDevices(function(outputInfo, inputInfo) {
-        assertDevicesMatch(kTestOutputDevices, outputInfo);
-        assertDevicesMatch(kTestInputDevices, inputInfo);
-      });
+      chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+        assertDevicesMatch(kTestDevices, devices);
+      }));
     }));
   },
 
-  function setPropertiesTest() {
-    getDevices(function(originalOutputInfo, originalInputInfo) {
-      var expectedInput = deviceListToExpectedDevicesMap(originalInputInfo);
+  function deprecatedSetPropertiesTest() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
+
       // Update expected input devices with values that should be changed in
       // test.
-      var updatedInput = expectedInput['40002'];
+      var updatedInput = expectedDevices['40002'];
       chrome.test.assertFalse(updatedInput.isMuted);
       chrome.test.assertFalse(updatedInput.gain === 55);
       updatedInput.isMuted = true;
-      updatedInput.gain = 55;
+      updatedInput.level = 55;
 
-      var expectedOutput = deviceListToExpectedDevicesMap(originalOutputInfo);
       // Update expected output devices with values that should be changed in
       // test.
-      var updatedOutput = expectedOutput['30001'];
-      chrome.test.assertFalse(updatedOutput.isMuted);
+      var updatedOutput = expectedDevices['30001'];
       chrome.test.assertFalse(updatedOutput.volume === 35);
-      updatedOutput.volume = 35;
+      updatedOutput.level = 35;
 
       chrome.audio.setProperties('30001', {
         volume: 35
@@ -176,15 +383,44 @@ chrome.test.runTests([
           isMuted: true,
           gain: 55
         }, chrome.test.callbackPass(function() {
-          getDevices(
-            chrome.test.callbackPass(function(outputInfo, inputInfo) {
-              assertDevicesMatch(expectedInput, inputInfo);
-              assertDevicesMatch(expectedOutput, outputInfo);
-            }));
+          chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+            assertDevicesMatch(expectedDevices, devices);
+          }));
         }));
       }));
-    });
+    }));
   },
+
+  function setPropertiesTest() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
+
+      // Update expected input devices with values that should be changed in
+      // test.
+      var updatedInput = expectedDevices['40002'];
+      chrome.test.assertFalse(updatedInput.gain === 65);
+      updatedInput.level = 65;
+
+      // Update expected output devices with values that should be changed in
+      // test.
+      var updatedOutput = expectedDevices['30001'];
+      chrome.test.assertFalse(updatedOutput.volume === 45);
+      updatedOutput.level = 45;
+
+      chrome.audio.setProperties('30001', {
+        level: 45
+      }, chrome.test.callbackPass(function() {
+        chrome.audio.setProperties('40002', {
+          level: 65
+        }, chrome.test.callbackPass(function() {
+          chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+            assertDevicesMatch(expectedDevices, devices);
+          }));
+        }));
+      }));
+    }));
+  },
+
 
   function inputMuteTest() {
     var getMute = function(callback) {
@@ -215,33 +451,27 @@ chrome.test.runTests([
   },
 
   function setPropertiesInvalidValuesTest() {
-    getDevices(function(originalOutputInfo, originalInputInfo) {
-      var expectedInput = deviceListToExpectedDevicesMap(originalInputInfo);
-      var expectedOutput = deviceListToExpectedDevicesMap(originalOutputInfo);
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
       var expectedError = 'Could not set volume/gain properties';
 
-      chrome.audio.setProperties(
-          '30001', {
-            isMuted: true,
-            // Output device - should have volume set.
-            gain: 55
-          },
-          chrome.test.callbackFail(expectedError, function() {
-            chrome.audio.setProperties(
-                '40002', {
-                  isMuted: true,
-                  // Input device - should have gain set.
-                  volume: 55
-                },
-                chrome.test.callbackFail(expectedError, function() {
-                  // Assert that device properties haven't changed.
-                  getDevices(function(outputInfo, inputInfo) {
-                    assertDevicesMatch(expectedOutput, outputInfo);
-                    assertDevicesMatch(expectedInput, inputInfo);
-                  });
-                }));
+      chrome.audio.setProperties('30001', {
+        isMuted: true,
+        // Output device - should have volume set.
+        gain: 55
+      }, chrome.test.callbackFail(expectedError, function() {
+        chrome.audio.setProperties('40002', {
+          isMuted: true,
+          // Input device - should have gain set.
+          volume:55
+        }, chrome.test.callbackFail(expectedError, function() {
+          // Assert that device properties haven't changed.
+          chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+            assertDevicesMatch(expectedDevices, devices);
           }));
-    });
+        }));
+      }));
+    }));
   },
 
   function setActiveDevicesTest() {
@@ -249,89 +479,92 @@ chrome.test.runTests([
       input: ['40002', '40003'],
       output: ['30001']
     }, chrome.test.callbackPass(function() {
-      getDevices(function(outputs, inputs) {
-        chrome.test.assertEq(
-            ['40002', '40003'], getActiveDeviceIds(inputs).sort());
-        chrome.test.assertEq(['30001'], getActiveDeviceIds(outputs));
-      });
+      chrome.audio.getDevices({
+        isActive: true
+      }, chrome.test.callbackPass(function(activeDevices) {
+        chrome.test.assertEq(['30001', '40002', '40003'],
+                             getDeviceIds(activeDevices));
+      }));
     }));
   },
 
   function setActiveDevicesOutputOnlyTest() {
-    getDevices(function(originalOutputs, originalInputs) {
-      var originalActiveInputs = getActiveDeviceIds(originalInputs);
-      chrome.test.assertTrue(originalActiveInputs.length > 0);
+    chrome.audio.getDevices({
+      streamTypes: ['INPUT'],
+      isActive: true
+    }, chrome.test.callbackPass(function(initial) {
+      var initialActiveInputs = getDeviceIds(initial);
+      chrome.test.assertTrue(initialActiveInputs.length > 0);
 
       chrome.audio.setActiveDevices({
         output: ['30003']
       }, chrome.test.callbackPass(function() {
-        getDevices(function(outputs, inputs) {
-          chrome.test.assertEq(
-              originalActiveInputs.sort(), getActiveDeviceIds(inputs).sort());
-          chrome.test.assertEq(['30003'], getActiveDeviceIds(outputs));
-        });
+        chrome.audio.getDevices({
+            isActive: true
+        }, chrome.test.callbackPass(function(devices) {
+          var expected = ['30003'].concat(initialActiveInputs).sort();
+          chrome.test.assertEq(expected, getDeviceIds(devices));
+        }));
       }));
-    });
+    }));
   },
 
   function setActiveDevicesFailInputTest() {
-    getDevices(function(originalOutputs, originalInputs) {
-      var originalActiveInputs = getActiveDeviceIds(originalInputs).sort();
-      chrome.test.assertTrue(originalActiveInputs.length > 0);
-
-      var originalActiveOutputs = getActiveDeviceIds(originalOutputs).sort();
-      chrome.test.assertTrue(originalActiveOutputs.length > 0);
+    chrome.audio.getDevices({
+      isActive: true
+    }, chrome.test.callbackPass(function(initial) {
+      var initialActiveIds = getDeviceIds(initial);
+      chrome.test.assertTrue(initialActiveIds.length > 0);
 
       chrome.audio.setActiveDevices({
         input: ['0000000'],  /* does not exist */
         output: []
       }, chrome.test.callbackFail('Failed to set active devices.', function() {
-        getDevices(function(outputs, inputs) {
-          chrome.test.assertEq(
-              originalActiveInputs, getActiveDeviceIds(inputs).sort());
-          chrome.test.assertEq(
-              originalActiveOutputs, getActiveDeviceIds(outputs).sort());
-        });
+        chrome.audio.getDevices({
+          isActive: true
+        }, chrome.test.callbackPass(function(devices) {
+          chrome.test.assertEq(initialActiveIds, getDeviceIds(devices));
+        }));
       }));
-    });
+    }));
   },
 
   function setActiveDevicesFailOutputTest() {
-    getDevices(function(originalOutputs, originalInputs) {
-      var originalActiveInputs = getActiveDeviceIds(originalInputs).sort();
-      chrome.test.assertTrue(originalActiveInputs.length > 0);
-
-      var originalActiveOutputs = getActiveDeviceIds(originalOutputs).sort();
-      chrome.test.assertTrue(originalActiveOutputs.length > 0);
+    chrome.audio.getDevices({
+      isActive: true
+    }, chrome.test.callbackPass(function(initial) {
+      var initialActiveIds = getDeviceIds(initial);
+      chrome.test.assertTrue(initialActiveIds.length > 0);
 
       chrome.audio.setActiveDevices({
         input: [],
         output: ['40001'] /* id is input node ID */
       }, chrome.test.callbackFail('Failed to set active devices.', function() {
-        getDevices(function(outputs, inputs) {
-          chrome.test.assertEq(
-              originalActiveInputs, getActiveDeviceIds(inputs).sort());
-          chrome.test.assertEq(
-              originalActiveOutputs, getActiveDeviceIds(outputs).sort());
-        });
+        chrome.audio.getDevices({
+          isActive: true
+        }, chrome.test.callbackPass(function(devices) {
+          chrome.test.assertEq(initialActiveIds, getDeviceIds(devices));
+        }));
       }));
-    });
+    }));
   },
 
   function clearActiveDevicesTest() {
-    getDevices(function(originalOutputs, originalInputs) {
-      chrome.test.assertTrue(getActiveDeviceIds(originalInputs).length > 0);
-      chrome.test.assertTrue(getActiveDeviceIds(originalOutputs).length > 0);
+    chrome.audio.getDevices({
+      isActive: true
+    }, chrome.test.callbackPass(function(initial) {
+      chrome.test.assertTrue(getDeviceIds(initial).length > 0);
 
       chrome.audio.setActiveDevices({
         input: [],
         output: []
       }, chrome.test.callbackPass(function() {
-        getDevices(function(outputs, inputs) {
-          chrome.test.assertEq([], getActiveDeviceIds(inputs));
-          chrome.test.assertEq([], getActiveDeviceIds(outputs));
-        });
+        chrome.audio.getDevices({
+          isActive: true
+        }, chrome.test.callbackPass(function(devices) {
+          chrome.test.assertEq([], devices);
+        }));
       }));
-    });
+    }));
   },
 ]);

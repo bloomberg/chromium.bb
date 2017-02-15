@@ -53,8 +53,20 @@ class AudioService {
   // Start to query audio device information. Should be called on UI thread.
   // Populates |output_info_out| and |input_info_out| with the results.
   // Returns true on success.
+  // DEPRECATED: Use |GetDevices| instead.
   virtual bool GetInfo(OutputInfo* output_info_out,
                        InputInfo* input_info_out) = 0;
+
+  // Retrieves list of audio devices that satisfy |filter|. Populates
+  // |devices_out| with retrieved devices.
+  // If |filter->is_active| is set, |devices_out| will contain only devices
+  // whose is-active state matches |filter->is_active| value.
+  // If |filter->stream_types| is set, |devices_out| will contain only devices
+  // whose stream type (INPUT for input devices, OUTPUT for output devices) is
+  // contained in |filter->stream_types|.
+  // Returns whether the list of devices was successfully retrieved.
+  virtual bool GetDevices(const api::audio::DeviceFilter* filter,
+                          DeviceInfoList* devices_out) = 0;
 
   // Sets set of active inputs to devices defined by IDs in |input_devices|,
   // and set of active outputs to devices defined by IDs in |output_devices|.
