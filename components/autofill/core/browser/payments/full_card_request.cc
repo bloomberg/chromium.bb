@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -23,7 +22,8 @@ FullCardRequest::FullCardRequest(AutofillClient* autofill_client,
     : autofill_client_(autofill_client),
       payments_client_(payments_client),
       personal_data_manager_(personal_data_manager),
-      delegate_(nullptr),
+      result_delegate_(nullptr),
+      ui_delegate_(nullptr),
       should_unmask_card_(false),
       weak_ptr_factory_(this) {
   DCHECK(autofill_client_);
@@ -35,18 +35,21 @@ FullCardRequest::~FullCardRequest() {}
 
 void FullCardRequest::GetFullCard(const CreditCard& card,
                                   AutofillClient::UnmaskCardReason reason,
-                                  base::WeakPtr<Delegate> delegate) {
-  DCHECK(delegate);
+                                  base::WeakPtr<ResultDelegate> result_delegate,
+                                  base::WeakPtr<UIDelegate> ui_delegate) {
+  DCHECK(result_delegate);
+  DCHECK(ui_delegate);
 
-  // Only request can be active a time. If the member variable |delegate_| is
-  // already set, then immediately reject the new request through the method
-  // parameter |delegate|.
-  if (delegate_) {
-    delegate->OnFullCardRequestFailed();
+  // Only one request can be active at a time. If the member variable
+  // |result_delegate_| is already set, then immediately reject the new request
+  // through the method parameter |result_delegate_|.
+  if (result_delegate_) {
+    result_delegate_->OnFullCardRequestFailed();
     return;
   }
 
-  delegate_ = delegate;
+  result_delegate_ = result_delegate;
+  ui_delegate_ = ui_delegate;
   request_.reset(new payments::PaymentsClient::UnmaskRequestDetails);
   request_->card = card;
   should_unmask_card_ = card.record_type() == CreditCard::MASKED_SERVER_CARD ||
@@ -55,8 +58,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   if (should_unmask_card_)
     payments_client_->Prepare();
 
-  autofill_client_->ShowUnmaskPrompt(request_->card, reason,
-                                     weak_ptr_factory_.GetWeakPtr());
+  ui_delegate_->ShowUnmaskPrompt(request_->card, reason,
+                                 weak_ptr_factory_.GetWeakPtr());
 
   if (should_unmask_card_) {
     autofill_client_->LoadRiskData(
@@ -83,10 +86,13 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
   }
 
   if (!should_unmask_card_) {
-    if (delegate_)
-      delegate_->OnFullCardRequestSucceeded(request_->card, response.cvc);
+    if (result_delegate_)
+      result_delegate_->OnFullCardRequestSucceeded(request_->card,
+                                                   response.cvc);
+    if (ui_delegate_)
+      ui_delegate_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
     Reset();
-    autofill_client_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
+
     return;
   }
 
@@ -98,8 +104,8 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
 }
 
 void FullCardRequest::OnUnmaskPromptClosed() {
-  if (delegate_)
-    delegate_->OnFullCardRequestFailed();
+  if (result_delegate_)
+    result_delegate_->OnFullCardRequestFailed();
 
   Reset();
 }
@@ -117,6 +123,9 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
   AutofillMetrics::LogRealPanDuration(
       AutofillClock::Now() - real_pan_request_timestamp_, result);
 
+  if (ui_delegate_)
+    ui_delegate_->OnUnmaskVerificationResult(result);
+
   switch (result) {
     // Wait for user retry.
     case AutofillClient::TRY_AGAIN_FAILURE:
@@ -126,8 +135,8 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
     case AutofillClient::PERMANENT_FAILURE:
     // Intentional fall through.
     case AutofillClient::NETWORK_ERROR: {
-      if (delegate_)
-        delegate_->OnFullCardRequestFailed();
+      if (result_delegate_)
+        result_delegate_->OnFullCardRequestFailed();
       Reset();
       break;
     }
@@ -141,9 +150,9 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
       if (request_->user_response.should_store_pan)
         personal_data_manager_->UpdateServerCreditCard(request_->card);
 
-      if (delegate_)
-        delegate_->OnFullCardRequestSucceeded(request_->card,
-                                              request_->user_response.cvc);
+      if (result_delegate_)
+        result_delegate_->OnFullCardRequestSucceeded(
+            request_->card, request_->user_response.cvc);
       Reset();
       break;
     }
@@ -152,14 +161,13 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
       NOTREACHED();
       break;
   }
-
-  autofill_client_->OnUnmaskVerificationResult(result);
 }
 
 void FullCardRequest::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   payments_client_->CancelRequest();
-  delegate_ = nullptr;
+  result_delegate_ = nullptr;
+  ui_delegate_ = nullptr;
   request_.reset();
   should_unmask_card_ = false;
 }

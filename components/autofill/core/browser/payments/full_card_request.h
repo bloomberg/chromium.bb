@@ -12,12 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 
 namespace autofill {
 
-class AutofillClient;
 class CreditCard;
 class PersonalDataManager;
 
@@ -27,11 +27,24 @@ namespace payments {
 class FullCardRequest : public CardUnmaskDelegate {
  public:
   // The interface for receiving the full card details.
-  class Delegate {
+  class ResultDelegate {
    public:
+    virtual ~ResultDelegate() = default;
     virtual void OnFullCardRequestSucceeded(const CreditCard& card,
                                             const base::string16& cvc) = 0;
     virtual void OnFullCardRequestFailed() = 0;
+  };
+
+  // The delegate responsible for displaying the unmask prompt UI.
+  class UIDelegate {
+   public:
+    virtual ~UIDelegate() = default;
+    virtual void ShowUnmaskPrompt(
+        const CreditCard& card,
+        AutofillClient::UnmaskCardReason reason,
+        base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
+    virtual void OnUnmaskVerificationResult(
+        AutofillClient::PaymentsRpcResult result) = 0;
   };
 
   // The parameters should outlive the FullCardRequest.
@@ -50,7 +63,8 @@ class FullCardRequest : public CardUnmaskDelegate {
   // autofill table on disk.
   void GetFullCard(const CreditCard& card,
                    AutofillClient::UnmaskCardReason reason,
-                   base::WeakPtr<Delegate> delegate);
+                   base::WeakPtr<ResultDelegate> result_delegate,
+                   base::WeakPtr<UIDelegate> ui_delegate);
 
   // Returns true if there's a pending request to get the full card.
   bool IsGettingFullCard() const;
@@ -80,7 +94,10 @@ class FullCardRequest : public CardUnmaskDelegate {
   PersonalDataManager* const personal_data_manager_;
 
   // Receiver of the full PAN and CVC.
-  base::WeakPtr<Delegate> delegate_;
+  base::WeakPtr<ResultDelegate> result_delegate_;
+
+  // Delegate responsible for displaying the unmask prompt UI.
+  base::WeakPtr<UIDelegate> ui_delegate_;
 
   // The pending request to get a card's full PAN and CVC.
   std::unique_ptr<payments::PaymentsClient::UnmaskRequestDetails> request_;

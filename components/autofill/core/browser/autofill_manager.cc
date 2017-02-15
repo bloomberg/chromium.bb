@@ -733,7 +733,7 @@ void AutofillManager::FillOrPreviewCreditCardForm(
       masked_card_ = credit_card;
       GetOrCreateFullCardRequest()->GetFullCard(
           masked_card_, AutofillClient::UNMASK_FOR_AUTOFILL,
-          weak_ptr_factory_.GetWeakPtr());
+          weak_ptr_factory_.GetWeakPtr(), weak_ptr_factory_.GetWeakPtr());
       credit_card_form_event_logger_->OnDidSelectMaskedServerCardSuggestion();
       return;
     }
@@ -1077,6 +1077,18 @@ void AutofillManager::OnFullCardRequestSucceeded(const CreditCard& card,
 
 void AutofillManager::OnFullCardRequestFailed() {
   driver_->RendererShouldClearPreviewedForm();
+}
+
+void AutofillManager::ShowUnmaskPrompt(
+    const CreditCard& card,
+    AutofillClient::UnmaskCardReason reason,
+    base::WeakPtr<CardUnmaskDelegate> delegate) {
+  client_->ShowUnmaskPrompt(card, reason, delegate);
+}
+
+void AutofillManager::OnUnmaskVerificationResult(
+    AutofillClient::PaymentsRpcResult result) {
+  client_->OnUnmaskVerificationResult(result);
 }
 
 void AutofillManager::OnUserDidAcceptUpload() {

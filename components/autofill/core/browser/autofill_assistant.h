@@ -21,10 +21,10 @@ class FormStructure;
 
 // This class encompasses the triggering rules and the logic for the autofill
 // assisted filling mechanisms.
-class AutofillAssistant : public payments::FullCardRequest::Delegate {
+class AutofillAssistant : public payments::FullCardRequest::ResultDelegate {
  public:
   explicit AutofillAssistant(AutofillManager* autofill_manager);
-  ~AutofillAssistant();
+  ~AutofillAssistant() override;
 
   // Should be called at every page navigation to clear state.
   void Reset();
@@ -43,7 +43,7 @@ class AutofillAssistant : public payments::FullCardRequest::Delegate {
   // Called by the infobar delegate when the user accepts the infobar.
   void OnUserDidAcceptCreditCardFill(const CreditCard& card);
 
-  // payments::FullCardRequest::Delegate:
+  // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const CreditCard& card,
                                   const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;

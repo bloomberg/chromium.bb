@@ -203,7 +203,7 @@ void PopulateNativeCreditCardFromJava(
 
 // Self-deleting requester of full card details, including full PAN and the CVC
 // number.
-class FullCardRequester : public payments::FullCardRequest::Delegate,
+class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
                           public base::SupportsWeakPtr<FullCardRequester> {
  public:
   FullCardRequester() {}
@@ -243,13 +243,14 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
     }
 
     driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
-        *card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST, AsWeakPtr());
+        *card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST, AsWeakPtr(),
+        driver->autofill_manager()->GetAsFullCardRequestUIDelegate());
   }
 
  private:
-  virtual ~FullCardRequester() {}
+  ~FullCardRequester() override {}
 
-  // payments::FullCardRequest::Delegate:
+  // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const CreditCard& card,
                                   const base::string16& cvc) override {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -259,7 +260,7 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
     delete this;
   }
 
-  // payments::FullCardRequest::Delegate:
+  // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestFailed() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FullCardRequestDelegate_onFullCardError(env, jdelegate_);

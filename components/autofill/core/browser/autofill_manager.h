@@ -74,7 +74,8 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillDownloadManager::Observer,
                         public payments::PaymentsClientDelegate,
-                        public payments::FullCardRequest::Delegate {
+                        public payments::FullCardRequest::ResultDelegate,
+                        public payments::FullCardRequest::UIDelegate {
  public:
   enum AutofillDownloadManagerState {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
@@ -155,6 +156,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   }
 
   payments::FullCardRequest* GetOrCreateFullCardRequest();
+
+  base::WeakPtr<payments::FullCardRequest::UIDelegate>
+  GetAsFullCardRequestUIDelegate() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   const std::string& app_locale() const { return app_locale_; }
 
@@ -293,10 +299,17 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       std::unique_ptr<base::DictionaryValue> legal_message) override;
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override;
 
-  // FullCardRequest::Delegate:
+  // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const CreditCard& card,
                                   const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
+
+  // payments::FullCardRequest::UIDelegate:
+  void ShowUnmaskPrompt(const CreditCard& card,
+                        AutofillClient::UnmaskCardReason reason,
+                        base::WeakPtr<CardUnmaskDelegate> delegate) override;
+  void OnUnmaskVerificationResult(
+      AutofillClient::PaymentsRpcResult result) override;
 
   // Sets |user_did_accept_upload_prompt_| and calls UploadCard if the risk data
   // is available.
