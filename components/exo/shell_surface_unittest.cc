@@ -418,9 +418,9 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
 
 TEST_F(ShellSurfaceTest, ModalWindow) {
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, false,
-                       ash::kShellWindowId_SystemModalContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true, false, ash::kShellWindowId_SystemModalContainer));
   gfx::Size desktop_size(640, 480);
   std::unique_ptr<Buffer> desktop_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
@@ -509,9 +509,9 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -583,9 +583,9 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -666,10 +666,9 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  // Set the bounds to disable auto managed mode.
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 480), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
 
   // Postion the widget at 10,10 so that we get non zero offset.
   const gfx::Size content_size(100, 100);
@@ -728,10 +727,9 @@ TEST_F(ShellSurfaceTest, ShadowWithTransform) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  // Set the bounds to disable auto managed mode.
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 400), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
 
   // Postion the widget at 10,10 so that we get non zero offset.
   const gfx::Size content_size(100, 100);
@@ -758,9 +756,9 @@ TEST_F(ShellSurfaceTest, ShadowWithTransform) {
 
 TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 480), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
   shell_surface->Maximize();
   views::Widget* widget = shell_surface->GetWidget();
   aura::Window* window = widget->GetNativeWindow();
@@ -828,9 +826,9 @@ TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(
-      new ShellSurface(surface.get(), nullptr, gfx::Rect(100, 100), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
 
   surface->Attach(buffer.get());
 
@@ -868,8 +866,9 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   const gfx::Size buffer_size(display_size);
   Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   Surface surface;
-  ShellSurface shell_surface(&surface, nullptr, gfx::Rect(100, 100), true,
-                             false, ash::kShellWindowId_DefaultContainer);
+  ShellSurface shell_surface(&surface, nullptr,
+                             ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+                             true, false, ash::kShellWindowId_DefaultContainer);
   surface.Attach(&buffer);
 
   gfx::Rect shadow_bounds(10, 10, 100, 100);
@@ -918,8 +917,9 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   // Create a new surface
   Buffer buffer2(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   Surface surface2;
-  ShellSurface shell_surface2(&surface2, nullptr, gfx::Rect(640, 480), true,
-                              false, ash::kShellWindowId_DefaultContainer);
+  ShellSurface shell_surface2(
+      &surface2, nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(), true,
+      false, ash::kShellWindowId_DefaultContainer);
   surface2.Attach(&buffer2);
   shell_surface2.SetRectangularSurfaceShadow(shadow_bounds);
   surface2.Commit();

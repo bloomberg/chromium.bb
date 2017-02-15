@@ -47,9 +47,20 @@ class ShellSurface : public SurfaceDelegate,
                      public WMHelper::ActivationObserver,
                      public WMHelper::AccessibilityObserver {
  public:
+  enum class BoundsMode { SHELL, CLIENT, FIXED };
+
+  // The |origin| is in screen coordinates. When bounds are controlled by the
+  // shell or fixed, it determines the initial position of the shell surface.
+  // In that case, the position specified as part of the geometry is relative
+  // to the shell surface.
+  //
+  // When bounds are controlled by the client, it represents the origin of a
+  // coordinate system to which the position of the shell surface, specified
+  // as part of the geometry, is relative.
   ShellSurface(Surface* surface,
                ShellSurface* parent,
-               const gfx::Rect& initial_bounds,
+               BoundsMode bounds_mode,
+               const gfx::Point& origin,
                bool activatable,
                bool can_minimize,
                int container);
@@ -287,6 +298,9 @@ class ShellSurface : public SurfaceDelegate,
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
 
+  // Updates the bounds of surface to match the current widget bounds.
+  void UpdateSurfaceBounds();
+
   // Creates, deletes and update the shadow bounds based on
   // |pending_shadow_content_bounds_|.
   void UpdateShadow();
@@ -294,7 +308,8 @@ class ShellSurface : public SurfaceDelegate,
   views::Widget* widget_ = nullptr;
   Surface* surface_;
   aura::Window* parent_;
-  gfx::Rect initial_bounds_;
+  const BoundsMode bounds_mode_;
+  gfx::Point origin_;
   bool activatable_ = true;
   const bool can_minimize_;
   // Container Window Id (see ash/public/cpp/shell_window_ids.h)
@@ -314,9 +329,9 @@ class ShellSurface : public SurfaceDelegate,
   ConfigureCallback configure_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
   bool ignore_window_bounds_changes_ = false;
-  gfx::Point origin_;
+  gfx::Vector2d origin_offset_;
   gfx::Vector2d pending_origin_offset_;
-  gfx::Vector2d pending_origin_config_offset_;
+  gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
   aura::Window* shadow_overlay_ = nullptr;

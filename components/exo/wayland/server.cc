@@ -29,7 +29,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/shell_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -1089,8 +1088,6 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
   }
 
   // Overridden from display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& new_display) override {}
-  void OnDisplayRemoved(const display::Display& new_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     if (display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
@@ -2046,7 +2043,7 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
                        ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
-    SendPrimaryDisplayMetrics();
+    SendDisplayMetrics();
     SendActivated(helper->GetActiveWindow(), nullptr);
   }
   ~WaylandRemoteShell() override {
@@ -2068,40 +2065,29 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   }
 
   // Overridden from display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& new_display) override {}
-  void OnDisplayRemoved(const display::Display& new_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     if (display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
       return;
 
-    // No need to update when a primary dislpay has changed without bounds
+    // No need to update when a primary display has changed without bounds
     // change. See WaylandPrimaryDisplayObserver::OnDisplayMetricsChanged
     // for more details.
     if (changed_metrics &
         (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
          DISPLAY_METRIC_ROTATION | DISPLAY_METRIC_WORK_AREA)) {
-      SendDisplayMetrics(display);
+      ScheduleSendDisplayMetrics(0);
     }
   }
 
   // Overridden from WMHelper::MaximizeModeObserver:
   void OnMaximizeModeStarted() override {
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
-
-    send_configure_after_layout_change_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
-                              weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
+    ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
   void OnMaximizeModeEnded() override {
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
-    send_configure_after_layout_change_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
-                              weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
+    ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
 
   // Overridden from WMHelper::ActivationObserver:
@@ -2111,27 +2097,30 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   }
 
  private:
-  void SendPrimaryDisplayMetrics() {
-    const display::Display primary =
-        display::Screen::GetScreen()->GetPrimaryDisplay();
-
-    SendDisplayMetrics(primary);
+  void ScheduleSendDisplayMetrics(int delay_ms) {
+    needs_send_display_metrics_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WaylandRemoteShell::SendDisplayMetrics,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(delay_ms));
   }
 
-  void MaybeSendConfigure() {
-    if (send_configure_after_layout_change_)
-      SendPrimaryDisplayMetrics();
-  }
+  void SendDisplayMetrics() {
+    if (!needs_send_display_metrics_)
+      return;
+    needs_send_display_metrics_ = false;
 
-  void SendDisplayMetrics(const display::Display& display) {
-    send_configure_after_layout_change_ = false;
+    const display::Screen* screen = display::Screen::GetScreen();
+    const display::Display primary_display = screen->GetPrimaryDisplay();
 
-    const gfx::Insets& work_area_insets = display.GetWorkAreaInsets();
+    const gfx::Insets& work_area_insets = primary_display.GetWorkAreaInsets();
 
     zcr_remote_shell_v1_send_configuration_changed(
-        remote_shell_resource_, display.size().width(), display.size().height(),
-        OutputTransform(display.rotation()),
-        wl_fixed_from_double(display.device_scale_factor()),
+        remote_shell_resource_,
+        primary_display.size().width(),
+        primary_display.size().height(),
+        OutputTransform(primary_display.rotation()),
+        wl_fixed_from_double(primary_display.device_scale_factor()),
         work_area_insets.left(), work_area_insets.top(),
         work_area_insets.right(), work_area_insets.bottom(), layout_mode_);
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
@@ -2176,7 +2165,7 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   // The remote shell resource associated with observer.
   wl_resource* const remote_shell_resource_;
 
-  bool send_configure_after_layout_change_ = false;
+  bool needs_send_display_metrics_ = true;
 
   int layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 

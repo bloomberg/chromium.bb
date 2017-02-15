@@ -28,8 +28,8 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
                            : ash::kShellWindowId_DefaultContainer;
   shell_surface_.reset(new ShellSurface(surface_.get(), nullptr,
-                                        gfx::Rect(gpu_buffer->GetSize()), true,
-                                        false, container));
+                                        ShellSurface::BoundsMode::SHELL,
+                                        gfx::Point(), true, false, container));
 
   buffer_.reset(new Buffer(std::move(gpu_buffer)));
   surface_->Attach(buffer_.get());
