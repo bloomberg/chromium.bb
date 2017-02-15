@@ -21,6 +21,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/test/headless_browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,6 +30,8 @@
     EXPECT_EQ((expected).width(), (actual).width());   \
     EXPECT_EQ((expected).height(), (actual).height()); \
   } while (false)
+
+using testing::ElementsAre;
 
 namespace headless {
 
@@ -788,5 +791,64 @@ class HeadlessDevToolsMethodCallErrorTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsMethodCallErrorTest);
+
+class HeadlessDevToolsNetworkBlockedUrlTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer,
+      public network::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetNetwork()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()->GetExperimental()->AddBlockedURL(
+        network::AddBlockedURLParams::Builder()
+            .SetUrl("dom_tree_test.css")
+            .Build());
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/dom_tree_test.html").spec());
+  }
+
+  std::string GetUrlPath(const std::string& url) const {
+    GURL gurl(url);
+    return gurl.path();
+  }
+
+  void OnRequestWillBeSent(
+      const network::RequestWillBeSentParams& params) override {
+    std::string path = GetUrlPath(params.GetRequest()->GetUrl());
+    requests_to_be_sent_.push_back(path);
+    request_id_to_path_[params.GetRequestId()] = path;
+  }
+
+  void OnResponseReceived(
+      const network::ResponseReceivedParams& params) override {
+    responses_received_.push_back(GetUrlPath(params.GetResponse()->GetUrl()));
+  }
+
+  void OnLoadingFailed(const network::LoadingFailedParams& failed) override {
+    failures_.push_back(request_id_to_path_[failed.GetRequestId()]);
+    EXPECT_EQ(network::BlockedReason::INSPECTOR, failed.GetBlockedReason());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_THAT(requests_to_be_sent_,
+                ElementsAre("/dom_tree_test.html", "/dom_tree_test.css",
+                            "/iframe.html"));
+    EXPECT_THAT(responses_received_,
+                ElementsAre("/dom_tree_test.html", "/iframe.html"));
+    EXPECT_THAT(failures_, ElementsAre("/dom_tree_test.css"));
+    FinishAsynchronousTest();
+  }
+
+  std::map<std::string, std::string> request_id_to_path_;
+  std::vector<std::string> requests_to_be_sent_;
+  std::vector<std::string> responses_received_;
+  std::vector<std::string> failures_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsNetworkBlockedUrlTest);
 
 }  // namespace headless
