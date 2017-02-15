@@ -283,6 +283,7 @@ class CONTENT_EXPORT NavigationControllerImpl
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_in_page,
+      bool was_restored,
       NavigationHandleImpl* handle);
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,

@@ -3786,6 +3786,68 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   CheckAuthenticatedState(tab2, AuthState::NONE);
 }
 
+void SetupRestoredTabWithNavigation(
+    net::test_server::EmbeddedTestServer* https_server,
+    Browser* browser) {
+  ASSERT_TRUE(https_server->Start());
+  GURL url(https_server->GetURL("/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser, url);
+  WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver observer(tab);
+  EXPECT_TRUE(ExecuteScript(tab, "history.pushState({}, '', '');"));
+  observer.Wait();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser, GURL("about:blank"), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  chrome::CloseTab(browser);
+
+  WebContents* blank_tab = browser->tab_strip_model()->GetActiveWebContents();
+
+  // Restore the tab.
+  content::WindowedNotificationObserver tab_added_observer(
+      chrome::NOTIFICATION_TAB_PARENTED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver tab_loaded_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(browser);
+  tab_added_observer.Wait();
+  tab_loaded_observer.Wait();
+
+  tab = browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(tab, blank_tab);
+}
+
+// Simulate a browser-initiated in-page navigation in a restored tab.
+// https://crbug.com/662267
+IN_PROC_BROWSER_TEST_F(SSLUITest,
+                       BrowserInitiatedExistingPageAfterRestoreHasSSLState) {
+  SetupRestoredTabWithNavigation(&https_server_, browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(tab);
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
+// Simulate a renderer-initiated in-page navigation in a restored tab.
+IN_PROC_BROWSER_TEST_F(SSLUITest,
+                       RendererInitiatedExistingPageAfterRestoreHasSSLState) {
+  SetupRestoredTabWithNavigation(&https_server_, browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  content::TestNavigationObserver observer(tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      tab, "location.replace(window.location.href + '#1')"));
+  observer.Wait();
+  content::WaitForLoadStop(tab);
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
 // Simulate the URL changing when the user presses enter in the omnibox. This
 // could happen when the user's login is expired and the server redirects them
 // to a login page. This will be considered a SAME_PAGE navigation but we do

@@ -816,10 +816,12 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // If there is a pending entry at this point, it should have a SiteInstance,
   // except for restored entries.
+  bool was_restored = false;
   DCHECK(pending_entry_index_ == -1 || pending_entry_->site_instance() ||
          pending_entry_->restore_type() != RestoreType::NONE);
   if (pending_entry_ && pending_entry_->restore_type() != RestoreType::NONE) {
     pending_entry_->set_restore_type(RestoreType::NONE);
+    was_restored = true;
   }
 
   // The renderer tells us whether the navigation replaces the current entry.
@@ -854,7 +856,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     case NAVIGATION_TYPE_EXISTING_PAGE:
       details->did_replace_entry = details->is_in_page;
       RendererDidNavigateToExistingPage(rfh, params, details->is_in_page,
-                                        navigation_handle);
+                                        was_restored, navigation_handle);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params, navigation_handle);
@@ -1196,6 +1198,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_in_page,
+    bool was_restored,
     NavigationHandleImpl* handle) {
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
@@ -1213,12 +1216,22 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // This is a browser-initiated navigation (back/forward/reload).
     entry = GetEntryWithUniqueID(params.nav_entry_id);
 
-    // Needed for the restore case, where the serialized NavigationEntry doesn't
-    // have the SSL state. Note that for in-page navigation, there's no
-    // SSLStatus in the NavigationHandle so don't overwrite the existing entry's
-    // SSLStatus.
-    if (!is_in_page)
+    if (is_in_page) {
+      // There's no SSLStatus in the NavigationHandle for in-page navigations,
+      // so normally we leave |entry|'s SSLStatus as is. However if this was a
+      // restored in-page navigation entry, then it won't have an SSLStatus. So
+      // we need to copy over the SSLStatus from the entry that navigated it.
+      NavigationEntryImpl* last_entry = GetLastCommittedEntry();
+      if (entry->GetURL().GetOrigin() == last_entry->GetURL().GetOrigin() &&
+          last_entry->GetSSL().initialized && !entry->GetSSL().initialized &&
+          was_restored) {
+        entry->GetSSL() = last_entry->GetSSL();
+      }
+    } else {
+      // When restoring a tab, the serialized NavigationEntry doesn't have the
+      // SSL state.
       entry->GetSSL() = handle->ssl_status();
+    }
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
     // navigations that are EXISTING_PAGE are reloads and location.replace,
