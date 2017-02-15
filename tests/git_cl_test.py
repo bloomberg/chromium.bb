@@ -38,7 +38,7 @@ class ChangelistMock(object):
     pass
   def GetIssue(self):
     return 1
-  def GetDescription(self):
+  def GetDescription(self, force=False):
     return ChangelistMock.desc
   def UpdateDescription(self, desc, force=False):
     ChangelistMock.desc = desc
@@ -57,7 +57,7 @@ class RietveldMock(object):
     pass
 
   @staticmethod
-  def get_description(issue):
+  def get_description(issue, force=False):
     return 'Issue: %d' % issue
 
   @staticmethod
@@ -178,7 +178,7 @@ class TestGitClBasic(unittest.TestCase):
                            codereview_host='host')
     cl.description = 'x'
     cl.has_description = True
-    cl._codereview_impl.FetchDescription = lambda: 'y'
+    cl._codereview_impl.FetchDescription = lambda *a, **kw: 'y'
     self.assertEquals(cl.GetDescription(), 'x')
     self.assertEquals(cl.GetDescription(force=True), 'y')
     self.assertEquals(cl.GetDescription(), 'y')
@@ -1695,7 +1695,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
     self.mock(git_cl._RietveldChangelistImpl, 'FetchDescription',
-              lambda *args: 'Description')
+              lambda *a, **kw: 'Description')
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
 
     if new_branch:

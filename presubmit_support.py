@@ -271,6 +271,38 @@ class OutputApi(object):
       return self.PresubmitNotifyResult(*args, **kwargs)
     return self.PresubmitPromptWarning(*args, **kwargs)
 
+  def EnsureCQIncludeTrybotsAreAdded(self, cl, bots_to_include, message):
+    """Helper for any PostUploadHook wishing to add CQ_INCLUDE_TRYBOTS.
+
+    Merges the bots_to_include into the current CQ_INCLUDE_TRYBOTS list,
+    keeping it alphabetically sorted. Returns the results that should be
+    returned from the PostUploadHook.
+
+    Args:
+      cl: The git_cl.Changelist object.
+      bots_to_include: A list of strings of bots to include, in the form
+        "master:slave".
+      message: A message to be printed in the case that
+        CQ_INCLUDE_TRYBOTS was updated.
+    """
+    description = cl.GetDescription(force=True)
+    all_bots = []
+    include_re = re.compile(r'^CQ_INCLUDE_TRYBOTS=(.*)', re.M | re.I)
+    m = include_re.search(description)
+    if m:
+      all_bots = [i.strip() for i in m.group(1).split(';') if i.strip()]
+    if set(all_bots) >= set(bots_to_include):
+      return []
+    # Sort the bots to keep them in some consistent order -- not required.
+    all_bots = sorted(set(all_bots) | set(bots_to_include))
+    new_include_trybots = 'CQ_INCLUDE_TRYBOTS=%s' % ';'.join(all_bots)
+    if m:
+      new_description = include_re.sub(new_include_trybots, description)
+    else:
+      new_description = description + '\n' + new_include_trybots + '\n'
+    cl.UpdateDescription(new_description, force=True)
+    return [self.PresubmitNotifyResult(message)]
+
 
 class InputApi(object):
   """An instance of this object is passed to presubmit scripts so they can
@@ -1094,42 +1126,6 @@ def DoPostUploadExecuter(change,
     output_stream.write('\n')
 
   return results
-
-
-# This helper function should be used by any PostUploadHook wishing to
-# add entries to the CQ_INCLUDE_TRYBOTS line. It returns the results
-# that should be returned from the PostUploadHook.
-def EnsureCQIncludeTrybotsAreAdded(cl, bots_to_include, message, output_api):
-  """Helper to be used by any PostUploadHook wishing to add CQ_INCLUDE_TRYBOTS.
-
-  Merges the bots_to_include into the current CQ_INCLUDE_TRYBOTS list,
-  keeping it alphabetically sorted. Returns the results that should be
-  returned from the PostUploadHook.
-
-  Args:
-    cl: The git_cl.Changelist object.
-    bots_to_include: A list of strings of bots to include, in the form
-      "master:slave".
-    message: A message to be printed in the case that
-      CQ_INCLUDE_TRYBOTS was updated.
-    output_api: An OutputApi instance used to display messages.
-  """
-  rietveld_obj = cl.RpcServer()
-  issue = cl.issue
-  description = rietveld_obj.get_description(issue)
-  all_bots = []
-  include_re = re.compile(r'^CQ_INCLUDE_TRYBOTS=(.*)', re.M | re.I)
-  m = include_re.search(description)
-  if m:
-    all_bots = [i.strip() for i in m.group(1).split(';') if i.strip()]
-  if not (set(all_bots) - set(bots_to_include)):
-    return []
-  # Sort the bots to keep them in some consistent order -- not required.
-  all_bots = sorted(set(all_bots) | set(bots_to_include))
-  new_include_trybots = 'CQ_INCLUDE_TRYBOTS=%s' % ';'.join(all_bots)
-  new_description = include_re.sub(new_include_trybots, description)
-  rietveld_obj.update_description(issue, new_description)
-  return [output_api.PresubmitNotifyResult(message)]
 
 
 class PresubmitExecuter(object):

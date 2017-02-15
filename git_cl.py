@@ -1358,7 +1358,7 @@ class Changelist(object):
   def GetDescription(self, pretty=False, force=False):
     if not self.has_description or force:
       if self.GetIssue():
-        self.description = self._codereview_impl.FetchDescription()
+        self.description = self._codereview_impl.FetchDescription(force=force)
       self.has_description = True
     if pretty:
       # Set width to 72 columns + 2 space indent.
@@ -1676,7 +1676,7 @@ class _ChangelistCodereviewBase(object):
     """Returns server URL without end slash, like "https://codereview.com"."""
     raise NotImplementedError()
 
-  def FetchDescription(self):
+  def FetchDescription(self, force=False):
     """Fetches and returns description from the codereview server."""
     raise NotImplementedError()
 
@@ -1812,11 +1812,11 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       if refresh:
         authenticator.get_access_token()
 
-  def FetchDescription(self):
+  def FetchDescription(self, force=False):
     issue = self.GetIssue()
     assert issue
     try:
-      return self.RpcServer().get_description(issue).strip()
+      return self.RpcServer().get_description(issue, force=force).strip()
     except urllib2.HTTPError as e:
       if e.code == 404:
         DieWithError(
@@ -2401,8 +2401,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     data = self._GetChangeDetail(['CURRENT_REVISION'])
     return data['revisions'][data['current_revision']]['_number']
 
-  def FetchDescription(self):
-    data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'])
+  def FetchDescription(self, force=False):
+    data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'],
+                                 no_cache=force)
     current_rev = data['current_revision']
     return data['revisions'][current_rev]['commit']['message']
 

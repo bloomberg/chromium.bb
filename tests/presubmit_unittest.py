@@ -168,7 +168,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
       'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
-      'GerritAccessor', 'EnsureCQIncludeTrybotsAreAdded',
+      'GerritAccessor',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -955,53 +955,6 @@ def CheckChangeOnCommit(input_api, output_api):
     except SystemExit, e:
       self.assertEquals(2, e.code)
 
-  def testEnsureCQIncludeTrybotsAreAdded(self):
-    # Deliberately has a space at the end to exercise space-stripping code.
-    cl_text = """A change to GPU-related code.
-
-CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel 
-"""
-
-    updated_cl_text = """A change to GPU-related code.
-
-CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
-"""
-
-    class FakeIssue(object):
-      def __init__(self, description):
-        self.description = description
-
-    class FakeRietveld(object):
-      def get_description(self, issue):
-        return issue.description
-
-      def update_description(self, issue, new_description):
-        issue.description = new_description
-
-    class FakeCL(object):
-      def __init__(self, description):
-        self.issue = FakeIssue(description)
-      def RpcServer(self):
-        return FakeRietveld()
-
-    class FakeOutputAPI(object):
-      def PresubmitNotifyResult(self, message):
-        return message
-
-    cl = FakeCL(cl_text)
-    message = 'Automatically added optional GPU tests to run on CQ.'
-    results = presubmit.EnsureCQIncludeTrybotsAreAdded(
-      cl,
-      [
-        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel'
-      ],
-      message,
-      FakeOutputAPI())
-    self.assertEqual(updated_cl_text, cl.issue.description)
-    self.assertEqual([message], results)
-
 
 class InputApiUnittest(PresubmitTestsBase):
   """Tests presubmit.InputApi."""
@@ -1387,7 +1340,7 @@ class OutputApiUnittest(PresubmitTestsBase):
     members = [
       'MailTextResult', 'PresubmitError', 'PresubmitNotifyResult',
       'PresubmitPromptWarning', 'PresubmitPromptOrNotify', 'PresubmitResult',
-      'is_committing',
+      'is_committing', 'EnsureCQIncludeTrybotsAreAdded',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(False), members)
@@ -1450,6 +1403,77 @@ class OutputApiUnittest(PresubmitTestsBase):
     output.prompt_yes_no('prompt: ')
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
+
+  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text):
+    class FakeCL(object):
+      def __init__(self, description):
+        self._description = description
+
+      def GetDescription(self, force=False):
+        return self._description
+
+      def UpdateDescription(self, description, force=False):
+        self._description = description
+
+    def FakePresubmitNotifyResult(message):
+      return message
+
+    cl = FakeCL(cl_text)
+    output_api = presubmit.OutputApi(False)
+    output_api.PresubmitNotifyResult = FakePresubmitNotifyResult
+    message = 'Automatically added optional bots to run on CQ.'
+    results = output_api.EnsureCQIncludeTrybotsAreAdded(
+      cl,
+      new_trybots,
+      message)
+    self.assertEqual(updated_cl_text, cl.GetDescription())
+    self.assertEqual([message], results)
+
+  def testEnsureCQIncludeTrybotsAreAdded(self):
+    # We need long lines in this test.
+    # pylint: disable=line-too-long
+
+    # Deliberately has a space at the end to exercise space-stripping code.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+
+CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel 
+""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel'
+      ],
+      """A change to GPU-related code.
+
+CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+""")
+
+    # Starting without any CQ_INCLUDE_TRYBOTS line.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
+""")
+
+    # All pre-existing bots are already in output set.
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.win:win_optional_gpu_tests_rel
+""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel'
+      ],
+      """A change to GPU-related code.
+
+CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+""")
+
 
 
 class AffectedFileUnittest(PresubmitTestsBase):

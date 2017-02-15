@@ -72,7 +72,7 @@ class Rietveld(object):
     logging.info('closing issue %d' % issue)
     self.post("/%d/close" % issue, [('xsrf_token', self.xsrf_token())])
 
-  def get_description(self, issue):
+  def get_description(self, issue, force=False):
     """Returns the issue's description.
 
     Converts any CRLF into LF and strip extraneous whitespace.
@@ -654,11 +654,14 @@ class CachingRietveld(Rietveld):
       function_cache[args] = update(*args)
     return copy.deepcopy(function_cache[args])
 
-  def get_description(self, issue):
-    return self._lookup(
-        'get_description',
-        (issue,),
-        super(CachingRietveld, self).get_description)
+  def get_description(self, issue, force=False):
+    if force:
+      return super(CachingRietveld, self).get_description(issue, force=force)
+    else:
+      return self._lookup(
+          'get_description',
+          (issue,),
+          super(CachingRietveld, self).get_description)
 
   def get_issue_properties(self, issue, messages):
     """Returns the issue properties.
