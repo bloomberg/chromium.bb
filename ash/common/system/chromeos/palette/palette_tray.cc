@@ -44,12 +44,9 @@ namespace ash {
 
 namespace {
 
-// Predefined padding for the icon used in this tray. These are to be set to the
-// border of the icon, depending on the current |shelf_alignment()|.
-constexpr int kHorizontalShelfHorizontalPadding = 8;
-constexpr int kHorizontalShelfVerticalPadding = 4;
-constexpr int kVerticalShelfHorizontalPadding = 2;
-constexpr int kVerticalShelfVerticalPadding = 5;
+// Padding for tray icon (dp; the button that shows the palette menu).
+constexpr int kTrayIconMainAxisInset = 8;
+constexpr int kTrayIconCrossAxisInset = 0;
 
 // Width of the palette itself (dp).
 constexpr int kPaletteWidth = 332;
@@ -170,7 +167,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
   icon_ = new views::ImageView();
   UpdateTrayIcon();
 
-  SetIconBorderForShelfAlignment();
+  tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
   tray_container()->AddChildView(icon_);
 
   WmShell::Get()->AddShellObserver(this);
@@ -398,7 +395,6 @@ void PaletteTray::SetShelfAlignment(ShelfAlignment alignment) {
     return;
 
   TrayBackgroundView::SetShelfAlignment(alignment);
-  SetIconBorderForShelfAlignment();
 }
 
 void PaletteTray::AnchorUpdated() {
@@ -416,18 +412,6 @@ void PaletteTray::Initialize() {
   // which will take care of showing the palette.
   palette_enabled_subscription_ = delegate->AddPaletteEnableListener(base::Bind(
       &PaletteTray::OnPaletteEnabledPrefChanged, weak_factory_.GetWeakPtr()));
-}
-
-void PaletteTray::SetIconBorderForShelfAlignment() {
-  // TODO(tdanderson): Ensure PaletteTray follows material design specs. See
-  // crbug.com/630464.
-  if (IsHorizontalAlignment(shelf_alignment())) {
-    icon_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-        kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding)));
-  } else {
-    icon_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-        kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding)));
-  }
 }
 
 void PaletteTray::UpdateTrayIcon() {

@@ -99,10 +99,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void OnActiveToolChanged() override;
   WmWindow* GetWindow() override;
 
-  // Creates a new border for the icon. The padding is determined based on the
-  // alignment of the shelf.
-  void SetIconBorderForShelfAlignment();
-
   // Updates the tray icon from the palette tool manager.
   void UpdateTrayIcon();
 
