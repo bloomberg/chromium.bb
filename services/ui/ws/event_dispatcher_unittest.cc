@@ -1324,7 +1324,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
     ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
     EXPECT_EQ(gfx::Point(25, 20), dispatched_event->root_location());
     EXPECT_EQ(gfx::Point(15, 10), dispatched_event->location());
-    EXPECT_EQ(touch_id, dispatched_event->pointer_id());
+    EXPECT_EQ(touch_id, dispatched_event->pointer_details().id);
   }
 }
 

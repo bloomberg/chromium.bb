@@ -469,7 +469,8 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   // Set unchanged touch point to StateStationary for touchmove and
   // touchcancel to make sure only send one ack per WebTouchEvent.
-  MarkUnchangedTouchPointsAsStationary(&touch_event, event->touch_id());
+  MarkUnchangedTouchPointsAsStationary(&touch_event,
+                                       event->pointer_details().id);
   if (ShouldRouteEvent(event)) {
     host_->delegate()->GetInputEventRouter()->RouteTouchEvent(
         host_view_, &touch_event, *event->latency());

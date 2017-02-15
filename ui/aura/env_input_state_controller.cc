@@ -36,7 +36,7 @@ void EnvInputStateController::UpdateStateForTouchEvent(
     const ui::TouchEvent& event) {
   switch (event.type()) {
     case ui::ET_TOUCH_PRESSED:
-      touch_ids_down_ |= (1 << event.touch_id());
+      touch_ids_down_ |= (1 << event.pointer_details().id);
       Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
       break;
 
@@ -46,8 +46,8 @@ void EnvInputStateController::UpdateStateForTouchEvent(
         break;
     // fallthrough
     case ui::ET_TOUCH_RELEASED:
-      touch_ids_down_ =
-          (touch_ids_down_ | (1 << event.touch_id())) ^ (1 << event.touch_id());
+      touch_ids_down_ = (touch_ids_down_ | (1 << event.pointer_details().id)) ^
+                        (1 << event.pointer_details().id);
       Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
       break;
 

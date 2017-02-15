@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
@@ -40,6 +41,7 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   result.windowY = window_y;
   result.setModifiers(modifiers);
   result.pointerType = pointer_type;
+  result.id = ui::PointerEvent::kMousePointerId;
   return result;
 }
 

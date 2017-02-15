@@ -60,7 +60,7 @@ void TouchAccessibilityEnabler::HandleTouchEvent(const ui::TouchEvent& event) {
   DCHECK(!(event.flags() & ui::EF_TOUCH_ACCESSIBILITY));
   const ui::EventType type = event.type();
   const gfx::PointF& location = event.location_f();
-  const int touch_id = event.touch_id();
+  const int touch_id = event.pointer_details().id;
 
   if (type == ui::ET_TOUCH_PRESSED) {
     touch_locations_.insert(std::pair<int, gfx::PointF>(touch_id, location));

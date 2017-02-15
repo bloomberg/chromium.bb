@@ -458,7 +458,8 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
                                    /* tilt_x */ 89.5f,
                                    /* tilt_y */ -89.5f,
                                    /* tangential_pressure */ 0.6f,
-                                   /* twist */ 269);
+                                   /* twist */ 269,
+                                   /* id */ 63);
     ui_event.set_pointer_details(pointer_details);
     blink::WebMouseEvent webkit_event =
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
@@ -470,6 +471,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_FLOAT_EQ(0.8f, webkit_event.force);
     EXPECT_FLOAT_EQ(0.6f, webkit_event.tangentialPressure);
     EXPECT_EQ(269, webkit_event.twist);
+    EXPECT_EQ(63, webkit_event.id);
     EXPECT_EQ(123, webkit_event.x);
     EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);

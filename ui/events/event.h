@@ -408,10 +408,8 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 // PointerEvents API.
 struct EVENTS_EXPORT PointerDetails {
  public:
-  PointerDetails() {}
-  explicit PointerDetails(EventPointerType pointer_type)
-      : pointer_type(pointer_type),
-        force(std::numeric_limits<float>::quiet_NaN()) {}
+  PointerDetails();
+  explicit PointerDetails(EventPointerType pointer_type, int pointer_id = -1);
   PointerDetails(EventPointerType pointer_type,
                  float radius_x,
                  float radius_y,
@@ -419,21 +417,12 @@ struct EVENTS_EXPORT PointerDetails {
                  float tilt_x,
                  float tilt_y,
                  float tangential_pressure = 0.0f,
-                 int twist = 0)
-      : pointer_type(pointer_type),
-        // If we aren't provided with a radius on one axis, use the
-        // information from the other axis.
-        radius_x(radius_x > 0 ? radius_x : radius_y),
-        radius_y(radius_y > 0 ? radius_y : radius_x),
-        force(force),
-        tilt_x(tilt_x),
-        tilt_y(tilt_y),
-        tangential_pressure(tangential_pressure),
-        twist(twist) {}
-  PointerDetails(EventPointerType pointer_type, const gfx::Vector2d& offset)
-      : pointer_type(pointer_type),
-        force(std::numeric_limits<float>::quiet_NaN()),
-        offset(offset) {}
+                 int twist = 0,
+                 int pointer_id = -1);
+  PointerDetails(EventPointerType pointer_type,
+                 const gfx::Vector2d& pointer_offset,
+                 int pointer_id = -1);
+  PointerDetails(const PointerDetails& other);
 
   bool operator==(const PointerDetails& other) const {
     return pointer_type == other.pointer_type && radius_x == other.radius_x &&
@@ -442,8 +431,12 @@ struct EVENTS_EXPORT PointerDetails {
             (std::isnan(force) && std::isnan(other.force))) &&
            tilt_x == other.tilt_x && tilt_y == other.tilt_y &&
            tangential_pressure == other.tangential_pressure &&
-           twist == other.twist && offset == other.offset;
+           twist == other.twist && id == other.id && offset == other.offset;
   }
+
+  // A value for pointer id which means it needs to be initialized for all
+  // pointer types.
+  static const int kUnknownPointerId;
 
   // The type of pointer device.
   EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
@@ -473,6 +466,9 @@ struct EVENTS_EXPORT PointerDetails {
   // The clockwise rotation of a pen stylus around its own major axis, in
   // degrees in the range [0,359]. Always 0 if the device does not support it.
   int twist = 0;
+
+  // An identifier that uniquely identifies a pointer during its lifetime.
+  int id = 0;
 
   // Only used by mouse wheel events. The amount to scroll. This is in multiples
   // of kWheelDelta.
@@ -663,7 +659,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   template <class T>
   TouchEvent(const TouchEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
-        touch_id_(model.touch_id_),
         unique_event_id_(model.unique_event_id_),
         rotation_angle_(model.rotation_angle_),
         may_cause_scrolling_(model.may_cause_scrolling_),
@@ -689,8 +684,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   ~TouchEvent() override;
 
-  // The id of the pointer this event modifies.
-  int touch_id() const { return touch_id_; }
   // A unique identifier for this event.
   uint32_t unique_event_id() const { return unique_event_id_; }
 
@@ -724,10 +717,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  private:
   // Adjusts rotation_angle_ to within the acceptable range.
   void FixRotationAngle();
-
-  // The identity (typically finger) of the touch starting at 0 and incrementing
-  // for each separable additional touch that the hardware can detect.
-  int touch_id_;
 
   // A unique identifier for the touch event.
   uint32_t unique_event_id_;
@@ -772,13 +761,11 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
                const PointerDetails& pointer_details,
                base::TimeTicks time_stamp);
 
-  int32_t pointer_id() const { return pointer_id_; }
   int changed_button_flags() const { return changed_button_flags_; }
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
   const PointerDetails& pointer_details() const { return details_; }
 
  private:
-  int32_t pointer_id_;
   int changed_button_flags_;
   PointerDetails details_;
 };

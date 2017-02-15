@@ -115,7 +115,7 @@ bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
     return false;
   if (first.location() != second.location())
     return false;
-  if (first.touch_id() != second.touch_id())
+  if (first.pointer_details().id != second.pointer_details().id)
     return false;
   if (second.time_stamp() != first.time_stamp())
     return false;

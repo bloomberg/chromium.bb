@@ -93,7 +93,7 @@ int GetTrackingId(const ui::TouchEvent& event) {
 struct TouchPointLog {
  public:
   explicit TouchPointLog(const ui::TouchEvent& touch)
-      : id(touch.touch_id()),
+      : id(touch.pointer_details().id),
         type(touch.type()),
         location(touch.root_location()),
         timestamp((touch.time_stamp() - base::TimeTicks()).InMillisecondsF()),
@@ -213,14 +213,14 @@ class TouchLog {
         break;
       next_trace_index_ = (next_trace_index_ + 1) % kMaxPaths;
     } while (next_trace_index_ != old_trace_index);
-    int touch_id = touch.touch_id();
+    int touch_id = touch.pointer_details().id;
     traces_[next_trace_index_].Reset();
     touch_id_to_trace_index_[touch_id] = next_trace_index_;
     next_trace_index_ = (next_trace_index_ + 1) % kMaxPaths;
   }
 
   void AddToTrace(const ui::TouchEvent& touch) {
-    int touch_id = touch.touch_id();
+    int touch_id = touch.pointer_details().id;
     int trace_index = touch_id_to_trace_index_[touch_id];
     traces_[trace_index].AddTouchPoint(touch);
   }
@@ -439,12 +439,12 @@ void TouchHudDebug::UpdateTouchPointLabel(int index) {
 }
 
 void TouchHudDebug::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->touch_id() >= kMaxTouchPoints)
+  if (event->pointer_details().id >= kMaxTouchPoints)
     return;
 
   touch_log_->AddTouchPoint(*event);
-  canvas_->TouchPointAdded(event->touch_id());
-  UpdateTouchPointLabel(event->touch_id());
+  canvas_->TouchPointAdded(event->pointer_details().id);
+  UpdateTouchPointLabel(event->pointer_details().id);
   label_container_->SetSize(label_container_->GetPreferredSize());
 }
 

@@ -818,14 +818,15 @@ TEST(EventTest, PointerEventId) {
     ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
                                gfx::Point(0, 0), base::TimeTicks(), 0, 0);
     ui::PointerEvent pointer_event(mouse_event);
-    EXPECT_EQ(pointer_event.pointer_id(), ui::PointerEvent::kMousePointerId);
+    EXPECT_EQ(pointer_event.pointer_details().id,
+              ui::PointerEvent::kMousePointerId);
   }
 
   for (int touch_id = 0; touch_id < 8; touch_id++) {
     ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), touch_id,
                                base::TimeTicks());
     ui::PointerEvent pointer_event(touch_event);
-    EXPECT_EQ(pointer_event.pointer_id(), touch_id);
+    EXPECT_EQ(pointer_event.pointer_details().id, touch_id);
   }
 }
 
@@ -863,7 +864,8 @@ TEST(EventTest, PointerEventClone) {
     ui::PointerEvent* clone_as_ptr = clone->AsPointerEvent();
 
     EXPECT_EQ(ptr_event.type(), clone_as_ptr->type());
-    EXPECT_EQ(ptr_event.pointer_id(), clone_as_ptr->pointer_id());
+    EXPECT_EQ(ptr_event.pointer_details().id,
+              clone_as_ptr->pointer_details().id);
     EXPECT_EQ(ptr_event.pointer_details(), clone_as_ptr->pointer_details());
     EXPECT_EQ(ptr_event.location(), clone_as_ptr->location());
     EXPECT_EQ(ptr_event.root_location(), clone_as_ptr->root_location());
@@ -878,7 +880,8 @@ TEST(EventTest, PointerEventClone) {
     ui::PointerEvent* clone_as_ptr = clone->AsPointerEvent();
 
     EXPECT_EQ(ptr_event.type(), clone_as_ptr->type());
-    EXPECT_EQ(ptr_event.pointer_id(), clone_as_ptr->pointer_id());
+    EXPECT_EQ(ptr_event.pointer_details().id,
+              clone_as_ptr->pointer_details().id);
     EXPECT_EQ(ptr_event.pointer_details(), clone_as_ptr->pointer_details());
     EXPECT_EQ(ptr_event.location(), clone_as_ptr->location());
     EXPECT_EQ(ptr_event.root_location(), clone_as_ptr->root_location());
@@ -970,7 +973,8 @@ TEST(EventTest, PointerEventToTouchEventDetails) {
 
   EXPECT_EQ(pointer_event.location(), touch_event.location());
   EXPECT_EQ(pointer_event.flags(), touch_event.flags());
-  EXPECT_EQ(pointer_event.pointer_id(), touch_event.touch_id());
+  EXPECT_EQ(pointer_event.pointer_details().id,
+            touch_event.pointer_details().id);
   EXPECT_EQ(pointer_event.pointer_details(), touch_event.pointer_details());
   EXPECT_EQ(pointer_event.time_stamp(), touch_event.time_stamp());
 }

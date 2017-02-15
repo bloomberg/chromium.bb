@@ -346,7 +346,7 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   DispatchUiEvent(&touch_event);
 
   if (params.type == ET_TOUCH_RELEASED || params.type == ET_TOUCH_CANCELLED) {
-    touch_id_generator_.ReleaseGeneratedID(touch_event.touch_id());
+    touch_id_generator_.ReleaseGeneratedID(touch_event.pointer_details().id);
   }
 }
 

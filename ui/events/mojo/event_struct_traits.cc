@@ -166,7 +166,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
 
   const ui::PointerEvent* pointer_event = event->AsPointerEvent();
   ui::mojom::PointerDataPtr pointer_data(ui::mojom::PointerData::New());
-  pointer_data->pointer_id = pointer_event->pointer_id();
+  pointer_data->pointer_id = pointer_event->pointer_details().id;
   pointer_data->changed_button_flags = pointer_event->changed_button_flags();
   const ui::PointerDetails* pointer_details = &pointer_event->pointer_details();
 

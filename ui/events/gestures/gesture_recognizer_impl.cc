@@ -65,7 +65,7 @@ GestureRecognizerImpl::~GestureRecognizerImpl() {
 // Otherwise, returns NULL.
 GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
     const TouchEvent& event) {
-  return touch_id_target_[event.touch_id()];
+  return touch_id_target_[event.pointer_details().id];
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
@@ -167,7 +167,8 @@ void GestureRecognizerImpl::TransferEventsTo(
         GetGestureProviderForConsumer(current_consumer);
 
     for (std::unique_ptr<TouchEvent>& event : cancelling_touches) {
-      gesture_provider->OnTouchEnter(event->touch_id(), event->x(), event->y());
+      gesture_provider->OnTouchEnter(event->pointer_details().id, event->x(),
+                                     event->y());
       helper->DispatchSyntheticTouchEvent(event.get());
     }
   }
@@ -243,9 +244,9 @@ void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
                                          GestureConsumer* target) {
   if (event.type() == ui::ET_TOUCH_RELEASED ||
       event.type() == ui::ET_TOUCH_CANCELLED) {
-    touch_id_target_.erase(event.touch_id());
+    touch_id_target_.erase(event.pointer_details().id);
   } else if (event.type() == ui::ET_TOUCH_PRESSED) {
-    touch_id_target_[event.touch_id()] = target;
+    touch_id_target_[event.pointer_details().id] = target;
   }
 }
 

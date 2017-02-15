@@ -52,7 +52,7 @@ std::unique_ptr<MoveLoop> MoveLoop::Create(aura::Window* target,
 MoveLoop::MoveResult MoveLoop::Move(const ui::PointerEvent& event) {
   switch (event.type()) {
     case ui::ET_POINTER_CANCELLED:
-      if (event.pointer_id() == pointer_id_) {
+      if (event.pointer_details().id == pointer_id_) {
         if (target_)
           Revert();
         return MoveResult::DONE;
@@ -60,12 +60,12 @@ MoveLoop::MoveResult MoveLoop::Move(const ui::PointerEvent& event) {
       return MoveResult::CONTINUE;
 
     case ui::ET_POINTER_MOVED:
-      if (target_ && event.pointer_id() == pointer_id_)
+      if (target_ && event.pointer_details().id == pointer_id_)
         MoveImpl(event);
       return MoveResult::CONTINUE;
 
     case ui::ET_POINTER_UP:
-      if (event.pointer_id() == pointer_id_) {
+      if (event.pointer_details().id == pointer_id_) {
         // TODO(sky): need to support changed_flags.
         if (target_)
           MoveImpl(event);
@@ -85,7 +85,6 @@ void MoveLoop::Revert() {
 
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(initial_window_bounds_);
-  //SetWindowUserSetBounds(target_, initial_user_set_bounds_);
 }
 
 MoveLoop::MoveLoop(aura::Window* target,
@@ -97,11 +96,10 @@ MoveLoop::MoveLoop(aura::Window* target,
       type_(type),
       h_loc_(h_loc),
       v_loc_(v_loc),
-      pointer_id_(event.pointer_id()),
+      pointer_id_(event.pointer_details().id),
       initial_event_screen_location_(event.root_location()),
       initial_window_bounds_(target->bounds()),
       initial_user_set_bounds_(target->bounds()),
-          // GetWindowUserSetBounds(target)),
       changing_bounds_(false) {
   target->AddObserver(this);
 }
@@ -181,7 +179,6 @@ void MoveLoop::MoveImpl(const ui::PointerEvent& event) {
   const gfx::Rect new_bounds(DetermineBoundsFromDelta(delta));
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(new_bounds);
-  //SetWindowUserSetBounds(target_, new_bounds);
 }
 
 void MoveLoop::Cancel() {

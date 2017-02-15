@@ -68,6 +68,7 @@ bool Touch::HasStylusDelegate() const {
 void Touch::OnTouchEvent(ui::TouchEvent* event) {
   bool send_details = false;
 
+  const int touch_pointer_id = event->pointer_details().id;
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED: {
       // Early out if event doesn't contain a valid target for touch device.
@@ -83,8 +84,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
         focus_->AddSurfaceObserver(this);
       }
 
-      DCHECK(!VectorContainsItem(touch_points_, event->touch_id()));
-      touch_points_.push_back(event->touch_id());
+      DCHECK(!VectorContainsItem(touch_points_, touch_pointer_id));
+      touch_points_.push_back(touch_pointer_id);
 
       // Convert location to focus surface coordinate space.
       DCHECK(focus_);
@@ -92,18 +93,18 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
 
       // Generate a touch down event for the focus surface. Note that this can
       // be different from the target surface.
-      delegate_->OnTouchDown(focus_, event->time_stamp(), event->touch_id(),
+      delegate_->OnTouchDown(focus_, event->time_stamp(), touch_pointer_id,
                              location);
       if (stylus_delegate_ &&
           event->pointer_details().pointer_type !=
               ui::EventPointerType::POINTER_TYPE_TOUCH) {
-        stylus_delegate_->OnTouchTool(event->touch_id(),
+        stylus_delegate_->OnTouchTool(touch_pointer_id,
                                       event->pointer_details().pointer_type);
       }
       send_details = true;
     } break;
     case ui::ET_TOUCH_RELEASED: {
-      auto it = FindVectorItem(touch_points_, event->touch_id());
+      auto it = FindVectorItem(touch_points_, touch_pointer_id);
       if (it == touch_points_.end())
         return;
       touch_points_.erase(it);
@@ -115,22 +116,21 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
         focus_ = nullptr;
       }
 
-      delegate_->OnTouchUp(event->time_stamp(), event->touch_id());
+      delegate_->OnTouchUp(event->time_stamp(), touch_pointer_id);
     } break;
     case ui::ET_TOUCH_MOVED: {
-      auto it = FindVectorItem(touch_points_, event->touch_id());
+      auto it = FindVectorItem(touch_points_, touch_pointer_id);
       if (it == touch_points_.end())
         return;
 
       DCHECK(focus_);
       // Convert location to focus surface coordinate space.
       gfx::PointF location = EventLocationInWindow(event, focus_->window());
-      delegate_->OnTouchMotion(event->time_stamp(), event->touch_id(),
-                               location);
+      delegate_->OnTouchMotion(event->time_stamp(), touch_pointer_id, location);
       send_details = true;
     } break;
     case ui::ET_TOUCH_CANCELLED: {
-      auto it = FindVectorItem(touch_points_, event->touch_id());
+      auto it = FindVectorItem(touch_points_, touch_pointer_id);
       if (it == touch_points_.end())
         return;
 
@@ -147,19 +147,18 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       return;
   }
   if (send_details) {
-    delegate_->OnTouchShape(event->touch_id(),
-                            event->pointer_details().radius_x,
+    delegate_->OnTouchShape(touch_pointer_id, event->pointer_details().radius_x,
                             event->pointer_details().radius_y);
 
     if (stylus_delegate_ &&
         event->pointer_details().pointer_type !=
             ui::EventPointerType::POINTER_TYPE_TOUCH) {
       if (!std::isnan(event->pointer_details().force)) {
-        stylus_delegate_->OnTouchForce(event->time_stamp(), event->touch_id(),
+        stylus_delegate_->OnTouchForce(event->time_stamp(), touch_pointer_id,
                                        event->pointer_details().force);
       }
       stylus_delegate_->OnTouchTilt(
-          event->time_stamp(), event->touch_id(),
+          event->time_stamp(), touch_pointer_id,
           gfx::Vector2dF(event->pointer_details().tilt_x,
                          event->pointer_details().tilt_y));
     }

@@ -501,6 +501,70 @@ void LocatedEvent::UpdateForRootTransform(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PointerDetails
+
+PointerDetails::PointerDetails() {}
+
+PointerDetails::PointerDetails(EventPointerType pointer_type, int pointer_id)
+    : PointerDetails(pointer_type,
+                     0.0f,
+                     0.0f,
+                     std::numeric_limits<float>::quiet_NaN(),
+                     0.0f,
+                     0.0f,
+                     0.0f,
+                     0,
+                     pointer_id) {}
+
+PointerDetails::PointerDetails(EventPointerType pointer_type,
+                               float radius_x,
+                               float radius_y,
+                               float force,
+                               float tilt_x,
+                               float tilt_y,
+                               float tangential_pressure,
+                               int twist,
+                               int pointer_id)
+    : pointer_type(pointer_type),
+      // If we aren't provided with a radius on one axis, use the
+      // information from the other axis.
+      radius_x(radius_x > 0 ? radius_x : radius_y),
+      radius_y(radius_y > 0 ? radius_y : radius_x),
+      force(force),
+      tilt_x(tilt_x),
+      tilt_y(tilt_y),
+      tangential_pressure(tangential_pressure),
+      twist(twist),
+      id(pointer_id) {
+  if (pointer_id == PointerDetails::kUnknownPointerId) {
+    id = pointer_type == EventPointerType::POINTER_TYPE_TOUCH
+             ? 0
+             : PointerEvent::kMousePointerId;
+  }
+}
+
+PointerDetails::PointerDetails(EventPointerType pointer_type,
+                               const gfx::Vector2d& pointer_offset,
+                               int pointer_id)
+    : PointerDetails(pointer_type, pointer_id) {
+  offset = pointer_offset;
+}
+
+PointerDetails::PointerDetails(const PointerDetails& other)
+    : pointer_type(other.pointer_type),
+      radius_x(other.radius_x),
+      radius_y(other.radius_y),
+      force(other.force),
+      tilt_x(other.tilt_x),
+      tilt_y(other.tilt_y),
+      tangential_pressure(other.tangential_pressure),
+      twist(other.twist),
+      id(other.id),
+      offset(other.offset) {}
+
+const int PointerDetails::kUnknownPointerId = -1;
+
+////////////////////////////////////////////////////////////////////////////////
 // MouseEvent
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
@@ -766,7 +830,6 @@ const int MouseWheelEvent::kWheelDelta = 53;
 
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
-      touch_id_(GetTouchId(native_event)),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(GetTouchAngle(native_event)),
       may_cause_scrolling_(false),
@@ -784,7 +847,6 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
 
 TouchEvent::TouchEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
-      touch_id_(pointer_event.pointer_id()),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(0.0f),
       may_cause_scrolling_(false),
@@ -822,12 +884,12 @@ TouchEvent::TouchEvent(EventType type,
                    gfx::PointF(location),
                    time_stamp,
                    0),
-      touch_id_(touch_id),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(0.0f),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
-      pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_TOUCH)) {
+      pointer_details_(
+          PointerDetails(EventPointerType::POINTER_TYPE_TOUCH, touch_id)) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
@@ -845,7 +907,6 @@ TouchEvent::TouchEvent(EventType type,
                    gfx::PointF(location),
                    time_stamp,
                    flags),
-      touch_id_(touch_id),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(angle),
       may_cause_scrolling_(false),
@@ -855,14 +916,16 @@ TouchEvent::TouchEvent(EventType type,
                                       radius_y,
                                       force,
                                       /* tilt_x */ 0.0f,
-                                      /* tilt_y */ 0.0f)) {
+                                      /* tilt_y */ 0.0f,
+                                      /* tangential_pressure */ 0.0f,
+                                      /* twist */ 0,
+                                      touch_id)) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   FixRotationAngle();
 }
 
 TouchEvent::TouchEvent(const TouchEvent& copy)
     : LocatedEvent(copy),
-      touch_id_(copy.touch_id_),
       unique_event_id_(copy.unique_event_id_),
       rotation_angle_(copy.rotation_angle_),
       may_cause_scrolling_(copy.may_cause_scrolling_),
@@ -934,7 +997,6 @@ bool PointerEvent::CanConvertFrom(const Event& event) {
 
 PointerEvent::PointerEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
-      pointer_id_(pointer_event.pointer_id()),
       changed_button_flags_(pointer_event.changed_button_flags()),
       details_(pointer_event.pointer_details()) {
   if (details_.pointer_type == EventPointerType::POINTER_TYPE_TOUCH)
@@ -947,7 +1009,6 @@ PointerEvent::PointerEvent(const PointerEvent& pointer_event)
 
 PointerEvent::PointerEvent(const MouseEvent& mouse_event)
     : LocatedEvent(mouse_event),
-      pointer_id_(kMousePointerId),
       changed_button_flags_(mouse_event.changed_button_flags()),
       details_(mouse_event.pointer_details()) {
   DCHECK(CanConvertFrom(mouse_event));
@@ -981,7 +1042,8 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
     case ET_MOUSEWHEEL:
       SetType(ET_POINTER_WHEEL_CHANGED);
       details_ = PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                mouse_event.AsMouseWheelEvent()->offset());
+                                mouse_event.AsMouseWheelEvent()->offset(),
+                                mouse_event.pointer_details().id);
       latency()->set_source_event_type(ui::SourceEventType::WHEEL);
       break;
 
@@ -996,7 +1058,6 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
 
 PointerEvent::PointerEvent(const TouchEvent& touch_event)
     : LocatedEvent(touch_event),
-      pointer_id_(touch_event.touch_id()),
       changed_button_flags_(0),
       details_(touch_event.pointer_details()) {
   DCHECK(CanConvertFrom(touch_event));
@@ -1036,9 +1097,9 @@ PointerEvent::PointerEvent(EventType type,
                    gfx::PointF(root_location),
                    time_stamp,
                    flags),
-      pointer_id_(pointer_id),
       changed_button_flags_(changed_button_flags),
       details_(pointer_details) {
+  details_.id = pointer_id;
   if (details_.pointer_type == EventPointerType::POINTER_TYPE_TOUCH)
     latency()->set_source_event_type(ui::SourceEventType::TOUCH);
   else if (type == ET_POINTER_WHEEL_CHANGED)

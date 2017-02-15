@@ -430,7 +430,7 @@ TEST(MotionEventAuraTest, ToolType) {
 
   touch_event = TouchWithType(ET_TOUCH_RELEASED, 7);
   PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN, 5.0f, 5.0f,
-                                 1.0f, 0.0f, 0.0f);
+                                 1.0f, 0.0f, 0.0f, 0.0f, 0, 7);
   touch_event.set_pointer_details(pointer_details);
   EXPECT_TRUE(event.OnTouch(touch_event));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS, event.GetToolType(0));

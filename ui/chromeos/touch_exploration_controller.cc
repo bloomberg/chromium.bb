@@ -130,7 +130,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
 
   const ui::EventType type = touch_event.type();
   const gfx::PointF& location = touch_event.location_f();
-  const int touch_id = touch_event.touch_id();
+  const int touch_id = touch_event.pointer_details().id;
 
   // Always update touch ids and touch locations, so we can use those
   // no matter what state we're in.
@@ -283,7 +283,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
         &TouchExplorationController::OnPassthroughTimerFired);
   }
   initial_press_.reset(new TouchEvent(event));
-  initial_presses_[event.touch_id()] = event.location();
+  initial_presses_[event.pointer_details().id] = event.location();
   last_unused_finger_event_.reset(new TouchEvent(event));
   StartTapTimer();
   SET_STATE(SINGLE_TAP_PRESSED);
@@ -300,7 +300,8 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
       (location == BOTTOM_LEFT_CORNER) || (location == BOTTOM_RIGHT_CORNER);
   // If the event is from the initial press and the location is no longer in the
   // corner, then we are not waiting for a corner passthrough anymore.
-  if (event.touch_id() == initial_press_->touch_id() && !in_a_bottom_corner) {
+  if (event.pointer_details().id == initial_press_->pointer_details().id &&
+      !in_a_bottom_corner) {
     if (passthrough_timer_.IsRunning()) {
       passthrough_timer_.Stop();
       // Since the long press timer has been running, it is possible that the
@@ -314,14 +315,14 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
   }
 
   if (type == ui::ET_TOUCH_PRESSED) {
-    initial_presses_[event.touch_id()] = event.location();
+    initial_presses_[event.pointer_details().id] = event.location();
     SET_STATE(TWO_FINGER_TAP);
     return EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     if (passthrough_timer_.IsRunning())
       passthrough_timer_.Stop();
     if (current_touch_ids_.size() == 0 &&
-        event.touch_id() == initial_press_->touch_id()) {
+        event.pointer_details().id == initial_press_->pointer_details().id) {
       SET_STATE(SINGLE_TAP_RELEASED);
     } else if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
@@ -506,7 +507,7 @@ ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
   ui::EventType type = event.type();
 
   // If the first finger has left the corner, then exit passthrough.
-  if (event.touch_id() == initial_press_->touch_id()) {
+  if (event.pointer_details().id == initial_press_->pointer_details().id) {
     int edges = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
     bool in_a_bottom_corner = (edges == BOTTOM_LEFT_CORNER) ||
                               (edges == BOTTOM_RIGHT_CORNER);
@@ -522,7 +523,7 @@ ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
   }
 
   std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
-      type, gfx::Point(), event.touch_id(), event.time_stamp()));
+      type, gfx::Point(), event.pointer_details().id, event.time_stamp()));
   new_event->set_location_f(event.location_f());
   new_event->set_root_location_f(event.location_f());
   new_event->set_flags(event.flags());
@@ -537,14 +538,15 @@ ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
 ui::EventRewriteStatus TouchExplorationController::InOneFingerPassthrough(
     const ui::TouchEvent& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
-  if (event.touch_id() != initial_press_->touch_id()) {
+  if (event.pointer_details().id != initial_press_->pointer_details().id) {
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
     }
     return ui::EVENT_REWRITE_DISCARD;
   }
-  std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
-      event.type(), gfx::Point(), event.touch_id(), event.time_stamp()));
+  std::unique_ptr<ui::TouchEvent> new_event(
+      new ui::TouchEvent(event.type(), gfx::Point(), event.pointer_details().id,
+                         event.time_stamp()));
   new_event->set_location_f(event.location_f() - passthrough_offset_);
   new_event->set_root_location_f(event.location_f() - passthrough_offset_);
   new_event->set_flags(event.flags());
@@ -564,9 +566,9 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     // through. The user enters the wait state, Since there has already been
     // a press dispatched when split tap began, the touch needs to be
     // cancelled.
-    std::unique_ptr<ui::TouchEvent> new_event(
-        new ui::TouchEvent(ui::ET_TOUCH_CANCELLED, gfx::Point(),
-                           initial_press_->touch_id(), event.time_stamp()));
+    std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
+        ui::ET_TOUCH_CANCELLED, gfx::Point(),
+        initial_press_->pointer_details().id, event.time_stamp()));
     // TODO(dmazzoni): fix for multiple displays. http://crbug.com/616793
     new_event->set_location_f(anchor_point_);
     new_event->set_root_location_f(anchor_point_);
@@ -578,9 +580,11 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     // If the fingers have moved too far from their original locations,
     // the user can no longer split tap.
     ui::TouchEvent* original_touch;
-    if (event.touch_id() == last_touch_exploration_->touch_id()) {
+    if (event.pointer_details().id ==
+        last_touch_exploration_->pointer_details().id) {
       original_touch = last_touch_exploration_.get();
-    } else if (event.touch_id() == initial_press_->touch_id()) {
+    } else if (event.pointer_details().id ==
+               initial_press_->pointer_details().id) {
       original_touch = initial_press_.get();
     } else {
       NOTREACHED();
@@ -600,7 +604,8 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     // If the touch exploration finger is lifted, there is no option to return
     // to touch explore anymore. The remaining finger acts as a pending
     // tap or long tap for the last touch explore location.
-    if (event.touch_id() == last_touch_exploration_->touch_id()) {
+    if (event.pointer_details().id ==
+        last_touch_exploration_->pointer_details().id) {
       SET_STATE(TOUCH_RELEASE_PENDING);
       return EVENT_REWRITE_DISCARD;
     }
@@ -647,14 +652,16 @@ void TouchExplorationController::SendSimulatedClick() {
   // Otherwise send a simulated press/release at the anchor point.
   std::unique_ptr<ui::TouchEvent> touch_press;
   touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
-                                       initial_press_->touch_id(), Now()));
+                                       initial_press_->pointer_details().id,
+                                       Now()));
   touch_press->set_location_f(anchor_point_);
   touch_press->set_root_location_f(anchor_point_);
   DispatchEvent(touch_press.get());
 
   std::unique_ptr<ui::TouchEvent> touch_release;
   touch_release.reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                                         initial_press_->touch_id(), Now()));
+                                         initial_press_->pointer_details().id,
+                                         Now()));
   touch_release->set_location_f(anchor_point_);
   touch_release->set_root_location_f(anchor_point_);
   DispatchEvent(touch_release.get());
@@ -670,7 +677,7 @@ ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
   // If additional fingers are added before a swipe gesture has been registered,
   // then wait until all fingers have been lifted.
   if (type == ui::ET_TOUCH_PRESSED ||
-      event.touch_id() != initial_press_->touch_id()) {
+      event.pointer_details().id != initial_press_->pointer_details().id) {
     if (sound_timer_.IsRunning())
       sound_timer_.Stop();
     SET_STATE(WAIT_FOR_NO_FINGERS);
@@ -717,7 +724,7 @@ ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
 
   if (type == ui::ET_TOUCH_MOVED) {
     // Determine if it was a swipe.
-    gfx::Point original_location = initial_presses_[event.touch_id()];
+    gfx::Point original_location = initial_presses_[event.pointer_details().id];
     float distance = (event.location() - original_location).Length();
     // If the user moves too far from the original position, consider the
     // movement a swipe.
@@ -770,9 +777,9 @@ void TouchExplorationController::OnTapTimerFired() {
       SET_STATE(ONE_FINGER_PASSTHROUGH);
       passthrough_offset_ =
           last_unused_finger_event_->location_f() - anchor_point_;
-      std::unique_ptr<ui::TouchEvent> passthrough_press(
-          new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
-                             last_unused_finger_event_->touch_id(), Now()));
+      std::unique_ptr<ui::TouchEvent> passthrough_press(new ui::TouchEvent(
+          ui::ET_TOUCH_PRESSED, gfx::Point(),
+          last_unused_finger_event_->pointer_details().id, Now()));
       passthrough_press->set_location_f(anchor_point_);
       passthrough_press->set_root_location_f(anchor_point_);
       DispatchEvent(passthrough_press.get());
@@ -814,12 +821,12 @@ void TouchExplorationController::OnPassthroughTimerFired() {
   // Check that initial press isn't null. Also a check that if the initial
   // corner press was released, then it should not be in corner passthrough.
   if (!initial_press_ ||
-      touch_locations_.find(initial_press_->touch_id()) !=
+      touch_locations_.find(initial_press_->pointer_details().id) !=
           touch_locations_.end()) {
   }
 
   gfx::Point location =
-      ToRoundedPoint(touch_locations_[initial_press_->touch_id()]);
+      ToRoundedPoint(touch_locations_[initial_press_->pointer_details().id]);
   int corner = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
   if (corner != BOTTOM_LEFT_CORNER && corner != BOTTOM_RIGHT_CORNER)
     return;
@@ -1133,7 +1140,7 @@ void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
     return;
 
   if (prev_event_ && prev_event_->type() == touch_event.type() &&
-      prev_event_->touch_id() == touch_event.touch_id()) {
+      prev_event_->pointer_details().id == touch_event.pointer_details().id) {
     return;
   }
   // The above statement prevents events of the same type and id from being
@@ -1146,7 +1153,7 @@ void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
 
   const std::string& type = touch_event.name();
   const gfx::PointF& location = touch_event.location_f();
-  const int touch_id = touch_event.touch_id();
+  const int touch_id = touch_event.pointer_details().id;
 
   VLOG(1) << "\n Function name: " << function_name << "\n Event Type: " << type
           << "\n Location: " << location.ToString()

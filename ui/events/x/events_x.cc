@@ -160,7 +160,9 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         GetTouchRadiusYFromXEvent(*native_event),
                         GetTouchForceFromXEvent(*native_event),
                         /* tilt_x */ 0.f,
-                        /* tilt_y */ 0.f);
+                        /* tilt_y */ 0.f,
+                        /* tangential_pressure */ 0.0f,
+                        /* twist */ 0, GetTouchIdFromXEvent(*native_event));
 }
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,

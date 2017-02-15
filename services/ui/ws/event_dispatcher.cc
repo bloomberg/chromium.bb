@@ -370,7 +370,7 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
     return;
   }
 
-  const int32_t pointer_id = event.pointer_id();
+  const int32_t pointer_id = event.pointer_details().id;
   if (!IsTrackingPointer(pointer_id) ||
       !pointer_targets_[pointer_id].is_pointer_down) {
     const bool any_pointers_down = AreAnyPointersDown();

@@ -45,8 +45,8 @@ bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
   if (one.type() != ui::ET_POINTER_MOVED)
     return false;
 
-  return one.AsPointerEvent()->pointer_id() ==
-         two.AsPointerEvent()->pointer_id();
+  return one.AsPointerEvent()->pointer_details().id ==
+         two.AsPointerEvent()->pointer_details().id;
 }
 
 std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
@@ -184,7 +184,7 @@ void WindowManagerState::SetDragDropSourceWindow(
   if (in_flight_event_details_ &&
       in_flight_event_details_->event->IsPointerEvent()) {
     drag_pointer =
-        in_flight_event_details_->event->AsPointerEvent()->pointer_id();
+        in_flight_event_details_->event->AsPointerEvent()->pointer_details().id;
   } else {
     NOTIMPLEMENTED() << "Set drag drop set up during something other than a "
                      << "pointer event; rejecting drag.";

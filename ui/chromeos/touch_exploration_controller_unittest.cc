@@ -432,7 +432,8 @@ void ConfirmEventsAreTouchAndEqual(ui::Event* e1, ui::Event* e2) {
   ui::TouchEvent* touch_event2 = e2->AsTouchEvent();
   EXPECT_EQ(touch_event1->type(), touch_event2->type());
   EXPECT_EQ(touch_event1->location(), touch_event2->location());
-  EXPECT_EQ(touch_event1->touch_id(), touch_event2->touch_id());
+  EXPECT_EQ(touch_event1->pointer_details().id,
+            touch_event2->pointer_details().id);
   EXPECT_EQ(touch_event1->flags(), touch_event2->flags());
   EXPECT_EQ(touch_event1->time_stamp(), touch_event2->time_stamp());
 }
@@ -1387,9 +1388,9 @@ TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
       // only those fingers at the end, so the check for being in
       // no fingers down can be accurate.
       if (next_dispatch->type() == ET_TOUCH_PRESSED) {
-        fingers_pressed[next_dispatch->touch_id()] = true;
+        fingers_pressed[next_dispatch->pointer_details().id] = true;
       } else if (next_dispatch->type() == ET_TOUCH_RELEASED) {
-        fingers_pressed[next_dispatch->touch_id()] = false;
+        fingers_pressed[next_dispatch->pointer_details().id] = false;
       }
     }
     ASSERT_EQ(queued_events.size(), 0u);

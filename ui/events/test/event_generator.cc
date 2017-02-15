@@ -669,8 +669,9 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
   if (event->IsTouchEvent()) {
-    static_cast<ui::TouchEvent*>(event)->set_pointer_details(
-        touch_pointer_details_);
+    ui::TouchEvent* touch_event = static_cast<ui::TouchEvent*>(event);
+    touch_pointer_details_.id = touch_event->pointer_details().id;
+    touch_event->set_pointer_details(touch_pointer_details_);
   }
 
   if (async) {

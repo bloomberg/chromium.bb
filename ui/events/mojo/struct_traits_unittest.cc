@@ -199,7 +199,8 @@ TEST_F(StructTraitsTest, PointerEvent) {
     EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
     EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
     EXPECT_EQ(kTestData[i].root_location(), output_ptr_event->root_location());
-    EXPECT_EQ(kTestData[i].pointer_id(), output_ptr_event->pointer_id());
+    EXPECT_EQ(kTestData[i].pointer_details().id,
+              output_ptr_event->pointer_details().id);
     EXPECT_EQ(kTestData[i].changed_button_flags(),
               output_ptr_event->changed_button_flags());
     EXPECT_EQ(kTestData[i].pointer_details(),

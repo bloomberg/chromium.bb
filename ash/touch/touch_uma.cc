@@ -122,12 +122,13 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
       "Ash.TouchPositionY", position.y() / bucket_size_y, 1,
       kBucketCountForLocation, kBucketCountForLocation + 1);
 
+  const int touch_pointer_id = event.pointer_details().id;
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     WmShell::Get()->RecordUserMetricsAction(UMA_TOUCHSCREEN_TAP_DOWN);
 
-    details->last_start_time_[event.touch_id()] = event.time_stamp();
-    details->start_touch_position_[event.touch_id()] = event.root_location();
-    details->last_touch_position_[event.touch_id()] = event.location();
+    details->last_start_time_[touch_pointer_id] = event.time_stamp();
+    details->start_touch_position_[touch_pointer_id] = event.root_location();
+    details->last_touch_position_[touch_pointer_id] = event.location();
 
     if (details->last_release_time_.ToInternalValue()) {
       // Measuring the interval between a touch-release and the next
@@ -148,16 +149,16 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
                                 details->last_start_time_.size(), 1,
                                 kMaxTouchPoints, kMaxTouchPoints + 1);
   } else if (event.type() == ui::ET_TOUCH_RELEASED) {
-    if (details->last_start_time_.count(event.touch_id())) {
+    if (details->last_start_time_.count(touch_pointer_id)) {
       base::TimeDelta duration =
-          event.time_stamp() - details->last_start_time_[event.touch_id()];
+          event.time_stamp() - details->last_start_time_[touch_pointer_id];
       // Look for touches that were [almost] stationary for a long time.
       const double kLongStationaryTouchDuration = 10;
       const int kLongStationaryTouchDistanceSquared = 100;
       if (duration.InSecondsF() > kLongStationaryTouchDuration) {
         gfx::Vector2d distance =
             event.root_location() -
-            details->start_touch_position_[event.touch_id()];
+            details->start_touch_position_[touch_pointer_id];
         if (distance.LengthSquared() < kLongStationaryTouchDistanceSquared) {
           UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.StationaryTouchDuration",
                                       duration.InSeconds(),
@@ -165,30 +166,30 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
         }
       }
     }
-    details->last_start_time_.erase(event.touch_id());
-    details->last_move_time_.erase(event.touch_id());
-    details->start_touch_position_.erase(event.touch_id());
-    details->last_touch_position_.erase(event.touch_id());
+    details->last_start_time_.erase(touch_pointer_id);
+    details->last_move_time_.erase(touch_pointer_id);
+    details->start_touch_position_.erase(touch_pointer_id);
+    details->last_touch_position_.erase(touch_pointer_id);
     details->last_release_time_ = event.time_stamp();
   } else if (event.type() == ui::ET_TOUCH_MOVED) {
     int distance = 0;
-    if (details->last_touch_position_.count(event.touch_id())) {
-      gfx::Point lastpos = details->last_touch_position_[event.touch_id()];
+    if (details->last_touch_position_.count(touch_pointer_id)) {
+      gfx::Point lastpos = details->last_touch_position_[touch_pointer_id];
       distance =
           std::abs(lastpos.x() - event.x()) + std::abs(lastpos.y() - event.y());
     }
 
-    if (details->last_move_time_.count(event.touch_id())) {
+    if (details->last_move_time_.count(touch_pointer_id)) {
       base::TimeDelta move_delay =
-          event.time_stamp() - details->last_move_time_[event.touch_id()];
+          event.time_stamp() - details->last_move_time_[touch_pointer_id];
       UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMoveInterval",
                                   move_delay.InMilliseconds(), 1, 50, 25);
     }
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMoveSteps", distance, 1, 1000, 50);
 
-    details->last_move_time_[event.touch_id()] = event.time_stamp();
-    details->last_touch_position_[event.touch_id()] = event.location();
+    details->last_move_time_[touch_pointer_id] = event.time_stamp();
+    details->last_touch_position_[touch_pointer_id] = event.location();
   }
 }
 

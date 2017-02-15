@@ -33,7 +33,7 @@ class RootWindowEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override {
-    last_touch_id_ = event->touch_id();
+    last_touch_id_ = event->pointer_details().id;
     last_touch_type_ = event->type();
     last_touch_location_ = event->location();
   }

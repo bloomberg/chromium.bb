@@ -429,6 +429,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
   webkit_event.force = event.pointer_details().force;
   webkit_event.tangentialPressure = event.pointer_details().tangential_pressure;
   webkit_event.twist = event.pointer_details().twist;
+  webkit_event.id = event.pointer_details().id;
   webkit_event.pointerType =
       EventPointerTypeToWebPointerType(event.pointer_details().pointer_type);
 

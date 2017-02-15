@@ -145,12 +145,12 @@ void TouchHudRenderer::Clear() {
 void TouchHudRenderer::HandleTouchEvent(const ui::LocatedEvent& event) {
   int id = 0;
   if (event.IsTouchEvent()) {
-    id = event.AsTouchEvent()->touch_id();
+    id = event.AsTouchEvent()->pointer_details().id;
   } else {
     DCHECK(event.IsPointerEvent());
     DCHECK(event.AsPointerEvent()->pointer_details().pointer_type ==
            ui::EventPointerType::POINTER_TYPE_TOUCH);
-    id = event.AsPointerEvent()->pointer_id();
+    id = event.AsPointerEvent()->pointer_details().id;
   }
   if (event.type() == ui::ET_TOUCH_PRESSED ||
       event.type() == ui::ET_POINTER_DOWN) {

@@ -86,7 +86,7 @@ bool DragController::DispatchPointerEvent(const ui::PointerEvent& event,
     return false;
   }
 
-  if (event.pointer_id() != drag_pointer_id_)
+  if (event.pointer_details().id != drag_pointer_id_)
     return false;
 
   // If |current_target| doesn't accept drags, walk its hierarchy up until we
