@@ -8,6 +8,7 @@
 #     nacl_exc_server.c
 #     nacl_exc.h
 
+import argparse
 import os
 import re
 import subprocess
@@ -22,13 +23,14 @@ def MkDirs(path):
     pass
 
 
-def Generate(src_defs, dst_header, dst_server):
+def Generate(src_defs, dst_header, dst_server, sdk):
   """Generate interface headers and server from a .defs file using MIG.
 
   Args:
     src_defs: Most likely /usr/include/mach/exc.defs.
     dst_header: Output generated header for the interface.
     dst_server: Output generated server for the interface.
+    sdk: If not none, the argument to pass to isysroot.
   """
   dst_header = os.path.abspath(dst_header)
   dst_server = os.path.abspath(dst_server)
@@ -74,6 +76,9 @@ def Generate(src_defs, dst_header, dst_server):
       args.append('-isysroot')
       args.append(os.environ['SDKROOT'])
       del os.environ['SDKROOT']
+    elif sdk:
+      args.append('-isysroot')
+      args.append(sdk)
 
     args.append(nacl_exc_defs_path)
     subprocess.check_call(args)
@@ -83,14 +88,16 @@ def Generate(src_defs, dst_header, dst_server):
 
 
 def Main(args):
-  if len(args) != 3 and len(args) != 4:
-    sys.stderr.write(
-        'USAGE: %s <src.defs> <dst_header> <dst_server> [DEVELOPER_DIR] \n'
-        % sys.argv[0])
-    sys.exit(1)
-  if len(args) == 4:
-    os.environ['DEVELOPER_DIR'] = args[3]
-  Generate(args[0], args[1], args[2])
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--sdk', help='Path to SDK')
+  parser.add_argument('src_defs')
+  parser.add_argument('dst_header')
+  parser.add_argument('dst_server')
+  parser.add_argument('developer_dir', nargs='?')
+  parsed = parser.parse_args(args)
+  if parsed.developer_dir is not None:
+    os.environ['DEVELOPER_DIR'] = parsed.developer_dir
+  Generate(args[0], args[1], args[2], parsed.sdk)
 
 
 if __name__ == '__main__':

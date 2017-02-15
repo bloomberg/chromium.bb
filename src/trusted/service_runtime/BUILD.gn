@@ -5,6 +5,10 @@
 import("//build/toolchain/toolchain.gni")
 import("//native_client/src/trusted/asm.gni")
 
+if (is_mac) {
+  import("//build/config/sysroot.gni")
+}
+
 source_set("sel_main") {
   sources = [
     "sel_main.c",
@@ -330,6 +334,10 @@ if (current_os == "mac") {
     if (!use_system_xcode) {
       args += [ hermetic_xcode_path ]
     }
+    args += [
+      "--sdk",
+      mac_sdk_path,
+    ]
   }
 }
 
