@@ -118,18 +118,22 @@ TEST_F(NotificationPermissionContextTest, IgnoresEmbedderOrigin) {
                        CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-      context.GetPermissionStatus(requesting_origin, embedding_origin));
+            context.GetPermissionStatus(requesting_origin, embedding_origin)
+                .content_setting);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-      context.GetPermissionStatus(requesting_origin, different_origin));
+            context.GetPermissionStatus(requesting_origin, different_origin)
+                .content_setting);
 
   context.ResetPermission(requesting_origin, embedding_origin);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      context.GetPermissionStatus(requesting_origin, embedding_origin));
+            context.GetPermissionStatus(requesting_origin, embedding_origin)
+                .content_setting);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      context.GetPermissionStatus(requesting_origin, different_origin));
+            context.GetPermissionStatus(requesting_origin, different_origin)
+                .content_setting);
 }
 
 // Push messaging permission requests should only succeed for top level origins
@@ -144,7 +148,8 @@ TEST_F(NotificationPermissionContextTest, PushTopLevelOriginOnly) {
                        CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            context.GetPermissionStatus(requesting_origin, embedding_origin));
+            context.GetPermissionStatus(requesting_origin, embedding_origin)
+                .content_setting);
 
   context.ResetPermission(requesting_origin, embedding_origin);
 
@@ -152,12 +157,14 @@ TEST_F(NotificationPermissionContextTest, PushTopLevelOriginOnly) {
                        CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            context.GetPermissionStatus(embedding_origin, embedding_origin));
+            context.GetPermissionStatus(embedding_origin, embedding_origin)
+                .content_setting);
 
   context.ResetPermission(embedding_origin, embedding_origin);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(embedding_origin, embedding_origin));
+            context.GetPermissionStatus(embedding_origin, embedding_origin)
+                .content_setting);
 }
 
 // Web Notifications do not require a secure origin when requesting permission.
@@ -168,12 +175,12 @@ TEST_F(NotificationPermissionContextTest, NoSecureOriginRequirement) {
   NotificationPermissionContext context(profile(),
                                         content::PermissionType::NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(origin, origin));
+            context.GetPermissionStatus(origin, origin).content_setting);
 
   UpdateContentSetting(&context, origin, origin, CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            context.GetPermissionStatus(origin, origin));
+            context.GetPermissionStatus(origin, origin).content_setting);
 }
 
 // Push notifications requires a secure origin to acquire permission.
@@ -183,20 +190,24 @@ TEST_F(NotificationPermissionContextTest, PushSecureOriginRequirement) {
 
   NotificationPermissionContext context(
       profile(), content::PermissionType::PUSH_MESSAGING);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, context.GetPermissionStatus(origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(origin, origin).content_setting);
 
   UpdateContentSetting(&context, origin, origin, CONTENT_SETTING_ALLOW);
 
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, context.GetPermissionStatus(origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(origin, origin).content_setting);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(secure_origin, secure_origin));
+            context.GetPermissionStatus(secure_origin, secure_origin)
+                .content_setting);
 
   UpdateContentSetting(&context, secure_origin, secure_origin,
                        CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            context.GetPermissionStatus(secure_origin, secure_origin));
+            context.GetPermissionStatus(secure_origin, secure_origin)
+                .content_setting);
 }
 
 // Tests auto-denial after a time delay in incognito.

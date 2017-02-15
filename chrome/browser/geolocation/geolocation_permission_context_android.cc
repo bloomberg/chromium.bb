@@ -74,7 +74,8 @@ void GeolocationPermissionContextAndroid::RequestPermission(
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   ContentSetting content_setting =
       GeolocationPermissionContext::GetPermissionStatus(requesting_frame_origin,
-                                                        embedding_origin);
+                                                        embedding_origin)
+          .content_setting;
   std::vector<ContentSettingsType> content_settings_types;
   content_settings_types.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   if (content_setting == CONTENT_SETTING_ALLOW &&

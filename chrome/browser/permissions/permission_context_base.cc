@@ -50,6 +50,12 @@ const char PermissionContextBase::kPermissionsKillSwitchFieldStudy[] =
 const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
     "blocked";
 
+PermissionResult::PermissionResult(ContentSetting cs,
+                                   PermissionStatusSource pss)
+    : content_setting(cs), source(pss) {}
+
+PermissionResult::~PermissionResult() {}
+
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
     const content::PermissionType permission_type,
@@ -111,17 +117,17 @@ void PermissionContextBase::RequestPermission(
   // Synchronously check the content setting to see if the user has already made
   // a decision, or if the origin is under embargo. If so, respect that
   // decision.
-  ContentSetting content_setting =
+  PermissionResult result =
       GetPermissionStatus(requesting_origin, embedding_origin);
-  if (content_setting == CONTENT_SETTING_ALLOW) {
+  if (result.content_setting == CONTENT_SETTING_ALLOW) {
     HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
         requesting_origin, embedding_origin, content_settings_type_);
   }
 
-  if (content_setting == CONTENT_SETTING_ALLOW ||
-      content_setting == CONTENT_SETTING_BLOCK) {
+  if (result.content_setting == CONTENT_SETTING_ALLOW ||
+      result.content_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, content_setting);
+                        false /* persist */, result.content_setting);
     return;
   }
 
@@ -165,16 +171,22 @@ void PermissionContextBase::ContinueRequestPermission(
                    user_gesture, callback);
 }
 
-ContentSetting PermissionContextBase::GetPermissionStatus(
+PermissionResult PermissionContextBase::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  // TODO(raymes): Ensure we return appropriate decision reasons in the
+  // PermissionResult. We should add these as each is needed.
+
   // If the permission has been disabled through Finch, block all requests.
-  if (IsPermissionKillSwitchOn())
-    return CONTENT_SETTING_BLOCK;
+  if (IsPermissionKillSwitchOn()) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::UNSPECIFIED);
+  }
 
   if (IsRestrictedToSecureOrigins() &&
       !content::IsOriginSecure(requesting_origin)) {
-    return CONTENT_SETTING_BLOCK;
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::UNSPECIFIED);
   }
 
   ContentSetting content_setting =
@@ -182,9 +194,11 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
   if (content_setting == CONTENT_SETTING_ASK &&
       PermissionDecisionAutoBlocker::GetForProfile(profile_)->IsUnderEmbargo(
           permission_type_, requesting_origin)) {
-    return CONTENT_SETTING_BLOCK;
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::UNSPECIFIED);
   }
-  return content_setting;
+
+  return PermissionResult(content_setting, PermissionStatusSource::UNSPECIFIED);
 }
 
 void PermissionContextBase::ResetPermission(

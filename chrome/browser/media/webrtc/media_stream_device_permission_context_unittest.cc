@@ -74,10 +74,13 @@ class MediaStreamDevicePermissionContextTests
                                       permission_type,
                                       std::string()));
 
-    EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.GetPermissionStatus(
-                                       insecure_url, insecure_url));
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetPermissionStatus(insecure_url, secure_url));
+              permission_context.GetPermissionStatus(insecure_url, insecure_url)
+                  .content_setting);
+
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              permission_context.GetPermissionStatus(insecure_url, secure_url)
+                  .content_setting);
   }
 
   void TestSecureQueryingUrl(ContentSettingsType permission_type) {
@@ -93,7 +96,8 @@ class MediaStreamDevicePermissionContextTests
                                       std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetPermissionStatus(secure_url, secure_url));
+              permission_context.GetPermissionStatus(secure_url, secure_url)
+                  .content_setting);
   }
 
  private:

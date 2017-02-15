@@ -497,6 +497,8 @@ ContentSetting PermissionManager::GetPermissionStatusInternal(
     return GetContentSettingForConstantPermission(permission);
 
   PermissionContextBase* context = GetPermissionContext(permission);
-  return context->GetPermissionStatus(requesting_origin.GetOrigin(),
-                                      embedding_origin.GetOrigin());
+  return context
+      ->GetPermissionStatus(requesting_origin.GetOrigin(),
+                            embedding_origin.GetOrigin())
+      .content_setting;
 }

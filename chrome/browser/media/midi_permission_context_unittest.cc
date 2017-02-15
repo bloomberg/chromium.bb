@@ -142,8 +142,11 @@ TEST_F(MidiPermissionContextTests, TestInsecureQueryingUrl) {
                               CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                               std::string()));
 
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, permission_context.GetPermissionStatus(
-      insecure_url, insecure_url));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, permission_context.GetPermissionStatus(
-      insecure_url, secure_url));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            permission_context.GetPermissionStatus(insecure_url, insecure_url)
+                .content_setting);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            permission_context.GetPermissionStatus(insecure_url, secure_url)
+                .content_setting);
 }

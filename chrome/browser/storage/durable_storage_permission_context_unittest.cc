@@ -221,5 +221,5 @@ TEST_F(DurableStoragePermissionContextTest, NonsecureOrigin) {
   GURL url("http://www.google.com");
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            permission_context.GetPermissionStatus(url, url));
+            permission_context.GetPermissionStatus(url, url).content_setting);
 }

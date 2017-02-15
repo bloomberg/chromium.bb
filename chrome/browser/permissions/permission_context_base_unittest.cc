@@ -375,7 +375,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
-      EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
+      PermissionResult result =
+          permission_context.GetPermissionStatus(url, url);
+      EXPECT_EQ(expected, result.content_setting);
+      EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
     }
 
     TestPermissionContext permission_context(profile(), permission_type,
@@ -394,8 +397,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
-    EXPECT_EQ(CONTENT_SETTING_BLOCK,
-              permission_context.GetPermissionStatus(url, url));
+    PermissionResult result = permission_context.GetPermissionStatus(url, url);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   }
 
   void TestBlockOnSeveralDismissals_TestContent() {
@@ -514,7 +518,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(1u, permission_context.decisions().size());
       ASSERT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
-      EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
+      PermissionResult result =
+          permission_context.GetPermissionStatus(url, url);
+      EXPECT_EQ(expected, result.content_setting);
+      EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
@@ -538,8 +545,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     TestPermissionContext permission_context(
         profile(), content::PermissionType::MIDI_SYSEX,
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-    EXPECT_EQ(CONTENT_SETTING_BLOCK,
-              permission_context.GetPermissionStatus(url, url));
+    PermissionResult result = permission_context.GetPermissionStatus(url, url);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
     variations::testing::ClearAllVariationParams();
   }
 
@@ -707,8 +716,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents(), id, url, true /* user_gesture */,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
-    EXPECT_EQ(expected_permission_status,
-              permission_context.GetPermissionStatus(url, url));
+    PermissionResult result = permission_context.GetPermissionStatus(url, url);
+    EXPECT_EQ(expected_permission_status, result.content_setting);
+    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
     if (expected_permission_status == CONTENT_SETTING_ALLOW) {
       ASSERT_EQ(1u, permission_context.decisions().size());
