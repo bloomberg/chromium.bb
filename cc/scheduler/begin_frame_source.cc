@@ -39,7 +39,9 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(args.IsValid());
   DCHECK(args.frame_time >= last_begin_frame_args_.frame_time);
   DCHECK(args.sequence_number > last_begin_frame_args_.sequence_number ||
-         args.source_id != last_begin_frame_args_.source_id);
+         args.source_id != last_begin_frame_args_.source_id)
+      << "current " << args.AsValue()->ToString() << ", last "
+      << last_begin_frame_args_.AsValue()->ToString();
   bool used = OnBeginFrameDerivedImpl(args);
   if (used) {
     last_begin_frame_args_ = args;
@@ -201,6 +203,11 @@ void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
       (current_begin_frame_args_.frame_time >
        last_args.frame_time +
            current_begin_frame_args_.interval / kDoubleTickDivisor)) {
+    DCHECK(current_begin_frame_args_.sequence_number >
+               last_args.sequence_number ||
+           current_begin_frame_args_.source_id != last_args.source_id)
+        << "current " << current_begin_frame_args_.AsValue()->ToString()
+        << ", last " << last_args.AsValue()->ToString();
     obs->OnBeginFrame(current_begin_frame_args_);
   }
 }
@@ -259,7 +266,9 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
         (missed_begin_frame_args_.frame_time > last_args.frame_time)) {
       DCHECK((missed_begin_frame_args_.source_id != last_args.source_id) ||
              (missed_begin_frame_args_.sequence_number >
-              last_args.sequence_number));
+              last_args.sequence_number))
+          << "current " << missed_begin_frame_args_.AsValue()->ToString()
+          << ", last " << last_args.AsValue()->ToString();
       obs->OnBeginFrame(missed_begin_frame_args_);
     }
   }
