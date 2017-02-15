@@ -8,7 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
@@ -19,7 +21,6 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
 
@@ -89,19 +90,16 @@ const char* kTriggerTypesParamName = "scheduler_trigger_types";
 const char* kTriggerTypesParamValueForEmptyList = "-";
 
 // Returns the time interval to use for scheduling remote suggestion fetches for
-// the given provider state (|interval|) and user_class.
+// the given interval and user_class.
 base::TimeDelta GetDesiredFetchingInterval(
     FetchingInterval interval,
     UserClassifier::UserClass user_class) {
-  double default_value_hours = 0.0;
-
   DCHECK(interval != FetchingInterval::COUNT);
   const unsigned int index = static_cast<unsigned int>(interval);
   DCHECK(index < arraysize(kDefaultFetchingIntervalHoursRareNtpUser));
 
+  double default_value_hours = 0.0;
   const char* param_name = nullptr;
-  // TODO(markusheintz): Figure out whether the switch statment should contain a
-  // default branch with a DCHECK.
   switch (user_class) {
     case UserClassifier::UserClass::RARE_NTP_USER:
       default_value_hours = kDefaultFetchingIntervalHoursRareNtpUser[index];
@@ -118,7 +116,7 @@ base::TimeDelta GetDesiredFetchingInterval(
       break;
   }
 
-  double value_hours = variations::GetVariationParamByFeatureAsDouble(
+  double value_hours = base::GetFieldTrialParamByFeatureAsDouble(
       ntp_snippets::kArticleSuggestionsFeature, param_name,
       default_value_hours);
 
@@ -495,7 +493,7 @@ SchedulingRemoteSuggestionsProvider::GetEnabledTriggerTypes() {
                     arraysize(kTriggerTypeNames),
                 "Fill in names for trigger types.");
 
-  std::string param_value = variations::GetVariationParamValueByFeature(
+  std::string param_value = base::GetFieldTrialParamValueByFeature(
       ntp_snippets::kArticleSuggestionsFeature, kTriggerTypesParamName);
   if (param_value == kTriggerTypesParamValueForEmptyList) {
     return std::set<TriggerType>();
