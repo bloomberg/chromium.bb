@@ -2854,6 +2854,26 @@ class TestGitCl(TestCase):
     self.assertEqual(cl._GetChangeDetail(options=['A'], no_cache=True), 'a')
     self.assertEqual(cl._GetChangeDetail(options=['B']), 'b')
 
+  def test_gerrit_description_caching(self):
+    def gen_detail(rev, desc):
+      return {
+        'current_revision': rev,
+        'revisions': {rev: {'commit': {'message': desc}}}
+      }
+    self.calls = [
+        (('GetChangeDetail', 'host', '1',
+          ['CURRENT_REVISION', 'CURRENT_COMMIT']),
+         gen_detail('rev1', 'desc1')),
+        (('GetChangeDetail', 'host', '1',
+          ['CURRENT_REVISION', 'CURRENT_COMMIT']),
+         gen_detail('rev2', 'desc2')),
+    ]
+
+    self._mock_gerrit_changes_for_detail_cache()
+    cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    self.assertEqual(cl.GetDescription(), 'desc1')
+    self.assertEqual(cl.GetDescription(), 'desc1')  # cache hit.
+    self.assertEqual(cl.GetDescription(force=True), 'desc2')
 
 if __name__ == '__main__':
   logging.basicConfig(
