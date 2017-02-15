@@ -17279,6 +17279,9 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
     return;
   }
 
+  if (texture_ref->texture() == texture)
+    return;
+
   DeleteTexturesHelper(1, &client_id);
   texture_ref = texture_manager()->Consume(client_id, texture);
   glBindTexture(target, texture_ref->service_id());
