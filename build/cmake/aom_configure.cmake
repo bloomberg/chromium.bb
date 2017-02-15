@@ -29,10 +29,15 @@ if (NOT AOM_TARGET_CPU)
               "      CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}\n"
               "      CMAKE_GENERATOR=${CMAKE_GENERATOR}\n")
     endif ()
+  elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR
+          "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86")
+    set(AOM_TARGET_CPU "x86")
   endif ()
 endif ()
 
+message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
+
 if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
   message(FATAL_ERROR "No RTCD template for ${AOM_TARGET_CPU}. Create one, or "
           "add -DAOM_TARGET_CPU=generic to your cmake command line for a "
@@ -68,12 +73,15 @@ else ()
   add_compiler_flag_if_supported("-Wfloat-conversion")
   add_compiler_flag_if_supported("-Wimplicit-function-declaration")
   add_compiler_flag_if_supported("-Wpointer-arith")
-  add_compiler_flag_if_supported("-Wshadow")
   add_compiler_flag_if_supported("-Wsign-compare")
   add_compiler_flag_if_supported("-Wtype-limits")
   add_compiler_flag_if_supported("-Wuninitialized")
   add_compiler_flag_if_supported("-Wunused")
   add_compiler_flag_if_supported("-Wvla")
+
+  # Add -Wshadow only for C files to avoid massive gtest warning spam.
+  add_c_flag_if_supported("-Wshadow")
+
   if (ENABLE_WERROR)
     add_compiler_flag_if_supported("-Werror")
   endif ()
