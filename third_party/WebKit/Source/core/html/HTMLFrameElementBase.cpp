@@ -71,11 +71,6 @@ bool HTMLFrameElementBase::isURLAllowed() const {
             BindingSecurity::ErrorReportOption::Report))
       return false;
   }
-
-  LocalFrame* parentFrame = document().frame();
-  if (parentFrame)
-    return parentFrame->isURLAllowed(completeURL);
-
   return true;
 }
 

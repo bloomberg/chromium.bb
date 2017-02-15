@@ -465,11 +465,9 @@ LayoutEmbeddedItem HTMLPlugInElement::layoutEmbeddedItem() const {
 // depending on <param> values.
 bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url) {
   KURL completeURL = document().completeURL(url);
-  if (contentFrame() && completeURL.protocolIsJavaScript() &&
-      !document().getSecurityOrigin()->canAccess(
-          contentFrame()->securityContext()->getSecurityOrigin()))
-    return false;
-  return document().frame()->isURLAllowed(completeURL);
+  return !(contentFrame() && completeURL.protocolIsJavaScript() &&
+           !document().getSecurityOrigin()->canAccess(
+               contentFrame()->securityContext()->getSecurityOrigin()));
 }
 
 // We don't use m_url, or m_serviceType as they may not be the final values

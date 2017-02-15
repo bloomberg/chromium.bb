@@ -805,27 +805,6 @@ EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint) {
   return EphemeralRange();
 }
 
-bool LocalFrame::isURLAllowed(const KURL& url) const {
-  // Exempt about: URLs from self-reference check.
-  if (url.protocolIsAbout())
-    return true;
-
-  // We allow one level of self-reference because some sites depend on that,
-  // but we don't allow more than one.
-  bool foundSelfReference = false;
-  for (const Frame* frame = this; frame; frame = frame->tree().parent()) {
-    if (!frame->isLocalFrame())
-      continue;
-    if (equalIgnoringFragmentIdentifier(toLocalFrame(frame)->document()->url(),
-                                        url)) {
-      if (foundSelfReference)
-        return false;
-      foundSelfReference = true;
-    }
-  }
-  return true;
-}
-
 bool LocalFrame::shouldReuseDefaultView(const KURL& url) const {
   // Secure transitions can only happen when navigating from the initial empty
   // document.

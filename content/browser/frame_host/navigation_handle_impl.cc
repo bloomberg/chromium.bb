@@ -509,6 +509,12 @@ void NavigationHandleImpl::WillStartRequest(
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 
+  if (IsSelfReferentialURL()) {
+    state_ = CANCELING;
+    RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
   RegisterNavigationThrottles();
 
   if (IsBrowserSideNavigationEnabled())
@@ -550,6 +556,12 @@ void NavigationHandleImpl::WillRedirectRequest(
 
   state_ = WILL_REDIRECT_REQUEST;
   complete_callback_ = callback;
+
+  if (IsSelfReferentialURL()) {
+    state_ = CANCELING;
+    RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
 
   // Notify each throttle of the request.
   NavigationThrottle::ThrottleCheckResult result = CheckWillRedirectRequest();
@@ -887,6 +899,31 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   throttles_.insert(throttles_.begin(),
                     std::make_move_iterator(throttles_to_register.begin()),
                     std::make_move_iterator(throttles_to_register.end()));
+}
+
+bool NavigationHandleImpl::IsSelfReferentialURL() {
+  // about: URLs should be exempted since they are reserved for other purposes
+  // and cannot be the source of infinite recursion. See
+  // https://crbug.com/341858 .
+  if (url_.SchemeIs("about"))
+    return false;
+
+  // Browser-triggered navigations should be exempted.
+  if (!is_renderer_initiated_)
+    return false;
+
+  // We allow one level of self-reference because some sites depend on that,
+  // but we don't allow more than one.
+  bool found_self_reference = false;
+  for (const FrameTreeNode* node = frame_tree_node_->parent(); node;
+       node = node->parent()) {
+    if (node->current_url().EqualsIgnoringRef(url_)) {
+      if (found_self_reference)
+        return true;
+      found_self_reference = true;
+    }
+  }
+  return false;
 }
 
 }  // namespace content
