@@ -110,8 +110,10 @@ class TestList(object):
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
 TOTAL_TESTS = 106
-TOTAL_SKIPS = 22
+TOTAL_WONTFIX = 3
+TOTAL_SKIPS = 22 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
+
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 26
 
@@ -295,6 +297,13 @@ Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
 Bug(test) passes/skipped/skip.html [ Skip ]
 Bug(test) passes/text.html [ Pass ]
+""")
+
+    if not filesystem.exists(LAYOUT_TEST_DIR + '/NeverFixTests'):
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/NeverFixTests', """
+Bug(test) failures/expected/keyboard.html [ WontFix ]
+Bug(test) failures/expected/exception.html [ WontFix ]
+Bug(test) failures/expected/device_failure.html [ WontFix ]
 """)
 
     filesystem.maybe_make_directory(LAYOUT_TEST_DIR + '/reftests/foo')

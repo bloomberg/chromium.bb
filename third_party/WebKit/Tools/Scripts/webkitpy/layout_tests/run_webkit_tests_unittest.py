@@ -173,7 +173,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_basic(self):
         options, args = parse_args(
-            extra_args=['--json-test-results', '/tmp/json_test_results.json', '--order', 'natural'],
+            extra_args=['--json-test-results', '/tmp/json_test_results.json'],
             tests_included=True)
         logging_stream = StringIO.StringIO()
         stdout = StringIO.StringIO()
@@ -184,21 +184,25 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # These numbers will need to be updated whenever we add new tests.
         self.assertEqual(details.initial_results.total, test.TOTAL_TESTS)
         self.assertEqual(details.initial_results.expected_skips, test.TOTAL_SKIPS)
-        self.assertEqual(len(details.initial_results.unexpected_results_by_name), test.UNEXPECTED_PASSES)
-        self.assertEqual(details.exit_code, test.UNEXPECTED_PASSES)
-        self.assertEqual(details.all_retry_results[0].total, test.UNEXPECTED_PASSES)
+        self.assertEqual(
+            len(details.initial_results.unexpected_results_by_name),
+            test.UNEXPECTED_PASSES + test.UNEXPECTED_FAILURES)
+        self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES)
+        self.assertEqual(details.all_retry_results[0].total, test.UNEXPECTED_FAILURES)
 
-        expected_tests = details.initial_results.total - details.initial_results.expected_skips - \
-            len(details.initial_results.unexpected_results_by_name) - test.TOTAL_CRASHES
+        expected_tests = (
+            details.initial_results.total
+            - details.initial_results.expected_skips
+            - len(details.initial_results.unexpected_results_by_name))
         expected_summary_str = ''
         if details.initial_results.expected_failures > 0:
             expected_summary_str = " (%d passed, %d didn't)" % (
-                expected_tests - details.initial_results.expected_failures, details.initial_results.expected_failures)
-        one_line_summary = "%d tests ran as expected%s, %d didn't (%d didn't run):\n" % (
+                expected_tests - details.initial_results.expected_failures,
+                details.initial_results.expected_failures)
+        one_line_summary = "%d tests ran as expected%s, %d didn't:\n" % (
             expected_tests,
             expected_summary_str,
-            len(details.initial_results.unexpected_results_by_name),
-            test.TOTAL_CRASHES)
+            len(details.initial_results.unexpected_results_by_name))
         self.assertIn(one_line_summary, logging_stream.buflist)
 
         # Ensure the results were summarized properly.
@@ -475,7 +479,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_stderr_is_saved(self):
         host = MockHost()
-        self.assertTrue(passing_run(['--order', 'natural'], host=host))
+        self.assertTrue(passing_run(host=host))
+        self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/passes/error-stderr.txt'),
+                         'stuff going to stderr')
 
     def test_reftest_crash_log_is_saved(self):
         host = MockHost()
@@ -699,15 +705,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         with host.filesystem.mkdtemp() as tmpdir:
             _, _, user = logging_run(['--results-directory=' + str(tmpdir), '--order', 'natural'],
                                      tests_included=True, host=host)
-            self.assertEqual(user.opened_urls, [])
+            self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, host.filesystem.join(tmpdir, 'results.html'))])
 
     def test_results_directory_default(self):
         # We run a configuration that should fail, to generate output, then
         # look for what the output results url was.
 
         # This is the default location.
-        _, _, user = logging_run(['--order', 'natural'], tests_included=True)
-        self.assertEqual(user.opened_urls, [])
+        _, _, user = logging_run(tests_included=True)
+        self.assertEqual(user.opened_urls, [abspath_to_uri(MockHost().platform, '/tmp/layout-test-results/results.html')])
 
     def test_results_directory_relative(self):
         # We run a configuration that should fail, to generate output, then
@@ -715,8 +721,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         host.filesystem.maybe_make_directory('/tmp/cwd')
         host.filesystem.chdir('/tmp/cwd')
-        _, _, user = logging_run(['--results-directory=foo', '--order', 'natural'], tests_included=True, host=host)
-        self.assertEqual(user.opened_urls, [])
+        _, _, user = logging_run(['--results-directory=foo'], tests_included=True, host=host)
+        self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, '/tmp/cwd/foo/results.html')])
 
     def test_retrying_default_value(self):
         host = MockHost()
@@ -742,9 +748,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         filename = '/tmp/foo.txt'
         host.filesystem.write_text_file(filename, 'failures')
-        details, err, _ = logging_run(['--order', 'natural', '--debug-rwt-logging', '--test-list=%s' % filename],
-                                      tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 0)
+        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES - 7)
         self.assertIn('Retrying', err.getvalue())
 
     def test_retrying_and_flaky_tests(self):

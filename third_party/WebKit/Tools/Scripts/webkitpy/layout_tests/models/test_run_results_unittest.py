@@ -206,7 +206,7 @@ class SummarizedResultsTest(unittest.TestCase):
                 'IMAGE': 1,
                 'NEEDSREBASELINE': 0,
                 'NEEDSMANUALREBASELINE': 0,
-                'PASS': 1,
+                'PASS': 0,
                 'REBASELINE': 0,
                 'SKIP': 0,
                 'SLOW': 0,
@@ -215,7 +215,7 @@ class SummarizedResultsTest(unittest.TestCase):
                 'LEAK': 0,
                 'FAIL': 0,
                 'AUDIO': 0,
-                'WONTFIX': 0
+                'WONTFIX': 1
             })
 
         summary = summarized_results(self.port, expected=True, passing=False, flaky=False)
@@ -281,7 +281,7 @@ class SummarizedResultsTest(unittest.TestCase):
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['tests']['failures']['expected']['keyboard.html']['expected'], 'CRASH')
+        self.assertEquals(summary['tests']['failures']['expected']['keyboard.html']['expected'], 'WONTFIX CRASH')
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
         self.assertEqual(summary['num_passes'], 1)
         self.assertEqual(summary['num_regressions'], 6)
