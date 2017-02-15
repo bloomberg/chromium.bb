@@ -156,24 +156,9 @@ ThreadHeap::ThreadHeap()
       m_ephemeronStack(CallbackStack::create()) {
   if (ThreadState::current()->isMainThread())
     s_mainThreadHeap = this;
-
-  MutexLocker locker(ThreadHeap::allHeapsMutex());
-  allHeaps().insert(this);
 }
 
 ThreadHeap::~ThreadHeap() {
-  MutexLocker locker(ThreadHeap::allHeapsMutex());
-  allHeaps().remove(this);
-}
-
-RecursiveMutex& ThreadHeap::allHeapsMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, (new RecursiveMutex));
-  return mutex;
-}
-
-HashSet<ThreadHeap*>& ThreadHeap::allHeaps() {
-  DEFINE_STATIC_LOCAL(HashSet<ThreadHeap*>, heaps, ());
-  return heaps;
 }
 
 void ThreadHeap::attach(ThreadState* thread) {

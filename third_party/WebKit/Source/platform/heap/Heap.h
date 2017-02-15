@@ -293,9 +293,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void enterSafePoint(ThreadState*);
   void leaveSafePoint();
 
-  static RecursiveMutex& allHeapsMutex();
-  static HashSet<ThreadHeap*>& allHeaps();
-
   // Is the finalizable GC object still alive, but slated for lazy sweeping?
   // If a lazy sweep is in progress, returns true if the object was found
   // to be not reachable during the marking phase, but it has yet to be swept
