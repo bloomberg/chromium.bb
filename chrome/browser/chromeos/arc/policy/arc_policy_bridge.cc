@@ -91,7 +91,7 @@ void MapBoolToBool(const std::string& arc_policy_name,
   if (!policy_value)
     return;
   if (!policy_value->IsType(base::Value::Type::BOOLEAN)) {
-    LOG(ERROR) << "Policy " << policy_name << " is not a boolean.";
+    NOTREACHED() << "Policy " << policy_name << " is not a boolean.";
     return;
   }
   bool bool_value;
@@ -111,12 +111,34 @@ void MapIntToBool(const std::string& arc_policy_name,
   if (!policy_value)
     return;
   if (!policy_value->IsType(base::Value::Type::INTEGER)) {
-    LOG(ERROR) << "Policy " << policy_name << " is not an integer.";
+    NOTREACHED() << "Policy " << policy_name << " is not an integer.";
     return;
   }
   int int_value;
   policy_value->GetAsInteger(&int_value);
   filtered_policies->SetBoolean(arc_policy_name, int_value == int_true);
+}
+
+// Checks whether |policy_name| is present as an object and has all |fields|,
+// Sets |arc_policy_name| to true only if the condition above is satisfied.
+void MapObjectToPresenceBool(const std::string& arc_policy_name,
+                             const std::string& policy_name,
+                             const policy::PolicyMap& policy_map,
+                             base::DictionaryValue* filtered_policies,
+                             const std::vector<std::string>& fields) {
+  const base::Value* const policy_value = policy_map.GetValue(policy_name);
+  if (!policy_value)
+    return;
+  const base::DictionaryValue* dict = nullptr;
+  if (!policy_value->GetAsDictionary(&dict)) {
+    NOTREACHED() << "Policy " << policy_name << " is not an object.";
+    return;
+  }
+  for (const auto& field : fields) {
+    if (!dict->HasKey(field))
+      return;
+  }
+  filtered_policies->SetBoolean(arc_policy_name, true);
 }
 
 void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
@@ -264,6 +286,8 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   MapBoolToBool("mountPhysicalMediaDisabled",
                 policy::key::kExternalStorageDisabled, policy_map, false,
                 &filtered_policies);
+  MapObjectToPresenceBool("setWallpaperDisabled", policy::key::kWallpaperImage,
+                          policy_map, &filtered_policies, {"url", "hash"});
 
   // Add global app restrictions.
   AddGlobalAppRestriction("com.android.browser:URLBlacklist",

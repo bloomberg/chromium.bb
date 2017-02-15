@@ -274,6 +274,27 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
       PolicyStringCallback("{\"mountPhysicalMediaDisabled\":true}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
+  base::DictionaryValue dict;
+  dict.SetString("url", "https://example.com/wallpaper.jpg");
+  dict.SetString("hash", "somehash");
+  policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   dict.CreateDeepCopy(), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"setWallpaperDisabled\":true}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, WallpaperImageSet_NotCompletePolicyTest) {
+  base::DictionaryValue dict;
+  dict.SetString("url", "https://example.com/wallpaper.jpg");
+  // "hash" attribute is missing, so the policy shouldn't be set
+  policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   dict.CreateDeepCopy(), nullptr);
+  policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
   base::ListValue blacklist;
   blacklist.AppendString("www.blacklist1.com");
