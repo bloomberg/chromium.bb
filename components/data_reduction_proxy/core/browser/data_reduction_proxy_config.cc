@@ -124,9 +124,12 @@ base::HistogramBase* GetEnumeratedHistogram(
 }
 
 // Following UMA is plotted to measure how frequently Lo-Fi state changes.
-// Too frequent changes are undesirable.
-void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
-                                            bool current_header_low) {
+// Too frequent changes are undesirable. |connection_type| is the current
+// connection type.
+void RecordAutoLoFiRequestHeaderStateChange(
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    bool previous_header_low,
+    bool current_header_low) {
   // Auto Lo-Fi request header state changes.
   // Possible Lo-Fi header directives are empty ("") and low ("q=low").
   // This enum must remain synchronized with the enum of the same name in
@@ -140,8 +143,6 @@ void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
   };
 
   AutoLoFiRequestHeaderState state;
-  net::NetworkChangeNotifier::ConnectionType connection_type =
-      net::NetworkChangeNotifier::GetConnectionType();
 
   if (!previous_header_low) {
     if (current_header_low)
@@ -357,6 +358,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       auto_lofi_hysteresis_(base::TimeDelta::Max()),
       network_prohibitively_slow_(false),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
+      connection_type_changed_(false),
       lofi_off_(false),
       network_quality_at_last_query_(NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN),
       previous_state_lofi_on_(false),
@@ -374,6 +376,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 void DataReductionProxyConfig::InitializeOnIOThread(
@@ -390,6 +393,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   PopulateAutoLoFiParams();
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   // Record accuracy at 3 different intervals. The values used here must remain
   // in sync with the suffixes specified in
@@ -547,15 +551,6 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
   if (!network_quality_estimator)
     return false;
 
-  // True iff network type changed since the last call to
-  // IsNetworkQualityProhibitivelySlow(). This call happens only on main frame
-  // requests.
-  bool network_type_changed = false;
-  if (net::NetworkChangeNotifier::GetConnectionType() != connection_type_) {
-    connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
-    network_type_changed = true;
-  }
-
   const net::EffectiveConnectionType effective_connection_type =
       network_quality_estimator->GetEffectiveConnectionType();
 
@@ -592,12 +587,13 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 
   // Return the cached entry if the last update was within the hysteresis
   // duration and if the connection type has not changed.
-  if (!network_type_changed && !network_quality_last_checked_.is_null() &&
+  if (!connection_type_changed_ && !network_quality_last_checked_.is_null() &&
       GetTicksNow() - network_quality_last_checked_ <= auto_lofi_hysteresis_) {
     return network_prohibitively_slow_;
   }
 
   network_quality_last_checked_ = GetTicksNow();
+  connection_type_changed_ = false;
 
   if (!is_network_quality_available)
     return false;
@@ -794,6 +790,14 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
   }
 }
 
+void DataReductionProxyConfig::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  connection_type_changed_ = true;
+  connection_type_ = type;
+  FetchWarmupURL();
+}
+
 void DataReductionProxyConfig::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -805,7 +809,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
     HandleCaptivePortal();
-    FetchWarmupURL();
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
@@ -860,6 +863,9 @@ void DataReductionProxyConfig::FetchWarmupURL() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!enabled_by_user_ || !params::FetchWarmupURLEnabled())
+    return;
+
+  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
 
   warmup_url_fetcher_->FetchWarmupURL();
@@ -978,8 +984,8 @@ bool DataReductionProxyConfig::ShouldEnableLoFiMode(
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
       params::IsIncludedInLoFiEnabledFieldTrial()) {
-    RecordAutoLoFiRequestHeaderStateChange(previous_state_lofi_on_,
-                                           enable_lofi);
+    RecordAutoLoFiRequestHeaderStateChange(
+        connection_type_, previous_state_lofi_on_, enable_lofi);
     previous_state_lofi_on_ = enable_lofi;
   }
 
@@ -1006,8 +1012,7 @@ bool DataReductionProxyConfig::ShouldEnableLoFiModeInternal(
     return true;
 
   if (params::IsLoFiCellularOnlyViaFlags()) {
-    return net::NetworkChangeNotifier::IsConnectionCellular(
-        net::NetworkChangeNotifier::GetConnectionType());
+    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
   }
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
