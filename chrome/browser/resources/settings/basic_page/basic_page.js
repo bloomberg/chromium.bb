@@ -114,7 +114,7 @@ Polymer({
 
     if (this.pageVisibility.advancedSettings !== false) {
       assert(whenSearchDone === settings.getSearchManager().search(
-          query, assert(this.$.advancedPageTemplate.get())));
+          query, assert(this.$$('#advancedPageTemplate').get())));
     }
 
     return whenSearchDone;
@@ -159,8 +159,11 @@ Polymer({
    * @private
    */
   advancedToggleExpandedChanged_: function() {
-    if (this.advancedToggleExpanded)
-      this.$.advancedPageTemplate.get();
+    if (this.advancedToggleExpanded) {
+      this.async(function() {
+        this.$$('#advancedPageTemplate').get();
+      }.bind(this));
+    }
   },
 
   /**

@@ -176,7 +176,7 @@
       </div>
     </template>
 
-    <div hidden$="[[!showAdvancedSettings_(pageVisibility.advancedSettings)]]">
+    <template is="dom-if" if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
       <template is="dom-if" if="[[showAdvancedToggle_(
           inSearchMode, hasExpandedSection_)]]">
         <div id="toggleSpacer"></div>
@@ -271,7 +271,7 @@
           </template>
         </div>
       </template>
-    </div>
+    </template>
   </template>
   <script src="basic_page.js"></script>
 </dom-module>
