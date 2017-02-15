@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
 
   let requestDevicePromise =
     setBluetoothFakeAdapter('DeviceEventAdapter')
@@ -31,7 +31,7 @@ promise_test(() => {
     assert_true(idsByName.has('Discovery Generic Access Device',
                               'Generic Access Device'));
     assert_equals(events[6], 'discovery-idle');
-    testRunner.sendBluetoothManualChooserEvent(
+    sendBluetoothManualChooserEvent(
       'selected', idsByName.get('Connected Heart Rate Device'));
     return requestDevicePromise;
   });

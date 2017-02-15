@@ -148,9 +148,20 @@ function requestDeviceWithKeyDown() {
   return callWithKeyDown(() => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
 }
 
+function assert_testRunner() {
+  assert_true(window.testRunner instanceof Object,
+    "window.testRunner is required for this test, it will not work manually.");
+}
+
+function setBluetoothManualChooser(enable) {
+  assert_testRunner();
+  testRunner.setBluetoothManualChooser(enable);
+}
+
 // Calls testRunner.getBluetoothManualChooserEvents() until it's returned
 // |expected_count| events. Or just once if |expected_count| is undefined.
 function getBluetoothManualChooserEvents(expected_count) {
+  assert_testRunner();
   return new Promise((resolve, reject) => {
     let events = [];
     let accumulate_events = new_events => {
@@ -165,7 +176,13 @@ function getBluetoothManualChooserEvents(expected_count) {
   });
 }
 
+function sendBluetoothManualChooserEvent(event, argument) {
+  assert_testRunner();
+  testRunner.sendBluetoothManualChooserEvent(event, argument);
+}
+
 function setBluetoothFakeAdapter(adapter_name) {
+  assert_testRunner();
   return new Promise(resolve => {
     testRunner.setBluetoothFakeAdapter(adapter_name, resolve);
   });

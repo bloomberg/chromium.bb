@@ -16,7 +16,7 @@ promise_test(() => {
     return idsByName;
   };
 
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
   // Open a chooser.
   let firstRequestDevicePromise = setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => assert_promise_rejects_with_message(
@@ -35,7 +35,7 @@ promise_test(() => {
       return getBluetoothManualChooserEvents(4)
         .then(assert_expected_events)
         .then(idsByName => {
-          testRunner.sendBluetoothManualChooserEvent(
+          sendBluetoothManualChooserEvent(
             'selected', idsByName.get('Heart Rate Device'));
           return Promise.all([
             firstRequestDevicePromise,

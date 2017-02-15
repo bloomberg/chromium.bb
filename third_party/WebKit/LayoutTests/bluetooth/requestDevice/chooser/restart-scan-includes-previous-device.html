@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
 
   // Open the chooser, looking for a Heart Rate device.
   let requestDevicePromise =
@@ -26,7 +26,7 @@ promise_test(() => {
 
     // After restarting a scan the connected device should be added to the
     // chooser.
-    testRunner.sendBluetoothManualChooserEvent('rescan', '');
+    sendBluetoothManualChooserEvent('rescan', '');
     return getBluetoothManualChooserEvents(3);
   }).then(events => {
     let idsByName = new AddDeviceEventSet();
@@ -37,7 +37,7 @@ promise_test(() => {
     assert_equals(events[2], 'discovery-idle');
 
     // Select it and let the test complete.
-    testRunner.sendBluetoothManualChooserEvent(
+    sendBluetoothManualChooserEvent(
       'selected', idsByName.get('Connected Heart Rate Device'));
     return requestDevicePromise;
   }).then(device => assert_equals(device.name, 'Connected Heart Rate Device'));

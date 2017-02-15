@@ -10,9 +10,6 @@ test(() => {
                 'the constructor should not be callable');
 }, 'BluetoothDevice IDL test');
 
-test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
-     'window.testRunner is required for the following tests.');
-
 promise_test(() => {
   return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({

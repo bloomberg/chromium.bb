@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
   let requestDevicePromise =
     setBluetoothFakeAdapter('NotPoweredAdapter')
       .then(() => requestDeviceWithKeyDown({
@@ -16,7 +16,7 @@ promise_test(() => {
                           ['chooser-opened(file://)',
                            'adapter-disabled'],
                           events);
-      testRunner.sendBluetoothManualChooserEvent('cancelled', '');
+      sendBluetoothManualChooserEvent('cancelled', '');
       return assert_promise_rejects_with_message(
         requestDevicePromise,
         new DOMException('User cancelled the requestDevice() chooser.',

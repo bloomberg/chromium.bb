@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
 
   let requestDevicePromise =
     setBluetoothFakeAdapter('DevicesRemovedAdapter')
@@ -22,7 +22,7 @@ promise_test(() => {
       idsByName.assert_add_device_event(events[3]);
       assert_true(idsByName.has('New Glucose Device'));
       assert_equals(events[4], 'discovery-idle');
-      testRunner.sendBluetoothManualChooserEvent(
+      sendBluetoothManualChooserEvent(
         'selected', idsByName.get('New Glucose Device'));
       return requestDevicePromise;
     }), new DOMException('User selected a device that doesn\'t exist anymore.',

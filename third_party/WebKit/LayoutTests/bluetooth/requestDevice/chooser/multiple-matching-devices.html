@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothManualChooser(true);
+  setBluetoothManualChooser(true);
   let requestDevicePromise =
     setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
       .then(() => requestDeviceWithKeyDown({
@@ -24,7 +24,7 @@ promise_test(() => {
       assert_true(idsByName.has('Heart Rate Device'));
       assert_true(idsByName.has('Glucose Device'));
       assert_equals(events[4], 'discovery-idle');
-      testRunner.sendBluetoothManualChooserEvent(
+      sendBluetoothManualChooserEvent(
         'selected', idsByName.get('Glucose Device'));
       return requestDevicePromise;
     }).then(device => assert_equals(device.name, 'Glucose Device'));
