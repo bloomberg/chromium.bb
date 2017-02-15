@@ -429,8 +429,6 @@ void V8Initializer::initializeMainThread() {
   }
 
   ASSERT(ThreadState::mainThreadState());
-  ThreadState::mainThreadState()->addInterruptor(
-      WTF::makeUnique<V8IsolateInterruptor>(isolate));
   ThreadState::mainThreadState()->registerTraceDOMWrappers(
       isolate, V8GCController::traceDOMWrappers,
       ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,

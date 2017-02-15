@@ -1131,24 +1131,6 @@ CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*,
 // http://www.w3.org/TR/WebIDL/#delete
 enum DeleteResult { DeleteSuccess, DeleteReject, DeleteUnknownProperty };
 
-class V8IsolateInterruptor final : public BlinkGCInterruptor {
- public:
-  explicit V8IsolateInterruptor(v8::Isolate* isolate) : m_isolate(isolate) {}
-
-  static void onInterruptCallback(v8::Isolate* isolate, void* data) {
-    V8IsolateInterruptor* interruptor =
-        reinterpret_cast<V8IsolateInterruptor*>(data);
-    interruptor->onInterrupted();
-  }
-
-  void requestInterrupt() override {
-    m_isolate->RequestInterrupt(&onInterruptCallback, this);
-  }
-
- private:
-  v8::Isolate* m_isolate;
-};
-
 // Freeze a V8 object. The type of the first parameter and the return value is
 // intentionally v8::Value so that this function can wrap ToV8().
 // If the argument isn't an object, this will crash.

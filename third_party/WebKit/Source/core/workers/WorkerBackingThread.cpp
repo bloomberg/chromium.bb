@@ -66,9 +66,6 @@ void WorkerBackingThread::initialize() {
   addWorkerIsolate(m_isolate);
   V8Initializer::initializeWorker(m_isolate);
 
-  std::unique_ptr<V8IsolateInterruptor> interruptor =
-      WTF::makeUnique<V8IsolateInterruptor>(m_isolate);
-  ThreadState::current()->addInterruptor(std::move(interruptor));
   ThreadState::current()->registerTraceDOMWrappers(
       m_isolate, V8GCController::traceDOMWrappers,
       ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
