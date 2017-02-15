@@ -84,6 +84,7 @@ source_set("find_bar") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "find_in_page_egtest.mm",
