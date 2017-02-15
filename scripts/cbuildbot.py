@@ -378,6 +378,12 @@ class CustomParser(commandline.FilteringParser):
     return self.add_option(*args, remote_pass_through=True, **kwargs)
 
 
+def CreateParser():
+  """Expose _CreateParser publicly."""
+  # Name _CreateParser is needed for commandline library.
+  return _CreateParser()
+
+
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options

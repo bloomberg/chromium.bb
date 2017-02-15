@@ -18,14 +18,13 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import repository
-from chromite.lib import commandline
-from chromite.lib import constants
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import osutils
+from chromite.scripts import cbuildbot
 
-def ExtractBranchName(argv):
+def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
 
   Ignores all arguments, other than the branch name.
@@ -37,50 +36,60 @@ def ExtractBranchName(argv):
     Branch as a string ('master' if nothing is specified).
   """
   # Must match cbuildbot._CreateParser().
-  parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('-b', '--branch',
-                      default='master',
-                      help='The manifest branch to test.  The branch to '
-                           'check the buildroot out to.')
+  parser = cbuildbot.CreateParser()
 
   # Extract the branch argument, if present, ignore the rest.
-  options, _ = parser.parse_known_args(argv)
-  return options.branch
+  options, _ = parser.parse_args(argv)
+
+  # This option isn't required for cbuildbot, but is for us.
+  if not options.buildroot:
+    cros_build_lib.Die('--buildroot is a required option.')
+
+  return options
 
 
-def CloneChromiteOnBranch(branch_name, branch_dir):
-  """Create a worktree of the current chromite checkout.
+def InitialCheckout(branchname, buildroot, git_cache_dir):
+  """Preliminary ChromeOS checkout.
+
+  Perform a complete checkout of ChromeOS on the specified branch. This does NOT
+  match what the build needs, but ensures the buildroot both has a 'hot'
+  checkout, and is close enough that the branched cbuildbot can successfully get
+  the right checkout.
+
+  This checks out full ChromeOS, even if a ChromiumOS build is going to be
+  performed. This is because we have no knowledge of the build config to be
+  used.
 
   Args:
-    branch_name: Name of the branch to checkout, in --branch format, or None.
-                 None means use the current branch.
-    branch_dir: Empty directory to worktree into.
+    branchname: Name of branch to checkout. None for no branch.
+    buildroot: Directory to checkout into.
+    git_cache_dir: Directory to use for git cache. None to not use it.
   """
-  assert branch_name
-  logging.info('Creating chromite clone of branch %s in %s',
-               branch_name, branch_dir)
+  site_config = config_lib.GetConfig()
+  manifest_url = site_config.params['MANIFEST_INT_URL']
 
-  reference_repo = os.path.join(constants.CHROMITE_DIR, '.git')
-  repository.CloneGitRepo(branch_dir, constants.CHROMITE_URL,
-                          reference=reference_repo)
-  git.RunGit(branch_dir, ['checkout', branch_name])
+  osutils.SafeMakedirs(buildroot)
+  repo = repository.RepoRepository(manifest_url, buildroot,
+                                   branch=branchname,
+                                   git_cache_dir=git_cache_dir)
+  repo.Sync()
 
 
-def RunCbuildbot(chromite_dir, argv):
+def RunCbuildbot(buildroot, argv):
   """Start cbuildbot in specified directory with all arguments.
 
   Args:
-    chromite_dir: Root of chromite checkout to run cbuildbot in.
+    buildroot: Root of ChromeOS checkout to run cbuildbot in.
     argv: All command line arguments to pass as list of strings.
 
   Returns:
     Return code of cbuildbot as an integer.
   """
-  logging.info('Bootstrap cbuildbot in: %s', chromite_dir)
-  cbuildbot = os.path.join(chromite_dir, 'bin', 'cbuildbot')
-  result = cros_build_lib.RunCommand([cbuildbot] + argv,
+  logging.info('Bootstrap cbuildbot in: %s', buildroot)
+  cbuildbot_cmd = os.path.join(buildroot, 'chromite', 'bin', 'cbuildbot')
+  result = cros_build_lib.RunCommand([cbuildbot_cmd] + argv,
                                      error_code_ok=True,
-                                     cwd=chromite_dir)
+                                     cwd=buildroot)
 
   logging.debug('cbuildbot result is: %s', result.returncode)
   return result.returncode
@@ -96,9 +105,14 @@ def main(argv):
     Return code of cbuildbot as an integer.
   """
   # Specified branch, or 'master'
-  branch_name = ExtractBranchName(argv)
+  options = PreParseArguments(argv)
 
-  # Run cbuildbot in branched clone of current repo.
-  with osutils.TempDir(prefix='bootstrap_branched_chromite-') as branch_dir:
-    CloneChromiteOnBranch(branch_name, branch_dir)
-    return RunCbuildbot(branch_dir, argv)
+  branchname = options.branch
+  buildroot = options.buildroot
+  git_cache_dir = options.git_cache_dir
+
+  # Get a checkout close enough the branched cbuildbot can handle it.
+  InitialCheckout(branchname, buildroot, git_cache_dir)
+
+  # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
+  RunCbuildbot(buildroot, argv)
