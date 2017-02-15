@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -347,6 +348,67 @@ TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
   ptr.ResetWithReason(2048u, "bye");
 
   run_loop.Run();
+}
+
+class PingInstanceCounter : public PingService {
+ public:
+  PingInstanceCounter() { ++instance_count; }
+  ~PingInstanceCounter() override { --instance_count; }
+
+  void Ping(const PingCallback& callback) override {}
+
+  static int instance_count;
+};
+int PingInstanceCounter::instance_count = 0;
+
+TEST_F(BindingSetTest, StrongBinding_Destructor) {
+  PingServicePtr ping_a, ping_b;
+  auto bindings = base::MakeUnique<StrongBindingSet<PingService>>();
+
+  bindings->AddBinding(base::MakeUnique<PingInstanceCounter>(),
+                       mojo::MakeRequest(&ping_a));
+  EXPECT_EQ(1, PingInstanceCounter::instance_count);
+
+  bindings->AddBinding(base::MakeUnique<PingInstanceCounter>(),
+                       mojo::MakeRequest(&ping_b));
+  EXPECT_EQ(2, PingInstanceCounter::instance_count);
+
+  bindings.reset();
+  EXPECT_EQ(0, PingInstanceCounter::instance_count);
+}
+
+TEST_F(BindingSetTest, StrongBinding_ConnectionError) {
+  PingServicePtr ping_a, ping_b;
+  StrongBindingSet<PingService> bindings;
+  bindings.AddBinding(base::MakeUnique<PingInstanceCounter>(),
+                      mojo::MakeRequest(&ping_a));
+  bindings.AddBinding(base::MakeUnique<PingInstanceCounter>(),
+                      mojo::MakeRequest(&ping_b));
+  EXPECT_EQ(2, PingInstanceCounter::instance_count);
+
+  ping_a.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, PingInstanceCounter::instance_count);
+
+  ping_b.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, PingInstanceCounter::instance_count);
+}
+
+TEST_F(BindingSetTest, StrongBinding_RemoveBinding) {
+  PingServicePtr ping_a, ping_b;
+  StrongBindingSet<PingService> bindings;
+  BindingId binding_id_a = bindings.AddBinding(
+      base::MakeUnique<PingInstanceCounter>(), mojo::MakeRequest(&ping_a));
+  BindingId binding_id_b = bindings.AddBinding(
+      base::MakeUnique<PingInstanceCounter>(), mojo::MakeRequest(&ping_b));
+  EXPECT_EQ(2, PingInstanceCounter::instance_count);
+
+  EXPECT_TRUE(bindings.RemoveBinding(binding_id_a));
+  EXPECT_EQ(1, PingInstanceCounter::instance_count);
+
+  EXPECT_TRUE(bindings.RemoveBinding(binding_id_b));
+  EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
 }  // namespace

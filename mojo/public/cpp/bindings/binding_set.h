@@ -23,10 +23,12 @@ namespace mojo {
 template <typename BindingType>
 struct BindingSetTraits;
 
-template <typename Interface>
-struct BindingSetTraits<Binding<Interface>> {
+template <typename Interface, typename ImplRefTraits>
+struct BindingSetTraits<Binding<Interface, ImplRefTraits>> {
   using ProxyType = InterfacePtr<Interface>;
   using RequestType = InterfaceRequest<Interface>;
+  using BindingType = Binding<Interface, ImplRefTraits>;
+  using ImplPointerType = typename BindingType::ImplPointerType;
 
   static RequestType MakeRequest(ProxyType* proxy) {
     return mojo::MakeRequest(proxy);
@@ -67,6 +69,7 @@ class BindingSetBase {
   using Traits = BindingSetTraits<BindingType>;
   using ProxyType = typename Traits::ProxyType;
   using RequestType = typename Traits::RequestType;
+  using ImplPointerType = typename Traits::ImplPointerType;
 
   BindingSetBase() {}
 
@@ -92,17 +95,20 @@ class BindingSetBase {
 
   // Adds a new binding to the set which binds |request| to |impl| with no
   // additional context.
-  BindingId AddBinding(Interface* impl, RequestType request) {
+  BindingId AddBinding(ImplPointerType impl, RequestType request) {
     static_assert(!ContextTraits::SupportsContext(),
                   "Context value required for non-void context type.");
-    return AddBindingImpl(impl, std::move(request), false);
+    return AddBindingImpl(std::move(impl), std::move(request), false);
   }
 
   // Adds a new binding associated with |context|.
-  BindingId AddBinding(Interface* impl, RequestType request, Context context) {
+  BindingId AddBinding(ImplPointerType impl,
+                       RequestType request,
+                       Context context) {
     static_assert(ContextTraits::SupportsContext(),
                   "Context value unsupported for void context type.");
-    return AddBindingImpl(impl, std::move(request), std::move(context));
+    return AddBindingImpl(std::move(impl), std::move(request),
+                          std::move(context));
   }
 
   // Removes a binding from the set. Note that this is safe to call even if the
@@ -120,10 +126,10 @@ class BindingSetBase {
   // Returns a proxy bound to one end of a pipe whose other end is bound to
   // |this|. If |id_storage| is not null, |*id_storage| will be set to the ID
   // of the added binding.
-  ProxyType CreateInterfacePtrAndBind(Interface* impl,
+  ProxyType CreateInterfacePtrAndBind(ImplPointerType impl,
                                       BindingId* id_storage = nullptr) {
     ProxyType proxy;
-    BindingId id = AddBinding(impl, Traits::MakeRequest(&proxy));
+    BindingId id = AddBinding(std::move(impl), Traits::MakeRequest(&proxy));
     if (id_storage)
       *id_storage = id;
     return proxy;
@@ -154,12 +160,12 @@ class BindingSetBase {
 
   class Entry {
    public:
-    Entry(Interface* impl,
+    Entry(ImplPointerType impl,
           RequestType request,
           BindingSetBase* binding_set,
           BindingId binding_id,
           Context context)
-        : binding_(impl, std::move(request)),
+        : binding_(std::move(impl), std::move(request)),
           binding_set_(binding_set),
           binding_id_(binding_id),
           context_(std::move(context)) {
@@ -216,13 +222,13 @@ class BindingSetBase {
       pre_dispatch_handler_.Run(*context);
   }
 
-  BindingId AddBindingImpl(Interface* impl,
+  BindingId AddBindingImpl(ImplPointerType impl,
                            RequestType request,
                            Context context) {
     BindingId id = next_binding_id_++;
     DCHECK_GE(next_binding_id_, 0u);
-    auto entry = base::MakeUnique<Entry>(
-        impl, std::move(request), this, id, std::move(context));
+    auto entry = base::MakeUnique<Entry>(std::move(impl), std::move(request),
+                                         this, id, std::move(context));
     bindings_.insert(std::make_pair(id, std::move(entry)));
     return id;
   }
