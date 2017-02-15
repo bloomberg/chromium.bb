@@ -111,53 +111,54 @@ controller-pairing-page::shadow #top {
       <neon-animated-pages id="pages" selected="{{C.page}}"
           attr-for-selected="name" class="fit">
         <controller-pairing-page name="devices-discovery" class="big-font">
-          <div class="title">
-            $i18n{loginControllerPairingScreenWelcomeTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenWelcomeTitle">
           </div>
-          <div>$i18n{loginControllerPairingScreenSearching}</div>
-          <paper-button class="help-button" on-tap="helpButtonClicked_">
-            $i18n{loginControllerPairingScreenHelpBtn}
+          <div i18n-content="loginControllerPairingScreenSearching"></div>
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="device-select" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenSelectTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenSelectTitle">
           </div>
           <pairing-device-list devices="[[C.devices]]"
               selected="{{selectedDevice}}">
           </pairing-device-list>
-          <paper-button class="help-button" on-tap="helpButtonClicked_">
-            $i18n{loginControllerPairingScreenHelpBtn}
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
           <paper-button on-tap="userActed" action="chooseDevice"
-              disabled$="[[C.controlsDisabled]]">
-            $i18n{loginControllerPairingScreenConnectBtn}
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="loginControllerPairingScreenConnectBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="device-not-found">
-          <div class="title">
-            $i18n{loginControllerPairingScreenTroubleConnectingTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenTroubleConnectingTitle">
           </div>
-          <div>$i18n{loginControllerPairingScreenConnectingAdvice}</div>
-          <paper-button on-tap="userActed" action="repeatDiscovery">
-            $i18n{loginControllerPairingScreenAdviceGotItBtn}
+          <div i18n-content="loginControllerPairingScreenConnectingAdvice">
+          </div>
+          <paper-button on-tap="userActed" action="repeatDiscovery"
+              i18n-content="loginControllerPairingScreenAdviceGotItBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="establishing-connection" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenSelectTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenSelectTitle">
           </div>
           <pairing-device-list devices="[[C.devices]]"
               selected="{{selectedDevice}}" connecting>
           </pairing-device-list>
-          <paper-button class="help-button" on-tap="helpButtonClicked_">
-            $i18n{loginControllerPairingScreenHelpBtn}
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
-          <paper-button disabled>
-            $i18n{loginControllerPairingScreenConnecting}
+          <paper-button disabled
+              i18n-content="loginControllerPairingScreenConnecting">
           </paper-button>
         </controller-pairing-page>
 
@@ -172,60 +173,64 @@ controller-pairing-page::shadow #top {
         </controller-pairing-page>
 
         <controller-pairing-page name="code-confirmation" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenConfirmationTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenConfirmationTitle">
           </div>
-          <div>$i18n{loginControllerPairingScreenConfirmationQuestion}</div>
+          <div
+              i18n-content="loginControllerPairingScreenConfirmationQuestion">
+          </div>
           <div id="code"><span>[[C.code]]</span></div>
           <paper-button on-tap="userActed" action="rejectCode"
-              disabled$="[[C.controlsDisabled]">
-            $i18n{loginControllerPairingScreenRejectCodeBtn}
+              disabled$="[[C.controlsDisabled]"
+              i18n-content="loginControllerPairingScreenRejectCodeBtn">
           </paper-button>
           <paper-button on-tap="userActed" action="acceptCode"
-              disabled$="[[C.controlsDisabled]]">
-            $i18n{loginControllerPairingScreenAcceptCodeBtn}
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="loginControllerPairingScreenAcceptCodeBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-network-error" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenHostNetworkErrorTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenHostNetworkErrorTitle">
           </div>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-update" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenUpdateTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenUpdateTitle">
           </div>
-          <div>$i18n{loginControllerPairingScreenUpdateText}</div>
+          <div i18n-content="loginControllerPairingScreenUpdateText"></div>
           <paper-progress indeterminate></paper-progress>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-connection-lost" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenConnectionLostTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenConnectionLostTitle">
           </div>
-          <div>$i18n{loginControllerPairingScreenConnectionLostText}</div>
+          <div i18n-content="loginControllerPairingScreenConnectionLostText">
+          </div>
           <paper-progress indeterminate></paper-progress>
         </controller-pairing-page>
 
         <controller-pairing-page name="enrollment-introduction" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenEnrollTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenEnrollTitle">
           </div>
-          <p>$i18n{loginControllerPairingScreenEnrollText1}</p>
+          <p i18n-content="loginControllerPairingScreenEnrollText1"></p>
           <p>
-            <strong>$i18n{loginControllerPairingScreenEnrollText2}</strong>
+            <strong i18n-content="loginControllerPairingScreenEnrollText2">
+            </strong>
           </p>
           <paper-button on-tap="userActed" action="proceedToAuthentication"
-              disabled$="[[C.controlsDisabled]]">
-            $i18n{loginControllerPairingScreenContinueBtn}
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="loginControllerPairingScreenContinueBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="authentication" class="split">
-          <div class="title">
-            $i18n{loginControllerPairingScreenEnrollTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenEnrollTitle">
           </div>
           <div>Not implemented.</div>
         </controller-pairing-page>
@@ -238,22 +243,22 @@ controller-pairing-page::shadow #top {
         </controller-pairing-page>
 
         <controller-pairing-page name="host-enrollment-error" class="progress">
-          <div class="title">
-            $i18n{loginControllerPairingScreenEnrollmentErrorTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenEnrollmentErrorTitle">
           </div>
-          <div>
-            $i18n{loginControllerPairingScreenEnrollmentErrorHostRestarts}
+          <div
+              i18n-content="loginControllerPairingScreenEnrollmentErrorHostRestarts">
           </div>
         </controller-pairing-page>
 
         <controller-pairing-page name="pairing-done" class="big-font">
-          <div class="title">
-            $i18n{loginControllerPairingScreenSuccessTitle}
+          <div class="title"
+              i18n-content="loginControllerPairingScreenSuccessTitle">
           </div>
           <div><span>[[getSuccessMessage_(selectedDevice)]]</div>
           <paper-button on-tap="userActed" action="startSession"
-              disabled$="{{C.controlsDisabled}}">
-            $i18n{loginControllerPairingScreenContinueToHangoutsBtn}
+              disabled$="{{C.controlsDisabled}}"
+              i18n-content="loginControllerPairingScreenContinueToHangoutsBtn">
           </paper-button>
         </controller-pairing-page>
       </neon-animated-pages>

@@ -5,17 +5,18 @@
   <arc-tos-md id="arc-tos-md" hidden></arc-tos-md>
   <div id="arc-tos-legacy">
     <div class="step-contents">
-      <img id="arc-tos-logo" 
+      <img id="arc-tos-logo"
           src="https://play.google.com/about/images/play_logo.png" alt>
-      <h1>$i18n{arcTermsOfServiceScreenHeading}</h1>
-      <h2>$i18n{arcTermsOfServiceScreenDescription}</h2>
+      <h1 i18n-content="arcTermsOfServiceScreenHeading"></h1>
+      <h2 i18n-content="arcTermsOfServiceScreenDescription"></h2>
       <div id="arc-tos-container">
         <div id="arc-tos-content">
           <div id="arc-tos-view-container">
             <webview id="arc-tos-view"></webview>
           </div>
           <label>
-            <a id="arc-policy-link" href="#">$i18n{arcPolicyLink}</a>
+            <a id="arc-policy-link" href="#" i18n-content="arcPolicyLink">
+            </a>
           </label>
           <label>
             <p id="arc-text-metrics"></p>
@@ -30,10 +31,10 @@
           </label>
         </div>
         <div id="arc-tos-loading">
-          <p>$i18n{arcTermsOfServiceLoading}</p>
+          <p i18n-content="arcTermsOfServiceLoading"></p>
         </div>
         <div id="arc-tos-error">
-          <p>$i18n{arcTermsOfServiceError}</p>
+          <p i18n-content="arcTermsOfServiceError"></p>
         </div>
       </div>
     </div>
@@ -48,8 +49,8 @@
         <span id="arc-learn-more-content"></span>
       </div>
       <button id="arc-tos-overlay-text-close"
-          class="arc-tos-overlay-close-bottom arc-overlay-close-button">
-        $i18n{arcOverlayClose}
+          class="arc-tos-overlay-close-bottom arc-overlay-close-button"
+          i18n-content="arcOverlayClose">
       </button>
     </div>
   </div>
@@ -62,8 +63,8 @@
         <webview id="arc-tos-overlay-webview"></webview>
       </div>
       <button id="arc-tos-overlay-url-close"
-          class="arc-tos-overlay-close-bottom arc-overlay-close-button">
-        $i18n{arcOverlayClose}
+          class="arc-tos-overlay-close-bottom arc-overlay-close-button"
+          i18n-content="arcOverlayClose">
       </button>
     </div>
   </div>

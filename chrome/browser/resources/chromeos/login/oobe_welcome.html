@@ -71,14 +71,14 @@
        has-buttons>
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title">$i18n{languageSectionTitle}</h1>
+        <h1 class="title" i18n-content="languageSectionTitle"></h1>
       </div>
       <div class="footer layout vertical">
         <template is="dom-if" if="[[enabled]]">
           <div id="languageDropdownContainer"
               class="flex layout horizontal justified language-selection-entry">
-            <div class="language-selection-title layout vertical center-justified">
-              $i18n{languageDropdownTitle}
+            <div class="language-selection-title layout vertical center-justified"
+                i18n-content="languageDropdownTitle">
             </div>
             <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
                 on-select-item="onLanguageSelected_"
@@ -88,8 +88,8 @@
           </div>
           <div id="keyboardDropdownContainer"
               class="flex layout horizontal justified language-selection-entry">
-            <div class="language-selection-title layout vertical center-justified">
-              $i18n{keyboardDropdownTitle}
+            <div class="language-selection-title layout vertical center-justified"
+                i18n-content="keyboardDropdownTitle">
             </div>
             <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
                 on-select-item="onKeyboardSelected_"
@@ -101,7 +101,7 @@
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeLanguageSection_">
-          <div>$i18n{oobeOKButtonText}</div>
+          <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -109,54 +109,64 @@
         hidden="[[!accessibilityOptionsScreenShown]]" has-buttons>
       <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title">$i18n{accessibilitySectionTitle}</h1>
-        <div class="subtitle">$i18n{accessibilitySectionHint}</div>
+        <h1 class="title" i18n-content="accessibilitySectionTitle"></h1>
+        <div class="subtitle" i18n-content="accessibilitySectionHint"></div>
       </div>
       <div class="footer layout vertical">
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableSpokenFeedback"
-            aria-label="$i18n{spokenFeedbackOption}">
-          <span class="title">$i18n{spokenFeedbackOption}</span>
-          <span class="checked-value">$i18n{spokenFeedbackOptionOn}</span>
-          <span class="unchecked-value">$i18n{spokenFeedbackOptionOff}</span>
+            aria-label="[[formatMessage_('spokenFeedbackOption')]]">
+          <span class="title" i18n-content="spokenFeedbackOption"></span>
+          <span class="checked-value" i18n-content="spokenFeedbackOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="spokenFeedbackOptionOff">
+          </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableLargeCursor"
-            aria-label="$i18n{largeCursorOption}">
-          <span class="title">$i18n{largeCursorOption}</span>
-          <span class="checked-value">$i18n{largeCursorOptionOn}</span>
-          <span class="unchecked-value">$i18n{largeCursorOptionOff}</span>
+            aria-label="[[formatMessage_('largeCursorOption')]]">
+          <span class="title" i18n-content="largeCursorOption"></span>
+          <span class="checked-value" i18n-content="largeCursorOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="largeCursorOptionOff">
+          </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableHighContrast"
-            aria-label="$i18n{highContrastOption}">
-          <span class="title">$i18n{highContrastOption}</span>
-          <span class="checked-value">$i18n{highContrastOptionOn}</span>
-          <span class="unchecked-value">$i18n{highContrastOptionOff}</span>
+            aria-label="[[formatMessage_('highContrastOption')]]">
+          <span class="title" i18n-content="highContrastOption"></span>
+          <span class="checked-value" i18n-content="highContrastOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="highContrastOptionOff">
+          </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableScreenMagnifier"
-            aria-label="$i18n{screenMagnifierOption}">
-          <span class="title">$i18n{screenMagnifierOption}</span>
-          <span class="checked-value">$i18n{screenMagnifierOptionOn}</span>
-          <span class="unchecked-value">$i18n{screenMagnifierOptionOff}</span>
+            aria-label="[[formatMessage_('screenMagnifierOption')]]">
+          <span class="title" i18n-content="screenMagnifierOption"></span>
+          <span class="checked-value" i18n-content="screenMagnifierOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="screenMagnifierOptionOff">
+          </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableVirtualKeyboard"
-            aria-label="$i18n{virtualKeyboardOption}">
-          <span class="title">$i18n{virtualKeyboardOption}</span>
-          <span class="checked-value">$i18n{virtualKeyboardOptionOn}</span>
-          <span class="unchecked-value">$i18n{virtualKeyboardOptionOff}</span>
+            aria-label="[[formatMessage_('virtualKeyboardOption')]]">
+          <span class="title" i18n-content="virtualKeyboardOption"></span>
+          <span class="checked-value" i18n-content="virtualKeyboardOptionOn">
+          </span>
+          <span class="unchecked-value" i18n-content="virtualKeyboardOptionOff">
+          </span>
         </oobe-a11y-option>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeAccessibilitySection_">
-          <div>$i18n{oobeOKButtonText}</div>
+          <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -164,22 +174,22 @@
        has-buttons>
       <iron-icon icon="oobe-welcome-64:timezone" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title">$i18n{timezoneSectionTitle}</h1>
+        <h1 class="title" i18n-content="timezoneSectionTitle"></h1>
       </div>
       <div class="footer layout vertical">
         <div class="flex layout horizontal justified timezone-selection-entry">
-          <div class="timezone-selection-title layout vertical center-justified">
-            $i18n{timezoneDropdownTitle}
+          <div class="timezone-selection-title layout vertical center-justified"
+              i18n-content="timezoneDropdownTitle">
           </div>
           <oobe-i18n-dropdown id="timezoneSelect" items="[[timezones]]"
               on-select-item="onTimezoneSelected_"
-              aria-label="$i18n{timezoneDropdownTitle}">
+              aria-label="[[formatMessage_('timezoneDropdownTitle')]]">
           </oobe-i18n-dropdown>
         </div>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeTimezoneSection_">
-          <div>$i18n{oobeOKButtonText}</div>
+          <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -187,8 +197,8 @@
         hidden="[[!networkSelectionScreenShown]]" has-buttons>
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title">$i18n{networkSectionTitle}</h1>
-        <div class="subtitle">$i18n{networkSectionHint}</div>
+        <h1 class="title" i18n-content="networkSectionTitle"></h1>
+        <div class="subtitle" i18n-content="networkSectionHint"></div>
       </div>
       <div class="footer layout vertical">
         <cr-network-select id="networkSelect"

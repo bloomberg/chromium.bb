@@ -27,8 +27,8 @@
     </div>
     <div id="oauth-enroll-step-success" role="alert">
       <notification-card id="oauth-enroll-success-card" type="success"
-          i18n-values="button-label:oauthEnrollDone">
-        $i18n{oauthEnrollSuccess}
+          i18n-values="button-label:oauthEnrollDone"
+          i18n-content="oauthEnrollSuccess">
       </notification-card>
     </div>
     <div id="oauth-enroll-step-abe-success" role="alert">
@@ -39,20 +39,18 @@
     <div id="oauth-enroll-step-attribute-prompt">
       <gaia-card id="oauth-enroll-attribute-prompt-card" class="fit">
         <div class="header flex vertical layout end-justified">
-          <h1 class="welcome-message" style="text-transform:capitalize">
-            $i18n{oauthEnrollScreenTitle}
-          </h1>
-          <p class="enterprise-info">$i18n{oauthEnrollDeviceInformation}</p>
+          <h1 class="welcome-message" style="text-transform:capitalize"
+              i18n-content="oauthEnrollScreenTitle"></h1>
+          <p class="enterprise-info"
+              i18n-content="oauthEnrollDeviceInformation"></p>
         </div>
         <div class="footer flex vertical layout justified">
           <div class="oauth-enroll-step-message">
-            <span id="oauth-enroll-attribute-prompt-message">
-              $i18n{oauthEnrollAttributeExplanation}
-            </span>
+            <span id="oauth-enroll-attribute-prompt-message"
+                  i18n-content="oauthEnrollAttributeExplanation"></span>
             <a href="#" id="oauth-enroll-learn-more-link"
-               class="oauth-enroll-link">
-             $i18n{oauthEnrollExplainAttributeLink}
-           </a>
+               class="oauth-enroll-link"
+               i18n-content="oauthEnrollExplainAttributeLink"></a>
             <gaia-input-form id="oauth-enroll-attribute-input"
                              i18n-values="button-text:oauthEnrollNextBtn">
               <gaia-input id="oauth-enroll-asset-id" type="text"
@@ -61,8 +59,8 @@
               <gaia-input id="oauth-enroll-location" type="text"
                   i18n-values="label:oauthEnrollLocationLabel">
               </gaia-input>
-              <gaia-button type="link" id="oauth-enroll-skip-button">
-                $i18n{oauthEnrollSkip}
+              <gaia-button type="link" id="oauth-enroll-skip-button"
+                  i18n-content="oauthEnrollSkip">
               </gaia-button>
             </gaia-input-form>
           </div>

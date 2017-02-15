@@ -19,13 +19,14 @@
 
   <template>
     <div class="content">
-      <div class="title">$i18n{unrecoverableCryptohomeErrorMessageTitle}</div>
+      <div i18n-content="unrecoverableCryptohomeErrorMessageTitle" class="title">
+      </div>
       <div class="message"
           i18n-values=".innerHTML:unrecoverableCryptohomeErrorMessage">
       </div>
       <div class="horizontal-reverse layout justified center">
-        <gaia-button on-tap="onContinueClicked_">
-          $i18n{unrecoverableCryptohomeErrorContinue}
+        <gaia-button on-tap="onContinueClicked_"
+            i18n-content="unrecoverableCryptohomeErrorContinue">
         </gaia-button>
       </div>
     </div>

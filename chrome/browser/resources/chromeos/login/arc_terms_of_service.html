@@ -16,16 +16,16 @@
       <iron-icon src="chrome://oobe/playstore.svg" class="oobe-icon">
       </iron-icon>
       <div class="header">
-        <h1 class="title">$i18n{arcTermsOfServiceScreenHeading}</h1>
-        <div class="subtitle">$i18n{arcTermsOfServiceScreenDescription}</div>
+        <h1 class="title" i18n-content="arcTermsOfServiceScreenHeading"></h1>
+        <div class="subtitle" i18n-content="arcTermsOfServiceScreenDescription">
+        </div>
       </div>
       <div class="footer flex layout vertical">
         <div id="arc-tos-view-container-md" class="arc-tos-content">
           <webview id="arc-tos-view-md"></webview>
         </div>
-        <a id="arc-policy-link-md" class="arc-tos-content" href="#">
-          $i18n{arcPolicyLink}
-        </a>
+        <a id="arc-policy-link-md" class="arc-tos-content" href="#"
+            i18n-content="arcPolicyLink"></a>
         <div class="parameter-section arc-tos-content">
           <p id="arc-text-metrics-md"></p>
         </div>
@@ -40,10 +40,10 @@
           </paper-checkbox>
         </div>
         <div class="arc-tos-loading">
-          <p>$i18n{arcTermsOfServiceLoading}</p>
+          <p i18n-content="arcTermsOfServiceLoading"></p>
         </div>
         <div class="arc-tos-error">
-          <p>$i18n{arcTermsOfServiceError}</p>
+          <p i18n-content="arcTermsOfServiceError"></p>
         </div>
       </div>
       <div class="bottom-buttons flex layout horizontal">
@@ -51,17 +51,17 @@
         </div>
         <oobe-text-button id="arc-tos-skip-button-md" on-tap="onSkip_"
             disabled="[[arcTosButtonsDisabled]]">
-          <div>$i18n{arcTermsOfServiceSkipButton}</div>
+          <div i18n-content="arcTermsOfServiceSkipButton"></div>
         </oobe-text-button>
         <oobe-text-button id="arc-tos-retry-button-md"
             inverse on-tap="onRetry_"
             disabled="[[arcTosButtonsDisabled]]">
-          <div>$i18n{arcTermsOfServiceRetryButton}</div>
+          <div i18n-content="arcTermsOfServiceRetryButton"></div>
         </oobe-text-button>
-        <oobe-text-button id="arc-tos-accept-button-md" 
+        <oobe-text-button id="arc-tos-accept-button-md"
             inverse on-tap="onAccept_"
             disabled="[[arcTosButtonsDisabled]]">
-          <div>$i18n{arcTermsOfServiceAcceptButton}</div>
+          <div i18n-content="arcTermsOfServiceAcceptButton"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
