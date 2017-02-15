@@ -1037,35 +1037,41 @@ if (!is_android) {
       "data/webui/print_preview.js",
       "data/webui/print_preview_destination_search_test.js",
       "data/webui/sandboxstatus_browsertest.js",
-      "data/webui/settings/advanced_page_browsertest.js",
-      "data/webui/settings/animation_browsertest.js",
-      "data/webui/settings/basic_page_browsertest.js",
-      "data/webui/settings/cr_settings_browsertest.js",
-      "data/webui/settings/easy_unlock_browsertest_chromeos.js",
-      "data/webui/settings/help_page_browsertest.js",
-      "data/webui/settings/languages_page_browsertest.js",
-      "data/webui/settings/on_startup_browsertest.js",
-      "data/webui/settings/passwords_and_autofill_fake_data.js",
-      "data/webui/settings/passwords_and_forms_browsertest.js",
-      "data/webui/settings/settings_autofill_section_browsertest.js",
-      "data/webui/settings/settings_idle_render_browsertest.js",
-      "data/webui/settings/settings_page_browsertest.js",
-      "data/webui/settings/settings_passwords_section_browsertest.js",
-      "data/webui/settings/settings_subpage_browsertest.js",
-      "data/webui/settings/settings_ui_browsertest.js",
-      "data/webui/settings/site_settings_page_browsertest.js",
       "data/webui/text_defaults_browsertest.js",
       "data/webui/webui_resource_async_browsertest.js",
     ]
+
+    if (!is_asan) {
+      sources += [
+        "data/webui/settings/advanced_page_browsertest.js",
+        "data/webui/settings/animation_browsertest.js",
+        "data/webui/settings/basic_page_browsertest.js",
+        "data/webui/settings/cr_settings_browsertest.js",
+        "data/webui/settings/help_page_browsertest.js",
+        "data/webui/settings/languages_page_browsertest.js",
+        "data/webui/settings/on_startup_browsertest.js",
+        "data/webui/settings/passwords_and_autofill_fake_data.js",
+        "data/webui/settings/passwords_and_forms_browsertest.js",
+        "data/webui/settings/settings_autofill_section_browsertest.js",
+        "data/webui/settings/settings_idle_render_browsertest.js",
+        "data/webui/settings/settings_page_browsertest.js",
+        "data/webui/settings/settings_passwords_section_browsertest.js",
+        "data/webui/settings/settings_subpage_browsertest.js",
+        "data/webui/settings/settings_ui_browsertest.js",
+        "data/webui/settings/site_settings_page_browsertest.js",
+      ]
+
+      if (is_chromeos) {
+        sources += [ "data/webui/settings/easy_unlock_browsertest_chromeos.js" ]
+      }
+    }
+
     if (is_chrome_branded) {
       # crbug.com/230471
       sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
     }
     if (!is_chromeos) {
-      sources -= [
-        "data/webui/certificate_viewer_dialog_test.js",
-        "data/webui/settings/easy_unlock_browsertest_chromeos.js",
-      ]
+      sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
     } else {
       sources -= [ "data/webui/md_user_manager/user_manager_browsertest.js" ]
     }
