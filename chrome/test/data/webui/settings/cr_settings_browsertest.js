@@ -952,7 +952,8 @@ CrSettingsLanguagesTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsLanguagesTest', 'Languages', function() {
+// Flaky on Win and Linux, see http://crbug/692356.
+TEST_F('CrSettingsLanguagesTest', 'DISABLED_Languages', function() {
   mocha.run();
 });
 
