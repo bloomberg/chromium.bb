@@ -1316,6 +1316,7 @@ COMMON_GTESTS = {
     ],
     'args': [
       '--use-test-data-path',
+      '--test_video_data=test-25fps.h264:320:240:250:258:::1',
     ],
   },
 }

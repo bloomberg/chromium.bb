@@ -10868,7 +10868,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -11334,7 +11335,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11813,7 +11815,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -12318,7 +12321,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -12826,7 +12830,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13318,7 +13323,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13761,7 +13767,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14223,7 +14230,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -14746,7 +14754,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15228,7 +15237,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -15710,7 +15720,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false,
@@ -16310,7 +16321,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16818,7 +16830,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17335,7 +17348,8 @@
       },
       {
         "args": [
-          "--use-test-data-path"
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
