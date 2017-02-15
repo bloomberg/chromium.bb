@@ -139,6 +139,63 @@ TEST_F(CSPSourceTest, InsecureHostSchemeMatchesSecureScheme) {
   EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:8000/")));
 }
 
+TEST_F(CSPSourceTest, SchemeIsEmpty) {
+  KURL base;
+
+  // Self scheme is http.
+  {
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+    csp->setupSelf(*SecurityOrigin::createFromString("http://a.com/"));
+    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_TRUE(source.matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "http-so://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "https-so://a.com")));
+    EXPECT_FALSE(source.matches(KURL(base, "ftp://a.com")));
+  }
+
+  // Self scheme is https.
+  {
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+    csp->setupSelf(*SecurityOrigin::createFromString("https://a.com/"));
+    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://a.com")));
+    EXPECT_FALSE(source.matches(KURL(base, "http-so://a.com")));
+    // TODO(mkwst, arthursonzogni): Maybe it should return true.
+    // See http://crbug.com/692442
+    EXPECT_FALSE(source.matches(KURL(base, "https-so://a.com")));
+    EXPECT_FALSE(source.matches(KURL(base, "ftp://a.com")));
+  }
+
+  // Self scheme is not in the http familly.
+  {
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+    csp->setupSelf(*SecurityOrigin::createFromString("ftp://a.com/"));
+    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "ftp://a.com")));
+  }
+
+  // Self scheme is unique
+  {
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+    csp->setupSelf(
+        *SecurityOrigin::createFromString("non-standard-scheme://a.com/"));
+    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
+                     CSPSource::NoWildcard);
+    // TODO(mkwst, arthursonzogni): This result might be wrong.
+    // See http://crbug.com/692449
+    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
+    // TODO(mkwst, arthursonzogni): This result might be wrong.
+    // See http://crbug.com/692449
+    EXPECT_FALSE(source.matches(KURL(base, "non-standard-scheme://a.com")));
+  }
+}
+
 TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
   KURL base;
   CSPSource source(csp.get(), "http", "example.com", 80, "/",
