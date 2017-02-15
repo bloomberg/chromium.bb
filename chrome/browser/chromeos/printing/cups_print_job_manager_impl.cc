@@ -188,42 +188,28 @@ void CupsPrintJobManagerImpl::QueryCups() {
                  weak_ptr_factory_.GetWeakPtr(), jobs));
 }
 
-// Use job information to update local job states.  Update jobs that are no
-// longer being reported on by CUPS.
+// Use job information to update local job states.  Previously completed jobs
+// could be in |jobs| but those are ignored as we will not emit updates for them
+// after they are completed.
 void CupsPrintJobManagerImpl::UpdateJobs(
     const std::vector<::printing::CupsJob>& jobs) {
-  std::set<std::string> updated_jobs;
   for (auto& job : jobs) {
     std::string key = CupsPrintJob::GetUniqueId(job.printer_id, job.id);
-    if (!base::ContainsKey(jobs_, key)) {
-      LOG(WARNING) << "Unexpected print job encountered";
-      continue;
-    }
+    const auto& entry = jobs_.find(key);
+    if (entry != jobs_.end()) {
+      CupsPrintJob* print_job = entry->second.get();
 
-    JobStateUpdated(jobs_[key].get(), ConvertState(job.state));
-    updated_jobs.insert(key);
-  }
+      // Update a job we're tracking.
+      JobStateUpdated(print_job, ConvertState(job.state));
 
-  // Cleanup completed jobs.
-  auto it = jobs_.begin();
-  while (it != jobs_.end()) {
-    auto& entry = *it;
-    if (!base::ContainsKey(updated_jobs, entry.first)) {
-      // We are no longer receiving updates for a job.  Declare it
-      // complete.
-      JobStateUpdated(entry.second.get(),
-                      CupsPrintJob::State::STATE_DOCUMENT_DONE);
-    }
-
-    CupsPrintJob* job = entry.second.get();
-    if (JobFinished(job->state())) {
-      // Delete job since we will no longer receive events for it.
-      it = jobs_.erase(it);
-    } else {
-      it++;
+      // Cleanup completed jobs.
+      if (JobFinished(print_job->state())) {
+        jobs_.erase(entry);
+      }
     }
   }
 
+  // Keep polling until all jobs complete or error.
   if (!jobs_.empty())
     ScheduleQuery();
 }
