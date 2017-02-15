@@ -11,6 +11,7 @@ include_rules = [
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
+  "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebDragOperation.h",
   "+third_party/WebKit/public/platform/WebFeaturePolicy.h",
@@ -64,6 +65,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebDeviceEmulationParams.h",
   "+third_party/WebKit/public/web/WebDragStatus.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
+  "+third_party/WebKit/public/web/WebFrameOwnerProperties.h",
   "+third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h",
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",
@@ -73,6 +75,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
+  "+third_party/WebKit/public/web/WebWindowFeatures.h",
   "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
   "+third_party/WebKit/public/web/win/WebFontRendering.h"
 ]
