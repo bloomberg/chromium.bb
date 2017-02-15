@@ -6,6 +6,7 @@
 #define CC_IPC_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
 
 #include "cc/ipc/copy_output_result.mojom-shared.h"
+#include "cc/ipc/texture_mailbox_releaser.mojom.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/copy_output_result.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
@@ -28,6 +29,9 @@ struct StructTraits<cc::mojom::CopyOutputResultDataView,
       const std::unique_ptr<cc::CopyOutputResult>& result) {
     return result->texture_mailbox_;
   }
+
+  static cc::mojom::TextureMailboxReleaserPtr releaser(
+      const std::unique_ptr<cc::CopyOutputResult>& result);
 
   static bool Read(cc::mojom::CopyOutputResultDataView data,
                    std::unique_ptr<cc::CopyOutputResult>* out_p);

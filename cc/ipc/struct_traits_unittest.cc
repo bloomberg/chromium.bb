@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "cc/input/selection.h"
 #include "cc/ipc/traits_test_service.mojom.h"
 #include "cc/output/copy_output_result.h"
@@ -131,8 +132,15 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
 void StubCopyOutputRequestCallback(std::unique_ptr<CopyOutputResult> result) {}
 
-void StubCopyOutputResultCallback(const gpu::SyncToken& sync_token,
-                                  bool is_lost) {}
+void CopyOutputResultCallback(base::Closure quit_closure,
+                              const gpu::SyncToken& expected_sync_token,
+                              bool expected_is_lost,
+                              const gpu::SyncToken& sync_token,
+                              bool is_lost) {
+  EXPECT_EQ(expected_sync_token, sync_token);
+  EXPECT_EQ(expected_is_lost, is_lost);
+  quit_closure.Run();
+}
 
 }  // namespace
 
@@ -431,8 +439,13 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
   const uint32_t target = 3;
-  auto callback =
-      SingleReleaseCallback::Create(base::Bind(StubCopyOutputResultCallback));
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                            gpu::CommandBufferId::FromUnsafeValue(0x123),
+                            71234838);
+  bool is_lost = true;
+  base::RunLoop run_loop;
+  auto callback = SingleReleaseCallback::Create(base::Bind(
+      CopyOutputResultCallback, run_loop.QuitClosure(), sync_token, is_lost));
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
@@ -452,6 +465,12 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   std::unique_ptr<SingleReleaseCallback> out_callback;
   output->TakeTexture(&out_mailbox, &out_callback);
   EXPECT_EQ(mailbox, out_mailbox.mailbox());
+  out_callback->Run(sync_token, is_lost);
+  // If CopyOutputResultCallback is called (which is the intended behaviour),
+  // this will exit. Otherwise, this test will time out and fail.
+  // In CopyOutputResultCallback we verify that the given sync_token and is_lost
+  // have their intended values.
+  run_loop.Run();
 }
 
 TEST_F(StructTraitsTest, FilterOperation) {
