@@ -19,10 +19,6 @@
       settings-omnibox-extension-entry {
         border-top: var(--settings-separator-line);
       }
-
-      settings-omnibox-extension-entry:first-of-type {
-        border-top: none;
-      }
     </style>
     <div class="settings-box first">
       <h2>$i18n{searchEnginesDefault}</h2>
@@ -40,7 +36,7 @@
         $i18n{add}
       </paper-button>
     </div>
-    <settings-search-engines-list engines="[[otherEngines]]">
+    <settings-search-engines-list engines="[[otherEngines]]" hide-headers>
     </settings-search-engines-list>
     <template is="dom-if" if="[[showExtensionsList_]]">
       <div class="settings-box first">

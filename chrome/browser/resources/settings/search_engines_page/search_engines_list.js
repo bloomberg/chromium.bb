@@ -20,5 +20,8 @@ Polymer({
       type: Object,
       value: settings.Route.SEARCH_ENGINES,
     },
+
+    /** Whether column headers should be displayed */
+    hideHeaders: Boolean,
   },
 });

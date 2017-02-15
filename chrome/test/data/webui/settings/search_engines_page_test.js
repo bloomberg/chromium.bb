@@ -162,12 +162,15 @@ cr.define('settings_search_engines_page', function() {
       // Test that the <search-engine-entry> is populated according to its
       // underlying SearchEngine model.
       test('Initialization', function() {
-        var columns = entry.root.querySelectorAll('.column, #url-column');
-        assertEquals(3, columns.length);
-
-        assertEquals(searchEngine.displayName, columns[0].textContent);
-        assertEquals(searchEngine.keyword, columns[1].textContent);
-        assertEquals(searchEngine.url, columns[2].textContent);
+        assertEquals(
+            searchEngine.displayName,
+            entry.root.querySelector('#name-column').textContent.trim());
+        assertEquals(
+            searchEngine.keyword,
+            entry.root.querySelector('#keyword-column').textContent);
+        assertEquals(
+            searchEngine.url,
+            entry.root.querySelector('#url-column').textContent);
       });
 
       test('Remove_Enabled', function() {

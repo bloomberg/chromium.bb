@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
+<link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="search_engine_entry.html">
 
 <dom-module id="settings-search-engines-list">
@@ -18,7 +19,7 @@
       }
 
       .headers .url {
-        flex: 4.5;
+        flex: 4;
       }
 
       div#outer {
@@ -29,12 +30,17 @@
         border-top: var(--settings-separator-line);
       }
 
-      settings-search-engine-entry:first-of-type {
-        border-top: none;
+      .icon-placeholder {
+        width: calc(var(--iron-icon-width) + 2 * 10px);
       }
     </style>
     <div id="outer">
-      <content></content>
+      <div class="headers" hidden$="[[hideHeaders]]">
+        <div class="name">$i18n{searchEnginesSearchEngine}</div>
+        <div class="keyword">$i18n{searchEnginesKeyword}</div>
+        <div class="url">$i18n{searchEnginesQueryURL}</div>
+        <div class="icon-placeholder"></div>
+      </div>
       <div id="container" class="scroll-container">
         <iron-list items="[[engines]]" scroll-target="[[subpageScrollTarget]]">
           <template>
