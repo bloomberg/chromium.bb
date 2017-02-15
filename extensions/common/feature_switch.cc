@@ -31,7 +31,7 @@ class CommonSwitches {
 #else
             nullptr,
 #endif
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
             FeatureSwitch::DEFAULT_ENABLED),
 #else
             FeatureSwitch::DEFAULT_DISABLED),

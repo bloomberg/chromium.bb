@@ -88,12 +88,7 @@ ExternalInstallManager::~ExternalInstallManager() {
 
 
 bool ExternalInstallManager::IsPromptingEnabled() {
-  // Enable this feature on canary on mac.
-#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
-  return GetCurrentChannel() <= version_info::Channel::CANARY;
-#else
   return FeatureSwitch::prompt_for_external_extensions()->IsEnabled();
-#endif
 }
 
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
