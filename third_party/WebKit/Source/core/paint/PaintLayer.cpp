@@ -1558,16 +1558,10 @@ void PaintLayer::collectFragments(
     const LayoutPoint* offsetFromRoot,
     const LayoutSize& subPixelAccumulation,
     const LayoutRect* layerBoundingBox) {
-  if (!enclosingPaginationLayer()) {
-    // For unpaginated layers, there is only one fragment.
-    appendSingleFragmentIgnoringPagination(
-        fragments, rootLayer, dirtyRect, clipRectsCacheSlot,
-        geometryMapperOption, overlayScrollbarClipBehavior, respectOverflowClip,
-        offsetFromRoot, subPixelAccumulation);
-    return;
-  }
-
-  if (!shouldFragmentCompositedBounds(rootLayer)) {
+  // For unpaginated layers, there is only one fragment. We also avoid
+  // fragmentation when compositing, due to implementation limitations.
+  if (!enclosingPaginationLayer() ||
+      !shouldFragmentCompositedBounds(rootLayer)) {
     appendSingleFragmentIgnoringPagination(
         fragments, rootLayer, dirtyRect, clipRectsCacheSlot,
         geometryMapperOption, overlayScrollbarClipBehavior, respectOverflowClip,
