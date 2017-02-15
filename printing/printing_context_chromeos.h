@@ -45,9 +45,6 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   // Lazily initializes |printer_|.
   Result InitializeDevice(const std::string& device);
 
-  // id for ongoing print job.  0 if no job is active.
-  int job_id_;
-
   CupsConnection connection_;
   std::unique_ptr<CupsPrinter> printer_;
 

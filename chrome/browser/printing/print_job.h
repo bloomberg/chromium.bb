@@ -211,7 +211,10 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
     FAILED,
   };
 
-  JobEventDetails(Type type, PrintedDocument* document, PrintedPage* page);
+  JobEventDetails(Type type,
+                  int job_id,
+                  PrintedDocument* document,
+                  PrintedPage* page);
 
   // Getters.
   PrintedDocument* document() const;
@@ -219,6 +222,7 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
   Type type() const {
     return type_;
   }
+  int job_id() const { return job_id_; }
 
  private:
   friend class base::RefCountedThreadSafe<JobEventDetails>;
@@ -228,6 +232,7 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
   scoped_refptr<PrintedDocument> document_;
   scoped_refptr<PrintedPage> page_;
   const Type type_;
+  int job_id_;
 
   DISALLOW_COPY_AND_ASSIGN(JobEventDetails);
 };
