@@ -819,6 +819,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return mContentViewClient;
     }
 
+    @CalledByNative
+    private void onBackgroundColorChanged(int color) {
+        getContentViewClient().onBackgroundColorChanged(color);
+    }
+
     /**
      * @return Viewport width in physical pixels as set from onSizeChanged.
      */
@@ -1790,6 +1795,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
             float contentHeight, float viewportWidth, float viewportHeight,
             float browserControlsHeightDp, float browserControlsShownRatio,
+            float bottomControlsHeightDp, float bottomControlsShownRatio,
             boolean isMobileOptimizedHint, boolean hasInsertionMarker,
             boolean isInsertionMarkerVisible, float insertionMarkerHorizontal,
             float insertionMarkerTop, float insertionMarkerBottom) {
@@ -1804,6 +1810,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mViewportHeightPix / (deviceScale * pageScaleFactor));
         final float topBarShownPix =
                 browserControlsHeightDp * deviceScale * browserControlsShownRatio;
+        final float bottomBarShownPix = bottomControlsHeightDp * deviceScale
+                * bottomControlsShownRatio;
 
         final boolean contentSizeChanged =
                 contentWidth != mRenderCoordinates.getContentWidthCss()
@@ -1819,6 +1827,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 || scrollOffsetY != mRenderCoordinates.getScrollY();
         final boolean topBarChanged = Float.compare(topBarShownPix,
                 mRenderCoordinates.getContentOffsetYPix()) != 0;
+        final boolean bottomBarChanged = Float.compare(bottomBarShownPix, mRenderCoordinates
+                .getContentOffsetYPixBottom()) != 0;
 
         final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
 
@@ -1837,7 +1847,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 contentWidth, contentHeight,
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
-                topBarShownPix);
+                topBarShownPix, bottomBarShownPix);
 
         if (scrollChanged || topBarChanged) {
             for (mGestureStateListenersIterator.rewind();
@@ -1854,6 +1864,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mGestureStateListenersIterator.next().onScaleLimitsChanged(
                         minPageScaleFactor, maxPageScaleFactor);
             }
+        }
+
+        if (topBarChanged) {
+            float topBarTranslate = topBarShownPix - browserControlsHeightDp * deviceScale;
+            getContentViewClient().onTopControlsChanged(topBarTranslate, topBarShownPix);
+        }
+        if (bottomBarChanged) {
+            float bottomBarTranslate = bottomControlsHeightDp * deviceScale - bottomBarShownPix;
+            getContentViewClient().onBottomControlsChanged(bottomBarTranslate, bottomBarShownPix);
         }
 
         if (mBrowserAccessibilityManager != null) {
@@ -2273,6 +2292,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @VisibleForTesting
     public float getScale() {
         return mRenderCoordinates.getPageScaleFactor();
+    }
+
+    @CalledByNative
+    private void startContentIntent(String contentUrl, boolean isMainFrame) {
+        getContentViewClient().onStartContentIntent(getContext(), contentUrl, isMainFrame);
     }
 
     @Override

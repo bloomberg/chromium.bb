@@ -762,7 +762,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         mAwViewMethods = new AwViewMethodsImpl();
         mFullScreenTransitionsState = new FullScreenTransitionsState(
                 mContainerView, mInternalAccessAdapter, mAwViewMethods);
-        mContentViewClient = new AwContentViewClient(contentsClient, settings, this);
+        mContentViewClient = new AwContentViewClient(contentsClient, settings, this, mContext);
         mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
@@ -1056,7 +1056,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         mWindowAndroid = getWindowAndroid(mContext);
         mContentViewCore = new ContentViewCore(mContext, PRODUCT_VERSION);
         mViewAndroidDelegate = new AwViewAndroidDelegate(mContainerView,
-                mContentsClient, mContentViewCore.getRenderCoordinates());
+                mContentViewCore.getRenderCoordinates());
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mContentViewClient, mWindowAndroid.getWindowAndroid());

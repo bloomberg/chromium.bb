@@ -36,6 +36,7 @@ import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -67,7 +68,6 @@ public class Shell extends LinearLayout {
     private long mNativeShell;
     private ContentViewRenderView mContentViewRenderView;
     private WindowAndroid mWindow;
-    private ShellViewAndroidDelegate mViewAndroidDelegate;
 
     private boolean mLoading;
     private boolean mIsFullscreen;
@@ -286,10 +286,6 @@ public class Shell extends LinearLayout {
         }
     }
 
-    public ShellViewAndroidDelegate getViewAndroidDelegate() {
-        return mViewAndroidDelegate;
-    }
-
     /**
      * Initializes the ContentView based on the native tab contents pointer passed in.
      * @param webContents A {@link WebContents} object.
@@ -300,8 +296,8 @@ public class Shell extends LinearLayout {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context, "");
         ContentView cv = ContentView.createContentView(context, mContentViewCore);
-        mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
-        mContentViewCore.initialize(mViewAndroidDelegate, cv, webContents, mWindow);
+        mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
+                webContents, mWindow);
         mContentViewCore.setActionModeCallback(defaultActionCallback());
         mContentViewCore.setContentViewClient(mContentViewClient);
         mWebContents = mContentViewCore.getWebContents();

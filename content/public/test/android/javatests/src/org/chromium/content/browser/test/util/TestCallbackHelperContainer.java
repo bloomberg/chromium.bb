@@ -17,9 +17,12 @@ import java.util.concurrent.TimeoutException;
  * This class is used to provide callback hooks for tests and related classes.
  */
 public class TestCallbackHelperContainer {
+    private final TestContentViewClient mTestContentViewClient;
     private TestWebContentsObserver mTestWebContentsObserver;
 
     public TestCallbackHelperContainer(final ContentViewCore contentViewCore) {
+        mTestContentViewClient = new TestContentViewClient();
+        contentViewCore.setContentViewClient(mTestContentViewClient);
         // TODO(yfriedman): Change callers to be executed on the UI thread. Unfortunately this is
         // super convenient as the caller is nearly always on the test thread which is fine to block
         // and it's cumbersome to keep bouncing to the UI thread.
@@ -30,6 +33,12 @@ public class TestCallbackHelperContainer {
                         .getWebContents());
             }
         });
+    }
+
+    protected TestCallbackHelperContainer(
+            TestContentViewClient viewClient, TestWebContentsObserver contentsObserver) {
+        mTestContentViewClient = viewClient;
+        mTestWebContentsObserver = contentsObserver;
     }
 
     /**
@@ -172,6 +181,21 @@ public class TestCallbackHelperContainer {
         }
     }
 
+    /**
+     * CallbackHelper for OnStartContentIntent.
+     */
+    public static class OnStartContentIntentHelper extends CallbackHelper {
+        private String mIntentUrl;
+        public void notifyCalled(String intentUrl) {
+            mIntentUrl = intentUrl;
+            notifyCalled();
+        }
+        public String getIntentUrl() {
+            assert getCallCount() > 0;
+            return mIntentUrl;
+        }
+    }
+
     public OnPageStartedHelper getOnPageStartedHelper() {
         return mTestWebContentsObserver.getOnPageStartedHelper();
     }
@@ -182,5 +206,9 @@ public class TestCallbackHelperContainer {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mTestWebContentsObserver.getOnReceivedErrorHelper();
+    }
+
+    public OnStartContentIntentHelper getOnStartContentIntentHelper() {
+        return mTestContentViewClient.getOnStartContentIntentHelper();
     }
 }

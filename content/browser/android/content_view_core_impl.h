@@ -307,6 +307,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::SizeF& viewport_size,
                        const float top_controls_height,
                        const float top_controls_shown_ratio,
+                       const float bottom_controls_height,
+                       const float bottom_controls_shown_ratio,
                        bool is_mobile_optimized_hint,
                        const gfx::SelectionBound& selection_start);
 
@@ -322,6 +324,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int composition_end,
                         bool show_ime_if_needed,
                         bool reply_to_request);
+  void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();
   void RequestDisallowInterceptTouchEvent();
@@ -332,6 +335,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnSelectionEvent(ui::SelectionEventType event,
                         const gfx::PointF& selection_anchor,
                         const gfx::RectF& selection_rect);
+
+  void StartContentIntent(const GURL& content_url, bool is_main_frame);
 
   // Shows the disambiguation popup
   // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents
