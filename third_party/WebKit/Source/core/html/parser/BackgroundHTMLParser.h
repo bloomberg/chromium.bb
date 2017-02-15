@@ -26,6 +26,7 @@
 #ifndef BackgroundHTMLParser_h
 #define BackgroundHTMLParser_h
 
+#include <memory>
 #include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -34,10 +35,9 @@
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "platform/heap/GarbageCollected.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,8 +45,8 @@ class HTMLDocumentParser;
 class XSSAuditor;
 class WebTaskRunner;
 
-class BackgroundHTMLParser {
-  USING_FAST_MALLOC(BackgroundHTMLParser);
+class BackgroundHTMLParser
+    : public GarbageCollectedFinalized<BackgroundHTMLParser> {
   WTF_MAKE_NONCOPYABLE(BackgroundHTMLParser);
 
  public:
@@ -56,10 +56,8 @@ class BackgroundHTMLParser {
    public:
     Configuration();
     HTMLParserOptions options;
-    WeakPtr<HTMLDocumentParser> parser;
     std::unique_ptr<XSSAuditor> xssAuditor;
     std::unique_ptr<TextResourceDecoder> decoder;
-    RefPtr<TokenizedChunkQueue> tokenizedChunkQueue;
     // outstandingTokenLimit must be greater than or equal to
     // pendingTokenLimit
     size_t outstandingTokenLimit;
@@ -67,14 +65,12 @@ class BackgroundHTMLParser {
     bool shouldCoalesceChunks;
   };
 
-  // The returned BackgroundHTMLParser should only be used on the parser
-  // thread: it must first be initialized by calling init(), and free by
-  // calling stop().
-  static WeakPtr<BackgroundHTMLParser> create(std::unique_ptr<Configuration>,
-                                              RefPtr<WebTaskRunner>);
-  void init(const KURL& documentURL,
-            std::unique_ptr<CachedDocumentParameters>,
-            const MediaValuesCached::MediaValuesCachedData&);
+  static BackgroundHTMLParser* create(HTMLDocumentParser*,
+                                      Document&,
+                                      std::unique_ptr<Configuration>);
+  ~BackgroundHTMLParser();
+
+  DECLARE_TRACE();
 
   struct Checkpoint {
     USING_FAST_MALLOC(Checkpoint);
@@ -96,17 +92,20 @@ class BackgroundHTMLParser {
   void resumeFrom(std::unique_ptr<Checkpoint>);
   void startedChunkWithCheckpoint(HTMLInputCheckpoint);
   void finish();
-  void stop();
 
   void forcePlaintextForTextDocument();
-
  private:
-  BackgroundHTMLParser(std::unique_ptr<Configuration>, RefPtr<WebTaskRunner>);
-  ~BackgroundHTMLParser();
+  BackgroundHTMLParser(HTMLDocumentParser*,
+                       std::unique_ptr<Configuration>,
+                       RefPtr<WebTaskRunner>,
+                       std::unique_ptr<TokenPreloadScanner>);
 
   void appendDecodedBytes(const String&);
   void markEndOfFile();
   void pumpTokenizer();
+
+  void onResumeFrom(std::unique_ptr<Checkpoint>);
+  void onFinish();
 
   // Returns whether or not the HTMLDocumentParser should be notified of
   // pending chunks.
@@ -114,10 +113,6 @@ class BackgroundHTMLParser {
   void notifyMainThreadOfNewChunks();
   void updateDocument(const String& decodedData);
 
-  template <typename FunctionType, typename... Ps>
-  void runOnMainThread(FunctionType, Ps&&...);
-
-  WeakPtrFactory<BackgroundHTMLParser> m_weakFactory;
   BackgroundHTMLInputStream m_input;
   HTMLSourceTracker m_sourceTracker;
   std::unique_ptr<HTMLToken> m_token;
@@ -125,7 +120,7 @@ class BackgroundHTMLParser {
   HTMLTreeBuilderSimulator m_treeBuilderSimulator;
   HTMLParserOptions m_options;
   const size_t m_outstandingTokenLimit;
-  WeakPtr<HTMLDocumentParser> m_parser;
+  Member<HTMLDocumentParser> m_parser;
 
   std::unique_ptr<CompactHTMLTokenStream> m_pendingTokens;
   const size_t m_pendingTokenLimit;
@@ -140,7 +135,6 @@ class BackgroundHTMLParser {
   std::unique_ptr<TextResourceDecoder> m_decoder;
   DocumentEncodingData m_lastSeenEncodingData;
   RefPtr<WebTaskRunner> m_loadingTaskRunner;
-  RefPtr<TokenizedChunkQueue> m_tokenizedChunkQueue;
 
   // Index into |m_pendingTokens| of the last <meta> csp token found. Will be
   // |TokenizedChunk::noPendingToken| if none have been found.
