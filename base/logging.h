@@ -628,16 +628,20 @@ std::string* MakeCheckOpString<std::string, std::string>(
 // The (int, int) specialization works around the issue that the compiler
 // will not instantiate the template version of the function on values of
 // unnamed enum type - see comment below.
-#define DEFINE_CHECK_OP_IMPL(name, op) \
-  template <class t1, class t2> \
-  inline std::string* Check##name##Impl(const t1& v1, const t2& v2, \
-                                        const char* names) { \
-    if (v1 op v2) return NULL; \
-    else return ::logging::MakeCheckOpString(v1, v2, names);    \
-  } \
+#define DEFINE_CHECK_OP_IMPL(name, op)                                       \
+  template <class t1, class t2>                                              \
+  inline std::string* Check##name##Impl(const t1& v1, const t2& v2,          \
+                                        const char* names) {                 \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
+      return NULL;                                                           \
+    else                                                                     \
+      return ::logging::MakeCheckOpString(v1, v2, names);                    \
+  }                                                                          \
   inline std::string* Check##name##Impl(int v1, int v2, const char* names) { \
-    if (v1 op v2) return NULL; \
-    else return ::logging::MakeCheckOpString(v1, v2, names);    \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
+      return NULL;                                                           \
+    else                                                                     \
+      return ::logging::MakeCheckOpString(v1, v2, names);                    \
   }
 DEFINE_CHECK_OP_IMPL(EQ, ==)
 DEFINE_CHECK_OP_IMPL(NE, !=)
