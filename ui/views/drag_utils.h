@@ -29,6 +29,10 @@ VIEWS_EXPORT void RunShellDrag(gfx::NativeView view,
                                int operation,
                                ui::DragDropTypes::DragEventSource source);
 
+// Returns the device scale for the display associated with this |widget|'s
+// native view.
+VIEWS_EXPORT float ScaleFactorForDragFromWidget(Widget* widget);
+
 // Returns a canvas that can be used to draw the drag image. Caller owns the
 // returned object. |widget| is Widget hosting the view being dragged.
 VIEWS_EXPORT gfx::Canvas* GetCanvasForDragImage(Widget* widget,

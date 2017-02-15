@@ -71,20 +71,22 @@ void SetDragImage(const GURL& url,
   } else {
     button.SetImage(views::Button::STATE_NORMAL, icon);
   }
-  gfx::Size prefsize = button.GetPreferredSize();
-  button.SetBounds(0, 0, prefsize.width(), prefsize.height());
+
+  gfx::Size size(button.GetPreferredSize());
+  button.SetBoundsRect(gfx::Rect(size));
 
   gfx::Vector2d press_point;
   if (press_pt)
     press_point = press_pt->OffsetFromOrigin();
   else
-    press_point = gfx::Vector2d(prefsize.width() / 2, prefsize.height() / 2);
+    press_point = gfx::Vector2d(size.width() / 2, size.height() / 2);
 
-  // Render the image.
-  std::unique_ptr<gfx::Canvas> canvas(
-      views::GetCanvasForDragImage(widget, prefsize));
-  button.Paint(ui::CanvasPainter(canvas.get(), 1.f).context());
-  drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);
+  SkBitmap bitmap;
+  float raster_scale = ScaleFactorForDragFromWidget(widget);
+  SkColor color = SK_ColorTRANSPARENT;
+  button.Paint(ui::CanvasPainter(&bitmap, size, raster_scale, color).context());
+  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
+  drag_utils::SetDragImageOnDataObject(image, press_point, data);
 }
 
 }  // namespace button_drag_utils

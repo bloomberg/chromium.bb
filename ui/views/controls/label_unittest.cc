@@ -52,8 +52,9 @@ class TestLabel : public Label {
   int schedule_paint_count() const { return schedule_paint_count_; }
 
   void SimulatePaint() {
-    gfx::Canvas canvas(bounds().size(), 1.0, false /* is_opaque */);
-    Paint(ui::CanvasPainter(&canvas, 1.f).context());
+    SkBitmap bitmap;
+    SkColor color = SK_ColorTRANSPARENT;
+    Paint(ui::CanvasPainter(&bitmap, bounds().size(), 1.f, color).context());
   }
 
   // View:

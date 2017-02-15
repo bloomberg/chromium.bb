@@ -15,29 +15,30 @@ namespace cc {
 class DisplayItemList;
 }
 
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 
-// This class provides a simple helper for painting directly to a bitmap
-// backed canvas (for painting use-cases other than compositing). After
-// constructing an instance of a CanvasPainter, the context() can be used
-// to do painting using the normal composited paint paths. When
-// the painter is destroyed, any painting done with the context() will be
-// rastered into the canvas.
+// This class provides a simple helper for rasterizing from a PaintContext
+// interface directly into a bitmap.  After constructing an instance of a
+// CanvasPainter, the context() can be used to do painting using the normal
+// composited paint paths.  When the painter is destroyed, any painting done
+// with the context() will be rastered into the provided output bitmap.
+//
+// TODO(enne): rename this class to be PaintContextRasterizer or some such.
 class COMPOSITOR_EXPORT CanvasPainter {
  public:
-  CanvasPainter(gfx::Canvas* canvas, float raster_scale_factor);
+  CanvasPainter(SkBitmap* output,
+                const gfx::Size& paint_size,
+                float raster_scale,
+                SkColor clear_color);
   ~CanvasPainter();
 
   const PaintContext& context() const { return context_; }
 
  private:
-  gfx::Canvas* const canvas_;
-  const float raster_scale_factor_;
-  const gfx::Rect rect_;
+  SkBitmap* const output_;
+  const gfx::Size paint_size_;
+  const float raster_scale_;
+  const SkColor clear_color_;
   scoped_refptr<cc::DisplayItemList> list_;
   PaintContext context_;
 

@@ -732,9 +732,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (hostedView_->GetWidget()->GetLayer())
     return;
 
-  gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
-  hostedView_->GetWidget()->OnNativeWidgetPaint(
-      ui::CanvasPainter(&canvas, 1.f).context());
+  // TODO(tapted): Add a NOTREACHED() here.  At the moment, low-level
+  // BridgedNativeWidget unit tests may not have a ui::Layer.
 }
 
 - (BOOL)isOpaque {

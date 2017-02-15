@@ -5,23 +5,34 @@
 #include "ui/compositor/canvas_painter.h"
 
 #include "cc/playback/display_item_list.h"
-#include "ui/gfx/canvas.h"
 
 namespace ui {
 
-CanvasPainter::CanvasPainter(gfx::Canvas* canvas, float raster_scale_factor)
-    : canvas_(canvas),
-      raster_scale_factor_(raster_scale_factor),
-      rect_(gfx::ScaleToEnclosedRect(
-          gfx::Rect(canvas_->sk_canvas()->getBaseLayerSize().width(),
-                    canvas_->sk_canvas()->getBaseLayerSize().height()),
-          1.f / raster_scale_factor)),
+CanvasPainter::CanvasPainter(SkBitmap* output,
+                             const gfx::Size& paint_size,
+                             float raster_scale,
+                             SkColor clear_color)
+    : output_(output),
+      paint_size_(paint_size),
+      raster_scale_(raster_scale),
+      clear_color_(clear_color),
       list_(new cc::DisplayItemList),
-      context_(list_.get(), raster_scale_factor_, rect_) {}
+      context_(list_.get(), raster_scale, gfx::Rect(paint_size_)) {}
 
 CanvasPainter::~CanvasPainter() {
+  gfx::Size pixel_size = gfx::ScaleToCeiledSize(paint_size_, raster_scale_);
+  SkImageInfo info = SkImageInfo::MakeN32(
+      pixel_size.width(), pixel_size.height(), kPremul_SkAlphaType);
+  if (!output_->tryAllocPixels(info))
+    return;
+
+  SkCanvas canvas(*output_);
+  canvas.clear(clear_color_);
+
+  canvas.scale(raster_scale_, raster_scale_);
+
   list_->Finalize();
-  list_->Raster(canvas_->sk_canvas(), nullptr, rect_, raster_scale_factor_);
+  list_->Raster(&canvas, nullptr);
 }
 
 }  // namespace ui

@@ -1063,16 +1063,21 @@ void Textfield::WriteDragDataForView(View* sender,
       display::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
   size.SetToMin(gfx::Size(display.size().width(), height()));
   label.SetBoundsRect(gfx::Rect(size));
-  std::unique_ptr<gfx::Canvas> canvas(
-      GetCanvasForDragImage(GetWidget(), label.size()));
   label.SetEnabledColor(GetTextColor());
+
+  SkBitmap bitmap;
+  float raster_scale = ScaleFactorForDragFromWidget(GetWidget());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Desktop Linux Aura does not yet support transparency in drag images.
-  canvas->DrawColor(GetBackgroundColor());
+  SkColor color = GetBackgroundColor();
+#else
+  SkColor color = SK_ColorTRANSPARENT;
 #endif
-  label.Paint(ui::CanvasPainter(canvas.get(), 1.f).context());
+  label.Paint(
+      ui::CanvasPainter(&bitmap, label.size(), raster_scale, color).context());
   const gfx::Vector2d kOffset(-15, 0);
-  drag_utils::SetDragImageOnDataObject(*canvas, kOffset, data);
+  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
+  drag_utils::SetDragImageOnDataObject(image, kOffset, data);
   if (controller_)
     controller_->OnWriteDragData(data);
 }
