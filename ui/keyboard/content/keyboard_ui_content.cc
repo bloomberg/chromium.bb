@@ -95,6 +95,25 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     ui_->RequestAudioInput(web_contents, request, callback);
   }
 
+  // Overridden from content::WebContentsDelegate:
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override {
+    switch (event.type()) {
+      // Scroll events are not suppressed because the menu to select IME should
+      // be scrollable.
+      case blink::WebInputEvent::GestureScrollBegin:
+      case blink::WebInputEvent::GestureScrollEnd:
+      case blink::WebInputEvent::GestureScrollUpdate:
+      case blink::WebInputEvent::GestureFlingStart:
+      case blink::WebInputEvent::GestureFlingCancel:
+        return false;
+      default:
+        // Stop gesture events from being passed to renderer to suppress the
+        // context menu. crbug.com/685140
+        return true;
+    }
+  }
+
   // Overridden from content::WebContentsObserver:
   void WebContentsDestroyed() override { delete this; }
 
