@@ -505,7 +505,6 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   int pixel_x = 0;
   int pixel_y = 0;
   target_element_ = nullptr;
-  InputTarget input_target = InputTarget::NONE;
 
   for (const auto& plane : scene_->GetUiElements()) {
     if (!plane->IsHitTestable())
@@ -517,28 +516,46 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
 
     gvr::Vec3f rect_2d_point =
         MatrixVectorMul(plane->transform.from_world, plane_intersection_point);
-    if (distance_to_plane > 0 && distance_to_plane < closest_element_distance) {
-      float x = rect_2d_point.x + 0.5f;
-      float y = 0.5f - rect_2d_point.y;
-      bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
-      if (!is_inside)
-        continue;
+    if (distance_to_plane < 0 ||
+        distance_to_plane >= closest_element_distance) {
+      continue;
+    }
 
-      closest_element_distance = distance_to_plane;
-      Rectf pixel_rect;
-      if (plane->fill == Fill::CONTENT) {
-        pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
-      } else {
-        pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
-                      plane->copy_rect.width, plane->copy_rect.height};
-      }
-      pixel_x = pixel_rect.width * x + pixel_rect.x;
-      pixel_y = pixel_rect.height * y + pixel_rect.y;
+    float x = rect_2d_point.x + 0.5f;
+    float y = 0.5f - rect_2d_point.y;
+    bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
+    if (!is_inside)
+      continue;
 
-      target_point_ = plane_intersection_point;
-      target_element_ = plane.get();
-      input_target = (plane->fill == Fill::CONTENT) ? InputTarget::CONTENT
-                                                    : InputTarget::UI;
+    closest_element_distance = distance_to_plane;
+    Rectf pixel_rect;
+    if (plane->fill == Fill::CONTENT) {
+      pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
+    } else {
+      pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
+                    plane->copy_rect.width, plane->copy_rect.height};
+    }
+    pixel_x = pixel_rect.width * x + pixel_rect.x;
+    pixel_y = pixel_rect.height * y + pixel_rect.y;
+
+    target_point_ = plane_intersection_point;
+    target_element_ = plane.get();
+  }
+
+  // Treat UI elements, which do not show web content, as NONE input
+  // targets since they cannot make use of the input anyway.
+  InputTarget input_target = InputTarget::NONE;
+  if (target_element_ != nullptr) {
+    switch (target_element_->fill) {
+      case Fill::CONTENT:
+        input_target = InputTarget::CONTENT;
+        break;
+      case Fill::SPRITE:
+        input_target = InputTarget::UI;
+        break;
+      default:
+        input_target = InputTarget::NONE;
+        break;
     }
   }
   SendEventsToTarget(input_target, pixel_x, pixel_y);
@@ -561,22 +578,37 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
     gesture_list.push_back(std::move(event));
   }
 
-  for (const auto& gesture : gesture_list) {
+  for (auto& gesture : gesture_list) {
+    gesture->x = pixel_x;
+    gesture->y = pixel_y;
+    auto movableGesture = base::MakeUnique<WebGestureEvent>(*gesture);
+
     switch (gesture->type()) {
+      // Once the user starts scrolling send all the scroll events to this
+      // element until the scrolling stops.
       case WebInputEvent::GestureScrollBegin:
-      case WebInputEvent::GestureScrollUpdate:
+        current_scroll_target = input_target;
+        if (current_scroll_target != InputTarget::NONE) {
+          SendGesture(current_scroll_target, std::move(movableGesture));
+        }
+        break;
       case WebInputEvent::GestureScrollEnd:
+        if (current_scroll_target != InputTarget::NONE) {
+          SendGesture(current_scroll_target, std::move(movableGesture));
+        }
+        current_scroll_target = InputTarget::NONE;
+        break;
+      case WebInputEvent::GestureScrollUpdate:
       case WebInputEvent::GestureFlingCancel:
       case WebInputEvent::GestureFlingStart:
-        SendGesture(InputTarget::CONTENT,
-                    base::WrapUnique(new WebGestureEvent(*gesture)));
+        if (current_scroll_target != InputTarget::NONE) {
+          SendGesture(current_scroll_target, std::move(movableGesture));
+        }
         break;
       case WebInputEvent::GestureTapDown:
-        gesture->x = pixel_x;
-        gesture->y = pixel_y;
-        if (input_target != InputTarget::NONE)
-          SendGesture(input_target,
-                      base::WrapUnique(new WebGestureEvent(*gesture)));
+        if (input_target != InputTarget::NONE) {
+          SendGesture(input_target, std::move(movableGesture));
+        }
         break;
       case WebInputEvent::Undefined:
         break;

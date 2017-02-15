@@ -167,6 +167,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gvr::Vec3f target_point_;
   const ContentRectangle* target_element_ = nullptr;
   InputTarget current_input_target_ = InputTarget::NONE;
+  InputTarget current_scroll_target = InputTarget::NONE;
   int ui_tex_css_width_ = 0;
   int ui_tex_css_height_ = 0;
   int content_tex_css_width_ = 0;
