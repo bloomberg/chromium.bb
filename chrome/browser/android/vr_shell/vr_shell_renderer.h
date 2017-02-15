@@ -97,10 +97,6 @@ class WebVrRenderer : public BaseRenderer {
   void Draw(int texture_handle);
 
  private:
-  static constexpr size_t VERTEX_STRIDE = sizeof(float) * 4;
-  static constexpr size_t VERTEX_ELEMENTS = 4;
-  static constexpr size_t VERTEX_OFFSET = 0;
-
   GLuint tex_uniform_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);

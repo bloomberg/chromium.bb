@@ -13,13 +13,16 @@
 namespace {
 
 static constexpr float kHalfSize = 0.5f;
+/* clang-format off */
 static constexpr float kTextureQuadVertices[30] = {
     //       x           y     z,    u,    v
-    -kHalfSize, kHalfSize, 0.0f,      0.0f,       0.0f,       -kHalfSize,
-    -kHalfSize, 0.0f,      0.0f,      1.0f,       kHalfSize,  kHalfSize,
-    0.0f,       1.0f,      0.0f,      -kHalfSize, -kHalfSize, 0.0f,
-    0.0f,       1.0f,      kHalfSize, -kHalfSize, 0.0f,       1.0f,
-    1.0f,       kHalfSize, kHalfSize, 0.0f,       1.0f,       0.0f};
+    -kHalfSize,  kHalfSize, 0.0f, 0.0f, 0.0f,
+    -kHalfSize, -kHalfSize, 0.0f, 0.0f, 1.0f,
+     kHalfSize,  kHalfSize, 0.0f, 1.0f, 0.0f,
+    -kHalfSize, -kHalfSize, 0.0f, 0.0f, 1.0f,
+     kHalfSize, -kHalfSize, 0.0f, 1.0f, 1.0f,
+     kHalfSize,  kHalfSize, 0.0f, 1.0f, 0.0f };
+/* clang-format on */
 static constexpr size_t kTextureQuadVerticesSize = sizeof(float) * 30;
 static constexpr size_t kTextureQuadDataStride = sizeof(float) * 5;
 static constexpr int kPositionDataSize = 3;
@@ -28,14 +31,6 @@ static constexpr int kTextureCoordinateDataSize = 2;
 static constexpr size_t kTextureCoordinateDataOffset = sizeof(float) * 3;
 // Number of vertices passed to glDrawArrays().
 static constexpr int kVerticesNumber = 6;
-
-static constexpr float kWebVrVertices[16] = {
-  //   x     y    u,   v
-    -1.f,  1.f, 0.f, 0.f,
-    -1.f, -1.f, 0.f, 1.f,
-     1.f, -1.f, 1.f, 1.f,
-     1.f,  1.f, 1.f, 0.f };
-static constexpr int kWebVrVerticesSize = sizeof(float) * 16;
 
 // Reticle constants
 static constexpr float kRingDiameter = 1.0f;
@@ -125,13 +120,13 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
-          attribute vec4 a_Position;
+          attribute vec3 a_Position;
+          attribute vec2 a_TexCoordinate;
           varying vec2 v_TexCoordinate;
 
           void main() {
-            // Pack the texcoord into the position to avoid state changes.
-            v_TexCoordinate = a_Position.zw;
-            gl_Position = vec4(a_Position.xy, 0.0, 1.0);
+            v_TexCoordinate = a_TexCoordinate;
+            gl_Position = vec4(a_Position * 2.0, 1.0);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::WEBVR_FRAGMENT_SHADER:
@@ -328,13 +323,8 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 WebVrRenderer::WebVrRenderer()
-    : BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER, false) {
+    : BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER) {
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
-
-  glGenBuffersARB(1, &vertex_buffer_);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, kWebVrVerticesSize, kWebVrVertices,
-      GL_STATIC_DRAW);
 }
 
 // Draw the stereo WebVR frame
@@ -344,10 +334,17 @@ void WebVrRenderer::Draw(int texture_handle) {
   // Bind vertex attributes
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
+  // Set up position attribute.
+  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
+                        kTextureQuadDataStride,
+                        VOID_OFFSET(kPositionDataOffset));
   glEnableVertexAttribArray(position_handle_);
 
-  glVertexAttribPointer(position_handle_, VERTEX_ELEMENTS, GL_FLOAT, false,
-      VERTEX_STRIDE, VOID_OFFSET(VERTEX_OFFSET));
+  // Set up texture coordinate attribute.
+  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
+                        false, kTextureQuadDataStride,
+                        VOID_OFFSET(kTextureCoordinateDataOffset));
+  glEnableVertexAttribArray(tex_coord_handle_);
 
   // Bind texture. Ideally this should be a 1:1 pixel copy. (Or even more
   // ideally, a zero copy reuse of the texture.) For now, we're using an
@@ -363,9 +360,10 @@ void WebVrRenderer::Draw(int texture_handle) {
   glUniform1i(tex_uniform_handle_, 0);
 
   // Blit texture to buffer
-  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 
   glDisableVertexAttribArray(position_handle_);
+  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 // Note that we don't explicitly delete gl objects here, they're deleted
