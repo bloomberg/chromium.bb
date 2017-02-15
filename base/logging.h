@@ -497,10 +497,12 @@ class CheckOpResult {
 };
 
 // Crashes in the fastest, simplest possible way with no attempt at logging.
-#if defined(COMPILER_GCC) || defined(__clang__)
+#if defined(COMPILER_GCC)
 #define IMMEDIATE_CRASH() __builtin_trap()
+#elif defined(COMPILER_MSVC)
+#define IMMEDIATE_CRASH() __debugbreak()
 #else
-#define IMMEDIATE_CRASH() ((void)(*(volatile char*)0 = 0))
+#error Port
 #endif
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
