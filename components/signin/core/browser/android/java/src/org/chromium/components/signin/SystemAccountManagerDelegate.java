@@ -48,7 +48,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public Account[] getAccountsByType(String type) {
-        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+        if (!hasGetAccountsPermission()) {
             return new Account[] {};
         }
         long now = SystemClock.elapsedRealtime();
@@ -110,7 +110,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public void hasFeatures(Account account, String[] features, final Callback<Boolean> callback) {
-        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+        if (!hasGetAccountsPermission()) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -153,7 +153,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     public void updateCredentials(
             Account account, Activity activity, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
-        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+        if (!hasGetAccountsPermission()) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -185,5 +185,9 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                         }
                     }
                 }, null /* handler */);
+    }
+
+    protected boolean hasGetAccountsPermission() {
+        return AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission();
     }
 }
