@@ -17,14 +17,13 @@ import difflib
 _TEMPLATE = """<html>
 <head>
 <style>
-pre { white-space: pre-wrap; }
+table { white-space: pre-wrap; font-family: monospace; border-collapse: collapse; }
+th { color: #444; background: #eed; text-align: right; vertical-align: baseline; padding: 1px 4px 1px 4px; }
 .del { background: #faa; }
 .add { background: #afa; }
 </style>
 </head>
-<body>
-<pre>%s</pre>
-</body>
+<body><table>%s</table></body>
 </html>
 """
 
@@ -37,33 +36,73 @@ def html_diff(a_text, b_text):
     assert isinstance(b_text, str)
     a_lines = a_text.splitlines(True)
     b_lines = b_text.splitlines(True)
-    return _TEMPLATE % html_diff_body(a_lines, b_lines)
+    return _TEMPLATE % HtmlDiffGenerator().generate_tbody(a_lines, b_lines)
 
 
-def html_diff_body(a_lines, b_lines):
-    matcher = difflib.SequenceMatcher(None, a_lines, b_lines)
-    output = []
-    for tag, a_start, a_end, b_start, b_end in matcher.get_opcodes():
-        a_chunk = ''.join(a_lines[a_start:a_end])
-        b_chunk = ''.join(b_lines[b_start:b_end])
-        output.append(_format_chunk(tag, a_chunk, b_chunk))
-    return ''.join(output)
+class HtmlDiffGenerator(object):
 
+    def __init__(self):
+        self.a_line_no = None
+        self.b_line_no = None
+        self.a_lines_len = None
 
-def _format_chunk(tag, a_chunk, b_chunk):
-    if tag == 'delete':
-        return _format_delete(a_chunk)
-    if tag == 'insert':
-        return _format_insert(b_chunk)
-    if tag == 'replace':
-        return _format_delete(a_chunk) + _format_insert(b_chunk)
-    assert tag == 'equal'
-    return cgi.escape(a_chunk)
+    def generate_tbody(self, a_lines, b_lines):
+        self.a_line_no = 0
+        self.b_line_no = 0
+        self.a_lines_len = len(a_lines)
+        matcher = difflib.SequenceMatcher(None, a_lines, b_lines)
+        output = []
+        for tag, a_start, a_end, b_start, b_end in matcher.get_opcodes():
+            output.append(self._format_chunk(tag, a_lines[a_start:a_end], b_lines[b_start:b_end]))
+        return ''.join(output)
 
+    def _format_chunk(self, tag, a_chunk, b_chunk):
+        if tag == 'delete':
+            return self._format_delete(a_chunk)
+        if tag == 'insert':
+            return self._format_insert(b_chunk)
+        if tag == 'replace':
+            return self._format_delete(a_chunk) + self._format_insert(b_chunk)
+        assert tag == 'equal'
+        return self._format_equal(a_chunk)
 
-def _format_insert(chunk):
-    return '<span class="add">%s</span>' % cgi.escape(chunk)
+    def _format_equal(self, common_chunk):
+        output = ''
+        if len(common_chunk) <= 7:
+            for line in common_chunk:
+                output += self._format_equal_line(line)
+        else:
+            # Do not show context lines at the beginning of the file.
+            if self.a_line_no == 0:
+                self.a_line_no += 3
+                self.b_line_no += 3
+            else:
+                for line in common_chunk[0:3]:
+                    output += self._format_equal_line(line)
+            self.a_line_no += len(common_chunk) - 6
+            self.b_line_no += len(common_chunk) - 6
+            output += '<tr><td colspan=3>\n\n</tr>'
+            # Do not show context lines at the end of the file.
+            if self.a_line_no + 3 != self.a_lines_len:
+                for line in common_chunk[len(common_chunk) - 3:len(common_chunk)]:
+                    output += self._format_equal_line(line)
+        return output
 
+    def _format_equal_line(self, line):
+        self.a_line_no += 1
+        self.b_line_no += 1
+        return '<tr><th>%d<th>%d<td>%s</tr>' % (self.a_line_no, self.b_line_no, cgi.escape(line))
 
-def _format_delete(chunk):
-    return '<span class="del">%s</span>' % cgi.escape(chunk)
+    def _format_insert(self, chunk):
+        output = ''
+        for line in chunk:
+            self.b_line_no += 1
+            output += '<tr><th><th>%d<td class="add">%s</tr>' % (self.b_line_no, cgi.escape(line))
+        return output
+
+    def _format_delete(self, chunk):
+        output = ''
+        for line in chunk:
+            self.a_line_no += 1
+            output += '<tr><th>%d<th><td class="del">%s</tr>' % (self.a_line_no, cgi.escape(line))
+        return output
