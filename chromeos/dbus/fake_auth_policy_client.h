@@ -34,7 +34,13 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   void RefreshUserPolicy(const AccountId& account_id,
                          const RefreshPolicyCallback& callback) override;
 
+  // Mark service as started. It's getting started by the
+  // UpstartClient::StartAuthPolicyService on the Active Directory managed
+  // devices.
+  void set_started(bool started) { started_ = started; }
+
  private:
+  bool started_ = false;
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);
 };
 

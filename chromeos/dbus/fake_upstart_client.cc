@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/fake_upstart_client.h"
 
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_auth_policy_client.h"
+
 namespace chromeos {
 
 FakeUpstartClient::FakeUpstartClient() {}
@@ -12,6 +15,10 @@ FakeUpstartClient::~FakeUpstartClient() {}
 
 void FakeUpstartClient::Init(dbus::Bus* bus) {}
 
-void FakeUpstartClient::StartAuthPolicyService() {}
+void FakeUpstartClient::StartAuthPolicyService() {
+  static_cast<FakeAuthPolicyClient*>(
+      DBusThreadManager::Get()->GetAuthPolicyClient())
+      ->set_started(true);
+}
 
 }  // namespace chromeos
