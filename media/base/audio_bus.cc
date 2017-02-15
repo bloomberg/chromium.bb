@@ -344,15 +344,4 @@ void AudioBus::SwapChannels(int a, int b) {
   std::swap(channel_data_[a], channel_data_[b]);
 }
 
-scoped_refptr<AudioBusRefCounted> AudioBusRefCounted::Create(
-    int channels, int frames) {
-  return scoped_refptr<AudioBusRefCounted>(
-      new AudioBusRefCounted(channels, frames));
-}
-
-AudioBusRefCounted::AudioBusRefCounted(int channels, int frames)
-    : AudioBus(channels, frames) {}
-
-AudioBusRefCounted::~AudioBusRefCounted() {}
-
 }  // namespace media
