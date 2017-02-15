@@ -615,7 +615,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
   if (schema->GetDictionary(schema::kPatternProperties, &pattern_properties)) {
     for (base::DictionaryValue::Iterator it(*pattern_properties); !it.IsAtEnd();
          it.Advance()) {
-      re2::RE2* prop_pattern = new re2::RE2(it.key());
+      auto prop_pattern = base::MakeUnique<re2::RE2>(it.key());
       if (!prop_pattern->ok()) {
         LOG(WARNING) << "Regular expression /" << it.key()
                      << "/ is invalid: " << prop_pattern->error() << ".";
@@ -627,7 +627,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
       }
       const base::DictionaryValue* prop_schema = NULL;
       CHECK(it.value().GetAsDictionary(&prop_schema));
-      pattern_properties_pattern.push_back(base::WrapUnique(prop_pattern));
+      pattern_properties_pattern.push_back(std::move(prop_pattern));
       pattern_properties_schema.push_back(prop_schema);
     }
   }
