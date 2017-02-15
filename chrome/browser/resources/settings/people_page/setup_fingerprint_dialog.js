@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+cr.exportPath('settings');
 
 /**
  * The steps in the fingerprint setup flow.
  * @enum {number}
  */
-var FingerprintSetupStep = {
+settings.FingerprintSetupStep = {
   LOCATE_SCANNER: 1,      // The user needs to locate the scanner.
   MOVE_FINGER: 2,         // The user needs to move finger around the scanner.
   READY: 3                // The scanner has read the fingerprint successfully.
 };
+
+(function() {
 
 /**
  * The estimated amount of complete scans needed to enroll a fingerprint. Used
@@ -38,12 +40,12 @@ Polymer({
 
     /**
      * The setup phase we are on.
-     * @type {!FingerprintSetupStep}
+     * @type {!settings.FingerprintSetupStep}
      * @private
      */
     step_: {
       type: Number,
-      value: FingerprintSetupStep.LOCATE_SCANNER
+      value: settings.FingerprintSetupStep.LOCATE_SCANNER
     },
   },
 
@@ -79,7 +81,7 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
-    if (this.step_ != FingerprintSetupStep.READY)
+    if (this.step_ != settings.FingerprintSetupStep.READY)
       this.browserProxy_.cancelCurrentEnroll();
     else
       this.fire('add-fingerprint');
@@ -93,7 +95,7 @@ Polymer({
    * @private
    */
   reset_: function() {
-    this.step_ = FingerprintSetupStep.LOCATE_SCANNER;
+    this.step_ = settings.FingerprintSetupStep.LOCATE_SCANNER;
     this.receivedScanCount_ = 0;
     this.$.arc.clearCanvas();
   },
@@ -104,7 +106,7 @@ Polymer({
    * @return {boolean}
    */
   enableContinue_: function(step) {
-    return step == FingerprintSetupStep.READY;
+    return step == settings.FingerprintSetupStep.READY;
   },
 
   /**
@@ -159,20 +161,20 @@ Polymer({
    */
   onScanReceived_: function(scan) {
     switch (this.step_) {
-      case FingerprintSetupStep.LOCATE_SCANNER:
-      case FingerprintSetupStep.MOVE_FINGER:
-        if (this.step_ == FingerprintSetupStep.LOCATE_SCANNER) {
+      case settings.FingerprintSetupStep.LOCATE_SCANNER:
+      case settings.FingerprintSetupStep.MOVE_FINGER:
+        if (this.step_ == settings.FingerprintSetupStep.LOCATE_SCANNER) {
           // Clear canvas because there will be shadows present at this step.
           this.$.arc.clearCanvas();
           this.$.arc.drawBackgroundCircle();
 
-          this.step_ = FingerprintSetupStep.MOVE_FINGER;
+          this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
           this.receivedScanCount_ = 0;
         }
         var slice = 2 * Math.PI / SUCCESSFUL_SCANS_TO_COMPLETE;
         if (scan.isComplete) {
           this.problemMessage_ = '';
-          this.step_ = FingerprintSetupStep.READY;
+          this.step_ = settings.FingerprintSetupStep.READY;
           this.$.arc.animate(this.receivedScanCount_ * slice, 2 * Math.PI);
           // TODO(sammiequon): Keep increasing scan counts after the scan is
           // complete, so we don't send more fake scans complete signals. Remove
@@ -187,7 +189,7 @@ Polymer({
           this.receivedScanCount_++;
         }
         break;
-      case FingerprintSetupStep.READY:
+      case settings.FingerprintSetupStep.READY:
         break;
       default:
         assertNotReached();
@@ -198,17 +200,17 @@ Polymer({
   /**
    * Sets the instructions based on which phase of the fingerprint setup we are
    * on.
-   * @param {!FingerprintSetupStep} step The current step the fingerprint setup
-   *     is on.
+   * @param {!settings.FingerprintSetupStep} step The current step the
+   *     fingerprint setup is on.
    * @private
    */
   getInstructionMessage_: function(step) {
     switch (step) {
-      case FingerprintSetupStep.LOCATE_SCANNER:
+      case settings.FingerprintSetupStep.LOCATE_SCANNER:
         return this.i18n('configureFingerprintInstructionLocateScannerStep');
-      case FingerprintSetupStep.MOVE_FINGER:
+      case settings.FingerprintSetupStep.MOVE_FINGER:
         return this.i18n('configureFingerprintInstructionMoveFingerStep');
-      case FingerprintSetupStep.READY:
+      case settings.FingerprintSetupStep.READY:
         return this.i18n('configureFingerprintInstructionReadyStep');
     }
     assertNotReached();

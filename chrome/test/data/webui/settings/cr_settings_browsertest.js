@@ -300,6 +300,33 @@ TEST_F('CrSettingsFingerprintProgressArcTest', 'FingerprintProgressArcTest',
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/people_page/fingerprint_list.html.
+ *
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsFingerprintListTest() {}
+
+CrSettingsFingerprintListTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/fingerprint_list.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'fingerprint_browsertest_chromeos.js',
+  ]),
+};
+
+TEST_F('CrSettingsFingerprintListTest', 'FingerprintListTest', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/people_page/change_picture.html.
  * This is ChromeOS only.
  * @constructor
