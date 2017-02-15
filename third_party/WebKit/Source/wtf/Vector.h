@@ -836,49 +836,262 @@ class Vector
   using OffsetRange = typename Base::OffsetRange;
 
  public:
-  typedef T ValueType;
-  typedef T value_type;
+  using ValueType = T;
+  using value_type = T;
 
-  typedef T* iterator;
-  typedef const T* const_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+  using iterator = T*;
+  using const_iterator = const T*;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  Vector() {
-    static_assert(!std::is_polymorphic<T>::value ||
-                      !VectorTraits<T>::canInitializeWithMemset,
-                  "Cannot initialize with memset if there is a vtable");
-    static_assert(Allocator::isGarbageCollected ||
-                      !AllowsOnlyPlacementNew<T>::value ||
-                      !IsTraceable<T>::value,
-                  "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
-                  "have trace methods into an off-heap Vector");
-    static_assert(Allocator::isGarbageCollected ||
-                      !IsPointerToGarbageCollectedType<T>::value,
-                  "Cannot put raw pointers to garbage-collected classes into "
-                  "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+  // Create an empty vector.
+  inline Vector();
+  // Create a vector containing the specified number of default-initialized
+  // elements.
+  inline explicit Vector(size_t);
+  // Create a vector containing the specified number of elements, each of which
+  // is copy initialized from the specified value.
+  inline Vector(size_t, const T&);
 
-    ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
-    m_size = 0;
+  // Copying.
+  Vector(const Vector&);
+  template <size_t otherCapacity>
+  explicit Vector(const Vector<T, otherCapacity, Allocator>&);
+
+  Vector& operator=(const Vector&);
+  template <size_t otherCapacity>
+  Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
+
+  // Moving.
+  Vector(Vector&&);
+  Vector& operator=(Vector&&);
+
+  // Construct with an initializer list. You can do e.g.
+  //     Vector<int> v({1, 2, 3});
+  // or
+  //     v = {4, 5, 6};
+  Vector(std::initializer_list<T> elements);
+  Vector& operator=(std::initializer_list<T> elements);
+
+  // Basic inquiry about the vector's state.
+  //
+  // capacity() is the maximum number of elements that the Vector can hold
+  // without a reallocation. It can be zero.
+  size_t size() const { return m_size; }
+  size_t capacity() const { return Base::capacity(); }
+  bool isEmpty() const { return !size(); }
+
+  // at() and operator[]: Obtain the reference of the element that is located
+  // at the given index. The reference may be invalidated on a reallocation.
+  //
+  // at() can be used in cases like:
+  //     pointerToVector->at(1);
+  // instead of:
+  //     (*pointerToVector)[1];
+  T& at(size_t i) {
+    RELEASE_ASSERT(i < size());
+    return Base::buffer()[i];
+  }
+  const T& at(size_t i) const {
+    RELEASE_ASSERT(i < size());
+    return Base::buffer()[i];
   }
 
-  explicit Vector(size_t size) : Base(size) {
-    static_assert(!std::is_polymorphic<T>::value ||
-                      !VectorTraits<T>::canInitializeWithMemset,
-                  "Cannot initialize with memset if there is a vtable");
-    static_assert(Allocator::isGarbageCollected ||
-                      !AllowsOnlyPlacementNew<T>::value ||
-                      !IsTraceable<T>::value,
-                  "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
-                  "have trace methods into an off-heap Vector");
-    static_assert(Allocator::isGarbageCollected ||
-                      !IsPointerToGarbageCollectedType<T>::value,
-                  "Cannot put raw pointers to garbage-collected classes into "
-                  "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+  T& operator[](size_t i) { return at(i); }
+  const T& operator[](size_t i) const { return at(i); }
 
-    ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
-    m_size = size;
-    TypeOperations::initialize(begin(), end());
+  // Return a pointer to the front of the backing buffer. Those pointers get
+  // invalidated on a reallocation.
+  T* data() { return Base::buffer(); }
+  const T* data() const { return Base::buffer(); }
+
+  // Iterators and reverse iterators. They are invalidated on a reallocation.
+  iterator begin() { return data(); }
+  iterator end() { return begin() + m_size; }
+  const_iterator begin() const { return data(); }
+  const_iterator end() const { return begin() + m_size; }
+
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(end());
+  }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(begin());
+  }
+
+  // Quick access to the first and the last element. It is invalid to call
+  // these functions when the vector is empty.
+  T& front() { return at(0); }
+  const T& front() const { return at(0); }
+  T& back() { return at(size() - 1); }
+  const T& back() const { return at(size() - 1); }
+
+  // Searching.
+  //
+  // Comparisons are done in terms of compareElement(), which is usually
+  // operator==(). find() and reverseFind() returns an index of the element
+  // that is found first. If no match is found, kNotFound will be returned.
+  template <typename U>
+  bool contains(const U&) const;
+  template <typename U>
+  size_t find(const U&) const;
+  template <typename U>
+  size_t reverseFind(const U&) const;
+
+  // Resize the vector to the specified size.
+  //
+  // These three functions are essentially similar. They differ in that
+  // (1) shrink() has a DCHECK to make sure the specified size is not more than
+  // size(), and (2) grow() has a DCHECK to make sure the specified size is
+  // not less than size().
+  //
+  // When a vector shrinks, the extra elements in the back will be destructed.
+  // All the iterators pointing to a to-be-destructed element will be
+  // invalidated.
+  //
+  // When a vector grows, new elements will be added in the back, and they
+  // will be default-initialized. A reallocation may happen in this case.
+  void shrink(size_t);
+  void grow(size_t);
+  void resize(size_t);
+
+  // Increase the capacity of the vector to at least |newCapacity|. The
+  // elements in the vector are not affected. This function does not shrink
+  // the size of the backing buffer, even if |newCapacity| is small. This
+  // function may cause a reallocation.
+  void reserveCapacity(size_t newCapacity);
+
+  // This is similar to reserveCapacity() but must be called immediately after
+  // the vector is default-constructed.
+  void reserveInitialCapacity(size_t initialCapacity);
+
+  // Shrink the backing buffer so it can contain exactly |size()| elements.
+  // This function may cause a reallocation.
+  void shrinkToFit() { shrinkCapacity(size()); }
+
+  // Shrink the backing buffer if at least 50% of the vector's capacity is
+  // unused. If it shrinks, the new buffer contains roughly 25% of unused
+  // space. This function may cause a reallocation.
+  void shrinkToReasonableCapacity() {
+    if (size() * 2 < capacity())
+      shrinkCapacity(size() + size() / 4 + 1);
+  }
+
+  // Remove all the elements. This function actually releases the backing
+  // buffer, thus any iterators will get invalidated (including begin()).
+  void clear() { shrinkCapacity(0); }
+
+  // Insertion to the back. All of these functions except uncheckedAppend() may
+  // cause a reallocation.
+  //
+  // push_back(value)
+  //     Insert a single element to the back.
+  // emplace_back(args...)
+  //     Insert a single element constructed as T(args...) to the back. The
+  //     element is constructed directly on the backing buffer with placement
+  //     new.
+  // append(buffer, size)
+  // appendVector(vector)
+  // appendRange(begin, end)
+  //     Insert multiple elements represented by (1) |buffer| and |size|
+  //     (for append), (2) |vector| (for appendVector), or (3) a pair of
+  //     iterators (for appendRange) to the back. The elements will be copied.
+  // uncheckedAppend(value)
+  //     Insert a single element like push_back(), but this function assumes
+  //     the vector has enough capacity such that it can store the new element
+  //     without a reallocation. Using this function could improve the
+  //     performance when you append many elements repeatedly.
+  template <typename U>
+  void push_back(U&&);
+  template <typename... Args>
+  T& emplace_back(Args&&...);
+  template <typename U>
+  void append(const U*, size_t);
+  template <typename U, size_t otherCapacity, typename V>
+  void appendVector(const Vector<U, otherCapacity, V>&);
+  template <typename Iterator>
+  void appendRange(Iterator begin, Iterator end);
+  template <typename U>
+  void uncheckedAppend(U&&);
+
+  // Insertion to an arbitrary position. All of these functions will take
+  // O(size())-time. All of the elements after |position| will be moved to
+  // the new locations. |position| must be no more than size(). All of these
+  // functions may cause a reallocation. In any case, all the iterators
+  // pointing to an element after |position| will be invalidated.
+  //
+  // insert(position, value)
+  //     Insert a single element at |position|.
+  // insert(position, buffer, size)
+  // insert(position, vector)
+  //     Insert multiple elements represented by either |buffer| and |size|
+  //     or |vector| at |position|. The elements will be copied.
+  //
+  // TODO(yutak): Why not insertVector()?
+  template <typename U>
+  void insert(size_t position, U&&);
+  template <typename U>
+  void insert(size_t position, const U*, size_t);
+  template <typename U, size_t otherCapacity, typename OtherAllocator>
+  void insert(size_t position, const Vector<U, otherCapacity, OtherAllocator>&);
+
+  // Insertion to the front. All of these functions will take O(size())-time.
+  // All of the elements in the vector will be moved to the new locations.
+  // All of these functions may cause a reallocation. In any case, all the
+  // iterators pointing to any element in the vector will be invalidated.
+  //
+  // prepend(value)
+  //     Insert a single element to the front.
+  // prepend(buffer, size)
+  // prependVector(vector)
+  //     Insert multiple elements represented by either |buffer| and |size| or
+  //     |vector| to the front. The elements will be copied.
+  template <typename U>
+  void prepend(U&&);
+  template <typename U>
+  void prepend(const U*, size_t);
+  template <typename U, size_t otherCapacity, typename OtherAllocator>
+  void prependVector(const Vector<U, otherCapacity, OtherAllocator>&);
+
+  // Remove an element or elements at the specified position. These functions
+  // take O(size())-time. All of the elements after the removed ones will be
+  // moved to the new locations. All the iterators pointing to any element
+  // after |position| will be invalidated.
+  void remove(size_t position);
+  void remove(size_t position, size_t length);
+
+  // Remove the last element. Unlike remove(), (1) this function is fast, and
+  // (2) only iterators pointing to the last element will be invalidated. Other
+  // references will remain valid.
+  void pop_back() {
+    DCHECK(!isEmpty());
+    shrink(size() - 1);
+  }
+
+  // Filling the vector with the same value. If the vector has shrinked or
+  // growed as a result of this call, those events may invalidate some
+  // iterators. See comments for shrink() and grow().
+  //
+  // fill(value, size) will resize the Vector to |size|, and then copy-assign
+  // or copy-initialize all the elements.
+  //
+  // fill(value) is a synonym for fill(value, size()).
+  void fill(const T&, size_t);
+  void fill(const T& val) { fill(val, size()); }
+
+  // Swap two vectors quickly.
+  void swap(Vector& other) {
+    Base::swapVectorBuffer(other, OffsetRange(), OffsetRange());
+  }
+
+  // Reverse the contents.
+  void reverse();
+
+  // Maximum element count supported; allocating a vector
+  // buffer with a larger count will fail.
+  static size_t maxCapacity() {
+    return Allocator::template maxElementCountInBackingStore<T>();
   }
 
   // Off-GC-heap vectors: Destructor should be called.
@@ -901,135 +1114,6 @@ class Vector
   }
 
   void finalizeGarbageCollectedObject() { finalize(); }
-
-  Vector(const Vector&);
-  template <size_t otherCapacity>
-  explicit Vector(const Vector<T, otherCapacity, Allocator>&);
-
-  Vector& operator=(const Vector&);
-  template <size_t otherCapacity>
-  Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
-
-  Vector(Vector&&);
-  Vector& operator=(Vector&&);
-
-  Vector(std::initializer_list<T> elements);
-  Vector& operator=(std::initializer_list<T> elements);
-
-  size_t size() const { return m_size; }
-  size_t capacity() const { return Base::capacity(); }
-  bool isEmpty() const { return !size(); }
-
-  T& at(size_t i) {
-    RELEASE_ASSERT(i < size());
-    return Base::buffer()[i];
-  }
-  const T& at(size_t i) const {
-    RELEASE_ASSERT(i < size());
-    return Base::buffer()[i];
-  }
-
-  T& operator[](size_t i) { return at(i); }
-  const T& operator[](size_t i) const { return at(i); }
-
-  T* data() { return Base::buffer(); }
-  const T* data() const { return Base::buffer(); }
-
-  iterator begin() { return data(); }
-  iterator end() { return begin() + m_size; }
-  const_iterator begin() const { return data(); }
-  const_iterator end() const { return begin() + m_size; }
-
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rbegin() const {
-    return const_reverse_iterator(end());
-  }
-  const_reverse_iterator rend() const {
-    return const_reverse_iterator(begin());
-  }
-
-  T& front() { return at(0); }
-  const T& front() const { return at(0); }
-  T& back() { return at(size() - 1); }
-  const T& back() const { return at(size() - 1); }
-
-  template <typename U>
-  bool contains(const U&) const;
-  template <typename U>
-  size_t find(const U&) const;
-  template <typename U>
-  size_t reverseFind(const U&) const;
-
-  void shrink(size_t);
-  void grow(size_t);
-  void resize(size_t);
-  void reserveCapacity(size_t newCapacity);
-  void reserveInitialCapacity(size_t initialCapacity);
-  void shrinkToFit() { shrinkCapacity(size()); }
-  void shrinkToReasonableCapacity() {
-    if (size() * 2 < capacity())
-      shrinkCapacity(size() + size() / 4 + 1);
-  }
-
-  void clear() { shrinkCapacity(0); }
-
-  template <typename U>
-  void append(const U*, size_t);
-  template <typename U>
-  void push_back(U&&);
-  template <typename... Args>
-  T& emplace_back(Args&&...);
-  template <typename U>
-  void uncheckedAppend(U&& val);
-  template <typename U, size_t otherCapacity, typename V>
-  void appendVector(const Vector<U, otherCapacity, V>&);
-
-  template <typename U>
-  void insert(size_t position, const U*, size_t);
-  template <typename U>
-  void insert(size_t position, U&&);
-  template <typename U, size_t c, typename V>
-  void insert(size_t position, const Vector<U, c, V>&);
-
-  template <typename U>
-  void prepend(const U*, size_t);
-  template <typename U>
-  void prepend(U&&);
-  template <typename U, size_t c, typename V>
-  void prependVector(const Vector<U, c, V>&);
-
-  void remove(size_t position);
-  void remove(size_t position, size_t length);
-
-  void pop_back() {
-    DCHECK(!isEmpty());
-    shrink(size() - 1);
-  }
-
-  Vector(size_t size, const T& val) : Base(size) {
-    ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
-    m_size = size;
-    TypeOperations::uninitializedFill(begin(), end(), val);
-  }
-
-  void fill(const T&, size_t);
-  void fill(const T& val) { fill(val, size()); }
-
-  template <typename Iterator>
-  void appendRange(Iterator start, Iterator end);
-
-  void swap(Vector& other) {
-    Base::swapVectorBuffer(other, OffsetRange(), OffsetRange());
-  }
-
-  void reverse();
-
-  // Maximum element count supported; allocating a vector
-  // buffer with a larger count will fail.
-  static size_t maxCapacity() {
-    return Allocator::template maxElementCountInBackingStore<T>();
-  }
 
   template <typename VisitorDispatcher>
   void trace(VisitorDispatcher);
@@ -1069,6 +1153,67 @@ class Vector
 //
 // Vector out-of-line implementation
 //
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline Vector<T, inlineCapacity, Allocator>::Vector() {
+  static_assert(!std::is_polymorphic<T>::value ||
+                    !VectorTraits<T>::canInitializeWithMemset,
+                "Cannot initialize with memset if there is a vtable");
+  static_assert(Allocator::isGarbageCollected ||
+                    !AllowsOnlyPlacementNew<T>::value || !IsTraceable<T>::value,
+                "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
+                "have trace methods into an off-heap Vector");
+  static_assert(Allocator::isGarbageCollected ||
+                    !IsPointerToGarbageCollectedType<T>::value,
+                "Cannot put raw pointers to garbage-collected classes into "
+                "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+
+  ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
+  m_size = 0;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline Vector<T, inlineCapacity, Allocator>::Vector(size_t size) : Base(size) {
+  static_assert(!std::is_polymorphic<T>::value ||
+                    !VectorTraits<T>::canInitializeWithMemset,
+                "Cannot initialize with memset if there is a vtable");
+  static_assert(Allocator::isGarbageCollected ||
+                    !AllowsOnlyPlacementNew<T>::value || !IsTraceable<T>::value,
+                "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
+                "have trace methods into an off-heap Vector");
+  static_assert(Allocator::isGarbageCollected ||
+                    !IsPointerToGarbageCollectedType<T>::value,
+                "Cannot put raw pointers to garbage-collected classes into "
+                "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+
+  ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
+  m_size = size;
+  TypeOperations::initialize(begin(), end());
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline Vector<T, inlineCapacity, Allocator>::Vector(size_t size, const T& val)
+    : Base(size) {
+  // TODO(yutak): Introduce these assertions. Some use sites call this function
+  // in the context where T is an incomplete type.
+  //
+  // static_assert(!std::is_polymorphic<T>::value ||
+  //               !VectorTraits<T>::canInitializeWithMemset,
+  //               "Cannot initialize with memset if there is a vtable");
+  // static_assert(Allocator::isGarbageCollected ||
+  //               !AllowsOnlyPlacementNew<T>::value ||
+  //               !IsTraceable<T>::value,
+  //               "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
+  //               "have trace methods into an off-heap Vector");
+  // static_assert(Allocator::isGarbageCollected ||
+  //               !IsPointerToGarbageCollectedType<T>::value,
+  //               "Cannot put raw pointers to garbage-collected classes into "
+  //               "an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+
+  ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
+  m_size = size;
+  TypeOperations::uninitializedFill(begin(), end(), val);
+}
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>::Vector(const Vector& other)
@@ -1228,14 +1373,6 @@ void Vector<T, inlineCapacity, Allocator>::fill(const T& val, size_t newSize) {
   std::fill(begin(), end(), val);
   TypeOperations::uninitializedFill(end(), begin() + newSize, val);
   m_size = newSize;
-}
-
-template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename Iterator>
-void Vector<T, inlineCapacity, Allocator>::appendRange(Iterator start,
-                                                       Iterator end) {
-  for (Iterator it = start; it != end; ++it)
-    push_back(*it);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -1407,24 +1544,6 @@ void Vector<T, inlineCapacity, Allocator>::shrinkCapacity(size_t newCapacity) {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-void Vector<T, inlineCapacity, Allocator>::append(const U* data,
-                                                  size_t dataSize) {
-  DCHECK(Allocator::isAllocationAllowed());
-  size_t newSize = m_size + dataSize;
-  if (newSize > capacity()) {
-    data = expandCapacity(newSize, data);
-    DCHECK(begin());
-  }
-  RELEASE_ASSERT(newSize >= m_size);
-  T* dest = end();
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
-  VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(
-      data, &data[dataSize], dest);
-  m_size = newSize;
-}
-
-template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
   DCHECK(Allocator::isAllocationAllowed());
   if (LIKELY(size() != capacity())) {
@@ -1456,6 +1575,24 @@ ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
+void Vector<T, inlineCapacity, Allocator>::append(const U* data,
+                                                  size_t dataSize) {
+  DCHECK(Allocator::isAllocationAllowed());
+  size_t newSize = m_size + dataSize;
+  if (newSize > capacity()) {
+    data = expandCapacity(newSize, data);
+    DCHECK(begin());
+  }
+  RELEASE_ASSERT(newSize >= m_size);
+  T* dest = end();
+  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
+  VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(
+      data, &data[dataSize], dest);
+  m_size = newSize;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename U>
 NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::appendSlowCase(
     U&& val) {
   DCHECK_EQ(size(), capacity());
@@ -1469,9 +1606,23 @@ NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::appendSlowCase(
   ++m_size;
 }
 
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename U, size_t otherCapacity, typename OtherAllocator>
+inline void Vector<T, inlineCapacity, Allocator>::appendVector(
+    const Vector<U, otherCapacity, OtherAllocator>& val) {
+  append(val.begin(), val.size());
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename Iterator>
+void Vector<T, inlineCapacity, Allocator>::appendRange(Iterator begin,
+                                                       Iterator end) {
+  for (Iterator it = begin; it != end; ++it)
+    push_back(*it);
+}
+
 // This version of append saves a branch in the case where you know that the
 // vector's capacity is large enough for the append to succeed.
-
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(
@@ -1488,10 +1639,21 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U, size_t otherCapacity, typename OtherAllocator>
-inline void Vector<T, inlineCapacity, Allocator>::appendVector(
-    const Vector<U, otherCapacity, OtherAllocator>& val) {
-  append(val.begin(), val.size());
+template <typename U>
+inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
+                                                         U&& val) {
+  DCHECK(Allocator::isAllocationAllowed());
+  RELEASE_ASSERT(position <= size());
+  typename std::remove_reference<U>::type* data = &val;
+  if (size() == capacity()) {
+    data = expandCapacity(size() + 1, data);
+    DCHECK(begin());
+  }
+  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
+  T* spot = begin() + position;
+  TypeOperations::moveOverlapping(spot, end(), spot + 1);
+  new (NotNull, spot) T(std::forward<U>(*data));
+  ++m_size;
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -1516,29 +1678,17 @@ void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U>
-inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
-                                                         U&& val) {
-  DCHECK(Allocator::isAllocationAllowed());
-  RELEASE_ASSERT(position <= size());
-  typename std::remove_reference<U>::type* data = &val;
-  if (size() == capacity()) {
-    data = expandCapacity(size() + 1, data);
-    DCHECK(begin());
-  }
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
-  T* spot = begin() + position;
-  TypeOperations::moveOverlapping(spot, end(), spot + 1);
-  new (NotNull, spot) T(std::forward<U>(*data));
-  ++m_size;
+template <typename U, size_t otherCapacity, typename OtherAllocator>
+inline void Vector<T, inlineCapacity, Allocator>::insert(
+    size_t position,
+    const Vector<U, otherCapacity, OtherAllocator>& val) {
+  insert(position, val.begin(), val.size());
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U, size_t c, typename OtherAllocator>
-inline void Vector<T, inlineCapacity, Allocator>::insert(
-    size_t position,
-    const Vector<U, c, OtherAllocator>& val) {
-  insert(position, val.begin(), val.size());
+template <typename U>
+inline void Vector<T, inlineCapacity, Allocator>::prepend(U&& val) {
+  insert(0, std::forward<U>(val));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -1549,15 +1699,9 @@ void Vector<T, inlineCapacity, Allocator>::prepend(const U* data,
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U>
-inline void Vector<T, inlineCapacity, Allocator>::prepend(U&& val) {
-  insert(0, std::forward<U>(val));
-}
-
-template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename U, size_t c, typename V>
+template <typename U, size_t otherCapacity, typename OtherAllocator>
 inline void Vector<T, inlineCapacity, Allocator>::prependVector(
-    const Vector<U, c, V>& val) {
+    const Vector<U, otherCapacity, OtherAllocator>& val) {
   insert(0, val.begin(), val.size());
 }
 
