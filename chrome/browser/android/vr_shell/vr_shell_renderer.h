@@ -53,7 +53,9 @@ class BaseRenderer {
   virtual ~BaseRenderer();
 
  protected:
-  BaseRenderer(ShaderID vertex_id, ShaderID fragment_id);
+  BaseRenderer(ShaderID vertex_id,
+               ShaderID fragment_id,
+               bool setup_vertex_buffer);
 
   void PrepareToDraw(GLuint view_proj_matrix_handle,
                      const gvr::Mat4f& view_proj_matrix);
@@ -61,6 +63,7 @@ class BaseRenderer {
   GLuint program_handle_;
   GLuint position_handle_;
   GLuint tex_coord_handle_;
+  GLuint vertex_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseRenderer);
 };
@@ -99,7 +102,6 @@ class WebVrRenderer : public BaseRenderer {
   static constexpr size_t VERTEX_OFFSET = 0;
 
   GLuint tex_uniform_handle_;
-  GLuint vertex_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
 };

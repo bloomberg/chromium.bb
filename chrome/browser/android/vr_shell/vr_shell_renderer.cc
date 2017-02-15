@@ -12,23 +12,22 @@
 
 namespace {
 
-#define RECTANGULAR_TEXTURE_BUFFER(left, right, bottom, top) \
-  { left, bottom, left, top, right, bottom, left, top, right, top, right, \
-    bottom }
-
 static constexpr float kHalfSize = 0.5f;
-static constexpr float kTextureQuadPosition[18] = {
-    -kHalfSize, kHalfSize,  0.0f, -kHalfSize, -kHalfSize, 0.0f,
-    kHalfSize,  kHalfSize,  0.0f, -kHalfSize, -kHalfSize, 0.0f,
-    kHalfSize,  -kHalfSize, 0.0f, kHalfSize,  kHalfSize,  0.0f};
+static constexpr float kTextureQuadVertices[30] = {
+    //       x           y     z,    u,    v
+    -kHalfSize, kHalfSize, 0.0f,      0.0f,       0.0f,       -kHalfSize,
+    -kHalfSize, 0.0f,      0.0f,      1.0f,       kHalfSize,  kHalfSize,
+    0.0f,       1.0f,      0.0f,      -kHalfSize, -kHalfSize, 0.0f,
+    0.0f,       1.0f,      kHalfSize, -kHalfSize, 0.0f,       1.0f,
+    1.0f,       kHalfSize, kHalfSize, 0.0f,       1.0f,       0.0f};
+static constexpr size_t kTextureQuadVerticesSize = sizeof(float) * 30;
+static constexpr size_t kTextureQuadDataStride = sizeof(float) * 5;
 static constexpr int kPositionDataSize = 3;
+static constexpr size_t kPositionDataOffset = 0;
+static constexpr int kTextureCoordinateDataSize = 2;
+static constexpr size_t kTextureCoordinateDataOffset = sizeof(float) * 3;
 // Number of vertices passed to glDrawArrays().
 static constexpr int kVerticesNumber = 6;
-
-static constexpr float kTexturedQuadTextureCoordinates[12] =
-    RECTANGULAR_TEXTURE_BUFFER(0.0f, 1.0f, 0.0f, 1.0f);
-
-static constexpr int kTextureCoordinateDataSize = 2;
 
 static constexpr float kWebVrVertices[16] = {
   //   x     y    u,   v
@@ -225,12 +224,13 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
   }
 }
 
-#undef RECTANGULAR_TEXTURE_BUFFER
 }  // namespace
 
 namespace vr_shell {
 
-BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
+BaseRenderer::BaseRenderer(ShaderID vertex_id,
+                           ShaderID fragment_id,
+                           bool setup_vertex_buffer = true) {
   std::string error;
   GLuint vertex_shader_handle = CompileShader(
       GL_VERTEX_SHADER, GetShaderSource(vertex_id), error);
@@ -250,6 +250,16 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
 
   position_handle_ = glGetAttribLocation(program_handle_, "a_Position");
   tex_coord_handle_ = glGetAttribLocation(program_handle_, "a_TexCoordinate");
+
+  if (setup_vertex_buffer) {
+    // Generate the vertex buffer
+    glGenBuffersARB(1, &vertex_buffer_);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+    glBufferData(GL_ARRAY_BUFFER, kTextureQuadVerticesSize,
+                 kTextureQuadVertices, GL_STATIC_DRAW);
+  } else {
+    vertex_buffer_ = 0;
+  }
 }
 
 BaseRenderer::~BaseRenderer() = default;
@@ -262,14 +272,19 @@ void BaseRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glUniformMatrix4fv(view_proj_matrix_handle, 1, false,
                      MatrixToGLArray(view_proj_matrix).data());
 
-  // Pass in texture coordinate.
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize,
-                        GL_FLOAT, false, 0, kTexturedQuadTextureCoordinates);
-  glEnableVertexAttribArray(tex_coord_handle_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        kTextureQuadPosition);
+  // Set up position attribute.
+  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
+                        kTextureQuadDataStride,
+                        VOID_OFFSET(kPositionDataOffset));
   glEnableVertexAttribArray(position_handle_);
+
+  // Set up texture coordinate attribute.
+  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
+                        false, kTextureQuadDataStride,
+                        VOID_OFFSET(kTextureCoordinateDataOffset));
+  glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -312,28 +327,18 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
 
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
-WebVrRenderer::WebVrRenderer() :
-    BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER) {
+WebVrRenderer::WebVrRenderer()
+    : BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER, false) {
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
-
-  // TODO(bajones): Figure out why this need to be restored.
-  GLint old_buffer;
-  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &old_buffer);
 
   glGenBuffersARB(1, &vertex_buffer_);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
   glBufferData(GL_ARRAY_BUFFER, kWebVrVerticesSize, kWebVrVertices,
       GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER, old_buffer);
 }
 
 // Draw the stereo WebVR frame
 void WebVrRenderer::Draw(int texture_handle) {
-  // TODO(bajones): Figure out why this need to be restored.
-  GLint old_buffer;
-  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &old_buffer);
-
   glUseProgram(program_handle_);
 
   // Bind vertex attributes
@@ -361,8 +366,6 @@ void WebVrRenderer::Draw(int texture_handle) {
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
   glDisableVertexAttribArray(position_handle_);
-
-  glBindBuffer(GL_ARRAY_BUFFER, old_buffer);
 }
 
 // Note that we don't explicitly delete gl objects here, they're deleted
@@ -486,7 +489,9 @@ void GradientQuadRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
 GradientQuadRenderer::~GradientQuadRenderer() = default;
 
 GradientGridRenderer::GradientGridRenderer()
-    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
+    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER,
+                   GRADIENT_QUAD_FRAGMENT_SHADER,
+                   false) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
@@ -522,8 +527,10 @@ void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
   glUniform1f(opacity_handle_, opacity);
 
   // Draw the grid.
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        reinterpret_cast<float*>(grid_lines_.data()));
+                        VOID_OFFSET(0));
   glEnableVertexAttribArray(position_handle_);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -560,6 +567,13 @@ void GradientGridRenderer::MakeGridLines(int gridline_count) {
     xLine.end.y = -position;
     xLine.end.z = 0.0f;
   }
+
+  size_t vertex_buffer_size = sizeof(Line3d) * linesNumber;
+
+  glGenBuffersARB(1, &vertex_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, grid_lines_.data(),
+               GL_STATIC_DRAW);
 }
 
 VrShellRenderer::VrShellRenderer()
