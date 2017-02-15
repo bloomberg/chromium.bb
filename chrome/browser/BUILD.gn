@@ -1117,6 +1117,8 @@ split_static_library("browser") {
     "search/most_visited_iframe_source.h",
     "search/search.cc",
     "search/search.h",
+    "search/search_engine_base_url_tracker.cc",
+    "search/search_engine_base_url_tracker.h",
     "search/suggestions/image_decoder_impl.cc",
     "search/suggestions/image_decoder_impl.h",
     "search/suggestions/suggestions_service_factory.cc",

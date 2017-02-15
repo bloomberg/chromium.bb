@@ -40,7 +40,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/search/search.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -66,7 +65,6 @@ const base::Feature kNtpTilesFeature{"NTPTilesInInstantService",
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
-      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -77,18 +75,16 @@ InstantService::InstantService(Profile* profile)
   // is only instantiated here (after the check for a UI thread above).
   instant_io_context_ = new InstantIOContext();
 
-  previous_google_base_url_ =
-      GURL(UIThreadSearchTermsData(profile).GoogleBaseURLValue());
-
-  // TemplateURLService is NULL by default in tests.
-  if (template_url_service_) {
-    template_url_service_->AddObserver(this);
-    const TemplateURL* default_search_provider =
-        template_url_service_->GetDefaultSearchProvider();
-    if (default_search_provider) {
-      previous_default_search_provider_.reset(
-          new TemplateURLData(default_search_provider->data()));
-    }
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  // TemplateURLService can be null in tests.
+  if (template_url_service) {
+    search_engine_base_url_tracker_ =
+        base::MakeUnique<SearchEngineBaseURLTracker>(
+            template_url_service,
+            base::MakeUnique<UIThreadSearchTermsData>(profile_),
+            base::Bind(&InstantService::OnSearchEngineBaseURLChanged,
+                       base::Unretained(this)));
   }
 
   ResetInstantSearchPrerendererIfNecessary();
@@ -151,10 +147,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
 }
 
-InstantService::~InstantService() {
-  if (template_url_service_)
-    template_url_service_->RemoveObserver(this);
-}
+InstantService::~InstantService() = default;
 
 void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
@@ -452,39 +445,6 @@ void InstantService::OnThemeChanged() {
 }
 #endif  // !defined(OS_ANDROID)
 
-void InstantService::OnTemplateURLServiceChanged() {
-  // Check whether the default search provider was changed.
-  const TemplateURL* template_url =
-      template_url_service_->GetDefaultSearchProvider();
-  bool default_search_provider_changed = !TemplateURL::MatchesData(
-      template_url, previous_default_search_provider_.get(),
-      UIThreadSearchTermsData(profile_));
-  if (default_search_provider_changed) {
-    previous_default_search_provider_.reset(
-        template_url ? new TemplateURLData(template_url->data()) : NULL);
-  }
-
-  // Note that, even if the TemplateURL for the Default Search Provider has not
-  // changed, the effective URLs might change if they reference the Google base
-  // URL. The TemplateURLService will notify us when the effective URL changes
-  // in this way but it's up to us to do the work to check both.
-  bool google_base_url_domain_changed = false;
-  GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
-  if (google_base_url != previous_google_base_url_) {
-    previous_google_base_url_ = google_base_url;
-    if (template_url &&
-        template_url->HasGoogleBaseURLs(UIThreadSearchTermsData(profile_))) {
-      google_base_url_domain_changed = true;
-    }
-  }
-
-  if (default_search_provider_changed || google_base_url_domain_changed) {
-    ResetInstantSearchPrerendererIfNecessary();
-    for (InstantServiceObserver& observer : observers_)
-      observer.DefaultSearchProviderChanged(google_base_url_domain_changed);
-  }
-}
-
 void InstantService::TopSitesLoaded(history::TopSites* top_sites) {
   DCHECK(!most_visited_sites_);
   DCHECK_EQ(top_sites_.get(), top_sites);
@@ -500,6 +460,16 @@ void InstantService::TopSitesChanged(history::TopSites* top_sites,
   top_sites_->GetMostVisitedURLs(base::Bind(&InstantService::OnTopSitesReceived,
                                             weak_ptr_factory_.GetWeakPtr()),
                                  false);
+}
+
+void InstantService::OnSearchEngineBaseURLChanged(
+    SearchEngineBaseURLTracker::ChangeReason change_reason) {
+  ResetInstantSearchPrerendererIfNecessary();
+  bool google_base_url_changed =
+      change_reason ==
+      SearchEngineBaseURLTracker::ChangeReason::GOOGLE_BASE_URL;
+  for (InstantServiceObserver& observer : observers_)
+    observer.DefaultSearchProviderChanged(google_base_url_changed);
 }
 
 void InstantService::ResetInstantSearchPrerendererIfNecessary() {
