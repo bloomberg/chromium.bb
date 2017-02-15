@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -35,14 +36,14 @@
 
     <dialog is="cr-dialog" id="dialog" on-close="close">
       <div class="title">$i18n{configureFingerprintTitle}</div>
-        <!-- TODO(sammiequon): on-click and on-dblclik are temporary, remove
-          once we can interact with the fingerprint hardware -->
-      <div class="body" on-click="handleClick_"
-          on-dblclick="handleDoubleClick_">
+      <div class="body">
         <div class="settings-box first">
           <span class="middle">[[getInstructionMessage_(step_)]]</span>
         </div>
-        <settings-fingerprint-progress-arc id="arc">
+        <!-- TODO(sammiequon): on-click and on-dblclik are temporary, remove
+          once we can interact with the fingerprint hardware -->
+        <settings-fingerprint-progress-arc id="arc" on-click="handleClick_"
+            on-dblclick="handleDoubleClick_">
         </settings-fingerprint-progress-arc>
         <iron-icon id="image" icon="settings:fingerprint"
             step$="[[step_]]">

@@ -24,7 +24,7 @@ var SUCCESSFUL_SCANS_TO_COMPLETE = 5;
 Polymer({
   is: 'settings-setup-fingerprint-dialog',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -55,12 +55,23 @@ Polymer({
    */
   receivedScanCount_: 0,
 
+  /** @private {?settings.FingerprintBrowserProxy}*/
+  browserProxy_: null,
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('on-scan-received',
+        this.onScanReceived_.bind(this));
+    this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
+  },
+
   /**
    * Opens the dialog.
    */
   open: function() {
     this.$.arc.drawBackgroundCircle();
     this.$.arc.drawShadow(10, 0, 0);
+    this.browserProxy_.startEnroll();
     this.$.dialog.showModal();
   },
 
@@ -68,6 +79,11 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
+    if (this.step_ != FingerprintSetupStep.READY)
+      this.browserProxy_.cancelCurrentEnroll();
+    else
+      this.fire('add-fingerprint');
+
     this.reset_();
   },
 
@@ -105,7 +121,6 @@ Polymer({
    * @private
    */
   onContinueTap_: function() {
-    this.fire('add-fingerprint');
     if (this.$.dialog.open)
       this.$.dialog.close();
   },
@@ -117,8 +132,12 @@ Polymer({
    * @private
    */
   handleClick_: function(e) {
-    this.onScanReceived_(settings.FingerprintResultType.SUCCESS,
-        this.receivedScanCount_ == SUCCESSFUL_SCANS_TO_COMPLETE - 1);
+    var complete = this.receivedScanCount_ == SUCCESSFUL_SCANS_TO_COMPLETE - 1;
+    this.onScanReceived_({result: settings.FingerprintResultType.SUCCESS,
+      isComplete: complete});
+
+    if (complete)
+      this.browserProxy_.fakeScanComplete();
   },
 
   /**
@@ -128,19 +147,17 @@ Polymer({
    * @private
    */
   handleDoubleClick_: function(e) {
-    this.onScanReceived_(settings.FingerprintResultType.TOO_FAST,
-        false /*isComplete*/);
+    this.onScanReceived_({result: settings.FingerprintResultType.TOO_FAST,
+      isComplete: false /*isComplete*/});
   },
 
   /**
    * Advances steps, shows problems and animates the progress as needed based on
    * scan results.
-   * @param {!settings.FingerprintResultType} scanResult The result from the
-   *     scanner.
-   * @param {bool} isComplete Whether the enroll session is complete.
+   * @param {!settings.FingerprintScan} scan
    * @private
    */
-  onScanReceived_: function(scanResult, isComplete) {
+  onScanReceived_: function(scan) {
     switch (this.step_) {
       case FingerprintSetupStep.LOCATE_SCANNER:
       case FingerprintSetupStep.MOVE_FINGER:
@@ -153,12 +170,16 @@ Polymer({
           this.receivedScanCount_ = 0;
         }
         var slice = 2 * Math.PI / SUCCESSFUL_SCANS_TO_COMPLETE;
-        if (isComplete) {
+        if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = FingerprintSetupStep.READY;
           this.$.arc.animate(this.receivedScanCount_ * slice, 2 * Math.PI);
-        } else if (scanResult != settings.FingerprintResultType.SUCCESS) {
-          this.setProblem_(scanResult);
+          // TODO(sammiequon): Keep increasing scan counts after the scan is
+          // complete, so we don't send more fake scans complete signals. Remove
+          // this with the fake scan.
+          this.receivedScanCount_++;
+        } else if (scan.result != settings.FingerprintResultType.SUCCESS) {
+          this.setProblem_(scan.result);
         } else {
           this.problemMessage_ = '';
           this.$.arc.animate(this.receivedScanCount_ * slice,
@@ -204,10 +225,10 @@ Polymer({
       case settings.FingerprintResultType.SUCCESS:
         this.problemMessage_ = '';
         break;
-      case settings.FingerprintResultType.PARTIAL_DATA:
+      case settings.FingerprintResultType.PARTIAL:
         this.problemMessage_ = this.i18n('configureFingerprintPartialData');
         break;
-      case settings.FingerprintResultType.INSUFFICIENT_DATA:
+      case settings.FingerprintResultType.INSUFFICIENT:
         this.problemMessage_ =
             this.i18n('configureFingerprintInsufficientData');
         break;

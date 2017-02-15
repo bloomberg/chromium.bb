@@ -5,12 +5,6 @@
 (function() {
 'use strict';
 
-/**
- * The max number of fingerprints this list can hold.
- * @const {number}
- */
-var MAX_NUMBER_FINGERPRINTS_ALLOWED = 5;
-
 Polymer({
   is: 'settings-fingerprint-list',
 
@@ -31,52 +25,46 @@ Polymer({
     }
   },
 
-  /**
-   * Adds a fingerprint with a default name.
-   * @private
-   */
-  onAddFingerprint_: function() {
-    // Determines what the newly added fingerprint's name should be.
-    // TODO(sammiequon): Add fingerprint using private API once it is ready.
+  /** @private {?settings.FingerprintBrowserProxy}*/
+  browserProxy_: null,
 
-    for (var i = 1; i <= MAX_NUMBER_FINGERPRINTS_ALLOWED; ++i) {
-      var fingerprintName = this.i18n('lockScreenFingerprintNewName', i);
-      if (!this.fingerprints_.includes(fingerprintName)) {
-        this.push('fingerprints_', fingerprintName);
-        break;
-      }
-    }
+  /** @override */
+  attached: function() {
+    this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
+    this.updateFingerprintsList_();
+  },
+
+  /** @private */
+  updateFingerprintsList_: function() {
+    this.browserProxy_.getFingerprintsList().then(
+        this.onFingerprintsChanged_.bind(this));
+  },
+
+  /**
+   * @param {settings.FingerprintInfo} fingerprintsInfo
+   * @private
+   * */
+  onFingerprintsChanged_: function(fingerprintInfo) {
+    this.fingerprints_ = fingerprintInfo.fingerprintsList;
+    this.$.fingerprintsList.notifyResize();
+    this.$$('.action-button').disabled = fingerprintInfo.isMaxed;
   },
 
   /**
    * Deletes a fingerprint from |fingerprints_|.
    * @private
    */
-  onFingerprintDelete_: function(e) {
-    // TODO(sammiequon): Remove fingerprint using private API once it is ready.
-    this.splice('fingerprints_', e.model.index, 1);
+  onFingerprintDeleteTapped_: function(e) {
+    this.browserProxy_.removeEnrollment(e.model.index).then(
+        function(success) {
+          if (success)
+            this.updateFingerprintsList_();
+        }.bind(this));
   },
 
-  /**
-   * Returns the text to be displayed for the add fingerprint button.
-   * @return {string}
-   * @private
-   */
-  getFingerprintButtonText_: function() {
-    if (this.canAddNewFingerprint_())
-      return this.i18n('lockScreenAddFingerprint');
-
-    return this.i18n('lockScreenCannotAddFingerprint',
-                     MAX_NUMBER_FINGERPRINTS_ALLOWED);
-  },
-
-  /**
-   * Checks whether another fingerprint can be added.
-   * @return {boolean}
-   * @private
-   */
-  canAddNewFingerprint_: function() {
-    return this.fingerprints_.length < MAX_NUMBER_FINGERPRINTS_ALLOWED;
+  /** @private */
+  onFingerprintLabelChanged_: function(e) {
+    this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item);
   },
 
   /**

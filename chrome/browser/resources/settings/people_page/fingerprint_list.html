@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="setup_fingerprint_dialog.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -16,25 +17,24 @@
     <iron-list id="fingerprintsList" items="[[fingerprints_]]">
       <template>
         <div class="list-item">
-          <paper-input value="{{item}}"></paper-input>
+          <paper-input value="{{item}}" on-change="onFingerprintLabelChanged_">
+          </paper-input>
           <button is="paper-icon-button-light"
-              on-tap="onFingerprintDelete_">
+              on-tap="onFingerprintDeleteTapped_">
             <iron-icon icon="cr:delete"></iron-icon>
           </button>
-          </paper-icon-button>
         </div>
       </template>
     </iron-list>
     <div class="settings-box first radio-indent">
-      <paper-button class="action-button" on-tap="openAddFingerprintDialog_"
-          disabled="[[!canAddNewFingerprint_(fingerprints_.*)]]">
-        [[getFingerprintButtonText_(fingerprints_.*)]]
+      <paper-button class="action-button" on-tap="openAddFingerprintDialog_">
+        $i18n{lockScreenAddFingerprint}
       </paper-button>
     </div>
     <i>$i18n{lockScreenFingerprintWarning}</i>
 
     <settings-setup-fingerprint-dialog id="setupFingerprint"
-        on-add-fingerprint="onAddFingerprint_">
+        on-add-fingerprint="updateFingerprintsList_">
     </settings-setup-fingerprint-dialog>
   </template>
   <script src="fingerprint_list.js"></script>
