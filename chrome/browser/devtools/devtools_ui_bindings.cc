@@ -71,6 +71,7 @@
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "third_party/WebKit/public/public_features.h"
@@ -700,9 +701,35 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
     callback.Run(&response);
     return;
   }
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("devtools_network_resource", R"(
+        semantics {
+          sender: "Developer Tools"
+          description:
+            "When user opens Developer Tools, the browser may fetch additional "
+            "resources from the network to enrich the debugging experience "
+            "(e.g. source map resources)."
+          trigger: "User opens Developer Tools to debug a web page."
+          data: "Any resources requested by Developer Tools"
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "It's not possible to disable this feature from settings."
+          policy {
+            DeveloperToolsDisabled {
+              policy_options {mode: MANDATORY}
+              value: true
+            }
+          }
+        })");
 
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(gurl, net::URLFetcher::GET, this).release();
+  net::URLFetcher* fetcher = net::URLFetcher::Create(gurl, net::URLFetcher::GET,
+                                                     this, traffic_annotation)
+                                 .release();
   pending_requests_[fetcher] = callback;
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetExtraRequestHeaders(headers);
