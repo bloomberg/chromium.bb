@@ -1,33 +1,40 @@
-<html>
-  <head>
-    <script>
-      var output = '';
-   
-      function selectNodes(a, b) {
-        window.getSelection().setBaseAndExtent(a, 1, b, 1);
-        output += window.getSelection().anchorNode.parentNode.id + ' ';   
-      }
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+// Test for https://bugs.webkit.org/show_bug.cgi?id=20117
+test(() => assert_selection(
+  [
+    '<div id="x">Div X</div>',
+    '<div id="y">Div Y</div>',
+    '<div id="z">Div Z</div>',
+  ].join(''),
+  selection => {
+    const x = selection.document.getElementById('x');
+    const y = selection.document.getElementById('y');
+    selection.setBaseAndExtent(x, 1, y, 1);
+  },
+  [
+    '<div id="x">Div X^</div>',
+    '<div id="y">Div Y|</div>',
+    '<div id="z">Div Z</div>',
+  ].join('')), 'anchor < focus');
 
-      if (window.testRunner)
-        testRunner.dumpAsText();
-
-      function doIt() {
-        try {
-          var x = document.getElementById('x');
-          var y = document.getElementById('y');
-          selectNodes(x, y);
-          selectNodes(y, x);
-          document.getElementById('result').innerHTML = (output == "x y " ? "PASS" : ("FAIL: " + output));
-        } catch (e) { alert(e); }
-      }
-    </script>
-  </head>
-  <body onload="doIt()">
-    <p>Test for <a href="https://bugs.webkit.org/show_bug.cgi?id=20117">bug 20117</a>:
-    setBaseAndExtent fails to reverse the current selection.</p>
-    <div id='x'>Div X</div>
-    <div id='y'>Div Y</div>
-    <div id='z'>Div Z</div>
-    <div id='result'>FAIL (script didn't run)</div>
-  </body>
-</html>
+test(() => assert_selection(
+  [
+    '<div id="x">Div X</div>',
+    '<div id="y">Div Y</div>',
+    '<div id="z">Div Z</div>',
+  ].join(''),
+  selection => {
+    const x = selection.document.getElementById('x');
+    const y = selection.document.getElementById('y');
+    selection.setBaseAndExtent(y, 1, x, 1);
+  },
+  [
+    '<div id="x">Div X|</div>',
+    '<div id="y">Div Y^</div>',
+    '<div id="z">Div Z</div>',
+  ].join('')), 'anchor > focus');
+</script>
