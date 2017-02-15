@@ -536,6 +536,7 @@ var vrShellUi = (function() {
           new api.OpaqueGradient(this.HORIZON_COLOR, this.CENTER_COLOR));
       groundPlane.setTranslation(0, -this.SCENE_HEIGHT / 2, 0);
       groundPlane.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
+      groundPlane.setDrawPhase(0);
       this.groundPlaneId = ui.addElement(groundPlane);
 
       // Make ceiling plane.
@@ -546,6 +547,7 @@ var vrShellUi = (function() {
           new api.OpaqueGradient(this.HORIZON_COLOR, this.CENTER_COLOR));
       ceilingPlane.setTranslation(0, this.SCENE_HEIGHT / 2, 0);
       ceilingPlane.setRotation(1.0, 0.0, 0.0, Math.PI / 2);
+      ceilingPlane.setDrawPhase(0);
       this.ceilingPlaneId = ui.addElement(ceilingPlane);
 
       // Ground grid.
@@ -562,6 +564,7 @@ var vrShellUi = (function() {
           transparentHorizonColor, this.HORIZON_COLOR, this.GRIDLINE_COUNT));
       groundGrid.setTranslation(0, -this.SCENE_HEIGHT / 2 + 0.01, 0);
       groundGrid.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
+      groundGrid.setDrawPhase(0);
       this.groundGridId = ui.addElement(groundGrid);
     }
 

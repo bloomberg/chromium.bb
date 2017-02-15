@@ -289,6 +289,17 @@ api.UiElementUpdate = class {
   setFill(fill) {
     Object.assign(this.properties, fill.properties);
   }
+
+  /**
+   * Sets the draw phase. Elements with a lower draw phase are rendered before
+   * elements with a higher draw phase. If elements have an equal draw phase
+   * the element with the larger distance is drawn first. The default draw phase
+   * is 1.
+   * @param {number} drawPhase
+   */
+  setDrawPhase(drawPhase) {
+    this.properties['drawPhase'] = drawPhase;
+  }
 };
 
 /**

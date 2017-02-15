@@ -810,14 +810,20 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
                            const gvr::Sizei& render_size,
                            int viewport_offset) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
+
+  gvr::Mat4f view_matrix;
+  if (head_pose) {
+    view_matrix = *head_pose;
+  } else {
+    SetIdentityM(view_matrix);
+  }
+  auto elementsInDrawOrder = GetElementsInDrawOrder(view_matrix, elements);
+
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(
         eye + viewport_offset, buffer_viewport_.get());
 
-    gvr::Mat4f view_matrix = gvr_api_->GetEyeFromHeadMatrix(eye);
-    if (head_pose != nullptr) {
-      view_matrix = MatrixMul(view_matrix, *head_pose);
-    }
+    view_matrix = MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), view_matrix);
 
     gvr::Recti pixel_rect =
         CalculatePixelSpaceRect(render_size, buffer_viewport_->GetSourceUv());
@@ -830,7 +836,7 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
             buffer_viewport_->GetSourceFov(), kZNear, kZFar),
         view_matrix);
 
-    DrawElements(render_matrix, elements);
+    DrawElements(render_matrix, view_matrix, elementsInDrawOrder);
     if (head_pose != nullptr && !web_vr_mode_) {
       DrawCursor(render_matrix);
     }
@@ -838,10 +844,13 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
 }
 
 void VrShellGl::DrawElements(
-    const gvr::Mat4f& render_matrix,
+    const gvr::Mat4f& view_proj_matrix,
+    const gvr::Mat4f& view_matrix,
     const std::vector<const ContentRectangle*>& elements) {
-  for (const auto& rect : elements) {
-    gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
+  for (auto& rect : elements) {
+    gvr::Mat4f transform =
+        MatrixMul(view_proj_matrix, rect->transform.to_world);
+
     switch (rect->fill) {
       case Fill::SPRITE: {
         Rectf copy_rect;
@@ -880,6 +889,41 @@ void VrShellGl::DrawElements(
         break;
     }
   }
+}
+
+std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
+    const gvr::Mat4f& view_matrix,
+    const std::vector<const ContentRectangle*>& elements) {
+  typedef std::pair<float, const ContentRectangle*> DistanceElementPair;
+  std::vector<DistanceElementPair> zOrderedElementPairs;
+  zOrderedElementPairs.reserve(elements.size());
+
+  for (const auto& element : elements) {
+    // Distance is the abs(z) value in view space.
+    gvr::Vec3f element_position = GetTranslation(element->transform.to_world);
+    float distance =
+        std::fabs(MatrixVectorMul(view_matrix, element_position).z);
+    zOrderedElementPairs.push_back(std::make_pair(distance, element));
+  }
+
+  // Sort elements primarily based on their draw phase (lower draw phase first)
+  // and secondarily based on their distance (larger distance first).
+  std::sort(
+      zOrderedElementPairs.begin(), zOrderedElementPairs.end(),
+      [](const DistanceElementPair& first, const DistanceElementPair& second) {
+        if (first.second->draw_phase != second.second->draw_phase) {
+          return first.second->draw_phase < second.second->draw_phase;
+        } else {
+          return first.first > second.first;
+        }
+      });
+
+  std::vector<const ContentRectangle*> zOrderedElements;
+  zOrderedElements.reserve(elements.size());
+  for (auto distanceElementPair : zOrderedElementPairs) {
+    zOrderedElements.push_back(distanceElementPair.second);
+  }
+  return zOrderedElements;
 }
 
 void VrShellGl::DrawCursor(const gvr::Mat4f& render_matrix) {

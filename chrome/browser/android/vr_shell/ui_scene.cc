@@ -446,6 +446,7 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   if (dict.GetDouble("opacity", &opacity)) {
     element->opacity = opacity;
   }
+  dict.GetInteger("drawPhase", &element->draw_phase);
 
   if (dict.GetInteger("xAnchoring",
                       reinterpret_cast<int*>(&element->x_anchoring))) {

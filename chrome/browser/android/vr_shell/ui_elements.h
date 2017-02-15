@@ -140,6 +140,8 @@ struct ContentRectangle : public WorldRectangle {
 
   int gridline_count = 1;
 
+  int draw_phase = 1;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentRectangle);
 };
