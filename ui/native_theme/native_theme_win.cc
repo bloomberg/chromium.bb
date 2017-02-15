@@ -578,8 +578,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectionBackgroundUnfocused:
       return system_colors_[IsUsingHighContrastTheme() ?
                               COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
-    case kColorId_TreeArrow:
-      return system_colors_[COLOR_WINDOWTEXT];
 
     // Table
     case kColorId_TableBackground:

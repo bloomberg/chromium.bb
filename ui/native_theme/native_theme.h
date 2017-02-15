@@ -335,7 +335,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TreeSelectedTextUnfocused,
     kColorId_TreeSelectionBackgroundFocused,
     kColorId_TreeSelectionBackgroundUnfocused,
-    kColorId_TreeArrow,
     // Table
     kColorId_TableBackground,
     kColorId_TableText,

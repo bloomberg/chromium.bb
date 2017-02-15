@@ -130,7 +130,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectedTextUnfocused:
     case kColorId_TreeSelectionBackgroundFocused:
     case kColorId_TreeSelectionBackgroundUnfocused:
-    case kColorId_TreeArrow:
     case kColorId_TableBackground:
     case kColorId_TableText:
     case kColorId_TableSelectedText:

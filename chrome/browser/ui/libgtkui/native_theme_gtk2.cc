@@ -263,8 +263,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectionBackgroundFocused:
     case kColorId_TreeSelectionBackgroundUnfocused:
       return GetBgColor(GetTree(), SELECTED);
-    case kColorId_TreeArrow:
-      return GetFgColor(GetTree(), NORMAL);
     case kColorId_TableGroupingIndicatorColor:
       return GetTextAAColor(GetTree(), NORMAL);
 

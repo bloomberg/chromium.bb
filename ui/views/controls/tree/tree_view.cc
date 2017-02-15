@@ -16,9 +16,12 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -29,6 +32,7 @@
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/vector_icons.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;
@@ -823,31 +827,22 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
 void TreeView::PaintExpandControl(gfx::Canvas* canvas,
                                   const gfx::Rect& node_bounds,
                                   bool expanded) {
-  int center_x;
-  if (base::i18n::IsRTL()) {
-    center_x = node_bounds.right() - kArrowRegionSize +
-               (kArrowRegionSize - 4) / 2;
-  } else {
-    center_x = node_bounds.x() + (kArrowRegionSize - 4) / 2;
+  gfx::ImageSkia arrow = gfx::CreateVectorIcon(
+      kSubmenuArrowIcon,
+      color_utils::DeriveDefaultIconColor(
+          GetNativeTheme()->GetSystemColor(text_color_id(false, false))));
+  if (expanded) {
+    arrow = gfx::ImageSkiaOperations::CreateRotatedImage(
+        arrow, base::i18n::IsRTL() ? SkBitmapOperations::ROTATION_270_CW
+                                   : SkBitmapOperations::ROTATION_90_CW);
   }
-  int center_y = node_bounds.y() + node_bounds.height() / 2;
-  const SkColor arrow_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TreeArrow);
-  // TODO: this should come from an image.
-  if (!expanded) {
-    int delta = base::i18n::IsRTL() ? 1 : -1;
-    for (int i = 0; i < 4; ++i) {
-      canvas->FillRect(gfx::Rect(center_x + delta * (2 - i),
-                                 center_y - (3 - i), 1, (3 - i) * 2 + 1),
-                       arrow_color);
-    }
-  } else {
-    center_y -= 2;
-    for (int i = 0; i < 4; ++i) {
-      canvas->FillRect(gfx::Rect(center_x - (3 - i), center_y + i,
-                                 (3 - i) * 2 + 1, 1), arrow_color);
-    }
-  }
+  gfx::Rect arrow_bounds = node_bounds;
+  arrow_bounds.Inset(gfx::Insets((node_bounds.height() - arrow.height()) / 2,
+                                 (kArrowRegionSize - arrow.width()) / 2));
+  canvas->DrawImageInt(arrow, base::i18n::IsRTL()
+                                  ? arrow_bounds.right() - arrow.width()
+                                  : arrow_bounds.x(),
+                       arrow_bounds.y());
 }
 
 TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(

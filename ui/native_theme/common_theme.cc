@@ -123,7 +123,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kTreeSelectedTextColor = SK_ColorBLACK;
   static const SkColor kTreeSelectionBackgroundColor =
       SkColorSetRGB(0xEE, 0xEE, 0xEE);
-  static const SkColor kTreeArrowColor = SkColorSetRGB(0x7A, 0x7A, 0x7A);
   // Table:
   static const SkColor kTableBackground = SK_ColorWHITE;
   static const SkColor kTableTextColor = SK_ColorBLACK;
@@ -244,8 +243,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TreeSelectionBackgroundFocused:
     case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
       return kTreeSelectionBackgroundColor;
-    case NativeTheme::kColorId_TreeArrow:
-      return kTreeArrowColor;
 
     // Table
     case NativeTheme::kColorId_TableBackground:

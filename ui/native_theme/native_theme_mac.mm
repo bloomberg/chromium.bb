@@ -242,7 +242,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_TreeSelectionBackgroundUnfocused:
     case kColorId_TableSelectionBackgroundUnfocused:
       return kUnfocusedSelectedTextBackgroundColor;
-    case kColorId_TreeArrow:
     case kColorId_TableGroupingIndicatorColor:
       return SkColorSetRGB(140, 140, 140);
 

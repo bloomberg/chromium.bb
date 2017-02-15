@@ -231,7 +231,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetBgColor("GtkTreeView#treeview.view .view.cell");
     case ui::NativeTheme::kColorId_TableText:
     case ui::NativeTheme::kColorId_TreeText:
-    case ui::NativeTheme::kColorId_TreeArrow:
     case ui::NativeTheme::kColorId_TableGroupingIndicatorColor:
       return GetFgColor("GtkTreeView#treeview.view .view.cell GtkLabel");
     case ui::NativeTheme::kColorId_TableSelectedText:
