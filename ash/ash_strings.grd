@@ -137,7 +137,7 @@ This file contains the strings for ash.
         Launcher (syncing apps...)
       </message>
       <message name="IDS_ASH_SHELF_OVERFLOW_NAME" desc="The title used for the Ash overflow button in the shelf">
-        Overflow Button
+        Overflow button
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE" desc="Title of the menu item in the context menu for auto-hiding the shelf when the current window is not maximized">
         Autohide shelf
@@ -159,7 +159,7 @@ This file contains the strings for ash.
       </message>
 
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
-        Keyboard Overlay
+        Keyboard overlay
       </message>
 
       <message name="IDS_ASH_LEARN_MORE" desc="Text of Learn more links.">

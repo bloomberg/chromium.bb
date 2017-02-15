@@ -94,7 +94,7 @@
     Not activated
   </message>
   <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
-    Private Network
+    Private network
   </message>
   <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider that supports OpenVPN and L2TP over IPsec.">
     OpenVPN / L2TP
@@ -112,13 +112,13 @@
     Cellular
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
-    Network Info
+    Network info
   </message>
   <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
-    IP Address
+    IP address
   </message>
   <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network:">
-    IPv6 Address
+    IPv6 address
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
     Settings...
@@ -227,7 +227,7 @@
 
   <!-- Status tray audio strings. -->
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_FRONT_MIC" desc="label used for front microphone">
-    Front Microphone
+    Front microphone
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE" desc="label used for audio headphone device">
@@ -235,15 +235,15 @@
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_SPEAKER" desc="label used for internal audio speaker">
-    Speaker (Internal)
+    Speaker (internal)
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_MIC" desc="label used for internal microphone">
-    Microphone (Internal)
+    Microphone (internal)
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_REAR_MIC" desc="label used for rear microphone">
-    Rear Microphone
+    Rear microphone
   </message>
 
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE" desc="label used for usb audio device">
@@ -258,7 +258,7 @@
     <ph name="device_name">$1<ex>Speaker</ex></ph> (HDMI/DP)
   </message>
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_MIC_JACK_DEVICE" desc="label used for mic jack device">
-    Mic Jack
+    Mic jack
   </message>
 
   <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
@@ -281,7 +281,7 @@
     Brightness
   </message>
   <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
-    Audio Settings
+    Audio settings
   </message>
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
     Output
@@ -576,7 +576,7 @@ Press Shift + Alt to switch.
     Press Control Shift Q twice to sign out.
   </message>
   <message name="IDS_ASH_LOGOUT_CONFIRMATION_TITLE" desc="Dialog title for the logout confirmation dialog.">
-    Exiting Session
+    Exiting session
   </message>
   <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING" desc="The text for the logout confirmation dialog.">
     You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT">$1<ex>5 seconds</ex></ph>.
