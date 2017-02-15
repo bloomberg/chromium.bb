@@ -369,10 +369,10 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   memory_kills_monitor_ = base::MakeUnique<memory::MemoryKillsMonitor::Handle>(
       memory::MemoryKillsMonitor::StartMonitoring());
 
-  // Enable libc close tracking in browser process on unknown/canary channel for
-  // http://crbug.com/660960.
+  // Crash on libc double-close() for http://crbug.com/660960.
   // TODO(xiyuan): Remove this.
-  if (chrome::GetChannel() == version_info::Channel::CANARY ||
+  if (chrome::GetChannel() == version_info::Channel::DEV ||
+      chrome::GetChannel() == version_info::Channel::CANARY ||
       chrome::GetChannel() == version_info::Channel::UNKNOWN) {
     chromeos::InitCloseTracking();
   }
