@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/google_logo_api.h"

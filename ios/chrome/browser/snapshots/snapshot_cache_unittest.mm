@@ -16,6 +16,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
