@@ -25,6 +25,10 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Returns a GREYMatcher that matches |view|.
 // TODO(crbug.com/642619): Evaluate whether this should be shared code.
