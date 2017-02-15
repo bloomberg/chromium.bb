@@ -71,6 +71,7 @@ source_set("remoting") {
     "//mojo/public/cpp/bindings",
     "//skia",
     "//ui/gfx",
+    "//ui/vector_icons",
   ]
 }
 

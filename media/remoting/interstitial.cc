@@ -18,7 +18,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace media {
 namespace remoting {
@@ -93,10 +93,9 @@ void RenderCastMessage(const gfx::Size& canvas_size,
                    sk_text_offset_y, paint);
 
   // Draw the appropriate Cast icon.
-  gfx::VectorIconId current_icon =
-      (type == InterstitialType::IN_SESSION
-           ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
-           : gfx::VectorIconId::MEDIA_ROUTER_WARNING);
+  const gfx::VectorIcon& current_icon = type == InterstitialType::IN_SESSION
+                                            ? ui::kMediaRouterActiveIcon
+                                            : ui::kMediaRouterWarningIcon;
   gfx::ImageSkia icon_image = gfx::CreateVectorIcon(
       current_icon, canvas_size.height() / 6, SK_ColorLTGRAY);
   const SkBitmap* icon_bitmap = icon_image.bitmap();

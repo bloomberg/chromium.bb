@@ -39,7 +39,6 @@
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_ANDROID)
 #include <vector>
@@ -49,7 +48,9 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "ui/android/window_android.h"
-#endif  // defined(OS_ANDROID)
+#else  // !defined(OS_ANDROID)
+#include "ui/vector_icons/vector_icons.h"
+#endif
 
 using content::BrowserThread;
 
@@ -280,8 +281,7 @@ PermissionRequest::IconId MediaStreamDevicesController::GetIconId() const {
   return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
                             : IDR_INFOBAR_MEDIA_STREAM_MIC;
 #else
-  return IsAskingForVideo() ? gfx::VectorIconId::VIDEOCAM
-                            : gfx::VectorIconId::MICROPHONE;
+  return IsAskingForVideo() ? ui::kVideocamIcon : ui::kMicrophoneIcon;
 #endif
 }
 

@@ -11,10 +11,12 @@
 #include "components/url_formatter/elide_url.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#else
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "ui/vector_icons/vector_icons.h"
 #endif
 
 PermissionRequestImpl::PermissionRequestImpl(
@@ -62,22 +64,22 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 #else
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
-      return gfx::VectorIconId::LOCATION_ON;
+      return ui::kLocationOnIcon;
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
-      return gfx::VectorIconId::NOTIFICATIONS;
+      return ui::kNotificationsIcon;
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return gfx::VectorIconId::PRODUCT;
+      return kProductIcon;
 #endif
     case content::PermissionType::MIDI_SYSEX:
-      return gfx::VectorIconId::MIDI;
+      return ui::kMidiIcon;
     case content::PermissionType::FLASH:
-      return gfx::VectorIconId::EXTENSION;
+      return ui::kExtensionIcon;
     default:
       NOTREACHED();
-      return gfx::VectorIconId::VECTOR_ICON_NONE;
+      return ui::kExtensionIcon;
   }
 #endif
 }

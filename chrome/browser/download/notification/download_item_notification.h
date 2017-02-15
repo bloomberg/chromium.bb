@@ -26,7 +26,7 @@ class DownloadItemNotificationTest;
 }
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 class DownloadNotificationManagerForProfile;
@@ -70,7 +70,7 @@ class DownloadItemNotification : public DownloadNotification,
 
   // Set icon of the notification.
   void SetNotificationIcon(int resource_id);
-  void SetNotificationVectorIcon(gfx::VectorIconId id, SkColor color);
+  void SetNotificationVectorIcon(const gfx::VectorIcon& icon, SkColor color);
 
   // Set preview image of the notification. Must be called on IO thread.
   void OnImageLoaded(const std::string& image_data);
@@ -114,8 +114,6 @@ class DownloadItemNotification : public DownloadNotification,
   // prevents updates after close.
   bool closed_ = false;
 
-  int image_resource_id_ = 0;
-  std::pair<gfx::VectorIconId, SkColor> vector_icon_params_;
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;

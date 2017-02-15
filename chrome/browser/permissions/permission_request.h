@@ -12,7 +12,7 @@
 #include "url/gurl.h"
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 // Used for UMA to record the types of permission prompts shown.
@@ -65,8 +65,8 @@ class PermissionRequest {
   // On Android, icons are represented with an IDR_ identifier.
   typedef int IconId;
 #else
-  // On desktop, we use a vector icon id.
-  typedef gfx::VectorIconId IconId;
+  // On desktop, we use a vector icon.
+  typedef const gfx::VectorIcon& IconId;
 #endif
 
   PermissionRequest();

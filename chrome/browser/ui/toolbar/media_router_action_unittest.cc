@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
@@ -19,6 +19,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
 
 using content::WebContents;
 using media_router::MediaRouterDialogControllerImpl;
@@ -95,10 +96,10 @@ class MediaRouterActionUnitTest : public MediaRouterWebUITest {
                                     media_router::IssueInfo::Severity::FATAL)),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
-        active_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_ACTIVE)),
-        error_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_ERROR)),
-        idle_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_IDLE)),
-        warning_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_WARNING)) {}
+        active_icon_(GetIcon(ui::kMediaRouterActiveIcon)),
+        error_icon_(GetIcon(ui::kMediaRouterErrorIcon)),
+        idle_icon_(GetIcon(ui::kMediaRouterIdleIcon)),
+        warning_icon_(GetIcon(ui::kMediaRouterWarningIcon)) {}
 
   ~MediaRouterActionUnitTest() override {}
 
@@ -135,9 +136,9 @@ class MediaRouterActionUnitTest : public MediaRouterWebUITest {
     MediaRouterWebUITest::TearDown();
   }
 
-  gfx::Image GetIcon(gfx::VectorIconId icon_id) {
-    return gfx::Image(gfx::CreateVectorIcon(
-        icon_id, MediaRouterAction::GetIconColor(icon_id)));
+  gfx::Image GetIcon(const gfx::VectorIcon& icon) {
+    return gfx::Image(
+        gfx::CreateVectorIcon(icon, MediaRouterAction::GetIconColor(icon)));
   }
 
   TestMediaRouterAction* action() { return action_.get(); }

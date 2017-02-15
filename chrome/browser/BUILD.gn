@@ -1598,7 +1598,11 @@ split_static_library("browser") {
       "//v8",
     ]
   } else {
-    deps += [ "//net:net" ]
+    deps += [
+      "//chrome/app/vector_icons",
+      "//net:net",
+      "//ui/vector_icons",
+    ]
   }
 
   if (is_chromeos && use_cras) {

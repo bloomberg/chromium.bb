@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "base/macros.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -61,8 +62,8 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
     content::WebContents* web_contents)
     : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL) {
-  gfx::ImageSkia download_image = gfx::CreateVectorIcon(
-      gfx::VectorIconId::FILE_DOWNLOAD_SHELF, 72, gfx::kGoogleBlue500);
+  gfx::ImageSkia download_image =
+      gfx::CreateVectorIcon(kFileDownloadShelfIcon, 72, gfx::kGoogleBlue500);
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.

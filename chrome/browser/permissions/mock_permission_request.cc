@@ -7,7 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/theme_resources.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 MockPermissionRequest::MockPermissionRequest()
     : MockPermissionRequest("test",
@@ -62,7 +62,7 @@ MockPermissionRequest::~MockPermissionRequest() {}
 
 PermissionRequest::IconId MockPermissionRequest::GetIconId() const {
   // Use a valid icon ID to support UI tests.
-  return gfx::VectorIconId::WARNING;
+  return ui::kWarningIcon;
 }
 
 base::string16 MockPermissionRequest::GetMessageTextFragment() const {

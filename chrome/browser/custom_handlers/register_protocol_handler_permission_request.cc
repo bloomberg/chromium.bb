@@ -10,7 +10,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -40,7 +40,7 @@ RegisterProtocolHandlerPermissionRequest::
 
 PermissionRequest::IconId RegisterProtocolHandlerPermissionRequest::GetIconId()
     const {
-  return gfx::VectorIconId::PROTOCOL_HANDLER;
+  return ui::kProtocolHandlerIcon;
 }
 
 base::string16

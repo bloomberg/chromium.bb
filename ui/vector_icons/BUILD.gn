@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/util/branding.gni")
 import("//ui/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("ui_vector_icons") {
@@ -12,8 +13,21 @@ aggregate_vector_icons("ui_vector_icons") {
     "back_arrow.icon",
     "close.1x.icon",
     "close.icon",
+    "error_circle.icon",
+    "extension.icon",
     "forward_arrow.1x.icon",
     "forward_arrow.icon",
+    "location_on.icon",
+    "media_router_active.icon",
+    "media_router_error.icon",
+    "media_router_idle.icon",
+    "media_router_warning.icon",
+    "microphone.icon",
+    "midi.icon",
+    "notifications.icon",
+    "protocol_handler.icon",
+    "videocam.icon",
+    "warning.icon",
   ]
 }
 

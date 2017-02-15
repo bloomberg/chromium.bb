@@ -233,11 +233,9 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
         layout_delegate->GetMetric(
             LayoutDelegate::Metric::RELATED_LABEL_HORIZONTAL_SPACING)));
     views::ImageView* icon = new views::ImageView();
-    gfx::VectorIconId vector_id = requests[index]->GetIconId();
-    if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
-      icon->SetImage(
-          gfx::CreateVectorIcon(vector_id, kIconSize, gfx::kChromeIconGrey));
-    }
+    const gfx::VectorIcon& vector_id = requests[index]->GetIconId();
+    icon->SetImage(
+        gfx::CreateVectorIcon(vector_id, kIconSize, gfx::kChromeIconGrey));
     icon->SetTooltipText(base::string16());  // Redundant with the text fragment
     label_container->AddChildView(icon);
     views::Label* label =

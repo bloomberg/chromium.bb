@@ -17,11 +17,14 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
-#include "ui/gfx/vector_icons_public.h"
 
 class Browser;
 class MediaRouterActionPlatformDelegate;
 class TabStripModel;
+
+namespace gfx {
+struct VectorIcon;
+}
 
 namespace media_router {
 class MediaRouterDialogControllerImpl;
@@ -38,7 +41,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   MediaRouterAction(Browser* browser, ToolbarActionsBar* toolbar_actions_bar);
   ~MediaRouterAction() override;
 
-  static SkColor GetIconColor(gfx::VectorIconId icon_id);
+  static SkColor GetIconColor(const gfx::VectorIcon& icon_id);
 
   // ToolbarActionViewController implementation.
   std::string GetId() const override;
@@ -107,11 +110,11 @@ class MediaRouterAction : public ToolbarActionViewController,
   // updates |current_icon_|.
   void MaybeUpdateIcon();
 
-  gfx::VectorIconId GetCurrentIcon() const;
+  const gfx::VectorIcon& GetCurrentIcon() const;
 
   // The current icon to show. This is updated based on the current issues and
   // routes since |this| is an IssueObserver and MediaRoutesObserver.
-  gfx::VectorIconId current_icon_;
+  const gfx::VectorIcon* current_icon_;
 
   // The current issue shown in the Media Router WebUI, set in OnIssue() and
   // cleared in OnIssuesCleared().
