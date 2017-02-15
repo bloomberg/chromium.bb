@@ -18,7 +18,6 @@ class SerializableUserData;
 // TODO(crbug.com/685388): Investigate using code from the sessions component.
 @interface CRWSessionStorage : NSObject<NSCoding>
 
-@property(nonatomic, copy) NSString* tabID;
 @property(nonatomic, copy) NSString* openerID;
 @property(nonatomic, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, assign) NSInteger openerNavigationIndex;

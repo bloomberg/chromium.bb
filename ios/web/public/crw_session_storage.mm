@@ -21,7 +21,6 @@ NSString* const kOpenerIDKey = @"openerId";
 NSString* const kOpenedByDOMKey = @"openedByDOM";
 NSString* const kOpenerNavigationIndexKey = @"openerNavigationIndex";
 NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
-NSString* const kTabIDKey = @"tabId";
 NSString* const kWindowNameKey = @"windowName";
 }
 
@@ -34,7 +33,6 @@ NSString* const kWindowNameKey = @"windowName";
 
 @implementation CRWSessionStorage
 
-@synthesize tabID = _tabID;
 @synthesize openerID = _openerID;
 @synthesize openedByDOM = _openedByDOM;
 @synthesize openerNavigationIndex = _openerNavigationIndex;
@@ -61,7 +59,6 @@ NSString* const kWindowNameKey = @"windowName";
 - (instancetype)initWithCoder:(nonnull NSCoder*)decoder {
   self = [super init];
   if (self) {
-    _tabID = [[decoder decodeObjectForKey:kTabIDKey] copy];
     _windowName = [[decoder decodeObjectForKey:kWindowNameKey] copy];
     _openerID = [[decoder decodeObjectForKey:kOpenerIDKey] copy];
     _openedByDOM = [decoder decodeBoolForKey:kOpenedByDOMKey];
@@ -91,7 +88,6 @@ NSString* const kWindowNameKey = @"windowName";
 }
 
 - (void)encodeWithCoder:(NSCoder*)coder {
-  [coder encodeObject:self.tabID forKey:kTabIDKey];
   [coder encodeObject:self.openerID forKey:kOpenerIDKey];
   [coder encodeBool:self.openedByDOM forKey:kOpenedByDOMKey];
   [coder encodeInt:self.openerNavigationIndex forKey:kOpenerNavigationIndexKey];

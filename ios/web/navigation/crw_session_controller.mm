@@ -37,7 +37,6 @@
   // the incremental merging of the two classes.
   web::NavigationManagerImpl* _navigationManager;
 
-  NSString* _tabId;  // Unique id of the tab.
   NSString* _openerId;  // Id of tab who opened this tab, empty/nil if none.
   // Navigation index of the tab which opened this tab. Do not rely on the
   // value of this member variable to indicate whether or not this tab has
@@ -92,7 +91,6 @@
 
 // TODO(rohitrao): These properties must be redefined readwrite to work around a
 // clang bug. crbug.com/228650
-@property(nonatomic, readwrite, copy) NSString* tabId;
 @property(nonatomic, readwrite, strong) NSArray* entries;
 @property(nonatomic, readwrite, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
@@ -105,7 +103,6 @@
 @property(nonatomic, readwrite, assign) NSInteger openerNavigationIndex;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 
-- (NSString*)uniqueID;
 // Removes all entries after currentNavigationIndex_.
 - (void)clearForwardItems;
 // Discards the transient entry, if any.
@@ -125,7 +122,6 @@
 
 @implementation CRWSessionController
 
-@synthesize tabId = _tabId;
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
@@ -145,7 +141,6 @@
   self = [super init];
   if (self) {
     self.windowName = windowName;
-    _tabId = [[self uniqueID] copy];
     _openerId = [openerId copy];
     _openedByDOM = openedByDOM;
     _openerNavigationIndex = openerIndex;
@@ -167,7 +162,6 @@
                  browserState:(web::BrowserState*)browserState {
   self = [super init];
   if (self) {
-    _tabId = [[self uniqueID] copy];
     _openerId = nil;
     _browserState = browserState;
 
@@ -197,7 +191,6 @@
 
 - (id)copyWithZone:(NSZone*)zone {
   CRWSessionController* copy = [[[self class] alloc] init];
-  copy->_tabId = [_tabId copy];
   copy->_openerId = [_openerId copy];
   copy->_openedByDOM = _openedByDOM;
   copy->_openerNavigationIndex = _openerNavigationIndex;
@@ -251,13 +244,14 @@
 
 - (NSString*)description {
   return [NSString
-      stringWithFormat:
-          @"id: %@\nname: %@\nlast visit: %f\ncurrent index: %" PRIdNS
-          @"\nprevious index: %" PRIdNS @"\npending index: %" PRIdNS
-                                        @"\n%@\npending: %@\ntransient: %@\n",
-          _tabId, self.windowName, _lastVisitedTimestamp,
-          _currentNavigationIndex, _previousNavigationIndex, _pendingItemIndex,
-          _entries, _pendingEntry.get(), _transientEntry.get()];
+      stringWithFormat:@"name: %@\nlast visit: %f\ncurrent index: %" PRIdNS
+                       @"\nprevious index: %" PRIdNS
+                       @"\npending index: %" PRIdNS
+                       @"\n%@\npending: %@\ntransient: %@\n",
+                       self.windowName, _lastVisitedTimestamp,
+                       _currentNavigationIndex, _previousNavigationIndex,
+                       _pendingItemIndex, _entries, _pendingEntry.get(),
+                       _transientEntry.get()];
 }
 
 - (web::NavigationItemList)items {
@@ -697,17 +691,6 @@
 
 #pragma mark -
 #pragma mark Private methods
-
-- (NSString*)uniqueID {
-  CFUUIDRef uuidRef = CFUUIDCreate(NULL);
-  CFStringRef uuidStringRef = CFUUIDCreateString(NULL, uuidRef);
-  CFRelease(uuidRef);
-
-  NSString* uuid =
-      [NSString stringWithString:base::mac::ObjCCastStrict<NSString>(
-                                     CFBridgingRelease(uuidStringRef))];
-  return uuid;
-}
 
 - (CRWSessionEntry*)sessionEntryWithURL:(const GURL&)url
                                referrer:(const web::Referrer&)referrer

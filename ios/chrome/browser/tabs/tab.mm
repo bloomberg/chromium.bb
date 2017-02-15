@@ -132,6 +132,7 @@
 #include "ios/web/public/interstitials/web_interstitial.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/url_util.h"
@@ -174,6 +175,10 @@ namespace {
 class TabHistoryContext;
 class FaviconDriverObserverBridge;
 class TabInfoBarObserver;
+
+// The key under which the Tab ID is stored in the WebState's serializable user
+// data.
+NSString* const kTabIDKey = @"TabID";
 
 // Name of histogram for recording the state of the tab when the renderer is
 // terminated.
@@ -780,8 +785,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)tabId {
-  DCHECK([self navigationManager]);
-  return [[self navigationManager]->GetSessionController() tabId];
+  DCHECK(self.webState);
+  web::SerializableUserDataManager* userDataManager =
+      web::SerializableUserDataManager::FromWebState(self.webState);
+  id<NSCoding> tabID = userDataManager->GetValueForSerializationKey(kTabIDKey);
+  if (!tabID) {
+    tabID = [[NSUUID UUID] UUIDString];
+    userDataManager->AddSerializableData(tabID, kTabIDKey);
+  }
+  return base::mac::ObjCCastStrict<NSString>(tabID);
 }
 
 - (web::WebState*)webState {

@@ -59,7 +59,8 @@ std::unique_ptr<SerializableUserData> SerializableUserData::Create() {
 }
 
 SerializableUserDataImpl::SerializableUserDataImpl()
-    : data_([[NSDictionary alloc] init]) {}
+    : data_([[NSDictionary alloc] init]),
+      legacy_key_conversions_(@{@"tabId" : @"TabID"}) {}
 
 SerializableUserDataImpl::~SerializableUserDataImpl() {}
 
@@ -71,9 +72,20 @@ void SerializableUserDataImpl::Encode(NSCoder* coder) {
 }
 
 void SerializableUserDataImpl::Decode(NSCoder* coder) {
-  NSDictionary* data = base::mac::ObjCCastStrict<NSDictionary>(
-      [coder decodeObjectForKey:kSerializedUserDataKey]);
-  data_.reset([data mutableCopy]);
+  NSMutableDictionary* data =
+      [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
+  [data addEntriesFromDictionary:GetDecodedLegacyValues(coder)];
+  data_.reset([data copy]);
+}
+
+NSDictionary* SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
+  NSMutableDictionary* legacy_values = [[NSMutableDictionary alloc] init];
+  for (NSString* legacy_key in [legacy_key_conversions_ allKeys]) {
+    id<NSCoding> value = [coder decodeObjectForKey:legacy_key];
+    NSString* new_key = [legacy_key_conversions_ objectForKey:legacy_key];
+    legacy_values[new_key] = value;
+  }
+  return legacy_values;
 }
 
 // static

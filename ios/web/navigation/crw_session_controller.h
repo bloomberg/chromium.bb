@@ -30,7 +30,6 @@ struct Referrer;
 // TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionController : NSObject<NSCopying>
 
-@property(nonatomic, readonly, copy) NSString* tabId;
 @property(nonatomic, readonly, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, readonly, assign) NSInteger previousNavigationIndex;
 // The index of the pending item if it is in |items|, or -1 if |pendingItem|
