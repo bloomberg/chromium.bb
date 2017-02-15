@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+</head>
+<body>
+<div id='testElement'></div>
+
+<script>
+
+testElement.style.lineHeight = '10px';
+testElement.style.fontSize = '100px';
+
+
+var t1 = async_test("Getting a 10px lineHeight results in a CSSSimpleLength");
+function t1Callback(computedStyleMap) {
+  t1.step(function() {
+    var result = computedStyleMap.get('line-height');
+    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.cssText, '10px');
+  });
+  t1.done();
+}
+
+var t2 = async_test("getAll for lineHeight returns a single value");
+function t2Callback(computedStyleMap) {
+  t2.step(function() {
+    testElement.style.lineHeight = '20px';
+    var result = computedStyleMap.getAll('line-height');
+    assert_equals(result.length, 1);
+    assert_equals(result[0].cssText, '20px');
+  });
+  t2.done();
+}
+
+var t3 = async_test("Getting a 10% lineHeight results in a CSSSimpleLength");
+function t3Callback(computedStyleMap) {
+  t3.step(function() {
+    testElement.style.lineHeight = '10%';
+    var result = computedStyleMap.get('line-height');
+    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.cssText, '10px');
+  });
+  t3.done();
+}
+
+var t4 = async_test("Getting a number lineHeight results in a CSSNumberValue");
+function t4Callback(computedStyleMap) {
+  t4.step(function() {
+    testElement.style.lineHeight = '0.2';
+    var result = computedStyleMap.get('line-height');
+    assert_true(result instanceof CSSNumberValue);
+    assert_equals(result.cssText, '20');
+  });
+  t4.done();
+}
+
+var t5 = async_test("Getting a calc lineHeight results in a CSSSimpleLength");
+function t5Callback(computedStyleMap) {
+  t5.step(function() {
+    testElement.style.lineHeight = 'calc(10px + 10%)';
+    var result = computedStyleMap.get('line-height');
+    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.cssText, '20px');
+  });
+  t5.done();
+}
+
+var t6 = async_test("Getting a normal lineHeight results in a CSSKeywordValue");
+function t6Callback(computedStyleMap) {
+  t6.step(function() {
+    testElement.style.lineHeight = 'normal';
+    var result = computedStyleMap.get('line-height');
+    assert_true(result instanceof CSSKeywordValue);
+    assert_equals(result.cssText, 'normal');
+  });
+  t6.done();
+}
+
+document.onreadystatechange = function() {
+  if(document.readyState == 'complete') {
+    var computedStyleMap = getComputedStyleMap(testElement);
+    t1Callback(computedStyleMap);
+    t2Callback(computedStyleMap);
+    t3Callback(computedStyleMap);
+    t4Callback(computedStyleMap);
+    t5Callback(computedStyleMap);
+    t6Callback(computedStyleMap);
+  }
+};
+
+</script>
+</body>
+</html>

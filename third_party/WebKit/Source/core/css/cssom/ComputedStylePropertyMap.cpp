@@ -8,6 +8,7 @@
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/cssom/CSSCalcLength.h"
 #include "core/css/cssom/CSSKeywordValue.h"
+#include "core/css/cssom/CSSNumberValue.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
@@ -105,6 +106,28 @@ CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(
     case CSSPropertyWidth:
       styleValue = styleValueForLength(style->width());
       break;
+    case CSSPropertyLineHeight: {
+      // LineHeight is represented as a Length in ComputedStyle, even though it
+      // can be a number or the "normal" keyword. "normal" is encoded as a
+      // negative percent, and numbers (which must be positive) are encoded as
+      // percents.
+      Length lineHeight = style->lineHeight();
+      if (lineHeight.isNegative()) {
+        styleValue = CSSKeywordValue::create("normal");
+        break;
+      }
+      if (lineHeight.isPercent()) {
+        styleValue = CSSNumberValue::create(lineHeight.percent());
+        break;
+      }
+      if (lineHeight.isFixed()) {
+        styleValue = CSSSimpleLength::create(
+            lineHeight.pixels(), CSSPrimitiveValue::UnitType::Pixels);
+        break;
+      }
+      NOTREACHED();
+      break;
+    }
     default:
       // TODO(rjwright): Add a flag argument to
       // ComputedStyleCSSValyeMapping::get that makes it return
