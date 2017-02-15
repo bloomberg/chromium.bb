@@ -23,6 +23,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -47,7 +48,31 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   ~IconFetcher() override {}
 
   void Start() {
-    fetcher_ = net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("launcher_drive_app_icon_fetch", R"(
+          semantics {
+            sender: "Google Drive App"
+            description:
+              "Drive allows user to add apps to handle their data such as "
+              "Lucidchart etc. DriveAppConverter wraps those apps as a "
+              "bookmark app. This service fetches the icon of a user's "
+              "connected Drive app."
+            trigger:
+              "When Chrome detects that a Drive app is connected to a user's "
+              "account"
+            data:
+              "URL of the required icon to fetch. No user information is sent."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: true
+            cookies_store: "user"
+            setting: "Unconditionally enabled on ChromeOS"
+            policy_exception_justification:
+              "Not implemented, considered not useful."
+          })");
+    fetcher_ = net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this,
+                                       traffic_annotation);
     fetcher_->SetRequestContext(converter_->profile_->GetRequestContext());
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->Start();
