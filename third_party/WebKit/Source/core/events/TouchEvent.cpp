@@ -259,18 +259,23 @@ void TouchEvent::preventDefault() {
     case PassiveMode::NotPassive:
     case PassiveMode::NotPassiveDefault:
       if (!cancelable()) {
-        UseCounter::count(view()->frame(),
-                          UseCounter::UncancellableTouchEventPreventDefaulted);
+        if (view() && view()->frame()) {
+          UseCounter::count(
+              view()->frame(),
+              UseCounter::UncancellableTouchEventPreventDefaulted);
+        }
 
         if (m_nativeEvent &&
             m_nativeEvent->dispatchType ==
                 WebInputEvent::
                     ListenersForcedNonBlockingDueToMainThreadResponsiveness) {
           // Non blocking due to main thread responsiveness.
-          UseCounter::count(
-              view()->frame(),
-              UseCounter::
-                  UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
+          if (view() && view()->frame()) {
+            UseCounter::count(
+                view()->frame(),
+                UseCounter::
+                    UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
+          }
           messageSource = InterventionMessageSource;
           warningMessage =
               "Ignored attempt to cancel a " + type() +

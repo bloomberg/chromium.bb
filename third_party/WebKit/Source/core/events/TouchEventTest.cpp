@@ -132,4 +132,10 @@ TEST_F(TouchEventTest,
   EXPECT_THAT(messageSources(), ElementsAre(InterventionMessageSource));
 }
 
+class TouchEventTestNoFrame : public testing::Test {};
+
+TEST_F(TouchEventTestNoFrame, PreventDefaultDoesntRequireFrame) {
+  TouchEvent::create()->preventDefault();
+}
+
 }  // namespace blink
