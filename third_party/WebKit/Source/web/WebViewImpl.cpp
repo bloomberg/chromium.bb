@@ -2170,7 +2170,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
   }
 
   if (isPointerLocked && WebInputEvent::isMouseEventType(inputEvent.type())) {
-    pointerLockMouseEvent(inputEvent);
+    mainFrameImpl()->frameWidget()->pointerLockMouseEvent(inputEvent);
     return WebInputEventResult::HandledSystem;
   }
 
@@ -2523,19 +2523,15 @@ void WebViewImpl::willCloseLayerTreeView() {
 }
 
 void WebViewImpl::didAcquirePointerLock() {
-  if (page())
-    page()->pointerLockController().didAcquirePointerLock();
+  mainFrameImpl()->frameWidget()->didAcquirePointerLock();
 }
 
 void WebViewImpl::didNotAcquirePointerLock() {
-  if (page())
-    page()->pointerLockController().didNotAcquirePointerLock();
+  mainFrameImpl()->frameWidget()->didNotAcquirePointerLock();
 }
 
 void WebViewImpl::didLosePointerLock() {
-  m_pointerLockGestureToken.clear();
-  if (page())
-    page()->pointerLockController().didLosePointerLock();
+  mainFrameImpl()->frameWidget()->didLosePointerLock();
 }
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
@@ -4083,42 +4079,6 @@ void WebViewImpl::setCompositorVisibility(bool isVisible) {
     m_overrideCompositorVisibility = false;
   if (m_layerTreeView)
     m_layerTreeView->setVisible(isVisible);
-}
-
-void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
-  std::unique_ptr<UserGestureIndicator> gestureIndicator;
-  AtomicString eventType;
-  switch (event.type()) {
-    case WebInputEvent::MouseDown:
-      eventType = EventTypeNames::mousedown;
-      if (!page() || !page()->pointerLockController().element())
-        break;
-      gestureIndicator = WTF::wrapUnique(
-          new UserGestureIndicator(DocumentUserGestureToken::create(
-              &page()->pointerLockController().element()->document(),
-              UserGestureToken::NewGesture)));
-      m_pointerLockGestureToken = gestureIndicator->currentToken();
-      break;
-    case WebInputEvent::MouseUp:
-      eventType = EventTypeNames::mouseup;
-      gestureIndicator = WTF::wrapUnique(
-          new UserGestureIndicator(m_pointerLockGestureToken.release()));
-      break;
-    case WebInputEvent::MouseMove:
-      eventType = EventTypeNames::mousemove;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  const WebMouseEvent& mouseEvent = static_cast<const WebMouseEvent&>(event);
-
-  if (page()) {
-    WebMouseEvent transformedEvent =
-        TransformWebMouseEvent(mainFrameImpl()->frameView(), mouseEvent);
-    page()->pointerLockController().dispatchLockedMouseEvent(transformedEvent,
-                                                             eventType);
-  }
 }
 
 void WebViewImpl::forceNextWebGLContextCreationToFail() {

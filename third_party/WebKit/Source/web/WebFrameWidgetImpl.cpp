@@ -337,6 +337,12 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
   AutoReset<const WebInputEvent*> currentEventChange(&m_currentInputEvent,
                                                      &inputEvent);
 
+  if (m_client->isPointerLocked() &&
+      WebInputEvent::isMouseEventType(inputEvent.type())) {
+    pointerLockMouseEvent(inputEvent);
+    return WebInputEventResult::HandledSystem;
+  }
+
   if (m_mouseCaptureNode &&
       WebInputEvent::isMouseEventType(inputEvent.type())) {
     TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type());
@@ -665,18 +671,6 @@ void WebFrameWidgetImpl::willCloseLayerTreeView() {
   m_layerTreeView = nullptr;
   m_animationHost = nullptr;
   m_layerTreeViewClosed = true;
-}
-
-void WebFrameWidgetImpl::didAcquirePointerLock() {
-  page()->pointerLockController().didAcquirePointerLock();
-}
-
-void WebFrameWidgetImpl::didNotAcquirePointerLock() {
-  page()->pointerLockController().didNotAcquirePointerLock();
-}
-
-void WebFrameWidgetImpl::didLosePointerLock() {
-  page()->pointerLockController().didLosePointerLock();
 }
 
 // TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This

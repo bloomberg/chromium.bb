@@ -6,7 +6,7 @@
 #define WebFrameWidgetBase_h
 
 #include "core/clipboard/DataObject.h"
-
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/WebDragData.h"
 #include "public/web/WebFrameWidget.h"
 #include "wtf/Assertions.h"
@@ -76,6 +76,11 @@ class WebFrameWidgetBase : public WebFrameWidget {
   static void setIgnoreInputEvents(bool value) { s_ignoreInputEvents = value; }
   static bool ignoreInputEvents() { return s_ignoreInputEvents; }
 
+  // WebWidget methods.
+  void didAcquirePointerLock() override;
+  void didNotAcquirePointerLock() override;
+  void didLosePointerLock() override;
+
  protected:
   enum DragAction { DragEnter, DragOver };
 
@@ -109,10 +114,16 @@ class WebFrameWidgetBase : public WebFrameWidget {
   // current drop target in this WebView (the drop target can accept the drop).
   WebDragOperation m_dragOperation = WebDragOperationNone;
 
+  // Helper function to process events while pointer locked.
+  void pointerLockMouseEvent(const WebInputEvent&);
+
  private:
   void cancelDrag();
 
   static bool s_ignoreInputEvents;
+  RefPtr<UserGestureToken> m_pointerLockGestureToken;
+
+  friend class WebViewImpl;
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);

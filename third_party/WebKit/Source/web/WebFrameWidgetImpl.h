@@ -108,9 +108,6 @@ class WebFrameWidgetImpl final
   void setTextDirection(WebTextDirection) override;
   bool isAcceleratedCompositingActive() const override;
   void willCloseLayerTreeView() override;
-  void didAcquirePointerLock() override;
-  void didNotAcquirePointerLock() override;
-  void didLosePointerLock() override;
   bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   void setRemoteViewportIntersection(const WebRect&) override;
 

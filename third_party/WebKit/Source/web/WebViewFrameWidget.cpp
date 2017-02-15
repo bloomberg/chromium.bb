@@ -149,18 +149,6 @@ void WebViewFrameWidget::willCloseLayerTreeView() {
   return m_webView->willCloseLayerTreeView();
 }
 
-void WebViewFrameWidget::didAcquirePointerLock() {
-  return m_webView->didAcquirePointerLock();
-}
-
-void WebViewFrameWidget::didNotAcquirePointerLock() {
-  return m_webView->didNotAcquirePointerLock();
-}
-
-void WebViewFrameWidget::didLosePointerLock() {
-  return m_webView->didLosePointerLock();
-}
-
 WebColor WebViewFrameWidget::backgroundColor() const {
   return m_webView->backgroundColor();
 }

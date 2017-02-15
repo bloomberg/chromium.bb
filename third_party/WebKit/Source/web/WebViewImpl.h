@@ -565,8 +565,6 @@ class WEB_EXPORT WebViewImpl final
                                     int targetMargin,
                                     int minimumMargin);
 
-  void pointerLockMouseEvent(const WebInputEvent&);
-
   // PageWidgetEventHandler functions
   void handleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
   void handleMouseDown(LocalFrame&, const WebMouseEvent&) override;
@@ -687,8 +685,6 @@ class WEB_EXPORT WebViewImpl final
   // If set, the (plugin) node which has mouse capture.
   Persistent<Node> m_mouseCaptureNode;
   RefPtr<UserGestureToken> m_mouseCaptureGestureToken;
-
-  RefPtr<UserGestureToken> m_pointerLockGestureToken;
 
   WebLayerTreeView* m_layerTreeView;
   std::unique_ptr<CompositorAnimationHost> m_animationHost;
