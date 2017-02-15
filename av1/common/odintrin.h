@@ -104,7 +104,7 @@ extern uint32_t OD_DIVU_SMALL_CONSTS[OD_DIVU_DMAX][2];
 
 #define OD_MINI AOMMIN
 #define OD_MAXI AOMMAX
-#define OD_CLAMPI(min, val, max) clamp((val), (min), (max))
+#define OD_CLAMPI(min, val, max) (OD_MAXI(min, OD_MINI(val, max)))
 
 #define OD_CLZ0 (1)
 #define OD_CLZ(x) (-get_msb(x))
