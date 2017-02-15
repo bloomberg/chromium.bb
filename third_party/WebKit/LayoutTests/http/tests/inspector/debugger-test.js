@@ -650,8 +650,7 @@ InspectorTest.waitForExecutionContextInTarget = function(target, callback)
 InspectorTest.selectThread = function(target)
 {
     var threadsPane = self.runtime.sharedInstance(Sources.ThreadsSidebarPane);
-    var listItem = threadsPane._targetToListItem.get(target);
-    threadsPane._onListItemClick(listItem, target);
+    threadsPane._list.selectItem(target.model(SDK.DebuggerModel));
 }
 
 InspectorTest.evaluateOnCurrentCallFrame = function(code)
