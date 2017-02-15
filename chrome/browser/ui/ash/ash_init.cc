@@ -15,6 +15,7 @@
 #include "ash/shell_init_params.h"
 #include "base/command_line.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"

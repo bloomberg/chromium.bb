@@ -95,6 +95,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/chromeos_switches.h"

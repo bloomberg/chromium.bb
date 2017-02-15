@@ -20,6 +20,10 @@
 
 class AccountId;
 
+namespace base {
+class TaskRunner;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
