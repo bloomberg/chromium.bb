@@ -488,9 +488,17 @@ void AppLaunchController::OnLaunchSucceeded() {
 }
 
 void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "Kiosk launch failed. Will now shut down."
-             << ", error=" << error;
   DCHECK_NE(KioskAppLaunchError::NONE, error);
+  LOG(ERROR) << "Kiosk launch failed, error=" << error;
+
+  // Reboot on the recoverable cryptohome errors.
+  if (error == KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING ||
+      error == KioskAppLaunchError::ALREADY_MOUNTED) {
+    // Do not save the error because saved errors would stop app from launching
+    // on the next run.
+    chrome::AttemptRelaunch();
+    return;
+  }
 
   // Saves the error and ends the session to go back to login screen.
   KioskAppLaunchError::Save(error);
