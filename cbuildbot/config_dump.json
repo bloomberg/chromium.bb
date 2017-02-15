@@ -5051,6 +5051,90 @@
             "chrome_internal"
         ]
     },
+    "caroline-userdebug-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-userdebug-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "caroline-userdebug"
+        ]
+    },
+    "caroline-userdebug-full": {
+        "_template": "full",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-userdebug-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "caroline-userdebug"
+        ]
+    },
+    "caroline-userdebug-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "caroline-userdebug-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "caroline-userdebug-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "caroline-userdebug-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-userdebug-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "caroline-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ]
+    },
+    "caroline-userdebug-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "caroline-userdebug"
+        ]
+    },
     "cave-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
