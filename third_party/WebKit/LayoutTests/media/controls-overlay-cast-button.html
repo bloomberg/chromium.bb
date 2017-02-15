@@ -34,13 +34,5 @@ async_test(function(t) {
         internals.mediaPlayerRemoteRouteAvailabilityChanged(video, false);
         assert_equals(button.style.display, "none", "button should not be visible after cast device goes away");
     });
-
-    function overlayCastButton(element) {
-        var controlID = "-internal-media-controls-overlay-cast-button";
-        var button = mediaControlsElement(internals.shadowRoot(element).firstChild, controlID);
-        if (!button)
-            throw "Failed to find cast button";
-        return button;
-    }
 });
 </script>

@@ -633,7 +633,6 @@ void MediaControls::defaultEventHandler(Event* event) {
     // When we get a mouse move, show the media controls, and start a timer
     // that will hide the media controls after a 3 seconds without a mouse move.
     makeOpaque();
-    refreshCastButtonVisibility();
     if (shouldHideMediaControls(IgnoreVideoHover))
       startHideMediaControlsTimer();
     return;
