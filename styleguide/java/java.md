@@ -7,17 +7,122 @@ Chromium follows the [Android Open Source style
 guide](http://source.android.com/source/code-style.html) unless an exception
 is listed below.
 
-## Style
+A checkout should give you clang-format to automatically format Java code.
+It is suggested that Clang's formatting of code should be accepted in code
+reviews.
 
-* Copyright header should use
-  [Chromium](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)
-  style.
-* TODO should follow chromium convention i.e. `TODO(username)`.
-* Use of ```assert``` statements are encouraged.
+You can propose changes to this style guide by sending an email to
+`java@chromium.org`. Ideally, the list will arrive at some consensus and you can
+request review for a change to this file. If there's no consensus,
+[`//styleguide/java/OWNERS`](https://chromium.googlesource.com/chromium/src/+/master/styleguide/java/OWNERS)
+get to decide.
+
+## Tools
+
+### Automatically formatting edited files
+
+You can run `git cl format` to apply the automatic formatting.
+
+### IDE setup
+
+For automatically using the correct style, follow the guide to set up your
+favorite IDE:
+
+* [Android Studio](https://chromium.googlesource.com/chromium/src/+/master/docs/android_studio.md)
+* [Eclipse](https://chromium.googlesource.com/chromium/src/+/master/docs/eclipse.md)
+
+### Checkstyle
+
+Checkstyle is automatically run by the build bots, and to ensure you do not have
+any surprises, you can also set up checkstyle locally using [this
+guide](https://sites.google.com/a/chromium.org/dev/developers/checkstyle).
+
+### Lint
+
+Lint is run as part of the build. For more information, see
+[here](https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md).
+
+## File Headers
+
+Use the same format as in the [C++ style guide](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md#File-headers).
+
+## TODOs
+
+TODO should follow chromium convention i.e. `TODO(username)`.
+
+## Code formatting
+
 * Fields should not be explicitly initialized to default values (see
   [here](https://groups.google.com/a/chromium.org/d/topic/chromium-dev/ylbLOvLs0bs/discussion)).
-* For automated style checking install
-  [checkstyle](https://sites.google.com/a/chromium.org/dev/developers/checkstyle).
+
+### Curly braces
+
+Conditional braces should be used, but are optional if the conditional and the
+statement can be on a single line.
+
+Do:
+
+```java
+if (someConditional) return false;
+for (int i = 0; i < 10; ++i) callThing(i);
+```
+
+or
+
+```java
+if (someConditional) {
+  return false;
+}
+```
+
+Do NOT do:
+
+```java
+if (someConditional)
+  return false;
+```
+
+### Exceptions
+
+Similarly to the Android style guide, we discourage the use of
+`catch Exception`. It is also allowed to catch multiple exceptions in one line.
+
+It is OK to do:
+
+```java
+try {
+  somethingThatThrowsIOException();
+  somethingThatThrowsParseException();
+} catch (IOException | ParseException e) {
+  Log.e(TAG, "Failed to do something with exception: ", e)
+}
+```
+
+### Asserts
+
+The Chromium build system strips asserts in release builds (via ProGuard) and
+enables them in debug builds (or when `dcheck_always_on=true`) (via a [build
+step](https://codereview.chromium.org/2517203002)). You should use asserts in
+the [same
+scenarios](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md#CHECK_DCHECK_and-NOTREACHED)
+where C++ DCHECK()s make sense. For multi-statement asserts, use
+`org.chromium.base.BuildConfig.DCHECK_IS_ON` to guard your code.
+
+Example assert:
+
+```java
+assert someCallWithSideEffects() : "assert description";
+```
+
+Example use of `DCHECK_IS_ON`:
+
+```java
+if (org.chromium.base.BuildConfig.DCHECK_IS_ON) {
+   if (!someCallWithSideEffects()) {
+     throw new AssertionError("assert description");
+   }
+}
+```
 
 ## Location
 
@@ -44,28 +149,6 @@ New `<top level directory>/android` directories should have an `OWNERS` file
 much like
 [//base/android/OWNERS](https://chromium.googlesource.com/chromium/src/+/master/base/android/OWNERS).
 
-## Asserts
+## Miscellany
 
-The Chromium build system strips asserts in release builds (via ProGuard) and
-enables them in debug builds (or when `dcheck_always_on=true`) (via a [build
-step](https://codereview.chromium.org/2517203002)). You should use asserts in
-the [same
-scenarios](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md#CHECK_DCHECK_and-NOTREACHED)
-where C++ DCHECK()s make sense. For multi-statement asserts, use
-`org.chromium.base.BuildConfig.DCHECK_IS_ON` to guard your code.
-
-Example assert:
-
-```java
-assert someCallWithSideEffects() : "assert description";
-```
-
-Example use of `DCHECK_IS_ON`:
-
-```java
-if (org.chromium.base.BuildConfig.DCHECK_IS_ON) {
-   if (!someCallWithSideEffects()) {
-     throw new AssertionError("assert description");
-   }
-}
-```
+* Use UTF-8 file encodings and LF line endings.
