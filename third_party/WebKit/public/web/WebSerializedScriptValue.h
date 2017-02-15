@@ -57,6 +57,7 @@ class WebSerializedScriptValue {
     return *this;
   }
 
+  // Creates a serialized script value from its wire format data.
   BLINK_EXPORT static WebSerializedScriptValue fromString(const WebString&);
 
   BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Local<v8::Value>);

@@ -973,7 +973,7 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck) {
   // Send a message with the correct origin.
   WebSecurityOrigin correctOrigin(WebSecurityOrigin::create(toKURL(m_baseURL)));
   WebDocument document = webViewHelper.webView()->mainFrame()->document();
-  WebSerializedScriptValue data(WebSerializedScriptValue::fromString("foo"));
+  WebSerializedScriptValue data(WebSerializedScriptValue::createInvalid());
   WebDOMMessageEvent message(data, "http://origin.com");
   webViewHelper.webView()->mainFrame()->dispatchMessageEventWithOriginCheck(
       correctOrigin, message);
