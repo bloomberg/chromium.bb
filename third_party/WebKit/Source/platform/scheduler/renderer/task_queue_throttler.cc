@@ -485,7 +485,8 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
     return;
 
   base::TimeTicks runtime =
-      std::max(now, AlignedThrottledRunTime(unaligned_runtime));
+      AlignedThrottledRunTime(std::max(now, unaligned_runtime));
+  DCHECK_LE(now, runtime);
 
   // If there is a pending call to PumpThrottledTasks and it's sooner than
   // |runtime| then return.
