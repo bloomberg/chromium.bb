@@ -17,6 +17,21 @@ A browsing context corresponds to the
 interface where the main implementation is
 [LocalFrame](https://cs.chromium.org/src/third_party/WebKit/Source/core/frame/LocalFrame.h).
 
+### [origins](https://html.spec.whatwg.org/multipage/browsers.html#concept-origin)
+
+An origin corresponds to the
+[SecurityOrigin](https://cs.chromium.org/src/third_party/WebKit/Source/platform/weborigin/SecurityOrigin.h)
+class. You can test for
+[same-origin](https://html.spec.whatwg.org/multipage/browsers.html#same-origin)
+using `SecurityOrigin::canAccess` and for [same-origin
+domain](https://html.spec.whatwg.org/multipage/browsers.html#same-origin-domain)
+using `SecurityOrigin::isSameSchemeHostPort`.
+
+The [Suborigins spec](https://w3c.github.io/webappsec-suborigins/) extends
+HTML's definition of origins. To check for same-origin and same-origin domain
+use `SecurityOrigin::canAccessCheckSuborigins` and
+`SecurityOrigin::isSameSchemeHostPortAndSuborigin`.
+
 ### [Window object](https://html.spec.whatwg.org/#window)
 
 A Window object corresponds to the
