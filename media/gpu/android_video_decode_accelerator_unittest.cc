@@ -12,18 +12,32 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/gpu/android_video_decode_accelerator.h"
+#include "media/gpu/avda_codec_allocator.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
+using ::testing::_;
+using ::testing::NiceMock;
+
+namespace media {
 namespace {
+
+#define SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE()     \
+  do {                                            \
+    if (!MediaCodecUtil::IsMediaCodecAvailable()) \
+      return;                                     \
+  } while (false)
 
 bool MakeContextCurrent() {
   return true;
@@ -34,81 +48,104 @@ base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
   return decoder;
 }
 
+ACTION(PostNullCodec) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&media::AVDACodecAllocatorClient::OnCodecConfigured,
+                            arg0, nullptr));
+}
+
 }  // namespace
 
-namespace media {
-
-class MockVideoDecodeAcceleratorClient : public VideoDecodeAccelerator::Client {
+class MockVDAClient : public VideoDecodeAccelerator::Client {
  public:
-  MockVideoDecodeAcceleratorClient() {}
-  ~MockVideoDecodeAcceleratorClient() override {}
+  MOCK_METHOD1(NotifyInitializationComplete, void(bool));
+  MOCK_METHOD5(
+      ProvidePictureBuffers,
+      void(uint32_t, VideoPixelFormat, uint32_t, const gfx::Size&, uint32_t));
+  MOCK_METHOD1(DismissPictureBuffer, void(int32_t));
+  MOCK_METHOD1(PictureReady, void(const Picture&));
+  MOCK_METHOD1(NotifyEndOfBitstreamBuffer, void(int32_t));
+  MOCK_METHOD0(NotifyFlushDone, void());
+  MOCK_METHOD0(NotifyResetDone, void());
+  MOCK_METHOD1(NotifyError, void(VideoDecodeAccelerator::Error));
+};
 
-  // VideoDecodeAccelerator::Client implementation.
-  void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
-                             VideoPixelFormat format,
-                             uint32_t textures_per_buffer,
-                             const gfx::Size& dimensions,
-                             uint32_t texture_target) override {}
-  void DismissPictureBuffer(int32_t picture_buffer_id) override {}
-  void PictureReady(const Picture& picture) override {}
-  void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override {}
-  void NotifyFlushDone() override {}
-  void NotifyResetDone() override {}
-  void NotifyError(VideoDecodeAccelerator::Error error) override {}
+class MockCodecAllocator : public AVDACodecAllocator {
+ public:
+  MOCK_METHOD2(CreateMediaCodecAsync,
+               void(base::WeakPtr<AVDACodecAllocatorClient>,
+                    scoped_refptr<CodecConfig>));
 };
 
 class AndroidVideoDecodeAcceleratorTest : public testing::Test {
  public:
   ~AndroidVideoDecodeAcceleratorTest() override {}
 
- protected:
   void SetUp() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterJni(env);
 
     gl::init::ShutdownGL();
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
-    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1024, 1024));
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(16, 16));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                          gl::GLContextAttribs());
     context_->MakeCurrent(surface_.get());
 
-    // Start a message loop because AVDA starts a timer task.
-    message_loop_.reset(new base::MessageLoop());
-    gl_decoder_.reset(new testing::NiceMock<gpu::gles2::MockGLES2Decoder>());
-    client_.reset(new MockVideoDecodeAcceleratorClient());
-
     vda_.reset(new AndroidVideoDecodeAccelerator(
-        base::Bind(&MakeContextCurrent),
-        base::Bind(&GetGLES2Decoder, gl_decoder_->AsWeakPtr())));
+        &codec_allocator_, base::Bind(&MakeContextCurrent),
+        base::Bind(&GetGLES2Decoder, gl_decoder_.AsWeakPtr())));
   }
 
-  bool Initialize(VideoCodecProfile profile) {
-    return vda_->Initialize(VideoDecodeAccelerator::Config(profile),
-                            client_.get());
-  }
-
- private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  std::unique_ptr<gpu::gles2::MockGLES2Decoder> gl_decoder_;
-  std::unique_ptr<MockVideoDecodeAcceleratorClient> client_;
+  NiceMock<gpu::gles2::MockGLES2Decoder> gl_decoder_;
+  NiceMock<MockVDAClient> client_;
+  NiceMock<MockCodecAllocator> codec_allocator_;
 
-  // This must be a unique pointer to a VDA and not an AVDA to ensure the
+  // This must be a unique pointer to a VDA, not an AVDA, to ensure the
   // the default_delete specialization that calls Destroy() will be used.
   std::unique_ptr<VideoDecodeAccelerator> vda_;
 };
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
-  ASSERT_FALSE(Initialize(VIDEO_CODEC_PROFILE_UNKNOWN));
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
+
+  ASSERT_FALSE(vda_->Initialize(
+      VideoDecodeAccelerator::Config(VIDEO_CODEC_PROFILE_UNKNOWN), &client_));
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureSupportedCodec) {
-  if (!MediaCodecUtil::IsMediaCodecAvailable())
-    return;
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
+
   // H264 is always supported by AVDA.
-  ASSERT_TRUE(Initialize(H264PROFILE_BASELINE));
+  ASSERT_TRUE(vda_->Initialize(
+      VideoDecodeAccelerator::Config(H264PROFILE_BASELINE), &client_));
+}
+
+TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecIsAnError) {
+  EXPECT_CALL(codec_allocator_, CreateMediaCodecAsync(_, _))
+      .WillOnce(PostNullCodec());
+  EXPECT_CALL(client_, NotifyInitializationComplete(false));
+
+  VideoDecodeAccelerator::Config config(H264PROFILE_BASELINE);
+  config.is_deferred_initialization_allowed = true;
+  vda_->Initialize(config, &client_);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AndroidVideoDecodeAcceleratorTest, NoCodecsAreCreatedDuringDestruction) {
+  // Assert that there's only one call to CreateMediaCodecAsync. And since it
+  // replies with a null codec, AVDA will be in an error state when it shuts
+  // down.
+  EXPECT_CALL(codec_allocator_, CreateMediaCodecAsync(_, _))
+      .WillOnce(PostNullCodec());
+
+  VideoDecodeAccelerator::Config config(H264PROFILE_BASELINE);
+  config.is_deferred_initialization_allowed = true;
+  vda_->Initialize(config, &client_);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media

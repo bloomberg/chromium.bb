@@ -29,6 +29,7 @@
 #endif
 #elif defined(OS_ANDROID)
 #include "media/gpu/android_video_decode_accelerator.h"
+#include "media/gpu/avda_codec_allocator.h"
 #endif
 
 namespace media {
@@ -247,8 +248,9 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
-  decoder.reset(new AndroidVideoDecodeAccelerator(make_context_current_cb_,
-                                                  get_gles2_decoder_cb_));
+  decoder.reset(new AndroidVideoDecodeAccelerator(
+      AVDACodecAllocator::Instance(), make_context_current_cb_,
+      get_gles2_decoder_cb_));
   return decoder;
 }
 #endif

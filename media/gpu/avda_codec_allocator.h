@@ -140,8 +140,9 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   // Create and configure a MediaCodec asynchronously. The result is delivered
   // via OnCodecConfigured().
-  void CreateMediaCodecAsync(base::WeakPtr<AVDACodecAllocatorClient> client,
-                             scoped_refptr<CodecConfig> codec_config);
+  virtual void CreateMediaCodecAsync(
+      base::WeakPtr<AVDACodecAllocatorClient> client,
+      scoped_refptr<CodecConfig> codec_config);
 
   // Asynchronously release |media_codec| with the attached surface.
   // TODO(watk): Bundle the MediaCodec and surface together so you can't get
@@ -168,6 +169,12 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   // Return a reference to the thread for unit tests.
   base::Thread& GetThreadForTesting(TaskType task_type);
+
+ protected:
+  // |tick_clock| and |stop_event| are for tests only.
+  AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
+                     base::WaitableEvent* stop_event = nullptr);
+  virtual ~AVDACodecAllocator();
 
  private:
   friend class AVDACodecAllocatorTest;
@@ -202,11 +209,6 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     base::Thread thread;
     HangDetector hang_detector;
   };
-
-  // |tick_clock| and |stop_event| are for tests only.
-  AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
-                     base::WaitableEvent* stop_event = nullptr);
-  ~AVDACodecAllocator();
 
   void OnMediaCodecAndSurfaceReleased(int surface_id);
 

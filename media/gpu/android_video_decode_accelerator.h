@@ -46,6 +46,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
       const gpu::GpuPreferences& gpu_preferences);
 
   AndroidVideoDecodeAccelerator(
+      AVDACodecAllocator* codec_allocator,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
@@ -237,6 +238,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // To expose client callbacks from VideoDecodeAccelerator.
   Client* client_;
+
+  AVDACodecAllocator* codec_allocator_;
 
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
