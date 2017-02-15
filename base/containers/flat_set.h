@@ -42,6 +42,9 @@ namespace base {
 //  * Copying and iterating.
 //  * Set operations (union/intersect etc).
 //
+// Prefer to build a new flat_set from a std::vector (or similar) instead of
+// calling insert() repeatedly, which would have O(size^2) complexity.
+//
 // TODO(dyaroshev): develop standalone benchmarks to find performance boundaries
 // for different types of sets crbug.com/682215.
 //
@@ -189,6 +192,9 @@ class flat_set {
   // Insertion of one element can take O(size). See the Notes section in the
   // class comments on why we do not currently implement range insertion.
   // Capacity of flat_set grows in an implementation-defined manner.
+  //
+  // NOTE: Prefer to build a new flat_set from a std::vector (or similar)
+  // instead of calling insert() repeatedly.
 
   std::pair<iterator, bool> insert(const value_type& val);
   std::pair<iterator, bool> insert(value_type&& val);
