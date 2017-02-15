@@ -31,4 +31,5 @@ public class VideoPersister {
     }
 
     public void attemptPersist(ChromeActivity activity) { }
+    public void stopPersist(ChromeActivity activity) { }
 }

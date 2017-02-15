@@ -497,6 +497,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
             mMergeTabsOnResume = false;
         }
+
+        VideoPersister.getInstance().stopPersist(this);
         mVrShellDelegate.maybeResumeVR();
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
