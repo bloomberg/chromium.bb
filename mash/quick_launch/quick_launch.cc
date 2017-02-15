@@ -154,7 +154,11 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 QuickLaunch::QuickLaunch() {
   registry_.AddInterface<::mash::mojom::Launchable>(this);
 }
-QuickLaunch::~QuickLaunch() {}
+
+QuickLaunch::~QuickLaunch() {
+  while (!windows_.empty())
+    windows_.front()->CloseNow();
+}
 
 void QuickLaunch::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);
