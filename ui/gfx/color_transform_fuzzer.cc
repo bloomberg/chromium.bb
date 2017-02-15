@@ -19,6 +19,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       bt709, icc.GetColorSpace(),
       gfx::ColorTransform::Intent::INTENT_ABSOLUTE));
   gfx::ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
-  t->transform(&tmp, 1);
+  t->Transform(&tmp, 1);
   return 0;
 }

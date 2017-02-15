@@ -10,29 +10,10 @@
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/skia_color_space_util.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
-
-namespace {
-
-SkColorSpaceTransferFn InvertTransferFn(SkColorSpaceTransferFn fn) {
-  SkColorSpaceTransferFn fn_inv = {0};
-  if (fn.fA > 0 && fn.fG > 0) {
-    double a_to_the_g = pow(fn.fA, fn.fG);
-    fn_inv.fA = 1.f / a_to_the_g;
-    fn_inv.fB = -fn.fE / a_to_the_g;
-    fn_inv.fG = 1.f / fn.fG;
-  }
-  fn_inv.fD = fn.fC * fn.fD + fn.fF;
-  fn_inv.fE = -fn.fB / fn.fA;
-  if (fn.fC != 0) {
-    fn_inv.fC = 1.f / fn.fC;
-    fn_inv.fF = -fn.fF / fn.fC;
-  }
-  return fn_inv;
-}
-};
 
 ColorSpace::PrimaryID ColorSpace::PrimaryIDFromInt(int primary_id) {
   if (primary_id < 0 || primary_id > static_cast<int>(PrimaryID::LAST))
@@ -486,7 +467,7 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
 bool ColorSpace::GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const {
   if (!GetTransferFunction(fn))
     return false;
-  *fn = InvertTransferFn(*fn);
+  *fn = SkTransferFnInverse(*fn);
   return true;
 }
 

@@ -76,7 +76,7 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
         samples[y].set_y(u * inverse);
         samples[y].set_z(v * inverse);
       }
-      transform->transform(samples.data(), samples.size());
+      transform->Transform(samples.data(), samples.size());
       T* lutp2 = lutp + lut_samples;
       FloatToLUT(reinterpret_cast<float*>(samples.data()), lutp2,
                  lut_samples * 3);
