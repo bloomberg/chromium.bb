@@ -184,12 +184,12 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             boolean isIndeterminate = item.isIndeterminate();
 
             if (item.isPaused()) {
-                mPauseResumeButton.setImageResource(R.drawable.ic_media_control_play);
+                mPauseResumeButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
                 mPauseResumeButton.setContentDescription(
                         getContext().getString(R.string.download_notification_resume_button));
                 mProgressView.setIndeterminate(false);
             } else {
-                mPauseResumeButton.setImageResource(R.drawable.ic_media_control_pause);
+                mPauseResumeButton.setImageResource(R.drawable.ic_pause_white_24dp);
                 mPauseResumeButton.setContentDescription(
                         getContext().getString(R.string.download_notification_pause_button));
                 mProgressView.setIndeterminate(isIndeterminate);

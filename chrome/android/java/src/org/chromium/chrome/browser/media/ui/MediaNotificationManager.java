@@ -585,26 +585,26 @@ public class MediaNotificationManager {
         mActionToButtonInfo = new SparseArray<>();
 
         mActionToButtonInfo.put(MediaSessionAction.PLAY,
-                new MediaButtonInfo(R.drawable.ic_media_control_play, R.string.accessibility_play,
-                        ListenerService.ACTION_PLAY));
+                new MediaButtonInfo(R.drawable.ic_play_arrow_white_36dp,
+                        R.string.accessibility_play, ListenerService.ACTION_PLAY));
         mActionToButtonInfo.put(MediaSessionAction.PAUSE,
-                new MediaButtonInfo(R.drawable.ic_media_control_pause, R.string.accessibility_pause,
+                new MediaButtonInfo(R.drawable.ic_pause_white_36dp, R.string.accessibility_pause,
                         ListenerService.ACTION_PAUSE));
         mActionToButtonInfo.put(CUSTOM_MEDIA_SESSION_ACTION_STOP,
-                new MediaButtonInfo(R.drawable.ic_media_control_stop, R.string.accessibility_stop,
+                new MediaButtonInfo(R.drawable.ic_stop_white_36dp, R.string.accessibility_stop,
                         ListenerService.ACTION_STOP));
         mActionToButtonInfo.put(MediaSessionAction.PREVIOUS_TRACK,
-                new MediaButtonInfo(R.drawable.ic_media_control_skip_previous,
+                new MediaButtonInfo(R.drawable.ic_skip_previous_white_36dp,
                         R.string.accessibility_previous_track,
                         ListenerService.ACTION_PREVIOUS_TRACK));
         mActionToButtonInfo.put(MediaSessionAction.NEXT_TRACK,
-                new MediaButtonInfo(R.drawable.ic_media_control_skip_next,
+                new MediaButtonInfo(R.drawable.ic_skip_next_white_36dp,
                         R.string.accessibility_next_track, ListenerService.ACTION_NEXT_TRACK));
         mActionToButtonInfo.put(MediaSessionAction.SEEK_FORWARD,
-                new MediaButtonInfo(R.drawable.ic_media_control_fast_forward,
+                new MediaButtonInfo(R.drawable.ic_fast_forward_white_36dp,
                         R.string.accessibility_seek_forward, ListenerService.ACTION_SEEK_FORWARD));
         mActionToButtonInfo.put(MediaSessionAction.SEEK_BACKWARD,
-                new MediaButtonInfo(R.drawable.ic_media_control_fast_rewind,
+                new MediaButtonInfo(R.drawable.ic_fast_rewind_white_36dp,
                         R.string.accessibility_seek_backward,
                         ListenerService.ACTION_SEEK_BACKWARD));
     }

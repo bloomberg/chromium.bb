@@ -328,7 +328,7 @@ public class DownloadNotificationService extends Service {
 
         Intent pauseIntent = buildActionIntent(
                 mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, isOffTheRecord, isOfflinePage);
-        builder.addAction(R.drawable.ic_media_control_pause,
+        builder.addAction(R.drawable.ic_pause_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_pause_button),
                 buildPendingIntent(pauseIntent, notificationId));
 

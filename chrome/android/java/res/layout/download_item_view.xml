@@ -3,14 +3,14 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- Represents a single item in the DownloadHistoryAdapterView. --> 
+<!-- Represents a single item in the DownloadHistoryAdapterView. -->
 <view class="org.chromium.chrome.browser.download.ui.DownloadItemView"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <!-- The end margin is not assigned because the cancel button overlaps it. --> 
+    <!-- The end margin is not assigned because the cancel button overlaps it. -->
     <LinearLayout
             android:id="@+id/layout_container"
             android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" >
-    
+
             <TextView
                     android:id="@+id/filename_completed_view"
                     android:layout_width="wrap_content"
@@ -48,7 +48,7 @@
                     android:singleLine="true"
                     android:textColor="@color/default_text_color"
                     android:textSize="16sp" />
-    
+
             <TextView
                     android:id="@+id/hostname_view"
                     android:layout_width="0dp"
@@ -63,7 +63,7 @@
                     android:textColor="@color/google_grey_600"
                     android:ellipsize="start"
                     android:singleLine="true" />
-    
+
             <TextView
                     android:id="@+id/filesize_view"
                     android:layout_width="wrap_content"
@@ -77,7 +77,7 @@
                     android:textColor="@color/google_grey_600"
                     android:singleLine="true" />
         </RelativeLayout>
-    
+
         <!-- Shown for downloads that haven't been completed. -->
         <RelativeLayout
                 android:id="@+id/progress_layout"
@@ -140,7 +140,7 @@
                     android:padding="8dp"
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/download_notification_pause_button"
-                    android:src="@drawable/ic_media_control_pause"
+                    android:src="@drawable/ic_pause_white_24dp"
                     chrome:tint="@color/google_grey_600" />
 
             <org.chromium.chrome.browser.widget.TintedImageButton
