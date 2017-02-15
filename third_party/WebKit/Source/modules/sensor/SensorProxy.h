@@ -108,10 +108,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void pageVisibilityChanged() override;
 
   // Generic handler for a fatal error.
-  // String parameters are intentionally copied.
-  void handleSensorError(ExceptionCode = UnknownError,
-                         String sanitizedMessage = String(),
-                         String unsanitizedMessage = String());
+  void handleSensorError();
+
   // mojo call callbacks.
   void onSensorCreated(device::mojom::blink::SensorInitParamsPtr,
                        device::mojom::blink::SensorClientRequest);

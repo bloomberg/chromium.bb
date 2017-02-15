@@ -162,9 +162,7 @@ void SensorProxy::pageVisibilityChanged() {
   }
 }
 
-void SensorProxy::handleSensorError(ExceptionCode code,
-                                    String sanitizedMessage,
-                                    String unsanitizedMessage) {
+void SensorProxy::handleSensorError() {
   m_state = Uninitialized;
   m_frequenciesUsed.clear();
   m_reading = device::SensorReading();
@@ -177,16 +175,17 @@ void SensorProxy::handleSensorError(ExceptionCode code,
   m_defaultConfig.reset();
   m_clientBinding.Close();
 
-  for (Observer* observer : m_observers)
-    observer->onSensorError(code, sanitizedMessage, unsanitizedMessage);
+  for (Observer* observer : m_observers) {
+    observer->onSensorError(NotReadableError, "Could not connect to a sensor",
+                            String());
+  }
 }
 
 void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
                                   SensorClientRequest clientRequest) {
   DCHECK_EQ(Initializing, m_state);
   if (!params) {
-    handleSensorError(NotReadableError,
-                      "Sensor is not present on the platform.");
+    handleSensorError();
     return;
   }
   const size_t kReadBufferSize = sizeof(ReadingBuffer);
@@ -217,8 +216,7 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
   DCHECK(m_maximumFrequency <= SensorConfiguration::kMaxAllowedFrequency);
 
   auto errorCallback =
-      WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this),
-                UnknownError, String("Internal error"), String());
+      WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this));
   m_sensor.set_connection_error_handler(
       convertToBaseCallback(std::move(errorCallback)));
 
