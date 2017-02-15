@@ -74,8 +74,14 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
   void MaybeScheduleDelayedWork(const tracked_objects::Location& from_here,
+                                TimeDomain* requesting_time_domain,
                                 base::TimeTicks now,
-                                base::TimeDelta delay);
+                                base::TimeTicks run_time);
+
+  // Cancels a delayed task to process work at |run_time|, previously requested
+  // with MaybeScheduleDelayedWork.
+  void CancelDelayedWork(TimeDomain* requesting_time_domain,
+                         base::TimeTicks run_time);
 
   // Set the number of tasks executed in a single invocation of the task queue
   // manager. Increasing the batch size can reduce the overhead of yielding
@@ -149,10 +155,72 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // need them, you can turn them off.
   void SetRecordTaskDelayHistograms(bool record_task_delay_histograms);
 
- private:
+ protected:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerTest;
+
+  // Intermediate data structure, used to compute NextDelayedDoWork.
+  class NextTaskDelay {
+   public:
+    NextTaskDelay() : time_domain_(nullptr) {}
+
+    using AllowAnyDelayForTesting = int;
+
+    NextTaskDelay(base::TimeDelta delay, TimeDomain* time_domain)
+        : delay_(delay), time_domain_(time_domain) {
+      DCHECK_GT(delay, base::TimeDelta());
+      DCHECK(time_domain);
+    }
+
+    NextTaskDelay(base::TimeDelta delay,
+                  TimeDomain* time_domain,
+                  AllowAnyDelayForTesting)
+        : delay_(delay), time_domain_(time_domain) {
+      DCHECK(time_domain);
+    }
+
+    base::TimeDelta delay() const { return delay_; }
+    TimeDomain* time_domain() const { return time_domain_; }
+
+    bool operator>(const NextTaskDelay& other) const {
+      return delay_ > other.delay_;
+    }
+
+    bool operator<(const NextTaskDelay& other) const {
+      return delay_ < other.delay_;
+    }
+
+   private:
+    base::TimeDelta delay_;
+    TimeDomain* time_domain_;
+  };
+
+ private:
+  // Represents a scheduled delayed DoWork (if any). Only public for testing.
+  class NextDelayedDoWork {
+   public:
+    NextDelayedDoWork() : time_domain_(nullptr) {}
+    NextDelayedDoWork(base::TimeTicks run_time, TimeDomain* time_domain)
+        : run_time_(run_time), time_domain_(time_domain) {
+      DCHECK_NE(run_time, base::TimeTicks());
+      DCHECK(time_domain);
+    }
+
+    base::TimeTicks run_time() const { return run_time_; }
+    TimeDomain* time_domain() const { return time_domain_; }
+
+    void Clear() {
+      run_time_ = base::TimeTicks();
+      time_domain_ = nullptr;
+    }
+
+    explicit operator bool() const { return !run_time_.is_null(); }
+
+   private:
+    base::TimeTicks run_time_;
+    TimeDomain* time_domain_;
+  };
 
   class DeletionSentinel : public base::RefCounted<DeletionSentinel> {
    private:
@@ -178,7 +246,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   void DoWork(bool delayed);
 
   // Post a DoWork continuation if |next_delay| is not empty.
-  void PostDoWorkContinuationLocked(base::Optional<base::TimeDelta> next_delay,
+  void PostDoWorkContinuationLocked(base::Optional<NextTaskDelay> next_delay,
                                     LazyNow* lazy_now,
                                     MoveableAutoLock&& lock);
 
@@ -216,7 +284,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   // Calls DelayTillNextTask on all time domains and returns the smallest delay
   // requested if any.
-  base::Optional<base::TimeDelta> ComputeDelayTillNextTaskLocked(
+  base::Optional<NextTaskDelay> ComputeDelayTillNextTaskLocked(
       LazyNow* lazy_now);
 
   void MaybeRecordTaskDelayHistograms(
@@ -293,7 +361,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
     return any_thread_;
   }
 
-  base::TimeTicks next_scheduled_delayed_do_work_time_;
+  NextDelayedDoWork next_delayed_do_work_;
 
   bool record_task_delay_histograms_;
 

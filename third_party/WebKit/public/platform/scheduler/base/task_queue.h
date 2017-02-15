@@ -150,8 +150,9 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // NOTE: this must be called on the thread this TaskQueue was created by.
   virtual bool HasPendingImmediateWork() const = 0;
 
-  // Returns requested run time of next delayed task, which is not ready
-  // to run. If there are no such tasks, returns base::nullopt.
+  // Returns requested run time of next scheduled wakeup for a delayed task
+  // which is not ready to run. If there are no such tasks or the queue is
+  // disabled (by a QueueEnabledVoter) it returns base::nullopt.
   // NOTE: this must be called on the thread this TaskQueue was created by.
   virtual base::Optional<base::TimeTicks> GetNextScheduledWakeUp() = 0;
 

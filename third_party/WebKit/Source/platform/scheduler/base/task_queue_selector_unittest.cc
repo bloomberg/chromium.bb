@@ -408,6 +408,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(1);
+
   scoped_refptr<TaskQueueImpl> task_queue(NewTaskQueueWithBlockReporting());
   selector.AddQueue(task_queue.get());
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
@@ -466,6 +468,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
 
   voter.reset();
   selector.EnableQueue(task_queue.get());
