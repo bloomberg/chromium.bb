@@ -340,6 +340,7 @@ void od_dering(int16_t *y, int16_t *in, int xdec,
   }
   copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
                              bsize);
+#ifndef CONFIG_CLPF
   for (bi = 0; bi < dering_count; bi++) {
     by = dlist[bi].by;
     bx = dlist[bi].bx;
@@ -349,4 +350,5 @@ void od_dering(int16_t *y, int16_t *in, int xdec,
         &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
         filter2_thresh[by][bx], dir[by][bx]);
   }
+#endif
 }
