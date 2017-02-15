@@ -86,7 +86,11 @@ class Regex(Comparator):
 
 
 class ListRegex(Regex):
-  """Checks if any string from an iterable matches a regular expression."""
+  """Checks if any string from an iterable matches a regular expression.
+
+  This can be used to match on a list. For example, a regex of
+  'dump_fmap -p .*bios.bin' will match ['dump_fmap', '-p', 'mainbios.bin'].
+  """
 
   @staticmethod
   def _ProcessArg(arg):
