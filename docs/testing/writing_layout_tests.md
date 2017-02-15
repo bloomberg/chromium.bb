@@ -212,10 +212,6 @@ event handling tests can use
 [synthetic events](https://developer.mozilla.org/docs/Web/Guide/Events/Creating_and_triggering_events).
 ***
 
-*** note
-TODO: document wpt_automation. Manual tests might end up moving here.
-***
-
 ### Relying on Blink-Specific Testing APIs
 
 Tests that cannot be expressed using the Web Platform APIs or WPT's testing APIs

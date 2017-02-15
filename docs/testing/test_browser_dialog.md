@@ -49,7 +49,7 @@ Notes:
 *   The body of the test is always just "`RunDialog();`".
 *   "`default`" is the `std::string` passed to `ShowDialog()` and can be
     customized. See
-    [Testing additional dialog "styles"](#Testing-additional-dialog-styles_).
+    [Testing additional dialog "styles"](#Testing-additional-dialog-styles).
 *   The text before `default` (in this case) must always be "`InvokeDialog_`".
 
 ### Concrete examples

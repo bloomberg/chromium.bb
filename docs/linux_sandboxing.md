@@ -41,11 +41,11 @@ network, something that is difficult to perform at the layer-2.
 
 | **Name** | **Layer and process** | **Linux flavors where available** | **State** |
 |:---------|:----------------------|:----------------------------------|:----------|
-| [Setuid sandbox](#The_setuid_sandbox.md) | Layer-1 in Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient), some utility processes) | Linux distributions and Chrome OS | Enabled by default (old kernels) and maintained |
-| [User namespaces sandbox](#User_namespaces_sandbox.md) | Modern alternative to the setuid sandbox. Layer-1 in Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient), some utility processes) | Linux distributions and Chrome OS (kernel >= 3.8) | Enabled by default (modern kernels) and actively developed |
-| [Seccomp-BPF](#The_seccomp-bpf_sandbox.md) | Layer-2 in some Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient)), Layer-1 + Layer-2 in GPU process | Linux kernel >= 3.5, Chrome OS and Ubuntu | Enabled by default and actively developed |
-| [Seccomp-legacy](#The_seccomp_sandbox.md) | Layer-2 in renderers  | All                               | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=197301&view=revision)  |
-| [SELinux](#SELinux.md) | Layer-1 in Zygote processes (renderers, PPAPI) | SELinux distributions             | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=200838&view=revision) |
+| [Setuid sandbox](#The-setuid-sandbox) | Layer-1 in Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient), some utility processes) | Linux distributions and Chrome OS | Enabled by default (old kernels) and maintained |
+| [User namespaces sandbox](#User-namespaces-sandbox) | Modern alternative to the setuid sandbox. Layer-1 in Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient), some utility processes) | Linux distributions and Chrome OS (kernel >= 3.8) | Enabled by default (modern kernels) and actively developed |
+| [Seccomp-BPF](#The-sandbox-1) | Layer-2 in some Zygote processes (renderers, PPAPI, [NaCl](https://www.chromium.org/nativeclient)), Layer-1 + Layer-2 in GPU process | Linux kernel >= 3.5, Chrome OS and Ubuntu | Enabled by default and actively developed |
+| [Seccomp-legacy](#The-sandbox-2) | Layer-2 in renderers  | All                               | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=197301&view=revision)  |
+| [SELinux](#SELinux) | Layer-1 in Zygote processes (renderers, PPAPI) | SELinux distributions             | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=200838&view=revision) |
 | AppArmor | Outer layer-1 in Zygote processes (renderers, PPAPI) | Not used                          | Deprecated |
 
 ## The setuid sandbox

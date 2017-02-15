@@ -11,9 +11,14 @@ test suite where all browser engines are collaborating. There's also a
 that will [soon be merged into
 web-platform-tests](https://github.com/w3c/csswg-test/issues/1102).
 
+Chromium has 2-way import/export process with the upstream web-platform-tests
+repository, where tests are imported into
+[LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+and any changes to the imported tests are also exported to web-platform-tests.
+
 [TOC]
 
-## Import
+## Importing tests
 
 Chromium has mirrors
 ([web-platform-tests](https://chromium.googlesource.com/external/w3c/web-platform-tests/),
@@ -21,7 +26,7 @@ Chromium has mirrors
 GitHub repos, and periodically imports a subset of the tests so that they are
 run as part of the regular Blink layout test testing process.
 
-The goal of this process are to be able to run the Web Platform Tests unmodified
+The goal of this process are to be able to run Web Platform Tests unmodified
 locally just as easily as we can run the Blink tests, and ensure that we are
 tracking tip-of-tree in the Web Platform Tests repository as closely as
 possible, and running as many of the tests as possible.
@@ -38,6 +43,8 @@ The easiest way to check the status of recent imports is to look at:
     builder](https://build.chromium.org/p/chromium.infra.cron/builders/w3c-test-autoroller)
 -   Recent CLs created by
     [blink-w3c-test-autoroller@chromium.org](https://codereview.chromium.org/search?owner=blink-w3c-test-autoroller%40chromium.org).
+
+Automatic imports are intended to run at least once every 24 hours.
 
 ### Skipped tests
 
@@ -70,17 +77,17 @@ it, and on the next auto-import, the new tests should be imported.
 If you want to import immediately (in order to try the tests out locally, etc)
 you can also run `wpt-import --allow-local-commits`, but this is not required.
 
-## Contributing tests back to the Web Platform Tests project.
+## Writing tests
 
-If you need to make changes to Web Platform Tests, just commit your changes
-directly to
-[LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+To contribute changes to Web Platform Tests, just commit your changes directly
+to [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
 and the changes will be automatically upstreamed within 24 hours.
 
-Note that tests in Web Platform Tests are expected to match behavior defined by
-the relevant WHATWG or W3C specification, not simply Blink's behavior. If in
-doubt, please request code review from someone with expertise in the relevant
-specification text.
+Changes involving adding, removing or modifying tests can all be upstreamed.
+Any changes outside of
+[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt) will not be
+upstreamed, and any changes `*-expected.txt`, `OWNERS`, and `MANIFEST.json`,
+will also not be upstreamed.
 
 Note: if you're adding a new test in `external/wpt`, you'll need to re-generate
 MANIFEST.json manually until [CL 2644783003](https://crrev.com/2644783003) is
@@ -91,17 +98,46 @@ Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest --work \
     --tests-root=LayoutTests/external/wpt
 ```
 
-### What kinds of changes can be upstreamed?
+Most tests are written using testharness.js, see
+[Writing Layout Tests](./writing_layout_tests.md) and
+[Layout Tests Tips](./layout_tests_tips.md) for general guidelines.
 
-In general, changes involving adding, removing or modifying tests can all be
-upstreamed. From a Chromium commit, any changes outside of
-[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt) will not be
-upstreamed, and any changes `*-expected.txt`, `OWNERS`, and `MANIFEST.json`,
-will also not be upstreamed.
+### Write tests against specifications
+
+Tests in Web Platform Tests are expected to match behavior defined by the
+relevant specification. In other words, all assertions that a test makes
+should be derived from a specification's normative requirements, and not go
+beyond them. It is often necessary to change the specification to clarify what
+is and isn't required.
+
+When the standards discussion is still ongoing or blocked on some implementation
+successfully shipping the hoped-for behavior, write the tests outside of
+web-platform-tests and upstream them when the specification is finally updated.
+Optionally, it may be possible to write deliberately failing tests against the
+current specification and later update them.
+
+### Tests that require testing APIs
+
+Tests that depend on `internals.*`, `eventSender.*` or other internal testing
+APIs cannot yet be written as part of web-platform-tests.
+
+An alternative is to write manual tests that are automated with scripts from
+[wpt_automation](../../third_party/WebKit/LayoutTests/external/wpt_automation).
+Such tests still require case-by-case automation to run for other browser
+engines, but are more valuable than purely manual tests.
+
+*** note
+TODO(foolip): Figure out and document a more scalable test automation solution.
+***
+
+### Adding new top-level directories
 
 Entirely new top-level directories should generally be added upstream, since
 that's the only way to add an OWNERS file upstream. After adding a new top-level
 directory upstream, you should add a line for it in `W3CImportExpectations`.
+
+Adding the new directory (and `W3CImportExpectations` entry) in Chromium and
+later adding an OWNERS file upstream also works.
 
 ### Will the exported commits be linked to my GitHub profile?
 
@@ -123,3 +159,18 @@ It's still possible to make direct pull requests to web-platform-tests. The
 processes for getting new tests committed the W3C repos are at
 http://testthewebforward.org/docs/. Some specifics are at
 http://testthewebforward.org/docs/github-101.html.
+
+## Reviewing tests
+
+Anyone who can review code and tests in Chromium can also review changes in
+[external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+that will be automatically upstreamed. There will be no additional review in
+web-platform-tests as part of the export process.
+
+If upstream reviewers have feedback on the changes, discuss on the pull request
+created during export, and if necessary work on a new pull request to iterate
+until everyone is satisfied.
+
+When reviewing tests, check that they match the relevant specification, which
+may not fully match the implementation. See also
+[Write tests against specifications](#Write-tests-against-specifications).

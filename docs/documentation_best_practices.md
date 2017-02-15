@@ -97,7 +97,7 @@ to detailed prose:
     design. However, once the code is implemented, design docs should serve as
     archives of these decisions, not as half-correct docs (they are often
     misused). See
-    [Implementation state](#implementation_state_determines_document_location)
+    [Implementation state](#Implementation-state-determines-document-repository)
     below.
 
 ## Implementation state determines document repository

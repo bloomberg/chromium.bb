@@ -80,7 +80,7 @@ file:///path/to/results.html, check the
 following conditions.
 
 1.  Make sure `DISPLAY` is set. See the
-    [Running X apps](#Running_X_apps) section above.
+    [Running X apps](#Running-X-apps) section above.
 1.  Install `xdg-utils`, which includes `xdg-open`, a utility for finding the
     right application to open a file or URL with.
 1.  Install [Chrome](https://www.google.com/intl/en/chrome/browser/).
