@@ -239,6 +239,46 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
   }
 }
 
+TEST_F(CSPSourceTest, HostMatches) {
+  KURL base;
+  Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+  csp->setupSelf(*SecurityOrigin::createFromString("http://a.com"));
+
+  // Host is * (source-expression = "http://*")
+  {
+    CSPSource source(csp.get(), "http", "", 0, "", CSPSource::HasWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_TRUE(source.matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://.")));
+  }
+
+  // Host is *.foo.bar
+  {
+    CSPSource source(csp.get(), "", "foo.bar", 0, "", CSPSource::HasWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://bar")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://o.bar")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://*.foo.bar")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://sub.sub.foo.bar")));
+    // Please see http://crbug.com/692505
+    EXPECT_TRUE(source.matches(KURL(base, "http://.foo.bar")));
+  }
+
+  // Host is exact.
+  {
+    CSPSource source(csp.get(), "", "foo.bar", 0, "", CSPSource::NoWildcard,
+                     CSPSource::NoWildcard);
+    EXPECT_TRUE(source.matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://bar")));
+    // Please see http://crbug.com/692505
+    EXPECT_FALSE(source.matches(KURL(base, "http://.foo.bar")));
+  }
+}
+
 TEST_F(CSPSourceTest, DoesNotSubsume) {
   struct Source {
     const char* scheme;
