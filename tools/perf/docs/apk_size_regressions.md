@@ -36,12 +36,12 @@
       to document the increase (also Update the "Themes / Thoughts" tab if
       applicable).
  * If the code might not justify the size increase:
-    1. File a bug and assign to the author to follow-up (and link them to
-       [Debugging Apk Size Increase](https://chromium.googlesource.com/chromium/src/+/master/tools/perf/docs/apk_size_regressions.md#Debugging-Apk-Size-Increase)).
+    1. File a bug and assign to the author to follow-up.
         * Change the bug's title from X% to XXkb
-        * Paste in link to commit that is at fault.
+        * Paste in link to commit or review URL that is at fault.
+        * Paste in link to [https://chromium.googlesource.com/chromium/src/+/master/tools/perf/docs/apk_size_regressions.md#Debugging-Apk-Size-Increase](https://chromium.googlesource.com/chromium/src/+/master/tools/perf/docs/apk_size_regressions.md#Debugging-Apk-Size-Increase).
         * Remove label: `Restrict-View-Google`
-        * Add label: `apk-size`
+        * Add label: `binary-size`
         * TODO(agrieve): [https://github.com/catapult-project/catapult/issues/3150](Change bug template to match these instructions)
     2. Add an entry to
       [this spreadsheet](https://docs.google.com/spreadsheets/d/1GrRkszV7Oy5pVsaMb5Eb6s8izW9t4dElBxIH3iGq93o/edit#gid=1894856744)
