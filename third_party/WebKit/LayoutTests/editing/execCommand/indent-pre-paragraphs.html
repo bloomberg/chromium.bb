@@ -1,83 +1,100 @@
-<!DOCTYPE html>
-<html>
-<body>
-<script src="../../resources/dump-as-markup.js"></script>
-<div id="test0" contenteditable>
-<pre>hello</pre>
-</div>
-
-<div id="test1" contenteditable>
-<pre>
-hello
-
-world
-
-webkit
-</pre>
-</div>
-
-<div id="test2" contenteditable>
-<pre>
-hello
-world
-webkit
-</pre>
-</div>
-
-<div id="test3" contenteditable>
-<pre>
-hello
-
-world
-</pre>
-</div>
-
-<div id="test4" contenteditable>
-<pre>
-hello
-
-world
-</pre>
-</div>
-
-<div id="test5" contenteditable>
-<pre>
-hello
-
-world
-</pre>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<pre>hello</pre>|',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>^hello|</pre>',
+      '</blockquote>',
+    '</div>',
+  ].join('')), '0 select all children');
 
-function testIndentation(containerId, selector) {
-    var container = document.getElementById(containerId);
-    selector(container);
-    Markup.dump(container, 'Indenting');
-    document.execCommand('indent', false, null);
-    Markup.dump(container, 'yields');
-}
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<pre>\nhello\n\nworld\n\nblink\n</pre>|',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>^hello</pre>',
+        '<pre>\n</pre><pre>world</pre><pre>\n</pre><pre>blink|</pre>',
+      '</blockquote>',
+    '</div>',
+  ].join('')), '1 select all children with blank lines');
 
-function selectAll(container) {
-    window.getSelection().selectAllChildren(container);
-}
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '^<pre>\nhello\nworld\nblink\n</pre>|',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>^hello</pre><pre>world</pre><pre>blink|</pre>',
+      '</blockquote>',
+    '</div>',
+  ].join('')), '2 select all children with newlines');
 
-function selectorForLineN(line) {
-    return function (container) {
-        window.getSelection().collapse(container, 0);
-        for (var i = 0; i < line - 1; i++)
-            window.getSelection().modify('move', 'forward', 'line');
-        window.getSelection().modify('extend', 'forward', 'line');
-        window.getSelection().modify('extend', 'backward', 'character');
-    }
-}
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '<pre>\n^hello|\n\nworld\n</pre>',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>^hello|</pre>',
+      '</blockquote>',
+      '<pre>\nworld\n</pre>',
+    '</div>',
+  ].join('')), '3 select line 1');
 
-testIndentation('test0', selectAll);
-testIndentation('test1', selectAll);
-testIndentation('test2', selectAll);
-testIndentation('test3', selectorForLineN(1));
-testIndentation('test4', selectorForLineN(2));
-testIndentation('test5', selectorForLineN(3));
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '<pre>\nhello\n|\nworld\n</pre>',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<pre>hello|\n</pre>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>\n</pre>',
+      '</blockquote>',
+      '<pre>world\n</pre>',
+    '</div>',
+  ].join('')), '4 select line 2');
 
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '<pre>\nhello\n\n^worl|d\n</pre>',
+    '</div>',
+  ].join(''),
+  'indent',
+  [
+    '<div contenteditable>',
+      '<pre>hello\n^\n</pre>',
+      '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+        '<pre>worl|d</pre>',
+      '</blockquote>',
+    '</div>',
+  ].join('')), '5 select line 3');
 </script>
-</body>
-</html>
