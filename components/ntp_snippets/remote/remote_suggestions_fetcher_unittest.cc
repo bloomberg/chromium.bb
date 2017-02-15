@@ -304,7 +304,7 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::Bind(&ParseJsonDelayed), kAPIKey, user_classifier_.get());
 
-    fetcher_->SetTickClockForTesting(mock_task_runner_->GetMockTickClock());
+    fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
   }
 
   void SignIn() { utils_.fake_signin_manager()->SignIn(kTestEmail); }

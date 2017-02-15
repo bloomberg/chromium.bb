@@ -49,6 +49,9 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] {"Simple"};
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] {""};
     private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {NTPTileSource.TOP_SITES};
+    private static final long FAKE_PUBLISH_TIMESTAMP = 1466614774;
+    private static final long FAKE_FETCH_TIMESTAMP = 1466634774;
+    private static final float FAKE_SNIPPET_SCORE = 10f;
 
     // TODO(dgn): Properly bypass the native code when testing with a fake suggestions source.
     // We currently mix the fake and the snippets bridge, resulting in crashes with unregistered
@@ -303,7 +306,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         for (int i = 0; i < suggestionsCount; i++) {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
             suggestions.add(new SnippetArticle(TEST_CATEGORY, "id" + i, "title" + i,
-                    "publisher" + i, "previewText" + i, url, 1466614774 + i, 10f));
+                    "publisher" + i, "previewText" + i, url, FAKE_PUBLISH_TIMESTAMP + i,
+                    FAKE_SNIPPET_SCORE, FAKE_FETCH_TIMESTAMP));
         }
         return suggestions;
     }

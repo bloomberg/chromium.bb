@@ -134,8 +134,9 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         int minimalCategory = 1;
         SnippetArticle shortSnippet = new SnippetArticle(fullCategory, "id1", "Snippet",
                 "Publisher", "Preview Text", "www.google.com",
-                1466614774, // Timestamp
-                10f); // Score
+                1466614774, // Publish timestamp
+                10f, // Score
+                1466634774); // Fetch timestamp
         shortSnippet.setThumbnailBitmap(BitmapFactory.decodeResource(getActivity().getResources(),
                 R.drawable.signin_promo_illustration));
 
@@ -143,19 +144,22 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 new String(new char[20]).replace("\0", "Snippet "),
                 new String(new char[20]).replace("\0", "Publisher "),
                 new String(new char[80]).replace("\0", "Preview Text "), "www.google.com",
-                1466614074, // Timestamp
-                20f); // Score
+                1466614074, // Publish timestamp
+                20f, // Score
+                1466634774); // Fetch timestamp
 
         SnippetArticle minimalSnippet = new SnippetArticle(minimalCategory, "id3",
                 new String(new char[20]).replace("\0", "Bookmark "), "Publisher",
                 "This should not be displayed", "www.google.com",
-                1466614774, // Timestamp
-                10f); // Score
+                1466614774, // Publish timestamp
+                10f, // Score
+                1466634774); // Fetch timestamp
 
         SnippetArticle minimalSnippet2 = new SnippetArticle(minimalCategory, "id4", "Bookmark",
                 "Publisher", "This should not be displayed", "www.google.com",
-                1466614774, // Timestamp
-                10f); // Score
+                1466614774, // Publish timestamp
+                10f, // Score
+                1466634774); // Fetch timestamp
 
         mSnippetsSource.setInfoForCategory(
                 fullCategory, new SuggestionsCategoryInfo(fullCategory, "Section Title",

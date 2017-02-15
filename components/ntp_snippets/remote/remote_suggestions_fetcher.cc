@@ -15,7 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -136,7 +136,8 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
 bool AddSuggestionsFromListValue(bool content_suggestions_api,
                                  int remote_category_id,
                                  const base::ListValue& list,
-                                 RemoteSuggestion::PtrVector* suggestions) {
+                                 RemoteSuggestion::PtrVector* suggestions,
+                                 const base::Time& fetch_time) {
   for (const auto& value : list) {
     const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict)) {
@@ -146,9 +147,10 @@ bool AddSuggestionsFromListValue(bool content_suggestions_api,
     std::unique_ptr<RemoteSuggestion> suggestion;
     if (content_suggestions_api) {
       suggestion = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
-          *dict, remote_category_id);
+          *dict, remote_category_id, fetch_time);
     } else {
-      suggestion = RemoteSuggestion::CreateFromChromeReaderDictionary(*dict);
+      suggestion =
+          RemoteSuggestion::CreateFromChromeReaderDictionary(*dict, fetch_time);
     }
     if (!suggestion) {
       return false;
@@ -159,8 +161,10 @@ bool AddSuggestionsFromListValue(bool content_suggestions_api,
   return true;
 }
 
-int GetMinuteOfTheDay(bool local_time, bool reduced_resolution) {
-  base::Time now(base::Time::Now());
+int GetMinuteOfTheDay(bool local_time,
+                      bool reduced_resolution,
+                      base::Clock* clock) {
+  base::Time now(clock->Now());
   base::Time::Exploded now_exploded{};
   local_time ? now.LocalExplode(&now_exploded) : now.UTCExplode(&now_exploded);
   int now_minute = reduced_resolution
@@ -255,7 +259,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
                      ? FetchAPI::CHROME_CONTENT_SUGGESTIONS_API
                      : FetchAPI::CHROME_READER_API),
       api_key_(api_key),
-      tick_clock_(new base::DefaultTickClock()),
+      clock_(new base::DefaultClock()),
       user_classifier_(user_classifier),
       request_throttler_rare_ntp_user_(
           pref_service,
@@ -290,12 +294,14 @@ void RemoteSuggestionsFetcher::FetchSnippets(
   }
 
   if (!params.interactive_request) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.FetchTimeLocal",
-                                GetMinuteOfTheDay(/*local_time=*/true,
-                                                  /*reduced_resolution=*/true));
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.FetchTimeUTC",
-                                GetMinuteOfTheDay(/*local_time=*/false,
-                                                  /*reduced_resolution=*/true));
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "NewTabPage.Snippets.FetchTimeLocal",
+        GetMinuteOfTheDay(/*local_time=*/true,
+                          /*reduced_resolution=*/true, clock_.get()));
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "NewTabPage.Snippets.FetchTimeUTC",
+        GetMinuteOfTheDay(/*local_time=*/false,
+                          /*reduced_resolution=*/true, clock_.get()));
   }
 
   JsonRequest::Builder builder;
@@ -304,7 +310,7 @@ void RemoteSuggestionsFetcher::FetchSnippets(
       .SetLanguageModel(language_model_)
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
-      .SetTickClock(tick_clock_.get())
+      .SetClock(clock_.get())
       .SetUrlRequestContextGetter(url_request_context_getter_)
       .SetUserClassifier(*user_classifier_);
 
@@ -442,6 +448,9 @@ void RemoteSuggestionsFetcher::JsonRequestDone(
     FetchResult status_code,
     const std::string& error_details) {
   DCHECK(request);
+  // Record the time when request for fetching remote content snippets finished.
+  const base::Time fetch_time = clock_->Now();
+
   last_fetch_json_ = request->GetResponseString();
 
   UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
@@ -453,7 +462,8 @@ void RemoteSuggestionsFetcher::JsonRequestDone(
     return;
   }
   FetchedCategoriesVector categories;
-  if (!JsonToSnippets(*result, &categories)) {
+
+  if (!JsonToSnippets(*result, &categories, fetch_time)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR, std::string());
@@ -489,7 +499,8 @@ void RemoteSuggestionsFetcher::FetchFinished(
 
 bool RemoteSuggestionsFetcher::JsonToSnippets(
     const base::Value& parsed,
-    FetchedCategoriesVector* categories) {
+    FetchedCategoriesVector* categories,
+    const base::Time& fetch_time) {
   const base::DictionaryValue* top_dict = nullptr;
   if (!parsed.GetAsDictionary(&top_dict)) {
     return false;
@@ -504,9 +515,9 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
 
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
-             AddSuggestionsFromListValue(/*content_suggestions_api=*/false,
-                                         kUnusedRemoteCategoryId, *recos,
-                                         &categories->back().suggestions);
+             AddSuggestionsFromListValue(
+                 /*content_suggestions_api=*/false, kUnusedRemoteCategoryId,
+                 *recos, &categories->back().suggestions, fetch_time);
     }
 
     case FetchAPI::CHROME_CONTENT_SUGGESTIONS_API: {
@@ -533,7 +544,7 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
         if (category_value->GetList("suggestions", &suggestions_list)) {
           if (!AddSuggestionsFromListValue(
                   /*content_suggestions_api=*/true, remote_category_id,
-                  *suggestions_list, &suggestions)) {
+                  *suggestions_list, &suggestions, fetch_time)) {
             return false;
           }
         }

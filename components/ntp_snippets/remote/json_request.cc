@@ -14,8 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
+#include "base/time/clock.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_info.h"
@@ -160,13 +159,13 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
 
 JsonRequest::JsonRequest(
     base::Optional<Category> exclusive_category,
-    base::TickClock* tick_clock,  // Needed until destruction of the request.
+    base::Clock* clock,  // Needed until destruction of the request.
     const ParseJSONCallback& callback)
     : exclusive_category_(exclusive_category),
-      tick_clock_(tick_clock),
+      clock_(clock),
       parse_json_callback_(callback),
       weak_ptr_factory_(this) {
-  creation_time_ = tick_clock_->NowTicks();
+  creation_time_ = clock_->Now();
 }
 
 JsonRequest::~JsonRequest() {
@@ -180,7 +179,7 @@ void JsonRequest::Start(CompletedCallback callback) {
 }
 
 base::TimeDelta JsonRequest::GetFetchDuration() const {
-  return tick_clock_->NowTicks() - creation_time_;
+  return clock_->Now() - creation_time_;
 }
 
 std::string JsonRequest::GetResponseString() const {
@@ -253,9 +252,9 @@ JsonRequest::Builder::~Builder() = default;
 std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
   DCHECK(!url_.is_empty());
   DCHECK(url_request_context_getter_);
-  DCHECK(tick_clock_);
-  auto request = base::MakeUnique<JsonRequest>(
-      params_.exclusive_category, tick_clock_, parse_json_callback_);
+  DCHECK(clock_);
+  auto request = base::MakeUnique<JsonRequest>(params_.exclusive_category,
+                                               clock_, parse_json_callback_);
   std::string body = BuildBody();
   std::string headers = BuildHeaders();
   request->url_fetcher_ = BuildURLFetcher(request.get(), headers, body);
@@ -299,9 +298,8 @@ JsonRequest::Builder& JsonRequest::Builder::SetParseJsonCallback(
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetTickClock(
-    base::TickClock* tick_clock) {
-  tick_clock_ = tick_clock;
+JsonRequest::Builder& JsonRequest::Builder::SetClock(base::Clock* clock) {
+  clock_ = clock;
   return *this;
 }
 

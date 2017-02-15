@@ -99,7 +99,8 @@ class NTPSnippetsBridge
                          jint j_category_id,
                          jint position_in_category,
                          jlong publish_timestamp_ms,
-                         jfloat score);
+                         jfloat score,
+                         jlong fetch_timestamp_ms);
 
   void OnSuggestionOpened(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,

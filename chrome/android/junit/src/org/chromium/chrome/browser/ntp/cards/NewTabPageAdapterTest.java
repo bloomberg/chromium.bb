@@ -304,7 +304,7 @@ public class NewTabPageAdapterTest {
 
         // Add another suggestion.
         suggestions.add(new SnippetArticle(TEST_CATEGORY, "https://site.com/url1", "title1", "pub1",
-                "txt1", "https://site.com/url1", 0, 0));
+                "txt1", "https://site.com/url1", 0, 0, 0));
 
         // When suggestion are disabled, we should not be able to load them.
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.SIGNED_OUT);

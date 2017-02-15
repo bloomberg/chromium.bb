@@ -223,8 +223,8 @@ void OnSuggestionShown(int global_position,
                        Category category,
                        int position_in_category,
                        base::Time publish_date,
-                       base::Time last_background_fetch_time,
-                       float score) {
+                       float score,
+                       base::Time fetch_date) {
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramShown, global_position,
                              kMaxSuggestionsTotal);
   LogCategoryHistogramPosition(kHistogramShown, category, position_in_category,
@@ -247,8 +247,8 @@ void OnSuggestionShown(int global_position,
     // suggestions.
     UMA_HISTOGRAM_CUSTOM_TIMES(
         kHistogramContentSuggestionsTimeSinceLastBackgroundFetch,
-        base::Time::Now() - last_background_fetch_time,
-        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7),
+        base::Time::Now() - fetch_date, base::TimeDelta::FromSeconds(1),
+        base::TimeDelta::FromDays(7),
         /*bucket_count=*/100);
   }
 }

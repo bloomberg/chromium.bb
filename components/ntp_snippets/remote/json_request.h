@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
@@ -20,7 +21,7 @@
 
 namespace base {
 class Value;
-class TickClock;
+class Clock;
 }  // namespace base
 
 class FetchAPI;
@@ -81,10 +82,10 @@ class JsonRequest : public net::URLFetcherDelegate {
     Builder& SetLanguageModel(const translate::LanguageModel* language_model);
     Builder& SetParams(const RequestParams& params);
     Builder& SetParseJsonCallback(ParseJSONCallback callback);
-    // The tick_clock borrowed from the fetcher will be injected into the
+    // The clock borrowed from the fetcher will be injected into the
     // request. It will be used at build time and after the fetch returned.
     // It has to be alive until the request is destroyed.
-    Builder& SetTickClock(base::TickClock* tick_clock);
+    Builder& SetClock(base::Clock* clock);
     Builder& SetUrl(const GURL& url);
     Builder& SetUrlRequestContextGetter(
         const scoped_refptr<net::URLRequestContextGetter>& context_getter);
@@ -115,7 +116,7 @@ class JsonRequest : public net::URLFetcherDelegate {
 
     // Only required, if the request needs to be sent.
     std::string auth_header_;
-    base::TickClock* tick_clock_;
+    base::Clock* clock_;
     FetchAPI fetch_api_;
     RequestParams params_;
     ParseJSONCallback parse_json_callback_;
@@ -131,7 +132,7 @@ class JsonRequest : public net::URLFetcherDelegate {
   };
 
   JsonRequest(base::Optional<Category> exclusive_category,
-              base::TickClock* tick_clock,
+              base::Clock* clock,
               const ParseJSONCallback& callback);
   JsonRequest(JsonRequest&&);
   ~JsonRequest() override;
@@ -160,11 +161,11 @@ class JsonRequest : public net::URLFetcherDelegate {
   // If set, only return results for this category.
   base::Optional<Category> exclusive_category_;
 
-  // Use the TickClock from the Fetcher to measure the fetch time. It will be
+  // Use the Clock from the Fetcher to measure the fetch time. It will be
   // used on creation and after the fetch returned. It has to be alive until the
   // request is destroyed.
-  base::TickClock* tick_clock_;
-  base::TimeTicks creation_time_;
+  base::Clock* clock_;
+  base::Time creation_time_;
 
   // This callback is called to parse a json string. It contains callbacks for
   // error and success cases.

@@ -96,7 +96,8 @@ RemoteSuggestion::~RemoteSuggestion() = default;
 // static
 std::unique_ptr<RemoteSuggestion>
 RemoteSuggestion::CreateFromChromeReaderDictionary(
-    const base::DictionaryValue& dict) {
+    const base::DictionaryValue& dict,
+    const base::Time& fetch_date) {
   const base::DictionaryValue* content = nullptr;
   if (!dict.GetDictionary("contentInfo", &content)) {
     return nullptr;
@@ -167,6 +168,7 @@ RemoteSuggestion::CreateFromChromeReaderDictionary(
 
   std::unique_ptr<RemoteSuggestion> snippet(
       new RemoteSuggestion(ids, kArticlesRemoteId));
+  snippet->fetch_date_ = fetch_date;
 
   std::string title;
   if (content->GetString("title", &title)) {
@@ -217,7 +219,8 @@ RemoteSuggestion::CreateFromChromeReaderDictionary(
 std::unique_ptr<RemoteSuggestion>
 RemoteSuggestion::CreateFromContentSuggestionsDictionary(
     const base::DictionaryValue& dict,
-    int remote_category_id) {
+    int remote_category_id,
+    const base::Time& fetch_date) {
   const base::ListValue* ids;
   if (!dict.GetList("ids", &ids)) {
     return nullptr;
@@ -235,6 +238,7 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
     return nullptr;
   }
   auto snippet = MakeUnique(parsed_ids, remote_category_id);
+  snippet->fetch_date_ = fetch_date;
 
   if (!(dict.GetString("title", &snippet->title_) &&
         dict.GetString("snippet", &snippet->snippet_) &&
@@ -281,6 +285,7 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
                                : kArticlesRemoteId;
 
   std::vector<std::string> ids(proto.ids().begin(), proto.ids().end());
+
   auto snippet = MakeUnique(ids, remote_category_id);
 
   snippet->title_ = proto.title();
@@ -318,6 +323,10 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
   snippet->url_ = source.url;
   snippet->publisher_name_ = source.publisher_name;
   snippet->amp_url_ = source.amp_url;
+
+  if (proto.has_fetch_date()) {
+    snippet->fetch_date_ = base::Time::FromInternalValue(proto.fetch_date());
+  }
 
   return snippet;
 }
@@ -371,6 +380,9 @@ SnippetProto RemoteSuggestion::ToProto() const {
     source_proto->set_amp_url(amp_url_.spec());
   }
 
+  if (!fetch_date_.is_null()) {
+    result.set_fetch_date(fetch_date_.ToInternalValue());
+  }
   return result;
 }
 
@@ -393,6 +405,7 @@ ContentSuggestion RemoteSuggestion::ToContentSuggestion(
     suggestion.set_notification_extra(
         base::MakeUnique<NotificationExtra>(extra));
   }
+  suggestion.set_fetch_date(fetch_date_);
   return suggestion;
 }
 

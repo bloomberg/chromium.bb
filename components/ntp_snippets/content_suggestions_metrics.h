@@ -23,8 +23,8 @@ void OnSuggestionShown(int global_position,
                        Category category,
                        int position_in_category,
                        base::Time publish_date,
-                       base::Time last_background_fetch_time,
-                       float score);
+                       float score,
+                       base::Time fetch_date);
 
 // TODO(crbug.com/682160): Take struct, so that one could not mix up the
 // order of arguments.

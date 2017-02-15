@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
@@ -105,8 +106,8 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   const GURL& fetch_url() const { return fetch_url_; }
 
   // Overrides internal clock for testing purposes.
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = std::move(tick_clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
   }
 
  private:
@@ -158,7 +159,8 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
                      const std::string& error_details);
 
   bool JsonToSnippets(const base::Value& parsed,
-                      FetchedCategoriesVector* categories);
+                      FetchedCategoriesVector* categories,
+                      const base::Time& fetch_time);
 
   bool DemandQuotaForRequest(bool interactive_request);
 
@@ -192,8 +194,8 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   // API key to use for non-authenticated requests.
   const std::string api_key_;
 
-  // Allow for an injectable tick clock for testing.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  // Allow for an injectable clock for testing.
+  std::unique_ptr<base::Clock> clock_;
 
   // Classifier that tells us how active the user is. Not owned.
   const UserClassifier* user_classifier_;

@@ -38,14 +38,16 @@ class RemoteSuggestion {
   // suggestion. The keys in the dictionary are expected to be the same as the
   // property name, with exceptions documented in the property comment.
   static std::unique_ptr<RemoteSuggestion> CreateFromChromeReaderDictionary(
-      const base::DictionaryValue& dict);
+      const base::DictionaryValue& dict,
+      const base::Time& fetch_date);
 
   // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Content
   // Suggestions. Returns a null pointer if the dictionary doesn't correspond to
   // a valid suggestion. Maps field names to Chrome Reader field names.
   static std::unique_ptr<RemoteSuggestion>
   CreateFromContentSuggestionsDictionary(const base::DictionaryValue& dict,
-                                         int remote_category_id);
+                                         int remote_category_id,
+                                         const base::Time& fetch_date);
 
   // Creates an RemoteSuggestion from a protocol buffer. Returns a null pointer
   // if the protocol buffer doesn't correspond to a valid suggestion.
@@ -120,6 +122,8 @@ class RemoteSuggestion {
   // CategoryFactory::FromRemoteCategory.
   int remote_category_id() const { return remote_category_id_; }
 
+  base::Time fetch_date() const { return fetch_date_; }
+
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
@@ -151,6 +155,9 @@ class RemoteSuggestion {
 
   bool should_notify_;
   base::Time notification_deadline_;
+
+  // The time when the remote suggestion was fetched from the server.
+  base::Time fetch_date_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestion);
 };

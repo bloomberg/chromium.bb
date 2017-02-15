@@ -154,7 +154,8 @@ public class SnippetsBridge
         assert mNativeSnippetsBridge != 0;
         nativeOnSuggestionShown(mNativeSnippetsBridge, suggestion.getGlobalRank(),
                 suggestion.mCategory, suggestion.getPerSectionRank(),
-                suggestion.mPublishTimestampMilliseconds, suggestion.mScore);
+                suggestion.mPublishTimestampMilliseconds, suggestion.mScore,
+                suggestion.mFetchTimestampMilliseconds);
     }
 
     @Override
@@ -262,10 +263,10 @@ public class SnippetsBridge
     @CalledByNative
     private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
             String id, String title, String publisher, String previewText, String url,
-            long timestamp, float score) {
+            long timestamp, float score, long fetchTime) {
         int position = suggestions.size();
         suggestions.add(new SnippetArticle(
-                category, id, title, publisher, previewText, url, timestamp, score));
+                category, id, title, publisher, previewText, url, timestamp, score, fetchTime));
         return suggestions.get(position);
     }
 
@@ -343,7 +344,8 @@ public class SnippetsBridge
     private native void nativeOnPageShown(
             long nativeNTPSnippetsBridge, int[] categories, int[] suggestionsPerCategory);
     private native void nativeOnSuggestionShown(long nativeNTPSnippetsBridge, int globalPosition,
-            int category, int positionInCategory, long publishTimestampMs, float score);
+            int category, int positionInCategory, long publishTimestampMs, float score,
+            long fetchTimestampMs);
     private native void nativeOnSuggestionOpened(long nativeNTPSnippetsBridge, int globalPosition,
             int category, int categoryIndex, int positionInCategory, long publishTimestampMs,
             float score, int windowOpenDisposition);

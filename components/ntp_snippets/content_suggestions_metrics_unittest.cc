@@ -20,23 +20,21 @@ TEST(ContentSuggestionsMetricsTest, ShouldLogOnSuggestionsShown) {
   base::HistogramTester histogram_tester;
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*category_position=*/3,
-                    base::Time::Now(),
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    0.01f);
+                    /*category_position=*/3, base::Time::Now(), 0.01f,
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   // Test corner cases for score.
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*category_position=*/3, base::Time::Now(),
-                    base::Time::Now() - base::TimeDelta::FromHours(2), 0.0f);
+                    /*category_position=*/3, base::Time::Now(), 0.0f,
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*category_position=*/3, base::Time::Now(),
-                    base::Time::Now() - base::TimeDelta::FromHours(2), 1.0f);
+                    /*category_position=*/3, base::Time::Now(), 1.0f,
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*category_position=*/3, base::Time::Now(),
-                    base::Time::Now() - base::TimeDelta::FromHours(2), 8.0f);
+                    /*category_position=*/3, base::Time::Now(), 8.0f,
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(

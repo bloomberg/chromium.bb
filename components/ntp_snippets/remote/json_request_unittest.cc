@@ -66,7 +66,7 @@ class JsonRequestTest : public testing::Test {
             {ntp_snippets::kArticleSuggestionsFeature.name}),
         pref_service_(base::MakeUnique<TestingPrefServiceSimple>()),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
-        tick_clock_(mock_task_runner_->GetMockTickClock()),
+        clock_(mock_task_runner_->GetMockClock()),
         request_context_getter_(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())) {
     translate::LanguageModel::RegisterProfilePrefs(pref_service_->registry());
@@ -88,7 +88,7 @@ class JsonRequestTest : public testing::Test {
   JsonRequest::Builder CreateMinimalBuilder() {
     JsonRequest::Builder builder;
     builder.SetUrl(GURL("http://valid-url.test"))
-        .SetTickClock(tick_clock_.get())
+        .SetClock(clock_.get())
         .SetUrlRequestContextGetter(request_context_getter_.get());
     return builder;
   }
@@ -97,7 +97,7 @@ class JsonRequestTest : public testing::Test {
   variations::testing::VariationParamsManager params_manager_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::Clock> clock_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory fetcher_factory_;
 
