@@ -232,11 +232,16 @@ class Testprinter(unittest.TestCase):
     def test_print_found(self):
         printer, err = self.get_printer()
 
-        printer.print_found(100, 10, 1, 1)
+        self.reset(err)
+        printer.print_found(100, 100, 10, 1, 1)
         self.assertWritten(err, ["Found 100 tests; running 10, skipping 90.\n"])
 
         self.reset(err)
-        printer.print_found(100, 10, 2, 3)
+        printer.print_found(100, 20, 10, 1, 1)
+        self.assertWritten(err, ["Found 20 tests (total 100); running 10, skipping 10.\n"])
+
+        self.reset(err)
+        printer.print_found(100, 100, 10, 2, 3)
         self.assertWritten(err, ["Found 100 tests; running 10 (6 times each: --repeat-each=2 --iterations=3), skipping 90.\n"])
 
     def test_debug_rwt_logging_is_throttled(self):

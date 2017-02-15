@@ -101,11 +101,14 @@ class Printer(object):
         self._print_default('Command line: ' + ' '.join(self._port.driver_cmd_line()))
         self._print_default('')
 
-    def print_found(self, num_all_test_files, num_to_run, repeat_each, iterations):
-        found_str = 'Found %s; running %d' % (grammar.pluralize('test', num_all_test_files), num_to_run)
+    def print_found(self, num_all_test_files, num_shard_test_files, num_to_run, repeat_each, iterations):
+        found_str = 'Found %s' % grammar.pluralize('test', num_shard_test_files)
+        if num_all_test_files != num_shard_test_files:
+            found_str += ' (total %d)' % num_all_test_files
+        found_str += '; running %d' % num_to_run
         if repeat_each * iterations > 1:
             found_str += ' (%d times each: --repeat-each=%d --iterations=%d)' % (repeat_each * iterations, repeat_each, iterations)
-        found_str += ', skipping %d' % (num_all_test_files - num_to_run)
+        found_str += ', skipping %d' % (num_shard_test_files - num_to_run)
         self._print_default(found_str + '.')
 
     def print_expected(self, run_results, tests_with_result_type_callback):

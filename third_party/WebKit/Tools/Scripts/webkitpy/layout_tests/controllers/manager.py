@@ -96,16 +96,31 @@ class Manager(object):
         self._printer.write_update("Collecting tests ...")
         running_all_tests = False
         try:
-            paths, test_names, running_all_tests = self._collect_tests(args)
+            paths, all_test_names, running_all_tests = self._collect_tests(args)
         except IOError:
             # This is raised if --test-list doesn't exist
             return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
+
+        # Create a sorted list of test files so the subset chunk,
+        # if used, contains alphabetically consecutive tests.
+        if self._options.order == 'natural':
+            all_test_names.sort(key=self._port.test_key)
+        elif self._options.order == 'random':
+            all_test_names.sort()
+            random.Random(self._options.seed).shuffle(all_test_names)
+
+        test_names, tests_in_other_chunks = self._finder.split_into_chunks(all_test_names)
 
         self._printer.write_update("Parsing expectations ...")
         self._expectations = test_expectations.TestExpectations(self._port, test_names)
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
-        self._printer.print_found(len(test_names), len(tests_to_run), self._options.repeat_each, self._options.iterations)
+
+        self._expectations.remove_tests(tests_in_other_chunks)
+
+        self._printer.print_found(
+            len(all_test_names), len(test_names), len(tests_to_run),
+            self._options.repeat_each, self._options.iterations)
 
         # Check to make sure we're not skipping every test.
         if not tests_to_run:
@@ -241,21 +256,6 @@ class Manager(object):
     def _prepare_lists(self, paths, test_names):
         tests_to_skip = self._finder.skip_tests(paths, test_names, self._expectations, self._http_tests(test_names))
         tests_to_run = [test for test in test_names if test not in tests_to_skip]
-
-        if not tests_to_run:
-            return tests_to_run, tests_to_skip
-
-        # Create a sorted list of test files so the subset chunk,
-        # if used, contains alphabetically consecutive tests.
-        if self._options.order == 'natural':
-            tests_to_run.sort(key=self._port.test_key)
-        elif self._options.order == 'random':
-            tests_to_run.sort()
-            random.Random(self._options.seed).shuffle(tests_to_run)
-
-        tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
-        self._expectations.add_extra_skipped_tests(tests_in_other_chunks)
-        tests_to_skip.update(tests_in_other_chunks)
 
         return tests_to_run, tests_to_skip
 

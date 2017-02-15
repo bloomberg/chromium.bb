@@ -1174,6 +1174,11 @@ class TestExpectations(object):
             model.add_expectation_line(expectation_line)
         self._model.merge_model(model)
 
+    def remove_tests(self, tests_to_remove):
+        for test in self._expectations:
+            if test.name and test.name in tests_to_remove:
+                self.remove_expectation_line(test)
+
     def add_expectations_from_bot(self):
         # FIXME: With mode 'very-flaky' and 'maybe-flaky', this will show the expectations entry in the flakiness
         # dashboard rows for each test to be whatever the bot thinks they should be. Is this a good thing?
