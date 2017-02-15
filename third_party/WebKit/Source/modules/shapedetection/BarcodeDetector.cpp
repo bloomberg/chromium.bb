@@ -26,8 +26,11 @@ BarcodeDetector::BarcodeDetector() : ShapeDetector() {
                 wrapWeakPersistent(this))));
 }
 
-ScriptPromise BarcodeDetector::doDetect(ScriptPromiseResolver* resolver,
-                                        skia::mojom::blink::BitmapPtr bitmap) {
+ScriptPromise BarcodeDetector::doDetect(
+    ScriptPromiseResolver* resolver,
+    mojo::ScopedSharedBufferHandle sharedBufferHandle,
+    int imageWidth,
+    int imageHeight) {
   ScriptPromise promise = resolver->promise();
   if (!m_barcodeService) {
     resolver->reject(DOMException::create(
@@ -36,9 +39,10 @@ ScriptPromise BarcodeDetector::doDetect(ScriptPromiseResolver* resolver,
   }
   m_barcodeServiceRequests.insert(resolver);
   m_barcodeService->Detect(
-      std::move(bitmap), convertToBaseCallback(WTF::bind(
-                             &BarcodeDetector::onDetectBarcodes,
-                             wrapPersistent(this), wrapPersistent(resolver))));
+      std::move(sharedBufferHandle), imageWidth, imageHeight,
+      convertToBaseCallback(WTF::bind(&BarcodeDetector::onDetectBarcodes,
+                                      wrapPersistent(this),
+                                      wrapPersistent(resolver))));
   return promise;
 }
 
