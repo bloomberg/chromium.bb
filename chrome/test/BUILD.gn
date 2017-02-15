@@ -3702,6 +3702,7 @@ test("unit_tests") {
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
+      "../browser/ui/toolbar/component_toolbar_actions_factory_unittest.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.h",
       "../browser/ui/toolbar/mock_media_router_action_controller.cc",
