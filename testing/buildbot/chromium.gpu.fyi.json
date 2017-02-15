@@ -7121,23 +7121,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "args": [
-          "--gtest_filter=*Detection*",
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "service_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -7481,23 +7464,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--gtest_filter=*Detection*",
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "service_unittests",
         "use_xvfb": false
       }
     ],

@@ -1258,12 +1258,24 @@ COMMON_GTESTS = {
     ],
     'test': 'gles2_conform_test',
   },
+  # Face and barcode detection unit tests, which currently only run on
+  # Mac OS, and require physical hardware.
   'service_unittests': {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['mac'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'swarming_dimension_sets': [
+          # These tests fail on the Mac Pros.
+          {
+            'gpu': '1002:679e',
+          },
+        ],
       },
     ],
     'args': [
