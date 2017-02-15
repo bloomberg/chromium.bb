@@ -44,6 +44,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private final int mEndPadding;
 
     private boolean mRemoveButtonVisible;
+    private boolean mIsItemRemoved;
 
     public HistoryItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -92,6 +93,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mTitle.setText(item.getTitle());
         mDomain.setText(item.getDomain());
+        mIsItemRemoved = false;
 
         if (item.wasBlockedVisit()) {
             if (mBlockedVisitDrawable == null) {
@@ -132,6 +134,10 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      * Removes the item associated with this view.
      */
     public void remove() {
+        // If the remove button is double tapped, this method may be called twice.
+        if (getItem() == null || mIsItemRemoved) return;
+
+        mIsItemRemoved = true;
         getItem().remove();
     }
 
