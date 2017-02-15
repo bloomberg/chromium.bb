@@ -2156,7 +2156,6 @@ split_static_library("ui") {
 
     if (is_chromeos) {
       sources += [ "webui/print_preview/printer_backend_proxy_chromeos.cc" ]
-      deps += [ "//chrome/browser/chromeos/printing" ]
     } else {
       sources += [ "webui/print_preview/printer_backend_proxy.cc" ]
     }
