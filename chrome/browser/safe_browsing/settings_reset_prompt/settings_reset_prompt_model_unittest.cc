@@ -222,7 +222,7 @@ class ResetStatesTest
 TEST_F(SettingsResetPromptModelTest, Homepage) {
   SetHomepage(kHomepage);
   ModelPointer model = CreateModel();
-  EXPECT_EQ(model->homepage(), kHomepage);
+  EXPECT_EQ(model->homepage(), GURL(kHomepage));
 }
 
 TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
@@ -260,7 +260,7 @@ TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
 TEST_F(SettingsResetPromptModelTest, DefaultSearch) {
   SetDefaultSearch(kDefaultSearch);
   ModelPointer model = CreateModel();
-  EXPECT_EQ(model->default_search(), kDefaultSearch);
+  EXPECT_EQ(model->default_search(), GURL(kDefaultSearch));
 }
 
 TEST_F(SettingsResetPromptModelTest, DefaultSearchResetState) {

@@ -662,14 +662,14 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsOverrideTest, ExtensionsToDisable) {
 
   {
     ModelPointer model = CreateModel(reset_urls);
-    EXPECT_EQ(model->homepage(), kHomepage2);
+    EXPECT_EQ(model->homepage(), GURL(kHomepage2));
     EXPECT_EQ(model->homepage_reset_state(),
               homepage_requires_reset_
                   ? SettingsResetPromptModel::RESET_REQUIRED
                   : SettingsResetPromptModel::
                         NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
 
-    EXPECT_EQ(model->default_search(), kSearchUrl2);
+    EXPECT_EQ(model->default_search(), GURL(kSearchUrl2));
     EXPECT_EQ(model->default_search_reset_state(),
               default_search_requires_reset_
                   ? SettingsResetPromptModel::RESET_REQUIRED

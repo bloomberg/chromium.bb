@@ -39,14 +39,24 @@ class SettingsResetPromptModel {
 
   using ExtensionMap =
       std::unordered_map<extensions::ExtensionId, ExtensionInfo>;
+  using CreateCallback =
+      base::Callback<void(std::unique_ptr<SettingsResetPromptModel>)>;
 
-  SettingsResetPromptModel(
+  // Creates a new |SettingsResetPromptModel| and passes it to |callback|. This
+  // function should be called on the UI thread.
+  static void Create(Profile* profile,
+                     std::unique_ptr<SettingsResetPromptConfig> prompt_config,
+                     CreateCallback callback);
+  static std::unique_ptr<SettingsResetPromptModel> CreateForTesting(
       Profile* profile,
       std::unique_ptr<SettingsResetPromptConfig> prompt_config,
       std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
       std::unique_ptr<BrandcodedDefaultSettings> default_settings,
       std::unique_ptr<ProfileResetter> profile_resetter);
+
   ~SettingsResetPromptModel();
+
+  SettingsResetPromptConfig* config() const;
 
   // Returns true if reset is enabled for any settings type.
   bool ShouldPromptForReset() const;
@@ -58,10 +68,10 @@ class SettingsResetPromptModel {
   // NOTE: Can only be called once during the lifetime of this object.
   void PerformReset(const base::Closure& done_callback);
 
-  std::string homepage() const;
+  GURL homepage() const;
   ResetState homepage_reset_state() const;
 
-  std::string default_search() const;
+  GURL default_search() const;
   ResetState default_search_reset_state() const;
 
   // Returns list of all current startup URLs. Returns empty list if session
@@ -77,6 +87,19 @@ class SettingsResetPromptModel {
   const ExtensionMap& extensions_to_disable() const;
 
  private:
+  static void OnSettingsFetched(
+      Profile* profile,
+      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
+      SettingsResetPromptModel::CreateCallback callback,
+      std::unique_ptr<BrandcodedDefaultSettings> default_settings);
+
+  SettingsResetPromptModel(
+      Profile* profile,
+      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
+      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
+      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
+      std::unique_ptr<ProfileResetter> profile_resetter);
+
   void InitHomepageData();
   void InitDefaultSearchData();
   void InitExtensionData();
@@ -93,9 +116,11 @@ class SettingsResetPromptModel {
   // Bits to keep track of which settings types have been initialized.
   uint32_t settings_types_initialized_;
 
+  GURL homepage_url_;
   int homepage_reset_domain_id_;
   ResetState homepage_reset_state_;
 
+  GURL default_search_url_;
   int default_search_reset_domain_id_;
   ResetState default_search_reset_state_;
 
