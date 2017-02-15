@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_IMPL_H_
 
+#include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -16,15 +17,14 @@ namespace content {
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface {
  public:
-  OffscreenCanvasSurfaceImpl(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& frame_sink_id,
-      blink::mojom::OffscreenCanvasSurfaceClientPtr client);
+  OffscreenCanvasSurfaceImpl(const cc::FrameSinkId& parent_frame_sink_id,
+                             const cc::FrameSinkId& frame_sink_id,
+                             cc::mojom::DisplayCompositorClientPtr client);
   ~OffscreenCanvasSurfaceImpl() override;
 
   static void Create(const cc::FrameSinkId& parent_frame_sink_id,
                      const cc::FrameSinkId& frame_sink_id,
-                     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
+                     cc::mojom::DisplayCompositorClientPtr client,
                      blink::mojom::OffscreenCanvasSurfaceRequest request);
 
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
@@ -45,7 +45,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   }
 
  private:
-  blink::mojom::OffscreenCanvasSurfaceClientPtr client_;
+  cc::mojom::DisplayCompositorClientPtr client_;
   mojo::StrongBindingPtr<blink::mojom::OffscreenCanvasSurface> binding_;
 
   // Surface-related state

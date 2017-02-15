@@ -44,6 +44,7 @@ mojom("interfaces") {
     "compositor_frame_metadata.mojom",
     "copy_output_request.mojom",
     "copy_output_result.mojom",
+    "display_compositor.mojom",
     "filter_operation.mojom",
     "filter_operations.mojom",
     "frame_sink_id.mojom",
@@ -67,20 +68,6 @@ mojom("interfaces") {
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
-  ]
-}
-
-# Interfaces between two privileged services.
-mojom("internal_interfaces") {
-  sources = [
-    "display_compositor.mojom",
-  ]
-
-  public_deps = [
-    ":interfaces",
-    "//gpu/ipc/common:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]

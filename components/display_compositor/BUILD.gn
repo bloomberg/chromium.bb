@@ -33,7 +33,7 @@ component("display_compositor") {
   deps = [
     "//base",
     "//cc",
-    "//cc/ipc:internal_interfaces",
+    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",

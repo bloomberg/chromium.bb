@@ -15,7 +15,7 @@ source_set("surfaces") {
   deps = [
     "//base",
     "//cc",
-    "//cc/ipc:internal_interfaces",
+    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//components/display_compositor",
     "//gpu/command_buffer/client",

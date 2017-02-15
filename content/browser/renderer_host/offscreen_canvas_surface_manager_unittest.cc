@@ -70,7 +70,7 @@ void OffscreenCanvasSurfaceManagerTest::TearDown() {
 // process.
 TEST_F(OffscreenCanvasSurfaceManagerTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
-  blink::mojom::OffscreenCanvasSurfaceClientPtr client;
+  cc::mojom::DisplayCompositorClientPtr client;
   cc::FrameSinkId frame_sink_id(3, 3);
   cc::SurfaceIdAllocator surface_id_allocator;
   cc::LocalSurfaceId current_local_surface_id(
@@ -93,14 +93,14 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
 
 TEST_F(OffscreenCanvasSurfaceManagerTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
-  blink::mojom::OffscreenCanvasSurfaceClientPtr client_a;
+  cc::mojom::DisplayCompositorClientPtr client_a;
   cc::FrameSinkId dummy_parent_frame_sink_id(0, 0);
   cc::FrameSinkId frame_sink_id_a(3, 3);
   cc::SurfaceIdAllocator surface_id_allocator;
   auto surface_impl_a = base::WrapUnique(new OffscreenCanvasSurfaceImpl(
       dummy_parent_frame_sink_id, frame_sink_id_a, std::move(client_a)));
 
-  blink::mojom::OffscreenCanvasSurfaceClientPtr client_b;
+  cc::mojom::DisplayCompositorClientPtr client_b;
   cc::FrameSinkId frame_sink_id_b(4, 4);
 
   auto surface_impl_b = base::WrapUnique(new OffscreenCanvasSurfaceImpl(

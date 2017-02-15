@@ -116,7 +116,7 @@ static_library("lib") {
   public_deps = [
     "//base",
     "//cc",
-    "//cc/ipc:internal_interfaces",
+    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//mojo/common:common_base",

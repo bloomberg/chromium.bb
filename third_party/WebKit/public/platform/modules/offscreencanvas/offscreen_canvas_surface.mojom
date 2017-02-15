@@ -5,10 +5,10 @@
 module blink.mojom;
 
 import "cc/ipc/compositor_frame.mojom";
+import "cc/ipc/display_compositor.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_info.mojom";
 import "cc/ipc/surface_sequence.mojom";
 
 interface OffscreenCanvasSurface {
@@ -16,15 +16,10 @@ interface OffscreenCanvasSurface {
   Satisfy(cc.mojom.SurfaceSequence sequence);
 };
 
-interface OffscreenCanvasSurfaceClient {
-  // TODO(fsamuel, xlai): Replace this with DisplayCompositorClient
-  OnSurfaceCreated(cc.mojom.SurfaceInfo surface_info);
-};
-
 interface OffscreenCanvasSurfaceFactory {
   CreateOffscreenCanvasSurface(cc.mojom.FrameSinkId parent_frame_sink_id,
                                cc.mojom.FrameSinkId frame_sink_id,
-                               OffscreenCanvasSurfaceClient client,
+                               cc.mojom.DisplayCompositorClient client,
                                OffscreenCanvasSurface& service);
 };
 
