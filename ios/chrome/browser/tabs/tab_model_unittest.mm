@@ -456,7 +456,6 @@ TEST_F(TabModelTest, OpenersEmptyModel) {
   EXPECT_TRUE([tab_model_ isEmpty]);
   EXPECT_FALSE([tab_model_ nextTabWithOpener:nil afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:nil]);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:nil]);
 }
 
 TEST_F(TabModelTest, OpenersNothingOpenedGeneral) {
@@ -473,14 +472,12 @@ TEST_F(TabModelTest, OpenersNothingOpenedGeneral) {
   // All should fail since this hasn't opened anything else.
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:tab]);
 
   // Add more items to the tab, expect the same results.
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:tab]);
 }
 
 TEST_F(TabModelTest, OpenersNothingOpenedFirst) {
@@ -494,7 +491,6 @@ TEST_F(TabModelTest, OpenersNothingOpenedFirst) {
   // All should fail since this hasn't opened anything else.
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:tab]);
 }
 
 TEST_F(TabModelTest, OpenersNothingOpenedLast) {
@@ -507,16 +503,13 @@ TEST_F(TabModelTest, OpenersNothingOpenedLast) {
   // All should fail since this hasn't opened anything else.
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:tab]);
 }
 
 TEST_F(TabModelTest, OpenersChildTabBeforeOpener) {
   Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
                                               atIndex:[tab_model_ count]];
   // Insert child at start
-  Tab* child_tab =
-      [tab_model_ insertTabWithWebState:CreateChildWebState(parent_tab)
-                                atIndex:0];
+  [tab_model_ insertTabWithWebState:CreateChildWebState(parent_tab) atIndex:0];
 
   // Insert a few more between them.
   [tab_model_ insertTabWithWebState:CreateWebState(@"window") atIndex:1];
@@ -524,7 +517,6 @@ TEST_F(TabModelTest, OpenersChildTabBeforeOpener) {
 
   EXPECT_FALSE([tab_model_ nextTabWithOpener:parent_tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:parent_tab]);
-  EXPECT_EQ([tab_model_ firstTabWithOpener:parent_tab], child_tab);
 }
 
 TEST_F(TabModelTest, OpenersChildTabAfterOpener) {
@@ -545,7 +537,6 @@ TEST_F(TabModelTest, OpenersChildTabAfterOpener) {
   EXPECT_EQ([tab_model_ nextTabWithOpener:parent_tab afterTab:child_tab1],
             child_tab2);
   EXPECT_EQ([tab_model_ lastTabWithOpener:parent_tab], child_tab2);
-  EXPECT_FALSE([tab_model_ firstTabWithOpener:parent_tab]);
 }
 
 TEST_F(TabModelTest, AddWithOrderController) {

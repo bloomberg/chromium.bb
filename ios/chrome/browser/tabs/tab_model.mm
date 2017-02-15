@@ -364,33 +364,6 @@ void CleanCertificatePolicyCache(
   return nil;
 }
 
-- (Tab*)firstTabWithOpener:(Tab*)tab {
-  if (!tab)
-    return nil;
-  NSUInteger stopIndex = [self indexOfTab:tab];
-  if (stopIndex == NSNotFound)
-    return nil;
-  NSString* parentID = tab.tabId;
-  // Match the navigation index as well as the session id, to better match the
-  // state of the tab. I.e. two tabs are opened via a link from tab A, and then
-  // a new url is loaded into tab A, and more tabs opened from that url, the
-  // latter two tabs should not be grouped with the former two. The navigation
-  // index is the simplest way to detect navigation changes.
-  DCHECK([tab navigationManager]);
-  NSInteger parentNavIndex = [tab navigationManager]->GetCurrentItemIndex();
-  for (NSUInteger i = 0; i < stopIndex; ++i) {
-    Tab* tabToCheck = [_tabs objectAtIndex:i];
-    DCHECK([tabToCheck navigationManager]);
-    CRWSessionController* sessionController =
-        [tabToCheck navigationManager]->GetSessionController();
-    if ([sessionController.openerId isEqualToString:parentID] &&
-        sessionController.openerNavigationIndex == parentNavIndex) {
-      return tabToCheck;
-    }
-  }
-  return nil;
-}
-
 - (Tab*)lastTabWithOpener:(Tab*)tab {
   NSUInteger startIndex = [self indexOfTab:tab];
   if (startIndex == NSNotFound)

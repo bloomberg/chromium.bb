@@ -12,14 +12,6 @@
 
 namespace TabModelOrderConstants {
 
-// InsertionPolicy is a general policy for opening all new tabs.
-enum InsertionPolicy {
-  // Newly created tabs are created after the selection. This is the default.
-  kInsertAfter,
-  // Newly created tabs are inserted before the selection.
-  kInsertBefore,
-};
-
 // InsertionAdjacency allows different links to choose to open tabs directly
 // before or after a given tab, depending on context.
 enum InsertionAdjacency {
@@ -35,18 +27,10 @@ enum InsertionAdjacency {
 // heuristics plugged into a TabStripModel. Closely parallels
 // chrome/browser/tabs/tab_strip_model_order_controller.h
 // but without the dependence on TabContentsWrapper and TabStripModel.
-@interface TabModelOrderController : NSObject {
- @private
-  TabModel* model_;  // weak, owns us
-  TabModelOrderConstants::InsertionPolicy insertionPolicy_;
-}
-
-// Sets the insertion policy for new tabs. Default is |kInsertAfter|.
-@property(nonatomic, assign)
-    TabModelOrderConstants::InsertionPolicy insertionPolicy;
+@interface TabModelOrderController : NSObject
 
 // Initializer, |model| must be non-nil and is not retained.
-- (id)initWithTabModel:(TabModel*)model;
+- (instancetype)initWithTabModel:(TabModel*)model;
 
 // Determines where to place a newly opened tab by using the transition and
 // adjacency flags.
@@ -56,7 +40,7 @@ enum InsertionAdjacency {
                          adjacency:(TabModelOrderConstants::InsertionAdjacency)
                                        adjacency;
 
-// Returns the index at which to append tabs, based on |insertionPolicy|.
+// Returns the index at which to append tabs.
 - (NSUInteger)insertionIndexForAppending;
 
 // Returns the tab in which to shift selection after a tab is closed. May

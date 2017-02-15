@@ -6,17 +6,18 @@
 
 #include "base/logging.h"
 
-@implementation TabModelOrderController
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-@synthesize insertionPolicy = insertionPolicy_;
+@implementation TabModelOrderController {
+  __weak TabModel* model_;
+}
 
-- (id)initWithTabModel:(TabModel*)model {
+- (instancetype)initWithTabModel:(TabModel*)model {
   DCHECK(model);
-  self = [super init];
-  if (self) {
+  if ((self = [super init]))
     model_ = model;
-    insertionPolicy_ = TabModelOrderConstants::kInsertAfter;
-  }
   return self;
 }
 
@@ -28,35 +29,23 @@
   if (model_.isEmpty)
     return 0;
 
-  if (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) &&
-      parentTab) {
-    NSUInteger referenceIndex = [model_ indexOfTab:parentTab];
-    Tab* openLocation = nil;
-    if (insertionPolicy_ == TabModelOrderConstants::kInsertAfter) {
-      openLocation = [model_ lastTabWithOpener:parentTab];
-    } else {
-      openLocation = [model_ firstTabWithOpener:parentTab];
-    }
-    if (openLocation)
-      referenceIndex = [model_ indexOfTab:openLocation];
+  if (!parentTab)
+    return [self insertionIndexForAppending];
 
-    // If the reference tab is no longer in the model (e.g., it was closed
-    // before the open request was handled), fall through to default behavior.
-    if (referenceIndex != NSNotFound) {
-      BOOL insertAfter =
-          insertionPolicy_ == TabModelOrderConstants::kInsertAfter ||
-          adjacency == TabModelOrderConstants::kAdjacentAfter;
-      NSUInteger delta = insertAfter ? 1 : 0;
-      return referenceIndex + delta;
-    }
-  }
-  // In other cases, such as a normal new tab, open at the end.
-  return [self insertionIndexForAppending];
+  if (!PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK))
+    return [self insertionIndexForAppending];
+
+  NSUInteger referenceIndex = [model_ indexOfTab:parentTab];
+  Tab* openLocation = [model_ lastTabWithOpener:parentTab];
+  if (openLocation)
+    referenceIndex = [model_ indexOfTab:openLocation];
+
+  DCHECK_NE(referenceIndex, static_cast<NSUInteger>(NSNotFound));
+  return referenceIndex + 1;
 }
 
 - (NSUInteger)insertionIndexForAppending {
-  return insertionPolicy_ == TabModelOrderConstants::kInsertAfter ? model_.count
-                                                                  : 0;
+  return model_.count;
 }
 
 - (Tab*)determineNewSelectedTabFromRemovedTab:(Tab*)removedTab {
@@ -69,6 +58,7 @@
   const NSUInteger numberOfTabs = model_.count;
   if (numberOfTabs < 2)
     return nil;
+
   DCHECK(numberOfTabs >= 2);
   DCHECK(removedTab == model_.currentTab);
 
