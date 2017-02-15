@@ -299,6 +299,8 @@ public class NewTabPageView
                 .findViewById(R.id.search_box_text);
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
+            searchBoxTextView.setCompoundDrawablePadding(0);
+
             // Not using the relative version of this call because we only want to clear
             // the drawables.
             searchBoxTextView.setCompoundDrawables(null, null, null, null);
