@@ -42,9 +42,4 @@ public class CommandLineUtil {
             CommandLine.init(null);
         }
     }
-
-    public static void initCommandLineIfNotInitialized() {
-        if (CommandLine.isInitialized()) return;
-        initCommandLine();
-    }
 }

@@ -129,9 +129,9 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
             }
             @Override
             public boolean isUploadEnabledForTests() {
-                // Note that CommandLine/CommandLineUtil are not thread safe (so only use them from
-                // one thread!).
-                CommandLineUtil.initCommandLineIfNotInitialized();
+                // Note that CommandLine/CommandLineUtil are not thread safe. They are initialized
+                // on the main thread, but before the current worker thread started - so this thread
+                // will have seen the initialization of the CommandLine.
                 return CommandLine.getInstance().hasSwitch(
                         CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
             }

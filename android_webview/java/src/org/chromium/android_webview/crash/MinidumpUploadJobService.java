@@ -8,6 +8,7 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.os.Build;
 
+import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
 
 /**
@@ -23,6 +24,10 @@ public class MinidumpUploadJobService extends JobService {
     @Override
     public void onCreate() {
         super.onCreate();
+        // This overwrites the command line set by ChromeApplication.onCreate() to use a
+        // WebView-specific command line file. This is okay since this Service is not running in the
+        // same process as the main Chrome process.
+        CommandLineUtil.initCommandLine();
     }
 
     @Override
