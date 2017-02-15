@@ -1,16 +1,7 @@
 <html>
 <head>
-<style>
-.pass {
-    color: green;
-    font-weight: bold;
-}
-
-.fail {
-    color: red;
-    font-weight: bold;
-}
-</style>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <span>Tests that canvas 2d context supports 'direction' attribute: <span id="supported"></span></span>
@@ -61,36 +52,16 @@
 <div id="results">
 </div>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
-var newCanvasElement = document.createElement('canvas');
-document.getElementById('supported').textContent = newCanvasElement.getContext('2d').direction ? 'PASS' : 'FAIL';
-document.getElementById('supported').className = newCanvasElement.getContext('2d').direction ? 'pass' : 'fail';
-
 var fontSettings = "12px 'Arial'";
 
-function appendResult(description, result)
+function verifyDrawText(canvasId, text, expectedDirection)
 {
-    var descriptionElement = document.createElement('span');
-    var resultElement = document.createElement('span');
-    descriptionElement.innerHTML = description;
-    resultElement.textContent = result;
-    resultElement.className = (result === 'PASS') ? 'pass' : 'fail';
-    descriptionElement.appendChild(resultElement);
-    document.getElementById("results").appendChild(descriptionElement);
-    document.getElementById("results").appendChild(document.createElement('br'));
-}
-
-function verifyDrawText(canvasId, resultId, text, expectedDirection)
-{
+    console.log(canvasId, text, expectedDirection);
     var canvasElement = document.getElementById(canvasId);
-    var resultElement = document.getElementById(resultId);
     var ctx = canvasElement.getContext('2d');
     var width = canvasElement.width/2;
     var height = canvasElement.height;
-    resultElement.textContent = (ctx.direction == expectedDirection) ? 'PASS' : 'FAIL';
-    resultElement.className = (ctx.direction == expectedDirection) ? 'pass' : 'fail';
+    assert_equals(ctx.direction, expectedDirection);
     ctx.moveTo(width, 0);
     ctx.lineTo(width, height);
     ctx.stroke();
@@ -98,68 +69,63 @@ function verifyDrawText(canvasId, resultId, text, expectedDirection)
     ctx.fillText(text, width, height/2);
 }
 
-function verifyDrawTextWithSpecifiedDirection(canvasId, resultId, text, direction, expectedDirection)
+function verifyDrawTextWithSpecifiedDirection(testItem)
 {
-    var canvasElement = document.getElementById(canvasId);
-    var resultElement = document.getElementById(resultId);
+    console.log(testItem);
+    var canvasElement = document.getElementById(testItem['canvasId']);
     var ctx = canvasElement.getContext('2d');
     var width = canvasElement.width/2;
     var height = canvasElement.height;
     var currentDirection = ctx.direction;
-    ctx.direction = direction;
-    resultElement.textContent = (currentDirection && (ctx.direction == expectedDirection)) ? 'PASS' : 'FAIL';
-    resultElement.className = (currentDirection && (ctx.direction == expectedDirection)) ? 'pass' : 'fail';
+    ctx.direction = testItem['direction'];
+    assert_not_equals(currentDirection, null);
+    assert_equals(ctx.direction, testItem['expectedDirection']);
     ctx.moveTo(width, 0);
     ctx.lineTo(width, height);
     ctx.stroke();
     ctx.font = fontSettings;
-    ctx.fillText(text, width, height/2);
+    ctx.fillText(testItem['text'], width, height/2);
 }
 
-function verifyDirectionAfterReset(canvasId, text, direction, expectedDirection)
+function verifyDirectionAfterReset(testItem)
 {
-    var canvasElement = document.getElementById(canvasId);
+    var canvasElement = document.getElementById(testItem['canvasId']);
     var width = canvasElement.width/2;
     var height = canvasElement.height;
     var ctx = canvasElement.getContext('2d');
-    ctx.direction = direction;
+    ctx.direction = testItem['direction'];
     ctx.moveTo(width, 0);
     ctx.lineTo(width, height);
     ctx.stroke();
     ctx.font = fontSettings;
-    ctx.fillText(text, width, height/2);
+    ctx.fillText(testItem['text'], width, height/2);
     canvasElement.width = canvasElement.width + 1;
-    var description = 'Tests that context.reset() sets the context.direction to ' + expectedDirection + ': ';
-    var result = (ctx.direction == expectedDirection) ? 'PASS' : 'FAIL';
-    appendResult(description, result);
+    assert_equals(ctx.direction, testItem['expectedDirection']);
     document.body.removeChild(canvasElement.parentElement);
 }
 
-function verifyDirectionAfterAttributeChange(canvasId, resultId, text, newDirection, forParentElement)
+function verifyDirectionAfterAttributeChange(testItem)
 {
-    var canvasElement = document.getElementById(canvasId);
-    var resultElement = document.getElementById(resultId);
+    var canvasElement = document.getElementById(testItem['canvasId']);
     var ctx = canvasElement.getContext('2d');
     var width = canvasElement.width/2;
     var height = canvasElement.height;
 
-    if (forParentElement)
-        canvasElement.parentElement.dir = newDirection;
+    if (testItem['forParentElement'])
+        canvasElement.parentElement.dir = testItem['newDirection'];
     else
-        canvasElement.dir = newDirection;
-    resultElement.textContent = ctx.direction == newDirection ? 'PASS' : 'FAIL';
-    resultElement.className = ctx.direction == newDirection ? 'pass' : 'fail';
+        canvasElement.dir = testItem['newDirection'];
+    assert_equals(ctx.direction, testItem['newDirection']);
     ctx.moveTo(width, 0);
     ctx.lineTo(width, height);
     ctx.stroke();
     ctx.font = fontSettings;
-    ctx.fillText(text, width, height/2);
+    ctx.fillText(testItem['text'], width, height/2);
 }
 
-function verifyDirectionAcrossSaveRestores(canvasId, resultId, testVector)
+function verifyDirectionAcrossSaveRestores(canvasId, testVector)
 {
     var canvasElement = document.getElementById(canvasId);
-    var resultElement = document.getElementById(resultId);
     var ctx = canvasElement.getContext('2d');
     var width = canvasElement.width/2;
     var height = 0;
@@ -182,8 +148,7 @@ function verifyDirectionAcrossSaveRestores(canvasId, resultId, testVector)
         if (ctx.direction == testVector[i - 1].direction)
             validDirectionCount++;
     }
-    resultElement.textContent = validDirectionCount == testVectorLength - 1 ? 'PASS' : 'FAIL';
-    resultElement.className = validDirectionCount == testVectorLength - 1 ? 'pass' : 'fail';
+    assert_equals(validDirectionCount, testVectorLength - 1);
 }
 
 function verifyInvalidDirection(direction)
@@ -191,35 +156,61 @@ function verifyInvalidDirection(direction)
     var ctx = document.createElement('canvas').getContext('2d');
     var currentDirection = ctx.direction;
     ctx.direction = direction;
-    var description = 'Tests that invalid direction value ' + direction + ' has no effect on the context.direction: ';
-    var result = (ctx.direction == currentDirection) ? 'PASS' : 'FAIL';
-    appendResult(description, result);
+    assert_equals(ctx.direction, currentDirection);
 }
 
-verifyDrawText('canvas1', 'result1', 'Left-to-Right text', 'ltr');
-verifyDrawText('canvas2', 'result2', 'Right-to-Left text', 'rtl');
+test(function(t) {
 
-verifyDrawTextWithSpecifiedDirection('canvas3', 'result3', 'Right-to-Left text', 'rtl', 'rtl');
-verifyDrawTextWithSpecifiedDirection('canvas4', 'result4', 'Left-to-Right text', 'ltr', 'ltr');
-verifyDrawTextWithSpecifiedDirection('canvas5', 'result5', 'Left-to-Right text', 'inherit', 'ltr');
-verifyDrawTextWithSpecifiedDirection('canvas6', 'result6', 'Right-to-Left text', 'inherit', 'rtl');
+    var newCanvasElement = document.createElement('canvas');
+    assert_not_equals(newCanvasElement.getContext('2d').direction, null);
+    
+    var drawTextTests = [
+        ['DrawTextTest1', 'canvas1', 'Left-to-Right text', 'ltr'],
+        ['DrawTextTest2', 'canvas2', 'Right-to-Left text', 'rtl'],
+    ];
+    generate_tests(verifyDrawText, drawTextTests);
+    
+    var drawTextWithSpecifiedDirectionTests = [
+        ['DrawTextWithSpecifiedDirectionTest1',
+         {canvasId: 'canvas3', text: 'Right-to-Left text', direction: 'rtl', expectedDirection: 'rtl'}],
+        ['DrawTextWithSpecifiedDirectionTest2',
+         {canvasId: 'canvas4', text: 'Left-to-Right text', direction: 'ltr', expectedDirection: 'ltr'}],
+        ['DrawTextWithSpecifiedDirectionTest3',
+         {canvasId: 'canvas5', text: 'Left-to-Right text', direction: 'inherit', expectedDirection: 'ltr'}],
+        ['DrawTextWithSpecifiedDirectionTest4',
+         {canvasId: 'canvas6', text: 'Right-to-Left text', direction: 'inherit', expectedDirection: 'rtl'}],
+    ];
+    generate_tests(verifyDrawTextWithSpecifiedDirection, drawTextWithSpecifiedDirectionTests);
+    
+    var directionAfterResetTests = [
+        ['DirectionAfterResetTest1',
+         {canvasId: 'canvas7', text: 'Right-to-Left', direction: 'rtl', expectedDirection: 'ltr'}],
+        ['DirectionAfterResetTest2',
+         {canvasId: 'canvas8', text: 'Right-to-Left', direction: 'ltr', expectedDirection: 'rtl'}],
+    ];
+    generate_tests(verifyDirectionAfterReset, directionAfterResetTests);
+    
+    var directionAfterAttributeChangeTests = [
+        ['DirectionAfterResetTest1',
+         {canvasId: 'canvas9', text: 'Right-to-Left text', newDirection: 'rtl', forParentElement: true}],
+        ['DirectionAfterResetTest2',
+         {canvasId: 'canvas10', text: 'Left-to-Right text', newDirection: 'ltr', forParentElement: false}],
+    ];
+    generate_tests(verifyDirectionAfterAttributeChange, directionAfterAttributeChangeTests);
+    
+    verifyDirectionAcrossSaveRestores('canvas11',
+                                      [{ text: 'Left-to-Right text', direction: 'ltr' },
+                                       { text: 'Right-to-Left text', direction: 'rtl' },
+                                       { text: 'Right-to-Left text', direction: 'rtl' },
+                                       { text: 'Left-to-Right text', direction: 'ltr' },
+                                       { text: 'Right-to-Left text', direction: 'rtl' },
+                                       { text: 'Right-to-Left text', direction: 'rtl' }]);
+    var invalidDirectionTests = [
+        ['InvalidDirectionTestRTL', 'RTL'],
+        ['InvalidDirectionTestLTR', 'LTR'],
+        ['InvalidDirectionTestINHERIT', 'INHERIT'],
+    ];
+    generate_tests(verifyInvalidDirection, invalidDirectionTests);
 
-verifyDirectionAfterReset('canvas7', 'Right-to-Left', 'rtl', 'ltr');
-verifyDirectionAfterReset('canvas8', 'Right-to-Left', 'ltr', 'rtl');
-
-verifyDirectionAfterAttributeChange('canvas9', 'result9', 'Right-to-Left text', 'rtl', true);
-verifyDirectionAfterAttributeChange('canvas10', 'result10', 'Left-to-Right text', 'ltr', false);
-
-verifyDirectionAcrossSaveRestores('canvas11',
-                                  'result11',
-                                  [{ text: 'Left-to-Right text', direction: 'ltr' },
-                                   { text: 'Right-to-Left text', direction: 'rtl' },
-                                   { text: 'Right-to-Left text', direction: 'rtl' },
-                                   { text: 'Left-to-Right text', direction: 'ltr' },
-                                   { text: 'Right-to-Left text', direction: 'rtl' },
-                                   { text: 'Right-to-Left text', direction: 'rtl' }]);
-
-verifyInvalidDirection('RTL');
-verifyInvalidDirection('LTR');
-verifyInvalidDirection('INHERIT');
+}, "Verify that canvas 2d context supports 'direction' attribute.");
 </script>
