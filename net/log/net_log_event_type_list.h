@@ -1055,6 +1055,14 @@ EVENT_TYPE(HTTP_STREAM_REQUEST)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB)
 
+// Measures the time and HttpStreamFactoryImpl::Job spends waiting for
+// another job.
+// The event parameters are:
+//   {
+//      "should_wait": <True if the job needs to wait>,
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_WAITING)
+
 // Identifies the NetLogSource() for a Job started by the Request.
 // The event parameters are:
 //   {
@@ -1095,11 +1103,17 @@ EVENT_TYPE(HTTP_STREAM_REQUEST_PROTO)
 // Job. The orphaned Job will continue to run to completion.
 EVENT_TYPE(HTTP_STREAM_JOB_ORPHANED)
 
-// Emitted when a job is asked to resume after non-zero microseconds.
+// Emitted when a job is delayed.
 //   {
-//     "resume_after_ms": <Number of milliseconds until job will be unblocked>
+//     "delay_ms": <Number of milliseconds until job will be resumed>
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_DELAYED)
+
+// Emitted when a job is asked to resume after non-zero microseconds.
+//   {
+//     "delay_ms": <Number of milliseconds the job was delayed before resuming>
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_RESUMED)
 
 // Marks the start/end of a HttpStreamFactoryImpl::JobController.
 // The following parameters are attached:

@@ -821,13 +821,17 @@ bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
 
 int HttpStreamFactoryImpl::Job::DoWait() {
   next_state_ = STATE_WAIT_COMPLETE;
-  if (delegate_->ShouldWait(this))
+  bool should_wait = delegate_->ShouldWait(this);
+  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING,
+                      NetLog::BoolCallback("should_wait", should_wait));
+  if (should_wait)
     return ERR_IO_PENDING;
 
   return OK;
 }
 
 int HttpStreamFactoryImpl::Job::DoWaitComplete(int result) {
+  net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING);
   DCHECK_EQ(OK, result);
   next_state_ = STATE_INIT_CONNECTION;
   return OK;
