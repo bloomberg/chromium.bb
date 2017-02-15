@@ -142,6 +142,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
 
+  void AddFilter(IPC::MessageFilter* message_filter) override;
+  int32_t GetRouteID() const override;
+
   using SwapBuffersCompletionCallback = base::Callback<void(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,

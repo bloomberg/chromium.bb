@@ -1064,6 +1064,15 @@ void InProcessCommandBuffer::UpdateVSyncParameters(base::TimeTicks timebase,
                  client_thread_weak_ptr_, timebase, interval));
 }
 
+void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
+  NOTREACHED();
+}
+
+int32_t InProcessCommandBuffer::GetRouteID() const {
+  NOTREACHED();
+  return 0;
+}
+
 void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
     SwapBuffersCompleteParams params) {
 #if defined(OS_MACOSX)

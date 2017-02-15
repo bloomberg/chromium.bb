@@ -243,3 +243,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
                            uint32_t, /* client_texture_id */
                            int32_t,  /* stream_id */
                            bool /* succeeded */)
+
+// Start or stop VSync sygnal production on GPU side (Windows only).
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetNeedsVSync, bool /* needs_vsync */)

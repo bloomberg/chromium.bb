@@ -17,6 +17,10 @@
 #include "ui/gfx/mac/io_surface.h"
 #endif
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace gpu {
 
 namespace gles2 {
@@ -72,6 +76,11 @@ class GPU_EXPORT ImageTransportSurfaceDelegate {
   // Informs the delegate about updated vsync parameters.
   virtual void UpdateVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;
+
+  // Add IPC message filter.
+  virtual void AddFilter(IPC::MessageFilter* message_filter) = 0;
+  // Gets route ID for sending / receiving IPC messages.
+  virtual int32_t GetRouteID() const = 0;
 
  protected:
   virtual ~ImageTransportSurfaceDelegate() {}

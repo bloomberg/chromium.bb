@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_GL_VSYNC_PROVIDER_WIN_H_
+#define UI_GL_VSYNC_PROVIDER_WIN_H_
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_export.h"
@@ -25,3 +28,5 @@ class GL_EXPORT VSyncProviderWin : public gfx::VSyncProvider {
 };
 
 }  // namespace gl
+
+#endif  // UI_GL_VSYNC_PROVIDER_WIN_H_
