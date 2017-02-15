@@ -1200,7 +1200,6 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
   if (!db_)
     return;
   size_t downloads_count_before = db_->CountDownloads();
-  base::TimeTicks started_removing = base::TimeTicks::Now();
   // HistoryBackend uses a long-running Transaction that is committed
   // periodically, so this loop doesn't actually hit the disk too hard.
   for (std::set<uint32_t>::const_iterator it = ids.begin(); it != ids.end();
@@ -1208,7 +1207,6 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
     db_->RemoveDownload(*it);
   }
   ScheduleCommit();
-  base::TimeTicks finished_removing = base::TimeTicks::Now();
   size_t downloads_count_after = db_->CountDownloads();
 
   DCHECK_LE(downloads_count_after, downloads_count_before);
@@ -1217,12 +1215,6 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
   size_t num_downloads_deleted = downloads_count_before - downloads_count_after;
   UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
                        num_downloads_deleted);
-  base::TimeDelta micros = (1000 * (finished_removing - started_removing));
-  UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTime", micros);
-  if (num_downloads_deleted > 0) {
-    UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTimePerRecord",
-                        (1000 * micros) / num_downloads_deleted);
-  }
   DCHECK_GE(ids.size(), num_downloads_deleted);
 }
 
