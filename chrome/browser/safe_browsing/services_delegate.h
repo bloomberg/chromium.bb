@@ -90,8 +90,6 @@ class ServicesDelegate {
       CreatePreferenceValidationDelegate(Profile* profile) = 0;
   virtual void RegisterDelayedAnalysisCallback(
       const DelayedAnalysisCallback& callback) = 0;
-  virtual void RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      const DelayedAnalysisCallback& callback) = 0;
   virtual void AddDownloadManager(
       content::DownloadManager* download_manager) = 0;
 

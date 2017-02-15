@@ -19,10 +19,6 @@ std::unique_ptr<ClientIncidentReport_IncidentData> Incident::TakePayload() {
   return std::move(payload_);
 }
 
-MinimumProfileConsent Incident::GetMinimumProfileConsent() const {
-  return MinimumProfileConsent::SAFE_BROWSING_ENABLED;
-}
-
 Incident::Incident() : payload_(new ClientIncidentReport_IncidentData) {
   payload_->set_incident_time_msec(base::Time::Now().ToJavaTime());
 }

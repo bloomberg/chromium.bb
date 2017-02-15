@@ -167,8 +167,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // |callback| will be dropped if the service is not applicable for the
   // process.
   void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
-  void RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      const DelayedAnalysisCallback& callback);
 
   // Adds |download_manager| to the set monitored by safe browsing.
   void AddDownloadManager(content::DownloadManager* download_manager);

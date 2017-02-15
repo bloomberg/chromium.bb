@@ -40,8 +40,6 @@ class ServicesDelegateImpl : public ServicesDelegate {
       CreatePreferenceValidationDelegate(Profile* profile) override;
   void RegisterDelayedAnalysisCallback(
       const DelayedAnalysisCallback& callback) override;
-  void RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      const DelayedAnalysisCallback& callback) override;
   void AddDownloadManager(content::DownloadManager* download_manager) override;
   ClientSideDetectionService* GetCsdService() override;
   DownloadProtectionService* GetDownloadService() override;

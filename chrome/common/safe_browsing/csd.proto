@@ -647,7 +647,8 @@ message ClientIncidentReport {
       optional Channel chrome_update_channel = 5;
       optional int64 uptime_msec = 6;
       optional bool metrics_consent = 7;
-      optional bool extended_consent = 8;
+      // Obsolete: extended consent is now required for incident reporting.
+      optional bool OBSOLETE_extended_consent = 8;
       message Dll {
         enum Feature {
           UNKNOWN = 0;
@@ -681,7 +682,8 @@ message ClientIncidentReport {
         repeated Modification modification = 4;
       }
       repeated ModuleState module_state = 11;
-      optional bool field_trial_participant = 12;
+      // Obsolete: field trials no longer enable incident reporting.
+      optional bool OBSOLETE_field_trial_participant = 12;
     }
     optional Process process = 3;
   }

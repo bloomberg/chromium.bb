@@ -154,7 +154,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
                                 &process_report);
 
   // CollectModuleVerificationData should return the single modified module and
-  // its modified export.  The other module, being unmodified, is omitted from
+  // its modified export. The other module, being unmodified, is omitted from
   // the returned list of modules.
   // AddressSanitizer build is special though, as it patches the code at
   // startup, which makes every single module modified and introduces extra

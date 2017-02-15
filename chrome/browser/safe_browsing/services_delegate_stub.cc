@@ -53,9 +53,6 @@ ServicesDelegateStub::CreatePreferenceValidationDelegate(Profile* profile) {
 void ServicesDelegateStub::RegisterDelayedAnalysisCallback(
     const DelayedAnalysisCallback& callback) {}
 
-void ServicesDelegateStub::RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-    const DelayedAnalysisCallback& callback) {}
-
 void ServicesDelegateStub::AddDownloadManager(
     content::DownloadManager* download_manager) {}
 

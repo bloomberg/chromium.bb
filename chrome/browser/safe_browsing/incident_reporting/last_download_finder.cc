@@ -278,7 +278,7 @@ LastDownloadFinder::LastDownloadFinder(
 
 void LastDownloadFinder::SearchInProfile(Profile* profile) {
   // Do not look in OTR profiles or in profiles that do not participate in
-  // safe browsing.
+  // safe browsing extended reporting.
   if (!IncidentReportingService::IsEnabledForProfile(profile))
     return;
 

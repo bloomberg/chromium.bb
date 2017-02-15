@@ -37,7 +37,8 @@ class ClientIncidentReport_DownloadDetails;
 class ClientIncidentReport_NonBinaryDownloadDetails;
 
 // Finds the most recent executable download and non-executable download by
-// any on-the-record profile with history that participates in safe browsing.
+// any on-the-record profile with history that participates in safe browsing
+// extended reporting.
 class LastDownloadFinder : public content::NotificationObserver,
                            public history::HistoryServiceObserver {
  public:
@@ -81,8 +82,8 @@ class LastDownloadFinder : public content::NotificationObserver,
                      const LastDownloadCallback& callback);
 
   // Adds |profile| to the set of profiles to be searched if it is an
-  // on-the-record profile with history that participates in safe browsing. A
-  // search for metadata is initiated immediately.
+  // on-the-record profile with history that participates in safe browsing
+  // extended reporting. A search for metadata is initiated immediately.
   void SearchInProfile(Profile* profile);
 
   // DownloadMetadataManager::GetDownloadDetailsCallback. If |details| are

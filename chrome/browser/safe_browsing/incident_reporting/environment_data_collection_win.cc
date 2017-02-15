@@ -304,12 +304,8 @@ void CollectPlatformProcessData(
 }
 
 void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
-  const std::string reg_data_param_value = variations::GetVariationParamValue(
-      "SafeBrowsingIncidentReportingService", "collect_reg_data");
-  if (reg_data_param_value == "true") {
-    CollectRegistryData(kRegKeysToCollect, arraysize(kRegKeysToCollect),
-                        os_data->mutable_registry_key());
-  }
+  CollectRegistryData(kRegKeysToCollect, arraysize(kRegKeysToCollect),
+                      os_data->mutable_registry_key());
   CollectDomainEnrollmentData(os_data);
 }
 }  // namespace safe_browsing

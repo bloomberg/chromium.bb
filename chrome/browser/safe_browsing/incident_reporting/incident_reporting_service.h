@@ -65,8 +65,9 @@ class SafeBrowsingService;
 // begins operation when an incident is reported via the AddIncident method.
 // Incidents reported from a profile that is loading are held until the profile
 // is fully created. Incidents originating from profiles that do not participate
-// in safe browsing are dropped. Process-wide incidents are affiliated with a
-// profile that participates in safe browsing when one becomes available.
+// in safe browsing extended reporting are dropped. Process-wide incidents are
+// affiliated with a profile that participates in safe browsing extended
+// reporting when one becomes available.
 // Following the addition of an incident that is not dropped, the service
 // collects environmental data, finds the most recent binary download, and waits
 // a bit. Additional incidents that arrive during this time are collated with
@@ -99,11 +100,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // Registers |callback| to be run after some delay following process launch.
   void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
 
-  // Registers |callback| to be run after some delay following process launch if
-  // a profile participating in extended reporting is found.
-  void RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      const DelayedAnalysisCallback& callback);
-
   // Adds |download_manager| to the set monitored for client download request
   // storage.
   void AddDownloadManager(content::DownloadManager* download_manager);
@@ -135,10 +131,10 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Handles the addition of a new profile to the ProfileManager. Creates a new
   // context for |profile| if one does not exist, drops any received incidents
-  // for the profile if the profile is not participating in safe browsing, and
-  // initiates a new search for the most recent download if a report is being
-  // assembled and the most recent has not been found. Overridden by unit tests
-  // to inject incidents prior to creation.
+  // for the profile if the profile is not participating in safe browsing
+  // extended reporting, and initiates a new search for the most recent download
+  // if a report is being assembled and the most recent has not been found.
+  // Overridden by unit tests to inject incidents prior to creation.
   virtual void OnProfileAdded(Profile* profile);
 
   // Initiates a search for the most recent binary download. Overriden by unit
@@ -170,8 +166,7 @@ class IncidentReportingService : public content::NotificationObserver {
   // but not yet uploaded are dropped.
   void OnProfileDestroyed(Profile* profile);
 
-  // Returns an initialized profile that participates in safe browsing. Profiles
-  // participating in extended safe browsing are preferred.
+  // Returns an initialized profile for which incident reporting is enabled.
   Profile* FindEligibleProfile() const;
 
   // Adds |incident_data| relating to the optional |profile| to the service.
@@ -245,9 +240,9 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Processes all received incidents once all data collection is
   // complete. Incidents originating from profiles that do not participate in
-  // safe browsing are dropped, incidents that have already been reported are
-  // pruned, and prune state is cleared for incidents that are now clear. Report
-  // upload is started if any incidents remain.
+  // safe browsing extended reporting are dropped, incidents that have already
+  // been reported are pruned, and prune state is cleared for incidents that are
+  // now clear. Report upload is started if any incidents remain.
   void ProcessIncidentsIfCollectionComplete();
 
   // Cancels all uploads, discarding all reports and responses in progress.
@@ -336,10 +331,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // Callbacks registered for performing delayed analysis.
   DelayedCallbackRunner delayed_analysis_callbacks_;
 
-  // Callbacks registered for performing delayed analysis that should only
-  // be executed for safebrowsing extended reporting users.
-  DelayedCallbackRunner extended_reporting_only_delayed_analysis_callbacks_;
-
   DownloadMetadataManager download_metadata_manager_;
 
   // The collection of uploads in progress.
@@ -348,10 +339,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // An object that asynchronously searches for the most recent binary download.
   // Non-NULL while such a search is outstanding.
   std::unique_ptr<LastDownloadFinder> last_download_finder_;
-
-  // True if IncidentReportingService is enabled at the process level, by a
-  // field trial.
-  bool enabled_by_field_trial_;
 
   // A factory for handing out weak pointers for IncidentReceiver objects.
   base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_;

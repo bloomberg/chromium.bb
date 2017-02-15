@@ -30,7 +30,6 @@ class SuspiciousModuleIncident : public Incident {
   IncidentType GetType() const override;
   std::string GetKey() const override;
   uint32_t ComputeDigest() const override;
-  MinimumProfileConsent GetMinimumProfileConsent() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuspiciousModuleIncident);

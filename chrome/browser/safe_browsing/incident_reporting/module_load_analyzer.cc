@@ -21,9 +21,8 @@ void RegisterModuleLoadAnalysis(
       g_browser_process->safe_browsing_service());
 
   if (safe_browsing_service) {
-    safe_browsing_service
-        ->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-            base::Bind(&VerifyModuleLoadState, database_manager));
+    safe_browsing_service->RegisterDelayedAnalysisCallback(
+        base::Bind(&VerifyModuleLoadState, database_manager));
   }
 #endif
 }

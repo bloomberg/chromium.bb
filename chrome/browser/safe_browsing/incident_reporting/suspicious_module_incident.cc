@@ -35,9 +35,4 @@ uint32_t SuspiciousModuleIncident::ComputeDigest() const {
   return HashMessage(payload()->suspicious_module());
 }
 
-MinimumProfileConsent SuspiciousModuleIncident::GetMinimumProfileConsent()
-    const {
-  return MinimumProfileConsent::SAFE_BROWSING_EXTENDED_REPORTING_ENABLED;
-}
-
 }  // namespace safe_browsing

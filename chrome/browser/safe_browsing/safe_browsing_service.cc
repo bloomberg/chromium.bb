@@ -458,12 +458,6 @@ void SafeBrowsingService::RegisterDelayedAnalysisCallback(
   services_delegate_->RegisterDelayedAnalysisCallback(callback);
 }
 
-void SafeBrowsingService::RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-    const DelayedAnalysisCallback& callback) {
-  services_delegate_->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      callback);
-}
-
 void SafeBrowsingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
   services_delegate_->AddDownloadManager(download_manager);

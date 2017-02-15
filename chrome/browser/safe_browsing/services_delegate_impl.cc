@@ -132,13 +132,6 @@ void ServicesDelegateImpl::RegisterDelayedAnalysisCallback(
   incident_service_->RegisterDelayedAnalysisCallback(callback);
 }
 
-void ServicesDelegateImpl::RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-    const DelayedAnalysisCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  incident_service_->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-      callback);
-}
-
 void ServicesDelegateImpl::AddDownloadManager(
     content::DownloadManager* download_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
