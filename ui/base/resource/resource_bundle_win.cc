@@ -5,6 +5,7 @@
 #include "ui/base/resource/resource_bundle_win.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"
@@ -31,7 +32,8 @@ HINSTANCE GetCurrentResourceDLL() {
 
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.
-  data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
+  data_packs_.push_back(
+      base::MakeUnique<ResourceDataDLL>(GetCurrentResourceDLL()));
 
   LoadChromeResources();
 }

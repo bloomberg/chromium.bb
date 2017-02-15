@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/event_types.h"
-#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"

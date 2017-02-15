@@ -284,13 +284,13 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
 
 #if DCHECK_IS_ON()
 void DataPack::CheckForDuplicateResources(
-    const ScopedVector<ResourceHandle>& packs) {
+    const std::vector<std::unique_ptr<ResourceHandle>>& packs) {
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
     const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
         data_source_->GetData() + kHeaderLength + (i * sizeof(DataPackEntry)));
     const uint16_t resource_id = entry->resource_id;
     const float resource_scale = GetScaleForScaleFactor(scale_factor_);
-    for (const ResourceHandle* handle : packs) {
+    for (const auto& handle : packs) {
       if (GetScaleForScaleFactor(handle->GetScaleFactor()) != resource_scale)
         continue;
       DCHECK(!handle->HasResource(resource_id)) << "Duplicate resource "

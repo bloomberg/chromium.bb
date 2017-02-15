@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -273,7 +274,7 @@ void ResourceBundle::AddDataPackFromBuffer(base::StringPiece buffer,
                                            ScaleFactor scale_factor) {
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromBuffer(buffer)) {
-    AddDataPack(data_pack.release());
+    AddDataPack(std::move(data_pack));
   } else {
     LOG(ERROR) << "Failed to load data pack from buffer";
   }
@@ -285,7 +286,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
     ScaleFactor scale_factor) {
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromFileRegion(std::move(file), region)) {
-    AddDataPack(data_pack.release());
+    AddDataPack(std::move(data_pack));
   } else {
     LOG(ERROR) << "Failed to load data pack from file."
                << "\nSome features may not be available.";
@@ -358,7 +359,7 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   // Use the given resource pak for both common and localized resources.
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (!path.empty() && data_pack->LoadFromPath(path))
-    AddDataPack(data_pack.release());
+    AddDataPack(std::move(data_pack));
 
   data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
@@ -762,22 +763,23 @@ void ResourceBundle::AddDataPackFromPathInternal(
 
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromPath(pack_path)) {
-    AddDataPack(data_pack.release());
+    AddDataPack(std::move(data_pack));
   } else if (!optional) {
     LOG(ERROR) << "Failed to load " << pack_path.value()
                << "\nSome features may not be available.";
   }
 }
 
-void ResourceBundle::AddDataPack(DataPack* data_pack) {
+void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
 #if DCHECK_IS_ON()
   data_pack->CheckForDuplicateResources(data_packs_);
 #endif
-  data_packs_.push_back(data_pack);
 
   if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
       GetScaleForScaleFactor(max_scale_factor_))
     max_scale_factor_ = data_pack->GetScaleFactor();
+
+  data_packs_.push_back(std::move(data_pack));
 }
 
 void ResourceBundle::InitDefaultFontList() {

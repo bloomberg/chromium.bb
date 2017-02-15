@@ -14,11 +14,11 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/resource/data_pack_export.h"
 #include "ui/base/resource/resource_handle.h"
@@ -70,7 +70,8 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
 #if DCHECK_IS_ON()
   // Checks to see if any resource in this DataPack already exists in the list
   // of resources.
-  void CheckForDuplicateResources(const ScopedVector<ResourceHandle>& packs);
+  void CheckForDuplicateResources(
+      const std::vector<std::unique_ptr<ResourceHandle>>& packs);
 #endif
 
  private:

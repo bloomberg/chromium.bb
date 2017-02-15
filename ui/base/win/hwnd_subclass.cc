@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -69,12 +69,12 @@ class HWNDSubclass::HWNDSubclassFactory {
         ui::ViewProp::GetValue(target, kHWNDSubclassKey));
     if (!subclass) {
       subclass = new ui::HWNDSubclass(target);
-      hwnd_subclasses_.push_back(subclass);
+      hwnd_subclasses_.push_back(base::WrapUnique(subclass));
     }
     return subclass;
   }
 
-  const ScopedVector<HWNDSubclass>& hwnd_subclasses() {
+  const std::vector<std::unique_ptr<HWNDSubclass>>& hwnd_subclasses() {
     return hwnd_subclasses_;
   }
 
@@ -83,7 +83,7 @@ class HWNDSubclass::HWNDSubclassFactory {
 
   HWNDSubclassFactory() {}
 
-  ScopedVector<HWNDSubclass> hwnd_subclasses_;
+  std::vector<std::unique_ptr<HWNDSubclass>> hwnd_subclasses_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDSubclassFactory);
 };
@@ -97,10 +97,8 @@ void HWNDSubclass::AddFilterToTarget(HWND target, HWNDMessageFilter* filter) {
 // static
 void HWNDSubclass::RemoveFilterFromAllTargets(HWNDMessageFilter* filter) {
   HWNDSubclassFactory* factory = HWNDSubclassFactory::GetInstance();
-  ScopedVector<ui::HWNDSubclass>::const_iterator it;
-  for (it = factory->hwnd_subclasses().begin();
-      it != factory->hwnd_subclasses().end(); ++it)
-    (*it)->RemoveFilter(filter);
+  for (const auto& subclass : factory->hwnd_subclasses())
+    subclass->RemoveFilter(filter);
 }
 
 // static

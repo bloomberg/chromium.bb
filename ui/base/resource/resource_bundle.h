@@ -10,13 +10,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -329,7 +329,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
   // accordingly.
-  void AddDataPack(DataPack* data_pack);
+  void AddDataPack(std::unique_ptr<DataPack> data_pack);
 
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.
@@ -401,7 +401,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Handles for data sources.
   std::unique_ptr<ResourceHandle> locale_resources_data_;
-  ScopedVector<ResourceHandle> data_packs_;
+  std::vector<std::unique_ptr<ResourceHandle>> data_packs_;
 
   // The maximum scale factor currently loaded.
   ScaleFactor max_scale_factor_;
