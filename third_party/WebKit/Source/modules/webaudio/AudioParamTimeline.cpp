@@ -807,13 +807,248 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
   // Return default value if there are no events matching the desired time
   // range.
   if (!m_events.size() || (endFrame / sampleRate <= m_events[0]->time())) {
-    for (unsigned i = 0; i < numberOfValues; ++i)
-      values[i] = defaultValue;
+    fillWithDefault(values, defaultValue, numberOfValues, 0);
+
     return defaultValue;
   }
 
   int numberOfEvents = m_events.size();
 
+  if (numberOfEvents > 0) {
+    double currentTime = startFrame / sampleRate;
+    clampToCurrentTime(numberOfEvents, startFrame, sampleRate);
+
+    if (handleAllEventsInThePast(currentTime, sampleRate, defaultValue,
+                                 numberOfValues, values))
+      return defaultValue;
+  }
+
+  // Maintain a running time (frame) and index for writing the values buffer.
+  size_t currentFrame = startFrame;
+  unsigned writeIndex = 0;
+
+  // If first event is after startFrame then fill initial part of values buffer
+  // with defaultValue until we reach the first event time.
+  std::tie(currentFrame, writeIndex) =
+      handleFirstEvent(values, defaultValue, numberOfValues, startFrame,
+                       endFrame, sampleRate, currentFrame, writeIndex);
+
+  float value = defaultValue;
+
+  // Go through each event and render the value buffer where the times overlap,
+  // stopping when we've rendered all the requested values.
+  int lastSkippedEventIndex = 0;
+  for (int i = 0; i < numberOfEvents && writeIndex < numberOfValues; ++i) {
+    ParamEvent* event = m_events[i].get();
+    ParamEvent* nextEvent = i < numberOfEvents - 1 ? m_events[i + 1].get() : 0;
+
+    // Wait until we get a more recent event.
+    if (!isEventCurrent(event, nextEvent, currentFrame, sampleRate)) {
+      // This is not the special SetValue event case, and nextEvent is
+      // in the past. We can skip processing of this event since it's
+      // in past. We keep track of this event in lastSkippedEventIndex
+      // to note what events we've skipped.
+      lastSkippedEventIndex = i;
+      continue;
+    }
+
+    // If there's no next event, set nextEventType to LastType to indicate that.
+    ParamEvent::Type nextEventType =
+        nextEvent ? static_cast<ParamEvent::Type>(nextEvent->getType())
+                  : ParamEvent::LastType;
+
+    processSetTargetFollowedByRamp(i, event, nextEventType, currentFrame,
+                                   sampleRate, controlRate, value);
+
+    float value1 = event->value();
+    double time1 = event->time();
+
+    float value2 = nextEvent ? nextEvent->value() : value1;
+    double time2 = nextEvent ? nextEvent->time() : endFrame / sampleRate + 1;
+
+    // Check to see if an event was cancelled.
+    std::tie(value2, time2, nextEventType) =
+        handleCancelValues(event, nextEvent, value2, time2);
+
+    DCHECK_GE(time2, time1);
+
+    // |fillToEndFrame| is the exclusive upper bound of the last frame to be
+    // computed for this event.  It's either the last desired frame (|endFrame|)
+    // or derived from the end time of the next event (time2). We compute
+    // ceil(time2*sampleRate) because fillToEndFrame is the exclusive upper
+    // bound.  Consider the case where |startFrame| = 128 and time2 = 128.1
+    // (assuming sampleRate = 1).  Since time2 is greater than 128, we want to
+    // output a value for frame 128.  This requires that fillToEndFrame be at
+    // least 129.  This is achieved by ceil(time2).
+    //
+    // However, time2 can be very large, so compute this carefully in the case
+    // where time2 exceeds the size of a size_t.
+
+    size_t fillToEndFrame = endFrame;
+    if (endFrame > time2 * sampleRate)
+      fillToEndFrame = static_cast<size_t>(ceil(time2 * sampleRate));
+
+    DCHECK_GE(fillToEndFrame, startFrame);
+    size_t fillToFrame = fillToEndFrame - startFrame;
+    fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
+
+    const AutomationState currentState = {
+        numberOfValues, startFrame,     endFrame, sampleRate, controlRate,
+        fillToFrame,    fillToEndFrame, value1,   time1,      value2,
+        time2,          event,          i,
+    };
+
+    // First handle linear and exponential ramps which require looking ahead to
+    // the next event.
+    if (nextEventType == ParamEvent::LinearRampToValue) {
+      std::tie(currentFrame, value, writeIndex) = processLinearRamp(
+          currentState, values, currentFrame, value, writeIndex);
+    } else if (nextEventType == ParamEvent::ExponentialRampToValue) {
+      std::tie(currentFrame, value, writeIndex) = processExponentialRamp(
+          currentState, values, currentFrame, value, writeIndex);
+    } else {
+      // Handle event types not requiring looking ahead to the next event.
+      switch (event->getType()) {
+        case ParamEvent::SetValue:
+        case ParamEvent::LinearRampToValue: {
+          currentFrame = fillToEndFrame;
+
+          // Simply stay at a constant value.
+          value = event->value();
+          writeIndex = fillWithDefault(values, value, fillToFrame, writeIndex);
+
+          break;
+        }
+
+        case ParamEvent::CancelValues: {
+          std::tie(currentFrame, value, writeIndex) = processCancelValues(
+              currentState, values, currentFrame, value, writeIndex);
+          break;
+        }
+
+        case ParamEvent::ExponentialRampToValue: {
+          currentFrame = fillToEndFrame;
+
+          // If we're here, we've reached the end of the ramp.  If we can
+          // (because the start and end values have the same sign, and neither
+          // is 0), use the actual end value.  If not, we have to propagate
+          // whatever we have.
+          if (i >= 1 && ((m_events[i - 1]->value() * event->value()) > 0))
+            value = event->value();
+
+          // Simply stay at a constant value from the last time.  We don't want
+          // to use the value of the event in case value1 * value2 < 0.  In this
+          // case we should propagate the previous value, which is in |value|.
+          writeIndex = fillWithDefault(values, value, fillToFrame, writeIndex);
+
+          break;
+        }
+
+        case ParamEvent::SetTarget: {
+          std::tie(currentFrame, value, writeIndex) = processSetTarget(
+              currentState, values, currentFrame, value, writeIndex);
+          break;
+        }
+
+        case ParamEvent::SetValueCurve: {
+          std::tie(currentFrame, value, writeIndex) = processSetValueCurve(
+              currentState, values, currentFrame, value, writeIndex);
+          break;
+        }
+        case ParamEvent::LastType:
+          ASSERT_NOT_REACHED();
+          break;
+      }
+    }
+  }
+
+  // If we skipped over any events (because they are in the past), we can
+  // remove them so we don't have to check them ever again.  (This MUST be
+  // running with the m_events lock so we can safely modify the m_events
+  // array.)
+  if (lastSkippedEventIndex > 0)
+    m_events.remove(0, lastSkippedEventIndex - 1);
+
+  // If there's any time left after processing the last event then just
+  // propagate the last value to the end of the values buffer.
+  writeIndex = fillWithDefault(values, value, numberOfValues, writeIndex);
+
+  // This value is used to set the .value attribute of the AudioParam.  it
+  // should be the last computed value.
+  return values[numberOfValues - 1];
+}
+
+std::tuple<size_t, unsigned> AudioParamTimeline::handleFirstEvent(
+    float* values,
+    float defaultValue,
+    unsigned numberOfValues,
+    size_t startFrame,
+    size_t endFrame,
+    double sampleRate,
+    size_t currentFrame,
+    unsigned writeIndex) {
+  double firstEventTime = m_events[0]->time();
+  if (firstEventTime > startFrame / sampleRate) {
+    // |fillToFrame| is an exclusive upper bound, so use ceil() to compute the
+    // bound from the firstEventTime.
+    size_t fillToFrame = endFrame;
+    double firstEventFrame = ceil(firstEventTime * sampleRate);
+    if (endFrame > firstEventFrame)
+      fillToFrame = static_cast<size_t>(firstEventFrame);
+    DCHECK_GE(fillToFrame, startFrame);
+
+    fillToFrame -= startFrame;
+    fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
+    writeIndex = fillWithDefault(values, defaultValue, fillToFrame, writeIndex);
+
+    currentFrame += fillToFrame;
+  }
+
+  return std::make_tuple(currentFrame, writeIndex);
+}
+
+bool AudioParamTimeline::isEventCurrent(const ParamEvent* event,
+                                        const ParamEvent* nextEvent,
+                                        size_t currentFrame,
+                                        double sampleRate) {
+  // WARNING: due to round-off it might happen that nextEvent->time() is
+  // just larger than currentFrame/sampleRate.  This means that we will end
+  // up running the |event| again.  The code below had better be prepared
+  // for this case!  What should happen is the fillToFrame should be 0 so
+  // that while the event is actually run again, nothing actually gets
+  // computed, and we move on to the next event.
+  //
+  // An example of this case is setValueCurveAtTime.  The time at which
+  // setValueCurveAtTime ends (and the setValueAtTime begins) might be
+  // just past currentTime/sampleRate.  Then setValueCurveAtTime will be
+  // processed again before advancing to setValueAtTime.  The number of
+  // frames to be processed should be zero in this case.
+  if (nextEvent && nextEvent->time() < currentFrame / sampleRate) {
+    // But if the current event is a SetValue event and the event time is
+    // between currentFrame - 1 and curentFrame (in time). we don't want to
+    // skip it.  If we do skip it, the SetValue event is completely skipped
+    // and not applied, which is wrong.  Other events don't have this problem.
+    // (Because currentFrame is unsigned, we do the time check in this funny,
+    // but equivalent way.)
+    double eventFrame = event->time() * sampleRate;
+
+    // Condition is currentFrame - 1 < eventFrame <= currentFrame, but
+    // currentFrame is unsigned and could be 0, so use
+    // currentFrame < eventFrame + 1 instead.
+    if (!((event->getType() == ParamEvent::SetValue &&
+           (eventFrame <= currentFrame) && (currentFrame < eventFrame + 1)))) {
+      // This is not the special SetValue event case, and nextEvent is
+      // in the past. We can skip processing of this event since it's
+      // in past.
+      return false;
+    }
+  }
+  return true;
+}
+
+void AudioParamTimeline::clampToCurrentTime(int numberOfEvents,
+                                            size_t startFrame,
+                                            double sampleRate) {
   if (numberOfEvents > 0) {
     bool clampedSomeEventTime = false;
     double currentTime = startFrame / sampleRate;
@@ -845,734 +1080,674 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
       std::stable_sort(m_events.begin(), m_events.end(),
                        ParamEvent::eventPreceeds);
     }
+  }
+}
 
-    // Optimize the case where the last event is in the past.
-    ParamEvent* lastEvent = m_events[m_events.size() - 1].get();
-    ParamEvent::Type lastEventType = lastEvent->getType();
-    double lastEventTime = lastEvent->time();
+bool AudioParamTimeline::handleAllEventsInThePast(double currentTime,
+                                                  double sampleRate,
+                                                  float defaultValue,
+                                                  unsigned numberOfValues,
+                                                  float* values) {
+  // Optimize the case where the last event is in the past.
+  ParamEvent* lastEvent = m_events[m_events.size() - 1].get();
+  ParamEvent::Type lastEventType = lastEvent->getType();
+  double lastEventTime = lastEvent->time();
 
-    // If the last event is in the past and the event has ended, then we can
-    // just propagate the same value.  Except for SetTarget which lasts
-    // "forever".  SetValueCurve also has an explicit SetValue at the end of
-    // the curve, so we don't need to worry that SetValueCurve time is a
-    // start time, not an end time.
-    //
-    // Allow at least one render quantum to go by before handling this
-    // to allow k-rate parameters to finish processing the event. See
-    // crbug.com/672857. Due to possible roundoff, arbirtrarily wait
-    // for 1.5 render quanta instead of 1.
-    if (lastEventTime +
-                1.5 * AudioUtilities::kRenderQuantumFrames / sampleRate <
-            currentTime &&
-        lastEventType != ParamEvent::SetTarget) {
-      // The event has finished, so just copy the default value out.
-      // Since all events are now also in the past, we can just remove all
-      // timeline events too because |defaultValue| has the expected
-      // value.
-      for (unsigned i = 0; i < numberOfValues; ++i)
-        values[i] = defaultValue;
-      m_smoothedValue = defaultValue;
-      m_events.clear();
-      return defaultValue;
-    }
+  // If the last event is in the past and the event has ended, then we can
+  // just propagate the same value.  Except for SetTarget which lasts
+  // "forever".  SetValueCurve also has an explicit SetValue at the end of
+  // the curve, so we don't need to worry that SetValueCurve time is a
+  // start time, not an end time.
+  if (lastEventTime + 1.5 * AudioUtilities::kRenderQuantumFrames / sampleRate <
+          currentTime &&
+      lastEventType != ParamEvent::SetTarget) {
+    // The event has finished, so just copy the default value out.
+    // Since all events are now also in the past, we can just remove all
+    // timeline events too because |defaultValue| has the expected
+    // value.
+    fillWithDefault(values, defaultValue, numberOfValues, 0);
+    m_smoothedValue = defaultValue;
+    m_events.clear();
+    return true;
   }
 
-  // Maintain a running time (frame) and index for writing the values buffer.
-  size_t currentFrame = startFrame;
-  unsigned writeIndex = 0;
+  return false;
+}
 
-  // If first event is after startFrame then fill initial part of values buffer
-  // with defaultValue until we reach the first event time.
-  double firstEventTime = m_events[0]->time();
-  if (firstEventTime > startFrame / sampleRate) {
-    // |fillToFrame| is an exclusive upper bound, so use ceil() to compute the
-    // bound from the firstEventTime.
-    size_t fillToFrame = endFrame;
-    double firstEventFrame = ceil(firstEventTime * sampleRate);
-    if (endFrame > firstEventFrame)
-      fillToFrame = static_cast<size_t>(firstEventFrame);
-    DCHECK_GE(fillToFrame, startFrame);
-
-    fillToFrame -= startFrame;
-    fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
-    for (; writeIndex < fillToFrame; ++writeIndex)
-      values[writeIndex] = defaultValue;
-
-    currentFrame += fillToFrame;
-  }
-
-  float value = defaultValue;
-
-  // Go through each event and render the value buffer where the times overlap,
-  // stopping when we've rendered all the requested values.
-  int lastSkippedEventIndex = 0;
-  for (int i = 0; i < numberOfEvents && writeIndex < numberOfValues; ++i) {
-    ParamEvent* event = m_events[i].get();
-    ParamEvent* nextEvent = i < numberOfEvents - 1 ? m_events[i + 1].get() : 0;
-
-    // Wait until we get a more recent event.
+void AudioParamTimeline::processSetTargetFollowedByRamp(
+    int eventIndex,
+    ParamEvent*& event,
+    ParamEvent::Type nextEventType,
+    size_t currentFrame,
+    double sampleRate,
+    double controlRate,
+    float& value) {
+  // If the current event is SetTarget and the next event is a
+  // LinearRampToValue or ExponentialRampToValue, special handling is needed.
+  // In this case, the linear and exponential ramp should start at wherever
+  // the SetTarget processing has reached.
+  if (event->getType() == ParamEvent::SetTarget &&
+      (nextEventType == ParamEvent::LinearRampToValue ||
+       nextEventType == ParamEvent::ExponentialRampToValue)) {
+    // Replace the SetTarget with a SetValue to set the starting time and
+    // value for the ramp using the current frame.  We need to update |value|
+    // appropriately depending on whether the ramp has started or not.
     //
-    // WARNING: due to round-off it might happen that nextEvent->time() is
-    // just larger than currentFrame/sampleRate.  This means that we will end
-    // up running the |event| again.  The code below had better be prepared
-    // for this case!  What should happen is the fillToFrame should be 0 so
-    // that while the event is actually run again, nothing actually gets
-    // computed, and we move on to the next event.
+    // If SetTarget starts somewhere between currentFrame - 1 and
+    // currentFrame, we directly compute the value it would have at
+    // currentFrame.  If not, we update the value from the value from
+    // currentFrame - 1.
     //
-    // An example of this case is setValueCurveAtTime.  The time at which
-    // setValueCurveAtTime ends (and the setValueAtTime begins) might be
-    // just past currentTime/sampleRate.  Then setValueCurveAtTime will be
-    // processed again before advancing to setValueAtTime.  The number of
-    // frames to be processed should be zero in this case.
-    if (nextEvent && nextEvent->time() < currentFrame / sampleRate) {
-      // But if the current event is a SetValue event and the event time is
-      // between currentFrame - 1 and curentFrame (in time). we don't want to
-      // skip it.  If we do skip it, the SetValue event is completely skipped
-      // and not applied, which is wrong.  Other events don't have this problem.
-      // (Because currentFrame is unsigned, we do the time check in this funny,
-      // but equivalent way.)
-      double eventFrame = event->time() * sampleRate;
-
-      // Condition is currentFrame - 1 < eventFrame <= currentFrame, but
-      // currentFrame is unsigned and could be 0, so use
-      // currentFrame < eventFrame + 1 instead.
-      if (!((event->getType() == ParamEvent::SetValue &&
-             (eventFrame <= currentFrame) &&
-             (currentFrame < eventFrame + 1)))) {
-        // This is not the special SetValue event case, and nextEvent is
-        // in the past. We can skip processing of this event since it's
-        // in past. We keep track of this event in lastSkippedEventIndex
-        // to note what events we've skipped.
-        lastSkippedEventIndex = i;
-        continue;
-      }
-    }
-
-    // If there's no next event, set nextEventType to LastType to indicate that.
-    ParamEvent::Type nextEventType =
-        nextEvent ? static_cast<ParamEvent::Type>(nextEvent->getType())
-                  : ParamEvent::LastType;
-
-    // If the current event is SetTarget and the next event is a
-    // LinearRampToValue or ExponentialRampToValue, special handling is needed.
-    // In this case, the linear and exponential ramp should start at wherever
-    // the SetTarget processing has reached.
-    if (event->getType() == ParamEvent::SetTarget &&
-        (nextEventType == ParamEvent::LinearRampToValue ||
-         nextEventType == ParamEvent::ExponentialRampToValue)) {
-      // Replace the SetTarget with a SetValue to set the starting time and
-      // value for the ramp using the current frame.  We need to update |value|
-      // appropriately depending on whether the ramp has started or not.
-      //
-      // If SetTarget starts somewhere between currentFrame - 1 and
-      // currentFrame, we directly compute the value it would have at
-      // currentFrame.  If not, we update the value from the value from
-      // currentFrame - 1.
-      //
-      // Can't use the condition currentFrame - 1 <= t0 * sampleRate <=
-      // currentFrame because currentFrame is unsigned and could be 0.  Instead,
-      // compute the condition this way,
-      // where f = currentFrame and Fs = sampleRate:
-      //
-      //    f - 1 <= t0 * Fs <= f
-      //    2 * f - 2 <= 2 * Fs * t0 <= 2 * f
-      //    -2 <= 2 * Fs * t0 - 2 * f <= 0
-      //    -1 <= 2 * Fs * t0 - 2 * f + 1 <= 1
-      //     abs(2 * Fs * t0 - 2 * f + 1) <= 1
-      if (fabs(2 * sampleRate * event->time() - 2 * currentFrame + 1) <= 1) {
-        // SetTarget is starting somewhere between currentFrame - 1 and
-        // currentFrame. Compute the value the SetTarget would have at the
-        // currentFrame.
-        value = event->value() +
-                (value - event->value()) *
-                    exp(-(currentFrame / sampleRate - event->time()) /
-                        event->timeConstant());
-      } else {
-        // SetTarget has already started.  Update |value| one frame because it's
-        // the value from the previous frame.
-        float discreteTimeConstant = static_cast<float>(
-            AudioUtilities::discreteTimeConstantForSampleRate(
-                event->timeConstant(), controlRate));
-        value += (event->value() - value) * discreteTimeConstant;
-      }
-
-      // Insert a SetValueEvent to mark the starting value and time.
-      // Clear the clamp check because this doesn't need it.
-      m_events[i] =
-          ParamEvent::createSetValueEvent(value, currentFrame / sampleRate);
-      m_events[i]->clearTimeClampCheck();
-
-      // Update our pointer to the current event because we just changed it.
-      event = m_events[i].get();
-    }
-
-    float value1 = event->value();
-    double time1 = event->time();
-
-    float value2 = nextEvent ? nextEvent->value() : value1;
-    double time2 = nextEvent ? nextEvent->time() : endFrame / sampleRate + 1;
-
-    // Check to see if an event was cancelled.
-    if (nextEventType == ParamEvent::CancelValues) {
-      switch (event->getType()) {
-        case ParamEvent::LinearRampToValue:
-        case ParamEvent::ExponentialRampToValue:
-        case ParamEvent::SetValue: {
-          // These three events potentially establish a starting value for
-          // the following event, so we need to examine the cancelled
-          // event to see what to do.
-          const ParamEvent* savedEvent = nextEvent->savedEvent();
-
-          // Update the end time and type to pretend that we're running
-          // this saved event type.
-          time2 = nextEvent->time();
-          nextEventType = savedEvent->getType();
-
-          if (nextEvent->hasDefaultCancelledValue()) {
-            // We've already established a value for the cancelled
-            // event, so just return it.
-            value2 = nextEvent->value();
-          } else {
-            // If the next event would have been a LinearRamp or
-            // ExponentialRamp, we need to compute a new end value for
-            // the event so that the curve works continues as if it were
-            // not cancelled.
-            switch (savedEvent->getType()) {
-              case ParamEvent::LinearRampToValue:
-                value2 =
-                    linearRampAtTime(nextEvent->time(), value1, time1,
-                                     savedEvent->value(), savedEvent->time());
-                break;
-              case ParamEvent::ExponentialRampToValue:
-                value2 = exponentialRampAtTime(nextEvent->time(), value1, time1,
-                                               savedEvent->value(),
-                                               savedEvent->time());
-                break;
-              case ParamEvent::SetValueCurve:
-              case ParamEvent::SetValue:
-              case ParamEvent::SetTarget:
-              case ParamEvent::CancelValues:
-                // These cannot be possible types for the saved event
-                // because they can't be created.
-                // createCancelValuesEvent doesn't allow them (SetValue,
-                // SetTarget, CancelValues) or cancelScheduledValues()
-                // doesn't create such an event (SetValueCurve).
-                NOTREACHED();
-                break;
-              case ParamEvent::LastType:
-                // Illegal event type.
-                NOTREACHED();
-                break;
-            }
-
-            // Cache the new value so we don't keep computing it over and over.
-            nextEvent->setCancelledValue(value2);
-          }
-        } break;
-        case ParamEvent::SetValueCurve:
-          // Everything needed for this was handled when cancelling was
-          // done.
-          break;
-        case ParamEvent::SetTarget:
-        case ParamEvent::CancelValues:
-          // Nothing special needs to be done for SetTarget or
-          // CancelValues followed by CancelValues.
-          break;
-        case ParamEvent::LastType:
-          NOTREACHED();
-          break;
-      }
-    }
-
-    DCHECK_GE(time2, time1);
-    double deltaTime = time2 - time1;
-    float k = deltaTime > 0 ? 1 / deltaTime : 0;
-
-    // |fillToEndFrame| is the exclusive upper bound of the last frame to be
-    // computed for this event.  It's either the last desired frame (|endFrame|)
-    // or derived from the end time of the next event (time2). We compute
-    // ceil(time2*sampleRate) because fillToEndFrame is the exclusive upper
-    // bound.  Consider the case where |startFrame| = 128 and time2 = 128.1
-    // (assuming sampleRate = 1).  Since time2 is greater than 128, we want to
-    // output a value for frame 128.  This requires that fillToEndFrame be at
-    // least 129.  This is achieved by ceil(time2).
+    // Can't use the condition currentFrame - 1 <= t0 * sampleRate <=
+    // currentFrame because currentFrame is unsigned and could be 0.  Instead,
+    // compute the condition this way,
+    // where f = currentFrame and Fs = sampleRate:
     //
-    // However, time2 can be very large, so compute this carefully in the case
-    // where time2 exceeds the size of a size_t.
-
-    size_t fillToEndFrame = endFrame;
-    if (endFrame > time2 * sampleRate)
-      fillToEndFrame = static_cast<size_t>(ceil(time2 * sampleRate));
-
-    DCHECK_GE(fillToEndFrame, startFrame);
-    size_t fillToFrame = fillToEndFrame - startFrame;
-    fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
-
-    // First handle linear and exponential ramps which require looking ahead to
-    // the next event.
-    if (nextEventType == ParamEvent::LinearRampToValue) {
-      const float valueDelta = value2 - value1;
-#if CPU(X86) || CPU(X86_64)
-      if (fillToFrame > writeIndex) {
-        // Minimize in-loop operations. Calculate starting value and increment.
-        // Next step: value += inc.
-        //  value = value1 +
-        //      (currentFrame/sampleRate - time1) * k * (value2 - value1);
-        //  inc = 4 / sampleRate * k * (value2 - value1);
-        // Resolve recursion by expanding constants to achieve a 4-step loop
-        // unrolling.
-        //  value = value1 +
-        //    ((currentFrame/sampleRate - time1) + i * sampleFrameTimeIncr) * k
-        //    * (value2 -value1), i in 0..3
-        __m128 vValue =
-            _mm_mul_ps(_mm_set_ps1(1 / sampleRate), _mm_set_ps(3, 2, 1, 0));
-        vValue =
-            _mm_add_ps(vValue, _mm_set_ps1(currentFrame / sampleRate - time1));
-        vValue = _mm_mul_ps(vValue, _mm_set_ps1(k * valueDelta));
-        vValue = _mm_add_ps(vValue, _mm_set_ps1(value1));
-        __m128 vInc = _mm_set_ps1(4 / sampleRate * k * valueDelta);
-
-        // Truncate loop steps to multiple of 4.
-        unsigned fillToFrameTrunc =
-            writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
-        // Compute final time.
-        DCHECK_LE(fillToFrameTrunc, numberOfValues);
-        currentFrame += fillToFrameTrunc - writeIndex;
-
-        // Process 4 loop steps.
-        for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-          _mm_storeu_ps(values + writeIndex, vValue);
-          vValue = _mm_add_ps(vValue, vInc);
-        }
-      }
-      // Update |value| with the last value computed so that the
-      // .value attribute of the AudioParam gets the correct linear
-      // ramp value, in case the following loop doesn't execute.
-      if (writeIndex >= 1)
-        value = values[writeIndex - 1];
-#endif
-      // Serially process remaining values.
-      for (; writeIndex < fillToFrame; ++writeIndex) {
-        float x = (currentFrame / sampleRate - time1) * k;
-        // value = (1 - x) * value1 + x * value2;
-        value = value1 + x * valueDelta;
-        values[writeIndex] = value;
-        ++currentFrame;
-      }
-    } else if (nextEventType == ParamEvent::ExponentialRampToValue) {
-      if (value1 * value2 <= 0) {
-        // It's an error if value1 and value2 have opposite signs or if one of
-        // them is zero.  Handle this by propagating the previous value, and
-        // making it the default.
-        value = value1;
-
-        for (; writeIndex < fillToFrame; ++writeIndex)
-          values[writeIndex] = value;
-      } else {
-        double numSampleFrames = deltaTime * sampleRate;
-        // The value goes exponentially from value1 to value2 in a duration of
-        // deltaTime seconds according to
-        //
-        //  v(t) = v1*(v2/v1)^((t-t1)/(t2-t1))
-        //
-        // Let c be currentFrame and F be the sampleRate.  Then we want to
-        // sample v(t) at times t = (c + k)/F for k = 0, 1, ...:
-        //
-        //   v((c+k)/F) = v1*(v2/v1)^(((c/F+k/F)-t1)/(t2-t1))
-        //              = v1*(v2/v1)^((c/F-t1)/(t2-t1))
-        //                  *(v2/v1)^((k/F)/(t2-t1))
-        //              = v1*(v2/v1)^((c/F-t1)/(t2-t1))
-        //                  *[(v2/v1)^(1/(F*(t2-t1)))]^k
-        //
-        // Thus, this can be written as
-        //
-        //   v((c+k)/F) = V*m^k
-        //
-        // where
-        //   V = v1*(v2/v1)^((c/F-t1)/(t2-t1))
-        //   m = (v2/v1)^(1/(F*(t2-t1)))
-
-        // Compute the per-sample multiplier.
-        float multiplier = powf(value2 / value1, 1 / numSampleFrames);
-        // Set the starting value of the exponential ramp.
-        value = value1 * powf(value2 / value1,
-                              (currentFrame / sampleRate - time1) / deltaTime);
-
-        for (; writeIndex < fillToFrame; ++writeIndex) {
-          values[writeIndex] = value;
-          value *= multiplier;
-          ++currentFrame;
-        }
-        // |value| got updated one extra time in the above loop.  Restore it to
-        // the last computed value.
-        if (writeIndex >= 1)
-          value /= multiplier;
-
-        // Due to roundoff it's possible that value exceeds value2.  Clip value
-        // to value2 if we are within 1/2 frame of time2.
-        if (currentFrame > time2 * sampleRate - 0.5)
-          value = value2;
-      }
+    //    f - 1 <= t0 * Fs <= f
+    //    2 * f - 2 <= 2 * Fs * t0 <= 2 * f
+    //    -2 <= 2 * Fs * t0 - 2 * f <= 0
+    //    -1 <= 2 * Fs * t0 - 2 * f + 1 <= 1
+    //     abs(2 * Fs * t0 - 2 * f + 1) <= 1
+    if (fabs(2 * sampleRate * event->time() - 2 * currentFrame + 1) <= 1) {
+      // SetTarget is starting somewhere between currentFrame - 1 and
+      // currentFrame. Compute the value the SetTarget would have at the
+      // currentFrame.
+      value = event->value() +
+              (value - event->value()) *
+                  exp(-(currentFrame / sampleRate - event->time()) /
+                      event->timeConstant());
     } else {
-      // Handle event types not requiring looking ahead to the next event.
-      switch (event->getType()) {
-        case ParamEvent::SetValue:
-        case ParamEvent::LinearRampToValue: {
-          currentFrame = fillToEndFrame;
+      // SetTarget has already started.  Update |value| one frame because it's
+      // the value from the previous frame.
+      float discreteTimeConstant =
+          static_cast<float>(AudioUtilities::discreteTimeConstantForSampleRate(
+              event->timeConstant(), controlRate));
+      value += (event->value() - value) * discreteTimeConstant;
+    }
 
-          // Simply stay at a constant value.
-          value = event->value();
+    // Insert a SetValueEvent to mark the starting value and time.
+    // Clear the clamp check because this doesn't need it.
+    m_events[eventIndex] =
+        ParamEvent::createSetValueEvent(value, currentFrame / sampleRate);
+    m_events[eventIndex]->clearTimeClampCheck();
 
-          for (; writeIndex < fillToFrame; ++writeIndex)
-            values[writeIndex] = value;
+    // Update our pointer to the current event because we just changed it.
+    event = m_events[eventIndex].get();
+  }
+}
 
-          break;
-        }
+std::tuple<float, double, AudioParamTimeline::ParamEvent::Type>
+AudioParamTimeline::handleCancelValues(const ParamEvent* currentEvent,
+                                       ParamEvent* nextEvent,
+                                       float value2,
+                                       double time2) {
+  DCHECK(currentEvent);
 
-        case ParamEvent::CancelValues: {
-          // If the previous event was a SetTarget or ExponentialRamp
-          // event, the current value is one sample behind.  Update
-          // the sample value by one sample, but only at the start of
-          // this CancelValues event.
-          if (event->hasDefaultCancelledValue()) {
-            value = event->value();
-          } else {
-            double cancelFrame = time1 * sampleRate;
-            if (i >= 1 && cancelFrame <= currentFrame &&
-                currentFrame < cancelFrame + 1) {
-              ParamEvent::Type lastEventType = m_events[i - 1]->getType();
-              if (lastEventType == ParamEvent::SetTarget) {
-                float target = m_events[i - 1]->value();
-                float timeConstant = m_events[i - 1]->timeConstant();
-                float discreteTimeConstant = static_cast<float>(
-                    AudioUtilities::discreteTimeConstantForSampleRate(
-                        timeConstant, controlRate));
-                value += (target - value) * discreteTimeConstant;
-              }
-            }
+  ParamEvent::Type nextEventType =
+      nextEvent ? nextEvent->getType() : ParamEvent::LastType;
+
+  if (nextEvent && nextEvent->getType() == ParamEvent::CancelValues) {
+    float value1 = currentEvent->value();
+    double time1 = currentEvent->time();
+
+    switch (currentEvent->getType()) {
+      case ParamEvent::LinearRampToValue:
+      case ParamEvent::ExponentialRampToValue:
+      case ParamEvent::SetValue: {
+        // These three events potentially establish a starting value for
+        // the following event, so we need to examine the cancelled
+        // event to see what to do.
+        const ParamEvent* savedEvent = nextEvent->savedEvent();
+
+        // Update the end time and type to pretend that we're running
+        // this saved event type.
+        time2 = nextEvent->time();
+        nextEventType = savedEvent->getType();
+
+        if (nextEvent->hasDefaultCancelledValue()) {
+          // We've already established a value for the cancelled
+          // event, so just return it.
+          value2 = nextEvent->value();
+        } else {
+          // If the next event would have been a LinearRamp or
+          // ExponentialRamp, we need to compute a new end value for
+          // the event so that the curve works continues as if it were
+          // not cancelled.
+          switch (savedEvent->getType()) {
+            case ParamEvent::LinearRampToValue:
+              value2 =
+                  linearRampAtTime(nextEvent->time(), value1, time1,
+                                   savedEvent->value(), savedEvent->time());
+              break;
+            case ParamEvent::ExponentialRampToValue:
+              value2 = exponentialRampAtTime(nextEvent->time(), value1, time1,
+                                             savedEvent->value(),
+                                             savedEvent->time());
+              break;
+            case ParamEvent::SetValueCurve:
+            case ParamEvent::SetValue:
+            case ParamEvent::SetTarget:
+            case ParamEvent::CancelValues:
+              // These cannot be possible types for the saved event
+              // because they can't be created.
+              // createCancelValuesEvent doesn't allow them (SetValue,
+              // SetTarget, CancelValues) or cancelScheduledValues()
+              // doesn't create such an event (SetValueCurve).
+              NOTREACHED();
+              break;
+            case ParamEvent::LastType:
+              // Illegal event type.
+              NOTREACHED();
+              break;
           }
 
-          // Simply stay at the current value.
-          for (; writeIndex < fillToFrame; ++writeIndex)
-            values[writeIndex] = value;
-
-          currentFrame = fillToEndFrame;
-          break;
+          // Cache the new value so we don't keep computing it over and over.
+          nextEvent->setCancelledValue(value2);
         }
+      } break;
+      case ParamEvent::SetValueCurve:
+        // Everything needed for this was handled when cancelling was
+        // done.
+        break;
+      case ParamEvent::SetTarget:
+      case ParamEvent::CancelValues:
+        // Nothing special needs to be done for SetTarget or
+        // CancelValues followed by CancelValues.
+        break;
+      case ParamEvent::LastType:
+        NOTREACHED();
+        break;
+    }
+  }
 
-        case ParamEvent::ExponentialRampToValue: {
-          currentFrame = fillToEndFrame;
+  return std::make_tuple(value2, time2, nextEventType);
+}
 
-          // If we're here, we've reached the end of the ramp.  If we can
-          // (because the start and end values have the same sign, and neither
-          // is 0), use the actual end value.  If not, we have to propagate
-          // whatever we have.
-          if (i >= 1 && ((m_events[i - 1]->value() * event->value()) > 0))
-            value = event->value();
-
-          // Simply stay at a constant value from the last time.  We don't want
-          // to use the value of the event in case value1 * value2 < 0.  In this
-          // case we should propagate the previous value, which is in |value|.
-          for (; writeIndex < fillToFrame; ++writeIndex)
-            values[writeIndex] = value;
-
-          break;
-        }
-
-        case ParamEvent::SetTarget: {
-          // Exponential approach to target value with given time constant.
-          //
-          //   v(t) = v2 + (v1 - v2)*exp(-(t-t1/tau))
-          //
-
-          float target = event->value();
-          float timeConstant = event->timeConstant();
-          float discreteTimeConstant = static_cast<float>(
-              AudioUtilities::discreteTimeConstantForSampleRate(timeConstant,
-                                                                controlRate));
-
-          // Set the starting value correctly.  This is only needed when the
-          // current time is "equal" to the start time of this event.  This is
-          // to get the sampling correct if the start time of this automation
-          // isn't on a frame boundary.  Otherwise, we can just continue from
-          // where we left off from the previous rendering quantum.
-          {
-            double rampStartFrame = time1 * sampleRate;
-            // Condition is c - 1 < r <= c where c = currentFrame and r =
-            // rampStartFrame.  Compute it this way because currentFrame is
-            // unsigned and could be 0.
-            if (rampStartFrame <= currentFrame &&
-                currentFrame < rampStartFrame + 1) {
-              value =
-                  target +
-                  (value - target) *
-                      exp(-(currentFrame / sampleRate - time1) / timeConstant);
-            } else {
-              // Otherwise, need to compute a new value bacause |value| is the
-              // last computed value of SetTarget.  Time has progressed by one
-              // frame, so we need to update the value for the new frame.
-              value += (target - value) * discreteTimeConstant;
-            }
-          }
-
-          // If the value is close enough to the target, just fill in the data
-          // with the target value.
-          if (fabs(value - target) < kSetTargetThreshold * fabs(target) ||
-              (!target && fabs(value) < kSetTargetZeroThreshold)) {
-            for (; writeIndex < fillToFrame; ++writeIndex)
-              values[writeIndex] = target;
-          } else {
+std::tuple<size_t, float, unsigned> AudioParamTimeline::processLinearRamp(
+    const AutomationState& currentState,
+    float* values,
+    size_t currentFrame,
+    float value,
+    unsigned writeIndex) {
 #if CPU(X86) || CPU(X86_64)
-            if (fillToFrame > writeIndex) {
-              // Resolve recursion by expanding constants to achieve a 4-step
-              // loop unrolling.
-              //
-              // v1 = v0 + (t - v0) * c
-              // v2 = v1 + (t - v1) * c
-              // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
-              // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
-              // v2 = v0 + (t - v0) * c * (2 - c)
-              // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
-              const float c0 = discreteTimeConstant;
-              const float c1 = c0 * (2 - c0);
-              const float c2 = c0 * ((c0 - 3) * c0 + 3);
-              const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
-
-              float delta;
-              __m128 vC = _mm_set_ps(c2, c1, c0, 0);
-              __m128 vDelta, vValue, vResult;
-
-              // Process 4 loop steps.
-              unsigned fillToFrameTrunc =
-                  writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
-              DCHECK_LE(fillToFrameTrunc, numberOfValues);
-
-              for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-                delta = target - value;
-                vDelta = _mm_set_ps1(delta);
-                vValue = _mm_set_ps1(value);
-
-                vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
-                _mm_storeu_ps(values + writeIndex, vResult);
-
-                // Update value for next iteration.
-                value += delta * c3;
-              }
-            }
+  auto numberOfValues = currentState.numberOfValues;
 #endif
-            // Serially process remaining values
-            for (; writeIndex < fillToFrame; ++writeIndex) {
-              values[writeIndex] = value;
-              value += (target - value) * discreteTimeConstant;
-            }
-            // The previous loops may have updated |value| one extra time.
-            // Reset it to the last computed value.
-            if (writeIndex >= 1)
-              value = values[writeIndex - 1];
-            currentFrame = fillToEndFrame;
-          }
-          break;
-        }
+  auto fillToFrame = currentState.fillToFrame;
+  auto time1 = currentState.time1;
+  auto time2 = currentState.time2;
+  auto value1 = currentState.value1;
+  auto value2 = currentState.value2;
+  auto sampleRate = currentState.sampleRate;
 
-        case ParamEvent::SetValueCurve: {
-          Vector<float> curve = event->curve();
-          float* curveData = curve.data();
-          unsigned numberOfCurvePoints = curve.size();
-
-          float curveEndValue = event->curveEndValue();
-
-          // Curve events have duration, so don't just use next event time.
-          double duration = event->duration();
-          // How much to step the curve index for each frame.  This is basically
-          // the term (N - 1)/Td in the specification.
-          double curvePointsPerFrame =
-              event->curvePointsPerSecond() / sampleRate;
-
-          if (!numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
-            // Error condition - simply propagate previous value.
-            currentFrame = fillToEndFrame;
-            for (; writeIndex < fillToFrame; ++writeIndex)
-              values[writeIndex] = value;
-            break;
-          }
-
-          // Save old values and recalculate information based on the curve's
-          // duration instead of the next event time.
-          size_t nextEventFillToFrame = fillToFrame;
-
-          // fillToEndFrame = min(endFrame,
-          //                      ceil(sampleRate * (time1 + duration))),
-          // but compute this carefully in case sampleRate*(time1 + duration) is
-          // huge.  fillToEndFrame is an exclusive upper bound of the last frame
-          // to be computed, so ceil is used.
-          {
-            double curveEndFrame = ceil(sampleRate * (time1 + duration));
-            if (endFrame > curveEndFrame)
-              fillToEndFrame = static_cast<size_t>(curveEndFrame);
-            else
-              fillToEndFrame = endFrame;
-          }
-
-          // |fillToFrame| can be less than |startFrame| when the end of the
-          // setValueCurve automation has been reached, but the next automation
-          // has not yet started. In this case, |fillToFrame| is clipped to
-          // |time1|+|duration| above, but |startFrame| will keep increasing
-          // (because the current time is increasing).
-          fillToFrame =
-              (fillToEndFrame < startFrame) ? 0 : fillToEndFrame - startFrame;
-          fillToFrame =
-              std::min(fillToFrame, static_cast<size_t>(numberOfValues));
-
-          // Index into the curve data using a floating-point value.
-          // We're scaling the number of curve points by the duration (see
-          // curvePointsPerFrame).
-          double curveVirtualIndex = 0;
-          if (time1 < currentFrame / sampleRate) {
-            // Index somewhere in the middle of the curve data.
-            // Don't use timeToSampleFrame() since we want the exact
-            // floating-point frame.
-            double frameOffset = currentFrame - time1 * sampleRate;
-            curveVirtualIndex = curvePointsPerFrame * frameOffset;
-          }
-
-          // Set the default value in case fillToFrame is 0.
-          value = curveEndValue;
-
-          // Render the stretched curve data using linear interpolation.
-          // Oversampled curve data can be provided if sharp discontinuities are
-          // desired.
-          unsigned k = 0;
+  double deltaTime = time2 - time1;
+  float k = deltaTime > 0 ? 1 / deltaTime : 0;
+  const float valueDelta = value2 - value1;
 #if CPU(X86) || CPU(X86_64)
-          if (fillToFrame > writeIndex) {
-            const __m128 vCurveVirtualIndex = _mm_set_ps1(curveVirtualIndex);
-            const __m128 vCurvePointsPerFrame =
-                _mm_set_ps1(curvePointsPerFrame);
-            const __m128 vNumberOfCurvePointsM1 =
-                _mm_set_ps1(numberOfCurvePoints - 1);
-            const __m128 vN1 = _mm_set_ps1(1.0f);
-            const __m128 vN4 = _mm_set_ps1(4.0f);
+  if (fillToFrame > writeIndex) {
+    // Minimize in-loop operations. Calculate starting value and increment.
+    // Next step: value += inc.
+    //  value = value1 +
+    //      (currentFrame/sampleRate - time1) * k * (value2 - value1);
+    //  inc = 4 / sampleRate * k * (value2 - value1);
+    // Resolve recursion by expanding constants to achieve a 4-step loop
+    // unrolling.
+    //  value = value1 +
+    //    ((currentFrame/sampleRate - time1) + i * sampleFrameTimeIncr) * k
+    //    * (value2 -value1), i in 0..3
+    __m128 vValue =
+        _mm_mul_ps(_mm_set_ps1(1 / sampleRate), _mm_set_ps(3, 2, 1, 0));
+    vValue = _mm_add_ps(vValue, _mm_set_ps1(currentFrame / sampleRate - time1));
+    vValue = _mm_mul_ps(vValue, _mm_set_ps1(k * valueDelta));
+    vValue = _mm_add_ps(vValue, _mm_set_ps1(value1));
+    __m128 vInc = _mm_set_ps1(4 / sampleRate * k * valueDelta);
 
-            __m128 vK = _mm_set_ps(3, 2, 1, 0);
-            int aCurveIndex0[4];
-            int aCurveIndex1[4];
+    // Truncate loop steps to multiple of 4.
+    unsigned fillToFrameTrunc =
+        writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+    // Compute final time.
+    DCHECK_LE(fillToFrameTrunc, numberOfValues);
+    currentFrame += fillToFrameTrunc - writeIndex;
 
-            // Truncate loop steps to multiple of 4
-            unsigned truncatedSteps = ((fillToFrame - writeIndex) / 4) * 4;
-            unsigned fillToFrameTrunc = writeIndex + truncatedSteps;
-            DCHECK_LE(fillToFrameTrunc, numberOfValues);
-
-            for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-              // Compute current index this way to minimize round-off that would
-              // have occurred by incrementing the index by curvePointsPerFrame.
-              __m128 vCurrentVirtualIndex = _mm_add_ps(
-                  vCurveVirtualIndex, _mm_mul_ps(vK, vCurvePointsPerFrame));
-              vK = _mm_add_ps(vK, vN4);
-
-              // Clamp index to the last element of the array.
-              __m128i vCurveIndex0 = _mm_cvttps_epi32(
-                  _mm_min_ps(vCurrentVirtualIndex, vNumberOfCurvePointsM1));
-              __m128i vCurveIndex1 = _mm_cvttps_epi32(
-                  _mm_min_ps(_mm_add_ps(vCurrentVirtualIndex, vN1),
-                             vNumberOfCurvePointsM1));
-
-              // Linearly interpolate between the two nearest curve points.
-              // |delta| is clamped to 1 because currentVirtualIndex can exceed
-              // curveIndex0 by more than one.  This can happen when we reached
-              // the end of the curve but still need values to fill out the
-              // current rendering quantum.
-              _mm_storeu_si128((__m128i*)aCurveIndex0, vCurveIndex0);
-              _mm_storeu_si128((__m128i*)aCurveIndex1, vCurveIndex1);
-              __m128 vC0 = _mm_set_ps(
-                  curveData[aCurveIndex0[3]], curveData[aCurveIndex0[2]],
-                  curveData[aCurveIndex0[1]], curveData[aCurveIndex0[0]]);
-              __m128 vC1 = _mm_set_ps(
-                  curveData[aCurveIndex1[3]], curveData[aCurveIndex1[2]],
-                  curveData[aCurveIndex1[1]], curveData[aCurveIndex1[0]]);
-              __m128 vDelta =
-                  _mm_min_ps(_mm_sub_ps(vCurrentVirtualIndex,
-                                        _mm_cvtepi32_ps(vCurveIndex0)),
-                             vN1);
-
-              __m128 vValue =
-                  _mm_add_ps(vC0, _mm_mul_ps(_mm_sub_ps(vC1, vC0), vDelta));
-
-              _mm_storeu_ps(values + writeIndex, vValue);
-            }
-            // Pass along k to the serial loop.
-            k = truncatedSteps;
-          }
-          if (writeIndex >= 1)
-            value = values[writeIndex - 1];
+    // Process 4 loop steps.
+    for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+      _mm_storeu_ps(values + writeIndex, vValue);
+      vValue = _mm_add_ps(vValue, vInc);
+    }
+  }
+  // Update |value| with the last value computed so that the
+  // .value attribute of the AudioParam gets the correct linear
+  // ramp value, in case the following loop doesn't execute.
+  if (writeIndex >= 1)
+    value = values[writeIndex - 1];
 #endif
-          for (; writeIndex < fillToFrame; ++writeIndex, ++k) {
-            // Compute current index this way to minimize round-off that would
-            // have occurred by incrementing the index by curvePointsPerFrame.
-            double currentVirtualIndex =
-                curveVirtualIndex + k * curvePointsPerFrame;
-            unsigned curveIndex0;
+  // Serially process remaining values.
+  for (; writeIndex < fillToFrame; ++writeIndex) {
+    float x = (currentFrame / sampleRate - time1) * k;
+    // value = (1 - x) * value1 + x * value2;
+    value = value1 + x * valueDelta;
+    values[writeIndex] = value;
+    ++currentFrame;
+  }
 
-            // Clamp index to the last element of the array.
-            if (currentVirtualIndex < numberOfCurvePoints) {
-              curveIndex0 = static_cast<unsigned>(currentVirtualIndex);
-            } else {
-              curveIndex0 = numberOfCurvePoints - 1;
-            }
+  return std::make_tuple(currentFrame, value, writeIndex);
+}
 
-            unsigned curveIndex1 =
-                std::min(curveIndex0 + 1, numberOfCurvePoints - 1);
+std::tuple<size_t, float, unsigned> AudioParamTimeline::processExponentialRamp(
+    const AutomationState& currentState,
+    float* values,
+    size_t currentFrame,
+    float value,
+    unsigned writeIndex) {
+  auto fillToFrame = currentState.fillToFrame;
+  auto time1 = currentState.time1;
+  auto time2 = currentState.time2;
+  auto value1 = currentState.value1;
+  auto value2 = currentState.value2;
+  auto sampleRate = currentState.sampleRate;
 
-            // Linearly interpolate between the two nearest curve points.
-            // |delta| is clamped to 1 because currentVirtualIndex can exceed
-            // curveIndex0 by more than one.  This can happen when we reached
-            // the end of the curve but still need values to fill out the
-            // current rendering quantum.
-            DCHECK_LT(curveIndex0, numberOfCurvePoints);
-            DCHECK_LT(curveIndex1, numberOfCurvePoints);
-            float c0 = curveData[curveIndex0];
-            float c1 = curveData[curveIndex1];
-            double delta = std::min(currentVirtualIndex - curveIndex0, 1.0);
+  if (value1 * value2 <= 0) {
+    // It's an error if value1 and value2 have opposite signs or if one of
+    // them is zero.  Handle this by propagating the previous value, and
+    // making it the default.
+    value = value1;
 
-            value = c0 + (c1 - c0) * delta;
+    for (; writeIndex < fillToFrame; ++writeIndex)
+      values[writeIndex] = value;
+  } else {
+    double deltaTime = time2 - time1;
+    double numSampleFrames = deltaTime * sampleRate;
+    // The value goes exponentially from value1 to value2 in a duration of
+    // deltaTime seconds according to
+    //
+    //  v(t) = v1*(v2/v1)^((t-t1)/(t2-t1))
+    //
+    // Let c be currentFrame and F be the sampleRate.  Then we want to
+    // sample v(t) at times t = (c + k)/F for k = 0, 1, ...:
+    //
+    //   v((c+k)/F) = v1*(v2/v1)^(((c/F+k/F)-t1)/(t2-t1))
+    //              = v1*(v2/v1)^((c/F-t1)/(t2-t1))
+    //                  *(v2/v1)^((k/F)/(t2-t1))
+    //              = v1*(v2/v1)^((c/F-t1)/(t2-t1))
+    //                  *[(v2/v1)^(1/(F*(t2-t1)))]^k
+    //
+    // Thus, this can be written as
+    //
+    //   v((c+k)/F) = V*m^k
+    //
+    // where
+    //   V = v1*(v2/v1)^((c/F-t1)/(t2-t1))
+    //   m = (v2/v1)^(1/(F*(t2-t1)))
 
-            values[writeIndex] = value;
-          }
+    // Compute the per-sample multiplier.
+    float multiplier = powf(value2 / value1, 1 / numSampleFrames);
+    // Set the starting value of the exponential ramp.
+    value = value1 * powf(value2 / value1,
+                          (currentFrame / sampleRate - time1) / deltaTime);
 
-          // If there's any time left after the duration of this event and the
-          // start of the next, then just propagate the last value of the
-          // curveData. Don't modify |value| unless there is time left.
-          if (writeIndex < nextEventFillToFrame) {
-            value = curveEndValue;
-            for (; writeIndex < nextEventFillToFrame; ++writeIndex)
-              values[writeIndex] = value;
-          }
+    for (; writeIndex < fillToFrame; ++writeIndex) {
+      values[writeIndex] = value;
+      value *= multiplier;
+      ++currentFrame;
+    }
+    // |value| got updated one extra time in the above loop.  Restore it to
+    // the last computed value.
+    if (writeIndex >= 1)
+      value /= multiplier;
 
-          // Re-adjust current time
-          currentFrame += nextEventFillToFrame;
+    // Due to roundoff it's possible that value exceeds value2.  Clip value
+    // to value2 if we are within 1/2 frame of time2.
+    if (currentFrame > time2 * sampleRate - 0.5)
+      value = value2;
+  }
 
-          break;
-        }
-        case ParamEvent::LastType:
-          ASSERT_NOT_REACHED();
-          break;
+  return std::make_tuple(currentFrame, value, writeIndex);
+}
+
+std::tuple<size_t, float, unsigned> AudioParamTimeline::processSetTarget(
+    const AutomationState& currentState,
+    float* values,
+    size_t currentFrame,
+    float value,
+    unsigned writeIndex) {
+#if CPU(X86) || CPU(X86_64)
+  auto numberOfValues = currentState.numberOfValues;
+#endif
+  auto fillToFrame = currentState.fillToFrame;
+  auto time1 = currentState.time1;
+  auto value1 = currentState.value1;
+  auto sampleRate = currentState.sampleRate;
+  auto controlRate = currentState.controlRate;
+  auto fillToEndFrame = currentState.fillToEndFrame;
+  auto event = currentState.event;
+
+  // Exponential approach to target value with given time constant.
+  //
+  //   v(t) = v2 + (v1 - v2)*exp(-(t-t1/tau))
+  //
+  float target = value1;
+  float timeConstant = event->timeConstant();
+  float discreteTimeConstant =
+      static_cast<float>(AudioUtilities::discreteTimeConstantForSampleRate(
+          timeConstant, controlRate));
+
+  // Set the starting value correctly.  This is only needed when the
+  // current time is "equal" to the start time of this event.  This is
+  // to get the sampling correct if the start time of this automation
+  // isn't on a frame boundary.  Otherwise, we can just continue from
+  // where we left off from the previous rendering quantum.
+  {
+    double rampStartFrame = time1 * sampleRate;
+    // Condition is c - 1 < r <= c where c = currentFrame and r =
+    // rampStartFrame.  Compute it this way because currentFrame is
+    // unsigned and could be 0.
+    if (rampStartFrame <= currentFrame && currentFrame < rampStartFrame + 1) {
+      value = target +
+              (value - target) *
+                  exp(-(currentFrame / sampleRate - time1) / timeConstant);
+    } else {
+      // Otherwise, need to compute a new value bacause |value| is the
+      // last computed value of SetTarget.  Time has progressed by one
+      // frame, so we need to update the value for the new frame.
+      value += (target - value) * discreteTimeConstant;
+    }
+  }
+
+  // If the value is close enough to the target, just fill in the data
+  // with the target value.
+  if (fabs(value - target) < kSetTargetThreshold * fabs(target) ||
+      (!target && fabs(value) < kSetTargetZeroThreshold)) {
+    for (; writeIndex < fillToFrame; ++writeIndex)
+      values[writeIndex] = target;
+  } else {
+#if CPU(X86) || CPU(X86_64)
+    if (fillToFrame > writeIndex) {
+      // Resolve recursion by expanding constants to achieve a 4-step
+      // loop unrolling.
+      //
+      // v1 = v0 + (t - v0) * c
+      // v2 = v1 + (t - v1) * c
+      // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
+      // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
+      // v2 = v0 + (t - v0) * c * (2 - c)
+      // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
+      const float c0 = discreteTimeConstant;
+      const float c1 = c0 * (2 - c0);
+      const float c2 = c0 * ((c0 - 3) * c0 + 3);
+      const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
+
+      float delta;
+      __m128 vC = _mm_set_ps(c2, c1, c0, 0);
+      __m128 vDelta, vValue, vResult;
+
+      // Process 4 loop steps.
+      unsigned fillToFrameTrunc =
+          writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+      DCHECK_LE(fillToFrameTrunc, numberOfValues);
+
+      for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+        delta = target - value;
+        vDelta = _mm_set_ps1(delta);
+        vValue = _mm_set_ps1(value);
+
+        vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
+        _mm_storeu_ps(values + writeIndex, vResult);
+
+        // Update value for next iteration.
+        value += delta * c3;
+      }
+    }
+#endif
+    // Serially process remaining values
+    for (; writeIndex < fillToFrame; ++writeIndex) {
+      values[writeIndex] = value;
+      value += (target - value) * discreteTimeConstant;
+    }
+    // The previous loops may have updated |value| one extra time.
+    // Reset it to the last computed value.
+    if (writeIndex >= 1)
+      value = values[writeIndex - 1];
+    currentFrame = fillToEndFrame;
+  }
+
+  return std::make_tuple(currentFrame, value, writeIndex);
+}
+
+std::tuple<size_t, float, unsigned> AudioParamTimeline::processSetValueCurve(
+    const AutomationState& currentState,
+    float* values,
+    size_t currentFrame,
+    float value,
+    unsigned writeIndex) {
+  auto numberOfValues = currentState.numberOfValues;
+  auto fillToFrame = currentState.fillToFrame;
+  auto time1 = currentState.time1;
+  auto sampleRate = currentState.sampleRate;
+  auto startFrame = currentState.startFrame;
+  auto endFrame = currentState.endFrame;
+  auto fillToEndFrame = currentState.fillToEndFrame;
+  auto event = currentState.event;
+
+  const Vector<float> curve = event->curve();
+  const float* curveData = curve.data();
+  unsigned numberOfCurvePoints = curve.size();
+
+  float curveEndValue = event->curveEndValue();
+
+  // Curve events have duration, so don't just use next event time.
+  double duration = event->duration();
+  // How much to step the curve index for each frame.  This is basically
+  // the term (N - 1)/Td in the specification.
+  double curvePointsPerFrame = event->curvePointsPerSecond() / sampleRate;
+
+  if (!numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
+    // Error condition - simply propagate previous value.
+    currentFrame = fillToEndFrame;
+    for (; writeIndex < fillToFrame; ++writeIndex)
+      values[writeIndex] = value;
+    return std::make_tuple(currentFrame, value, writeIndex);
+  }
+
+  // Save old values and recalculate information based on the curve's
+  // duration instead of the next event time.
+  size_t nextEventFillToFrame = fillToFrame;
+
+  // fillToEndFrame = min(endFrame,
+  //                      ceil(sampleRate * (time1 + duration))),
+  // but compute this carefully in case sampleRate*(time1 + duration) is
+  // huge.  fillToEndFrame is an exclusive upper bound of the last frame
+  // to be computed, so ceil is used.
+  {
+    double curveEndFrame = ceil(sampleRate * (time1 + duration));
+    if (endFrame > curveEndFrame)
+      fillToEndFrame = static_cast<size_t>(curveEndFrame);
+    else
+      fillToEndFrame = endFrame;
+  }
+
+  // |fillToFrame| can be less than |startFrame| when the end of the
+  // setValueCurve automation has been reached, but the next automation
+  // has not yet started. In this case, |fillToFrame| is clipped to
+  // |time1|+|duration| above, but |startFrame| will keep increasing
+  // (because the current time is increasing).
+  fillToFrame = (fillToEndFrame < startFrame) ? 0 : fillToEndFrame - startFrame;
+  fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
+
+  // Index into the curve data using a floating-point value.
+  // We're scaling the number of curve points by the duration (see
+  // curvePointsPerFrame).
+  double curveVirtualIndex = 0;
+  if (time1 < currentFrame / sampleRate) {
+    // Index somewhere in the middle of the curve data.
+    // Don't use timeToSampleFrame() since we want the exact
+    // floating-point frame.
+    double frameOffset = currentFrame - time1 * sampleRate;
+    curveVirtualIndex = curvePointsPerFrame * frameOffset;
+  }
+
+  // Set the default value in case fillToFrame is 0.
+  value = curveEndValue;
+
+  // Render the stretched curve data using linear interpolation.
+  // Oversampled curve data can be provided if sharp discontinuities are
+  // desired.
+  unsigned k = 0;
+#if CPU(X86) || CPU(X86_64)
+  if (fillToFrame > writeIndex) {
+    const __m128 vCurveVirtualIndex = _mm_set_ps1(curveVirtualIndex);
+    const __m128 vCurvePointsPerFrame = _mm_set_ps1(curvePointsPerFrame);
+    const __m128 vNumberOfCurvePointsM1 = _mm_set_ps1(numberOfCurvePoints - 1);
+    const __m128 vN1 = _mm_set_ps1(1.0f);
+    const __m128 vN4 = _mm_set_ps1(4.0f);
+
+    __m128 vK = _mm_set_ps(3, 2, 1, 0);
+    int aCurveIndex0[4];
+    int aCurveIndex1[4];
+
+    // Truncate loop steps to multiple of 4
+    unsigned truncatedSteps = ((fillToFrame - writeIndex) / 4) * 4;
+    unsigned fillToFrameTrunc = writeIndex + truncatedSteps;
+    DCHECK_LE(fillToFrameTrunc, numberOfValues);
+
+    for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+      // Compute current index this way to minimize round-off that would
+      // have occurred by incrementing the index by curvePointsPerFrame.
+      __m128 vCurrentVirtualIndex =
+          _mm_add_ps(vCurveVirtualIndex, _mm_mul_ps(vK, vCurvePointsPerFrame));
+      vK = _mm_add_ps(vK, vN4);
+
+      // Clamp index to the last element of the array.
+      __m128i vCurveIndex0 = _mm_cvttps_epi32(
+          _mm_min_ps(vCurrentVirtualIndex, vNumberOfCurvePointsM1));
+      __m128i vCurveIndex1 = _mm_cvttps_epi32(_mm_min_ps(
+          _mm_add_ps(vCurrentVirtualIndex, vN1), vNumberOfCurvePointsM1));
+
+      // Linearly interpolate between the two nearest curve points.
+      // |delta| is clamped to 1 because currentVirtualIndex can exceed
+      // curveIndex0 by more than one.  This can happen when we reached
+      // the end of the curve but still need values to fill out the
+      // current rendering quantum.
+      _mm_storeu_si128((__m128i*)aCurveIndex0, vCurveIndex0);
+      _mm_storeu_si128((__m128i*)aCurveIndex1, vCurveIndex1);
+      __m128 vC0 =
+          _mm_set_ps(curveData[aCurveIndex0[3]], curveData[aCurveIndex0[2]],
+                     curveData[aCurveIndex0[1]], curveData[aCurveIndex0[0]]);
+      __m128 vC1 =
+          _mm_set_ps(curveData[aCurveIndex1[3]], curveData[aCurveIndex1[2]],
+                     curveData[aCurveIndex1[1]], curveData[aCurveIndex1[0]]);
+      __m128 vDelta = _mm_min_ps(
+          _mm_sub_ps(vCurrentVirtualIndex, _mm_cvtepi32_ps(vCurveIndex0)), vN1);
+
+      __m128 vValue = _mm_add_ps(vC0, _mm_mul_ps(_mm_sub_ps(vC1, vC0), vDelta));
+
+      _mm_storeu_ps(values + writeIndex, vValue);
+    }
+    // Pass along k to the serial loop.
+    k = truncatedSteps;
+  }
+  if (writeIndex >= 1)
+    value = values[writeIndex - 1];
+#endif
+  for (; writeIndex < fillToFrame; ++writeIndex, ++k) {
+    // Compute current index this way to minimize round-off that would
+    // have occurred by incrementing the index by curvePointsPerFrame.
+    double currentVirtualIndex = curveVirtualIndex + k * curvePointsPerFrame;
+    unsigned curveIndex0;
+
+    // Clamp index to the last element of the array.
+    if (currentVirtualIndex < numberOfCurvePoints) {
+      curveIndex0 = static_cast<unsigned>(currentVirtualIndex);
+    } else {
+      curveIndex0 = numberOfCurvePoints - 1;
+    }
+
+    unsigned curveIndex1 = std::min(curveIndex0 + 1, numberOfCurvePoints - 1);
+
+    // Linearly interpolate between the two nearest curve points.
+    // |delta| is clamped to 1 because currentVirtualIndex can exceed
+    // curveIndex0 by more than one.  This can happen when we reached
+    // the end of the curve but still need values to fill out the
+    // current rendering quantum.
+    DCHECK_LT(curveIndex0, numberOfCurvePoints);
+    DCHECK_LT(curveIndex1, numberOfCurvePoints);
+    float c0 = curveData[curveIndex0];
+    float c1 = curveData[curveIndex1];
+    double delta = std::min(currentVirtualIndex - curveIndex0, 1.0);
+
+    value = c0 + (c1 - c0) * delta;
+
+    values[writeIndex] = value;
+  }
+
+  // If there's any time left after the duration of this event and the
+  // start of the next, then just propagate the last value of the
+  // curveData. Don't modify |value| unless there is time left.
+  if (writeIndex < nextEventFillToFrame) {
+    value = curveEndValue;
+    for (; writeIndex < nextEventFillToFrame; ++writeIndex)
+      values[writeIndex] = value;
+  }
+
+  // Re-adjust current time
+  currentFrame += nextEventFillToFrame;
+
+  return std::make_tuple(currentFrame, value, writeIndex);
+}
+
+std::tuple<size_t, float, unsigned> AudioParamTimeline::processCancelValues(
+    const AutomationState& currentState,
+    float* values,
+    size_t currentFrame,
+    float value,
+    unsigned writeIndex) {
+  auto fillToFrame = currentState.fillToFrame;
+  auto time1 = currentState.time1;
+  auto sampleRate = currentState.sampleRate;
+  auto controlRate = currentState.controlRate;
+  auto fillToEndFrame = currentState.fillToEndFrame;
+  auto event = currentState.event;
+  auto eventIndex = currentState.eventIndex;
+
+  // If the previous event was a SetTarget or ExponentialRamp
+  // event, the current value is one sample behind.  Update
+  // the sample value by one sample, but only at the start of
+  // this CancelValues event.
+  if (event->hasDefaultCancelledValue()) {
+    value = event->value();
+  } else {
+    double cancelFrame = time1 * sampleRate;
+    if (eventIndex >= 1 && cancelFrame <= currentFrame &&
+        currentFrame < cancelFrame + 1) {
+      ParamEvent::Type lastEventType = m_events[eventIndex - 1]->getType();
+      if (lastEventType == ParamEvent::SetTarget) {
+        float target = m_events[eventIndex - 1]->value();
+        float timeConstant = m_events[eventIndex - 1]->timeConstant();
+        float discreteTimeConstant = static_cast<float>(
+            AudioUtilities::discreteTimeConstantForSampleRate(timeConstant,
+                                                              controlRate));
+        value += (target - value) * discreteTimeConstant;
       }
     }
   }
 
-  // If we skipped over any events (because they are in the past), we can
-  // remove them so we don't have to check them ever again.  (This MUST be
-  // running with the m_events lock so we can safely modify the m_events
-  // array.)
-  if (lastSkippedEventIndex > 0)
-    m_events.remove(0, lastSkippedEventIndex - 1);
-
-  // If there's any time left after processing the last event then just
-  // propagate the last value to the end of the values buffer.
-  for (; writeIndex < numberOfValues; ++writeIndex)
+  // Simply stay at the current value.
+  for (; writeIndex < fillToFrame; ++writeIndex)
     values[writeIndex] = value;
 
-  // This value is used to set the .value attribute of the AudioParam.  it
-  // should be the last computed value.
-  return values[numberOfValues - 1];
+  currentFrame = fillToEndFrame;
+
+  return std::make_tuple(currentFrame, value, writeIndex);
+}
+
+unsigned AudioParamTimeline::fillWithDefault(float* values,
+                                             float defaultValue,
+                                             size_t endFrame,
+                                             unsigned writeIndex) {
+  size_t index = writeIndex;
+
+  for (; index < endFrame; ++index)
+    values[index] = defaultValue;
+
+  return index;
 }
 
 }  // namespace blink

@@ -36,6 +36,8 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 
+#include <tuple>
+
 namespace blink {
 
 class AudioParamTimeline {
@@ -158,6 +160,7 @@ class AudioParamTimeline {
     void setTime(double newTime) { m_time = newTime; }
     double timeConstant() const { return m_timeConstant; }
     double duration() const { return m_duration; }
+    const Vector<float>& curve() const { return m_curve; }
     Vector<float>& curve() { return m_curve; }
     float initialValue() const { return m_initialValue; }
     double callTime() const { return m_callTime; }
@@ -261,6 +264,36 @@ class AudioParamTimeline {
     bool m_hasDefaultCancelledValue;
   };
 
+  // State of the timeline for the current event.
+  struct AutomationState {
+    // Parameters for the current automation request.  Number of
+    // values to be computed for the automation request
+    const unsigned numberOfValues;
+    // Start and end frames for this automation request
+    const size_t startFrame;
+    const size_t endFrame;
+
+    // Sample rate and control rate for this request
+    const double sampleRate;
+    const double controlRate;
+
+    // Parameters needed for processing the current event.
+    const size_t fillToFrame;
+    const size_t fillToEndFrame;
+
+    // Value and time for the current event
+    const float value1;
+    const double time1;
+
+    // Value and time for the next event, if any.
+    const float value2;
+    const double time2;
+
+    // The current event, and it's index in the event vector.
+    const ParamEvent* event;
+    const int eventIndex;
+  };
+
   void insertEvent(std::unique_ptr<ParamEvent>, ExceptionState&);
   float valuesForFrameRangeImpl(size_t startFrame,
                                 size_t endFrame,
@@ -295,6 +328,120 @@ class AudioParamTimeline {
                          double duration,
                          const float* curveData,
                          unsigned curveLength);
+
+  // Handles the special case where the first event in the timeline
+  // starts after |startFrame|.  These initial values are filled using
+  // |defaultValue|.  The updated |currentFrame| and |writeIndex| is
+  // returned.
+  std::tuple<size_t, unsigned> handleFirstEvent(float* values,
+                                                float defaultValue,
+                                                unsigned numberOfValues,
+                                                size_t startFrame,
+                                                size_t endFrame,
+                                                double sampleRate,
+                                                size_t currentFrame,
+                                                unsigned writeIndex);
+
+  // Return true if |currentEvent| starts after |currentFrame|, but
+  // also takes into account the |nextEvent| if any.
+  bool isEventCurrent(const ParamEvent* currentEvent,
+                      const ParamEvent* nextEvent,
+                      size_t currentFrame,
+                      double sampleRate);
+
+  // Clamp event times to current time, if needed.
+  void clampToCurrentTime(int numberOfEvents,
+                          size_t startFrame,
+                          double sampleRate);
+
+  // Handle the case where the last event in the timeline is in the
+  // past.  Returns false if any event is not in the past. Otherwise,
+  // return true and also fill in |values| with |defaultValue|.
+  bool handleAllEventsInThePast(double currentTime,
+                                double sampleRate,
+                                float defaultValue,
+                                unsigned numberOfValues,
+                                float* values);
+
+  // Handle processing of CancelValue event. If cancellation happens, value2,
+  // time2, and nextEventType will be updated with the new value due to
+  // cancellation.  The
+  std::tuple<float, double, ParamEvent::Type> handleCancelValues(
+      const ParamEvent* currentEvent,
+      ParamEvent* nextEvent,
+      float value2,
+      double time2);
+
+  // Process a SetTarget event and the next event is a
+  // LinearRampToValue or ExponentialRampToValue event.  This requires
+  // special handling because the ramp should start at whatever value
+  // the SetTarget event has reached at this time, instead of using
+  // the value of the SetTarget event.
+  void processSetTargetFollowedByRamp(int eventIndex,
+                                      ParamEvent*& currentEvent,
+                                      ParamEvent::Type nextEventType,
+                                      size_t currentFrame,
+                                      double sampleRate,
+                                      double controlRate,
+                                      float& value);
+
+  // Handle processing of linearRampEvent, writing the appropriate
+  // values to |values|.  Returns the updated |currentFrame|, last
+  // computed |value|, and the updated |writeIndex|.
+  std::tuple<size_t, float, unsigned> processLinearRamp(
+      const AutomationState& currentState,
+      float* values,
+      size_t currentFrame,
+      float value,
+      unsigned writeIndex);
+
+  // Handle processing of exponentialRampEvent, writing the appropriate
+  // values to |values|.  Returns the updated |currentFrame|, last
+  // computed |value|, and the updated |writeIndex|.
+  std::tuple<size_t, float, unsigned> processExponentialRamp(
+      const AutomationState& currentState,
+      float* values,
+      size_t currentFrame,
+      float value,
+      unsigned writeIndex);
+
+  // Handle processing of SetTargetEvent, writing the appropriate
+  // values to |values|.  Returns the updated |currentFrame|, last
+  // computed |value|, and the updated |writeIndex|.
+  std::tuple<size_t, float, unsigned> processSetTarget(
+      const AutomationState& currentState,
+      float* values,
+      size_t currentFrame,
+      float value,
+      unsigned writeIndex);
+
+  // Handle processing of SetValueCurveEvent, writing the appropriate
+  // values to |values|.  Returns the updated |currentFrame|, last
+  // computed |value|, and the updated |writeIndex|.
+  std::tuple<size_t, float, unsigned> processSetValueCurve(
+      const AutomationState& currentState,
+      float* values,
+      size_t currentFrame,
+      float value,
+      unsigned writeIndex);
+
+  // Handle processing of CancelValuesEvent, writing the appropriate
+  // values to |values|.  Returns the updated |currentFrame|, last
+  // computed |value|, and the updated |writeIndex|.
+  std::tuple<size_t, float, unsigned> processCancelValues(
+      const AutomationState& currentState,
+      float* values,
+      size_t currentFrame,
+      float value,
+      unsigned writeIndex);
+
+  // Fill the output vector |values| with the value |defaultValue|,
+  // starting at |writeIndex| and continuing up to |endFrame|
+  // (exclusive).  |writeIndex| is updated with the new index.
+  unsigned fillWithDefault(float* values,
+                           float defaultValue,
+                           size_t endFrame,
+                           unsigned writeIndex);
 
   // Vector of all automation events for the AudioParam.  Access must
   // be locked via m_eventsLock.
