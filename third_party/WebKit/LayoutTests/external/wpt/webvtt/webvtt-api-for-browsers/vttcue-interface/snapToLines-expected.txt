@@ -1,0 +1,6 @@
+CONSOLE ERROR: Text track from origin 'null' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin 'http://web-platform.test:8001' is therefore not allowed access.
+This is a testharness.js-based test.
+PASS VTTCue.snapToLines, script-created cue 
+FAIL VTTCue.snapToLines, parsed cue assert_unreached: got error event Reached unreachable code
+Harness: the test ran to completion.
+
