@@ -915,18 +915,87 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
                              DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
+  EXPECT_TRUE(job_controller_->main_job()->is_waiting());
 
   // The alternative job stalls as host resolution hangs when creating the QUIC
   // request and controller should resume the main job after delay.
-  // Verify the waiting time for delayed main job.
+  base::RunLoop run_loop;
   EXPECT_CALL(*job_factory_.main_job(), Resume())
+      .Times(1)
+      .WillOnce(testing::DoAll(
+          testing::Invoke(testing::CreateFunctor(
+              &JobControllerPeer::VerifyWaitingTimeForMainJob, job_controller_,
+              base::TimeDelta::FromMicroseconds(15))),
+          testing::Invoke([&run_loop]() { run_loop.Quit(); })));
+
+  // Wait for the main job to be resumed.
+  run_loop.Run();
+
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // |alternative_job| fails but should not report status to Request.
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+
+  EXPECT_FALSE(JobControllerPeer::main_job_is_blocked(job_controller_));
+  // OnStreamFailed will not resume the main job again since it's been resumed
+  // already.
+  EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
+
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
+                                  ERR_NETWORK_CHANGED, SSLConfig());
+}
+
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       ResumeMainJobImmediatelyOnStreamFailed) {
+  HangingResolver* resolver = new HangingResolver();
+  session_deps_.host_resolver.reset(resolver);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info, false, false);
+
+  // Enable delayed TCP and set time delay for waiting job.
+  QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
+  test::QuicStreamFactoryPeer::SetDelayTcpRace(quic_stream_factory, true);
+  quic_stream_factory->set_require_confirmation(false);
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  session_->http_server_properties()->SetServerNetworkStats(
+      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+
+  // Set a SPDY alternative service for the server.
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_.reset(
+      job_controller_->Start(request_info, &request_delegate_, nullptr,
+                             NetLogWithSource(), HttpStreamRequest::HTTP_STREAM,
+                             DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+  EXPECT_TRUE(job_controller_->main_job()->is_waiting());
+
+  // |alternative_job| fails but should not report status to Request.
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+
+  // The alternative job stalls as host resolution hangs when creating the QUIC
+  // request and controller should resume the main job with delay.
+  // OnStreamFailed should resume the main job immediately.
+  EXPECT_CALL(*job_factory_.main_job(), Resume())
+      .Times(1)
       .WillOnce(Invoke(testing::CreateFunctor(
           &JobControllerPeer::VerifyWaitingTimeForMainJob, job_controller_,
-          base::TimeDelta::FromMicroseconds(15))));
+          base::TimeDelta::FromMicroseconds(0))));
+
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
+                                  ERR_NETWORK_CHANGED, SSLConfig());
 
   base::RunLoop().RunUntilIdle();
 }
-
 // Verifies that the alternative proxy server job is not created if the URL
 // scheme is HTTPS.
 TEST_F(HttpStreamFactoryImplJobControllerTest, HttpsURL) {

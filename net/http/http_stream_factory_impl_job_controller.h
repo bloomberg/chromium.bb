@@ -308,6 +308,10 @@ class HttpStreamFactoryImpl::JobController
   // True if the main job has to wait for the alternative job: i.e., the main
   // job must not create a connection until it is resumed.
   bool main_job_is_blocked_;
+
+  // True if the main job was blocked and has been resumed in ResumeMainJob().
+  bool main_job_is_resumed_;
+
   // Waiting time for the main job before it is resumed.
   base::TimeDelta main_job_wait_time_;
 
