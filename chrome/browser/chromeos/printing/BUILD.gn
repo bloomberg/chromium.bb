@@ -1,0 +1,70 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//printing/features/features.gni")
+
+assert(is_chromeos)
+
+source_set("printing") {
+  sources = [
+    "cups_print_job.cc",
+    "cups_print_job.h",
+    "cups_print_job_manager.cc",
+    "cups_print_job_manager.h",
+    "cups_print_job_manager_factory.cc",
+    "cups_print_job_manager_factory.h",
+    "cups_print_job_notification.cc",
+    "cups_print_job_notification.h",
+    "cups_print_job_notification_manager.cc",
+    "cups_print_job_notification_manager.h",
+    "fake_printer_discoverer.cc",
+    "fake_printer_discoverer.h",
+    "ppd_provider_factory.cc",
+    "ppd_provider_factory.h",
+    "printer_discoverer.h",
+    "printers_manager.cc",
+    "printers_manager.h",
+    "printers_manager_factory.cc",
+    "printers_manager_factory.h",
+    "printers_sync_bridge.cc",
+    "printers_sync_bridge.h",
+    "specifics_translation.cc",
+    "specifics_translation.h",
+  ]
+
+  if (use_cups) {
+    sources += [
+      "cups_print_job_manager_impl.cc",
+      "cups_print_job_manager_impl.h",
+    ]
+  } else {
+    sources += [
+      "fake_cups_print_job_manager.cc",
+      "fake_cups_print_job_manager.h",
+    ]
+  }
+
+  deps = [
+    "//chromeos",
+    "//components/sync/protocol",
+    "//printing",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "printers_manager_unittest.cc",
+    "specifics_translation_unittest.cc",
+  ]
+
+  deps = [
+    ":printing",
+    "//components/sync/protocol",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

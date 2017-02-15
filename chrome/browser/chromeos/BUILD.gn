@@ -42,6 +42,7 @@ source_set("chromeos") {
     "//ash/autoclick/mus/public/interfaces",
     "//ash/public/interfaces",
     "//build/linux:fontconfig",
+    "//chrome/browser/chromeos/printing",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/safe_browsing:chunk_proto",
@@ -1175,29 +1176,6 @@ source_set("chromeos") {
     "printer_detector/printer_detector.h",
     "printer_detector/printer_detector_factory.cc",
     "printer_detector/printer_detector_factory.h",
-    "printing/cups_print_job.cc",
-    "printing/cups_print_job.h",
-    "printing/cups_print_job_manager.cc",
-    "printing/cups_print_job_manager.h",
-    "printing/cups_print_job_manager_factory.cc",
-    "printing/cups_print_job_manager_factory.h",
-    "printing/cups_print_job_notification.cc",
-    "printing/cups_print_job_notification.h",
-    "printing/cups_print_job_notification_manager.cc",
-    "printing/cups_print_job_notification_manager.h",
-    "printing/fake_printer_discoverer.cc",
-    "printing/fake_printer_discoverer.h",
-    "printing/ppd_provider_factory.cc",
-    "printing/ppd_provider_factory.h",
-    "printing/printer_discoverer.h",
-    "printing/printers_manager.cc",
-    "printing/printers_manager.h",
-    "printing/printers_manager_factory.cc",
-    "printing/printers_manager_factory.h",
-    "printing/printers_sync_bridge.cc",
-    "printing/printers_sync_bridge.h",
-    "printing/specifics_translation.cc",
-    "printing/specifics_translation.h",
     "profiles/avatar_menu_actions_chromeos.cc",
     "profiles/avatar_menu_actions_chromeos.h",
     "profiles/avatar_menu_chromeos.cc",
@@ -1417,19 +1395,6 @@ source_set("chromeos") {
       "system_logs/touch_log_source_x11.cc",
     ]
   }
-
-  if (use_cups) {
-    sources += [
-      "printing/cups_print_job_manager_impl.cc",
-      "printing/cups_print_job_manager_impl.h",
-    ]
-  } else {
-    sources += [
-      "printing/fake_cups_print_job_manager.cc",
-      "printing/fake_cups_print_job_manager.h",
-    ]
-  }
-
   if (use_cras) {
     defines = [ "USE_CRAS" ]
   }
@@ -1653,8 +1618,6 @@ source_set("unit_tests") {
     "power/renderer_freezer_unittest.cc",
     "preferences_unittest.cc",
     "printer_detector/printer_detector_unittest.cc",
-    "printing/printers_manager_unittest.cc",
-    "printing/specifics_translation_unittest.cc",
     "profiles/profile_list_chromeos_unittest.cc",
     "proxy_config_service_impl_unittest.cc",
     "resource_reporter/resource_reporter_unittest.cc",
@@ -1738,6 +1701,7 @@ source_set("unit_tests") {
     ":device_policy_proto",
     ":test_support",
     "//ash/resources",
+    "//chrome/browser/chromeos/printing:unit_tests",
     "//components/drive",
     "//components/drive:test_support_chromeos",
     "//components/invalidation/public",
