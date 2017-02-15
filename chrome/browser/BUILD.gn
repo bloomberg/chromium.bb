@@ -655,6 +655,8 @@ split_static_library("browser") {
     "net/net_error_diagnostics_dialog_win.cc",
     "net/net_error_tab_helper.cc",
     "net/net_error_tab_helper.h",
+    "net/net_export_helper.cc",
+    "net/net_export_helper.h",
     "net/nqe/ui_network_quality_estimator_service.cc",
     "net/nqe/ui_network_quality_estimator_service.h",
     "net/nqe/ui_network_quality_estimator_service_factory.cc",

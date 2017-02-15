@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -18,7 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/platform_util.h"
+#include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/url_constants.h"
@@ -58,6 +57,14 @@ content::WebUIDataSource* CreateNetExportHTMLSource() {
   source->AddResourcePath(net_log::kNetExportUIJS, IDR_NET_LOG_NET_EXPORT_JS);
   source->SetDefaultResource(IDR_NET_LOG_NET_EXPORT_HTML);
   return source;
+}
+
+void SetIfNotNull(base::DictionaryValue* dict,
+                  const base::StringPiece& path,
+                  std::unique_ptr<base::Value> in_value) {
+  if (in_value) {
+    dict->Set(path, std::move(in_value));
+  }
 }
 
 // This class receives javascript messages from the renderer.
@@ -210,10 +217,24 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::unique_ptr<base::DictionaryValue> ui_thread_polled_data;
+  std::unique_ptr<base::DictionaryValue> ui_thread_polled_data(
+      new base::DictionaryValue());
 
-  // TODO(crbug.com/438656): fill |ui_thread_polled_data| with browser-specific
-  // polled data.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  SetIfNotNull(ui_thread_polled_data.get(), "dataReductionProxyInfo",
+               chrome_browser_net::GetDataReductionProxyInfo(profile));
+  SetIfNotNull(ui_thread_polled_data.get(), "historicNetworkStats",
+               chrome_browser_net::GetHistoricNetworkStats(profile));
+  SetIfNotNull(ui_thread_polled_data.get(), "prerenderInfo",
+               chrome_browser_net::GetPrerenderInfo(profile));
+  SetIfNotNull(ui_thread_polled_data.get(), "sessionNetworkStats",
+               chrome_browser_net::GetSessionNetworkStats(profile));
+  SetIfNotNull(ui_thread_polled_data.get(), "extensionInfo",
+               chrome_browser_net::GetExtensionInfo(profile));
+#if defined(OS_WIN)
+  SetIfNotNull(ui_thread_polled_data.get(), "serviceProviders",
+               chrome_browser_net::GetWindowsServiceProviders());
+#endif
 
   file_writer_->StopNetLog(std::move(ui_thread_polled_data),
                            Profile::FromWebUI(web_ui())->GetRequestContext());
@@ -247,11 +268,10 @@ void NetExportMessageHandler::OnNewState(const base::DictionaryValue& state) {
 
 // static
 void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_ANDROID)
   if (file_to_send.empty())
     return;
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(OS_ANDROID)
   std::string email;
   std::string subject = "net_internals_log";
   std::string title = "Issue number: ";
