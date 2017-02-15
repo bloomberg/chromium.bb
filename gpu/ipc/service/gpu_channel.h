@@ -24,6 +24,7 @@
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_router.h"
 #include "ui/gfx/geometry/size.h"
@@ -37,10 +38,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace IPC {
-class MessageFilter;
-}
-
 namespace gpu {
 
 class PreemptionFlag;
@@ -51,11 +48,18 @@ class GpuChannelMessageFilter;
 class GpuChannelMessageQueue;
 class GpuWatchdogThread;
 
+class GPU_EXPORT FilteredSender : public IPC::Sender {
+ public:
+  FilteredSender();
+  ~FilteredSender() override;
+
+  virtual void AddFilter(IPC::MessageFilter* filter) = 0;
+  virtual void RemoveFilter(IPC::MessageFilter* filter) = 0;
+};
+
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
-class GPU_EXPORT GpuChannel
-    : public IPC::Listener,
-      public IPC::Sender {
+class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -117,8 +121,10 @@ class GPU_EXPORT GpuChannel
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
-  // IPC::Sender implementation:
+  // FilteredSender implementation:
   bool Send(IPC::Message* msg) override;
+  void AddFilter(IPC::MessageFilter* filter) override;
+  void RemoveFilter(IPC::MessageFilter* filter) override;
 
   void OnStreamRescheduled(int32_t stream_id, bool scheduled);
 
@@ -137,9 +143,6 @@ class GPU_EXPORT GpuChannel
   void RemoveRoute(int32_t route_id);
 
   void CacheShader(const std::string& key, const std::string& shader);
-
-  void AddFilter(IPC::MessageFilter* filter);
-  void RemoveFilter(IPC::MessageFilter* filter);
 
   uint64_t GetMemoryUsage();
 

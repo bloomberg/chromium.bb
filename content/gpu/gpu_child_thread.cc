@@ -307,7 +307,8 @@ void GpuChildThread::CreateGpuService(
   gpu_info_.video_encode_accelerator_supported_profiles =
       media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences);
   gpu_info_.jpeg_decode_accelerator_supported =
-      media::GpuJpegDecodeAccelerator::IsSupported();
+      media::GpuJpegDecodeAcceleratorFactoryProvider::
+          IsAcceleratedJpegDecodeSupported();
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.

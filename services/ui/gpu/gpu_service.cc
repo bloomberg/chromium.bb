@@ -77,7 +77,8 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   gpu_info_.video_encode_accelerator_supported_profiles =
       media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences_);
   gpu_info_.jpeg_decode_accelerator_supported =
-      media::GpuJpegDecodeAccelerator::IsSupported();
+      media::GpuJpegDecodeAcceleratorFactoryProvider::
+          IsAcceleratedJpegDecodeSupported();
   gpu_host_->DidInitialize(gpu_info_);
 
   sync_point_manager_ = sync_point_manager;

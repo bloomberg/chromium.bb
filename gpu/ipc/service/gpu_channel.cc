@@ -570,6 +570,12 @@ bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
   return true;
 }
 
+// Definitions for constructor and destructor of this interface are needed to
+// avoid MSVC LNK2019.
+FilteredSender::FilteredSender() = default;
+
+FilteredSender::~FilteredSender() = default;
+
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        SyncPointManager* sync_point_manager,
                        GpuWatchdogThread* watchdog,
