@@ -5,11 +5,15 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "headless/lib/headless_macros.h"
+#include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
@@ -640,6 +644,90 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_RendererCommandPrefixTest) {
 
   base::DeleteFile(launcher_script, false);
   base::DeleteFile(launcher_stamp, false);
+}
+
+class CrashReporterTest : public HeadlessBrowserTest,
+                          public HeadlessWebContents::Observer,
+                          inspector::ExperimentalObserver {
+ public:
+  CrashReporterTest() : devtools_client_(HeadlessDevToolsClient::Create()) {}
+  ~CrashReporterTest() override {}
+
+  void SetUp() override {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    base::CreateNewTempDirectory("CrashReporterTest", &crash_dumps_dir_);
+    EXPECT_FALSE(options()->enable_crash_reporter);
+    options()->enable_crash_reporter = true;
+    options()->crash_dumps_dir = crash_dumps_dir_;
+    HeadlessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    base::DeleteFile(crash_dumps_dir_, /* recursive */ false);
+  }
+
+  // HeadlessWebContents::Observer implementation:
+  void DevToolsTargetReady() override {
+    EXPECT_TRUE(web_contents_->GetDevToolsTarget());
+    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
+  }
+
+  // inspector::ExperimentalObserver implementation:
+  void OnTargetCrashed(const inspector::TargetCrashedParams&) override {
+    FinishAsynchronousTest();
+  }
+
+ protected:
+  HeadlessBrowserContext* browser_context_ = nullptr;
+  HeadlessWebContents* web_contents_ = nullptr;
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+  base::FilePath crash_dumps_dir_;
+};
+
+// TODO(skyostil): Minidump generation currently is only supported on Linux.
+#if defined(HEADLESS_USE_BREAKPAD)
+#define MAYBE_GenerateMinidump GenerateMinidump
+#else
+#define MAYBE_GenerateMinidump DISABLED_GenerateMinidump
+#endif  // defined(HEADLESS_USE_BREAKPAD)
+IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
+  // Navigates a tab to chrome://crash and checks that a minidump is generated.
+  // Note that we only test renderer crashes here -- browser crashes need to be
+  // tested with a separate harness.
+  //
+  // The case where crash reporting is disabled is covered by
+  // HeadlessCrashObserverTest.
+  browser_context_ = browser()->CreateBrowserContextBuilder().Build();
+
+  web_contents_ = browser_context_->CreateWebContentsBuilder()
+                      .SetInitialURL(GURL(content::kChromeUICrashURL))
+                      .Build();
+
+  web_contents_->AddObserver(this);
+  RunAsynchronousTest();
+
+  // The target has crashed and should no longer be there.
+  EXPECT_FALSE(web_contents_->GetDevToolsTarget());
+
+  // Check that one minidump got created.
+  {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    base::FileEnumerator it(crash_dumps_dir_, /* recursive */ false,
+                            base::FileEnumerator::FILES);
+    base::FilePath minidump = it.Next();
+    EXPECT_FALSE(minidump.empty());
+    EXPECT_EQ(".dmp", minidump.Extension());
+    EXPECT_TRUE(it.Next().empty());
+  }
+
+  web_contents_->RemoveObserver(this);
+  web_contents_->Close();
+  web_contents_ = nullptr;
+
+  browser_context_->Close();
+  browser_context_ = nullptr;
 }
 
 }  // namespace headless

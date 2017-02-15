@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -440,6 +441,13 @@ int HeadlessShellMain(int argc, const char** argv) {
       *base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))
     return EXIT_FAILURE;
+
+  if (command_line.HasSwitch(::switches::kEnableCrashReporter))
+    builder.SetCrashReporterEnabled(true);
+  if (command_line.HasSwitch(switches::kCrashDumpsDir)) {
+    builder.SetCrashDumpsDir(
+        command_line.GetSwitchValuePath(switches::kCrashDumpsDir));
+  }
 
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string address = kDevToolsHttpServerAddress;

@@ -157,6 +157,12 @@ struct HeadlessBrowser::Options {
   // exposed WebPreferences API, so use with care.
   base::Callback<void(WebPreferences*)> override_web_preferences_callback;
 
+  // Minidump crash reporter settings. Crash reporting is disabled by default.
+  // By default crash dumps are written to the directory containing the
+  // executable.
+  bool enable_crash_reporter;
+  base::FilePath crash_dumps_dir;
+
   // Reminder: when adding a new field here, do not forget to add it to
   // HeadlessBrowserContextOptions (where appropriate).
  private:
@@ -190,6 +196,8 @@ class HeadlessBrowser::Options::Builder {
   Builder& SetIncognitoMode(bool incognito_mode);
   Builder& SetOverrideWebPreferencesCallback(
       base::Callback<void(WebPreferences*)> callback);
+  Builder& SetCrashReporterEnabled(bool enabled);
+  Builder& SetCrashDumpsDir(const base::FilePath& dir);
 
   Options Build();
 

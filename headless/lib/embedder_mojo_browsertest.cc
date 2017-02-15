@@ -66,7 +66,7 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
         pak_path, ui::SCALE_FACTOR_NONE);
   }
 
-  // HeadlessWebContentsObserver implementation:
+  // HeadlessWebContents::Observer implementation:
   void DevToolsTargetReady() override {
     EXPECT_TRUE(web_contents_->GetDevToolsTarget());
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());

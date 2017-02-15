@@ -7,28 +7,99 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/base_switches.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "headless/lib/headless_macros.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(HEADLESS_USE_BREAKPAD)
+#include "base/debug/leak_annotations.h"
+#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "content/public/common/content_descriptors.h"
+#endif  // defined(HEADLESS_USE_BREAKPAD)
 
 namespace headless {
 
 namespace {
 const char kCapabilityPath[] =
     "interface_provider_specs.navigation:frame.provides.renderer";
+
+#if defined(HEADLESS_USE_BREAKPAD)
+breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
+    const std::string& process_type,
+    const HeadlessBrowser::Options& options) {
+  base::FilePath dumps_path = options.crash_dumps_dir;
+  if (dumps_path.empty()) {
+    bool ok = PathService::Get(base::DIR_MODULE, &dumps_path);
+    DCHECK(ok);
+  }
+
+  {
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+#if defined(OFFICIAL_BUILD)
+    // Upload crash dumps in official builds, unless we're running in unattended
+    // mode (not to be confused with headless mode in general -- see
+    // chrome/common/env_vars.cc).
+    static const char kHeadless[] = "CHROME_HEADLESS";
+    bool upload = (getenv(kHeadless) == nullptr);
+#else
+    bool upload = false;
+#endif
+    breakpad::CrashHandlerHostLinux* crash_handler =
+        new breakpad::CrashHandlerHostLinux(process_type, dumps_path, upload);
+    crash_handler->StartUploaderThread();
+    return crash_handler;
+  }
+}
+
+int GetCrashSignalFD(const base::CommandLine& command_line,
+                     const HeadlessBrowser::Options& options) {
+  if (!breakpad::IsCrashReporterEnabled())
+    return -1;
+
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type == switches::kRendererProcess) {
+    static breakpad::CrashHandlerHostLinux* crash_handler =
+        CreateCrashHandlerHost(process_type, options);
+    return crash_handler->GetDeathSignalSocket();
+  }
+
+  if (process_type == switches::kPpapiPluginProcess) {
+    static breakpad::CrashHandlerHostLinux* crash_handler =
+        CreateCrashHandlerHost(process_type, options);
+    return crash_handler->GetDeathSignalSocket();
+  }
+
+  if (process_type == switches::kGpuProcess) {
+    static breakpad::CrashHandlerHostLinux* crash_handler =
+        CreateCrashHandlerHost(process_type, options);
+    return crash_handler->GetDeathSignalSocket();
+  }
+
+  return -1;
+}
+#endif  // defined(HEADLESS_USE_BREAKPAD)
+
 }  // namespace
 
 HeadlessContentBrowserClient::HeadlessContentBrowserClient(
@@ -97,6 +168,27 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
       base::Bind(&storage::CalculateNominalDynamicSettings,
                  partition->GetPath(), context->IsOffTheRecord()),
       callback);
+}
+
+void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const base::CommandLine& command_line,
+    int child_process_id,
+    content::FileDescriptorInfo* mappings) {
+#if defined(HEADLESS_USE_BREAKPAD)
+  int crash_signal_fd = GetCrashSignalFD(command_line, *browser_->options());
+  if (crash_signal_fd >= 0)
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
+#endif  // defined(HEADLESS_USE_BREAKPAD)
+}
+
+void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+#if defined(HEADLESS_USE_BREAKPAD)
+  // This flag tells child processes to also turn on crash reporting.
+  if (breakpad::IsCrashReporterEnabled())
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+#endif  // defined(HEADLESS_USE_BREAKPAD)
 }
 
 }  // namespace headless

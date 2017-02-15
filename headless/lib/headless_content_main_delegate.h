@@ -44,6 +44,7 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
   friend class HeadlessBrowserTest;
 
   void InitLogging(const base::CommandLine& command_line);
+  void InitCrashReporter(const base::CommandLine& command_line);
   static void InitializeResourceBundle();
 
   static HeadlessContentMainDelegate* GetInstance();

@@ -4,16 +4,21 @@
 
 #include "headless/lib/headless_content_main_delegate.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
+#include "headless/lib/headless_crash_reporter_client.h"
+#include "headless/lib/headless_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -31,6 +36,9 @@ namespace {
 const int kTraceEventBrowserProcessSortIndex = -6;
 
 HeadlessContentMainDelegate* g_current_headless_content_main_delegate = nullptr;
+
+base::LazyInstance<HeadlessCrashReporterClient>::Leaky g_headless_crash_client =
+    LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
@@ -131,8 +139,31 @@ void HeadlessContentMainDelegate::InitLogging(
   DCHECK(success);
 }
 
+void HeadlessContentMainDelegate::InitCrashReporter(
+    const base::CommandLine& command_line) {
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  crash_reporter::SetCrashReporterClient(g_headless_crash_client.Pointer());
+  g_headless_crash_client.Pointer()->set_crash_dumps_dir(
+      browser_->options()->crash_dumps_dir);
+
+  if (!browser_->options()->enable_crash_reporter) {
+    DCHECK(!breakpad::IsCrashReporterEnabled());
+    return;
+  }
+#if defined(HEADLESS_USE_BREAKPAD)
+  if (process_type != switches::kZygoteProcess)
+    breakpad::InitCrashReporter(process_type);
+#endif  // defined(HEADLESS_USE_BREAKPAD)
+}
+
 void HeadlessContentMainDelegate::PreSandboxStartup() {
-  InitLogging(*base::CommandLine::ForCurrentProcess());
+  const base::CommandLine& command_line(
+      *base::CommandLine::ForCurrentProcess());
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  InitLogging(command_line);
+  InitCrashReporter(command_line);
   InitializeResourceBundle();
 }
 
@@ -163,7 +194,14 @@ int HeadlessContentMainDelegate::RunProcess(
 }
 
 void HeadlessContentMainDelegate::ZygoteForked() {
-  // TODO(skyostil): Disable the zygote host.
+  const base::CommandLine& command_line(
+      *base::CommandLine::ForCurrentProcess());
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  // Unconditionally try to turn on crash reporting since we do not have access
+  // to the latest browser options at this point when testing. Breakpad will
+  // bail out gracefully if the browser process hasn't enabled crash reporting.
+  breakpad::InitCrashReporter(process_type);
 }
 
 // static

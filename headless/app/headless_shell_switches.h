@@ -9,6 +9,7 @@
 
 namespace headless {
 namespace switches {
+extern const char kCrashDumpsDir[];
 extern const char kDeterministicFetch[];
 extern const char kDumpDom[];
 extern const char kHideScrollbars[];

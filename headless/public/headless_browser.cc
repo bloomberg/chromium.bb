@@ -28,7 +28,8 @@ Options::Options(int argc, const char** argv)
       gl_implementation("osmesa"),
       user_agent(content::BuildUserAgentFromProduct(kProductName)),
       window_size(kDefaultWindowSize),
-      incognito_mode(true) {}
+      incognito_mode(true),
+      enable_crash_reporter(false) {}
 
 Options::Options(Options&& options) = default;
 
@@ -105,6 +106,16 @@ Builder& Builder::SetIncognitoMode(bool incognito_mode) {
 Builder& Builder::SetOverrideWebPreferencesCallback(
     base::Callback<void(WebPreferences*)> callback) {
   options_.override_web_preferences_callback = callback;
+  return *this;
+}
+
+Builder& Builder::SetCrashReporterEnabled(bool enabled) {
+  options_.enable_crash_reporter = enabled;
+  return *this;
+}
+
+Builder& Builder::SetCrashDumpsDir(const base::FilePath& dir) {
+  options_.crash_dumps_dir = dir;
   return *this;
 }
 
