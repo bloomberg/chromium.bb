@@ -679,20 +679,20 @@ void ServiceWorkerURLRequestJob::CreateResponseHeader(
     const ServiceWorkerHeaderMap& headers) {
   // TODO(kinuko): If the response has an identifier to on-disk cache entry,
   // pull response header from the disk.
-  std::string status_line(
-      base::StringPrintf("HTTP/1.1 %d %s", status_code, status_text.c_str()));
-  status_line.push_back('\0');
-  http_response_headers_ = new net::HttpResponseHeaders(status_line);
-  for (ServiceWorkerHeaderMap::const_iterator it = headers.begin();
-       it != headers.end();
-       ++it) {
-    std::string header;
-    header.reserve(it->first.size() + 2 + it->second.size());
-    header.append(it->first);
-    header.append(": ");
-    header.append(it->second);
-    http_response_headers_->AddHeader(header);
+
+  // Build a string instead of using HttpResponseHeaders::AddHeader on
+  // each header, since AddHeader has O(n^2) performance.
+  std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
+                                     status_text.c_str()));
+  for (const auto& item : headers) {
+    buf.append(item.first);
+    buf.append(": ");
+    buf.append(item.second);
+    buf.append("\r\n");
   }
+  buf.append("\r\n");
+  http_response_headers_ = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
 }
 
 void ServiceWorkerURLRequestJob::CommitResponseHeader() {

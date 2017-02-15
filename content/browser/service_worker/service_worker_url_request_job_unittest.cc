@@ -131,6 +131,14 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
       blob_storage_context, nullptr, base::ThreadTaskRunnerHandle::Get().get());
 }
 
+std::unique_ptr<ServiceWorkerHeaderMap> MakeHeaders() {
+  auto headers = base::MakeUnique<ServiceWorkerHeaderMap>();
+  (*headers)["Pineapple"] = "Pen";
+  (*headers)["Foo"] = "Bar";
+  (*headers)["Set-Cookie"] = "CookieCookieCookie";
+  return headers;
+}
+
 }  // namespace
 
 class ServiceWorkerURLRequestJobTest
@@ -244,6 +252,22 @@ class ServiceWorkerURLRequestJobTest
     } else {
       EXPECT_FALSE(ssl_info.is_valid());
     }
+  }
+
+  void CheckHeaders(const net::HttpResponseHeaders* headers) {
+    size_t iter = 0;
+    std::string name;
+    std::string value;
+    EXPECT_TRUE(headers->EnumerateHeaderLines(&iter, &name, &value));
+    EXPECT_EQ("Foo", name);
+    EXPECT_EQ("Bar", value);
+    EXPECT_TRUE(headers->EnumerateHeaderLines(&iter, &name, &value));
+    EXPECT_EQ("Pineapple", name);
+    EXPECT_EQ("Pen", value);
+    EXPECT_TRUE(headers->EnumerateHeaderLines(&iter, &name, &value));
+    EXPECT_EQ("Set-Cookie", name);
+    EXPECT_EQ("CookieCookieCookie", value);
+    EXPECT_FALSE(headers->EnumerateHeaderLines(&iter, &name, &value));
   }
 
   void TestRequest(int expected_status_code,
@@ -476,9 +500,9 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::WebServiceWorkerResponseTypeDefault,
-            base::MakeUnique<ServiceWorkerHeaderMap>(), blob_uuid_, blob_size_,
-            GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+            blink::WebServiceWorkerResponseTypeDefault, MakeHeaders(),
+            blob_uuid_, blob_size_, GURL(),
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
             base::MakeUnique<
@@ -510,6 +534,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response, true /* expect_valid_ssl */);
+  CheckHeaders(request_->response_headers());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -561,10 +586,9 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::WebServiceWorkerResponseTypeDefault,
-            base::MakeUnique<ServiceWorkerHeaderMap>(), "", 0, stream_url_,
-            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
+            blink::WebServiceWorkerResponseTypeDefault, MakeHeaders(), "", 0,
+            stream_url_, blink::WebServiceWorkerResponseErrorUnknown,
+            base::Time(), false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
             base::MakeUnique<
                 ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
@@ -605,10 +629,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasWork());
   EXPECT_TRUE(request_->status().is_success());
-  EXPECT_EQ(200,
-            request_->response_headers()->response_code());
-  EXPECT_EQ("OK",
-            request_->response_headers()->GetStatusText());
+  net::HttpResponseHeaders* headers = request_->response_headers();
+  EXPECT_EQ(200, headers->response_code());
+  EXPECT_EQ("OK", headers->GetStatusText());
+  CheckHeaders(headers);
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
