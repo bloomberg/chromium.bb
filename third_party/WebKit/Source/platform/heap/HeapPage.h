@@ -31,6 +31,7 @@
 #ifndef HeapPage_h
 #define HeapPage_h
 
+#include <stdint.h>
 #include "base/trace_event/memory_allocator_dump.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
@@ -43,7 +44,6 @@
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/Forward.h"
 #include "wtf/allocator/Partitions.h"
-#include <stdint.h>
 
 namespace blink {
 
@@ -124,12 +124,6 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
   } while (false)
 #endif
 
-#if !DCHECK_IS_ON() && CPU(64BIT)
-#define USE_4BYTE_HEADER_PADDING 1
-#else
-#define USE_4BYTE_HEADER_PADDING 0
-#endif
-
 class NormalPageArena;
 class PageMemory;
 
@@ -179,9 +173,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // If gcInfoIndex is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
   HeapObjectHeader(size_t size, size_t gcInfoIndex) {
-#if DCHECK_IS_ON()
-    m_magic = magic;
-#endif
+    m_magic = getMagic();
     // sizeof(HeapObjectHeader) must be equal to or smaller than
     // allocationGranurarity, because HeapObjectHeader is used as a header
     // for an freed entry.  Given that the smallest entry size is
@@ -189,10 +181,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
     static_assert(
         sizeof(HeapObjectHeader) <= allocationGranularity,
         "size of HeapObjectHeader must be smaller than allocationGranularity");
-#if CPU(64BIT)
     static_assert(sizeof(HeapObjectHeader) == 8,
-                  "size of HeapObjectHeader must be 8 byte aligned");
-#endif
+                  "sizeof(HeapObjectHeader) must be 8 bytes");
 
     ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
     ASSERT(size < nonLargeObjectPageSizeMax);
@@ -233,44 +223,33 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t payloadSize();
   Address payloadEnd();
 
-#if DCHECK_IS_ON()
+  // TODO(633030): Make |checkHeader| and |zapMagic| private. This class should
+  // manage its integrity on its own, without requiring outside callers to
+  // explicitly check.
   bool checkHeader() const;
   // Zap magic number with a new magic number that means there was once an
   // object allocated here, but it was freed because nobody marked it during
   // GC.
   void zapMagic();
-#endif
 
   void finalize(Address, size_t);
   static HeapObjectHeader* fromPayload(const void*);
 
-  static const uint16_t magic = 0xfff1;
-  static const uint16_t zappedMagic = 0x4321;
+  static const uint32_t zappedMagic = 0xDEAD4321;
 
  private:
-  uint32_t m_encoded;
-#if DCHECK_IS_ON()
-  uint16_t m_magic;
-#endif
+  // Returns a random value.
+  //
+  // The implementation gets its randomness from the locations of 2 independent
+  // sources of address space layout randomization: a function in a Chrome
+  // executable image, and a function in an external DLL/so. This implementation
+  // should be fast and small, and should have the benefit of requiring
+  // attackers to discover and use 2 independent weak infoleak bugs, or 1
+  // arbitrary infoleak bug (used twice).
+  uint32_t getMagic() const;
 
-// In 64 bit architectures, we intentionally add 4 byte padding immediately
-// after the HeapObjectHeader. This is because:
-//
-// | HeapObjectHeader (4 byte)   |  <- 8 byte aligned
-// | padding (4 byte)            |
-// | object payload (8 * n byte) |  <- 8 byte aligned
-//
-// is better than:
-//
-// | HeapObjectHeader (4 byte)   |  <- 4 byte aligned
-// | object payload (8 * n byte) |  <- 8 byte aligned
-// | padding (4 byte)            |  <- 4 byte aligned
-//
-// since the former layout aligns both header and payload to 8 byte.
-#if USE_4BYTE_HEADER_PADDING
- public:
-  uint32_t m_padding;
-#endif
+  uint32_t m_magic;
+  uint32_t m_encoded;
 };
 
 class FreeListEntry final : public HeapObjectHeader {
@@ -856,11 +835,9 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   return result;
 }
 
-#if DCHECK_IS_ON()
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::checkHeader() const {
-  return m_magic == magic;
+  return m_magic == getMagic();
 }
-#endif
 
 inline Address HeapObjectHeader::payload() {
   return reinterpret_cast<Address>(this) + sizeof(HeapObjectHeader);
@@ -886,6 +863,36 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
   ASSERT(header->checkHeader());
   return header;
+}
+
+inline uint32_t HeapObjectHeader::getMagic() const {
+  const uintptr_t random1 =
+      ~(reinterpret_cast<uintptr_t>(
+            base::trace_event::MemoryAllocatorDump::kNameSize) >>
+        16);
+
+#if OS(WIN)
+  const uintptr_t random2 = ~(reinterpret_cast<uintptr_t>(::ReadFile) << 16);
+#elif OS(POSIX)
+  const uintptr_t random2 = ~(reinterpret_cast<uintptr_t>(::read) << 16);
+#else
+#error OS not supported
+#endif
+
+#if CPU(64BIT)
+  static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
+                "uintptr_t is not uint64_t");
+  const uint32_t random = static_cast<uint32_t>(
+      (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
+#elif CPU(32BIT)
+  static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
+                "uintptr_t is not uint32_t");
+  const uint32_t random = (random1 & 0x0FFFFUL) | (random2 & 0xFFFF0000UL);
+#else
+#error architecture not supported
+#endif
+
+  return random;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isWrapperHeaderMarked()
