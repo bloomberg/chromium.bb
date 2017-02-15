@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -36,7 +37,8 @@ class AutofillProfile;
 // Coordinator responsible for creating and presenting the shipping address
 // selection view controller. This view controller will be presented by the view
 // controller provided in the initializer.
-@interface ShippingAddressSelectionCoordinator : ChromeCoordinator
+@interface ShippingAddressSelectionCoordinator
+    : ChromeCoordinator<ShippingAddressSelectionViewControllerDelegate>
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This pointer is not

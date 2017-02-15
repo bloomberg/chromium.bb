@@ -13,7 +13,6 @@
 #include "components/payments/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
-#import "ios/chrome/browser/payments/payment_request_utils.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"

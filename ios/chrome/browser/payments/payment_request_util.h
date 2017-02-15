@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTILS_H_
-#define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTILS_H_
+#ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTIL_H_
+#define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTIL_H_
 
 #import <Foundation/Foundation.h>
 
@@ -13,7 +13,7 @@ namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
 
-namespace payment_request_utils {
+namespace payment_request_util {
 
 // Helper function to get the name label from an autofill profile.
 NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile);
@@ -30,6 +30,6 @@ NSString* PhoneNumberLabelFromAutofillProfile(
 web::PaymentAddress PaymentAddressFromAutofillProfile(
     autofill::AutofillProfile* profile);
 
-}  // namespace payment_request_utils
+}  // namespace payment_request_util
 
-#endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTILS_H_
+#endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTIL_H_

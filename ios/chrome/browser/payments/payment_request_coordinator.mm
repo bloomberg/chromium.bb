@@ -19,7 +19,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#include "ios/chrome/browser/payments/payment_request_utils.h"
+#include "ios/chrome/browser/payments/payment_request_util.h"
 
 @interface PaymentRequestCoordinator () {
   base::WeakNSProtocol<id<PaymentRequestCoordinatorDelegate>> _delegate;
@@ -123,7 +123,7 @@
             _paymentRequest->billing_profiles());
     if (address) {
       paymentResponse.details.billing_address =
-          payment_request_utils::PaymentAddressFromAutofillProfile(address);
+          payment_request_util::PaymentAddressFromAutofillProfile(address);
     }
   }
 
@@ -253,7 +253,7 @@
   _pendingShippingAddress = shippingAddress;
 
   web::PaymentAddress address =
-      payment_request_utils::PaymentAddressFromAutofillProfile(shippingAddress);
+      payment_request_util::PaymentAddressFromAutofillProfile(shippingAddress);
   [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
 }
 

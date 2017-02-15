@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/payments/payment_request_utils.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "ios/chrome/browser/application_context.h"
 
-namespace payment_request_utils {
+namespace payment_request_util {
 
 NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
   return base::SysUTF16ToNSString(
@@ -68,4 +68,4 @@ web::PaymentAddress PaymentAddressFromAutofillProfile(
   return address;
 }
 
-}  // namespace payment_request_utils
+}  // namespace payment_request_util

@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
 @class ShippingOptionSelectionCoordinator;
@@ -33,7 +34,8 @@
 // Coordinator responsible for creating and presenting the shipping option
 // selection view controller. This view controller will be presented by the view
 // controller provided in the initializer.
-@interface ShippingOptionSelectionCoordinator : ChromeCoordinator
+@interface ShippingOptionSelectionCoordinator
+    : ChromeCoordinator<ShippingOptionSelectionViewControllerDelegate>
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This pointer is not

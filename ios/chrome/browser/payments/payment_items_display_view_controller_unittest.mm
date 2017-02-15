@@ -4,19 +4,16 @@
 
 #import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
 
-#include <utility>
-#include <vector>
-
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#import "ios/chrome/browser/payments/cells/price_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
 
 class PaymentItemsDisplayViewControllerTest
     : public CollectionViewControllerTest {
@@ -25,22 +22,19 @@ class PaymentItemsDisplayViewControllerTest
     personal_data_manager_ =
         base::MakeUnique<autofill::TestPersonalDataManager>();
 
-    std::unique_ptr<web::PaymentRequest> web_payment_request =
-        base::MakeUnique<web::PaymentRequest>();
-    web::PaymentItem payment_item;
-    web_payment_request->details.display_items.push_back(payment_item);
-    web_payment_request->details.display_items.push_back(payment_item);
-    web_payment_request->details.display_items.push_back(payment_item);
+    web::PaymentRequest web_payment_request =
+        payment_request_test_util::CreateTestWebPaymentRequest();
 
     payment_request_ = base::MakeUnique<PaymentRequest>(
-        std::move(web_payment_request), personal_data_manager_.get());
+        base::MakeUnique<web::PaymentRequest>(web_payment_request),
+        personal_data_manager_.get());
 
     return [[PaymentItemsDisplayViewController alloc]
         initWithPaymentRequest:payment_request_.get()
               payButtonEnabled:YES];
   }
 
-  PaymentItemsDisplayViewController* PaymentItemsController() {
+  PaymentItemsDisplayViewController* GetPaymentItemsViewController() {
     return base::mac::ObjCCastStrict<PaymentItemsDisplayViewController>(
         controller());
   }
@@ -55,12 +49,15 @@ TEST_F(PaymentItemsDisplayViewControllerTest, TestModel) {
   CheckController();
   CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE);
 
-  [PaymentItemsController() loadModel];
+  [GetPaymentItemsViewController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());
-  // There should be an item for each of the line items in paymentItems plus 1
-  // for the total.
-  EXPECT_EQ(4U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
-}
+  // There should be one item for the total and another one for sub-total.
+  ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-}  // namespace
+  // They both should be of type PriceItem.
+  id item = GetCollectionViewItem(0, 0);
+  EXPECT_TRUE([item isMemberOfClass:[PriceItem class]]);
+  item = GetCollectionViewItem(0, 1);
+  EXPECT_TRUE([item isMemberOfClass:[PriceItem class]]);
+}

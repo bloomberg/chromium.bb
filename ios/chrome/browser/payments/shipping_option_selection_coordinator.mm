@@ -7,10 +7,8 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 
-@interface ShippingOptionSelectionCoordinator ()<
-    ShippingOptionSelectionViewControllerDelegate> {
+@interface ShippingOptionSelectionCoordinator () {
   base::WeakNSProtocol<id<ShippingOptionSelectionCoordinatorDelegate>>
       _delegate;
   base::scoped_nsobject<ShippingOptionSelectionViewController> _viewController;

@@ -9,10 +9,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
 
-@interface ShippingAddressSelectionCoordinator ()<
-    ShippingAddressSelectionViewControllerDelegate> {
+@interface ShippingAddressSelectionCoordinator () {
   base::WeakNSProtocol<id<ShippingAddressSelectionCoordinatorDelegate>>
       _delegate;
   base::scoped_nsobject<ShippingAddressSelectionViewController> _viewController;

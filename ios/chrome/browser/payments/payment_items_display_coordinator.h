@@ -31,7 +31,8 @@
 // Coordinator responsible for creating and presenting the payment items display
 // view controller. This view controller will be presented by the view
 // controller provided in the initializer.
-@interface PaymentItemsDisplayCoordinator : ChromeCoordinator
+@interface PaymentItemsDisplayCoordinator
+    : ChromeCoordinator<PaymentItemsDisplayViewControllerDelegate>
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This pointer is not

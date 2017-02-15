@@ -8,8 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "ios/web/public/payments/payment_request.h"
 
-@interface PaymentItemsDisplayCoordinator ()<
-    PaymentItemsDisplayViewControllerDelegate> {
+@interface PaymentItemsDisplayCoordinator () {
   base::WeakNSProtocol<id<PaymentItemsDisplayCoordinatorDelegate>> _delegate;
   base::scoped_nsobject<PaymentItemsDisplayViewController> _viewController;
 }

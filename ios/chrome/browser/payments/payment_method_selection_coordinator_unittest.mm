@@ -1,15 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
+#import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
+#import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/web/public/payments/payment_request.h"
@@ -18,11 +18,11 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
-typedef PlatformTest PaymentItemsDisplayCoordinatorTest;
+typedef PlatformTest PaymentMethodSelectionCoordinatorTest;
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
-// the payment items display view controller, respectively.
-TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
+// the PaymentMethodSelectionViewController, respectively.
+TEST(PaymentMethodSelectionCoordinatorTest, StartAndStop) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
@@ -32,8 +32,8 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
       [[[UINavigationController alloc]
           initWithRootViewController:base_view_controller] autorelease];
 
-  PaymentItemsDisplayCoordinator* coordinator =
-      [[[PaymentItemsDisplayCoordinator alloc]
+  PaymentMethodSelectionCoordinator* coordinator =
+      [[[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller] autorelease];
   [coordinator setPaymentRequest:payment_request.get()];
 
@@ -43,6 +43,11 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+
+  UIViewController* view_controller =
+      navigation_controller.visibleViewController;
+  EXPECT_TRUE([view_controller
+      isMemberOfClass:[PaymentMethodSelectionViewController class]]);
 
   [coordinator stop];
   // Short delay to allow animation to complete.
@@ -51,9 +56,9 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
 }
 
 // Tests that calling the view controller delegate method which notifies the
-// coordinator that the user has confirmed the payment request invokes the
-// the corresponding coordinator delegate method.
-TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
+// coordinator about selection of a payment method invokes the corresponding
+// coordinator delegate method.
+TEST(PaymentMethodSelectionCoordinatorTest, DidSelectPaymentMethod) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
@@ -63,15 +68,17 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
       [[[UINavigationController alloc]
           initWithRootViewController:base_view_controller] autorelease];
 
-  PaymentItemsDisplayCoordinator* coordinator =
-      [[[PaymentItemsDisplayCoordinator alloc]
+  PaymentMethodSelectionCoordinator* coordinator =
+      [[[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller] autorelease];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
-      mockForProtocol:@protocol(PaymentItemsDisplayCoordinatorDelegate)];
-  [[delegate expect] paymentItemsDisplayCoordinatorDidConfirm:coordinator];
+      mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
+  std::unique_ptr<autofill::CreditCard> credit_card(new autofill::CreditCard());
+  [[delegate expect] paymentMethodSelectionCoordinator:coordinator
+                                didSelectPaymentMethod:credit_card.get()];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -82,18 +89,22 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  PaymentItemsDisplayViewController* view_controller =
-      base::mac::ObjCCastStrict<PaymentItemsDisplayViewController>(
+  PaymentMethodSelectionViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentMethodSelectionViewController>(
           navigation_controller.visibleViewController);
-  [coordinator paymentItemsDisplayViewControllerDidConfirm:view_controller];
+  [coordinator paymentMethodSelectionViewController:view_controller
+                             didSelectPaymentMethod:credit_card.get()];
+
+  // Wait for the coordinator delegate to be notified.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 // Tests that calling the view controller delegate method which notifies the
-// coordinator that the user has chosen to return to the previous screen invokes
-// the corresponding coordinator delegate method.
-TEST(PaymentItemsDisplayCoordinatorTest, DidReturn) {
+// coordinator that the user has chosen to return without making a selection
+// invokes the corresponding coordinator delegate method.
+TEST(PaymentMethodSelectionCoordinatorTest, DidReturn) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
@@ -103,15 +114,15 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidReturn) {
       [[[UINavigationController alloc]
           initWithRootViewController:base_view_controller] autorelease];
 
-  PaymentItemsDisplayCoordinator* coordinator =
-      [[[PaymentItemsDisplayCoordinator alloc]
+  PaymentMethodSelectionCoordinator* coordinator =
+      [[[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller] autorelease];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
-      mockForProtocol:@protocol(PaymentItemsDisplayCoordinatorDelegate)];
-  [[delegate expect] paymentItemsDisplayCoordinatorDidReturn:coordinator];
+      mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
+  [[delegate expect] paymentMethodSelectionCoordinatorDidReturn:coordinator];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -122,10 +133,10 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidReturn) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  PaymentItemsDisplayViewController* view_controller =
-      base::mac::ObjCCastStrict<PaymentItemsDisplayViewController>(
+  PaymentMethodSelectionViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentMethodSelectionViewController>(
           navigation_controller.visibleViewController);
-  [coordinator paymentItemsDisplayViewControllerDidReturn:view_controller];
+  [coordinator paymentMethodSelectionViewControllerDidReturn:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

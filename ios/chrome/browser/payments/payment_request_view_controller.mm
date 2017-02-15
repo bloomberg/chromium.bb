@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
-#import "ios/chrome/browser/payments/payment_request_utils.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -38,9 +38,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using payment_request_utils::NameLabelFromAutofillProfile;
-using payment_request_utils::AddressLabelFromAutofillProfile;
-using payment_request_utils::PhoneNumberLabelFromAutofillProfile;
+using payment_request_util::NameLabelFromAutofillProfile;
+using payment_request_util::AddressLabelFromAutofillProfile;
+using payment_request_util::PhoneNumberLabelFromAutofillProfile;
 
 NSString* const kPaymentRequestCollectionViewId =
     @"kPaymentRequestCollectionViewId";
