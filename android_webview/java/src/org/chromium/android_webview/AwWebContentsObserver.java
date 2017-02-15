@@ -93,7 +93,6 @@ public class AwWebContentsObserver extends WebContentsObserver {
             Integer pageTransition, int errorCode, String errorDescription, int httpStatusCode) {
         if (errorCode != 0) {
             didFailLoad(isInMainFrame, errorCode, errorDescription, url);
-            return;
         }
 
         if (!hasCommitted) return;

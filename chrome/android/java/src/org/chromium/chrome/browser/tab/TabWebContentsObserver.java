@@ -215,7 +215,6 @@ public class TabWebContentsObserver extends WebContentsObserver {
             if (isInMainFrame) mTab.didFailPageLoad(errorCode);
 
             recordErrorInPolicyAuditor(url, errorDescription, errorCode);
-            return;
         }
 
         if (!hasCommitted) return;
