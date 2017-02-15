@@ -114,6 +114,7 @@ class CORE_EXPORT HTMLImageElement final
   virtual void ensureCollapsedOrFallbackContent();
   virtual void ensureFallbackForGeneratedContent();
   virtual void ensurePrimaryContent();
+  bool isCollapsed() const;
 
   // CanvasImageSource implementation
   PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
@@ -187,7 +188,6 @@ class CORE_EXPORT HTMLImageElement final
   void setLayoutDisposition(LayoutDisposition, bool forceReattach = false);
 
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
   bool canStartSelection() const override { return false; }

@@ -45,6 +45,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -285,6 +286,12 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const {
   // hasDirectionAuto into StyleResolver.
   if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
     return false;
+
+  if (isHTMLImageElement(candidate) && isHTMLImageElement(element()) &&
+      toHTMLImageElement(candidate).isCollapsed() !=
+          toHTMLImageElement(element()).isCollapsed()) {
+    return false;
+  }
 
   if (candidate.isLink() && m_context.elementLinkState() != style->insideLink())
     return false;

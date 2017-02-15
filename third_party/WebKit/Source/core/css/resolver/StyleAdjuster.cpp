@@ -39,6 +39,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -206,6 +207,12 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
       else
         style.setWhiteSpace(EWhiteSpace::kNowrap);
     }
+    return;
+  }
+
+  if (isHTMLImageElement(element)) {
+    if (toHTMLImageElement(element).isCollapsed())
+      style.setDisplay(EDisplay::None);
     return;
   }
 
