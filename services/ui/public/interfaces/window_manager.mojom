@@ -121,6 +121,9 @@ interface WindowManager {
   // Type: gfx::Rect.
   const string kRestoreBounds_Property = "prop:restore-bounds";
 
+  // See ShadowElevation for details. Type: wm::ShadowElevation.
+  const string kShadowElevation_Property = "prop:shadow-elevation";
+
   // The type of item to be shown on the shelf for this window. Type: int
   // A few ash::ShelfItemType values are supported; TYPE_UNKNOWN means no item.
   const string kShelfItemType_Property = "prop:shelf-item-type";

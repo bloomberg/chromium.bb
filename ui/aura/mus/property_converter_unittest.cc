@@ -80,6 +80,7 @@ void TestPrimitiveProperty(PropertyConverter* property_converter,
   property_converter->RegisterProperty(key, transport_name);
   EXPECT_EQ(transport_name,
             property_converter->GetTransportNameForPropertyKey(key));
+  EXPECT_TRUE(property_converter->IsTransportNameRegistered(transport_name));
 
   window->SetProperty(key, value_1);
   EXPECT_EQ(value_1, window->GetProperty(key));
@@ -119,6 +120,9 @@ using PropertyConverterTest = test::AuraTestBase;
 TEST_F(PropertyConverterTest, PrimitiveProperties) {
   PropertyConverter property_converter;
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+
+  EXPECT_FALSE(
+      property_converter.IsTransportNameRegistered(kTestPropertyServerKey0));
 
   const bool value_0a = true, value_0b = false;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey0,
@@ -169,6 +173,8 @@ TEST_F(PropertyConverterTest, ImageSkiaProperty) {
   EXPECT_EQ(
       kTestImagePropertyServerKey,
       property_converter.GetTransportNameForPropertyKey(kTestImagePropertyKey));
+  EXPECT_TRUE(property_converter.IsTransportNameRegistered(
+      kTestImagePropertyServerKey));
 
   SkBitmap bitmap_1;
   bitmap_1.allocN32Pixels(16, 32);
@@ -209,6 +215,8 @@ TEST_F(PropertyConverterTest, RectProperty) {
   EXPECT_EQ(
       kTestRectPropertyServerKey,
       property_converter.GetTransportNameForPropertyKey(kTestRectPropertyKey));
+  EXPECT_TRUE(
+      property_converter.IsTransportNameRegistered(kTestRectPropertyServerKey));
 
   gfx::Rect value_1(1, 2, 3, 4);
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
@@ -240,6 +248,8 @@ TEST_F(PropertyConverterTest, SizeProperty) {
   EXPECT_EQ(
       kTestSizePropertyServerKey,
       property_converter.GetTransportNameForPropertyKey(kTestSizePropertyKey));
+  EXPECT_TRUE(
+      property_converter.IsTransportNameRegistered(kTestSizePropertyServerKey));
 
   gfx::Size value_1(1, 2);
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
@@ -271,6 +281,8 @@ TEST_F(PropertyConverterTest, StringProperty) {
   EXPECT_EQ(kTestStringPropertyServerKey,
             property_converter.GetTransportNameForPropertyKey(
                 kTestStringPropertyKey));
+  EXPECT_TRUE(property_converter.IsTransportNameRegistered(
+      kTestStringPropertyServerKey));
 
   std::string value_1 = "test value";
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
@@ -302,6 +314,8 @@ TEST_F(PropertyConverterTest, String16Property) {
   EXPECT_EQ(kTestString16PropertyServerKey,
             property_converter.GetTransportNameForPropertyKey(
                 kTestString16PropertyKey));
+  EXPECT_TRUE(property_converter.IsTransportNameRegistered(
+      kTestString16PropertyServerKey));
 
   base::string16 value_1 = base::ASCIIToUTF16("test value");
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));

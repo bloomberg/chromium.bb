@@ -52,6 +52,7 @@
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -70,6 +71,9 @@ WindowManager::WindowManager(service_manager::Connector* connector)
       ui::mojom::WindowManager::kRenderParentTitleArea_Property);
   property_converter_->RegisterProperty(
       kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property);
+  property_converter_->RegisterProperty(
+      ::wm::kShadowElevationKey,
+      ui::mojom::WindowManager::kShadowElevation_Property);
 }
 
 WindowManager::~WindowManager() {
@@ -317,13 +321,10 @@ bool WindowManager::OnWmSetProperty(
         new_data ? mojo::ConvertTo<bool>(**new_data) : false);
     return false;  // Won't attempt to map through property converter.
   }
-  return name == ui::mojom::WindowManager::kAppIcon_Property ||
-         name == ui::mojom::WindowManager::kShowState_Property ||
-         name == ui::mojom::WindowManager::kPreferredSize_Property ||
-         name == ui::mojom::WindowManager::kResizeBehavior_Property ||
-         name == ui::mojom::WindowManager::kShelfItemType_Property ||
-         name == ui::mojom::WindowManager::kWindowIcon_Property ||
-         name == ui::mojom::WindowManager::kWindowTitle_Property;
+  if (property_converter_->IsTransportNameRegistered(name))
+    return true;
+  DVLOG(1) << "unknown property changed, ignoring " << name;
+  return false;
 }
 
 void WindowManager::OnWmSetCanFocus(aura::Window* window, bool can_focus) {

@@ -1188,6 +1188,10 @@ bool DesktopWindowTreeHostX11::ShouldUseDesktopNativeCursorManager() const {
   return true;
 }
 
+bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 

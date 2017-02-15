@@ -482,6 +482,10 @@ bool DesktopWindowTreeHostWin::ShouldUseDesktopNativeCursorManager() const {
   return true;
 }
 
+bool DesktopWindowTreeHostWin::ShouldCreateVisibilityController() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, WindowTreeHost implementation:
 

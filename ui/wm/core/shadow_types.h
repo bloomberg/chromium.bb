@@ -18,6 +18,9 @@ namespace wm {
 // shell. Used as a value for the kShadowTypeKey property. The integer value of
 // each entry is directly used for determining the size of the shadow.
 enum class ShadowElevation {
+  // Indicates an elevation should be chosen based on the window. This is the
+  // default.
+  DEFAULT = -1,
   NONE = 0,
   SMALL = 6,
   MEDIUM = 8,
@@ -25,12 +28,12 @@ enum class ShadowElevation {
 };
 
 WM_EXPORT void SetShadowElevation(aura::Window* window,
-                                  ShadowElevation shadow_type);
-WM_EXPORT ShadowElevation GetShadowElevation(aura::Window* window);
+                                  ShadowElevation elevation);
 
 // A property key describing the drop shadow that should be displayed under the
-// window.  If unset, no shadow is displayed.
-extern const aura::WindowProperty<ShadowElevation>* const kShadowElevationKey;
+// window. A null value is interpreted as using the default.
+WM_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
+    kShadowElevationKey;
 
 }  // namespace wm
 

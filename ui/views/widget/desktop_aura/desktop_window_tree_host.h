@@ -167,6 +167,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // used, a return value of false indicates the DesktopWindowTreeHost manages
   // cursors itself.
   virtual bool ShouldUseDesktopNativeCursorManager() const = 0;
+
+  // Returns whether a VisibilityController should be created.
+  virtual bool ShouldCreateVisibilityController() const = 0;
 };
 
 }  // namespace views

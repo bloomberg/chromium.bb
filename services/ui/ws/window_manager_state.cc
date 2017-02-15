@@ -487,6 +487,9 @@ void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
                  << display_root->root()->GetDebugWindowHierarchy();
     }
   }
+  ServerWindow* focused_window = GetFocusedWindowForEventDispatcher();
+  LOG(ERROR) << "Focused window: "
+             << (focused_window ? focused_window->id().ToString() : "(null)");
 #endif
 }
 

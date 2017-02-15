@@ -46,6 +46,10 @@ uint32_t ConfigureFullscreen(uint32_t serial,
   return serial;
 }
 
+wm::ShadowElevation GetShadowElevation(aura::Window* window) {
+  return window->GetProperty(wm::kShadowElevationKey);
+}
+
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   gfx::Size buffer_size(32, 32);
   std::unique_ptr<Buffer> buffer(
@@ -560,14 +564,14 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   shell_surface->SetRectangularSurfaceShadow(gfx::Rect());
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::NONE, wm::GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::NONE, GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable non surface shadow again.
   shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For surface shadow, the underlay is placed at the bottom of shell surfaces.
@@ -637,14 +641,14 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   shell_surface->SetRectangularShadowEnabled(false);
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::NONE, wm::GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::NONE, GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable non surface shadow.
   shell_surface->SetRectangularShadowEnabled(true);
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For no surface shadow, both of underlay and overlay should be stacked
@@ -690,7 +694,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
 
   shell_surface->SetRectangularSurfaceShadow(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
 
   // Shadow overlay bounds.
   EXPECT_TRUE(shadow->layer()->visible());

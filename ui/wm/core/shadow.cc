@@ -32,6 +32,7 @@ Shadow::Shadow()
 Shadow::~Shadow() {}
 
 void Shadow::Init(ShadowElevation elevation) {
+  DCHECK_NE(ShadowElevation::DEFAULT, elevation);
   desired_elevation_ = elevation;
   layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
   RecreateShadowLayer();
@@ -48,6 +49,7 @@ void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
 }
 
 void Shadow::SetElevation(ShadowElevation elevation) {
+  DCHECK_NE(ShadowElevation::DEFAULT, elevation);
   if (desired_elevation_ == elevation)
     return;
 

@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace views {
 
@@ -293,6 +294,34 @@ TEST_F(DesktopWindowTreeHostMusTest, TransientParentWiredToHostWindow) {
   EXPECT_EQ(widget1->GetNativeView()->GetHost()->window(),
             transient_window_client->GetTransientParent(
                 widget2->GetNativeView()->GetHost()->window()));
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, ShadowDefaults) {
+  Widget widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  // |DesktopNativeWidgetAura::content_window_| should have no shadow; the wm
+  // should provide it if it so desires.
+  EXPECT_EQ(wm::ShadowElevation::NONE,
+            widget.GetNativeView()->GetProperty(wm::kShadowElevationKey));
+  // The wm honors the shadow property from the WindowTreeHost's window.
+  EXPECT_EQ(wm::ShadowElevation::DEFAULT,
+            widget.GetNativeView()->GetHost()->window()->GetProperty(
+                wm::kShadowElevationKey));
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, NoShadow) {
+  Widget widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  widget.Init(params);
+  EXPECT_EQ(wm::ShadowElevation::NONE,
+            widget.GetNativeView()->GetProperty(wm::kShadowElevationKey));
+  EXPECT_EQ(wm::ShadowElevation::NONE,
+            widget.GetNativeView()->GetHost()->window()->GetProperty(
+                wm::kShadowElevationKey));
 }
 
 }  // namespace views

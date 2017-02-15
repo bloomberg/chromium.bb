@@ -33,6 +33,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/wm_state.h"
 
 // Widget::InitParams::Type must match that of ui::mojom::WindowType.
@@ -78,6 +79,9 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   // TODO(msw): Avoid this... use some default value? Allow clients to extend?
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
+  property_converter_->RegisterProperty(
+      wm::kShadowElevationKey,
+      ui::mojom::WindowManager::kShadowElevation_Property);
 
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
@@ -144,39 +148,42 @@ std::map<std::string, std::vector<uint8_t>>
 MusClient::ConfigurePropertiesFromParams(
     const Widget::InitParams& init_params) {
   using PrimitiveType = aura::PropertyConverter::PrimitiveType;
-  std::map<std::string, std::vector<uint8_t>> properties =
-      init_params.mus_properties;
+  using WindowManager = ui::mojom::WindowManager;
+  using TransportType = std::vector<uint8_t>;
+
+  std::map<std::string, TransportType> properties = init_params.mus_properties;
 
   // Widget::InitParams::Type matches ui::mojom::WindowType.
-  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(init_params.type));
+  properties[WindowManager::kWindowType_InitProperty] =
+      mojo::ConvertTo<TransportType>(static_cast<int32_t>(init_params.type));
 
-  properties[ui::mojom::WindowManager::kFocusable_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(init_params.CanActivate());
+  properties[WindowManager::kFocusable_InitProperty] =
+      mojo::ConvertTo<TransportType>(init_params.CanActivate());
 
   if (!init_params.bounds.IsEmpty()) {
-    properties[ui::mojom::WindowManager::kBounds_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
+    properties[WindowManager::kBounds_InitProperty] =
+        mojo::ConvertTo<TransportType>(init_params.bounds);
   }
 
   if (!init_params.name.empty()) {
-    properties[ui::mojom::WindowManager::kName_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(init_params.name);
+    properties[WindowManager::kName_Property] =
+        mojo::ConvertTo<TransportType>(init_params.name);
   }
 
-  properties[ui::mojom::WindowManager::kAlwaysOnTop_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
+  properties[WindowManager::kAlwaysOnTop_Property] =
+      mojo::ConvertTo<TransportType>(
           static_cast<PrimitiveType>(init_params.keep_on_top));
+
+  properties[WindowManager::kRemoveStandardFrame_InitProperty] =
+      mojo::ConvertTo<TransportType>(init_params.remove_standard_frame);
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return properties;
 
   if (init_params.delegate) {
-    if (properties.count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
-        0) {
-      properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
-          mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
+    if (properties.count(WindowManager::kResizeBehavior_Property) == 0) {
+      properties[WindowManager::kResizeBehavior_Property] =
+          mojo::ConvertTo<TransportType>(static_cast<PrimitiveType>(
               init_params.delegate->GetResizeBehavior()));
     }
 
@@ -184,15 +191,15 @@ MusClient::ConfigurePropertiesFromParams(
     gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
     SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
     if (!app_bitmap.isNull()) {
-      properties[ui::mojom::WindowManager::kAppIcon_Property] =
-          mojo::ConvertTo<std::vector<uint8_t>>(app_bitmap);
+      properties[WindowManager::kAppIcon_Property] =
+          mojo::ConvertTo<TransportType>(app_bitmap);
     }
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
     SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).sk_bitmap();
     if (!window_bitmap.isNull()) {
-      properties[ui::mojom::WindowManager::kWindowIcon_Property] =
-          mojo::ConvertTo<std::vector<uint8_t>>(window_bitmap);
+      properties[WindowManager::kWindowIcon_Property] =
+          mojo::ConvertTo<TransportType>(window_bitmap);
     }
   }
 

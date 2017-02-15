@@ -287,10 +287,6 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
   mash_reveal_widget_->Init(init_params);
   mash_reveal_widget_->SetContentsView(
       new TopContainerMirrorView(browser_view_->top_container()));
-  // Disable the default animation as we want to the window to slide in nicely,
-  // not slide and inherit the default window animations.
-  mash_reveal_widget_->GetNativeWindow()->SetProperty(
-      aura::client::kAnimationsDisabledKey, true);
   mash_reveal_widget_->StackAtTop();
   mash_reveal_widget_->Show();
 }

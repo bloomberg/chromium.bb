@@ -501,8 +501,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     host_->window()->AddPreTargetHandler(tooltip_controller_.get());
   }
 
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
-    visibility_controller_.reset(new wm::VisibilityController);
+  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
+      desktop_window_tree_host_->ShouldCreateVisibilityController()) {
+    visibility_controller_ = base::MakeUnique<wm::VisibilityController>();
     aura::client::SetVisibilityClient(host_->window(),
                                       visibility_controller_.get());
     wm::SetChildWindowVisibilityChangesAnimated(host_->window());

@@ -57,6 +57,11 @@ class VIEWS_EXPORT NativeWidgetAura
                                      const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon);
 
+  // If necessary, sets the ShadowElevation of |window| from |params|.
+  static void SetShadowElevationFromInitParams(
+      aura::Window* window,
+      const Widget::InitParams& params);
+
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;

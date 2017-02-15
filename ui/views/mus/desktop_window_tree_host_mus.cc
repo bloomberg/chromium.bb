@@ -287,6 +287,8 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   aura::client::SetCursorClient(window(), cursor_manager_.get());
   InitHost();
 
+  NativeWidgetAura::SetShadowElevationFromInitParams(window(), params);
+
   // Transient parents are connected using the Window created by WindowTreeHost,
   // which is owned by the window manager. This way the window manager can
   // properly identify and honor transients.
@@ -714,6 +716,11 @@ bool DesktopWindowTreeHostMus::ShouldUpdateWindowTransparency() const {
 
 bool DesktopWindowTreeHostMus::ShouldUseDesktopNativeCursorManager() const {
   // We manage the cursor ourself.
+  return false;
+}
+
+bool DesktopWindowTreeHostMus::ShouldCreateVisibilityController() const {
+  // Window manager takes care of all top-level window animations.
   return false;
 }
 

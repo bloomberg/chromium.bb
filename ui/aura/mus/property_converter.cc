@@ -48,13 +48,18 @@ PropertyConverter::PropertyConverter() {
                    ui::mojom::WindowManager::kRestoreBounds_Property);
   RegisterProperty(client::kShowStateKey,
                    ui::mojom::WindowManager::kShowState_Property);
-  RegisterProperty(client::kTitleKey,
-                   ui::mojom::WindowManager::kWindowTitle_Property);
   RegisterProperty(client::kWindowIconKey,
                    ui::mojom::WindowManager::kWindowIcon_Property);
+  RegisterProperty(client::kTitleKey,
+                   ui::mojom::WindowManager::kWindowTitle_Property);
 }
 
 PropertyConverter::~PropertyConverter() {}
+
+bool PropertyConverter::IsTransportNameRegistered(
+    const std::string& name) const {
+  return transport_names_.count(name) > 0;
+}
 
 bool PropertyConverter::ConvertPropertyForTransport(
     Window* window,
@@ -239,30 +244,35 @@ void PropertyConverter::RegisterProperty(
     const WindowProperty<gfx::ImageSkia*>* property,
     const char* transport_name) {
   image_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
 }
 
 void PropertyConverter::RegisterProperty(
     const WindowProperty<gfx::Rect*>* property,
     const char* transport_name) {
   rect_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
 }
 
 void PropertyConverter::RegisterProperty(
     const WindowProperty<gfx::Size*>* property,
     const char* transport_name) {
   size_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
 }
 
 void PropertyConverter::RegisterProperty(
     const WindowProperty<std::string*>* property,
     const char* transport_name) {
   string_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
 }
 
 void PropertyConverter::RegisterProperty(
     const WindowProperty<base::string16*>* property,
     const char* transport_name) {
   string16_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
 }
 
 }  // namespace aura

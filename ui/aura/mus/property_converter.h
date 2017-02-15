@@ -36,6 +36,10 @@ class AURA_EXPORT PropertyConverter {
   PropertyConverter();
   ~PropertyConverter();
 
+  // Returns true if RegisterProperty() has been called with the specified
+  // transport name.
+  bool IsTransportNameRegistered(const std::string& name) const;
+
   // Maps a property on the Window to a property pushed to the server. Return
   // true if the property should be sent to the server, false if the property
   // is only used locally.
@@ -73,8 +77,10 @@ class AURA_EXPORT PropertyConverter {
     PrimitiveProperty primitive_property;
     primitive_property.property_name = property->name;
     primitive_property.transport_name = transport_name;
-    primitive_property.default_value = property->default_value;
+    primitive_property.default_value =
+        ui::ClassPropertyCaster<T>::ToInt64(property->default_value);
     primitive_properties_[property] = primitive_property;
+    transport_names_.insert(transport_name);
   }
 
   // Specializations for properties to pointer types supporting mojo conversion.
@@ -113,6 +119,9 @@ class AURA_EXPORT PropertyConverter {
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
   std::map<const WindowProperty<base::string16*>*, const char*>
       string16_properties_;
+
+  // Set of transport names supplied to RegisterProperty().
+  std::set<std::string> transport_names_;
 
   DISALLOW_COPY_AND_ASSIGN(PropertyConverter);
 };
