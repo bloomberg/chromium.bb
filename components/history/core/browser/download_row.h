@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/download_slice_info.h"
 #include "components/history/core/browser/download_types.h"
 #include "url/gurl.h"
 
@@ -46,7 +47,8 @@ struct DownloadRow {
               const std::string& guid,
               bool download_opened,
               const std::string& ext_id,
-              const std::string& ext_name);
+              const std::string& ext_name,
+              const std::vector<DownloadSliceInfo>& download_slice_info);
   DownloadRow(const DownloadRow& other);
   ~DownloadRow();
 
@@ -135,6 +137,8 @@ struct DownloadRow {
   // The id and name of the extension that created this download.
   std::string by_ext_id;
   std::string by_ext_name;
+
+  std::vector<DownloadSliceInfo> download_slice_info;
 };
 
 }  // namespace history

@@ -140,7 +140,9 @@ history::DownloadRow GetDownloadRow(
       history::ToHistoryDownloadInterruptReason(item->GetLastReason()),
       std::string(),  // Hash value (not available yet)
       history::ToHistoryDownloadId(item->GetId()), item->GetGuid(),
-      item->GetOpened(), by_ext_id, by_ext_name);
+      item->GetOpened(), by_ext_id, by_ext_name,
+      // TODO(qinmin): get the slice information.
+      std::vector<history::DownloadSliceInfo>());
 }
 
 enum class ShouldUpdateHistoryResult {

@@ -11,6 +11,8 @@ static_library("browser") {
     "download_database.h",
     "download_row.cc",
     "download_row.h",
+    "download_slice_info.cc",
+    "download_slice_info.h",
     "download_types.cc",
     "download_types.h",
     "expire_history_backend.cc",
@@ -160,6 +162,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/history/history.29.sql",
     "//components/test/data/history/history.30.sql",
     "//components/test/data/history/history.31.sql",
+    "//components/test/data/history/history.32.sql",
     "//components/test/data/history/thumbnail_wild/Favicons.corrupt_meta.disable",
     "//components/test/data/history/thumbnail_wild/Favicons.v2.init.sql",
     "//components/test/data/history/thumbnail_wild/Favicons.v3.init.sql",
@@ -179,6 +182,7 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "download_slice_info_unittest.cc",
     "expire_history_backend_unittest.cc",
     "history_backend_db_unittest.cc",
     "history_backend_unittest.cc",

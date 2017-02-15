@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <iosfwd>
 
+#include "base/compiler_specific.h"
+
 namespace history {
 
 // DownloadState represents the state of a DownloadRow saved into the
@@ -54,7 +56,7 @@ typedef uint32_t DownloadId;
 
 // Utility functions to convert between int and DownloadId for
 // serialization to the download database.
-DownloadId IntToDownloadId(int64_t id);
+bool ConvertIntToDownloadId(int64_t id, DownloadId* out) WARN_UNUSED_RESULT;
 int64_t DownloadIdToInt(DownloadId id);
 
 }  // namespace history

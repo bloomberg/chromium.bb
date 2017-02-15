@@ -295,7 +295,8 @@ class LastDownloadFinderTest : public testing::Test {
         base::GenerateGUID(),                          // GUID
         false,                                         // download_opened
         std::string(),                                 // ext_id
-        std::string());                                // ext_name
+        std::string(),                                 // ext_name
+        std::vector<history::DownloadSliceInfo>());    // download_slice_info
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;

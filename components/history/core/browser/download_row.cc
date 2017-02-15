@@ -20,31 +20,33 @@ DownloadRow::DownloadRow()
   // has no meaning unless |state| is equal to kStateInterrupted.
 }
 
-DownloadRow::DownloadRow(const base::FilePath& current_path,
-                         const base::FilePath& target_path,
-                         const std::vector<GURL>& url_chain,
-                         const GURL& referrer_url,
-                         const GURL& site_url,
-                         const GURL& tab_url,
-                         const GURL& tab_referrer_url,
-                         const std::string& http_method,
-                         const std::string& mime_type,
-                         const std::string& original_mime_type,
-                         const base::Time& start,
-                         const base::Time& end,
-                         const std::string& etag,
-                         const std::string& last_modified,
-                         int64_t received,
-                         int64_t total,
-                         DownloadState download_state,
-                         DownloadDangerType danger_type,
-                         DownloadInterruptReason interrupt_reason,
-                         const std::string& hash,
-                         DownloadId id,
-                         const std::string& guid,
-                         bool download_opened,
-                         const std::string& ext_id,
-                         const std::string& ext_name)
+DownloadRow::DownloadRow(
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
+    const std::vector<GURL>& url_chain,
+    const GURL& referrer_url,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
+    const std::string& http_method,
+    const std::string& mime_type,
+    const std::string& original_mime_type,
+    const base::Time& start,
+    const base::Time& end,
+    const std::string& etag,
+    const std::string& last_modified,
+    int64_t received,
+    int64_t total,
+    DownloadState download_state,
+    DownloadDangerType danger_type,
+    DownloadInterruptReason interrupt_reason,
+    const std::string& hash,
+    DownloadId id,
+    const std::string& guid,
+    bool download_opened,
+    const std::string& ext_id,
+    const std::string& ext_name,
+    const std::vector<DownloadSliceInfo>& download_slice_info)
     : current_path(current_path),
       target_path(target_path),
       url_chain(url_chain),
@@ -69,7 +71,8 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
       guid(guid),
       opened(download_opened),
       by_ext_id(ext_id),
-      by_ext_name(ext_name) {}
+      by_ext_name(ext_name),
+      download_slice_info(download_slice_info) {}
 
 DownloadRow::DownloadRow(const DownloadRow& other) = default;
 
@@ -89,7 +92,8 @@ bool DownloadRow::operator==(const DownloadRow& rhs) const {
          danger_type == rhs.danger_type &&
          interrupt_reason == rhs.interrupt_reason && hash == rhs.hash &&
          id == rhs.id && guid == rhs.guid && opened == rhs.opened &&
-         by_ext_id == rhs.by_ext_id && by_ext_name == rhs.by_ext_name;
+         by_ext_id == rhs.by_ext_id && by_ext_name == rhs.by_ext_name &&
+         download_slice_info == rhs.download_slice_info;
 }
 
 }  // namespace history

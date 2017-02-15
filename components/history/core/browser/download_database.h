@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,7 @@ class Connection;
 
 namespace history {
 
+struct DownloadSliceInfo;
 struct DownloadRow;
 
 // Maintains a table of downloads.
@@ -47,7 +49,7 @@ class DownloadDatabase {
   bool CreateDownload(const DownloadRow& info);
 
   // Remove |id| from the database.
-  void RemoveDownload(uint32_t id);
+  void RemoveDownload(DownloadId id);
 
   size_t CountDownloads();
 
@@ -111,7 +113,19 @@ class DownloadDatabase {
 
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
-  void RemoveDownloadURLs(uint32_t id);
+  void RemoveDownloadURLs(DownloadId id);
+
+  // Creates a new download slice if it doesn't exist, or updates an existing
+  // one. Returns true on success, or false otherwise.
+  bool CreateOrUpdateDownloadSlice(const DownloadSliceInfo& info);
+
+  // Delete all the download slices associated with one DownloadRow.
+  void RemoveDownloadSlices(DownloadId id);
+
+  // Helper method to query the download slices for all the records in
+  // |download_row_map|.
+  using DownloadRowMap = std::map<DownloadId, DownloadRow*>;
+  void QueryDownloadSlices(DownloadRowMap* download_row_map);
 
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;

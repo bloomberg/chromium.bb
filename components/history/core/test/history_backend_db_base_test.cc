@@ -135,7 +135,8 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
       "application/vnd.oasis.opendocument.text", "application/octet-stream",
       time, time, std::string(), std::string(), 0, 512, state,
       DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonNone,
-      std::string(), id, guid, false, "by_ext_id", "by_ext_name");
+      std::string(), id, guid, false, "by_ext_id", "by_ext_name",
+      std::vector<DownloadSliceInfo>());
   return db_->CreateDownload(download);
 }
 

@@ -115,10 +115,11 @@ int DownloadInterruptReasonToInt(DownloadInterruptReason interrupt_reason) {
 
 const DownloadId kInvalidDownloadId = 0;
 
-DownloadId IntToDownloadId(int64_t id) {
-  DCHECK_GE(id, static_cast<int64_t>(0));
-  DCHECK_NE(id, static_cast<int64_t>(kInvalidDownloadId));
-  return static_cast<DownloadId>(id);
+bool ConvertIntToDownloadId(int64_t id, DownloadId* out) {
+  if (id <= static_cast<int64_t>(kInvalidDownloadId))
+    return false;
+  *out = static_cast<DownloadId>(id);
+  return true;
 }
 
 int64_t DownloadIdToInt(DownloadId id) {
