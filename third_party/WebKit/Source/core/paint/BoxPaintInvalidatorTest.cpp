@@ -232,33 +232,21 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "height: 3000px");
   document().view()->updateAllLifecyclePhases();
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  // TODO(wangxianzhu): Temporary for crbug.com/680745.
+  // ASSERT_EQ(1u, rasterInvalidations.size());
+  ASSERT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(IntRect(0, 2000, 800, 1000), rasterInvalidations[0].rect);
+  EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
+            rasterInvalidations[0].client);
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    // For now in RootLayerScrolling mode root background is invalidated and
-    // painted on the container layer. No invalidation because the changed part
-    // is clipped.
-    // TODO(skobes): Treat LayoutView in the same way as normal objects having
-    // background-attachment: local. crbug.com/568847.
-    // TODO(wangxianzhu): Temporary for crbug.com/680745.
-    // EXPECT_FALSE(layoutView()
-    //                  .layer()
-    //                  ->graphicsLayerBacking()
-    //                  ->getRasterInvalidationTracking());
-    EXPECT_EQ(1u, layoutView()
-                      .layer()
-                      ->graphicsLayerBacking()
-                      ->getRasterInvalidationTracking()
-                      ->trackedRasterInvalidations.size());
+    EXPECT_EQ(PaintInvalidationBackgroundOnScrollingContentsLayer,
+              rasterInvalidations[0].reason);
   } else {
-    const auto& rasterInvalidations =
-        getRasterInvalidationTracking()->trackedRasterInvalidations;
-    // TODO(wangxianzhu): Temporary for crbug.com/680745.
-    // ASSERT_EQ(1u, rasterInvalidations.size());
-    ASSERT_EQ(2u, rasterInvalidations.size());
-    EXPECT_EQ(IntRect(0, 2000, 800, 1000), rasterInvalidations[0].rect);
-    EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
-              rasterInvalidations[0].client);
     EXPECT_EQ(PaintInvalidationIncremental, rasterInvalidations[0].reason);
   }
+
   document().view()->setTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.
@@ -281,34 +269,23 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "height: 3000px");
   document().view()->updateAllLifecyclePhases();
+
+  const auto& rasterInvalidations =
+      getRasterInvalidationTracking()->trackedRasterInvalidations;
+  // TODO(wangxianzhu): Temporary for crbug.com/680745.
+  // ASSERT_EQ(1u, rasterInvalidations.size());
+  ASSERT_EQ(2u, rasterInvalidations.size());
+  EXPECT_EQ(IntRect(0, 0, 800, 3000), rasterInvalidations[0].rect);
+  EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
+            rasterInvalidations[0].client);
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    // For now in RootLayerScrolling mode root background is invalidated and
-    // painted on the container layer.
-    // TODO(skobes): Treat LayoutView in the same way as normal objects having
-    // background-attachment: local. crbug.com/568847.
-    const auto& rasterInvalidations = layoutView()
-                                          .layer()
-                                          ->graphicsLayerBacking(&layoutView())
-                                          ->getRasterInvalidationTracking()
-                                          ->trackedRasterInvalidations;
-    ASSERT_EQ(1u, rasterInvalidations.size());
-    EXPECT_EQ(IntRect(0, 0, 800, 600), rasterInvalidations[0].rect);
-    EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
-              rasterInvalidations[0].client);
-    EXPECT_EQ(PaintInvalidationLayoutOverflowBoxChange,
+    EXPECT_EQ(PaintInvalidationBackgroundOnScrollingContentsLayer,
               rasterInvalidations[0].reason);
   } else {
-    const auto& rasterInvalidations =
-        getRasterInvalidationTracking()->trackedRasterInvalidations;
-    // TODO(wangxianzhu): Temporary for crbug.com/680745.
-    // ASSERT_EQ(1u, rasterInvalidations.size());
-    ASSERT_EQ(2u, rasterInvalidations.size());
-    EXPECT_EQ(IntRect(0, 0, 800, 3000), rasterInvalidations[0].rect);
-    EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
-              rasterInvalidations[0].client);
     EXPECT_EQ(PaintInvalidationLayoutOverflowBoxChange,
               rasterInvalidations[0].reason);
   }
+
   document().view()->setTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.

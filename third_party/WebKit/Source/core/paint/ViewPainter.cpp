@@ -8,11 +8,13 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/ScrollRecorder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -54,20 +56,32 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
   //    possible.
 
   GraphicsContext& context = paintInfo.context;
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, m_layoutView, DisplayItem::kDocumentBackground))
-    return;
 
   // The background rect always includes at least the visible content size.
   IntRect backgroundRect(IntRect(m_layoutView.viewRect()));
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() ||
-      BoxPainter::
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    backgroundRect.unite(m_layoutView.documentRect());
+
+  const DisplayItemClient* displayItemClient = &m_layoutView;
+
+  Optional<ScrollRecorder> scrollRecorder;
+  if (BoxPainter::
           isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
               &m_layoutView, paintInfo)) {
     // Layout overflow, combined with the visible content size.
     backgroundRect.unite(m_layoutView.documentRect());
+    displayItemClient =
+        static_cast<const DisplayItemClient*>(m_layoutView.layer()
+                                                  ->compositedLayerMapping()
+                                                  ->scrollingContentsLayer());
+    scrollRecorder.emplace(paintInfo.context, m_layoutView, paintInfo.phase,
+                           m_layoutView.scrolledContentOffset());
   }
+
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          context, *displayItemClient, DisplayItem::kDocumentBackground))
+    return;
 
   const Document& document = m_layoutView.document();
   const FrameView& frameView = *m_layoutView.frameView();
@@ -85,8 +99,8 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
       document.documentElement() ? document.documentElement()->layoutObject()
                                  : nullptr;
 
-  LayoutObjectDrawingRecorder recorder(
-      context, m_layoutView, DisplayItem::kDocumentBackground, backgroundRect);
+  DrawingRecorder recorder(context, *displayItemClient,
+                           DisplayItem::kDocumentBackground, backgroundRect);
 
   // Special handling for print economy mode.
   bool forceBackgroundToWhite =
