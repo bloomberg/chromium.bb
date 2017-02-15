@@ -62,14 +62,24 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
-void SurfaceLayer::SetSurfaceInfo(const SurfaceInfo& surface_info) {
-  RemoveCurrentReference();
-  surface_info_ = surface_info;
+void SurfaceLayer::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
+  RemoveReference(std::move(primary_reference_returner_));
+  primary_surface_info_ = surface_info;
   if (layer_tree_host()) {
-    reference_returner_ =
-        ref_factory_->CreateReference(layer_tree_host(), surface_info_.id());
+    primary_reference_returner_ = ref_factory_->CreateReference(
+        layer_tree_host(), primary_surface_info_.id());
   }
   UpdateDrawsContent(HasDrawableContent());
+  SetNeedsPushProperties();
+}
+
+void SurfaceLayer::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
+  RemoveReference(std::move(fallback_reference_returner_));
+  fallback_surface_info_ = surface_info;
+  if (layer_tree_host()) {
+    fallback_reference_returner_ = ref_factory_->CreateReference(
+        layer_tree_host(), fallback_surface_info_.id());
+  }
   SetNeedsPushProperties();
 }
 
@@ -85,7 +95,7 @@ std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
 }
 
 bool SurfaceLayer::HasDrawableContent() const {
-  return surface_info_.id().is_valid() && Layer::HasDrawableContent();
+  return primary_surface_info_.id().is_valid() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -93,11 +103,18 @@ void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
     Layer::SetLayerTreeHost(host);
     return;
   }
-  RemoveCurrentReference();
+  RemoveReference(std::move(primary_reference_returner_));
+  RemoveReference(std::move(fallback_reference_returner_));
   Layer::SetLayerTreeHost(host);
   if (layer_tree_host()) {
-    reference_returner_ =
-        ref_factory_->CreateReference(layer_tree_host(), surface_info_.id());
+    if (primary_surface_info_.id().is_valid()) {
+      primary_reference_returner_ = ref_factory_->CreateReference(
+          layer_tree_host(), primary_surface_info_.id());
+    }
+    if (fallback_surface_info_.id().is_valid()) {
+      fallback_reference_returner_ = ref_factory_->CreateReference(
+          layer_tree_host(), fallback_surface_info_.id());
+    }
   }
 }
 
@@ -105,15 +122,16 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "SurfaceLayer::PushPropertiesTo");
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetSurfaceInfo(surface_info_);
+  layer_impl->SetPrimarySurfaceInfo(primary_surface_info_);
+  layer_impl->SetFallbackSurfaceInfo(fallback_surface_info_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }
 
-void SurfaceLayer::RemoveCurrentReference() {
-  if (!reference_returner_)
+void SurfaceLayer::RemoveReference(base::Closure reference_returner) {
+  if (!reference_returner)
     return;
   auto swap_promise = base::MakeUnique<SatisfySwapPromise>(
-      std::move(reference_returner_),
+      std::move(reference_returner),
       layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
   layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
       std::move(swap_promise));

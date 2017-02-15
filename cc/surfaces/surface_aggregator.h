@@ -84,7 +84,11 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
-                         RenderPass* dest_pass);
+                         RenderPass* dest_pass,
+                         bool ignore_undamaged,
+                         gfx::Rect* damage_rect_in_quad_space,
+                         bool* damage_rect_in_quad_space_valid);
+
   SharedQuadState* CopySharedQuadState(const SharedQuadState* source_sqs,
                                        const gfx::Transform& target_transform,
                                        const ClipData& clip_rect,

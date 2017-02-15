@@ -44,6 +44,24 @@ void MoveMatchingRequests(
   copy_requests->erase(request_range.first, request_range.second);
 }
 
+// Returns true if the damage rect is valid.
+bool CalculateQuadSpaceDamageRect(
+    const gfx::Transform& quad_to_target_transform,
+    const gfx::Transform& target_to_root_transform,
+    const gfx::Rect& root_damage_rect,
+    gfx::Rect* quad_space_damage_rect) {
+  gfx::Transform quad_to_root_transform(target_to_root_transform,
+                                        quad_to_target_transform);
+  gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
+  bool inverse_valid = quad_to_root_transform.GetInverse(&inverse_transform);
+  if (!inverse_valid)
+    return false;
+
+  *quad_space_damage_rect = MathUtil::ProjectEnclosingClippedRect(
+      inverse_transform, root_damage_rect);
+  return true;
+}
+
 }  // namespace
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
@@ -159,17 +177,39 @@ void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
-    RenderPass* dest_pass) {
+    RenderPass* dest_pass,
+    bool ignore_undamaged,
+    gfx::Rect* damage_rect_in_quad_space,
+    bool* damage_rect_in_quad_space_valid) {
   SurfaceId surface_id = surface_quad->surface_id;
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   if (referenced_surfaces_.count(surface_id))
     return;
   Surface* surface = manager_->GetSurfaceForId(surface_id);
-  if (!surface)
+  if (!surface || !surface->HasActiveFrame()) {
+    if (surface_quad->fallback_quad) {
+      HandleSurfaceQuad(surface_quad->fallback_quad, target_transform,
+                        clip_rect, dest_pass, ignore_undamaged,
+                        damage_rect_in_quad_space,
+                        damage_rect_in_quad_space_valid);
+    }
     return;
-  if (!surface->HasActiveFrame())
-    return;
+  }
+
+  if (ignore_undamaged) {
+    gfx::Transform quad_to_target_transform(
+        target_transform,
+        surface_quad->shared_quad_state->quad_to_target_transform);
+    *damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
+        quad_to_target_transform, dest_pass->transform_to_root_target,
+        root_damage_rect_, damage_rect_in_quad_space);
+    if (*damage_rect_in_quad_space_valid &&
+        !damage_rect_in_quad_space->Intersects(surface_quad->visible_rect)) {
+      return;
+    }
+  }
+
   const CompositorFrame& frame = surface->GetActiveFrame();
 
   // A map keyed by RenderPass id.
@@ -309,24 +349,6 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
   return copy_shared_quad_state;
 }
 
-// Returns true if the damage rect is valid.
-static bool CalculateQuadSpaceDamageRect(
-    const gfx::Transform& quad_to_target_transform,
-    const gfx::Transform& target_to_root_transform,
-    const gfx::Rect& root_damage_rect,
-    gfx::Rect* quad_space_damage_rect) {
-  gfx::Transform quad_to_root_transform(target_to_root_transform,
-                                        quad_to_target_transform);
-  gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
-  bool inverse_valid = quad_to_root_transform.GetInverse(&inverse_transform);
-  if (!inverse_valid)
-    return false;
-
-  *quad_space_damage_rect = MathUtil::ProjectEnclosingClippedRect(
-      inverse_transform, root_damage_rect);
-  return true;
-}
-
 void SurfaceAggregator::CopyQuadsToPass(
     const QuadList& source_quad_list,
     const SharedQuadStateList& source_shared_quad_state_list,
@@ -369,18 +391,14 @@ void SurfaceAggregator::CopyQuadsToPass(
       // current data.
       last_copied_source_shared_quad_state = nullptr;
 
-      if (ignore_undamaged) {
-        gfx::Transform quad_to_target_transform(
-            target_transform,
-            quad->shared_quad_state->quad_to_target_transform);
-        damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
-            quad_to_target_transform, dest_pass->transform_to_root_target,
-            root_damage_rect_, &damage_rect_in_quad_space);
-        if (damage_rect_in_quad_space_valid &&
-            !damage_rect_in_quad_space.Intersects(quad->visible_rect))
-          continue;
-      }
-      HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass);
+      // The primary SurfaceDrawQuad should have already dealt with the fallback
+      // DrawQuad.
+      if (surface_quad->surface_draw_quad_type == SurfaceDrawQuadType::FALLBACK)
+        continue;
+
+      HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass,
+                        ignore_undamaged, &damage_rect_in_quad_space,
+                        &damage_rect_in_quad_space_valid);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
         dest_shared_quad_state = CopySharedQuadState(

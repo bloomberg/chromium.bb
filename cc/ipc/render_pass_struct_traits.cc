@@ -32,6 +32,7 @@ bool StructTraits<cc::mojom::RenderPassDataView,
   mojo::ArrayDataView<cc::mojom::DrawQuadDataView> quads;
   data.GetQuadListDataView(&quads);
   cc::SharedQuadState* last_sqs = nullptr;
+  cc::DrawQuad* last_draw_quad = nullptr;
   for (size_t i = 0; i < quads.size(); ++i) {
     cc::mojom::DrawQuadDataView quad_data_view;
     quads.GetDataView(i, &quad_data_view);
@@ -58,6 +59,30 @@ bool StructTraits<cc::mojom::RenderPassDataView,
     quad->shared_quad_state = last_sqs;
     if (!quad->shared_quad_state)
       return false;
+
+    // If this quad is a fallback SurfaceDrawQuad then update the previous
+    // primary SurfaceDrawQuad to point to this quad.
+    if (quad->material == cc::DrawQuad::SURFACE_CONTENT) {
+      const cc::SurfaceDrawQuad* surface_draw_quad =
+          cc::SurfaceDrawQuad::MaterialCast(quad);
+      if (surface_draw_quad->surface_draw_quad_type ==
+          cc::SurfaceDrawQuadType::FALLBACK) {
+        // A fallback quad must immediately follow a primary SurfaceDrawQuad.
+        if (!last_draw_quad ||
+            last_draw_quad->material != cc::DrawQuad::SURFACE_CONTENT) {
+          return false;
+        }
+        cc::SurfaceDrawQuad* last_surface_draw_quad =
+            static_cast<cc::SurfaceDrawQuad*>(last_draw_quad);
+        // Only one fallback quad is currently supported.
+        if (last_surface_draw_quad->surface_draw_quad_type !=
+            cc::SurfaceDrawQuadType::PRIMARY) {
+          return false;
+        }
+        last_surface_draw_quad->fallback_quad = surface_draw_quad;
+      }
+    }
+    last_draw_quad = quad;
   }
   return true;
 }

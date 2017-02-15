@@ -383,8 +383,9 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
     // SharedQuadStates should appear in the order they are used by DrawQuads.
     // Find the SharedQuadState for this DrawQuad.
     while (shared_quad_state_iter != p.shared_quad_state_list.end() &&
-           quad->shared_quad_state != *shared_quad_state_iter)
+           quad->shared_quad_state != *shared_quad_state_iter) {
       ++shared_quad_state_iter;
+    }
 
     DCHECK(shared_quad_state_iter != p.shared_quad_state_list.end());
 
@@ -425,7 +426,7 @@ static cc::DrawQuad* ReadDrawQuad(const base::Pickle* m,
                                   cc::RenderPass* render_pass) {
   QuadType* quad = render_pass->CreateAndAppendDrawQuad<QuadType>();
   if (!ReadParam(m, iter, quad))
-    return NULL;
+    return nullptr;
   return quad;
 }
 
@@ -455,13 +456,14 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   p->SetAll(id, output_rect, damage_rect, transform_to_root_target, filters,
             background_filters, color_space, has_transparent_background);
 
+  cc::DrawQuad* last_draw_quad = nullptr;
   for (uint32_t i = 0; i < quad_list_size; ++i) {
     cc::DrawQuad::Material material;
     base::PickleIterator temp_iter = *iter;
     if (!ReadParam(m, &temp_iter, &material))
       return false;
 
-    cc::DrawQuad* draw_quad = NULL;
+    cc::DrawQuad* draw_quad = nullptr;
     switch (material) {
       case cc::DrawQuad::DEBUG_BORDER:
         draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter, p);
@@ -521,6 +523,29 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
     }
 
     draw_quad->shared_quad_state = p->shared_quad_state_list.back();
+    // If this quad is a fallback SurfaceDrawQuad then update the previous
+    // primary SurfaceDrawQuad to point to this quad.
+    if (draw_quad->material == cc::DrawQuad::SURFACE_CONTENT) {
+      const cc::SurfaceDrawQuad* surface_draw_quad =
+          cc::SurfaceDrawQuad::MaterialCast(draw_quad);
+      if (surface_draw_quad->surface_draw_quad_type ==
+          cc::SurfaceDrawQuadType::FALLBACK) {
+        // A fallback quad must immediately follow a primary SurfaceDrawQuad.
+        if (!last_draw_quad ||
+            last_draw_quad->material != cc::DrawQuad::SURFACE_CONTENT) {
+          return false;
+        }
+        cc::SurfaceDrawQuad* last_surface_draw_quad =
+            static_cast<cc::SurfaceDrawQuad*>(last_draw_quad);
+        // Only one fallback quad is currently supported.
+        if (last_surface_draw_quad->surface_draw_quad_type !=
+            cc::SurfaceDrawQuadType::PRIMARY) {
+          return false;
+        }
+        last_surface_draw_quad->fallback_quad = surface_draw_quad;
+      }
+    }
+    last_draw_quad = draw_quad;
   }
 
   return true;

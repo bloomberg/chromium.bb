@@ -34,7 +34,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  surface_layer_impl->SetSurfaceInfo(
+  surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
 
   LayerImplList layer_list;
@@ -100,7 +100,8 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  surface_layer_impl->SetSurfaceInfo(SurfaceInfo(surface_id, 1.f, layer_size));
+  surface_layer_impl->SetPrimarySurfaceInfo(
+      SurfaceInfo(surface_id, 1.f, layer_size));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -158,7 +159,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  surface_layer_impl->SetSurfaceInfo(
+  surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);
 

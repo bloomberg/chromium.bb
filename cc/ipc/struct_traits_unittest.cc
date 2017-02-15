@@ -563,12 +563,21 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
 
   const gfx::Rect rect3(1029, 3847, 5610, 2938);
-  const SurfaceId surface_id(
+  const SurfaceId primary_surface_id(
       FrameSinkId(1234, 4321),
       LocalSurfaceId(5678, base::UnguessableToken::Create()));
-  SurfaceDrawQuad* surface_quad =
+  const SurfaceId fallback_surface_id(
+      FrameSinkId(2468, 1357),
+      LocalSurfaceId(1234, base::UnguessableToken::Create()));
+  SurfaceDrawQuad* primary_surface_quad =
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  surface_quad->SetNew(sqs, rect3, rect3, surface_id);
+  SurfaceDrawQuad* fallback_surface_quad =
+      render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  primary_surface_quad->SetNew(sqs, rect3, rect3, primary_surface_id,
+                               SurfaceDrawQuadType::PRIMARY,
+                               fallback_surface_quad);
+  fallback_surface_quad->SetNew(sqs, rect3, rect3, fallback_surface_id,
+                                SurfaceDrawQuadType::FALLBACK, nullptr);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
@@ -636,14 +645,27 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(force_anti_aliasing_off,
             out_solid_color_draw_quad->force_anti_aliasing_off);
 
-  const SurfaceDrawQuad* out_surface_draw_quad =
+  const SurfaceDrawQuad* out_primary_surface_draw_quad =
       SurfaceDrawQuad::MaterialCast(output->quad_list.ElementAt(2));
-  EXPECT_EQ(rect3, out_surface_draw_quad->rect);
-  EXPECT_EQ(rect3, out_surface_draw_quad->visible_rect);
-  EXPECT_EQ(surface_id, out_surface_draw_quad->surface_id);
+  EXPECT_EQ(rect3, out_primary_surface_draw_quad->rect);
+  EXPECT_EQ(rect3, out_primary_surface_draw_quad->visible_rect);
+  EXPECT_EQ(primary_surface_id, out_primary_surface_draw_quad->surface_id);
+  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+            out_primary_surface_draw_quad->surface_draw_quad_type);
+
+  const SurfaceDrawQuad* out_fallback_surface_draw_quad =
+      SurfaceDrawQuad::MaterialCast(output->quad_list.ElementAt(3));
+  EXPECT_EQ(out_fallback_surface_draw_quad,
+            out_primary_surface_draw_quad->fallback_quad);
+  EXPECT_EQ(rect3, out_fallback_surface_draw_quad->rect);
+  EXPECT_EQ(rect3, out_fallback_surface_draw_quad->visible_rect);
+  EXPECT_EQ(fallback_surface_id, out_fallback_surface_draw_quad->surface_id);
+  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+            out_fallback_surface_draw_quad->surface_draw_quad_type);
+  EXPECT_FALSE(out_fallback_surface_draw_quad->fallback_quad);
 
   const RenderPassDrawQuad* out_render_pass_draw_quad =
-      RenderPassDrawQuad::MaterialCast(output->quad_list.ElementAt(3));
+      RenderPassDrawQuad::MaterialCast(output->quad_list.ElementAt(4));
   EXPECT_EQ(rect4, out_render_pass_draw_quad->rect);
   EXPECT_EQ(rect4, out_render_pass_draw_quad->visible_rect);
   EXPECT_EQ(render_pass_id, out_render_pass_draw_quad->render_pass_id);
@@ -652,7 +674,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(filters_scale, out_render_pass_draw_quad->filters_scale);
 
   const TextureDrawQuad* out_texture_draw_quad =
-      TextureDrawQuad::MaterialCast(output->quad_list.ElementAt(4));
+      TextureDrawQuad::MaterialCast(output->quad_list.ElementAt(5));
   EXPECT_EQ(rect5, out_texture_draw_quad->rect);
   EXPECT_EQ(rect5, out_texture_draw_quad->opaque_rect);
   EXPECT_EQ(rect5, out_texture_draw_quad->visible_rect);
@@ -673,7 +695,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(secure_output_only, out_texture_draw_quad->secure_output_only);
 
   const StreamVideoDrawQuad* out_stream_video_draw_quad =
-      StreamVideoDrawQuad::MaterialCast(output->quad_list.ElementAt(5));
+      StreamVideoDrawQuad::MaterialCast(output->quad_list.ElementAt(6));
   EXPECT_EQ(rect6, out_stream_video_draw_quad->rect);
   EXPECT_EQ(rect6, out_stream_video_draw_quad->opaque_rect);
   EXPECT_EQ(rect6, out_stream_video_draw_quad->visible_rect);
@@ -736,7 +758,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   surface_quad->SetNew(
       shared_state_2, surface_quad_rect, surface_quad_rect,
       SurfaceId(FrameSinkId(1337, 1234),
-                LocalSurfaceId(1234, base::UnguessableToken::Create())));
+                LocalSurfaceId(1234, base::UnguessableToken::Create())),
+      SurfaceDrawQuadType::PRIMARY, nullptr);
 
   std::unique_ptr<RenderPass> output;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

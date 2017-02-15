@@ -25,7 +25,8 @@ namespace test {
 void AddSurfaceQuad(RenderPass* pass,
                     const gfx::Size& surface_size,
                     float opacity,
-                    SurfaceId surface_id) {
+                    const SurfaceId& primary_surface_id,
+                    const SurfaceId& fallback_surface_id) {
   gfx::Transform layer_to_target_transform;
   gfx::Size layer_bounds = surface_size;
   gfx::Rect visible_layer_rect = gfx::Rect(surface_size);
@@ -40,9 +41,20 @@ void AddSurfaceQuad(RenderPass* pass,
 
   SurfaceDrawQuad* surface_quad =
       pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  SurfaceDrawQuad* fallback_surface_quad = nullptr;
+  if (fallback_surface_id.is_valid())
+    fallback_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+
   gfx::Rect quad_rect = gfx::Rect(surface_size);
   surface_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
-                       quad_rect, surface_id);
+                       quad_rect, primary_surface_id,
+                       SurfaceDrawQuadType::PRIMARY, fallback_surface_quad);
+
+  if (fallback_surface_quad) {
+    fallback_surface_quad->SetNew(pass->shared_quad_state_list.back(),
+                                  quad_rect, quad_rect, fallback_surface_id,
+                                  SurfaceDrawQuadType::FALLBACK, nullptr);
+  }
 }
 
 void AddRenderPassQuad(RenderPass* pass, int render_pass_id) {
@@ -56,13 +68,14 @@ void AddRenderPassQuad(RenderPass* pass, int render_pass_id) {
                gfx::Vector2dF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF());
 }
 
-void AddQuadInPass(RenderPass* pass, Quad desc) {
+void AddQuadInPass(RenderPass* pass, const Quad& desc) {
   switch (desc.material) {
     case DrawQuad::SOLID_COLOR:
       AddQuad(pass, gfx::Rect(0, 0, 5, 5), desc.color);
       break;
     case DrawQuad::SURFACE_CONTENT:
-      AddSurfaceQuad(pass, gfx::Size(5, 5), desc.opacity, desc.surface_id);
+      AddSurfaceQuad(pass, gfx::Size(5, 5), desc.opacity,
+                     desc.primary_surface_id, desc.fallback_surface_id);
       break;
     case DrawQuad::RENDER_PASS:
       AddRenderPassQuad(pass, desc.render_pass_id);

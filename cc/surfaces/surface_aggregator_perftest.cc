@@ -92,7 +92,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)));
+            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)),
+            SurfaceDrawQuadType::PRIMARY, nullptr);
       }
 
       frame.render_pass_list.push_back(std::move(pass));
@@ -113,7 +114,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       surface_quad->SetNew(
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
           SurfaceId(FrameSinkId(1, num_surfaces),
-                    LocalSurfaceId(num_surfaces, kArbitraryToken)));
+                    LocalSurfaceId(num_surfaces, kArbitraryToken)),
+          SurfaceDrawQuadType::PRIMARY, nullptr);
 
       if (full_damage)
         pass->damage_rect = gfx::Rect(0, 0, 100, 100);

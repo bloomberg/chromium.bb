@@ -1571,8 +1571,16 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   }
 
   for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
+    SurfaceLayerImpl* surface_layer_impl =
+        static_cast<SurfaceLayerImpl*>(surface_layer);
     metadata.referenced_surfaces.push_back(
-        static_cast<SurfaceLayerImpl*>(surface_layer)->surface_info().id());
+        surface_layer_impl->primary_surface_info().id());
+    // We need to retain a reference to the fallback surface too so that it's
+    // guaranteed to be available when needed.
+    if (surface_layer_impl->fallback_surface_info().id().is_valid()) {
+      metadata.referenced_surfaces.push_back(
+          surface_layer_impl->fallback_surface_info().id());
+    }
   }
   if (!InnerViewportScrollLayer())
     return metadata;

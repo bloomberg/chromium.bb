@@ -21,7 +21,8 @@ class CC_EXPORT SurfaceLayer : public Layer {
   static scoped_refptr<SurfaceLayer> Create(
       scoped_refptr<SurfaceReferenceFactory> ref_factory);
 
-  void SetSurfaceInfo(const SurfaceInfo& surface_info);
+  void SetPrimarySurfaceInfo(const SurfaceInfo& surface_info);
+  void SetFallbackSurfaceInfo(const SurfaceInfo& surface_info);
 
   // When stretch_content_to_fill_bounds is true, the scale of the embedded
   // surface is ignored and the content will be stretched to fill the bounds.
@@ -35,7 +36,14 @@ class CC_EXPORT SurfaceLayer : public Layer {
   scoped_refptr<SurfaceReferenceFactory> surface_reference_factory() const {
     return ref_factory_;
   }
-  const SurfaceInfo& surface_info() const { return surface_info_; }
+
+  const SurfaceInfo& primary_surface_info() const {
+    return primary_surface_info_;
+  }
+
+  const SurfaceInfo& fallback_surface_info() const {
+    return fallback_surface_info_;
+  }
 
  protected:
   explicit SurfaceLayer(scoped_refptr<SurfaceReferenceFactory> ref_factory);
@@ -43,11 +51,15 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
  private:
   ~SurfaceLayer() override;
-  void RemoveCurrentReference();
+  void RemoveReference(base::Closure reference_returner);
 
-  SurfaceInfo surface_info_;
+  SurfaceInfo primary_surface_info_;
+  base::Closure primary_reference_returner_;
+
+  SurfaceInfo fallback_surface_info_;
+  base::Closure fallback_reference_returner_;
+
   scoped_refptr<SurfaceReferenceFactory> ref_factory_;
-  base::Closure reference_returner_;
   bool stretch_content_to_fill_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);

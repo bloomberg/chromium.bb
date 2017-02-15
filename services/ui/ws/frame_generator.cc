@@ -179,7 +179,8 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
   auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   quad->SetAll(sqs, bounds_at_origin /* rect */, gfx::Rect() /* opaque_rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-               window_manager_surface_info_.id());
+               window_manager_surface_info_.id(),
+               cc::SurfaceDrawQuadType::PRIMARY, nullptr);
 }
 
 }  // namespace ws

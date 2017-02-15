@@ -13,6 +13,8 @@
 
 namespace cc {
 
+enum class SurfaceDrawQuadType { PRIMARY, FALLBACK, LAST = FALLBACK };
+
 class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
  public:
   SurfaceDrawQuad();
@@ -20,16 +22,22 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              const SurfaceId& surface_id);
+              const SurfaceId& surface_id,
+              SurfaceDrawQuadType surface_draw_quad_type,
+              SurfaceDrawQuad* fallback_quad);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              const SurfaceId& surface_id);
+              const SurfaceId& surface_id,
+              SurfaceDrawQuadType surface_draw_quad_type,
+              SurfaceDrawQuad* fallback_quad);
 
   SurfaceId surface_id;
+  SurfaceDrawQuadType surface_draw_quad_type;
+  const SurfaceDrawQuad* fallback_quad = nullptr;
 
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 

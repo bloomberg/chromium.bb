@@ -181,8 +181,9 @@ std::unique_ptr<Layer> Layer::Clone() const {
     clone->SetAlphaShape(base::MakeUnique<SkRegion>(*alpha_shape_));
 
   // cc::Layer state.
-  if (surface_layer_ && surface_layer_->surface_info().id().is_valid()) {
-    clone->SetShowSurface(surface_layer_->surface_info(),
+  if (surface_layer_ &&
+      surface_layer_->primary_surface_info().id().is_valid()) {
+    clone->SetShowSurface(surface_layer_->primary_surface_info(),
                           surface_layer_->surface_reference_factory());
   } else if (type_ == LAYER_SOLID_COLOR) {
     clone->SetColor(GetTargetColor());
@@ -659,7 +660,7 @@ void Layer::SetShowSurface(
 
   scoped_refptr<cc::SurfaceLayer> new_layer =
       cc::SurfaceLayer::Create(ref_factory);
-  new_layer->SetSurfaceInfo(surface_info);
+  new_layer->SetPrimarySurfaceInfo(surface_info);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
 

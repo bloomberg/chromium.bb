@@ -287,7 +287,8 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
         SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
-        cc::SurfaceId(kChildFrameSinkId, child_local_surface_id_));
+        cc::SurfaceId(kChildFrameSinkId, child_local_surface_id_),
+        cc::SurfaceDrawQuadType::PRIMARY, nullptr);
 
     child_support_->SubmitCompositorFrame(child_local_surface_id_,
                                           std::move(frame));

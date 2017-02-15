@@ -122,9 +122,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     SurfaceDrawQuad* surface_quad =
         pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                         gfx::Rect(child_size),
-                         gfx::Rect(child_size),
-                         child_surface_id);
+                         gfx::Rect(child_size), gfx::Rect(child_size),
+                         child_surface_id, SurfaceDrawQuadType::PRIMARY,
+                         nullptr);
 
     SolidColorDrawQuad* color_quad =
         pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -214,9 +214,9 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     SurfaceDrawQuad* left_surface_quad =
         pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                              gfx::Rect(child_size),
-                              gfx::Rect(child_size),
-                              left_child_id);
+                              gfx::Rect(child_size), gfx::Rect(child_size),
+                              left_child_id, SurfaceDrawQuadType::PRIMARY,
+                              nullptr);
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(
@@ -225,9 +225,9 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     SurfaceDrawQuad* right_surface_quad =
         pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                               gfx::Rect(child_size),
-                               gfx::Rect(child_size),
-                               right_child_id);
+                               gfx::Rect(child_size), gfx::Rect(child_size),
+                               right_child_id, SurfaceDrawQuadType::PRIMARY,
+                               nullptr);
 
     CompositorFrame root_frame;
     root_frame.render_pass_list.push_back(std::move(pass));

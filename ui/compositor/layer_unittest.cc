@@ -1833,7 +1833,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   const auto* surface = static_cast<cc::SurfaceLayer*>(cc_layer);
 
   // Mirroring preserves surface state.
-  EXPECT_EQ(surface_info, surface->surface_info());
+  EXPECT_EQ(surface_info, surface->primary_surface_info());
 
   surface_id =
       cc::SurfaceId(cc::FrameSinkId(1, 2),
@@ -1846,7 +1846,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   surface = static_cast<cc::SurfaceLayer*>(mirror->cc_layer_for_testing());
 
   // Surface updates propagate to the mirror.
-  EXPECT_EQ(surface_info_2, surface->surface_info());
+  EXPECT_EQ(surface_info_2, surface->primary_surface_info());
 }
 
 // Test if frame size in dip is properly calculated in SetShowSurface

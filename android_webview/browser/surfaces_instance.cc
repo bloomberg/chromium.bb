@@ -126,7 +126,8 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   cc::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_bounds),
-                       gfx::Rect(quad_state->quad_layer_bounds), child_id);
+                       gfx::Rect(quad_state->quad_layer_bounds), child_id,
+                       cc::SurfaceDrawQuadType::PRIMARY, nullptr);
 
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));

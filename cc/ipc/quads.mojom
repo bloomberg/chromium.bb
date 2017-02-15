@@ -49,8 +49,14 @@ struct StreamVideoQuadState {
   gfx.mojom.Transform matrix;
 };
 
+enum SurfaceDrawQuadType {
+  PRIMARY,
+  FALLBACK,
+};
+
 struct SurfaceQuadState {
-  cc.mojom.SurfaceId surface;
+  SurfaceId surface;
+  SurfaceDrawQuadType surface_draw_quad_type;
 };
 
 struct TextureQuadState {

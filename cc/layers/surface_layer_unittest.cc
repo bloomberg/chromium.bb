@@ -14,6 +14,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "cc/layers/surface_layer_impl.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_info.h"
@@ -34,12 +35,17 @@ namespace {
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class SurfaceLayerTest : public testing::Test {
+ public:
+  SurfaceLayerTest()
+      : host_impl_(&task_runner_provider_, &task_graph_runner_) {}
+
  protected:
   void SetUp() override {
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_ = FakeLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
+    host_impl_.CreatePendingTree();
   }
 
   void TearDown() override {
@@ -50,9 +56,11 @@ class SurfaceLayerTest : public testing::Test {
   }
 
   FakeLayerTreeHostClient fake_client_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
+  FakeLayerTreeHostImpl host_impl_;
 };
 
 class TestSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
@@ -100,7 +108,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   SurfaceInfo info(
       SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)), 1.f,
       gfx::Size(1, 1));
-  layer->SetSurfaceInfo(info);
+  layer->SetPrimarySurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
   layer_tree_host_->SetRootLayer(layer);
@@ -110,7 +118,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_,
                                 animation_host2.get());
   auto layer2 = SurfaceLayer::Create(std::move(ref_factory));
-  layer2->SetSurfaceInfo(info);
+  layer2->SetPrimarySurfaceInfo(info);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -151,6 +159,46 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   EXPECT_EQ(2u, required_seq.size());
 }
 
+// This test verifies that the primary and fallback SurfaceInfo are pushed
+// across from SurfaceLayer to SurfaceLayerImpl.
+TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
+  SurfaceSequence blank_change;
+  SurfaceId required_id;
+  std::set<SurfaceSequence> required_sequences;
+  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+      new TestSurfaceReferenceFactory(&blank_change, &required_id,
+                                      &required_sequences);
+
+  scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create(ref_factory);
+  layer_tree_host_->SetRootLayer(layer);
+  SurfaceInfo primary_info(
+      SurfaceId(kArbitraryFrameSinkId,
+                LocalSurfaceId(1, base::UnguessableToken::Create())),
+      1.f, gfx::Size(1, 1));
+  layer->SetPrimarySurfaceInfo(primary_info);
+
+  std::unique_ptr<SurfaceLayerImpl> layer_impl =
+      SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer->id());
+  layer->PushPropertiesTo(layer_impl.get());
+
+  // Verify tha the primary SurfaceInfo is pushed through and that there is
+  // no valid fallback SurfaceInfo.
+  EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
+  EXPECT_EQ(SurfaceInfo(), layer_impl->fallback_surface_info());
+
+  SurfaceInfo fallback_info(
+      SurfaceId(kArbitraryFrameSinkId,
+                LocalSurfaceId(2, base::UnguessableToken::Create())),
+      2.f, gfx::Size(10, 10));
+  layer->SetFallbackSurfaceInfo(fallback_info);
+  layer->PushPropertiesTo(layer_impl.get());
+
+  // Verify that the primary SurfaceInfo stays the same and the new fallback
+  // SurfaceInfo is pushed through.
+  EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
+  EXPECT_EQ(fallback_info, layer_impl->fallback_surface_info());
+}
+
 // Check that SurfaceSequence is sent through swap promise.
 class SurfaceLayerSwapPromise : public LayerTreeTest {
  public:
@@ -165,7 +213,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     SurfaceInfo info(
         SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)),
         1.f, gfx::Size(1, 1));
-    layer_->SetSurfaceInfo(info);
+    layer_->SetPrimarySurfaceInfo(info);
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());

@@ -100,7 +100,7 @@ void CanvasSurfaceLayerBridge::OnSurfaceCreated(
 
     scoped_refptr<cc::SurfaceLayer> surfaceLayer =
         cc::SurfaceLayer::Create(m_refFactory);
-    surfaceLayer->SetSurfaceInfo(surfaceInfo);
+    surfaceLayer->SetPrimarySurfaceInfo(surfaceInfo);
     surfaceLayer->SetStretchContentToFillBounds(true);
     m_CCLayer = surfaceLayer;
 
@@ -114,7 +114,7 @@ void CanvasSurfaceLayerBridge::OnSurfaceCreated(
     m_currentSurfaceId = surfaceInfo.id();
     cc::SurfaceLayer* surfaceLayer =
         static_cast<cc::SurfaceLayer*>(m_CCLayer.get());
-    surfaceLayer->SetSurfaceInfo(surfaceInfo);
+    surfaceLayer->SetPrimarySurfaceInfo(surfaceInfo);
   }
 
   m_observer->OnWebLayerReplaced();

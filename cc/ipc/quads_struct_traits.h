@@ -219,10 +219,23 @@ struct StructTraits<cc::mojom::StreamVideoQuadStateDataView, cc::DrawQuad> {
 };
 
 template <>
+struct EnumTraits<cc::mojom::SurfaceDrawQuadType, cc::SurfaceDrawQuadType> {
+  static cc::mojom::SurfaceDrawQuadType ToMojom(
+      cc::SurfaceDrawQuadType surface_draw_quad_type);
+  static bool FromMojom(cc::mojom::SurfaceDrawQuadType input,
+                        cc::SurfaceDrawQuadType* out);
+};
+template <>
 struct StructTraits<cc::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
   static const cc::SurfaceId& surface(const cc::DrawQuad& input) {
     const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
     return quad->surface_id;
+  }
+
+  static cc::SurfaceDrawQuadType surface_draw_quad_type(
+      const cc::DrawQuad& input) {
+    const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
+    return quad->surface_draw_quad_type;
   }
 
   static bool Read(cc::mojom::SurfaceQuadStateDataView data, cc::DrawQuad* out);
