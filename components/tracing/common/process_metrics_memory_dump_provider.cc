@@ -244,6 +244,22 @@ bool IsAddressInSharedRegion(uint64_t address) {
          address < (SHARED_REGION_BASE_X86_64 + SHARED_REGION_SIZE_X86_64);
 }
 
+bool IsRegionContainedInRegion(const VMRegion& containee,
+                               const VMRegion& container) {
+  uint64_t containee_end_address =
+      containee.start_address + containee.size_in_bytes;
+  uint64_t container_end_address =
+      container.start_address + container.size_in_bytes;
+  return containee.start_address >= container.start_address &&
+         containee_end_address <= container_end_address;
+}
+
+bool DoRegionsIntersect(const VMRegion& a, const VMRegion& b) {
+  uint64_t a_end_address = a.start_address + a.size_in_bytes;
+  uint64_t b_end_address = b.start_address + b.size_in_bytes;
+  return a.start_address < b_end_address && b.start_address < a_end_address;
+}
+
 // Creates VMRegions for all dyld images. Returns whether the operation
 // succeeded.
 bool GetDyldRegions(std::vector<VMRegion>* regions) {
@@ -259,6 +275,7 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
       reinterpret_cast<const struct dyld_all_image_infos*>(
           dyld_info.all_image_info_addr);
 
+  bool emitted_linkedit_from_dyld_shared_cache = false;
   for (size_t i = 0; i < all_image_infos->infoArrayCount; i++) {
     const char* image_name = all_image_infos->infoArray[i].imageFilePath;
 
@@ -271,7 +288,8 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
 
     uint64_t next_command = reinterpret_cast<uint64_t>(header + 1);
     uint64_t command_end = next_command + header->sizeofcmds;
-    for (unsigned int i = 0; i < header->ncmds; ++i) {
+    uint64_t slide = 0;
+    for (unsigned int j = 0; j < header->ncmds; ++j) {
       // Ensure that next_command doesn't run past header->sizeofcmds.
       if (next_command + sizeof(struct load_command) > command_end)
         return false;
@@ -286,6 +304,21 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
             reinterpret_cast<const segment_command_64*>(load_cmd);
         if (strcmp(seg->segname, SEG_PAGEZERO) == 0)
           continue;
+        if (strcmp(seg->segname, SEG_TEXT) == 0) {
+          slide = reinterpret_cast<uint64_t>(header) - seg->vmaddr;
+        }
+
+        // Avoid emitting LINKEDIT regions in the dyld shared cache, since they
+        // all overlap.
+        if (IsAddressInSharedRegion(seg->vmaddr) &&
+            strcmp(seg->segname, SEG_LINKEDIT) == 0) {
+          if (emitted_linkedit_from_dyld_shared_cache) {
+            continue;
+          } else {
+            emitted_linkedit_from_dyld_shared_cache = true;
+            image_name = "dyld shared cache combined __LINKEDIT";
+          }
+        }
 
         uint32_t protection_flags = 0;
         if (seg->initprot & VM_PROT_READ)
@@ -299,8 +332,7 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
         region.size_in_bytes = seg->vmsize;
         region.protection_flags = protection_flags;
         region.mapped_file = image_name;
-        region.start_address =
-            reinterpret_cast<uint64_t>(header) + seg->fileoff;
+        region.start_address = slide + seg->vmaddr;
 
         // We intentionally avoid setting any page information, which is not
         // available from dyld. The fields will be populated later.
@@ -398,17 +430,17 @@ bool GetAllRegions(std::vector<VMRegion>* regions) {
   return true;
 }
 
-void CopyRegionByteStats(VMRegion* dest, const VMRegion& source) {
-  dest->byte_stats_private_dirty_resident =
+void AddRegionByteStats(VMRegion* dest, const VMRegion& source) {
+  dest->byte_stats_private_dirty_resident +=
       source.byte_stats_private_dirty_resident;
-  dest->byte_stats_private_clean_resident =
+  dest->byte_stats_private_clean_resident +=
       source.byte_stats_private_clean_resident;
-  dest->byte_stats_shared_dirty_resident =
+  dest->byte_stats_shared_dirty_resident +=
       source.byte_stats_shared_dirty_resident;
-  dest->byte_stats_shared_clean_resident =
+  dest->byte_stats_shared_clean_resident +=
       source.byte_stats_shared_clean_resident;
-  dest->byte_stats_swapped = source.byte_stats_swapped;
-  dest->byte_stats_proportional_resident =
+  dest->byte_stats_swapped += source.byte_stats_swapped;
+  dest->byte_stats_proportional_resident +=
       source.byte_stats_proportional_resident;
 }
 
@@ -426,42 +458,35 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
   if (!GetAllRegions(&all_regions))
     return false;
 
-  // Cache information from dyld_regions in a data-structure more conducive to
-  // fast lookups.
-  std::unordered_map<uint64_t, VMRegion*> address_to_vm_region;
-  std::vector<uint64_t> addresses_in_shared_region;
-  for (VMRegion& region : dyld_regions) {
-    if (IsAddressInSharedRegion(region.start_address))
-      addresses_in_shared_region.push_back(region.start_address);
-    address_to_vm_region[region.start_address] = &region;
-  }
-
   // Merge information from dyld regions and all regions.
   for (const VMRegion& region : all_regions) {
-    // Check to see if the region already has a VMRegion created from a dyld
-    // load command. If so, copy the byte stats and move on.
-    auto it = address_to_vm_region.find(region.start_address);
-    if (it != address_to_vm_region.end() &&
-        it->second->size_in_bytes == region.size_in_bytes) {
-      CopyRegionByteStats(it->second, region);
-      continue;
-    }
+    bool skip = false;
+    const bool in_shared_region = IsAddressInSharedRegion(region.start_address);
+    for (VMRegion& dyld_region : dyld_regions) {
+      // If this region is fully contained in a dyld region, then add the bytes
+      // stats.
+      if (IsRegionContainedInRegion(region, dyld_region)) {
+        AddRegionByteStats(&dyld_region, region);
+        skip = true;
+        break;
+      }
 
-    // Check to see if the region is likely used for the dyld shared cache.
-    if (IsAddressInSharedRegion(region.start_address)) {
-      uint64_t end_address = region.start_address + region.size_in_bytes;
-      for (uint64_t address : addresses_in_shared_region) {
+      // Check to see if the region is likely used for the dyld shared cache.
+      if (in_shared_region) {
         // This region is likely used for the dyld shared cache. Don't record
         // any byte stats since:
         //   1. It's not possible to figure out which dyld regions the byte
         //      stats correspond to.
         //   2. The region is likely shared by non-Chrome processes, so there's
         //      no point in charging the pages towards Chrome.
-        if (address >= region.start_address && address < end_address) {
-          continue;
+        if (DoRegionsIntersect(region, dyld_region)) {
+          skip = true;
+          break;
         }
       }
     }
+    if (skip)
+      continue;
     pmd->process_mmaps()->AddVMRegion(region);
   }
 

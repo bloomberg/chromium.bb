@@ -46,6 +46,8 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
 #if defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
                            TestMachOReading);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
+                           NoDuplicateRegions);
 #endif  // defined(OS_MACOSX)
 
   ProcessMetricsMemoryDumpProvider(base::ProcessId process);
