@@ -4,5 +4,5 @@
 
 // https://w3c.github.io/ServiceWorker/#navigator-service-worker
 partial interface Navigator {
-    [RaisesException, CallWith=ExecutionContext] readonly attribute ServiceWorkerContainer serviceWorker;
+    [RaisesException, CallWith=ScriptState] readonly attribute ServiceWorkerContainer serviceWorker;
 };

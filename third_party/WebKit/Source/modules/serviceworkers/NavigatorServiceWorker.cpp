@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -51,9 +52,10 @@ const char* NavigatorServiceWorker::supplementName() {
 }
 
 ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     Navigator& navigator,
     ExceptionState& exceptionState) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(!navigator.frame() ||
          executionContext->getSecurityOrigin()->canAccessCheckSuborigins(
              navigator.frame()->securityContext()->getSecurityOrigin()));
@@ -62,9 +64,10 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
 }
 
 ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     Navigator& navigator,
     String& errorMessage) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(!navigator.frame() ||
          executionContext->getSecurityOrigin()->canAccessCheckSuborigins(
              navigator.frame()->securityContext()->getSecurityOrigin()));

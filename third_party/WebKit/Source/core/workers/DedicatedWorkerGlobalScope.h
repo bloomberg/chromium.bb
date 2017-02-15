@@ -41,6 +41,7 @@ namespace blink {
 
 class DedicatedWorkerThread;
 class InProcessWorkerObjectProxy;
+class ScriptState;
 class WorkerThreadStartupData;
 
 class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
@@ -58,7 +59,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // EventTarget
   const AtomicString& interfaceName() const override;
 
-  void postMessage(ExecutionContext*,
+  void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);

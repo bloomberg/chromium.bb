@@ -4,6 +4,8 @@
 
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 
+#include <memory>
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
@@ -11,7 +13,6 @@
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "wtf/AutoReset.h"
-#include <memory>
 
 namespace blink {
 
@@ -68,13 +69,14 @@ const AtomicString& CompositorWorkerGlobalScope::interfaceName() const {
 }
 
 void CompositorWorkerGlobalScope::postMessage(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     PassRefPtr<SerializedScriptValue> message,
     const MessagePortArray& ports,
     ExceptionState& exceptionState) {
   // Disentangle the port in preparation for sending it to the remote context.
   std::unique_ptr<MessagePortChannelArray> channels =
-      MessagePort::disentanglePorts(executionContext, ports, exceptionState);
+      MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
+                                    exceptionState);
   if (exceptionState.hadException())
     return;
   workerObjectProxy().postMessageToWorkerObject(std::move(message),

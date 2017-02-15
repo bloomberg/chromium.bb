@@ -10,5 +10,5 @@
     readonly attribute USVString url;
     readonly attribute ContextFrameType frameType;
     readonly attribute DOMString id;
-    [PostMessage, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
+    [PostMessage, RaisesException, CallWith=ScriptState] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 };

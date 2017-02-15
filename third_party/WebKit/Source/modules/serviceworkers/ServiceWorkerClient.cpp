@@ -5,13 +5,14 @@
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 
+#include <memory>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -63,10 +64,11 @@ String ServiceWorkerClient::frameType() const {
   return String();
 }
 
-void ServiceWorkerClient::postMessage(ExecutionContext* context,
+void ServiceWorkerClient::postMessage(ScriptState* scriptState,
                                       PassRefPtr<SerializedScriptValue> message,
                                       const MessagePortArray& ports,
                                       ExceptionState& exceptionState) {
+  ExecutionContext* context = scriptState->getExecutionContext();
   // Disentangle the port in preparation for sending it to the remote context.
   std::unique_ptr<MessagePortChannelArray> channels =
       MessagePort::disentanglePorts(context, ports, exceptionState);

@@ -24,7 +24,7 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
 
   ~InstallEvent() override;
 
-  void registerForeignFetch(ExecutionContext*,
+  void registerForeignFetch(ScriptState*,
                             const ForeignFetchOptions&,
                             ExceptionState&);
 

@@ -15,6 +15,7 @@ namespace blink {
 class Document;
 class ExceptionState;
 class Navigator;
+class ScriptState;
 class ServiceWorkerContainer;
 
 class MODULES_EXPORT NavigatorServiceWorker final
@@ -26,10 +27,10 @@ class MODULES_EXPORT NavigatorServiceWorker final
   static NavigatorServiceWorker* from(Document&);
   static NavigatorServiceWorker& from(Navigator&);
   static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
-  static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
+  static ServiceWorkerContainer* serviceWorker(ScriptState*,
                                                Navigator&,
                                                ExceptionState&);
-  static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
+  static ServiceWorkerContainer* serviceWorker(ScriptState*,
                                                Navigator&,
                                                String& errorMessage);
   void clearServiceWorker();

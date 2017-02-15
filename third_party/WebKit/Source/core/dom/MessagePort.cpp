@@ -26,7 +26,9 @@
 
 #include "core/dom/MessagePort.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/ExceptionCode.h"
@@ -40,7 +42,6 @@
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,7 +58,7 @@ MessagePort::~MessagePort() {
   DCHECK(!m_started || !isEntangled());
 }
 
-void MessagePort::postMessage(ExecutionContext* context,
+void MessagePort::postMessage(ScriptState* scriptState,
                               PassRefPtr<SerializedScriptValue> message,
                               const MessagePortArray& ports,
                               ExceptionState& exceptionState) {
@@ -76,7 +77,8 @@ void MessagePort::postMessage(ExecutionContext* context,
     }
   }
   std::unique_ptr<MessagePortChannelArray> channels =
-      MessagePort::disentanglePorts(context, ports, exceptionState);
+      MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
+                                    exceptionState);
   if (exceptionState.hadException())
     return;
 

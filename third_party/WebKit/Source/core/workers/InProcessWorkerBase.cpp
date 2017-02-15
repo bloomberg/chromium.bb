@@ -4,14 +4,15 @@
 
 #include "core/workers/InProcessWorkerBase.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include <memory>
 
 namespace blink {
 
@@ -26,14 +27,15 @@ InProcessWorkerBase::~InProcessWorkerBase() {
   m_contextProxy->parentObjectDestroyed();
 }
 
-void InProcessWorkerBase::postMessage(ExecutionContext* context,
+void InProcessWorkerBase::postMessage(ScriptState* scriptState,
                                       PassRefPtr<SerializedScriptValue> message,
                                       const MessagePortArray& ports,
                                       ExceptionState& exceptionState) {
   DCHECK(m_contextProxy);
   // Disentangle the port in preparation for sending it to the remote context.
   std::unique_ptr<MessagePortChannelArray> channels =
-      MessagePort::disentanglePorts(context, ports, exceptionState);
+      MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
+                                    exceptionState);
   if (exceptionState.hadException())
     return;
   m_contextProxy->postMessageToWorkerGlobalScope(std::move(message),

@@ -33,7 +33,7 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
   // EventTarget
   const AtomicString& interfaceName() const override;
 
-  void postMessage(ExecutionContext*,
+  void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);

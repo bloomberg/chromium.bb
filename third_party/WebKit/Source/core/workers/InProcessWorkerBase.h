@@ -21,6 +21,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class InProcessWorkerMessagingProxy;
+class ScriptState;
 class WorkerScriptLoader;
 
 // Base class for workers that operate in the same process as the document that
@@ -31,7 +32,7 @@ class CORE_EXPORT InProcessWorkerBase
  public:
   ~InProcessWorkerBase() override;
 
-  void postMessage(ExecutionContext*,
+  void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);

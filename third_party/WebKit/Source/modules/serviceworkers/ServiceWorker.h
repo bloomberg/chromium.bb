@@ -43,6 +43,8 @@
 
 namespace blink {
 
+class ScriptState;
+
 class MODULES_EXPORT ServiceWorker final
     : public AbstractWorker,
       public ActiveScriptWrappable<ServiceWorker>,
@@ -60,7 +62,7 @@ class MODULES_EXPORT ServiceWorker final
   // Eager finalization needed to promptly release owned WebServiceWorker.
   EAGERLY_FINALIZE();
 
-  void postMessage(ExecutionContext*,
+  void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);

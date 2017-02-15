@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/InstallEvent.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -23,7 +24,7 @@ InstallEvent* InstallEvent::create(const AtomicString& type,
 
 InstallEvent::~InstallEvent() {}
 
-void InstallEvent::registerForeignFetch(ExecutionContext* executionContext,
+void InstallEvent::registerForeignFetch(ScriptState* scriptState,
                                         const ForeignFetchOptions& options,
                                         ExceptionState& exceptionState) {
   if (!isBeingDispatched()) {
@@ -55,6 +56,7 @@ void InstallEvent::registerForeignFetch(ExecutionContext* executionContext,
     }
   }
 
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   ServiceWorkerGlobalScopeClient* client =
       ServiceWorkerGlobalScopeClient::from(executionContext);
 

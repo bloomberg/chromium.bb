@@ -30,7 +30,9 @@
 
 #include "modules/serviceworkers/ServiceWorker.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
@@ -40,7 +42,6 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerState.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,7 +49,7 @@ const AtomicString& ServiceWorker::interfaceName() const {
   return EventTargetNames::ServiceWorker;
 }
 
-void ServiceWorker::postMessage(ExecutionContext* context,
+void ServiceWorker::postMessage(ScriptState* scriptState,
                                 PassRefPtr<SerializedScriptValue> message,
                                 const MessagePortArray& ports,
                                 ExceptionState& exceptionState) {
@@ -63,7 +64,8 @@ void ServiceWorker::postMessage(ExecutionContext* context,
 
   // Disentangle the port in preparation for sending it to the remote context.
   std::unique_ptr<MessagePortChannelArray> channels =
-      MessagePort::disentanglePorts(context, ports, exceptionState);
+      MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
+                                    exceptionState);
   if (exceptionState.hadException())
     return;
   if (m_handle->serviceWorker()->state() == WebServiceWorkerStateRedundant) {

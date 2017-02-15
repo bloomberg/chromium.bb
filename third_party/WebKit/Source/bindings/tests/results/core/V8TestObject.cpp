@@ -7696,9 +7696,9 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
       return;
   }
 
-  // FIXME: Only pass context/exceptionState if instance really requires it.
-  ExecutionContext* context = currentExecutionContext(info.GetIsolate());
-  instance->postMessage(context, message.release(), transferables.messagePorts, exceptionState);
+  // FIXME: Only pass scriptState/exceptionState if instance really requires it.
+  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+  instance->postMessage(scriptState, message.release(), transferables.messagePorts, exceptionState);
 }
 
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

@@ -45,6 +45,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class MessagePort;
+class ScriptState;
 class SerializedScriptValue;
 
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and
@@ -62,7 +63,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   static MessagePort* create(ExecutionContext&);
   ~MessagePort() override;
 
-  void postMessage(ExecutionContext*,
+  void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);

@@ -8,5 +8,5 @@
     Constructor(DOMString type, optional ExtendableEventInit eventInitDict),
     Exposed=ServiceWorker,
 ] interface InstallEvent : ExtendableEvent {
-  [OriginTrialEnabled=ForeignFetch, CallWith=ExecutionContext, RaisesException] void registerForeignFetch(ForeignFetchOptions options);
+  [OriginTrialEnabled=ForeignFetch, CallWith=ScriptState, RaisesException] void registerForeignFetch(ForeignFetchOptions options);
 };
