@@ -263,12 +263,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   RunTest(popup_contents, "runTest");
 }
 
-// Prevent inline install while in browser fullscreen mode. Browser fullscreen
-// is initiated by the user using F11.
+// Allow inline install while in browser fullscreen mode. Browser fullscreen
+// is initiated by the user using F11 (windows), ctrl+cmd+F (mac) or the green
+// maximize window button on mac. This will be allowed since it cannot be
+// initiated by an API and because of the nuance with mac windows.
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
-                       BlockInlineInstallFromFullscreenForBrowser) {
-  const GURL install_url =
-      GenerateTestServerUrl(kAppDomain, "install_from_fullscreen.html");
+                       AllowInlineInstallFromFullscreenForBrowser) {
+  const GURL install_url = GenerateTestServerUrl(kAppDomain, "install.html");
   ui_test_utils::NavigateToURL(browser(), install_url);
   AutoAcceptInstall();
 
@@ -279,10 +280,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
 
   RunTest("runTest");
 
-  // Ensure extension is not installed.
+  // Ensure extension is installed.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  EXPECT_FALSE(registry->GenerateInstalledExtensionsSet()->Contains(
-      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
+  EXPECT_TRUE(
+      registry->GenerateInstalledExtensionsSet()->Contains(kTestExtensionId));
 }
 
 // Prevent inline install while in tab fullscreen mode. Tab fullscreen is
@@ -305,8 +306,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
 
   // Ensure extension is not installed.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  EXPECT_FALSE(registry->GenerateInstalledExtensionsSet()->Contains(
-      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
+  EXPECT_FALSE(
+      registry->GenerateInstalledExtensionsSet()->Contains(kTestExtensionId));
 }
 
 // Ensure that inline-installing a disabled extension simply re-enables it.

@@ -184,7 +184,7 @@ bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
   }
   FullscreenController* controller =
       browser->exclusive_access_manager()->fullscreen_controller();
-  if (controller->IsFullscreenForBrowser() || controller->IsTabFullscreen()) {
+  if (controller->IsTabFullscreen()) {
     *error = kInitiatedFromFullscreenError;
     return false;
   }
