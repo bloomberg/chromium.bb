@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Document#fullscreenElement assert_equals: fullscreenElement after requestFullscreen() expected null but got Element node <div id="log"></div>
-Harness: the test ran to completion.
-
