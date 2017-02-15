@@ -4,6 +4,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_CREDENTIALS_SELECTION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_CREDENTIALS_SELECTION_VIEW_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -12,6 +13,10 @@
 
 namespace views {
 class Combobox;
+}
+
+namespace ui {
+class SimpleComboboxModel;
 }
 
 class ManagePasswordsBubbleModel;
@@ -27,12 +32,12 @@ class CredentialsSelectionView : public views::View {
   const autofill::PasswordForm* GetSelectedCredentials();
 
  private:
-  views::Combobox* GenerateUsernameCombobox(
-      const base::string16& best_matched_username);
+  void GenerateUsernameCombobox(const base::string16& best_matched_username);
   void ReportUserActionOnce(bool was_update_rejected, int selected_index);
 
   const std::vector<autofill::PasswordForm>* password_forms_;
-  views::Combobox* combobox_;
+  std::unique_ptr<views::Combobox> combobox_;
+  std::unique_ptr<ui::SimpleComboboxModel> combobox_model_;
   int default_index_;
   bool is_default_best_match_;
   bool is_default_preferred_;

@@ -55,9 +55,9 @@ CredentialsSelectionView::CredentialsSelectionView(
   // The username combobox and password label.
   layout->StartRowWithPadding(0, column_set_id, 0,
                               views::kRelatedControlVerticalSpacing);
-  combobox_ = GenerateUsernameCombobox(
+  GenerateUsernameCombobox(
       manage_passwords_bubble_model->pending_password().username_value);
-  layout->AddView(combobox_);
+  layout->AddView(combobox_.get());
   views::Label* label =
       GeneratePasswordLabel(manage_passwords_bubble_model->pending_password());
   layout->AddView(label);
@@ -67,6 +67,10 @@ CredentialsSelectionView::CredentialsSelectionView(
 
 CredentialsSelectionView::~CredentialsSelectionView() {
   ReportUserActionOnce(true, -1);
+  // |combobox_| has a pointer to |combobox_model_|, so |combobox_| should be
+  // deleted before deleting of |combobox_model_|. To ensure this, let's delete
+  // it now.
+  combobox_.reset();
 }
 
 const autofill::PasswordForm*
@@ -77,7 +81,7 @@ CredentialsSelectionView::GetSelectedCredentials() {
   return &password_forms_->at(combobox_->selected_index());
 }
 
-views::Combobox* CredentialsSelectionView::GenerateUsernameCombobox(
+void CredentialsSelectionView::GenerateUsernameCombobox(
     const base::string16& best_matched_username) {
   std::vector<base::string16> usernames;
   size_t best_matched_username_index = password_forms_->size();
@@ -92,19 +96,18 @@ views::Combobox* CredentialsSelectionView::GenerateUsernameCombobox(
     }
   }
 
-  views::Combobox* combobox =
-      new views::Combobox(new ui::SimpleComboboxModel(usernames));
+  combobox_model_.reset(new ui::SimpleComboboxModel(usernames));
+  combobox_.reset(new views::Combobox(combobox_model_.get()));
 
   if (best_matched_username_index < password_forms_->size()) {
     is_default_best_match_ = true;
     default_index_ = best_matched_username_index;
-    combobox->SetSelectedIndex(best_matched_username_index);
+    combobox_->SetSelectedIndex(best_matched_username_index);
   } else if (preferred_form_index < password_forms_->size()) {
     is_default_preferred_ = true;
     default_index_ = preferred_form_index;
-    combobox->SetSelectedIndex(preferred_form_index);
+    combobox_->SetSelectedIndex(preferred_form_index);
   }
-  return combobox;
 }
 
 void CredentialsSelectionView::ReportUserActionOnce(bool was_update_rejected,
