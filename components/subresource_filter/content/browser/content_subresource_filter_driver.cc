@@ -15,15 +15,15 @@ ContentSubresourceFilterDriver::ContentSubresourceFilterDriver(
 
 ContentSubresourceFilterDriver::~ContentSubresourceFilterDriver() {}
 
-void ContentSubresourceFilterDriver::ActivateForProvisionalLoad(
+void ContentSubresourceFilterDriver::ActivateForNextCommittedLoad(
     ActivationLevel activation_level,
-    const GURL& url,
     bool measure_performance) {
   // Must use legacy IPC to ensure the activation message arrives in-order, i.e.
   // before the load is committed on the renderer side.
-  render_frame_host_->Send(new SubresourceFilterMsg_ActivateForProvisionalLoad(
-      render_frame_host_->GetRoutingID(), activation_level, url,
-      measure_performance));
+  render_frame_host_->Send(
+      new SubresourceFilterMsg_ActivateForNextCommittedLoad(
+          render_frame_host_->GetRoutingID(), activation_level,
+          measure_performance));
 }
 
 }  // namespace subresource_filter

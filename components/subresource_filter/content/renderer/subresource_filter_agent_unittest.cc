@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
@@ -137,8 +138,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
                                       bool measure_performance = false) {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-        SubresourceFilterMsg_ActivateForProvisionalLoad(
-            0, activation_level, GURL(), measure_performance)));
+        SubresourceFilterMsg_ActivateForNextCommittedLoad(
+            0, activation_level, measure_performance)));
     agent_as_rfo()->DidCommitProvisionalLoad(
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
@@ -302,7 +303,9 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   FinishLoad();
 
   // Resource loads after the in-page navigation should not be counted toward
-  // the figures below, as they came after the original page load event.
+  // the figures below, as they came after the original page load event. There
+  // should be no samples recorded into subresource count histograms during the
+  // final load where there is no activation.
   histogram_tester.ExpectUniqueSample(kSubresourcesTotal, 2, 1);
   histogram_tester.ExpectUniqueSample(kSubresourcesEvaluated, 2, 1);
   histogram_tester.ExpectUniqueSample(kSubresourcesMatchedRules, 1, 1);
@@ -404,10 +407,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   FinishLoad();
 }
 
-// If a provisional load is aborted, the RenderFrameObservers might not receive
-// any further notifications about that load. It is thus possible that there
-// will be two RenderFrameObserver::DidStartProvisionalLoad in a row. Make sure
-// that the activation decision does not outlive the first provisional load.
+// Make sure that the activation decision does not outlive a failed provisional
+// load (and affect the second next load).
 TEST_F(SubresourceFilterAgentTest,
        Enabled_FilteringNoLongerEffectAfterProvisionalLoadIsCancelled) {
   ASSERT_NO_FATAL_FAILURE(
@@ -415,8 +416,9 @@ TEST_F(SubresourceFilterAgentTest,
   ExpectNoSubresourceFilterGetsInjected();
   agent_as_rfo()->DidStartProvisionalLoad(nullptr);
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-      SubresourceFilterMsg_ActivateForProvisionalLoad(
-          0, ActivationLevel::ENABLED, GURL(), true)));
+      SubresourceFilterMsg_ActivateForNextCommittedLoad(
+          0, ActivationLevel::ENABLED, true)));
+  agent_as_rfo()->DidFailProvisionalLoad(blink::WebURLError());
   agent_as_rfo()->DidStartProvisionalLoad(nullptr);
   agent_as_rfo()->DidCommitProvisionalLoad(true /* is_new_navigation */,
                                            false /* is_same_page_navigation */);

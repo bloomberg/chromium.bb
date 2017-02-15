@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 
-class GURL;
-
 namespace content {
 class RenderFrameHost;
 }  // namespace content
@@ -24,11 +22,10 @@ class ContentSubresourceFilterDriver {
       content::RenderFrameHost* render_frame_host);
   virtual ~ContentSubresourceFilterDriver();
 
-  // Instructs the agent on the renderer to set up the subresource filter for
-  // the currently ongoing provisional document load in the frame.
-  virtual void ActivateForProvisionalLoad(ActivationLevel activation_level,
-                                          const GURL& url,
-                                          bool measure_performance);
+  // Instructs the agent on the renderer side to set up subresource filtering at
+  // the specified |activation_level| for the next load committed in this frame.
+  virtual void ActivateForNextCommittedLoad(ActivationLevel activation_level,
+                                            bool measure_performance);
 
  private:
   // The RenderFrameHost that this driver belongs to.

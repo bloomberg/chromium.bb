@@ -37,13 +37,20 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
                      IPC::PlatformFileForTransit /* ruleset_file */);
 
-// Instructs the renderer to activate subresource filtering for the currently
-// ongoing provisional document load in a frame. The message must arrive after
-// the provisional load starts, but before it is committed on the renderer side.
+// Instructs the renderer to activate subresource filtering at the specified
+// |activation_level| for the document load committed next in a frame.
+//
+// Without browser-side navigation, the message must arrive just before the
+// provisional load is committed on the renderer side. In practice, it is often
+// sent after the provisional load has already started, but this is not a
+// requirement. The message will have no effect if the provisional load fails.
+//
+// With browser-side navigation enabled, the message must arrive just before
+// FrameMsg_CommitNavigation.
+//
 // If no message arrives, the default behavior is ActivationLevel::DISABLED.
-IPC_MESSAGE_ROUTED3(SubresourceFilterMsg_ActivateForProvisionalLoad,
+IPC_MESSAGE_ROUTED2(SubresourceFilterMsg_ActivateForNextCommittedLoad,
                     subresource_filter::ActivationLevel /* activation_level */,
-                    GURL /* url */,
                     bool /* measure_performance */);
 
 // ----------------------------------------------------------------------------

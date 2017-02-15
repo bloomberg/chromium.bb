@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 namespace subresource_filter {
@@ -170,12 +171,18 @@ bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
 
 void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
-    const GURL& url) {
-  if (activation_level_ != ActivationLevel::DISABLED) {
+    const GURL& url,
+    bool failed_navigation) {
+  // PlzNavigate: For failed navigations, ReadyToCommitNavigation is still
+  // called, so we end up here; but there is no longer a failed provisional load
+  // on the renderer side, so an activation message sent from here would turn on
+  // filtering for the subsequent error page load. This is probably harmless,
+  // but not sending an activation message is even cleaner.
+  if (activation_level_ != ActivationLevel::DISABLED && !failed_navigation) {
     auto* driver = DriverFromFrameHost(render_frame_host);
     DCHECK(driver);
-    driver->ActivateForProvisionalLoad(GetMaximumActivationLevel(), url,
-                                       measure_performance_);
+    driver->ActivateForNextCommittedLoad(GetMaximumActivationLevel(),
+                                         measure_performance_);
   }
 }
 
@@ -243,7 +250,9 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
   GURL url = navigation_handle->GetURL();
   const content::Referrer& referrer = navigation_handle->GetReferrer();
   ui::PageTransition transition = navigation_handle->GetPageTransition();
-  ReadyToCommitNavigationInternal(render_frame_host, url, referrer, transition);
+  ReadyToCommitNavigationInternal(
+      render_frame_host, url, referrer, transition,
+      navigation_handle->GetNetErrorCode() != net::OK);
 }
 
 void ContentSubresourceFilterDriverFactory::DidFinishLoad(
@@ -305,9 +314,10 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     const content::Referrer& referrer,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool failed_navigation) {
   if (render_frame_host->GetParent()) {
-    ActivateForFrameHostIfNeeded(render_frame_host, url);
+    ActivateForFrameHostIfNeeded(render_frame_host, url, failed_navigation);
     return;
   }
 
@@ -327,7 +337,7 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
   activation_level_ = GetMaximumActivationLevel();
   measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
                          ShouldMeasurePerformanceForPageLoad();
-  ActivateForFrameHostIfNeeded(render_frame_host, url);
+  ActivateForFrameHostIfNeeded(render_frame_host, url, failed_navigation);
 }
 
 bool ContentSubresourceFilterDriverFactory::DidURLMatchCurrentActivationList(

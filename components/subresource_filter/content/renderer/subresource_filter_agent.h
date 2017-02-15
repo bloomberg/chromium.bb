@@ -62,26 +62,26 @@ class SubresourceFilterAgent
       const DocumentLoadStatistics& statistics);
 
  private:
-  void OnActivateForProvisionalLoad(ActivationLevel activation_level,
-                                    const GURL& url,
-                                    bool measure_performance);
+  void OnActivateForNextCommittedLoad(ActivationLevel activation_level,
+                                      bool measure_performance);
   void RecordHistogramsOnLoadCommitted();
   void RecordHistogramsOnLoadFinished();
+  void ResetActivatonStateForNextCommit();
 
   // content::RenderFrameObserver:
   void OnDestruct() override;
-  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
+  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidFinishLoad() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
 
-  ActivationLevel activation_level_for_provisional_load_;
-  GURL url_for_provisional_load_;
-  bool measure_performance_ = false;
+  ActivationLevel activation_level_for_next_commit_ = ActivationLevel::DISABLED;
+  bool measure_performance_for_next_commit_ = false;
+
   base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgent);

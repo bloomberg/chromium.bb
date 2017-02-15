@@ -143,8 +143,7 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
 
   ~MockSubresourceFilterDriver() override = default;
 
-  MOCK_METHOD3(ActivateForProvisionalLoad,
-               void(ActivationLevel, const GURL&, bool));
+  MOCK_METHOD2(ActivateForNextCommittedLoad, void(ActivationLevel, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -206,6 +205,19 @@ class ContentSubresourceFilterDriverFactoryTest
   MockSubresourceFilterDriver* subframe_driver() { return subframe_driver_; }
   content::RenderFrameHost* subframe_rfh() { return subframe_rfh_; }
 
+  void SimulateNavigationCommit(content::RenderFrameHost* rfh,
+                                const GURL& url,
+                                const content::Referrer& referrer,
+                                const ui::PageTransition transition) {
+    // TODO(crbug.com/688393): Once WCO::ReadyToCommitNavigation is invoked
+    // consistently for tests in PlzNavigate and non-PlzNavigate, remove this.
+    if (!content::IsBrowserSideNavigationEnabled()) {
+      factory()->ReadyToCommitNavigationInternal(rfh, url, referrer, transition,
+                                                 false /* failed_navigation */);
+    }
+    content::RenderFrameHostTester::For(rfh)->SimulateNavigationCommit(url);
+  }
+
   void BlacklistURLWithRedirectsNavigateAndCommit(
       const std::vector<bool>& blacklisted_urls,
       const std::vector<GURL>& navigation_chain,
@@ -236,19 +248,12 @@ class ContentSubresourceFilterDriverFactoryTest
       }
       rfh_tester->SimulateRedirect(url);
     }
-    EXPECT_CALL(*driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_,
-                                           expected_measure_performance()))
-        .Times(expected_activation);
-    // TODO(crbug.com/688393): remove the call to
-    // ReadyToCommitNavigationInternal once WCO::ReadyToCommitNavigation is
-    // invoked consistently for tests in PlzNavigate and non-PlzNavigate.
-    if (!content::IsBrowserSideNavigationEnabled()) {
-      factory()->ReadyToCommitNavigationInternal(
-          main_rfh(), navigation_chain.back(), referrer, transition);
-    }
 
-    rfh_tester->SimulateNavigationCommit(navigation_chain.back());
+    EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(
+                               ::testing::_, expected_measure_performance()))
+        .Times(expected_activation);
+    SimulateNavigationCommit(main_rfh(), navigation_chain.back(), referrer,
+                             transition);
     ::testing::Mock::VerifyAndClearExpectations(driver());
 
     if (expected_pattern != EMPTY) {
@@ -268,13 +273,15 @@ class ContentSubresourceFilterDriverFactoryTest
 
   void NavigateAndCommitSubframe(const GURL& url, bool expected_activation) {
     EXPECT_CALL(*subframe_driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_,
-                                           expected_measure_performance()))
+                ActivateForNextCommittedLoad(::testing::_,
+                                             expected_measure_performance()))
         .Times(expected_activation);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
-    factory()->ReadyToCommitNavigationInternal(
-        subframe_rfh(), url, content::Referrer(), ui::PAGE_TRANSITION_LINK);
+    content::RenderFrameHostTester::For(subframe_rfh())
+        ->SimulateNavigationStart(url);
+    SimulateNavigationCommit(subframe_rfh(), url, content::Referrer(),
+                             ui::PAGE_TRANSITION_LINK);
     ::testing::Mock::VerifyAndClearExpectations(subframe_driver());
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
@@ -314,6 +321,24 @@ class ContentSubresourceFilterDriverFactoryTest
         main_rfh());
   }
 
+  void EmulateFailedNavigationAndExpectNoActivation(const GURL& url) {
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
+    EXPECT_CALL(*driver(),
+                ActivateForNextCommittedLoad(::testing::_, ::testing::_))
+        .Times(0);
+
+    // ReadyToCommitNavigation with browser-side navigation disabled is not
+    // called in production code for failed navigations (e.g. network errors).
+    // It is called with browser-side navigation enabled, in which case
+    // RenderFrameHostTester already calls it, no need to call it manually.
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(main_rfh());
+    rfh_tester->SimulateNavigationStart(url);
+    rfh_tester->SimulateNavigationError(url, 403);
+    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ::testing::Mock::VerifyAndClearExpectations(client());
+  }
+
   void EmulateInPageNavigation(const std::vector<bool>& blacklisted_urls,
                                RedirectChainMatchPattern expected_pattern,
                                bool expected_activation) {
@@ -327,8 +352,8 @@ class ContentSubresourceFilterDriverFactoryTest
 
     NavigateAndExpectActivation(blacklisted_urls, {GURL(kExampleUrl)},
                                 expected_pattern, expected_activation);
-    EXPECT_CALL(*driver(), ActivateForProvisionalLoad(
-                               ::testing::_, ::testing::_, ::testing::_))
+    EXPECT_CALL(*driver(),
+                ActivateForNextCommittedLoad(::testing::_, ::testing::_))
         .Times(0);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
     content::RenderFrameHostTester::For(main_rfh())
@@ -449,6 +474,17 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       "1" /* performance_measurement_rate */);
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           true /* expected_activation */);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
+      kActivationScopeAllSites);
+  const GURL url(kExampleUrl);
+  NavigateAndExpectActivation({false}, {url}, EMPTY,
+                              true /* expected_activation */);
+  EmulateFailedNavigationAndExpectNoActivation(url);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {

@@ -28,8 +28,7 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     content::RenderFrame* render_frame,
     UnverifiedRulesetDealer* ruleset_dealer)
     : content::RenderFrameObserver(render_frame),
-      ruleset_dealer_(ruleset_dealer),
-      activation_level_for_provisional_load_(ActivationLevel::DISABLED) {
+      ruleset_dealer_(ruleset_dealer) {
   DCHECK(ruleset_dealer);
 }
 
@@ -67,24 +66,21 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
       render_frame()->GetRoutingID(), statistics));
 }
 
-void SubresourceFilterAgent::OnActivateForProvisionalLoad(
+void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
     ActivationLevel activation_level,
-    const GURL& url,
     bool measure_performance) {
-  activation_level_for_provisional_load_ = activation_level;
-  url_for_provisional_load_ = url;
-  measure_performance_ = measure_performance;
+  activation_level_for_next_commit_ = activation_level;
+  measure_performance_for_next_commit_ = measure_performance;
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
   // Note: ActivationLevel used to be called ActivationState, the legacy name is
   // kept for the histogram.
-  UMA_HISTOGRAM_ENUMERATION(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(activation_level_for_provisional_load_),
-      static_cast<int>(ActivationLevel::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.DocumentLoad.ActivationState",
+                            static_cast<int>(activation_level_for_next_commit_),
+                            static_cast<int>(ActivationLevel::LAST) + 1);
 
-  if (activation_level_for_provisional_load_ != ActivationLevel::DISABLED) {
+  if (activation_level_for_next_commit_ != ActivationLevel::DISABLED) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
                           ruleset_dealer_->IsRulesetFileAvailable());
   }
@@ -109,7 +105,8 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 
   // If ThreadTicks is not supported or performance measuring is switched off,
   // then no time measurements have been collected.
-  if (measure_performance_ && ScopedThreadTimers::IsSupported()) {
+  if (ScopedThreadTimers::IsSupported() &&
+      filter_for_last_committed_load_->is_performance_measuring_enabled()) {
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.DocumentLoad.SubresourceEvaluation."
         "TotalWallDuration",
@@ -129,27 +126,13 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   SendDocumentLoadStatistics(statistics);
 }
 
-void SubresourceFilterAgent::OnDestruct() {
-  delete this;
+void SubresourceFilterAgent::ResetActivatonStateForNextCommit() {
+  activation_level_for_next_commit_ = ActivationLevel::DISABLED;
+  measure_performance_for_next_commit_ = false;
 }
 
-void SubresourceFilterAgent::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
-  // With PlzNavigate, DidStartProvisionalLoad and DidCommitProvisionalLoad will
-  // both be called in response to the one commit IPC from the browser. That
-  // means that they will come after OnActivateForProvisionalLoad. So we have to
-  // have extra logic to check that the response to OnActivateForProvisionalLoad
-  // isn't removed in that case.
-  if (!content::IsBrowserSideNavigationEnabled() ||
-      (!data_source ||
-       static_cast<GURL>(data_source->getRequest().url()) !=
-           url_for_provisional_load_)) {
-    activation_level_for_provisional_load_ = ActivationLevel::DISABLED;
-    measure_performance_ = false;
-  } else {
-    url_for_provisional_load_ = GURL();
-  }
-  filter_for_last_committed_load_.reset();
+void SubresourceFilterAgent::OnDestruct() {
+  delete this;
 }
 
 void SubresourceFilterAgent::DidCommitProvisionalLoad(
@@ -158,11 +141,13 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   if (is_same_page_navigation)
     return;
 
+  filter_for_last_committed_load_.reset();
+
   std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
   if (ancestor_document_urls.front().SchemeIsHTTPOrHTTPS() ||
       ancestor_document_urls.front().SchemeIsFile()) {
     RecordHistogramsOnLoadCommitted();
-    if (activation_level_for_provisional_load_ != ActivationLevel::DISABLED &&
+    if (activation_level_for_next_commit_ != ActivationLevel::DISABLED &&
         ruleset_dealer_->IsRulesetFileAvailable()) {
       base::OnceClosure first_disallowed_load_callback(
           base::BindOnce(&SubresourceFilterAgent::
@@ -171,9 +156,10 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
       auto ruleset = ruleset_dealer_->GetRuleset();
       DCHECK(ruleset);
-      ActivationState activation_state = ComputeActivationState(
-          activation_level_for_provisional_load_, measure_performance_,
-          ancestor_document_urls, ruleset.get());
+      ActivationState activation_state =
+          ComputeActivationState(activation_level_for_next_commit_,
+                                 measure_performance_for_next_commit_,
+                                 ancestor_document_urls, ruleset.get());
       DCHECK(!ancestor_document_urls.empty());
       std::unique_ptr<DocumentSubresourceFilter> filter(
           new DocumentSubresourceFilter(
@@ -184,7 +170,14 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
       SetSubresourceFilterForCommittedLoad(std::move(filter));
     }
   }
-  activation_level_for_provisional_load_ = ActivationLevel::DISABLED;
+
+  ResetActivatonStateForNextCommit();
+}
+
+void SubresourceFilterAgent::DidFailProvisionalLoad(
+    const blink::WebURLError& error) {
+  // TODO(engedy): Add a test with `frame-ancestor` violation to exercise this.
+  ResetActivatonStateForNextCommit();
 }
 
 void SubresourceFilterAgent::DidFinishLoad() {
@@ -197,8 +190,8 @@ void SubresourceFilterAgent::DidFinishLoad() {
 bool SubresourceFilterAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SubresourceFilterAgent, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterMsg_ActivateForProvisionalLoad,
-                        OnActivateForProvisionalLoad)
+    IPC_MESSAGE_HANDLER(SubresourceFilterMsg_ActivateForNextCommittedLoad,
+                        OnActivateForNextCommittedLoad)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

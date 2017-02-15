@@ -118,7 +118,8 @@ class ContentSubresourceFilterDriverFactory
   // activation signal should be sent.
   bool ShouldActivateForMainFrameURL(const GURL& url) const;
   void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
-                                    const GURL& url);
+                                    const GURL& url,
+                                    bool failed_navigation);
 
   // Internal implementation of ReadyToCommitNavigation which doesn't use
   // NavigationHandle to ease unit tests.
@@ -126,7 +127,8 @@ class ContentSubresourceFilterDriverFactory
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       const content::Referrer& referrer,
-      ui::PageTransition page_transition);
+      ui::PageTransition page_transition,
+      bool failed_navigation);
 
   bool DidURLMatchCurrentActivationList(const GURL& url) const;
 

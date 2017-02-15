@@ -1,6 +1,7 @@
 include_rules = [
   "+components/keyed_service/core",
-  "+content/public/browser",
   "+components/safe_browsing_db",
+  "+content/public/browser",
+  "+net/base",
   "+ui/base/page_transition_types.h",
 ]

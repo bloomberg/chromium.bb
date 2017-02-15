@@ -72,6 +72,9 @@ class DocumentSubresourceFilter
   ~DocumentSubresourceFilter() override;
 
   const DocumentLoadStatistics& statistics() const { return statistics_; }
+  bool is_performance_measuring_enabled() const {
+    return activation_state_.measure_performance;
+  }
 
   // blink::WebDocumentSubresourceFilter:
   LoadPolicy getLoadPolicy(const blink::WebURL& resourceUrl,
