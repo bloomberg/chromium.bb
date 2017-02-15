@@ -19,7 +19,6 @@ class SafePointScope final {
                           ThreadState* state = ThreadState::current())
       : m_state(state) {
     if (m_state) {
-      RELEASE_ASSERT(!m_state->isAtSafePoint());
       m_state->enterSafePoint(stackState, this);
     }
   }

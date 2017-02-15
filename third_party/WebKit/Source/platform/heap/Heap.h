@@ -233,7 +233,6 @@ class PLATFORM_EXPORT ThreadHeap {
   static ThreadHeap* mainThreadHeap() { return s_mainThreadHeap; }
 
 #if DCHECK_IS_ON()
-  bool isAtSafePoint();
   BasePage* findPageFromAddress(Address);
 #endif
 

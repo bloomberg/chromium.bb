@@ -212,15 +212,6 @@ BasePage* ThreadHeap::findPageFromAddress(Address address) {
   }
   return nullptr;
 }
-
-bool ThreadHeap::isAtSafePoint() {
-  MutexLocker locker(m_threadAttachMutex);
-  for (ThreadState* state : m_threads) {
-    if (!state->isAtSafePoint())
-      return false;
-  }
-  return true;
-}
 #endif
 
 Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {

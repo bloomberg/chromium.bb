@@ -249,9 +249,7 @@ class PLATFORM_EXPORT ThreadState {
 
   // Support for disallowing allocation. Mainly used for sanity
   // checks asserts.
-  bool isAllocationAllowed() const {
-    return !isAtSafePoint() && !m_noAllocationCount;
-  }
+  bool isAllocationAllowed() const { return !m_noAllocationCount; }
   void enterNoAllocationScope() { m_noAllocationCount++; }
   void leaveNoAllocationScope() { m_noAllocationCount--; }
   bool isWrapperTracingForbidden() { return isMixinInConstruction(); }
@@ -333,7 +331,6 @@ class PLATFORM_EXPORT ThreadState {
   // Mark current thread as running inside safepoint.
   void enterSafePoint(BlinkGC::StackState, void*);
   void leaveSafePoint();
-  bool isAtSafePoint() const { return m_atSafePoint; }
 
   void addInterruptor(std::unique_ptr<BlinkGCInterruptor>);
 
@@ -639,7 +636,6 @@ class PLATFORM_EXPORT ThreadState {
 
   void* m_safePointScopeMarker;
   Vector<Address> m_safePointStackCopy;
-  bool m_atSafePoint;
   Vector<std::unique_ptr<BlinkGCInterruptor>> m_interruptors;
   bool m_sweepForbidden;
   size_t m_noAllocationCount;

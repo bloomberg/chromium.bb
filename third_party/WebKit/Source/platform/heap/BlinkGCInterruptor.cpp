@@ -12,7 +12,6 @@ namespace blink {
 void BlinkGCInterruptor::onInterrupted() {
   ThreadState* state = ThreadState::current();
   ASSERT(state);
-  ASSERT(!state->isAtSafePoint());
   state->safePoint(BlinkGC::HeapPointersOnStack);
 }
 

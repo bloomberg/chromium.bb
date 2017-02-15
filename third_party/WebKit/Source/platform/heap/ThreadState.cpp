@@ -105,7 +105,6 @@ ThreadState::ThreadState()
       m_startOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
       m_endOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
       m_safePointScopeMarker(nullptr),
-      m_atSafePoint(false),
       m_interruptors(),
       m_sweepForbidden(false),
       m_noAllocationCount(0),
@@ -1104,7 +1103,6 @@ void ThreadState::safePoint(BlinkGC::StackState stackState) {
   ThreadHeap::reportMemoryUsageForTracing();
 
   runScheduledGC(stackState);
-  ASSERT(!m_atSafePoint);
   m_stackState = BlinkGC::HeapPointersOnStack;
 }
 
@@ -1142,8 +1140,6 @@ void ThreadState::enterSafePoint(BlinkGC::StackState stackState,
 #endif
   ASSERT(stackState == BlinkGC::NoHeapPointersOnStack || scopeMarker);
   runScheduledGC(stackState);
-  ASSERT(!m_atSafePoint);
-  m_atSafePoint = true;
   m_stackState = stackState;
   m_safePointScopeMarker = scopeMarker;
   m_heap->enterSafePoint(this);
@@ -1151,9 +1147,7 @@ void ThreadState::enterSafePoint(BlinkGC::StackState stackState,
 
 void ThreadState::leaveSafePoint() {
   ASSERT(checkThread());
-  ASSERT(m_atSafePoint);
   m_heap->leaveSafePoint();
-  m_atSafePoint = false;
   m_stackState = BlinkGC::HeapPointersOnStack;
   clearSafePointScopeMarker();
 }
