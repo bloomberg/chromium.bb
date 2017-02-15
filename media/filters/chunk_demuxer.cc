@@ -308,7 +308,7 @@ void ChunkDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
                                         StreamParserBuffer::CreateEOSBuffer());
   }
   if (!stream_status_change_cb_.is_null())
-    stream_status_change_cb_.Run(is_enabled_, timestamp);
+    stream_status_change_cb_.Run(this, is_enabled_, timestamp);
 }
 
 void ChunkDemuxerStream::SetStreamStatusChangeCB(
@@ -491,26 +491,26 @@ base::Time ChunkDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
 }
 
-DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
-  DCHECK_NE(type, DemuxerStream::TEXT);
+std::vector<DemuxerStream*> ChunkDemuxer::GetAllStreams() {
   base::AutoLock auto_lock(lock_);
+  std::vector<DemuxerStream*> result;
+  for (const auto& stream : audio_streams_) {
+    if (stream->enabled())
+      result.push_back(stream.get());
+  }
+  for (const auto& stream : video_streams_) {
+    if (stream->enabled())
+      result.push_back(stream.get());
+  }
+  return result;
+}
 
-  // TODO(servolk): For now return only the first enabled audio/video stream,
-  // since this GetStream method is part of the implementation of the
-  // DemuxerStreamProvider interface that is used in many places and can't be
-  // changed easily. It will be fixed later, when we add support for multiple
-  // streams/tracks in DemuxerStreamProvider, tracked by crbug.com/646669
-  if (type == DemuxerStream::AUDIO)
-    for (const auto& s : audio_streams_)
-      if (s->enabled())
-        return s.get();
-
-  if (type == DemuxerStream::VIDEO)
-    for (const auto& s : video_streams_)
-      if (s->enabled())
-        return s.get();
-
-  return NULL;
+void ChunkDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
+  DCHECK(!cb.is_null());
+  for (const auto& stream : audio_streams_)
+    stream->SetStreamStatusChangeCB(cb);
+  for (const auto& stream : video_streams_)
+    stream->SetStreamStatusChangeCB(cb);
 }
 
 TimeDelta ChunkDemuxer::GetStartTime() const {

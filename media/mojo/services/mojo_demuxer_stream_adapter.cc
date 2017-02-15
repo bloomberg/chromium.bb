@@ -79,11 +79,6 @@ void MojoDemuxerStreamAdapter::set_enabled(bool enabled,
   NOTIMPLEMENTED();
 }
 
-void MojoDemuxerStreamAdapter::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  NOTIMPLEMENTED();
-}
-
 // TODO(xhwang): Pass liveness here.
 void MojoDemuxerStreamAdapter::OnStreamReady(
     Type type,

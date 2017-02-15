@@ -105,8 +105,8 @@ class PipelineImplTest : public ::testing::Test {
         renderer_client_(nullptr) {
     // SetDemuxerExpectations() adds overriding expectations for expected
     // non-NULL streams.
-    DemuxerStream* null_pointer = NULL;
-    EXPECT_CALL(*demuxer_, GetStream(_)).WillRepeatedly(Return(null_pointer));
+    std::vector<DemuxerStream*> empty;
+    EXPECT_CALL(*demuxer_, GetAllStreams()).WillRepeatedly(Return(empty));
 
     EXPECT_CALL(*demuxer_, GetTimelineOffset())
         .WillRepeatedly(Return(base::Time()));
@@ -147,11 +147,13 @@ class PipelineImplTest : public ::testing::Test {
                         PostCallback<1>(PIPELINE_OK)));
 
     // Configure the demuxer to return the streams.
+    std::vector<DemuxerStream*> mock_streams;
     for (size_t i = 0; i < streams->size(); ++i) {
       DemuxerStream* stream = (*streams)[i];
-      EXPECT_CALL(*demuxer_, GetStream(stream->type()))
-          .WillRepeatedly(Return(stream));
+      mock_streams.push_back(stream);
     }
+    EXPECT_CALL(*demuxer_, GetAllStreams())
+        .WillRepeatedly(Return(mock_streams));
   }
 
   void SetDemuxerExpectations(MockDemuxerStreamVector* streams) {

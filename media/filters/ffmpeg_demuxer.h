@@ -116,7 +116,8 @@ class FFmpegDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
+
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 
   void SetLiveness(Liveness liveness);
 
@@ -218,7 +219,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void CancelPendingSeek(base::TimeDelta seek_time) override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
   base::Time GetTimelineOffset() const override;
-  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  std::vector<DemuxerStream*> GetAllStreams() override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
 
@@ -276,9 +278,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Called by |url_protocol_| whenever |data_source_| returns a read error.
   void OnDataSourceError();
 
-  // Returns the stream from |streams_| that matches |type| as an
-  // FFmpegDemuxerStream.
-  FFmpegDemuxerStream* GetFFmpegStream(DemuxerStream::Type type) const;
+  // Returns the first stream from |streams_| that matches |type| as an
+  // FFmpegDemuxerStream and is enabled.
+  FFmpegDemuxerStream* GetFirstEnabledFFmpegStream(
+      DemuxerStream::Type type) const;
 
   // Called after the streams have been collected from the media, to allow
   // the text renderer to bind each text stream to the cue rendering engine.

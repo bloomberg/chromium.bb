@@ -1181,7 +1181,7 @@ TEST_F(PipelineIntegrationTest,
   ASSERT_EQ(PIPELINE_OK, Start("bear-opus.webm", kHashed | kClockless));
 
   AudioDecoderConfig config =
-      demuxer_->GetStream(DemuxerStream::AUDIO)->audio_decoder_config();
+      demuxer_->GetFirstStream(DemuxerStream::AUDIO)->audio_decoder_config();
 
   // Verify that this file's preroll is not eclipsed by the codec delay so we
   // can detect when preroll is not properly performed.
@@ -1209,7 +1209,7 @@ TEST_F(PipelineIntegrationTest,
   source.EndOfStream();
 
   AudioDecoderConfig config =
-      demuxer_->GetStream(DemuxerStream::AUDIO)->audio_decoder_config();
+      demuxer_->GetFirstStream(DemuxerStream::AUDIO)->audio_decoder_config();
 
   // Verify that this file's preroll is not eclipsed by the codec delay so we
   // can detect when preroll is not properly performed.
@@ -2524,7 +2524,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_Opus441kHz) {
   ASSERT_EQ(PIPELINE_OK, Start("sfx-opus-441.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_EQ(48000, demuxer_->GetStream(DemuxerStream::AUDIO)
+
+  EXPECT_EQ(48000, demuxer_->GetFirstStream(DemuxerStream::AUDIO)
                        ->audio_decoder_config()
                        .samples_per_second());
 }
@@ -2539,7 +2540,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
   ASSERT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
-  EXPECT_EQ(48000, demuxer_->GetStream(DemuxerStream::AUDIO)
+  EXPECT_EQ(48000, demuxer_->GetFirstStream(DemuxerStream::AUDIO)
                        ->audio_decoder_config()
                        .samples_per_second());
 }

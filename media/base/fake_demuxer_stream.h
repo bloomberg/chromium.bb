@@ -37,7 +37,6 @@ class FakeDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
   void Initialize();
 
@@ -112,7 +111,8 @@ class FakeMediaResource : public MediaResource {
   ~FakeMediaResource() override;
 
   // MediaResource implementation.
-  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  std::vector<DemuxerStream*> GetAllStreams() override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
  private:
   FakeDemuxerStream fake_video_stream_;

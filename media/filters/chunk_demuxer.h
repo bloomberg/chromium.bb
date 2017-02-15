@@ -116,7 +116,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   bool enabled() const override;
   void set_enabled(bool enabled, base::TimeDelta timestamp) override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
+
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
@@ -196,7 +197,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
   base::Time GetTimelineOffset() const override;
-  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  std::vector<DemuxerStream*> GetAllStreams() override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
   void AbortPendingReads() override;

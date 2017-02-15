@@ -162,11 +162,6 @@ void DecryptingDemuxerStream::set_enabled(bool enabled,
   demuxer_stream_->set_enabled(enabled, timestamp);
 }
 
-void DecryptingDemuxerStream::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  demuxer_stream_->SetStreamStatusChangeCB(cb);
-}
-
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __func__ << " : state_ = " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());

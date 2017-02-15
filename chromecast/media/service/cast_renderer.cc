@@ -105,9 +105,14 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   pipeline_->SetClient(pipeline_client);
   pipeline_->Initialize(load_type, std::move(backend));
 
-  // Initialize audio.
+  // TODO(servolk): Implement support for multiple streams. For now use the
+  // first enabled audio and video streams to preserve the existing behavior.
   ::media::DemuxerStream* audio_stream =
-      media_resource->GetStream(::media::DemuxerStream::AUDIO);
+      media_resource->GetFirstStream(::media::DemuxerStream::AUDIO);
+  ::media::DemuxerStream* video_stream =
+      media_resource->GetFirstStream(::media::DemuxerStream::VIDEO);
+
+  // Initialize audio.
   if (audio_stream) {
     AvPipelineClient audio_client;
     audio_client.wait_for_key_cb = base::Bind(
@@ -132,8 +137,6 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   }
 
   // Initialize video.
-  ::media::DemuxerStream* video_stream =
-      media_resource->GetStream(::media::DemuxerStream::VIDEO);
   if (video_stream) {
     VideoPipelineClient video_client;
     video_client.av_pipeline_client.wait_for_key_cb = base::Bind(

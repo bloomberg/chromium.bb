@@ -18,9 +18,14 @@ MediaUrlDemuxer::MediaUrlDemuxer(
 MediaUrlDemuxer::~MediaUrlDemuxer() {}
 
 // Should never be called since MediaResource::Type is URL.
-DemuxerStream* MediaUrlDemuxer::GetStream(DemuxerStream::Type type) {
+std::vector<DemuxerStream*> MediaUrlDemuxer::GetAllStreams() {
   NOTREACHED();
-  return nullptr;
+  return std::vector<DemuxerStream*>();
+}
+
+// Should never be called since MediaResource::Type is URL.
+void MediaUrlDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
+  NOTREACHED();
 }
 
 MediaUrlParams MediaUrlDemuxer::GetMediaUrlParams() const {

@@ -132,17 +132,20 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 
   state_ = STATE_CREATE_PIPE;
 
+  // TODO(servolk): Add support for multiple streams. For now use the first
+  // enabled audio and video streams to preserve the existing behavior.
+  ::media::DemuxerStream* audio_demuxer_stream =
+      media_resource_->GetFirstStream(DemuxerStream::AUDIO);
+  ::media::DemuxerStream* video_demuxer_stream =
+      media_resource_->GetFirstStream(DemuxerStream::VIDEO);
+
   // Create audio mojo data pipe handles if audio is available.
-  DemuxerStream* audio_demuxer_stream =
-      media_resource_->GetStream(DemuxerStream::AUDIO);
   std::unique_ptr<mojo::DataPipe> audio_data_pipe;
   if (audio_demuxer_stream) {
     audio_data_pipe = base::WrapUnique(DemuxerStreamAdapter::CreateDataPipe());
   }
 
   // Create video mojo data pipe handles if video is available.
-  DemuxerStream* video_demuxer_stream =
-      media_resource_->GetStream(DemuxerStream::VIDEO);
   std::unique_ptr<mojo::DataPipe> video_data_pipe;
   if (video_demuxer_stream) {
     video_data_pipe = base::WrapUnique(DemuxerStreamAdapter::CreateDataPipe());
@@ -332,9 +335,14 @@ void CourierRenderer::OnDataPipeCreated(
   DCHECK_EQ(state_, STATE_CREATE_PIPE);
   DCHECK(!init_workflow_done_callback_.is_null());
 
+  // TODO(servolk): Add support for multiple streams. For now use the first
+  // enabled audio and video streams to preserve the existing behavior.
+  ::media::DemuxerStream* audio_demuxer_stream =
+      media_resource_->GetFirstStream(DemuxerStream::AUDIO);
+  ::media::DemuxerStream* video_demuxer_stream =
+      media_resource_->GetFirstStream(DemuxerStream::VIDEO);
+
   // Create audio demuxer stream adapter if audio is available.
-  DemuxerStream* audio_demuxer_stream =
-      media_resource_->GetStream(DemuxerStream::AUDIO);
   if (audio_demuxer_stream && audio.is_valid() && audio_handle.is_valid() &&
       audio_rpc_handle != RpcBroker::kInvalidHandle) {
     VLOG(2) << "Initialize audio";
@@ -346,8 +354,6 @@ void CourierRenderer::OnDataPipeCreated(
   }
 
   // Create video demuxer stream adapter if video is available.
-  DemuxerStream* video_demuxer_stream =
-      media_resource_->GetStream(DemuxerStream::VIDEO);
   if (video_demuxer_stream && video.is_valid() && video_handle.is_valid() &&
       video_rpc_handle != RpcBroker::kInvalidHandle) {
     VLOG(2) << "Initialize video";

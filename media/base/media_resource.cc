@@ -19,4 +19,13 @@ MediaResource::Type MediaResource::GetType() const {
   return STREAM;
 }
 
+DemuxerStream* MediaResource::GetFirstStream(DemuxerStream::Type type) {
+  const auto& streams = GetAllStreams();
+  for (const auto& stream : streams) {
+    if (stream->type() == type && stream->enabled())
+      return stream;
+  }
+  return nullptr;
+}
+
 }  // namespace media

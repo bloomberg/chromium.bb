@@ -111,11 +111,6 @@ void FakeDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
   NOTIMPLEMENTED();
 }
 
-void FakeDemuxerStream::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  NOTIMPLEMENTED();
-}
-
 void FakeDemuxerStream::HoldNextRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   read_to_hold_ = next_read_num_;
@@ -224,10 +219,15 @@ FakeMediaResource::FakeMediaResource(int num_video_configs,
 
 FakeMediaResource::~FakeMediaResource() {}
 
-DemuxerStream* FakeMediaResource::GetStream(DemuxerStream::Type type) {
-  if (type == DemuxerStream::Type::AUDIO)
-    return nullptr;
-  return &fake_video_stream_;
-};
+std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
+  std::vector<DemuxerStream*> result;
+  result.push_back(&fake_video_stream_);
+  return result;
+}
+
+void FakeMediaResource::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
+  NOTIMPLEMENTED();
+}
 
 }  // namespace media

@@ -54,11 +54,6 @@ void FakeTextTrackStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
   NOTIMPLEMENTED();
 }
 
-void FakeTextTrackStream::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  NOTIMPLEMENTED();
-}
-
 void FakeTextTrackStream::SatisfyPendingRead(
     const base::TimeDelta& start,
     const base::TimeDelta& duration,

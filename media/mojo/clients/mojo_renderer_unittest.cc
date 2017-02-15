@@ -77,7 +77,7 @@ class MojoRendererTest : public ::testing::Test {
 
     // CreateAudioStream() and CreateVideoStream() overrides expectations for
     // expected non-NULL streams.
-    EXPECT_CALL(demuxer_, GetStream(_)).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
 
     EXPECT_CALL(*mock_renderer_, GetMediaTime())
         .WillRepeatedly(Return(base::TimeDelta()));
@@ -105,8 +105,8 @@ class MojoRendererTest : public ::testing::Test {
 
   void CreateAudioStream() {
     audio_stream_ = CreateStream(DemuxerStream::AUDIO);
-    EXPECT_CALL(demuxer_, GetStream(DemuxerStream::AUDIO))
-        .WillRepeatedly(Return(audio_stream_.get()));
+    streams_.push_back(audio_stream_.get());
+    EXPECT_CALL(demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
   }
 
   void CreateVideoStream(bool is_encrypted = false) {
@@ -114,8 +114,9 @@ class MojoRendererTest : public ::testing::Test {
     video_stream_->set_video_decoder_config(
         is_encrypted ? TestVideoConfig::NormalEncrypted()
                      : TestVideoConfig::Normal());
-    EXPECT_CALL(demuxer_, GetStream(DemuxerStream::VIDEO))
-        .WillRepeatedly(Return(video_stream_.get()));
+    std::vector<DemuxerStream*> streams;
+    streams_.push_back(audio_stream_.get());
+    EXPECT_CALL(demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
   }
 
   void InitializeAndExpect(PipelineStatus status) {
@@ -210,6 +211,7 @@ class MojoRendererTest : public ::testing::Test {
   StrictMock<MockDemuxer> demuxer_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> video_stream_;
+  std::vector<DemuxerStream*> streams_;
 
   // Service side mocks and helpers.
   StrictMock<MockRenderer>* mock_renderer_;

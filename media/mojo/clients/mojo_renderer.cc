@@ -71,38 +71,25 @@ void MojoRenderer::InitializeRendererFromStreams(
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Create audio and video mojom::DemuxerStream and bind its lifetime to
-  // the pipe.
-  DemuxerStream* const audio = media_resource_->GetStream(DemuxerStream::AUDIO);
-  DemuxerStream* const video = media_resource_->GetStream(DemuxerStream::VIDEO);
+  // Create mojom::DemuxerStream for each demuxer stream and bind its lifetime
+  // to the pipe.
+  std::vector<DemuxerStream*> streams = media_resource_->GetAllStreams();
+  std::vector<mojom::DemuxerStreamPtr> stream_proxies;
 
-  std::vector<mojom::DemuxerStreamPtr> streams;
-  if (audio) {
-    mojom::DemuxerStreamPtr audio_stream;
+  for (const auto& stream : streams) {
+    mojom::DemuxerStreamPtr stream_proxy;
     std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
-        base::MakeUnique<MojoDemuxerStreamImpl>(audio,
-                                                MakeRequest(&audio_stream));
+        base::MakeUnique<MojoDemuxerStreamImpl>(stream,
+                                                MakeRequest(&stream_proxy));
+
     // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
     // and the error handler can't be invoked once |mojo_stream| is destroyed.
     mojo_stream->set_connection_error_handler(
         base::Bind(&MojoRenderer::OnDemuxerStreamConnectionError,
                    base::Unretained(this), mojo_stream.get()));
-    streams_.push_back(std::move(mojo_stream));
-    streams.push_back(std::move(audio_stream));
-  }
 
-  if (video) {
-    mojom::DemuxerStreamPtr video_stream;
-    std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
-        base::MakeUnique<MojoDemuxerStreamImpl>(video,
-                                                MakeRequest(&video_stream));
-    // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
-    // and the error handler can't be invoked once |mojo_stream| is destroyed.
-    mojo_stream->set_connection_error_handler(
-        base::Bind(&MojoRenderer::OnDemuxerStreamConnectionError,
-                   base::Unretained(this), mojo_stream.get()));
     streams_.push_back(std::move(mojo_stream));
-    streams.push_back(std::move(video_stream));
+    stream_proxies.push_back(std::move(stream_proxy));
   }
 
   BindRemoteRendererIfNeeded();
@@ -114,7 +101,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), std::move(streams), base::nullopt,
+      std::move(client_ptr_info), std::move(stream_proxies), base::nullopt,
       base::nullopt,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }

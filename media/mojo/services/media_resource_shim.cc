@@ -30,16 +30,17 @@ MediaResourceShim::MediaResourceShim(
 
 MediaResourceShim::~MediaResourceShim() {}
 
-// This function returns only the first stream of the given |type| for now.
-// TODO(servolk): Make this work with multiple streams.
-DemuxerStream* MediaResourceShim::GetStream(DemuxerStream::Type type) {
+std::vector<DemuxerStream*> MediaResourceShim::GetAllStreams() {
   DCHECK(demuxer_ready_cb_.is_null());
-  for (auto& stream : streams_) {
-    if (stream->type() == type)
-      return stream.get();
-  }
+  std::vector<DemuxerStream*> result;
+  for (auto& stream : streams_)
+    result.push_back(stream.get());
+  return result;
+}
 
-  return nullptr;
+void MediaResourceShim::SetStreamStatusChangeCB(
+    const StreamStatusChangeCB& cb) {
+  NOTIMPLEMENTED();
 }
 
 void MediaResourceShim::OnStreamReady() {

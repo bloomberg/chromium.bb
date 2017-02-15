@@ -350,15 +350,17 @@ bool RendererImpl::GetWallClockTimes(
 }
 
 bool RendererImpl::HasEncryptedStream() {
-  DemuxerStream* audio_stream =
-      media_resource_->GetStream(DemuxerStream::AUDIO);
-  if (audio_stream && audio_stream->audio_decoder_config().is_encrypted())
-    return true;
+  std::vector<DemuxerStream*> demuxer_streams =
+      media_resource_->GetAllStreams();
 
-  DemuxerStream* video_stream =
-      media_resource_->GetStream(DemuxerStream::VIDEO);
-  if (video_stream && video_stream->video_decoder_config().is_encrypted())
-    return true;
+  for (const auto& stream : demuxer_streams) {
+    if (stream->type() == DemuxerStream::AUDIO &&
+        stream->audio_decoder_config().is_encrypted())
+      return true;
+    if (stream->type() == DemuxerStream::VIDEO &&
+        stream->video_decoder_config().is_encrypted())
+      return true;
+  }
 
   return false;
 }
@@ -381,16 +383,15 @@ void RendererImpl::InitializeAudioRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
+  // TODO(servolk): Implement proper support for multiple streams. But for now
+  // pick the first enabled stream to preserve the existing behavior.
   DemuxerStream* audio_stream =
-      media_resource_->GetStream(DemuxerStream::AUDIO);
+      media_resource_->GetFirstStream(DemuxerStream::AUDIO);
   if (!audio_stream) {
     audio_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
-
-  audio_stream->SetStreamStatusChangeCB(base::Bind(
-      &RendererImpl::OnStreamStatusChanged, weak_this_, audio_stream));
 
   audio_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::AUDIO, this));
@@ -430,16 +431,15 @@ void RendererImpl::InitializeVideoRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
+  // TODO(servolk): Implement proper support for multiple streams. But for now
+  // pick the first enabled stream to preserve the existing behavior.
   DemuxerStream* video_stream =
-      media_resource_->GetStream(DemuxerStream::VIDEO);
+      media_resource_->GetFirstStream(DemuxerStream::VIDEO);
   if (!video_stream) {
     video_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
-
-  video_stream->SetStreamStatusChangeCB(base::Bind(
-      &RendererImpl::OnStreamStatusChanged, weak_this_, video_stream));
 
   video_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::VIDEO, this));
@@ -468,6 +468,9 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
     FinishInitialization(status);
     return;
   }
+
+  media_resource_->SetStreamStatusChangeCB(
+      base::Bind(&RendererImpl::OnStreamStatusChanged, weak_this_));
 
   if (audio_renderer_) {
     time_source_ = audio_renderer_->GetTimeSource();

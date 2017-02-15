@@ -133,7 +133,9 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(AbortPendingReads, void());
-  MOCK_METHOD1(GetStream, DemuxerStream*(DemuxerStream::Type));
+  MOCK_METHOD0(GetAllStreams, std::vector<DemuxerStream*>());
+  MOCK_METHOD1(SetStreamStatusChangeCB, void(const StreamStatusChangeCB& cb));
+
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
   MOCK_CONST_METHOD0(GetMemoryUsage, int64_t());
@@ -167,7 +169,6 @@ class MockDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation() override;
   MOCK_CONST_METHOD0(enabled, bool());
   MOCK_METHOD2(set_enabled, void(bool, base::TimeDelta));
-  MOCK_METHOD1(SetStreamStatusChangeCB, void(const StreamStatusChangeCB&));
 
  private:
   Type type_;

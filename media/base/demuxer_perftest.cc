@@ -102,23 +102,13 @@ class StreamReader {
 
 StreamReader::StreamReader(media::Demuxer* demuxer,
                            bool enable_bitstream_converter) {
-  media::DemuxerStream* stream =
-      demuxer->GetStream(media::DemuxerStream::AUDIO);
-  if (stream) {
+  std::vector<media::DemuxerStream*> streams = demuxer->GetAllStreams();
+  for (const auto& stream : streams) {
     streams_.push_back(stream);
     end_of_stream_.push_back(false);
     last_read_timestamp_.push_back(media::kNoTimestamp);
     counts_.push_back(0);
-  }
-
-  stream = demuxer->GetStream(media::DemuxerStream::VIDEO);
-  if (stream) {
-    streams_.push_back(stream);
-    end_of_stream_.push_back(false);
-    last_read_timestamp_.push_back(media::kNoTimestamp);
-    counts_.push_back(0);
-
-    if (enable_bitstream_converter)
+    if (enable_bitstream_converter && stream->type() == DemuxerStream::VIDEO)
       stream->EnableBitstreamConverter();
   }
 }

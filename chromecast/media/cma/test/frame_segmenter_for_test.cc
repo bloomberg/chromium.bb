@@ -323,8 +323,9 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
                      false);
   init_event.RunAndWaitForStatus(::media::PIPELINE_OK);
 
-  ::media::DemuxerStream* stream = demuxer.GetStream(
-      audio ? ::media::DemuxerStream::AUDIO : ::media::DemuxerStream::VIDEO);
+  auto stream_type =
+      audio ? ::media::DemuxerStream::AUDIO : ::media::DemuxerStream::VIDEO;
+  ::media::DemuxerStream* stream = demuxer.GetFirstStream(stream_type);
   CHECK(stream);
 
   DemuxResult demux_result;

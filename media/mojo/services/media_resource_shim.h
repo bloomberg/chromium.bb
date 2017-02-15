@@ -26,7 +26,8 @@ class MediaResourceShim : public MediaResource {
   ~MediaResourceShim() override;
 
   // MediaResource interface.
-  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  std::vector<DemuxerStream*> GetAllStreams() override;
+  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
  private:
   // Called as each mojom::DemuxerStream becomes ready.  Once all streams
