@@ -682,6 +682,8 @@ source_set("chromeos") {
     "login/chrome_restart_request.h",
     "login/demo_mode/demo_app_launcher.cc",
     "login/demo_mode/demo_app_launcher.h",
+    "login/demo_mode/demo_mode_detector.cc",
+    "login/demo_mode/demo_mode_detector.h",
     "login/easy_unlock/bootstrap_manager.cc",
     "login/easy_unlock/bootstrap_manager.h",
     "login/easy_unlock/bootstrap_user_context_initializer.cc",

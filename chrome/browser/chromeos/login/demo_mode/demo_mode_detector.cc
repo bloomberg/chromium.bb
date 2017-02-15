@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,23 +15,23 @@
 #include "components/prefs/pref_service.h"
 
 namespace {
-  const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
-  const int kDerelectIdleTimeoutSeconds = 5 * 60;            // 5 minutes.
-  const int kOobeTimerUpdateIntervalSeconds = 5 * 60;        // 5 minutes.
+const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
+const int kDerelectIdleTimeoutSeconds = 5 * 60;            // 5 minutes.
+const int kOobeTimerUpdateIntervalSeconds = 5 * 60;        // 5 minutes.
 }  // namespace
 
 namespace chromeos {
 
-DemoModeDetector::DemoModeDetector()
-    : demo_launched_(false),
-      weak_ptr_factory_(this) {
+// static
+void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
+}
+
+DemoModeDetector::DemoModeDetector() : weak_ptr_factory_(this) {
   SetupTimeouts();
 }
 
-DemoModeDetector::~DemoModeDetector() {
-}
-
-// Public methods.
+DemoModeDetector::~DemoModeDetector() {}
 
 void DemoModeDetector::InitDetection() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -64,18 +64,10 @@ void DemoModeDetector::StopDetection() {
   idle_detector_.reset();
 }
 
-// static
-void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
-}
-
-// Private methods.
-
 void DemoModeDetector::StartIdleDetection() {
-  if (!idle_detector_.get()) {
-    idle_detector_.reset(
-        new IdleDetector(base::Bind(&DemoModeDetector::OnIdle,
-                                    weak_ptr_factory_.GetWeakPtr())));
+  if (!idle_detector_) {
+    idle_detector_.reset(new IdleDetector(
+        base::Bind(&DemoModeDetector::OnIdle, weak_ptr_factory_.GetWeakPtr())));
   }
   idle_detector_->Start(derelict_idle_timeout_);
 }
@@ -83,9 +75,7 @@ void DemoModeDetector::StartIdleDetection() {
 void DemoModeDetector::StartOobeTimer() {
   if (oobe_timer_.IsRunning())
     return;
-  oobe_timer_.Start(FROM_HERE,
-                    oobe_timer_update_interval_,
-                    this,
+  oobe_timer_.Start(FROM_HERE, oobe_timer_update_interval_, this,
                     &DemoModeDetector::OnOobeTimerUpdate);
 }
 
@@ -134,7 +124,6 @@ void DemoModeDetector::SetupTimeouts() {
     derelict_idle_timeout = kDerelectIdleTimeoutSeconds;
   }
   derelict_idle_timeout_ = base::TimeDelta::FromSeconds(derelict_idle_timeout);
-
 
   int oobe_timer_update_interval;
   if (!cmdline->HasSwitch(switches::kOobeTimerInterval) ||
