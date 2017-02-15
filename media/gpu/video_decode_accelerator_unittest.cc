@@ -821,10 +821,7 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
 
   // Flush decoder after all BitstreamBuffers are processed.
   if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
-    // TODO(owenlin): We should not have to check the number of
-    // |outstanding_decodes_|. |decoder_| should be able to accept Flush()
-    // before it's done with outstanding decodes. (crbug.com/528183)
-    if (outstanding_decodes_ == 0) {
+    if (state_ != CS_FLUSHING) {
       decoder_->Flush();
       SetState(CS_FLUSHING);
     }
