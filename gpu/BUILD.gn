@@ -55,6 +55,9 @@ shared_library("command_buffer_gles2") {
     "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
     "EGLAPIENTRY=",
   ]
+  if (is_android) {
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  }
   if (current_os == "win") {
     defines += [ "EGLAPI=__declspec(dllexport)" ]
   } else {
