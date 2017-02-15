@@ -684,6 +684,7 @@ html element link
     property import
     property integrity
     property media
+    property referrerPolicy
     property rel
     property relList
     property rev
