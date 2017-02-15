@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -268,9 +269,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
                         static_cast<const base::DictionaryValue*>(value));
 
     case base::Value::Type::BINARY:
-      return ToArrayBuffer(isolate,
-                           creation_context,
-                           static_cast<const base::BinaryValue*>(value));
+      return ToArrayBuffer(isolate, creation_context, value);
 
     default:
       LOG(ERROR) << "Unexpected value type: " << value->GetType();
@@ -501,9 +500,9 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ArrayBuffer(
   } else if (val->IsArrayBufferView()) {
     v8::Local<v8::ArrayBufferView> view = val.As<v8::ArrayBufferView>();
     size_t byte_length = view->ByteLength();
-    auto buffer = base::MakeUnique<char[]>(byte_length);
-    view->CopyContents(buffer.get(), byte_length);
-    return base::MakeUnique<base::BinaryValue>(std::move(buffer), byte_length);
+    std::vector<char> buffer(byte_length);
+    view->CopyContents(buffer.data(), buffer.size());
+    return base::MakeUnique<base::BinaryValue>(std::move(buffer));
   } else {
     NOTREACHED() << "Only ArrayBuffer and ArrayBufferView should get here.";
     return nullptr;

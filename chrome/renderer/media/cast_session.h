@@ -15,9 +15,10 @@
 #include "net/base/ip_endpoint.h"
 
 namespace base {
-class BinaryValue;
 class DictionaryValue;
 class SingleThreadTaskRunner;
+class Value;
+using BinaryValue = Value;
 }  // namespace base
 
 namespace media {

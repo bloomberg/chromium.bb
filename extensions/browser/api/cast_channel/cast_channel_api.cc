@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"

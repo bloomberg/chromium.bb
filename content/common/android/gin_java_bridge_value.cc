@@ -57,11 +57,9 @@ std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateObjectIDValue(
 bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
   if (!value->IsType(base::Value::Type::BINARY))
     return false;
-  const base::BinaryValue* binary_value =
-      reinterpret_cast<const base::BinaryValue*>(value);
-  if (binary_value->GetSize() < sizeof(Header))
+  if (value->GetSize() < sizeof(Header))
     return false;
-  base::Pickle pickle(binary_value->GetBuffer(), binary_value->GetSize());
+  base::Pickle pickle(value->GetBuffer(), value->GetSize());
   // Broken binary value: payload or header size is wrong
   if (!pickle.data() || pickle.size() - pickle.payload_size() != sizeof(Header))
     return false;
@@ -74,10 +72,8 @@ bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
 std::unique_ptr<const GinJavaBridgeValue> GinJavaBridgeValue::FromValue(
     const base::Value* value) {
   return std::unique_ptr<const GinJavaBridgeValue>(
-      value->IsType(base::Value::Type::BINARY)
-          ? new GinJavaBridgeValue(
-                reinterpret_cast<const base::BinaryValue*>(value))
-          : NULL);
+      value->IsType(base::Value::Type::BINARY) ? new GinJavaBridgeValue(value)
+                                               : NULL);
 }
 
 GinJavaBridgeValue::Type GinJavaBridgeValue::GetType() const {

@@ -179,7 +179,8 @@ TEST_F(DefaultSearchPolicyHandlerTest, InvalidType) {
     // Try changing policy param to BinaryValue and check that policy becomes
     // invalid.
     policy.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, base::WrapUnique(new base::BinaryValue()),
+               POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::Value>(base::Value::Type::BINARY),
                nullptr);
     UpdateProviderPolicy(policy);
 

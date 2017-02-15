@@ -17,8 +17,9 @@ class CastRtpStream;
 class CastUdpTransport;
 
 namespace base {
-class BinaryValue;
 class DictionaryValue;
+class Value;
+using BinaryValue = Value;
 }
 
 namespace net {

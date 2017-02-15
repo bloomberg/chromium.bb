@@ -37,7 +37,6 @@ bool MessageInfoToCastMessage(const MessageInfo& message,
   // Determine the type of the base::Value and set the message payload
   // appropriately.
   std::string data;
-  base::BinaryValue* real_value;
   switch (message.data->GetType()) {
     // JS string
     case base::Value::Type::STRING:
@@ -48,12 +47,9 @@ bool MessageInfoToCastMessage(const MessageInfo& message,
       break;
     // JS ArrayBuffer
     case base::Value::Type::BINARY:
-      real_value = static_cast<base::BinaryValue*>(message.data.get());
-      if (real_value->GetBuffer()) {
-        message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
-        message_proto->set_payload_binary(real_value->GetBuffer(),
-                                          real_value->GetSize());
-      }
+      message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
+      message_proto->set_payload_binary(message.data->GetBuffer(),
+                                        message.data->GetSize());
       break;
     default:
       // Unknown value type.  message_proto will remain uninitialized because

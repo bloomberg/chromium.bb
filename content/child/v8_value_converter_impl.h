@@ -13,10 +13,10 @@
 #include "content/public/child/v8_value_converter.h"
 
 namespace base {
-class BinaryValue;
 class DictionaryValue;
 class ListValue;
 class Value;
+using BinaryValue = Value;
 }
 
 namespace content {

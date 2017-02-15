@@ -171,7 +171,7 @@ const base::BinaryValue* VideoFrameMetadata::GetBinaryValue(Key key) const {
   if (dictionary_.GetWithoutPathExpansion(ToInternalKey(key),
                                           &internal_value) &&
       internal_value->GetType() == base::Value::Type::BINARY) {
-    return static_cast<const base::BinaryValue*>(internal_value);
+    return internal_value;
   }
   return nullptr;
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/values.h"
 #include "chromecast/base/scoped_temp_file.h"
@@ -53,7 +55,7 @@ TEST(DeserializeFromJson, PoorlyFormedJsonObject) {
 }
 
 TEST(SerializeToJson, BadValue) {
-  base::BinaryValue value(std::unique_ptr<char[]>(new char[12]), 12);
+  base::BinaryValue value(std::vector<char>(12));
   std::unique_ptr<std::string> str = SerializeToJson(value);
   EXPECT_EQ(nullptr, str.get());
 }
@@ -116,7 +118,7 @@ TEST(DeserializeJsonFromFile, PoorlyFormedJsonObject) {
 TEST(SerializeJsonToFile, BadValue) {
   ScopedTempFile temp;
 
-  base::BinaryValue value(std::unique_ptr<char[]>(new char[12]), 12);
+  base::BinaryValue value(std::vector<char>(12));
   ASSERT_FALSE(SerializeJsonToFile(temp.path(), value));
   std::string str(temp.Read());
   EXPECT_TRUE(str.empty());

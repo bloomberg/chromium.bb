@@ -18,8 +18,9 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace base {
-class BinaryValue;
 class DictionaryValue;
+class Value;
+using BinaryValue = Value;
 }
 
 class CastAudioSink;

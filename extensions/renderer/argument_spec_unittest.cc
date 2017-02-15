@@ -262,7 +262,8 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     const char kBinarySpec[] = "{ 'type': 'binary' }";
     ArgumentSpec spec(*ValueFromString(kBinarySpec));
     // Simple case: empty ArrayBuffer -> empty BinaryValue.
-    ExpectSuccess(spec, "(new ArrayBuffer())", base::BinaryValue());
+    ExpectSuccess(spec, "(new ArrayBuffer())",
+                  base::Value(base::Value::Type::BINARY));
     {
       // A non-empty (but zero-filled) ArrayBufferView.
       const char kBuffer[] = {0, 0, 0, 0};

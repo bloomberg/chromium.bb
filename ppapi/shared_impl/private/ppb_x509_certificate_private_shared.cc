@@ -64,10 +64,8 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
       return StringVar::StringToPPVar(val);
     }
     case base::Value::Type::BINARY: {
-      const base::BinaryValue* binary =
-          static_cast<const base::BinaryValue*>(value);
-      uint32_t size = static_cast<uint32_t>(binary->GetSize());
-      const char* buffer = binary->GetBuffer();
+      uint32_t size = static_cast<uint32_t>(value->GetSize());
+      const char* buffer = value->GetBuffer();
       PP_Var array_buffer =
           PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(size,
                                                                      buffer);

@@ -523,7 +523,7 @@ void SocketReadFunction::OnCompleted(int bytes_read,
                 base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
                                                           bytes_read));
   } else {
-    result->Set(kDataKey, new base::BinaryValue());
+    result->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
   }
   SetResult(std::move(result));
 
@@ -601,7 +601,7 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
                 base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
                                                           bytes_read));
   } else {
-    result->Set(kDataKey, new base::BinaryValue());
+    result->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
   }
   result->SetString(kAddressKey, address);
   result->SetInteger(kPortKey, port);
