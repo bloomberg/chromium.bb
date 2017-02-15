@@ -11,6 +11,7 @@ action("credits") {
   # be at the same location.
   about_credits_file = "$root_build_dir/gen/remoting/CREDITS.txt"
   script = "//tools/licenses.py"
+  depfile = "$target_gen_dir/$target_name.d"
 
   inputs = [
     "credits.tmpl",
@@ -28,5 +29,7 @@ action("credits") {
     rebase_path("credits.tmpl", root_build_dir),
     "--entry-template",
     rebase_path("credits_entry.tmpl", root_build_dir),
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
   ]
 }

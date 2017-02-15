@@ -36,6 +36,8 @@ third_party = \
   imp.load_source('PRESUBMIT', \
                   os.path.join(REPOSITORY_ROOT, 'third_party', 'PRESUBMIT.py'))
 
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android/gyp/util'))
+import build_utils
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'third_party'))
 import jinja2
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
@@ -170,15 +172,9 @@ def _Scan():
 
 class TemplateEntryGenerator(object):
   def __init__(self):
-    self._generate_licenses_file_list_only = False
     self._toc_index = 0
 
-  def SetGenerateLicensesFileListOnly(self, generate_licenses_file_list_only):
-    self._generate_licenses_file_list_only = generate_licenses_file_list_only
-
   def _ReadFileGuessEncoding(self, name):
-    if self._generate_licenses_file_list_only:
-      return ''
     contents = ''
     with open(name, 'rb') as input_file:
       contents = input_file.read()
@@ -200,15 +196,13 @@ class TemplateEntryGenerator(object):
     }
 
 
-def GenerateNoticeFile(generate_licenses_file_list_only=False):
+def GenerateNoticeFile():
   """Generates the contents of an Android NOTICE file for the third-party code.
   This is used by the snapshot tool.
   Returns:
-    The contents of the NOTICE file.
+    A tuple of (input paths, contents of the NOTICE file).
   """
-
   generator = TemplateEntryGenerator()
-  generator.SetGenerateLicensesFileListOnly(generate_licenses_file_list_only)
   # Start from Chromium's LICENSE file
   entries = [generator.MetadataToTemplateEntry({
     'Name': 'The Chromium Project',
@@ -234,14 +228,16 @@ def GenerateNoticeFile(generate_licenses_file_list_only=False):
     if license_file and license_file != licenses.NOT_SHIPPED:
       entries.append(generator.MetadataToTemplateEntry(metadata))
 
-  if generate_licenses_file_list_only:
-    return [entry['license_file'] for entry in entries]
-  else:
-    env = jinja2.Environment(
-      loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-      extensions=['jinja2.ext.autoescape'])
-    template = env.get_template('licenses_notice.tmpl')
-    return template.render({ 'entries': entries }).encode('utf8')
+  entries.sort(key=lambda entry: entry['name'])
+
+  license_file_list = sorted(set([entry['license_file'] for entry in entries]))
+  license_file_list = [os.path.relpath(p) for p in license_file_list]
+  env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'])
+  template = env.get_template('licenses_notice.tmpl')
+  notice_file_contents = template.render({'entries': entries}).encode('utf8')
+  return (license_file_list, notice_file_contents)
 
 
 def main():
@@ -254,16 +250,16 @@ def main():
   parser = optparse.OptionParser(formatter=FormatterWithNewLines(),
                                  usage='%prog [options]')
   parser.add_option('--json', help='Path to JSON output file')
+  build_utils.AddDepfileOption(parser)
   parser.description = (__doc__ +
                         '\nCommands:\n'
                         '  scan Check licenses.\n'
-                        '  notice_deps Generate the list of dependencies for '
                         'Android NOTICE file.\n'
                         '  notice [file] Generate Android NOTICE file on '
                         'stdout or into |file|.\n'
                         '  display_copyrights Display autorship on the files'
                         ' using names provided via stdin.\n')
-  (options, args) = parser.parse_args()
+  options, args = parser.parse_args()
   if len(args) < 1:
     parser.print_help()
     return ScanResult.Errors
@@ -276,25 +272,23 @@ def main():
       with open(options.json, 'w') as f:
         json.dump(problem_paths, f)
     return scan_result
-  elif args[0] == 'notice_deps':
-    # 'set' is used to eliminate duplicate references to the same license file.
-    print ' '.join(
-      sorted(set(GenerateNoticeFile(generate_licenses_file_list_only=True))))
-    return ScanResult.Ok
-  elif args[0] == 'gn_notice_deps':
-    # generate list for gn.
-    # 'set' is used to eliminate duplicate references to the same license file.
-    gn_file_list = ['"' + f + '"' for f in
-        sorted(set(GenerateNoticeFile(generate_licenses_file_list_only=True)))]
-    print '[%s] ' % ','.join(gn_file_list)
-    return ScanResult.Ok
   elif args[0] == 'notice':
-    notice_file_contents = GenerateNoticeFile()
+    license_file_list, notice_file_contents = GenerateNoticeFile()
     if len(args) == 1:
       print notice_file_contents
     else:
       with open(args[1], 'w') as output_file:
         output_file.write(notice_file_contents)
+    if options.depfile:
+      assert args[1]
+      # Add in build.ninja so that the target will be considered dirty whenever
+      # gn gen is run. Otherwise, it will fail to notice new files being added.
+      # This is still no perfect, as it will fail if no build files are changed,
+      # but a new README.chromium / LICENSE is added. This shouldn't happen in
+      # practice however.
+      build_utils.WriteDepfile(options.depfile, args[1],
+                               license_file_list + ['build.ninja'])
+
     return ScanResult.Ok
   elif args[0] == 'display_copyrights':
     files = sys.stdin.read().splitlines()

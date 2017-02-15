@@ -11,6 +11,7 @@ import("//remoting/webapp/files.gni")
 action("credits") {
   about_credits_file = "$target_gen_dir/credits.html"
   script = "//tools/licenses.py"
+  depfile = "$target_gen_dir/$target_name.d"
 
   inputs = [
     "base/html/credits.tmpl",
@@ -28,6 +29,8 @@ action("credits") {
     rebase_path("base/html/credits.tmpl", root_build_dir),
     "--entry-template",
     rebase_path("base/html/credits_entry.tmpl", root_build_dir),
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
   ]
 }
 

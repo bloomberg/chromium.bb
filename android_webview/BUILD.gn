@@ -149,16 +149,18 @@ android_assets("assets") {
 
 action("generate_webview_license_notice") {
   script = "tools/webview_licenses.py"
-  inputs = exec_script("//android_webview/tools/webview_licenses.py",
-                       [ "gn_notice_deps" ],
-                       "value")
-  inputs += [ "tools/licenses_notice.tmpl" ]
+  depfile = "$target_gen_dir/$target_name.d"
+  inputs = [
+    "tools/licenses_notice.tmpl",
+  ]
   outputs = [
     webview_license_path,
   ]
   args = [
     "notice",
-    rebase_path(webview_license_path),
+    rebase_path(webview_license_path, root_build_dir),
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
   ]
 }
 
