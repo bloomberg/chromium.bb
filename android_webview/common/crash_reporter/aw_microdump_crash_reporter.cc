@@ -38,7 +38,19 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   size_t RegisterCrashKeys() override;
 
   bool IsRunningUnattended() override { return false; }
-  bool GetCollectStatsConsent() override { return false; }
+  bool GetCollectStatsConsent() override {
+#if defined(GOOGLE_CHROME_BUILD)
+    // TODO(gsennton): Enabling minidump-generation unconditionally means we
+    // will generate minidumps even if the user doesn't consent to minidump
+    // uploads. However, we will check user-consent before uploading any
+    // minidumps, if we do not have user consent we will delete the minidumps.
+    // We should investigate whether we can avoid generating minidumps
+    // altogether if we don't have user consent, see crbug.com/692485
+    return true;
+#else
+    return false;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  }
 
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override {
