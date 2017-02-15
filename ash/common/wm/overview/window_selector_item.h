@@ -26,10 +26,6 @@ namespace views {
 class ImageButton;
 }
 
-namespace wm {
-class Shadow;
-}
-
 namespace ash {
 
 class WindowSelector;
@@ -197,9 +193,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |caption_container_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
-
-  // Shadow around the item in overview.
-  std::unique_ptr<::wm::Shadow> shadow_;
 
   // Container view that owns a Button view covering the |transform_window_|.
   // That button serves as an event shield to receive all events such as clicks

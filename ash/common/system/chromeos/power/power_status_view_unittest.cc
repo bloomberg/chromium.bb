@@ -4,9 +4,8 @@
 
 #include "ash/common/system/chromeos/power/power_status_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/test/ash_md_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,20 +18,20 @@ using power_manager::PowerSupplyProperties;
 
 namespace ash {
 
-class PowerStatusViewTest : public test::AshMDTestBase {
+class PowerStatusViewTest : public test::AshTestBase {
  public:
   PowerStatusViewTest() {}
   ~PowerStatusViewTest() override {}
 
   // Overridden from testing::Test:
   void SetUp() override {
-    test::AshMDTestBase::SetUp();
+    test::AshTestBase::SetUp();
     view_.reset(new PowerStatusView(false));
   }
 
   void TearDown() override {
     view_.reset();
-    test::AshMDTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:
@@ -61,14 +60,7 @@ class PowerStatusViewTest : public test::AshMDTestBase {
   DISALLOW_COPY_AND_ASSIGN(PowerStatusViewTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    PowerStatusViewTest,
-    testing::Values(MaterialDesignController::NON_MATERIAL,
-                    MaterialDesignController::MATERIAL_NORMAL,
-                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
-
-TEST_P(PowerStatusViewTest, Basic) {
+TEST_F(PowerStatusViewTest, Basic) {
   EXPECT_FALSE(IsPercentageVisible());
   EXPECT_TRUE(IsTimeStatusVisible());
 
@@ -122,33 +114,6 @@ TEST_P(PowerStatusViewTest, Basic) {
   UpdatePowerStatus(prop);
   EXPECT_TRUE(IsPercentageVisible());
   EXPECT_FALSE(IsTimeStatusVisible());
-}
-
-TEST_P(PowerStatusViewTest, AvoidNeedlessBatteryImageUpdates) {
-  // No battery icon is shown in the material design system menu.
-  if (ash::MaterialDesignController::UseMaterialDesignSystemIcons())
-    return;
-
-  PowerSupplyProperties prop;
-  prop.set_external_power(PowerSupplyProperties::AC);
-  prop.set_battery_state(PowerSupplyProperties::CHARGING);
-  prop.set_battery_percent(50.0);
-  UpdatePowerStatus(prop);
-
-  // Create a copy of the view's ImageSkia (backed by the same bitmap). We hang
-  // onto this to ensure that the original bitmap's memory doesn't get recycled
-  // for a new bitmap, ensuring that we can safely compare bitmap addresses
-  // later to check if the image that's being displayed has changed.
-  const gfx::ImageSkia original_image = GetBatteryImage();
-
-  // Send a no-op update. The old image should still be used.
-  UpdatePowerStatus(prop);
-  EXPECT_EQ(original_image.bitmap(), GetBatteryImage().bitmap());
-
-  // Make a big change to the percentage and check that a new image is used.
-  prop.set_battery_percent(100.0);
-  UpdatePowerStatus(prop);
-  EXPECT_NE(original_image.bitmap(), GetBatteryImage().bitmap());
 }
 
 }  // namespace ash

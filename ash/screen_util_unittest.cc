@@ -8,7 +8,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
-#include "ash/test/ash_md_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -20,18 +20,9 @@
 namespace ash {
 namespace test {
 
-using ScreenUtilTest = AshMDTestBase;
+using ScreenUtilTest = AshTestBase;
 
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    ScreenUtilTest,
-    testing::Values(MaterialDesignController::NON_MATERIAL,
-                    MaterialDesignController::MATERIAL_NORMAL,
-                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
-
-TEST_P(ScreenUtilTest, Bounds) {
-  const int height_offset = GetMdMaximizedWindowHeightOffset();
-
+TEST_F(ScreenUtilTest, Bounds) {
   UpdateDisplay("600x600,500x500");
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
@@ -42,11 +33,11 @@ TEST_P(ScreenUtilTest, Bounds) {
 
   // Maximized bounds. By default the shelf is 47px tall (ash::kShelfSize).
   EXPECT_EQ(
-      gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+      gfx::Rect(0, 0, 600, 552).ToString(),
       ScreenUtil::GetMaximizedWindowBoundsInParent(primary->GetNativeView())
           .ToString());
   EXPECT_EQ(
-      gfx::Rect(0, 0, 500, 453 + height_offset).ToString(),
+      gfx::Rect(0, 0, 500, 452).ToString(),
       ScreenUtil::GetMaximizedWindowBoundsInParent(secondary->GetNativeView())
           .ToString());
 
@@ -60,18 +51,18 @@ TEST_P(ScreenUtilTest, Bounds) {
 
   // Work area bounds
   EXPECT_EQ(
-      gfx::Rect(0, 0, 600, 553 + height_offset).ToString(),
+      gfx::Rect(0, 0, 600, 552).ToString(),
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(primary->GetNativeView())
           .ToString());
   EXPECT_EQ(
-      gfx::Rect(0, 0, 500, 453 + height_offset).ToString(),
+      gfx::Rect(0, 0, 500, 452).ToString(),
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(secondary->GetNativeView())
           .ToString());
 }
 
 // Test verifies a stable handling of secondary screen widget changes
 // (crbug.com/226132).
-TEST_P(ScreenUtilTest, StabilityTest) {
+TEST_F(ScreenUtilTest, StabilityTest) {
   UpdateDisplay("600x600,500x500");
   views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
@@ -85,7 +76,7 @@ TEST_P(ScreenUtilTest, StabilityTest) {
   secondary->Close();
 }
 
-TEST_P(ScreenUtilTest, ConvertRect) {
+TEST_F(ScreenUtilTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
 
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
@@ -114,7 +105,7 @@ TEST_P(ScreenUtilTest, ConvertRect) {
                 .ToString());
 }
 
-TEST_P(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
+TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(

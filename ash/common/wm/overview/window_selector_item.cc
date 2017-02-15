@@ -44,7 +44,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/shadow.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -500,19 +499,6 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 void WindowSelectorItem::SetSelected(bool selected) {
   selected_ = selected;
   background_view_->AnimateBackgroundOpacity(selected ? 0.f : kHeaderOpacity);
-
-  if (shadow_) {
-    ui::ScopedLayerAnimationSettings animation_settings_shadow(
-        shadow_->shadow_layer()->GetAnimator());
-    animation_settings_shadow.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kSelectorFadeInMilliseconds));
-    animation_settings_shadow.SetTweenType(
-        selected ? gfx::Tween::FAST_OUT_LINEAR_IN
-                 : gfx::Tween::LINEAR_OUT_SLOW_IN);
-    animation_settings_shadow.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    shadow_->shadow_layer()->SetOpacity(selected ? 0.0f : 1.0f);
-  }
 }
 
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
@@ -668,18 +654,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   label_view_->SetVisible(false);
   item_widget_->SetOpacity(0);
   item_widget_->Show();
-
-  // TODO(varkha): Restore shadows when programmatic shadows exist.
-  // Note: current shadow implementation does not allow proper animation when
-  // the parent layer bounds change during the animation since
-  // Shadow::UpdateLayerBounds() only happens before the animation starts.
-  if (ash::MaterialDesignController::GetMode() ==
-      ash::MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL) {
-    shadow_.reset(new ::wm::Shadow());
-    shadow_->Init(::wm::ShadowElevation::MEDIUM);
-    shadow_->layer()->SetVisible(true);
-    item_widget_->GetLayer()->Add(shadow_->layer());
-  }
   item_widget_->GetLayer()->SetMasksToBounds(false);
 }
 
@@ -736,11 +710,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
   label_transform.Translate(transformed_window_bounds.x(),
                             transformed_window_bounds.y());
   widget_window->SetTransform(label_transform);
-
-  gfx::Rect shadow_bounds(label_rect.size());
-  shadow_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
-  if (shadow_)
-    shadow_->SetContentBounds(shadow_bounds);
 }
 
 void WindowSelectorItem::AnimateOpacity(float opacity,

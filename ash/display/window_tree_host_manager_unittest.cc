@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
@@ -16,7 +15,6 @@
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/cursor_manager_test_api.h"
@@ -405,8 +403,7 @@ class TestMouseWatcherListener : public views::MouseWatcherListener {
 
 }  // namespace
 
-class WindowTreeHostManagerTest : public test::AshMDTestBase,
-                                  public TestHelper {
+class WindowTreeHostManagerTest : public test::AshTestBase, public TestHelper {
  public:
   WindowTreeHostManagerTest() : TestHelper(this){};
   ~WindowTreeHostManagerTest() override{};
@@ -414,13 +411,6 @@ class WindowTreeHostManagerTest : public test::AshMDTestBase,
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerTest);
 };
-
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    WindowTreeHostManagerTest,
-    testing::Values(MaterialDesignController::NON_MATERIAL,
-                    MaterialDesignController::MATERIAL_NORMAL,
-                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 TEST_F(WindowTreeHostManagerShutdownTest, Shutdown) {
   UpdateDisplay("444x333, 200x200");
@@ -430,7 +420,7 @@ TEST_F(WindowTreeHostManagerStartupTest, Startup) {
   EXPECT_TRUE(startup_helper()->displays_initialized());
 }
 
-TEST_P(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
+TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -592,7 +582,7 @@ display::ManagedDisplayInfo CreateMirroredDisplayInfo(
 
 }  // namespace
 
-TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
+TEST_F(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -641,7 +631,7 @@ TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   EXPECT_EQ("0,0 500x500", w1->bounds().ToString());
 }
 
-TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
+TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   // Creates windows to catch activation change event.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
@@ -751,7 +741,7 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 }
 
-TEST_P(WindowTreeHostManagerTest, FindNearestDisplay) {
+TEST_F(WindowTreeHostManagerTest, FindNearestDisplay) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
 
@@ -810,9 +800,7 @@ TEST_P(WindowTreeHostManagerTest, FindNearestDisplay) {
                 .id());
 }
 
-TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
-  const int height_offset = GetMdMaximizedWindowHeightOffset();
-
+TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
 
@@ -845,10 +833,10 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(nullptr).id());
 
   EXPECT_EQ("0,0 200x200", primary_display.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 200, 153 + height_offset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 200, 152).ToString(),
             primary_display.work_area().ToString());
   EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(200, 0, 300, 253 + height_offset).ToString(),
+  EXPECT_EQ(gfx::Rect(200, 0, 300, 252).ToString(),
             secondary_display.work_area().ToString());
   EXPECT_EQ("id=2200000001, parent=2200000000, right, 50",
             display_manager()
@@ -882,10 +870,10 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display swapped_secondary = display_manager()->GetSecondaryDisplay();
   EXPECT_EQ("0,0 300x300", swapped_primary.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 253 + height_offset).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 252).ToString(),
             swapped_primary.work_area().ToString());
   EXPECT_EQ("-200,-50 200x200", swapped_secondary.bounds().ToString());
-  EXPECT_EQ(gfx::Rect(-200, -50, 200, 153 + height_offset).ToString(),
+  EXPECT_EQ(gfx::Rect(-200, -50, 200, 152).ToString(),
             swapped_secondary.work_area().ToString());
 
   // Calling the same ID don't do anything.
@@ -960,7 +948,7 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
   EXPECT_TRUE(primary_root->Contains(shelf_window));
 }
 
-TEST_P(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
+TEST_F(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
   UpdateDisplay("500x400,400x300,300x200");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList non_primary_ids =
@@ -1080,7 +1068,7 @@ TEST_P(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
   }
 }
 
-TEST_P(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
+TEST_F(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
   UpdateDisplay("600x500,500x400,400x300,300x200");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList non_primary_ids =
@@ -1189,7 +1177,7 @@ TEST_P(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
   }
 }
 
-TEST_P(WindowTreeHostManagerTest, OverscanInsets) {
+TEST_F(WindowTreeHostManagerTest, OverscanInsets) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
   TestEventHandler event_handler;
@@ -1236,7 +1224,7 @@ TEST_P(WindowTreeHostManagerTest, OverscanInsets) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_P(WindowTreeHostManagerTest, Rotate) {
+TEST_F(WindowTreeHostManagerTest, Rotate) {
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1315,7 +1303,7 @@ TEST_P(WindowTreeHostManagerTest, Rotate) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
+TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1350,7 +1338,7 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_P(WindowTreeHostManagerTest, TouchScale) {
+TEST_F(WindowTreeHostManagerTest, TouchScale) {
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1379,7 +1367,7 @@ TEST_P(WindowTreeHostManagerTest, TouchScale) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_P(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
+TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1438,7 +1426,7 @@ TEST_P(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
 
 // Make sure that the compositor based mirroring can switch
 // from/to dock mode.
-TEST_P(WindowTreeHostManagerTest, DockToSingle) {
+TEST_F(WindowTreeHostManagerTest, DockToSingle) {
   const int64_t internal_id = 1;
 
   const display::ManagedDisplayInfo internal_display_info =
@@ -1480,7 +1468,7 @@ TEST_P(WindowTreeHostManagerTest, DockToSingle) {
 
 // Tests if switching two displays at the same time while the primary display
 // is swapped should not cause a crash. (crbug.com/426292)
-TEST_P(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
+TEST_F(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
   const display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
   const display::ManagedDisplayInfo second_display_info =
@@ -1540,7 +1528,7 @@ class RootWindowTestObserver : public aura::WindowObserver {
 // 2) both are disconnected and new one with the same size as b) is connected
 // in one configuration event.
 // See crbug.com/547280.
-TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
+TEST_F(WindowTreeHostManagerTest, ReplacePrimary) {
   display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
   first_display_info.SetBounds(gfx::Rect(0, 0, 400, 400));
@@ -1568,7 +1556,7 @@ TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
   primary_root->RemoveObserver(&test_observer);
 }
 
-TEST_P(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
+TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
   UpdateDisplay("200x200,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -1608,7 +1596,7 @@ TEST_P(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
   EXPECT_EQ("450,10", env->last_mouse_location().ToString());
 }
 
-TEST_P(WindowTreeHostManagerTest,
+TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_2ndOnLeft) {
   // Set the 2nd display on the left.
   display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
@@ -1644,7 +1632,7 @@ TEST_P(WindowTreeHostManagerTest,
 
 // Test that the cursor swaps displays and that its scale factor and rotation
 // are updated when the primary display is swapped.
-TEST_P(WindowTreeHostManagerTest,
+TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_SwapPrimary) {
   UpdateDisplay("200x200,200x200*2/r");
 
@@ -1670,7 +1658,7 @@ TEST_P(WindowTreeHostManagerTest,
 
 // Test that the cursor moves to the other display and that its scale factor
 // and rotation are updated when the primary display is disconnected.
-TEST_P(WindowTreeHostManagerTest,
+TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected) {
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::GetInstance();
@@ -1703,7 +1691,7 @@ TEST_P(WindowTreeHostManagerTest,
 
 // GetRootWindowForDisplayId() for removed display::Display during
 // OnDisplayRemoved() should not cause crash. See http://crbug.com/415222
-TEST_P(WindowTreeHostManagerTest,
+TEST_F(WindowTreeHostManagerTest,
        GetRootWindowForDisplayIdDuringDisplayDisconnection) {
   UpdateDisplay("300x300,200x200");
   aura::Window* root2 = Shell::GetInstance()

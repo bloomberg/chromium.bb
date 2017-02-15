@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/browser_with_test_window_test.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -61,8 +60,7 @@ void BrowserWithTestWindowTest::SetUp() {
   ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
   ash_test_helper_.reset(
       new ash::test::AshTestHelper(ash_test_environment_.get()));
-  ash_test_helper_->SetUp(true,
-                          ash::MaterialDesignController::Mode::UNINITIALIZED);
+  ash_test_helper_->SetUp(true);
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif

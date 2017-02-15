@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -37,9 +35,7 @@ class TestObserver : public PowerStatus::Observer {
 
 }  // namespace
 
-class PowerStatusTest
-    : public testing::Test,
-      public testing::WithParamInterface<MaterialDesignController::Mode> {
+class PowerStatusTest : public testing::Test {
  public:
   PowerStatusTest() : power_status_(NULL) {}
   ~PowerStatusTest() override {}
@@ -50,12 +46,9 @@ class PowerStatusTest
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);
     power_status_->AddObserver(test_observer_.get());
-    material_design_state_.reset(
-        new test::MaterialDesignControllerTestAPI(GetParam()));
   }
 
   void TearDown() override {
-    material_design_state_.reset();
     power_status_->RemoveObserver(test_observer_.get());
     test_observer_.reset();
     PowerStatus::Shutdown();
@@ -68,21 +61,10 @@ class PowerStatusTest
   std::unique_ptr<TestObserver> test_observer_;
 
  private:
-  std::unique_ptr<test::MaterialDesignControllerTestAPI> material_design_state_;
-
   DISALLOW_COPY_AND_ASSIGN(PowerStatusTest);
 };
 
-// The prefix has intentionally been left blank since there is only one
-// parameterization of this test fixture.
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank */,
-    PowerStatusTest,
-    testing::Values(MaterialDesignController::NON_MATERIAL,
-                    MaterialDesignController::MATERIAL_NORMAL,
-                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
-
-TEST_P(PowerStatusTest, InitializeAndUpdate) {
+TEST_F(PowerStatusTest, InitializeAndUpdate) {
   // Test that the initial power supply state should be acquired after
   // PowerStatus is instantiated. This depends on
   // PowerManagerClientStubImpl, which responds to power status update
@@ -98,7 +80,7 @@ TEST_P(PowerStatusTest, InitializeAndUpdate) {
   EXPECT_EQ(2, test_observer_->power_changed_count());
 }
 
-TEST_P(PowerStatusTest, ShouldDisplayBatteryTime) {
+TEST_F(PowerStatusTest, ShouldDisplayBatteryTime) {
   EXPECT_FALSE(
       PowerStatus::ShouldDisplayBatteryTime(base::TimeDelta::FromSeconds(-1)));
   EXPECT_FALSE(
@@ -118,7 +100,7 @@ TEST_P(PowerStatusTest, ShouldDisplayBatteryTime) {
           PowerStatus::kMaxBatteryTimeToDisplaySec + 1)));
 }
 
-TEST_P(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
+TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   int hours = 0, minutes = 0;
   PowerStatus::SplitTimeIntoHoursAndMinutes(base::TimeDelta::FromSeconds(0),
                                             &hours, &minutes);
@@ -169,10 +151,7 @@ TEST_P(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   EXPECT_EQ(0, minutes);
 }
 
-TEST_P(PowerStatusTest, GetBatteryImageInfo) {
-  const bool use_md_icon =
-      ash::MaterialDesignController::UseMaterialDesignSystemIcons();
-
+TEST_F(PowerStatusTest, GetBatteryImageInfo) {
   PowerSupplyProperties prop;
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
@@ -190,13 +169,8 @@ TEST_P(PowerStatusTest, GetBatteryImageInfo) {
   // The dark icon set should use a different image for non-MD, but the
   // same image for MD.
   prop.set_battery_percent(98.0);
-  if (use_md_icon) {
-    EXPECT_EQ(info_charging_98,
-              power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
-  } else {
-    EXPECT_NE(info_charging_98,
-              power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
-  }
+  EXPECT_EQ(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
 
   // A different icon should be used when the battery is full, too.
   prop.set_battery_state(PowerSupplyProperties::FULL);
@@ -222,12 +196,7 @@ TEST_P(PowerStatusTest, GetBatteryImageInfo) {
 
 // Tests that the |icon_badge| member of BatteryImageInfo is set correctly
 // with various power supply property values.
-TEST_P(PowerStatusTest, BatteryImageInfoIconBadge) {
-  // The |icon_badge| member is only populated for the material design
-  // battery icon.
-  if (!ash::MaterialDesignController::UseMaterialDesignSystemIcons())
-    return;
-
+TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   PowerSupplyProperties prop;
 
   // A charging battery connected to AC power should have an ICON_BADGE_BOLT.
@@ -294,12 +263,7 @@ TEST_P(PowerStatusTest, BatteryImageInfoIconBadge) {
 
 // Tests that the |charge_level| member of BatteryImageInfo is set correctly
 // with various power supply property values.
-TEST_P(PowerStatusTest, BatteryImageInfoChargeLevel) {
-  // The |charge_level| member is only populated for the material design
-  // battery icon.
-  if (!ash::MaterialDesignController::UseMaterialDesignSystemIcons())
-    return;
-
+TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   PowerSupplyProperties prop;
 
   // No charge level is drawn when the battery is not present.

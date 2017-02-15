@@ -75,8 +75,6 @@ static_library("test_support_common") {
     "../laser/laser_pointer_points_test_api.h",
     "../shell/toplevel_window.cc",
     "../shell/toplevel_window.h",
-    "ash_md_test_base.cc",
-    "ash_md_test_base.h",
     "ash_test_base.cc",
     "ash_test_base.h",
     "ash_test_environment.h",

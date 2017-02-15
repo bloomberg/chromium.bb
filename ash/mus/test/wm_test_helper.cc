@@ -4,8 +4,6 @@
 
 #include "ash/mus/test/wm_test_helper.h"
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -82,13 +80,11 @@ WmTestHelper::~WmTestHelper() {
   blocking_pool_owner_.reset();
   base::RunLoop().RunUntilIdle();
 
-  ash::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
 }
 
 void WmTestHelper::Init() {
   ui::MaterialDesignController::Initialize();
-  ash::MaterialDesignController::Initialize();
 
   views_delegate_ = base::MakeUnique<views::TestViewsDelegate>();
 

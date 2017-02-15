@@ -23,8 +23,7 @@ class AshTestHelperTest : public testing::Test {
     ash_test_environment_ = test::AshTestEnvironment::Create();
     ash_test_helper_.reset(
         new test::AshTestHelper(ash_test_environment_.get()));
-    ash_test_helper_->SetUp(true,
-                            MaterialDesignController::Mode::UNINITIALIZED);
+    ash_test_helper_->SetUp(true);
   }
 
   void TearDown() override {

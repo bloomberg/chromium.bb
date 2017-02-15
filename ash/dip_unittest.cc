@@ -5,11 +5,10 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/test/ash_md_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -28,18 +27,10 @@
 
 namespace ash {
 
-using DIPTest = test::AshMDTestBase;
-
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    DIPTest,
-    testing::Values(MaterialDesignController::NON_MATERIAL,
-                    MaterialDesignController::MATERIAL_NORMAL,
-                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+using DIPTest = test::AshTestBase;
 
 // Test if the WM sets correct work area under different density.
-TEST_P(DIPTest, WorkArea) {
-  const int height_offset = GetMdMaximizedWindowHeightOffset();
+TEST_F(DIPTest, WorkArea) {
   UpdateDisplay("1000x900*1.0f");
 
   aura::Window* root = Shell::GetPrimaryRootWindow();
@@ -48,9 +39,8 @@ TEST_P(DIPTest, WorkArea) {
 
   EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
   gfx::Rect work_area = display.work_area();
-  EXPECT_EQ(gfx::Rect(0, 0, 1000, 853 + height_offset).ToString(),
-            work_area.ToString());
-  EXPECT_EQ(gfx::Insets(0, 0, 47 - height_offset, 0).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 852).ToString(), work_area.ToString());
+  EXPECT_EQ(gfx::Insets(0, 0, 48, 0).ToString(),
             display.bounds().InsetsFrom(work_area).ToString());
 
   UpdateDisplay("2000x1800*2.0f");
@@ -66,9 +56,8 @@ TEST_P(DIPTest, WorkArea) {
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
   work_area = display_2x.work_area();
-  EXPECT_EQ(gfx::Rect(0, 0, 1000, 853 + height_offset).ToString(),
-            work_area.ToString());
-  EXPECT_EQ(gfx::Insets(0, 0, 47 - height_offset, 0).ToString(),
+  EXPECT_EQ(gfx::Rect(0, 0, 1000, 852).ToString(), work_area.ToString());
+  EXPECT_EQ(gfx::Insets(0, 0, 48, 0).ToString(),
             display_2x.bounds().InsetsFrom(work_area).ToString());
 
   // Sanity check if the workarea's inset hight is same as

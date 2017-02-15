@@ -5,7 +5,6 @@
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 
 #include "ash/common/login_status.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
@@ -100,7 +99,6 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {
-  ash::MaterialDesignController::Initialize();
   wm_state_.reset(new ::wm::WMState);
 }
 

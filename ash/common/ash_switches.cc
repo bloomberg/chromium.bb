@@ -73,13 +73,6 @@ const char kAshForceEnablePalette[] = "ash-force-enable-palette";
 const char kAshHideNotificationsForFactory[] =
     "ash-hide-notifications-for-factory";
 
-// Specifies if Material Design elements in Chrome OS system UI are enabled.
-// Can be disabled / enabled / experimental allowing to launch incrementally.
-const char kAshMaterialDesign[] = "ash-md";
-const char kAshMaterialDesignDisabled[] = "disabled";
-const char kAshMaterialDesignEnabled[] = "enabled";
-const char kAshMaterialDesignExperimental[] = "experimental";
-
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 

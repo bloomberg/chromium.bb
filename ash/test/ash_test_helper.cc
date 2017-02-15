@@ -5,8 +5,6 @@
 #include "ash/test/ash_test_helper.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/test/wm_shell_test_api.h"
@@ -57,8 +55,7 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
 
 AshTestHelper::~AshTestHelper() {}
 
-void AshTestHelper::SetUp(bool start_session,
-                          MaterialDesignController::Mode material_mode) {
+void AshTestHelper::SetUp(bool start_session) {
   display::ResetDisplayIdForTest();
   wm_state_ = base::MakeUnique<::wm::WMState>();
   views_delegate_ = ash_test_environment_->CreateViewsDelegate();
@@ -109,11 +106,6 @@ void AshTestHelper::SetUp(bool start_session,
   // MaterialDesignController in unit_tests suite.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
-  ash::MaterialDesignController::Initialize();
-  if (material_mode == MaterialDesignController::Mode::UNINITIALIZED)
-    material_mode = MaterialDesignController::GetMode();
-  material_design_state_.reset(
-      new test::MaterialDesignControllerTestAPI(material_mode));
 
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
@@ -150,8 +142,6 @@ void AshTestHelper::TearDown() {
   // Suspend the tear down until all resources are returned via
   // MojoCompositorFrameSinkClient::ReclaimResources()
   RunAllPendingInMessageLoop();
-  material_design_state_.reset();
-  test::MaterialDesignControllerTestAPI::Uninitialize();
   ash_test_environment_->TearDown();
 
   test_screenshot_delegate_ = NULL;

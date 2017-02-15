@@ -4,7 +4,6 @@
 
 #include "ash/common/system/tray/tray_constants.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
@@ -127,10 +126,9 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayImeMenuIcon[] = {40, kTrayItemSize, kTrayItemSize};
   const int kTrayImageItemPadding[] = {1, 3, 3};
 
-  const int mode = MaterialDesignController::GetMode();
-  DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
-         mode <= MaterialDesignController::MATERIAL_EXPERIMENTAL);
-
+  // TODO(estade): clean this up --- remove unneeded constants and reduce
+  // remaining arrays to a single constant.
+  const int mode = 1;
   switch (constant) {
     case TRAY_ITEM_HEIGHT_LEGACY:
       return kTrayItemHeightLegacy[mode];

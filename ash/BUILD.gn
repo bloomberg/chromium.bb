@@ -1167,9 +1167,6 @@ test("ash_unittests") {
     "common/frame/custom_frame_view_ash_unittest.cc",
     "common/frame/default_header_painter_unittest.cc",
 
-    # TODO: convert to use AshTest http://crbug.com/654491.
-    "common/material_design/material_design_controller_unittest.cc",
-
     # TODO: convert to use AshTest http://crbug.com/654492.
     "common/metrics/pointer_metrics_recorder_unittest.cc",
 

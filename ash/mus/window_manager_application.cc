@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/mojo_interface_factory.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/wm_shell.h"
@@ -112,8 +111,6 @@ void WindowManagerApplication::OnStart() {
       "ash_mus_resources_200.pak", nullptr,
       views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
   window_manager_.reset(new WindowManager(context()->connector()));
-
-  MaterialDesignController::Initialize();
 
   tracing_.Initialize(context()->connector(), context()->identity().name());
 

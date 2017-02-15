@@ -10,80 +10,25 @@
 
 namespace ash {
 
-namespace test {
-class MaterialDesignControllerTestAPI;
-}  // namespace test
-
-// Central controller to handle material design modes.
+// TODO(estade): deprecated, remove: crbug.com/690957
 class ASH_EXPORT MaterialDesignController {
  public:
-  // The different material design modes for Chrome OS system UI.
-  enum Mode {
-    // Not initialized.
-    UNINITIALIZED = -1,
-    // Classic, non-material design.
-    NON_MATERIAL = 0,
-    // Basic material design.
-    MATERIAL_NORMAL = 1,
-    // Material design with experimental features.
-    MATERIAL_EXPERIMENTAL = 2
-  };
-
-  // Initializes |mode_|. Must be called before calling IsMaterial(),
-  // IsMaterialExperimental(), IsMaterialNormal(), or GetMode().
-  static void Initialize();
-
-  // Returns the currently initialized MaterialDesignController::Mode type for
-  // Chrome OS system UI.
-  static Mode GetMode();
-
-  // Returns true if Material Design features are enabled for Chrome OS shelf.
+  // Returns true.
   static bool IsShelfMaterial();
 
-  // Returns true if Material Design features are enabled for Chrome OS
-  // immersive mode.
+  // Returns true.
   static bool IsImmersiveModeMaterial();
 
-  // Returns true if Material Design features are enabled for Chrome OS system
-  // tray menu.
+  // Returns true.
   static bool IsSystemTrayMenuMaterial();
 
-  // Returns true if material design versions of icons should be used in the
-  // status tray and system menu.
+  // Returns true.
   static bool UseMaterialDesignSystemIcons();
 
  private:
-  friend class test::MaterialDesignControllerTestAPI;
-
   // Declarations only. Do not allow construction of an object.
   MaterialDesignController();
   ~MaterialDesignController();
-
-  // Material Design |Mode| for Chrome OS system UI. Used only by tests.
-  static Mode mode();
-
-  // Returns true if Material Design is enabled in Chrome OS system UI.
-  // Maps to "ash-md" flag "enabled" or "experimental" values.
-  static bool IsMaterial();
-
-  // Returns true if Material Design normal features are enabled in Chrome OS
-  // system UI. Maps to "--ash-md=enabled" command line switch value.
-  static bool IsMaterialNormal();
-
-  // Returns true if Material Design experimental features are enabled in
-  // Chrome OS system UI. Maps to "--ash-md=experimental" command line switch
-  // value.
-  static bool IsMaterialExperimental();
-
-  // Returns the per-platform default material design variant.
-  static Mode DefaultMode();
-
-  // Sets |mode_| to |mode|. Can be used by tests to directly set the mode.
-  static void SetMode(Mode mode);
-
-  // Resets the initialization state to uninitialized. To be used by tests to
-  // allow calling Initialize() more than once.
-  static void Uninitialize();
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignController);
 };

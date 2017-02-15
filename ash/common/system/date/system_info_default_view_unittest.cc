@@ -4,7 +4,6 @@
 
 #include "ash/common/system/date/system_info_default_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 

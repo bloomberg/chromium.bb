@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -59,7 +58,6 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
-  ash::MaterialDesignController::Initialize();
 
   env_ = aura::Env::CreateInstance();
   ash::test::TestShellDelegate* shell_delegate =

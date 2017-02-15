@@ -4,7 +4,6 @@
 
 #include "ash/common/shelf/shelf_constants.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -32,10 +31,9 @@ int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfButtonSize[] = {44, 48, 48};
   const int kShelfInsetsForAutoHide[] = {3, 0, 0};
 
-  const int mode = MaterialDesignController::GetMode();
-  DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
-         mode <= MaterialDesignController::MATERIAL_EXPERIMENTAL);
-
+  // TODO(estade): clean this up --- remove unneeded constants and reduce
+  // remaining arrays to a single constant.
+  const int mode = 1;
   switch (shelf_constant) {
     case SHELF_SIZE:
       return kShelfSize[mode];
