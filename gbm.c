@@ -255,7 +255,8 @@ gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width,
 		return NULL;
 
 	*stride = gbm_bo_get_plane_stride(bo, plane);
-	return drv_bo_map(bo->bo, x, y, width, height, 0, map_data, plane);
+	return drv_bo_map(bo->bo, x, y, width, height, 0,
+			  (struct map_info**)map_data, plane);
 }
 
 PUBLIC void

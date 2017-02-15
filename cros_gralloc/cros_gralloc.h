@@ -17,7 +17,8 @@ struct cros_gralloc_bo {
 	struct bo *bo;
 	int32_t refcount;
 	struct cros_gralloc_handle *hnd;
-	void *map_data;
+	struct map_info *map_data;
+	int32_t lockcount;
 };
 
 struct handle_info {

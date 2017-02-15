@@ -40,14 +40,6 @@ struct driver {
 	pthread_mutex_t driver_lock;
 };
 
-struct map_info {
-	void *addr;
-	size_t length;
-	uint32_t handle;
-	int32_t refcount;
-	void *priv;
-};
-
 struct kms_item {
 	uint32_t format;
 	uint64_t modifier;

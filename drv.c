@@ -352,7 +352,8 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 }
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
-		 uint32_t height, uint32_t flags, void **map_data, size_t plane)
+		 uint32_t height, uint32_t flags, struct map_info **map_data,
+		 size_t plane)
 {
 	void *ptr;
 	uint8_t *addr;
@@ -388,7 +389,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
 		      (void *) data);
 
 success:
-	*map_data = (void *) data;
+	*map_data = data;
 	offset = drv_bo_get_plane_stride(bo, plane) * y;
 	offset += drv_stride_from_format(bo->format, x, plane);
 	addr = (uint8_t *) data->addr;
@@ -398,9 +399,8 @@ success:
 	return (void *) addr;
 }
 
-int drv_bo_unmap(struct bo *bo, void *map_data)
+int drv_bo_unmap(struct bo *bo, struct map_info *data)
 {
-	struct map_info *data = map_data;
 	int ret = 0;
 
 	assert(data);

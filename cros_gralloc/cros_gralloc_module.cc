@@ -173,15 +173,21 @@ static int cros_gralloc_lock(struct gralloc_module_t const* module,
 	}
 
 	if (sw_access() & usage) {
-		*vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
-				   drv_bo_get_height(bo->bo), 0, &bo->map_data,
-				   0);
+		if (bo->map_data) {
+			*vaddr = bo->map_data->addr;
+		} else {
+			*vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
+					   drv_bo_get_height(bo->bo), 0,
+					   &bo->map_data, 0);
+		}
 
 		if (*vaddr == MAP_FAILED) {
 			cros_gralloc_error("Mapping failed.");
 			return CROS_GRALLOC_ERROR_UNSUPPORTED;
 		}
 	}
+
+	bo->lockcount++;
 
 	return CROS_GRALLOC_ERROR_NONE;
 }
@@ -204,8 +210,10 @@ static int cros_gralloc_unlock(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (bo->map_data)
+	if (!--bo->lockcount && bo->map_data) {
 		drv_bo_unmap(bo->bo, bo->map_data);
+		bo->map_data = NULL;
+	}
 
 	return CROS_GRALLOC_ERROR_NONE;
 }
@@ -303,9 +311,14 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 	}
 
 	if (sw_access() & usage) {
-		void *vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
-					 drv_bo_get_height(bo->bo), 0,
-					 &bo->map_data, 0);
+		void *vaddr;
+		if (bo->map_data) {
+			vaddr = bo->map_data->addr;
+		} else {
+			vaddr = drv_bo_map(bo->bo, 0, 0, drv_bo_get_width(bo->bo),
+					   drv_bo_get_height(bo->bo), 0,
+					   &bo->map_data, 0);
+		}
 
 		if (vaddr == MAP_FAILED) {
 			cros_gralloc_error("Mapping failed.");
@@ -346,6 +359,8 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 	default:
 		return CROS_GRALLOC_ERROR_UNSUPPORTED;
 	}
+
+	bo->lockcount++;
 
 	return CROS_GRALLOC_ERROR_NONE;
 }
