@@ -407,6 +407,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "-internal-media-controls-text-track-list* selectors", M59,
           "5661431349379072");
 
+    case UseCounter::FileReaderSyncInServiceWorker:
+      return willBeRemoved("FileReaderSync in service workers", M59,
+                           "5739144722513920");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
