@@ -400,10 +400,11 @@ void WebRTCInternals::SendUpdate(const char* command,
   }
 }
 
-void WebRTCInternals::RenderProcessHostDestroyed(RenderProcessHost* host) {
+void WebRTCInternals::RenderProcessExited(RenderProcessHost* host,
+                                          base::TerminationStatus status,
+                                          int exit_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnRendererExit(host->GetID());
-
   render_process_id_set_.erase(host->GetID());
   host->RemoveObserver(this);
 }
@@ -458,6 +459,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
         update->SetInteger("pid", pid);
         SendUpdate("removePeerConnection", std::move(update));
       }
+      MaybeClosePeerConnection(record);
       peer_connection_data_.Remove(i, NULL);
     }
   }
