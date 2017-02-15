@@ -102,12 +102,6 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
   DCHECK(connection);
 #if defined(USE_AURA)
   if (service_manager::ServiceManagerIsRemote()) {
-    // TODO(rockot): Remove the blocking wait for init.
-    // http://crbug.com/594852.
-    base::RunLoop wait_loop;
-    connection->SetInitializeHandler(wait_loop.QuitClosure());
-    wait_loop.Run();
-
     input_device_client_.reset(new ui::InputDeviceClient());
     ui::mojom::InputDeviceServerPtr server;
     connection->GetConnector()->BindInterface(ui::mojom::kServiceName, &server);
@@ -116,7 +110,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     // WMState is owned as a member, so don't have MusClient create it.
     const bool create_wm_state = false;
     mus_client_ = base::MakeUnique<views::MusClient>(
-        connection->GetConnector(), connection->GetIdentity(),
+        connection->GetConnector(), service_manager::Identity(),
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO),
         create_wm_state);

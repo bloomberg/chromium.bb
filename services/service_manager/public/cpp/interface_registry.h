@@ -165,6 +165,10 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // have been deleted.
   void AddConnectionLostClosure(const base::Closure& connection_lost_closure);
 
+  // Binds a local interface request.
+  void BindInterface(const std::string& name,
+                     mojo::ScopedMessagePipeHandle handle);
+
  private:
   using InterfaceNameToBinderMap =
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;

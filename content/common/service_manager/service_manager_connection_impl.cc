@@ -439,12 +439,6 @@ void ServiceManagerConnectionImpl::Start() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void ServiceManagerConnectionImpl::SetInitializeHandler(
-    const base::Closure& handler) {
-  DCHECK(initialize_handler_.is_null());
-  initialize_handler_ = handler;
-}
-
 service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
 }
@@ -523,8 +517,6 @@ void ServiceManagerConnectionImpl::CreateService(
 void ServiceManagerConnectionImpl::OnContextInitialized(
     const service_manager::Identity& identity) {
   identity_ = identity;
-  if (!initialize_handler_.is_null())
-    base::ResetAndReturn(&initialize_handler_).Run();
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {

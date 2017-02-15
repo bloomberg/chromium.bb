@@ -15,6 +15,8 @@ class Connector;
 
 namespace content {
 
+class ServiceManagerConnection;
+
 // ServiceManagerContext manages the browser's connection to the ServiceManager,
 // hosting a new in-process ServiceManagerContext if the browser was not
 // launched from an external one.
@@ -30,6 +32,7 @@ class CONTENT_EXPORT ServiceManagerContext {
   class InProcessServiceManagerContext;
 
   scoped_refptr<InProcessServiceManagerContext> in_process_context_;
+  std::unique_ptr<ServiceManagerConnection> packaged_services_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerContext);
 };

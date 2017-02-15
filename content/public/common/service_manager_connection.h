@@ -77,10 +77,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // below.
   virtual void Start() = 0;
 
-  // Sets a closure to be invoked once the connection receives an Initialize()
-  // request from the shell.
-  virtual void SetInitializeHandler(const base::Closure& handler) = 0;
-
   // Returns the service_manager::Connector received via this connection's
   // Service
   // implementation. Use this to initiate connections as this object's Identity.

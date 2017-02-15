@@ -58,12 +58,13 @@ catalog("catalog") {
     # if you have such a binary built, the runner will be able to locate it.
     "//chrome/app:chrome_content_browser_manifest",
     "//chrome/app:chrome_content_gpu_manifest",
+    "//chrome/app:chrome_content_packaged_services_manifest_for_mash",
     "//chrome/app:chrome_content_plugin_manifest",
     "//chrome/app:chrome_content_renderer_manifest",
     "//chrome/app:chrome_content_utility_manifest",
   ]
 
-  executable_overrides = [ "content_browser:@EXE_DIR/chrome" ]
+  executable_overrides = [ "content_packaged_services:@EXE_DIR/chrome" ]
 
   catalog_deps = [ "//mash/example:catalog" ]
 

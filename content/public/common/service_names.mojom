@@ -14,6 +14,11 @@ const string kBrowserServiceName = "content_browser";
 // src/content/public/app/mojo/content_gpu_manifest.json.
 const string kGpuServiceName = "content_gpu";
 
+// The service name used to identify the browser process's singleton service
+// instance which packages other browser-wide services. this must match the name
+// in src/content/public/app/mojo/content_packaged_services_manifest.json.
+const string kPackagedServicesServiceName = "content_packaged_services";
+
 // The default service name used to identify plugin processes when connecting
 // them to the Service Manager. This must match the name in
 // src/content/public/app/mojo/content_plugin_manifest.json.

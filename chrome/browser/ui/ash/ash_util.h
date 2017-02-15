@@ -5,6 +5,15 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASH_UTIL_H_
 #define CHROME_BROWSER_UI_ASH_ASH_UTIL_H_
 
+#include <memory>
+
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+
+namespace service_manager {
+class Service;
+}
+
 namespace ui {
 class Accelerator;
 }  // namespace ui
@@ -14,6 +23,11 @@ namespace ash_util {
 // Returns the name of the ash service depending on whether the browser is
 // running in classic ash or mash.
 const char* GetAshServiceName();
+
+// Creates an in-process Service instance of which can host common ash
+// interfaces.
+std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
 }  // namespace ash_util
 

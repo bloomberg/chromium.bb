@@ -183,6 +183,13 @@ void InterfaceRegistry::AddConnectionLostClosure(
   connection_lost_closures_.push_back(connection_lost_closure);
 }
 
+void InterfaceRegistry::BindInterface(const std::string& name,
+                                      mojo::ScopedMessagePipeHandle handle) {
+  // NOTE: We don't expose GetInterface() publicly so as to avoid confusion
+  // with local and remote binding requests.
+  GetInterface(name, std::move(handle));
+}
+
 // mojom::InterfaceProvider:
 void InterfaceRegistry::GetInterface(const std::string& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {

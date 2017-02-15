@@ -34,6 +34,7 @@ include_rules = [
   "+google_update",
   "+installer_util_strings",  # For generated headers
   "+jni",
+  "+mash/public/interfaces",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/cdm/cdm_paths.h",

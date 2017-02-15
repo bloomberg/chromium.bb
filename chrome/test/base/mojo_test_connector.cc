@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/pending_process_connection.h"
@@ -35,7 +36,6 @@
 namespace {
 
 const char kTestRunnerName[] = "mash_browser_tests";
-const char kTestName[] = "content_browser";
 
 // State created per test to register a client process with the background
 // service manager.
@@ -72,8 +72,8 @@ class MojoTestState : public content::TestState {
                                                          command_line);
 
     background_service_manager_->RegisterService(
-        service_manager::Identity(
-            kTestName, service_manager::mojom::kRootUserID),
+        service_manager::Identity(content::mojom::kPackagedServicesServiceName,
+                                  service_manager::mojom::kRootUserID),
         std::move(service),
         service_manager::mojom::PIDReceiverRequest(&pid_receiver_));
 
@@ -144,7 +144,7 @@ class MojoTestConnector::ServiceProcessLauncherDelegateImpl
   void AdjustCommandLineArgumentsForTarget(
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
-    if (target.name() != kTestName) {
+    if (target.name() != content::mojom::kPackagedServicesServiceName) {
       if (target.name() == kTestRunnerName) {
         RemoveMashFromBrowserTests(command_line);
         command_line->SetProgram(

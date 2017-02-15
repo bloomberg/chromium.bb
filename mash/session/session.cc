@@ -24,7 +24,7 @@ void Session::OnStart() {
   StartQuickLaunch();
 
   // Launch a chrome window for dev convience; don't do this in the long term.
-  context()->connector()->Connect(content::mojom::kBrowserServiceName);
+  context()->connector()->Connect(content::mojom::kPackagedServicesServiceName);
 }
 
 void Session::StartWindowManager() {

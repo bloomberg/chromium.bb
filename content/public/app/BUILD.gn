@@ -174,15 +174,20 @@ if (is_component_build) {
   }
 }
 
-service_manifest("browser_manifest") {
-  name = "content_browser"
-  source = "mojo/content_browser_manifest.json"
+service_manifest("packaged_services_manifest") {
+  name = "content_packaged_services"
+  source = "mojo/content_packaged_services_manifest.json"
   packaged_services = [
     "//media/mojo/services:media_manifest",
     "//services/device:manifest",
-    "//services/file:manifest",
     "//services/shape_detection:manifest",
   ]
+}
+
+service_manifest("browser_manifest") {
+  name = "content_browser"
+  source = "mojo/content_browser_manifest.json"
+  packaged_services = [ "//services/file:manifest" ]
 }
 
 service_manifest("gpu_manifest") {

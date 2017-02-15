@@ -85,6 +85,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -222,7 +223,6 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
-#include "chrome/browser/chromeos/chrome_interface_factory.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
@@ -233,10 +233,16 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
+#include "mash/public/interfaces/launchable.mojom.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -462,6 +468,76 @@ enum AppLoadedInTabSource {
   APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE,
   APP_LOADED_IN_TAB_SOURCE_MAX
 };
+
+#if defined(OS_CHROMEOS)
+
+// The name of the packaged service used to expose miscellaneous application
+// control features such as the mash Launchable interface.
+const char kChromeServiceName[] = "chrome";
+
+// Packaged service implementation used to expose miscellaneous application
+// control features. This is a singleton service which runs on the main thread
+// and never stops.
+class ChromeServiceChromeOS
+    : public service_manager::Service,
+      public mash::mojom::Launchable,
+      public service_manager::InterfaceFactory<mash::mojom::Launchable> {
+ public:
+  ChromeServiceChromeOS()
+      : interfaces_(service_manager::mojom::kServiceManager_ConnectorSpec) {
+    interfaces_.AddInterface<mash::mojom::Launchable>(this);
+  }
+  ~ChromeServiceChromeOS() override {}
+
+  static std::unique_ptr<service_manager::Service> CreateService() {
+    return base::MakeUnique<ChromeServiceChromeOS>();
+  }
+
+ private:
+  void CreateNewWindowImpl(bool is_incognito) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
+                                        : profile);
+  }
+
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+                       const std::string& name,
+                       mojo::ScopedMessagePipeHandle handle) override {
+    interfaces_.BindInterface(name, std::move(handle));
+  }
+
+  // mash::mojom::Launchable:
+  void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
+    if (how != mash::mojom::LaunchMode::MAKE_NEW) {
+      LOG(ERROR) << "Unable to handle Launch request with how = " << how;
+      return;
+    }
+    switch (what) {
+      case mash::mojom::kWindow:
+        CreateNewWindowImpl(false /* is_incognito */);
+        break;
+      case mash::mojom::kIncognitoWindow:
+        CreateNewWindowImpl(true /* is_incognito */);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  // mojo::InterfaceFactory<mash::mojom::Launchable>:
+  void Create(const service_manager::Identity& remote_identity,
+              mash::mojom::LaunchableRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  service_manager::InterfaceRegistry interfaces_;
+  mojo::BindingSet<mash::mojom::Launchable> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
+};
+
+#endif  // defined(OS_CHROMEOS)
 
 // Returns a copy of the given url with its host set to given host and path set
 // to given path. Other parts of the url will be the same.
@@ -3120,15 +3196,28 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
   services->insert(std::make_pair("media", info));
 #endif
 #if defined(OS_CHROMEOS)
-  content::ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
-      base::MakeUnique<chromeos::ChromeInterfaceFactory>());
+  {
+    content::ServiceInfo info;
+    info.factory = base::Bind(&ChromeServiceChromeOS::CreateService);
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->insert(std::make_pair(kChromeServiceName, info));
+  }
+
   {
     content::ServiceInfo info;
     info.factory = base::Bind([] {
       return std::unique_ptr<service_manager::Service>(
           base::MakeUnique<PreferencesConnectionManager>());
     });
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
+  }
+
+  if (!chrome::IsRunningInMash()) {
+    content::ServiceInfo info;
+    info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
+                              base::ThreadTaskRunnerHandle::Get());
+    services->insert(std::make_pair("ash", info));
   }
 #endif  // OS_CHROMEOS
 }
@@ -3151,6 +3240,8 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
   else if (name == content::mojom::kGpuServiceName)
     id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
+  else if (name == content::mojom::kPackagedServicesServiceName)
+    id = IDR_CHROME_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
   else if (name == content::mojom::kPluginServiceName)
     id = IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY;
   else if (name == content::mojom::kRendererServiceName)

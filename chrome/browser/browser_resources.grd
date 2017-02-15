@@ -625,6 +625,7 @@
       <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_browser_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_gpu_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_plugin_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
+      <include name="IDR_CHROME_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_packaged_services_manifest_overlay.json" type="BINDATA" use_base_dir="false"/>
       <include name="IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_renderer_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_utility_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_NACL_LOADER_MANIFEST" file="../../components/nacl/loader/nacl_loader_manifest.json" type="BINDATA" />

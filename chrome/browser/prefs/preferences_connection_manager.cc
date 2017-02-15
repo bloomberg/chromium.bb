@@ -90,6 +90,15 @@ void PreferencesConnectionManager::Create(
     const service_manager::Identity& remote_identity,
     prefs::mojom::PreferencesServiceFactoryRequest request) {
   factory_bindings_.AddBinding(this, std::move(request));
+
+  if (!profile_shutdown_notification_) {
+    profile_shutdown_notification_ =
+        ShutdownNotifierFactory::GetInstance()
+            ->Get(ProfileManager::GetActiveUserProfile())
+            ->Subscribe(
+                base::Bind(&PreferencesConnectionManager::OnProfileDestroyed,
+                           base::Unretained(this)));
+  }
 }
 
 void PreferencesConnectionManager::OnStart() {
@@ -97,13 +106,6 @@ void PreferencesConnectionManager::OnStart() {
   // which block the creation of test profiles.
   if (!g_browser_process->profile_manager()->GetNumberOfProfiles())
     return;
-
-  profile_shutdown_notification_ =
-      ShutdownNotifierFactory::GetInstance()
-          ->Get(ProfileManager::GetActiveUserProfile())
-          ->Subscribe(
-              base::Bind(&PreferencesConnectionManager::OnProfileDestroyed,
-                         base::Unretained(this)));
 }
 
 bool PreferencesConnectionManager::OnConnect(

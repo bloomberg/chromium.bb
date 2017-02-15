@@ -94,12 +94,12 @@ class ServiceProcessLauncherDelegateImpl
         const service_manager::Identity& target,
         base::CommandLine* command_line) override {
     if (target.name() == kChromeMashServiceName ||
-        target.name() == content::mojom::kBrowserServiceName) {
+        target.name() == content::mojom::kPackagedServicesServiceName) {
       base::FilePath exe_path;
       base::PathService::Get(base::FILE_EXE, &exe_path);
       command_line->SetProgram(exe_path);
     }
-    if (target.name() != content::mojom::kBrowserServiceName) {
+    if (target.name() != content::mojom::kPackagedServicesServiceName) {
       // If running anything other than the browser process, launch a mash
       // child process. The new process will execute MashRunner::RunChild().
       command_line->AppendSwitchASCII(switches::kProcessType, kMashChild);
