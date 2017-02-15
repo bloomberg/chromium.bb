@@ -105,7 +105,7 @@ bool AreExtraHeadersCompatibleWithPrerenderContents(
 // opposed to a performance optimization.
 bool IsPrerenderingForced(Origin origin) {
   return origin == ORIGIN_OFFLINE ||
-         origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR;
+         origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER;
 }
 
 }  // namespace
@@ -277,16 +277,13 @@ PrerenderManager::AddPrerenderFromExternalRequest(
 }
 
 std::unique_ptr<PrerenderHandle>
-PrerenderManager::AddPrerenderOnCellularFromExternalRequest(
+PrerenderManager::AddForcedPrerenderFromExternalRequest(
     const GURL& url,
     const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Rect& bounds) {
-  return AddPrerender(ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
-                      url,
-                      referrer,
-                      bounds,
-                      session_storage_namespace);
+  return AddPrerender(ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, url, referrer,
+                      bounds, session_storage_namespace);
 }
 
 std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderForInstant(
@@ -1341,7 +1338,7 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 
 bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
   if (origin == ORIGIN_OFFLINE ||
-      origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) {
+      origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER) {
     return false;
   }
 
@@ -1399,7 +1396,7 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
   // the DISABLED_ALWAYS selected via privacy settings.
   NetworkPredictionStatus prediction_status =
       chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-  if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR &&
+  if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER &&
       prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK) {
     return NetworkPredictionStatus::ENABLED;
   }

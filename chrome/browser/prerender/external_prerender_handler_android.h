@@ -29,17 +29,18 @@ class ExternalPrerenderHandlerAndroid {
 
   // Add a prerender with the given url and referrer on the PrerenderManager of
   // the given profile. This is restricted to a single prerender at a time.
-  base::android::ScopedJavaLocalRef<jobject> AddPrerender(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj,
-                    const base::android::JavaParamRef<jobject>& profile,
-                    const base::android::JavaParamRef<jobject>& jweb_contents,
-                    const base::android::JavaParamRef<jstring>& url,
-                    const base::android::JavaParamRef<jstring>& referrer,
-                    jint top,
-                    jint left,
-                    jint bottom,
-                    jint right,
-                    jboolean prerender_on_cellular);
+  base::android::ScopedJavaLocalRef<jobject> AddPrerender(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& profile,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      const base::android::JavaParamRef<jstring>& url,
+      const base::android::JavaParamRef<jstring>& referrer,
+      jint top,
+      jint left,
+      jint bottom,
+      jint right,
+      jboolean forced_prerender);
 
   // Cancel the prerender associated with the prerender_handle_
   void CancelCurrentPrerender(

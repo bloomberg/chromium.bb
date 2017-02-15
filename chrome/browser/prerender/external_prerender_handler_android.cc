@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ExternalPrerenderHandler_jni.h"
-#include "net/base/network_change_notifier.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
@@ -51,7 +50,7 @@ bool CheckAndConvertParams(JNIEnv* env,
 }  // namespace
 
 base::android::ScopedJavaLocalRef<jobject>
-    ExternalPrerenderHandlerAndroid::AddPrerender(
+ExternalPrerenderHandlerAndroid::AddPrerender(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jprofile,
@@ -62,7 +61,7 @@ base::android::ScopedJavaLocalRef<jobject>
     jint left,
     jint bottom,
     jint right,
-    jboolean prerender_on_cellular) {
+    jboolean forced_prerender) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
@@ -87,10 +86,9 @@ base::android::ScopedJavaLocalRef<jobject>
   if (prerender_handle_)
     prerender_handle_->OnNavigateAway();
 
-  if (prerender_on_cellular && net::NetworkChangeNotifier::IsConnectionCellular(
-                   net::NetworkChangeNotifier::GetConnectionType())) {
+  if (forced_prerender) {
     prerender_handle_ =
-        prerender_manager->AddPrerenderOnCellularFromExternalRequest(
+        prerender_manager->AddForcedPrerenderFromExternalRequest(
             url, referrer,
             web_contents->GetController().GetDefaultSessionStorageNamespace(),
             gfx::Rect(left, top, right - left, bottom - top));

@@ -1341,16 +1341,16 @@ TEST_F(PrerenderTest, PrerenderSilenceAllowsForcedCellular) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
+          url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
           FINAL_STATUS_MANAGER_SHUTDOWN);
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      prerender_manager()->AddPrerenderOnCellularFromExternalRequest(
+      prerender_manager()->AddForcedPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, gfx::Rect(kSize));
   EXPECT_TRUE(prerender_handle);
   EXPECT_TRUE(prerender_handle->IsPrerendering());
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   EXPECT_EQ(prerender_contents, prerender_handle->contents());
-  EXPECT_EQ(ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
+  EXPECT_EQ(ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
             prerender_handle->contents()->origin());
 }
 
@@ -1406,8 +1406,7 @@ TEST_F(PrerenderTest, PrerenderSilenceAllowsAfterExpiration) {
 
 TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {
   const Origin origins[] = {
-    ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
-    ORIGIN_OFFLINE,
+      ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, ORIGIN_OFFLINE,
   };
 
   EnablePrerender();
@@ -1428,7 +1427,7 @@ TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {
       prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, origin, FINAL_STATUS_USED);
       prerender_handle =
-          prerender_manager()->AddPrerenderOnCellularFromExternalRequest(
+          prerender_manager()->AddForcedPrerenderFromExternalRequest(
               url, content::Referrer(), nullptr, gfx::Rect(kSize));
     }
     EXPECT_TRUE(prerender_handle);

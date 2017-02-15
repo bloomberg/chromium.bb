@@ -71,7 +71,7 @@ std::string GetHistogramName(Origin origin, bool is_wash,
       return ComposeHistogramName("webnext", name);
     case ORIGIN_GWS_PRERENDER:
       return ComposeHistogramName("gws", name);
-    case ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR:
+    case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
       return ComposeHistogramName("externalrequestforced", name);
     case ORIGIN_OFFLINE:
       return ComposeHistogramName("offline", name);
@@ -105,40 +105,40 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
                                              HISTOGRAM) \
   PREFIXED_HISTOGRAM_INTERNAL(origin, false, HISTOGRAM, histogram_name)
 
-#define PREFIXED_HISTOGRAM_INTERNAL(origin, wash, HISTOGRAM, histogram_name) \
-do { \
-  { \
-    /* Do not rename.  HISTOGRAM expects a local variable "name". */           \
-    std::string name = ComposeHistogramName(std::string(), histogram_name);    \
-    HISTOGRAM;                                                                 \
-  } \
-  /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
-  std::string name = GetHistogramName(origin, wash, histogram_name); \
-  /* Branching because HISTOGRAM is caching the histogram into a static. */ \
-  if (wash) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_NONE) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_EXTERNAL_REQUEST) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_INSTANT) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_LINK_REL_NEXT) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_OFFLINE) { \
-    HISTOGRAM; \
-  } else { \
-    HISTOGRAM; \
-  } \
-} while (0)
+#define PREFIXED_HISTOGRAM_INTERNAL(origin, wash, HISTOGRAM, histogram_name)  \
+  do {                                                                        \
+    {                                                                         \
+      /* Do not rename.  HISTOGRAM expects a local variable "name". */        \
+      std::string name = ComposeHistogramName(std::string(), histogram_name); \
+      HISTOGRAM;                                                              \
+    }                                                                         \
+    /* Do not rename.  HISTOGRAM expects a local variable "name". */          \
+    std::string name = GetHistogramName(origin, wash, histogram_name);        \
+    /* Branching because HISTOGRAM is caching the histogram into a static. */ \
+    if (wash) {                                                               \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_OMNIBOX) {                                    \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_NONE) {                                       \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) {              \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {             \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_EXTERNAL_REQUEST) {                           \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_INSTANT) {                                    \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_LINK_REL_NEXT) {                              \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER) {          \
+      HISTOGRAM;                                                              \
+    } else if (origin == ORIGIN_OFFLINE) {                                    \
+      HISTOGRAM;                                                              \
+    } else {                                                                  \
+      HISTOGRAM;                                                              \
+    }                                                                         \
+  } while (0)
 
 PrerenderHistograms::PrerenderHistograms()
     : last_origin_(ORIGIN_MAX),

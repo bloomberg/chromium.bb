@@ -140,7 +140,7 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Adds a prerender from an external request that will prerender even on
   // cellular networks as long as the user setting for prerendering is ON.
-  std::unique_ptr<PrerenderHandle> AddPrerenderOnCellularFromExternalRequest(
+  std::unique_ptr<PrerenderHandle> AddForcedPrerenderFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,
       content::SessionStorageNamespace* session_storage_namespace,
