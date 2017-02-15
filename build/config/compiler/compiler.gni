@@ -101,9 +101,9 @@ if (symbol_level == -1) {
     symbol_level = 1
   } else if ((!is_nacl && !is_linux) || is_debug || is_official_build ||
              is_chromecast) {
-    # Linux is slowed by having symbols as part of the target binary, whereas
-    # Mac and Windows have them separate, so in Release Linux, default them off,
-    # but keep them on for Official builds and Chromecast builds.
+    # Linux builds slower by having symbols as part of the target binary,
+    # whereas Mac and Windows have them separate, so in Release Linux, default
+    # them off, but keep them on for Official builds and Chromecast builds.
     symbol_level = 2
   } else if (using_sanitizer) {
     # Sanitizers require symbols for filename suppressions to work.
