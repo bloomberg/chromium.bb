@@ -49897,6 +49897,12 @@
      {}
     ]
    ],
+   "webstorage/event_no_duplicates.html": [
+    [
+     "/webstorage/event_no_duplicates.html",
+     {}
+    ]
+   ],
    "webstorage/event_session_key.html": [
     [
      "/webstorage/event_session_key.html",
@@ -81702,6 +81708,10 @@
   ],
   "webstorage/event_local_url.html": [
    "7a504bc478d03cbd77498284037af1d2a54d27d8",
+   "testharness"
+  ],
+  "webstorage/event_no_duplicates.html": [
+   "50011333297d4a240afc288b4b39cb751471b6a4",
    "testharness"
   ],
   "webstorage/event_session_key.html": [

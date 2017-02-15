@@ -132,6 +132,8 @@ class LevelDBWrapperImplTest : public testing::Test,
                : "";
   }
 
+  void clear_mock_data() { mock_data_.clear(); }
+
   mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
   mojo::AssociatedGroup* associated_group() {
     return level_db_wrapper_ptr_.associated_group();
@@ -309,6 +311,11 @@ TEST_F(LevelDBWrapperImplTest, PutObservations) {
   EXPECT_EQ(value1, observations()[1].old_value);
   EXPECT_EQ(value2, observations()[1].new_value);
   EXPECT_EQ(source2, observations()[1].source);
+
+  // Same put should not cause another observation.
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key),
+                      StdStringToUint8Vector(value2), source2));
+  ASSERT_EQ(2u, observations().size());
 }
 
 TEST_F(LevelDBWrapperImplTest, DeleteNonExistingKey) {
@@ -353,11 +360,9 @@ TEST_F(LevelDBWrapperImplTest, DeleteAllWithoutLoadedMap) {
   EXPECT_FALSE(has_mock_data(kTestPrefix + key));
   EXPECT_TRUE(has_mock_data(dummy_key));
 
-  // Deleting all again should still work, an cause an observation.
+  // Deleting all again should still work, but not cause an observation.
   EXPECT_TRUE(DeleteAllSync());
-  ASSERT_EQ(2u, observations().size());
-  EXPECT_EQ(Observation::kDeleteAll, observations()[1].type);
-  EXPECT_EQ(kTestSource, observations()[1].source);
+  ASSERT_EQ(1u, observations().size());
 
   // And now we've deleted all, writing something the quota size should work.
   EXPECT_TRUE(PutSync(std::vector<uint8_t>(kTestSizeLimit, 'b'),
@@ -404,6 +409,13 @@ TEST_F(LevelDBWrapperImplTest, DeleteAllWithPendingMapLoad) {
   CommitChanges();
   EXPECT_FALSE(has_mock_data(kTestPrefix + key));
   EXPECT_TRUE(has_mock_data(dummy_key));
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteAllWithoutLoadedEmptyMap) {
+  clear_mock_data();
+
+  EXPECT_TRUE(DeleteAllSync());
+  ASSERT_EQ(0u, observations().size());
 }
 
 TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeValue) {

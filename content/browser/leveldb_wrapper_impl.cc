@@ -186,20 +186,23 @@ void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
 
 void LevelDBWrapperImpl::DeleteAll(const std::string& source,
                                    const DeleteAllCallback& callback) {
-  if (!map_ && !on_load_complete_tasks_.empty()) {
+  if (!map_) {
     LoadMap(
         base::Bind(&LevelDBWrapperImpl::DeleteAll, base::Unretained(this),
                     source, callback));
     return;
   }
 
-  if (database_ && (!map_ || !map_->empty())) {
+  if (map_->empty()) {
+    callback.Run(true);
+    return;
+  }
+
+  if (database_) {
     CreateCommitBatchIfNeeded();
     commit_batch_->clear_all_first = true;
     commit_batch_->changed_keys.clear();
   }
-  if (!map_)
-    map_.reset(new ValueMap);
 
   map_->clear();
   bytes_used_ = 0;
