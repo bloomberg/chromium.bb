@@ -198,24 +198,45 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
 TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
   KURL base;
-  CSPSource source(csp.get(), "http", "example.com", 80, "/",
-                   CSPSource::NoWildcard, CSPSource::NoWildcard);
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:80/")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:443/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://example.com/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://example.com:80/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443/")));
 
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8443/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8443/")));
+  // source scheme is "http"
+  {
+    CSPSource source(csp.get(), "http", "example.com", 80, "/",
+                     CSPSource::NoWildcard, CSPSource::NoWildcard);
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:80/")));
+    // TODO(mkwst, arthursonzogni): It is weird to upgrade the port without the
+    // sheme. See http://crbug.com/692499
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:443/")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com/")));
+    // TODO(mkwst, arthursonzogni): It is weird to upgrade the scheme without
+    // the port. See http://crbug.com/692499
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:80/")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443/")));
 
-  EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:80/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:443/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:80/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:443/")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8443/")));
+    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8443/")));
+
+    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com/")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:80/")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:443/")));
+    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com/")));
+    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:80/")));
+    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:443/")));
+  }
+
+  // source scheme is empty
+  {
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
+    csp->setupSelf(*SecurityOrigin::createFromString("http://example.com"));
+    CSPSource source(csp.get(), "", "example.com", 80, "/",
+                     CSPSource::NoWildcard, CSPSource::NoWildcard);
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443")));
+    // TODO(mkwst, arthursonzogni): It is weird to upgrade the port without the
+    // sheme. See http://crbug.com/692499
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:443")));
+  }
 }
 
 TEST_F(CSPSourceTest, DoesNotSubsume) {
