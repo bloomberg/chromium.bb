@@ -1,5 +1,5 @@
 This test passes if it doesn't crash.
-<iframe src="data:text/plain,Hi"></iframe>
+<iframe srcdoc="Hi"></iframe>
 <script>
 frames[0].onunload = function () {
     document.open();

@@ -2640,7 +2640,8 @@ void Document::open(Document* enteredDocument, ExceptionState& exceptionState) {
   }
 
   if (enteredDocument) {
-    if (!getSecurityOrigin()->canAccess(enteredDocument->getSecurityOrigin())) {
+    if (!getSecurityOrigin()->isSameSchemeHostPortAndSuborigin(
+            enteredDocument->getSecurityOrigin())) {
       exceptionState.throwSecurityError(
           "Can only call open() on same-origin documents.");
       return;
