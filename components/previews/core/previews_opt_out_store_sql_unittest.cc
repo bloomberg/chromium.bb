@@ -15,6 +15,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -36,7 +39,8 @@ const base::FilePath::CharType kOptOutFilename[] = FILE_PATH_LITERAL("OptOut");
 
 class PreviewsOptOutStoreSQLTest : public testing::Test {
  public:
-  PreviewsOptOutStoreSQLTest() {}
+  PreviewsOptOutStoreSQLTest()
+      : field_trials_(new base::FieldTrialList(nullptr)) {}
   ~PreviewsOptOutStoreSQLTest() override {}
 
   // Called when |store_| is done loading.
@@ -80,6 +84,13 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
   void TearDown() override { DestroyStore(); }
 
  protected:
+  void ResetFieldTrials() {
+    // Destroy existing FieldTrialList before creating new one to avoid DCHECK.
+    field_trials_.reset();
+    field_trials_.reset(new base::FieldTrialList(nullptr));
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+  }
+
   base::HistogramTester histogram_tester_;
 
   base::MessageLoop message_loop_;
@@ -95,6 +106,9 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
 
   // The directory for the database.
   base::ScopedTempDir temp_dir_;
+
+ private:
+  std::unique_ptr<base::FieldTrialList> field_trials_;
 };
 
 TEST_F(PreviewsOptOutStoreSQLTest, TestErrorRecovery) {
@@ -257,6 +271,90 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   // be black listed.
   EXPECT_FALSE(iter->second->IsBlackListed(clock.Now()));
   histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 2);
+}
+
+TEST_F(PreviewsOptOutStoreSQLTest, TestPreviewsDisabledClearsBlacklistEntry) {
+  // Tests if data is cleared for previews type when it is disabled.
+  // Enable offline previews and add black list entry for it.
+  std::map<std::string, std::string> params;
+  params["show_offline_pages"] = "true";
+  EXPECT_TRUE(
+      base::AssociateFieldTrialParams("ClientSidePreviews", "Enabled", params));
+  EXPECT_TRUE(
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+  std::string test_host = "host.com";
+  CreateAndLoad();
+  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
+  base::Time now = base::Time::Now();
+  store_->AddPreviewNavigation(true, test_host, PreviewsType::OFFLINE, now);
+  base::RunLoop().RunUntilIdle();
+
+  // Force data write to database then reload it and verify black list entry
+  // is present.
+  DestroyStore();
+  CreateAndLoad();
+  auto iter = black_list_map_->find(test_host);
+  EXPECT_NE(black_list_map_->end(), iter);
+  EXPECT_EQ(1U, iter->second->OptOutRecordsSizeForTesting());
+
+  // Now reload with offline pages previews disabled and verify black list
+  // entry dropped.
+  ResetFieldTrials();
+  params["show_offline_pages"] = "false";
+  EXPECT_TRUE(
+      base::AssociateFieldTrialParams("ClientSidePreviews", "Enabled", params));
+  EXPECT_TRUE(
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+  DestroyStore();
+  CreateAndLoad();
+  iter = black_list_map_->find(test_host);
+  EXPECT_EQ(black_list_map_->end(), iter);
+
+  // Clean up field trials set in this test.
+  ResetFieldTrials();
+}
+
+TEST_F(PreviewsOptOutStoreSQLTest,
+       TestPreviewsVersionUpdateClearsBlacklistEntry) {
+  // Tests if data is cleared for new version of previews type.
+  // Enable offline previews and add black list entry for it.
+  std::map<std::string, std::string> params;
+  params["show_offline_pages"] = "true";
+  params["version"] = "1";
+  EXPECT_TRUE(
+      base::AssociateFieldTrialParams("ClientSidePreviews", "Enabled", params));
+  EXPECT_TRUE(
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+  std::string test_host = "host.com";
+  CreateAndLoad();
+  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
+  base::Time now = base::Time::Now();
+  store_->AddPreviewNavigation(true, test_host, PreviewsType::OFFLINE, now);
+  base::RunLoop().RunUntilIdle();
+
+  // Force data write to database then reload it and verify black list entry
+  // is present.
+  DestroyStore();
+  CreateAndLoad();
+  auto iter = black_list_map_->find(test_host);
+  EXPECT_NE(black_list_map_->end(), iter);
+  EXPECT_EQ(1U, iter->second->OptOutRecordsSizeForTesting());
+
+  // Now reload with incremented previews version and verify black list
+  // entry dropped.
+  ResetFieldTrials();
+  params["version"] = "2";
+  EXPECT_TRUE(
+      base::AssociateFieldTrialParams("ClientSidePreviews", "Enabled", params));
+  EXPECT_TRUE(
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+  DestroyStore();
+  CreateAndLoad();
+  iter = black_list_map_->find(test_host);
+  EXPECT_EQ(black_list_map_->end(), iter);
+
+  // Clean up field trials set in this test.
+  ResetFieldTrials();
 }
 
 }  // namespace net

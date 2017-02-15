@@ -17,13 +17,19 @@ namespace previews {
 
 namespace {
 
-// The group of client-side previews experiments.
+// The group of client-side previews experiments. Actually, this group is only
+// expected to control one PreviewsType (OFFLINE) as well as the blacklist.
+// Other PreviewsType's will be control by different field trial groups.
 const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
 
 const char kEnabled[] = "Enabled";
 
 // Allow offline pages to show for prohibitively slow networks.
 const char kOfflinePagesSlowNetwork[] = "show_offline_pages";
+
+// Name for the version parameter of a field trial. Version changes will
+// result in older blacklist entries being removed.
+const char kVersion[] = "version";
 
 // The maximum number of recent previews navigations the black list looks at to
 // determine if a host is blacklisted.
@@ -73,9 +79,9 @@ const char kEffectiveConnectionTypeThreshold[] =
 // The string that corresponds to enabled for the variation param experiments.
 const char kExperimentEnabled[] = "true";
 
-// Returns the parameter value of |param| as a string. If there is no value for
-// |param|, returns an empty string.
-std::string ParamValue(const std::string& param) {
+// Returns the ClientSidePreviews parameter value of |param| as a string.
+// If there is no value for |param|, returns an empty string.
+std::string ClientSidePreviewsParamValue(const std::string& param) {
   if (!IsIncludedInClientSidePreviewsExperimentsFieldTrial())
     return std::string();
   std::map<std::string, std::string> experiment_params;
@@ -93,7 +99,8 @@ std::string ParamValue(const std::string& param) {
 namespace params {
 
 size_t MaxStoredHistoryLengthForPerHostBlackList() {
-  std::string param_value = ParamValue(kMaxStoredHistoryLengthPerHost);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kMaxStoredHistoryLengthPerHost);
   size_t history_length;
   if (!base::StringToSizeT(param_value, &history_length))
     history_length = 4;
@@ -101,7 +108,8 @@ size_t MaxStoredHistoryLengthForPerHostBlackList() {
 }
 
 size_t MaxStoredHistoryLengthForHostIndifferentBlackList() {
-  std::string param_value = ParamValue(kMaxStoredHistoryLengthHostIndifferent);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kMaxStoredHistoryLengthHostIndifferent);
   size_t history_length;
   if (!base::StringToSizeT(param_value, &history_length))
     history_length = 10;
@@ -109,7 +117,7 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList() {
 }
 
 size_t MaxInMemoryHostsInBlackList() {
-  std::string param_value = ParamValue(kMaxHostsInBlackList);
+  std::string param_value = ClientSidePreviewsParamValue(kMaxHostsInBlackList);
   size_t max_hosts;
   if (!base::StringToSizeT(param_value, &max_hosts))
     max_hosts = 100;
@@ -117,7 +125,8 @@ size_t MaxInMemoryHostsInBlackList() {
 }
 
 int PerHostBlackListOptOutThreshold() {
-  std::string param_value = ParamValue(kPerHostOptOutThreshold);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kPerHostOptOutThreshold);
   int opt_out_threshold;
   if (!base::StringToInt(param_value, &opt_out_threshold))
     opt_out_threshold = 2;
@@ -125,7 +134,8 @@ int PerHostBlackListOptOutThreshold() {
 }
 
 int HostIndifferentBlackListOptOutThreshold() {
-  std::string param_value = ParamValue(kHostIndifferentOptOutThreshold);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kHostIndifferentOptOutThreshold);
   int opt_out_threshold;
   if (!base::StringToInt(param_value, &opt_out_threshold))
     opt_out_threshold = 4;
@@ -133,7 +143,8 @@ int HostIndifferentBlackListOptOutThreshold() {
 }
 
 base::TimeDelta PerHostBlackListDuration() {
-  std::string param_value = ParamValue(kPerHostBlackListDurationInDays);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kPerHostBlackListDurationInDays);
   int duration;
   if (!base::StringToInt(param_value, &duration))
     duration = 30;
@@ -141,7 +152,8 @@ base::TimeDelta PerHostBlackListDuration() {
 }
 
 base::TimeDelta HostIndifferentBlackListPerHostDuration() {
-  std::string param_value = ParamValue(kHostIndifferentBlackListDurationInDays);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kHostIndifferentBlackListDurationInDays);
   int duration;
   if (!base::StringToInt(param_value, &duration))
     duration = 365 * 100;
@@ -149,7 +161,8 @@ base::TimeDelta HostIndifferentBlackListPerHostDuration() {
 }
 
 base::TimeDelta SingleOptOutDuration() {
-  std::string param_value = ParamValue(kSingleOptOutDurationInSeconds);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kSingleOptOutDurationInSeconds);
   int duration;
   if (!base::StringToInt(param_value, &duration))
     duration = 60 * 5;
@@ -157,7 +170,8 @@ base::TimeDelta SingleOptOutDuration() {
 }
 
 base::TimeDelta OfflinePreviewFreshnessDuration() {
-  std::string param_value = ParamValue(kOfflinePreviewFreshnessDurationInDays);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kOfflinePreviewFreshnessDurationInDays);
   int duration;
   if (!base::StringToInt(param_value, &duration))
     duration = 7;
@@ -165,7 +179,8 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
 }
 
 net::EffectiveConnectionType EffectiveConnectionTypeThreshold() {
-  std::string param_value = ParamValue(kEffectiveConnectionTypeThreshold);
+  std::string param_value =
+      ClientSidePreviewsParamValue(kEffectiveConnectionTypeThreshold);
   net::EffectiveConnectionType effective_connection_type;
   if (!net::GetEffectiveConnectionTypeForName(param_value,
                                               &effective_connection_type)) {
@@ -188,11 +203,42 @@ bool IsIncludedInClientSidePreviewsExperimentsFieldTrial() {
 bool IsPreviewsTypeEnabled(PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
-      return ParamValue(kOfflinePagesSlowNetwork) == kExperimentEnabled;
+      return ClientSidePreviewsParamValue(kOfflinePagesSlowNetwork) ==
+             kExperimentEnabled;
     default:
       NOTREACHED();
       return false;
   }
+}
+
+int GetPreviewsTypeVersion(PreviewsType type) {
+  int version = 0;  // default
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      base::StringToInt(ClientSidePreviewsParamValue(kVersion), &version);
+      return version;
+    // List remaining enum cases vs. default to catch when new one is added.
+    case PreviewsType::NONE:
+      break;
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return -1;
+}
+
+std::unique_ptr<PreviewsTypeList> GetEnabledPreviews() {
+  std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList());
+
+  // Loop across all previews types (relies on sequential enum values).
+  for (int i = static_cast<int>(PreviewsType::NONE) + 1;
+       i < static_cast<int>(PreviewsType::LAST); ++i) {
+    PreviewsType type = static_cast<PreviewsType>(i);
+    if (IsPreviewsTypeEnabled(type)) {
+      enabled_previews->push_back({type, GetPreviewsTypeVersion(type)});
+    }
+  }
+  return enabled_previews;
 }
 
 bool EnableOfflinePreviewsForTesting() {

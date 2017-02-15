@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 #define COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/time/time.h"
 #include "net/nqe/effective_connection_type.h"
 
@@ -53,8 +57,12 @@ net::EffectiveConnectionType EffectiveConnectionTypeThreshold();
 enum class PreviewsType {
   NONE = 0,
   OFFLINE = 1,
+  // Insert new enum values here. Keep values sequential to allow looping
+  // from NONE+1 to LAST-1.
   LAST = 2,
 };
+
+typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
 // Returns true if any client-side previews experiment is active.
 bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
@@ -62,6 +70,13 @@ bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
 // Returns true if the field trial that should enable previews for |type| for
 // prohibitvely slow networks is active.
 bool IsPreviewsTypeEnabled(PreviewsType type);
+
+// Returns the version of preview treatment |type|. Defaults to 0 if not
+// specified in field trial config.
+int GetPreviewsTypeVersion(PreviewsType type);
+
+// Returns the enabled PreviewsTypes with their version.
+std::unique_ptr<PreviewsTypeList> GetEnabledPreviews();
 
 // Sets the appropriate state for field trial and variations to imitate the
 // offline pages field trial.
