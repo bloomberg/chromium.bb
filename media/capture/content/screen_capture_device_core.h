@@ -122,6 +122,12 @@ class CAPTURE_EXPORT ScreenCaptureDeviceCore
   // component of the system with direct access to |client_|.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
 
+  // After Resume(), some unknown amount of time has passed, and the content of
+  // the capture source may have changed. This flag is used to ensure that the
+  // passive refresh mechanism is not used for the first refresh frame following
+  // a Resume().
+  bool force_active_refresh_once_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureDeviceCore);
 };
 
