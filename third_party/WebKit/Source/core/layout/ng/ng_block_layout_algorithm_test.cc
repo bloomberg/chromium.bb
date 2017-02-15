@@ -195,40 +195,41 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
 // Verifies that floats are positioned at the top of the first child that can
 // determine its position after margins collapsed.
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1WithFloats) {
-  setBodyInnerHTML(
-      "<style>"
-      "  #container {"
-      "    height: 200px;"
-      "    width: 200px;"
-      "    margin-top: 10px;"
-      "    padding: 0 7px;"
-      "    background-color: red;"
-      "  }"
-      "  #first-child {"
-      "    margin-top: 20px;"
-      "    height: 10px;"
-      "    background-color: blue;"
-      "  }"
-      "  #float-child-left {"
-      "    float: left;"
-      "    height: 10px;"
-      "    width: 10px;"
-      "    padding: 10px;"
-      "    margin: 10px;"
-      "    background-color: green;"
-      "  }"
-      "  #float-child-right {"
-      "    float: right;"
-      "    height: 30px;"
-      "    width: 30px;"
-      "    background-color: pink;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='float-child-left'></div>"
-      "  <div id='float-child-right'></div>"
-      "  <div id='first-child'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          height: 200px;
+          width: 200px;
+          margin-top: 10px;
+          padding: 0 7px;
+          background-color: red;
+        }
+        #first-child {
+          margin-top: 20px;
+          height: 10px;
+          background-color: blue;
+        }
+        #float-child-left {
+          float: left;
+          height: 10px;
+          width: 10px;
+          padding: 10px;
+          margin: 10px;
+          background-color: green;
+        }
+        #float-child-right {
+          float: right;
+          height: 30px;
+          width: 30px;
+          background-color: pink;
+        }
+      </style>
+      <div id='container'>
+        <div id='float-child-left'></div>
+        <div id='float-child-right'></div>
+        <div id='first-child'></div>
+      </div>
+    )HTML");
 
   // ** Run LayoutNG algorithm **
   NGConstraintSpace* space;
@@ -304,49 +305,50 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1WithFloats) {
 //   formatting context and that has zero computed 'min-height', zero or 'auto'
 //   computed 'height', and no in-flow children
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
-  setBodyInnerHTML(
-      "<style>"
-      "#first-child {"
-      "  background-color: red;"
-      "  height: 50px;"
-      "  margin-bottom: 20px;"
-      "}"
-      "#float-between-empties {"
-      "  background-color: green;"
-      "  float: left;"
-      "  height: 30px;"
-      "  width: 30px;"
-      "}"
-      "#float-between-nonempties {"
-      "  background-color: lightgreen;"
-      "  float: left;"
-      "  height: 40px;"
-      "  width: 40px;"
-      "}"
-      "#float-top-align {"
-      "  background-color: seagreen;"
-      "  float: left;"
-      "  height: 50px;"
-      "  width: 50px;"
-      "}"
-      "#second-child {"
-      "  background-color: blue;"
-      "  height: 50px;"
-      "  margin-top: 10px;"
-      "}"
-      "</style>"
-      "<div id='first-child'>"
-      "  <div id='empty1' style='margin-bottom: -15px'></div>"
-      "  <div id='float-between-empties'></div>"
-      "  <div id='empty2'></div>"
-      "</div>"
-      "<div id='float-between-nonempties'></div>"
-      "<div id='second-child'>"
-      "  <div id='float-top-align'></div>"
-      "  <div id='empty3'></div>"
-      "  <div id='empty4' style='margin-top: -30px'></div>"
-      "</div>"
-      "<div id='empty5'></div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+      #first-child {
+        background-color: red;
+        height: 50px;
+        margin-bottom: 20px;
+      }
+      #float-between-empties {
+        background-color: green;
+        float: left;
+        height: 30px;
+        width: 30px;
+      }
+      #float-between-nonempties {
+        background-color: lightgreen;
+        float: left;
+        height: 40px;
+        width: 40px;
+      }
+      #float-top-align {
+        background-color: seagreen;
+        float: left;
+        height: 50px;
+        width: 50px;
+      }
+      #second-child {
+        background-color: blue;
+        height: 50px;
+        margin-top: 10px;
+      }
+      </style>
+      <div id='first-child'>
+        <div id='empty1' style='margin-bottom: -15px'></div>
+        <div id='float-between-empties'></div>
+        <div id='empty2'></div>
+      </div>
+      <div id='float-between-nonempties'></div>
+      <div id='second-child'>
+        <div id='float-top-align'></div>
+        <div id='empty3'></div>
+        <div id='empty4' style='margin-top: -30px'></div>
+      </div>
+      <div id='empty5'></div>
+    )HTML");
 
   // ** Run LayoutNG algorithm **
   NGConstraintSpace* space;
@@ -435,19 +437,20 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
 // - bottom margin of a last in-flow child and bottom margin of its parent if
 //   the parent has 'auto' computed height
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
-  setBodyInnerHTML(
-      "<style>"
-      " #container {"
-      "   margin-bottom: 20px;"
-      " }"
-      " #child {"
-      "   margin-bottom: 200px;"
-      "   height: 50px;"
-      " }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+       #container {
+         margin-bottom: 20px;
+       }
+       #child {
+         margin-bottom: 200px;
+         height: 50px;
+       }
+      </style>
+      <div id='container'>
+        <div id='child'></div>
+      </div>
+    )HTML");
 
   const NGPhysicalBoxFragment* body_fragment;
   const NGPhysicalBoxFragment* container_fragment;
@@ -486,21 +489,22 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
 // Verifies that 2 adjoining margins are not collapsed if there is padding or
 // border that separates them.
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
-  setBodyInnerHTML(
-      "<style>"
-      "  #container {"
-      "    margin: 30px 0px;"
-      "    width: 200px;"
-      "  }"
-      "  #child {"
-      "    margin: 200px 0px;"
-      "    height: 50px;"
-      "    background-color: blue;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          margin: 30px 0px;
+          width: 200px;
+        }
+        #child {
+         margin: 200px 0px;
+          height: 50px;
+          background-color: blue;
+        }
+      </style>
+      <div id='container'>
+        <div id='child'></div>
+      </div>
+    )HTML");
 
   const NGPhysicalBoxFragment* body_fragment;
   const NGPhysicalBoxFragment* container_fragment;
@@ -544,38 +548,31 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
 // Verifies that margins of 2 adjoining blocks with different writing modes
 // get collapsed.
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
-  setBodyInnerHTML(
-      "<style>"
-      // TODO(glebl): Remove the fixed height
-      // Fix this once min/max algorithm handles orthogonal children.
-      " body {"
-      "    height: 500px;"
-      "  }"
-      "  #container {"
-      "    margin-top: 10px;"
-      // TODO(glebl): Remove the fixed height
-      // Fix this once min/max algorithm handles orthogonal children.
-      "    width: 500px;"
-      "    writing-mode: vertical-lr;"
-      "  }"
-      "  #vertical {"
-      "    margin-right: 90px;"
-      "    background-color: red;"
-      "    height: 70px;"
-      "    width: 30px;"
-      "  }"
-      "  #horizontal {"
-      "    background-color: blue;"
-      "    margin-left: 100px;"
-      "    writing-mode: horizontal-tb;"
-      "    height: 60px;"
-      "    width: 30px;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='vertical'></div>"
-      "  <div id='horizontal'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          margin-top: 10px;
+          writing-mode: vertical-lr;
+        }
+        #vertical {
+          margin-right: 90px;
+          background-color: red;
+          height: 70px;
+          width: 30px;
+        }
+        #horizontal {
+         background-color: blue;
+          margin-left: 100px;
+          writing-mode: horizontal-tb;
+          height: 60px;
+          width: 30px;
+        }
+      </style>
+      <div id='container'>
+        <div id='vertical'></div>
+        <div id='horizontal'></div>
+      </div>
+    )HTML");
   RefPtr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       document().getElementsByTagName("html")->item(0));
@@ -590,7 +587,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   // height = 70. std::max(vertical height's 70, horizontal's height's 60)
   // TODO(glebl): Should be 70! Fix this once min/max algorithm handles
   // orthogonal children.
-  int body_fragment_block_size = 500;
+  int body_fragment_block_size = 130;
   ASSERT_EQ(
       NGPhysicalSize(LayoutUnit(784), LayoutUnit(body_fragment_block_size)),
       body_fragment->Size());
@@ -813,37 +810,37 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
 // Verifies that floats can be correctly positioned if they are inside of nested
 // empty blocks.
 TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
-  setBodyInnerHTML(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  #container {"
-      "    height: 200px;"
-      "    width: 200px;"
-      "  }"
-      "  #empty1 {"
-      "    margin: 20px;"
-      "    padding: 0 20px;"
-      "  }"
-      "  #empty2 {"
-      "    margin: 15px;"
-      "    padding: 0 15px;"
-      "  }"
-      "  #float {"
-      "    float: left;"
-      "    height: 5px;"
-      "    width: 5px;"
-      "    padding: 10px;"
-      "    margin: 10px;"
-      "    background-color: green;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='empty1'>"
-      "    <div id='empty2'>"
-      "      <div id='float'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          height: 200px;
+          width: 200px;
+        }
+        #empty1 {
+          margin: 20px;
+          padding: 0 20px;
+        }
+        #empty2 {
+          margin: 15px;
+          padding: 0 15px;
+        }
+        #float {
+          float: left;
+          height: 5px;
+          width: 5px;
+          padding: 10px;
+          margin: 10px;
+          background-color: green;
+        }
+      </style>
+      <div id='container'>
+        <div id='empty1'>
+          <div id='empty2'>
+            <div id='float'></div>
+          </div>
+        </div>
+      </div>
+    )HTML");
 
   // ** Run LayoutNG algorithm **
   NGConstraintSpace* space;
@@ -912,50 +909,51 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
 // Verifies that left/right floating and regular blocks can be positioned
 // correctly by the algorithm.
 TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
-  setBodyInnerHTML(
-      "<style>"
-      "  #container {"
-      "    height: 200px;"
-      "    width: 200px;"
-      "  }"
-      "  #left-float {"
-      "    background-color: red;"
-      "    float:left;"
-      "    height: 30px;"
-      "    width: 30px;"
-      "  }"
-      "  #left-wide-float {"
-      "    background-color: greenyellow;"
-      "    float:left;"
-      "    height: 30px;"
-      "    width: 180px;"
-      "  }"
-      "  #regular {"
-      "    width: 40px;"
-      "    height: 40px;"
-      "    background-color: green;"
-      "  }"
-      "  #right-float {"
-      "    background-color: cyan;"
-      "    float:right;"
-      "    width: 50px;"
-      "    height: 50px;"
-      "  }"
-      "  #left-float-with-margin {"
-      "    background-color: black;"
-      "    float:left;"
-      "    height: 120px;"
-      "    margin: 10px;"
-      "    width: 120px;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='left-float'></div>"
-      "  <div id='left-wide-float'></div>"
-      "  <div id='regular'></div>"
-      "  <div id='right-float'></div>"
-      "  <div id='left-float-with-margin'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          height: 200px;
+          width: 200px;
+        }
+        #left-float {
+          background-color: red;
+          float: left;
+          height: 30px;
+          width: 30px;
+        }
+        #left-wide-float {
+          background-color: greenyellow;
+          float: left;
+          height: 30px;
+          width: 180px;
+        }
+        #regular {
+          width: 40px;
+          height: 40px;
+          background-color: green;
+        }
+        #right-float {
+          background-color: cyan;
+          float: right;
+          width: 50px;
+          height: 50px;
+        }
+        #left-float-with-margin {
+          background-color: black;
+          float: left;
+          height: 120px;
+          margin: 10px;
+          width: 120px;
+        }
+      </style>
+      <div id='container'>
+        <div id='left-float'></div>
+        <div id='left-wide-float'></div>
+        <div id='regular'></div>
+        <div id='right-float'></div>
+        <div id='left-float-with-margin'></div>
+      </div>
+      )HTML");
 
   // ** Run LayoutNG algorithm **
   NGConstraintSpace* space;
@@ -1084,51 +1082,52 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
 
 // Verifies that NG block layout algorithm respects "clear" CSS property.
 TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
-  setBodyInnerHTML(
-      "<style>"
-      "  #container {"
-      "    height: 200px;"
-      "    width: 200px;"
-      "  }"
-      "  #float-left {"
-      "    background-color: red;"
-      "    float: left;"
-      "    height: 30px;"
-      "    width: 30px;"
-      "  }"
-      "  #float-right {"
-      "    background-color: blue;"
-      "    float: right;"
-      "    height: 170px;"
-      "    width: 40px;"
-      "  }"
-      "  #clearance {"
-      "    background-color: yellow;"
-      "    height: 60px;"
-      "    width: 60px;"
-      "    margin: 20px;"
-      "  }"
-      "  #block {"
-      "    margin: 40px;"
-      "    background-color: black;"
-      "    height: 60px;"
-      "    width: 60px;"
-      "  }"
-      "  #adjoining-clearance {"
-      "    background-color: green;"
-      "    clear: left;"
-      "    height: 20px;"
-      "    width: 20px;"
-      "    margin: 30px;"
-      "  }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='float-left'></div>"
-      "  <div id='float-right'></div>"
-      "  <div id='clearance'></div>"
-      "  <div id='block'></div>"
-      "  <div id='adjoining-clearance'></div>"
-      "</div>");
+  setBodyInnerHTML(R"HTML(
+      <style>
+        #container {
+          height: 200px;
+          width: 200px;
+        }
+        #float-left {
+          background-color: red;
+          float: left;
+          height: 30px;
+          width: 30px;
+        }
+        #float-right {
+          background-color: blue;
+          float: right;
+          height: 170px;
+          width: 40px;
+        }
+        #clearance {
+          background-color: yellow;
+          height: 60px;
+          width: 60px;
+          margin: 20px;
+        }
+        #block {
+          margin: 40px;
+          background-color: black;
+          height: 60px;
+          width: 60px;
+        }
+        #adjoining-clearance {
+          background-color: green;
+          clear: left;
+          height: 20px;
+          width: 20px;
+          margin: 30px;
+        }
+      </style>
+      <div id='container'>
+        <div id='float-left'></div>
+        <div id='float-right'></div>
+        <div id='clearance'></div>
+        <div id='block'></div>
+        <div id='adjoining-clearance'></div>
+      </div>
+    )HTML");
 
   const NGPhysicalBoxFragment* clerance_fragment;
   const NGPhysicalBoxFragment* body_fragment;
