@@ -62,6 +62,13 @@ bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs);
 ::std::ostream& operator<<(::std::ostream& os, const BeginFrameArgs& args);
 void PrintTo(const BeginFrameArgs& args, ::std::ostream* os);
 
+// Allow "EXPECT_EQ(ack1, ack2);"
+bool operator==(const BeginFrameAck& lhs, const BeginFrameAck& rhs);
+
+// Allow gtest to pretty print BeginFrameAcks.
+::std::ostream& operator<<(::std::ostream& os, const BeginFrameAck& ack);
+void PrintTo(const BeginFrameAck& ack, ::std::ostream* os);
+
 }  // namespace cc
 
 #endif  // CC_TEST_BEGIN_FRAME_ARGS_TEST_H_

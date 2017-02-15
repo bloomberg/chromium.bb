@@ -93,4 +93,24 @@ void PrintTo(const BeginFrameArgs& args, ::std::ostream* os) {
       << args.interval.InMicroseconds() << "us)";
 }
 
+bool operator==(const BeginFrameAck& lhs, const BeginFrameAck& rhs) {
+  return (lhs.source_id == rhs.source_id) &&
+         (lhs.sequence_number == rhs.sequence_number) &&
+         (lhs.latest_confirmed_sequence_number ==
+          rhs.latest_confirmed_sequence_number) &&
+         (lhs.remaining_frames == rhs.remaining_frames) &&
+         (lhs.has_damage == rhs.has_damage);
+}
+
+::std::ostream& operator<<(::std::ostream& os, const BeginFrameAck& args) {
+  PrintTo(args, &os);
+  return os;
+}
+
+void PrintTo(const BeginFrameAck& ack, ::std::ostream* os) {
+  *os << "BeginFrameAck(" << ack.source_id << ", " << ack.sequence_number
+      << ", " << ack.latest_confirmed_sequence_number << ", "
+      << ack.remaining_frames << ", " << ack.has_damage << ")";
+}
+
 }  // namespace cc
