@@ -676,6 +676,12 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode) {
   return result;
 }
 
+// https://html.spec.whatwg.org/#execute-the-script-block
+// with additional support for HTML imports.
+// Note that Steps 2 and 8 must be handled by the caller of doExecuteScript(),
+// i.e. load/error events are dispatched by the caller.
+// Steps 3--7 are implemented here in doExecuteScript().
+// TODO(hiroshige): Move event dispatching code to doExecuteScript().
 bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   DCHECK(m_alreadyStarted);
 
@@ -763,25 +769,46 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   }
 
   const bool isImportedScript = contextDocument != elementDocument;
-  // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block
-  // step 2.3 with additional support for HTML imports.
+
+  // 3. "If the script is from an external file,
+  //     or the script's type is module",
+  //     then increment the ignore-destructive-writes counter of the
+  //     script element's node document. Let neutralized doc be that Document."
+  // TODO(hiroshige): Implement "module" case.
   IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(
       m_isExternalScript || isImportedScript ? contextDocument : 0);
 
+  // 4. "Let old script element be the value to which the script element's
+  //     node document's currentScript object was most recently set."
+  // This is implemented as push/popCurrentScript().
+
+  // 5. "Switch on the script's type:"
+  //    - "classic":
+  //    1. "If the script element's root is not a shadow root,
+  //        then set the script element's node document's currentScript
+  //        attribute to the script element. Otherwise, set it to null."
   if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element))
     contextDocument->pushCurrentScript(m_element);
 
-  // Create a script from the script element node, using the script
-  // block's source and the script block's type.
+  //    2. "Run the classic script given by the script's script."
   // Note: This is where the script is compiled and actually executed.
   frame->script().executeScriptInMainWorld(sourceCode, accessControlStatus);
 
+  //    - "module":
+  // TODO(hiroshige): Implement this.
+
+  // 6. "Set the script element's node document's currentScript attribute
+  //     to old script element."
   if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element)) {
     DCHECK(contextDocument->currentScript() == m_element);
     contextDocument->popCurrentScript();
   }
 
   return true;
+
+  // 7. "Decrement the ignore-destructive-writes counter of neutralized doc,
+  //     if it was incremented in the earlier step."
+  // Implemented as the scope out of IgnoreDestructiveWriteCountIncrementer.
 }
 
 void ScriptLoader::execute() {
