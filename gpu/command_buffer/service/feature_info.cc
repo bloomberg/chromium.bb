@@ -701,7 +701,9 @@ void FeatureInfo::InitializeFeatures() {
   // fallback to an implementation that does not depend on glGetInteger64v on
   // ES2. Thus we can enable GL_EXT_disjoint_timer_query on ES2 contexts even
   // though it does not support glGetInteger64v due to a specification bug.
-  if (extensions.Contains("GL_EXT_disjoint_timer_query") ||
+  feature_flags_.ext_disjoint_timer_query =
+      extensions.Contains("GL_EXT_disjoint_timer_query");
+  if (feature_flags_.ext_disjoint_timer_query ||
       extensions.Contains("GL_ARB_timer_query") ||
       extensions.Contains("GL_EXT_timer_query")) {
     AddExtensionString("GL_EXT_disjoint_timer_query");
@@ -896,8 +898,9 @@ void FeatureInfo::InitializeFeatures() {
         gl_version_info_->is_es3 ||
         gl_version_info_->is_desktop_core_profile;
     if (gl_version_info_->is_angle) {
-      ext_has_multisample |=
+      feature_flags_.angle_framebuffer_multisample =
           extensions.Contains("GL_ANGLE_framebuffer_multisample");
+      ext_has_multisample |= feature_flags_.angle_framebuffer_multisample;
     }
     feature_flags_.use_core_framebuffer_multisample =
         gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile;
@@ -1392,6 +1395,10 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_CHROMIUM_bind_generates_resource");
   feature_flags_.angle_webgl_compatibility =
       extensions.Contains("GL_ANGLE_webgl_compatibility");
+  feature_flags_.chromium_copy_texture =
+      extensions.Contains("GL_CHROMIUM_copy_texture");
+  feature_flags_.chromium_copy_compressed_texture =
+      extensions.Contains("GL_CHROMIUM_copy_compressed_texture");
 }
 
 bool FeatureInfo::IsES3Capable() const {

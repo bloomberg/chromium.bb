@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {
@@ -2250,8 +2251,18 @@ GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  glRenderbufferStorageMultisampleANGLE(target, samples, internalformat, width,
-                                        height);
+  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+    return error::kUnknownCommand;
+  }
+
+  if (feature_info_->feature_flags().angle_framebuffer_multisample) {
+    glRenderbufferStorageMultisampleANGLE(target, samples, internalformat,
+                                          width, height);
+  } else {
+    DCHECK(feature_info_->gl_version_info().is_es3);
+    glRenderbufferStorageMultisample(target, samples, internalformat, width,
+                                     height);
+  }
   return error::kNoError;
 }
 
@@ -2261,8 +2272,18 @@ error::Error GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  glRenderbufferStorageMultisampleANGLE(target, samples, internalformat, width,
-                                        height);
+  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+    return error::kUnknownCommand;
+  }
+
+  if (feature_info_->feature_flags().angle_framebuffer_multisample) {
+    glRenderbufferStorageMultisampleANGLE(target, samples, internalformat,
+                                          width, height);
+  } else {
+    DCHECK(feature_info_->gl_version_info().is_es3);
+    glRenderbufferStorageMultisample(target, samples, internalformat, width,
+                                     height);
+  }
   return error::kNoError;
 }
 
@@ -2346,6 +2367,10 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
     int32_t sync_shm_id,
     uint32_t sync_shm_offset,
     uint32_t submit_count) {
+  if (!feature_info_->feature_flags().ext_disjoint_timer_query) {
+    return error::kUnknownCommand;
+  }
+
   GLuint service_id = GetQueryServiceID(id, &query_id_map_);
 
   // Flush all previous errors
@@ -3018,13 +3043,23 @@ error::Error GLES2DecoderPassthroughImpl::DoDiscardFramebufferEXT(
     GLenum target,
     GLsizei count,
     const volatile GLenum* attachments) {
+  if (!feature_info_->feature_flags().ext_discard_framebuffer) {
+    return error::kUnknownCommand;
+  }
+
   // Validate that count is non-negative before allocating a vector
   if (count < 0) {
     InsertError(GL_INVALID_VALUE, "count cannot be negative.");
     return error::kNoError;
   }
   std::vector<GLenum> attachments_copy(attachments, attachments + count);
-  glDiscardFramebufferEXT(target, count, attachments_copy.data());
+
+  if (feature_info_->gl_version_info().is_es3) {
+    glInvalidateFramebuffer(target, count, attachments_copy.data());
+  } else {
+    glDiscardFramebufferEXT(target, count, attachments_copy.data());
+  }
+
   return error::kNoError;
 }
 

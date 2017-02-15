@@ -101,6 +101,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_webgl_compatibility = false;
     bool ext_srgb_write_control = false;
     bool ext_srgb = false;
+    bool chromium_copy_texture = false;
+    bool chromium_copy_compressed_texture = false;
+    bool angle_framebuffer_multisample = false;
+    bool ext_disjoint_timer_query = false;
   };
 
   FeatureInfo();
