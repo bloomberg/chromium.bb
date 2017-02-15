@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/frame/ImageBitmap.h"
@@ -936,7 +937,7 @@ static inline CanvasImageSource* toImageSourceInternal(
 }
 
 void BaseRenderingContext2D::drawImage(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     const CanvasImageSourceUnion& imageSource,
     double x,
     double y,
@@ -950,13 +951,13 @@ void BaseRenderingContext2D::drawImage(
       imageSourceInternal->elementSize(defaultObjectSize);
   FloatSize destRectSize =
       imageSourceInternal->defaultDestinationSize(defaultObjectSize);
-  drawImage(executionContext, imageSourceInternal, 0, 0, sourceRectSize.width(),
+  drawImage(scriptState, imageSourceInternal, 0, 0, sourceRectSize.width(),
             sourceRectSize.height(), x, y, destRectSize.width(),
             destRectSize.height(), exceptionState);
 }
 
 void BaseRenderingContext2D::drawImage(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     const CanvasImageSourceUnion& imageSource,
     double x,
     double y,
@@ -970,12 +971,12 @@ void BaseRenderingContext2D::drawImage(
   FloatSize defaultObjectSize(this->width(), this->height());
   FloatSize sourceRectSize =
       imageSourceInternal->elementSize(defaultObjectSize);
-  drawImage(executionContext, imageSourceInternal, 0, 0, sourceRectSize.width(),
+  drawImage(scriptState, imageSourceInternal, 0, 0, sourceRectSize.width(),
             sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
 void BaseRenderingContext2D::drawImage(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     const CanvasImageSourceUnion& imageSource,
     double sx,
     double sy,
@@ -990,8 +991,8 @@ void BaseRenderingContext2D::drawImage(
       toImageSourceInternal(imageSource, exceptionState);
   if (!imageSourceInternal)
     return;
-  drawImage(executionContext, imageSourceInternal, sx, sy, sw, sh, dx, dy, dw,
-            dh, exceptionState);
+  drawImage(scriptState, imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh,
+            exceptionState);
 }
 
 bool BaseRenderingContext2D::shouldDrawImageAntialiased(
@@ -1118,7 +1119,7 @@ bool shouldDisableDeferral(CanvasImageSource* imageSource,
   return false;
 }
 
-void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext,
+void BaseRenderingContext2D::drawImage(ScriptState* scriptState,
                                        CanvasImageSource* imageSource,
                                        double sx,
                                        double sy,
@@ -1338,7 +1339,8 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext,
       buffer->setHasExpensiveOp();
   }
 
-  if (originClean() && wouldTaintOrigin(imageSource, executionContext))
+  if (originClean() &&
+      wouldTaintOrigin(imageSource, scriptState->getExecutionContext()))
     setOriginTainted();
 }
 
@@ -1391,7 +1393,7 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
 }
 
 CanvasPattern* BaseRenderingContext2D::createPattern(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     const CanvasImageSourceUnion& imageSource,
     const String& repetitionType,
     ExceptionState& exceptionState) {
@@ -1401,12 +1403,12 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
     return nullptr;
   }
 
-  return createPattern(executionContext, imageSourceInternal, repetitionType,
+  return createPattern(scriptState, imageSourceInternal, repetitionType,
                        exceptionState);
 }
 
 CanvasPattern* BaseRenderingContext2D::createPattern(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     CanvasImageSource* imageSource,
     const String& repetitionType,
     ExceptionState& exceptionState) {
@@ -1452,7 +1454,8 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   }
   DCHECK(imageForRendering);
 
-  bool originClean = !wouldTaintOrigin(imageSource, executionContext);
+  bool originClean =
+      !wouldTaintOrigin(imageSource, scriptState->getExecutionContext());
 
   return CanvasPattern::create(imageForRendering.release(), repeatMode,
                                originClean);

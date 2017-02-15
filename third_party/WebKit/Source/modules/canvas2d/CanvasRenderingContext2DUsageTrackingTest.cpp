@@ -97,6 +97,10 @@ class CanvasRenderingContextUsageTrackingTest : public ::testing::Test {
   Persistent<ImageData> m_fullImageData;
   void TearDown();
 
+  ScriptState* getScriptState() {
+    return ScriptState::forMainWorld(m_canvasElement->frame());
+  }
+
  private:
   std::shared_ptr<DummyPageHolder> m_dummyPageHolder;
   Persistent<Document> m_document;
@@ -261,9 +265,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking) {
 
   // create pattern
   NonThrowableExceptionState exceptionState2;
-  ExecutionContext* execCtx = canvasElement().getExecutionContext();
   CanvasPattern* canvasPattern = context2d()->createPattern(
-      execCtx, &m_opaqueBitmap, "repeat-x", exceptionState2);
+      getScriptState(), &m_opaqueBitmap, "repeat-x", exceptionState2);
   StringOrCanvasGradientOrCanvasPattern pattern =
       StringOrCanvasGradientOrCanvasPattern::fromCanvasPattern(canvasPattern);
   context2d()->setFillStyle(pattern);
@@ -365,9 +368,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking) {
 
   // create pattern
   NonThrowableExceptionState exceptionState;
-  ExecutionContext* execCtx = canvasElement().getExecutionContext();
   CanvasPattern* canvasPattern = context2d()->createPattern(
-      execCtx, &m_opaqueBitmap, "repeat-x", exceptionState);
+      getScriptState(), &m_opaqueBitmap, "repeat-x", exceptionState);
   StringOrCanvasGradientOrCanvasPattern pattern =
       StringOrCanvasGradientOrCanvasPattern::fromCanvasPattern(canvasPattern);
   context2d()->setStrokeStyle(pattern);
@@ -412,9 +414,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ImageTracking) {
   int imgHeight = 200;
   for (int i = 0; i < numReps; i++) {
     context2d()->putImageData(m_fullImageData.get(), 0, 0, exceptionState);
-    context2d()->drawImage(canvasElement().getExecutionContext(),
-                           &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, imgWidth,
-                           imgHeight, exceptionState);
+    context2d()->drawImage(getScriptState(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0,
+                           imgWidth, imgHeight, exceptionState);
     context2d()->getImageData(0, 0, 10, 100, exceptionState);
   }
 
@@ -440,8 +441,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ImageTracking) {
               0.1);
 
   context2d()->setFilter("blur(5px)");
-  context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap,
-                         0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
+  context2d()->drawImage(getScriptState(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0,
+                         10, 10, exceptionState);
 
   EXPECT_EQ(numReps, context2d()->getUsage().numPutImageDataCalls);
   EXPECT_NE(0, context2d()->getUsage().areaPutImageDataCalls);
@@ -615,9 +616,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ShadowsTracking) {
   for (int i = 0; i < numReps; i++) {
     context2d()->putImageData(m_fullImageData.get(), 0, 0, exceptionState);
     context2d()->setShadowBlur(shadowBlur2);
-    context2d()->drawImage(canvasElement().getExecutionContext(),
-                           &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, imgWidth,
-                           imgHeight, exceptionState);
+    context2d()->drawImage(getScriptState(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0,
+                           imgWidth, imgHeight, exceptionState);
     context2d()->getImageData(0, 0, 1, 1, exceptionState);
   }
 

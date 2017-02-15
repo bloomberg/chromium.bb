@@ -130,19 +130,19 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   void fillRect(double x, double y, double width, double height);
   void strokeRect(double x, double y, double width, double height);
 
-  void drawImage(ExecutionContext*,
+  void drawImage(ScriptState*,
                  const CanvasImageSourceUnion&,
                  double x,
                  double y,
                  ExceptionState&);
-  void drawImage(ExecutionContext*,
+  void drawImage(ScriptState*,
                  const CanvasImageSourceUnion&,
                  double x,
                  double y,
                  double width,
                  double height,
                  ExceptionState&);
-  void drawImage(ExecutionContext*,
+  void drawImage(ScriptState*,
                  const CanvasImageSourceUnion&,
                  double sx,
                  double sy,
@@ -153,7 +153,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                  double dw,
                  double dh,
                  ExceptionState&);
-  void drawImage(ExecutionContext*,
+  void drawImage(ScriptState*,
                  CanvasImageSource*,
                  double sx,
                  double sy,
@@ -176,11 +176,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                                        double y1,
                                        double r1,
                                        ExceptionState&);
-  CanvasPattern* createPattern(ExecutionContext*,
+  CanvasPattern* createPattern(ScriptState*,
                                const CanvasImageSourceUnion&,
                                const String& repetitionType,
                                ExceptionState&);
-  CanvasPattern* createPattern(ExecutionContext*,
+  CanvasPattern* createPattern(ScriptState*,
                                CanvasImageSource*,
                                const String& repetitionType,
                                ExceptionState&);
