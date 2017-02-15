@@ -29,6 +29,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -237,7 +238,9 @@ void NetworkConfigView::ShowAdvancedView() {
   gfx::Size predefined_size = views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
-  size.SetToMax(predefined_size);
+  // Use the pre-determined value to determine its size for non-harmony dialog.
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+    size.SetToMax(predefined_size);
 
   // Get the new bounds with desired size at the same center point.
   gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();

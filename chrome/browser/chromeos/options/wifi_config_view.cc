@@ -32,6 +32,7 @@
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -940,11 +941,18 @@ void WifiConfigView::Init(bool show_8021x) {
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
-  const int kLabelMinWidth = 150;
   const int kPasswordVisibleWidth = 20;
   // Label
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, kLabelMinWidth);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // This constant ensures the minimum width of the label column and ensures
+    // the width of the Wifi dialog equals 512.
+    const int kLabelMinWidth = 158;
+    column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                          1, views::GridLayout::USE_PREF, 0, kLabelMinWidth);
+  } else {
+    column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                          1, views::GridLayout::USE_PREF, 0, 0);
+  }
   column_set->AddPaddingColumn(
       0, delegate->GetMetric(
              LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
@@ -958,9 +966,6 @@ void WifiConfigView::Init(bool show_8021x) {
   // Password visible button / policy indicator.
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 0,
                         views::GridLayout::FIXED, kPasswordVisibleWidth, 0);
-  column_set->AddPaddingColumn(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
 
   // SSID input
   if (!network || network->type() != shill::kTypeEthernet) {
@@ -972,9 +977,13 @@ void WifiConfigView::Init(bool show_8021x) {
       ssid_textfield_->set_controller(this);
       ssid_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
-      layout->AddView(ssid_textfield_, 1, 1, views::GridLayout::FILL,
-                      views::GridLayout::FILL, 0,
-                      ChildNetworkConfigView::kInputFieldHeight);
+      if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+        layout->AddView(ssid_textfield_, 1, 1, views::GridLayout::FILL,
+                        views::GridLayout::FILL, 0,
+                        ChildNetworkConfigView::kInputFieldHeight);
+      } else {
+        layout->AddView(ssid_textfield_);
+      }
     } else {
       views::Label* label =
           new views::Label(base::UTF8ToUTF16(network->name()));
@@ -996,9 +1005,13 @@ void WifiConfigView::Init(bool show_8021x) {
     security_combobox_ = new views::Combobox(security_combobox_model_.get());
     security_combobox_->SetAccessibleName(label_text);
     security_combobox_->set_listener(this);
-    layout->AddView(security_combobox_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(security_combobox_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(security_combobox_);
+    }
     layout->AddView(security_combobox_);
     layout->AddPaddingRow(
         0, delegate->GetMetric(
@@ -1021,9 +1034,13 @@ void WifiConfigView::Init(bool show_8021x) {
     eap_method_combobox_->SetAccessibleName(eap_label_text);
     eap_method_combobox_->set_listener(this);
     eap_method_combobox_->SetEnabled(eap_method_ui_data_.IsEditable());
-    layout->AddView(eap_method_combobox_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(eap_method_combobox_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(eap_method_combobox_);
+    }
     layout->AddView(new ControlledSettingIndicatorView(eap_method_ui_data_));
     layout->AddPaddingRow(
         0, delegate->GetMetric(
@@ -1043,9 +1060,13 @@ void WifiConfigView::Init(bool show_8021x) {
     phase_2_auth_label_->SetEnabled(false);
     phase_2_auth_combobox_->SetEnabled(false);
     phase_2_auth_combobox_->set_listener(this);
-    layout->AddView(phase_2_auth_combobox_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(phase_2_auth_combobox_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(phase_2_auth_combobox_);
+    }
     layout->AddView(new ControlledSettingIndicatorView(phase_2_auth_ui_data_));
     layout->AddPaddingRow(
         0, delegate->GetMetric(
@@ -1066,9 +1087,13 @@ void WifiConfigView::Init(bool show_8021x) {
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
     server_ca_cert_combobox_->set_listener(this);
-    layout->AddView(server_ca_cert_combobox_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(server_ca_cert_combobox_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(server_ca_cert_combobox_);
+    }
     layout->AddView(
         new ControlledSettingIndicatorView(server_ca_cert_ui_data_));
     layout->AddPaddingRow(
@@ -1084,9 +1109,13 @@ void WifiConfigView::Init(bool show_8021x) {
     subject_match_textfield_ = new views::Textfield();
     subject_match_textfield_->SetAccessibleName(subject_match_label_text);
     subject_match_textfield_->set_controller(this);
-    layout->AddView(subject_match_textfield_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(subject_match_textfield_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(subject_match_textfield_);
+    }
     layout->AddPaddingRow(
         0, delegate->GetMetric(
                LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
@@ -1103,9 +1132,13 @@ void WifiConfigView::Init(bool show_8021x) {
     user_cert_label_->SetEnabled(false);
     user_cert_combobox_->SetEnabled(false);
     user_cert_combobox_->set_listener(this);
-    layout->AddView(user_cert_combobox_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(user_cert_combobox_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(user_cert_combobox_);
+    }
     layout->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
     layout->AddPaddingRow(
         0, delegate->GetMetric(
@@ -1121,9 +1154,13 @@ void WifiConfigView::Init(bool show_8021x) {
     identity_textfield_->SetAccessibleName(identity_label_text);
     identity_textfield_->set_controller(this);
     identity_textfield_->SetEnabled(identity_ui_data_.IsEditable());
-    layout->AddView(identity_textfield_, 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(identity_textfield_, 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(identity_textfield_);
+    }
     layout->AddView(new ControlledSettingIndicatorView(identity_ui_data_));
     layout->AddPaddingRow(
         0, delegate->GetMetric(
@@ -1144,9 +1181,13 @@ void WifiConfigView::Init(bool show_8021x) {
   passphrase_textfield_->SetEnabled(network &&
                                     passphrase_ui_data_.IsEditable());
   passphrase_textfield_->SetAccessibleName(passphrase_label_text);
-  layout->AddView(passphrase_textfield_, 1, 1, views::GridLayout::FILL,
-                  views::GridLayout::FILL, 0,
-                  ChildNetworkConfigView::kInputFieldHeight);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    layout->AddView(passphrase_textfield_, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0,
+                    ChildNetworkConfigView::kInputFieldHeight);
+  } else {
+    layout->AddView(passphrase_textfield_);
+  }
 
   if (passphrase_ui_data_.IsManaged()) {
     layout->AddView(new ControlledSettingIndicatorView(passphrase_ui_data_));
@@ -1197,9 +1238,13 @@ void WifiConfigView::Init(bool show_8021x) {
     identity_anonymous_label_->SetEnabled(false);
     identity_anonymous_textfield_->SetEnabled(false);
     identity_anonymous_textfield_->set_controller(this);
-    layout->AddView(identity_anonymous_textfield_, 1, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                    ChildNetworkConfigView::kInputFieldHeight);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      layout->AddView(identity_anonymous_textfield_, 1, 1,
+                      views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                      ChildNetworkConfigView::kInputFieldHeight);
+    } else {
+      layout->AddView(identity_anonymous_textfield_);
+    }
     layout->AddView(
         new ControlledSettingIndicatorView(identity_anonymous_ui_data_));
     layout->AddPaddingRow(
@@ -1207,10 +1252,12 @@ void WifiConfigView::Init(bool show_8021x) {
                LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
   }
 
-  // We need a little bit more padding before Checkboxes.
-  layout->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // We need a little bit more padding above Checkboxes.
+    layout->AddPaddingRow(
+        0, delegate->GetMetric(
+               LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+  }
 
   // Checkboxes.
 
