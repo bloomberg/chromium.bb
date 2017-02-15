@@ -11,7 +11,6 @@ import mock
 import sys
 
 from chromite.cbuildbot import buildbucket_lib
-from chromite.cbuildbot import build_status
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
@@ -23,6 +22,7 @@ from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
 from chromite.lib import auth
+from chromite.lib import builder_status_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
@@ -272,7 +272,7 @@ class MasterSlaveSyncCompletionStageTest(
     inflight = {}
     failed_msg = failures_lib.BuildFailureMessage(
         'message', [], True, 'reason', 'bot')
-    status = build_status.BuilderStatus('failed', failed_msg, 'url')
+    status = builder_status_lib.BuilderStatus('failed', failed_msg, 'url')
 
     statuses = {'a' : status}
     no_stat = set()
@@ -336,9 +336,9 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     stage._run.attrs.manifest_manager = mock.MagicMock()
 
     statuses = {
-        'build_1': build_status.BuilderStatus(
+        'build_1': builder_status_lib.BuilderStatus(
             constants.BUILDER_STATUS_MISSING, None),
-        'build_2': build_status.BuilderStatus(
+        'build_2': builder_status_lib.BuilderStatus(
             constants.BUILDER_STATUS_MISSING, None)
     }
 
@@ -431,7 +431,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     inflight = {}
     failed_msg = failures_lib.BuildFailureMessage(
         'message', [], True, 'reason', 'bot')
-    status = build_status.BuilderStatus('failed', failed_msg, 'url')
+    status = builder_status_lib.BuilderStatus('failed', failed_msg, 'url')
 
     statuses = {'failing_build' : status}
     no_stat = set(['no_stat_build'])
@@ -560,10 +560,10 @@ class BaseCommitQueueCompletionStageTest(
     stage._run.attrs.manifest_manager = mock.MagicMock()
     statuses = {}
     for x in failing:
-      statuses[x] = build_status.BuilderStatus(
+      statuses[x] = builder_status_lib.BuilderStatus(
           constants.BUILDER_STATUS_FAILED, message=None)
     for x in inflight:
-      statuses[x] = build_status.BuilderStatus(
+      statuses[x] = builder_status_lib.BuilderStatus(
           constants.BUILDER_STATUS_INFLIGHT, message=None)
     if self._run.config.master:
       self.PatchObject(stage._run.attrs.manifest_manager, 'GetBuildersStatus',

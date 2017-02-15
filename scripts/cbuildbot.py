@@ -20,7 +20,6 @@ import pickle
 import sys
 
 from chromite.cbuildbot import builders
-from chromite.cbuildbot import build_status
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
@@ -29,6 +28,7 @@ from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import completion_stages
+from chromite.lib import builder_status_lib
 from chromite.lib import cidb
 from chromite.lib import cgroups
 from chromite.lib import cleanup
@@ -1270,7 +1270,7 @@ def main(argv):
       with open(options.mock_slave_status, 'r') as f:
         mock_statuses = pickle.load(f)
         for key, value in mock_statuses.iteritems():
-          mock_statuses[key] = build_status.BuilderStatus(**value)
+          mock_statuses[key] = builder_status_lib.BuilderStatus(**value)
       stack.Add(mock.patch.object,
                 completion_stages.MasterSlaveSyncCompletionStage,
                 '_FetchSlaveStatuses',
