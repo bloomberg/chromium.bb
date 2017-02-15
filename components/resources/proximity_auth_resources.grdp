@@ -32,4 +32,16 @@
            file="../proximity_auth/webui/resources/reachable-devices.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
   <include name="IDR_PROXIMITY_AUTH_CRYPTAUTH_INTERFACE_JS"
            file="../proximity_auth/webui/resources/cryptauth_interface.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+
+  <!-- Resources for Pollux debug page. -->
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_HTML"
+          file="../proximity_auth/webui/resources/pollux/pollux_debug.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_CSS"
+           file="../proximity_auth/webui/resources/pollux/pollux_debug.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_JS"
+           file="../proximity_auth/webui/resources/pollux/pollux_debug.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_LOGS_CONTROLLER_JS"
+           file="../proximity_auth/webui/resources/pollux/logs_controller.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_WEBUI_JS"
+           file="../proximity_auth/webui/resources/pollux/webui.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 </grit-part>

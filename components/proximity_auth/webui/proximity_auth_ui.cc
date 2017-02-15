@@ -21,33 +21,14 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
-  source->SetDefaultResource(IDR_PROXIMITY_AUTH_UI_HTML);
-  source->AddResourcePath("proximity_auth.css", IDR_PROXIMITY_AUTH_UI_CSS);
-  source->AddResourcePath("content-panel.html",
-                          IDR_PROXIMITY_AUTH_CONTENT_PANEL_HTML);
-  source->AddResourcePath("content-panel.js",
-                          IDR_PROXIMITY_AUTH_CONTENT_PANEL_JS);
-  source->AddResourcePath("log-panel.html", IDR_PROXIMITY_AUTH_LOG_PANEL_HTML);
-  source->AddResourcePath("log-panel.js", IDR_PROXIMITY_AUTH_LOG_PANEL_JS);
-  source->AddResourcePath("local-state.html",
-                          IDR_PROXIMITY_AUTH_LOCAL_STATE_HTML);
-  source->AddResourcePath("local-state.js", IDR_PROXIMITY_AUTH_LOCAL_STATE_JS);
-  source->AddResourcePath("device-list.html",
-                          IDR_PROXIMITY_AUTH_DEVICE_LIST_HTML);
-  source->AddResourcePath("device-list.js", IDR_PROXIMITY_AUTH_DEVICE_LIST_JS);
-  source->AddResourcePath("log-buffer.html",
-                          IDR_PROXIMITY_AUTH_LOG_BUFFER_HTML);
-  source->AddResourcePath("log-buffer.js", IDR_PROXIMITY_AUTH_LOG_BUFFER_JS);
-  source->AddResourcePath("eligible-devices.html",
-                          IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_HTML);
-  source->AddResourcePath("eligible-devices.js",
-                          IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_JS);
-  source->AddResourcePath("reachable-devices.html",
-                          IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_HTML);
-  source->AddResourcePath("reachable-devices.js",
-                          IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_JS);
-  source->AddResourcePath("cryptauth_interface.js",
-                          IDR_PROXIMITY_AUTH_CRYPTAUTH_INTERFACE_JS);
+  source->SetDefaultResource(IDR_PROXIMITY_AUTH_POLLUX_DEBUG_HTML);
+  source->AddResourcePath("pollux_debug.css",
+                          IDR_PROXIMITY_AUTH_POLLUX_DEBUG_CSS);
+  source->AddResourcePath("pollux_debug.js",
+                          IDR_PROXIMITY_AUTH_POLLUX_DEBUG_JS);
+  source->AddResourcePath("webui.js", IDR_PROXIMITY_AUTH_POLLUX_WEBUI_JS);
+  source->AddResourcePath("logs_controller.js",
+                          IDR_PROXIMITY_AUTH_POLLUX_LOGS_CONTROLLER_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
