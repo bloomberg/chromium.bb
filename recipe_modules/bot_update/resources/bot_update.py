@@ -661,6 +661,12 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
   print '===Applying gerrit ref==='
   print 'Repo is %r @ %r, ref is %r, root is %r' % (
       gerrit_repo, base_rev, gerrit_ref, root)
+  # TODO(tandrii): move the fix below to common rietveld/gerrit codepath.
+  # Speculative fix: prior bot_update run with Rietveld patch may leave git
+  # index with unmerged paths. bot_update calls 'checkout --force xyz' thus
+  # ignoring such paths, but potentially never cleaning them up. The following
+  # command will do so. See http://crbug.com/692067.
+  git('reset', '--hard', cwd=root)
   try:
     git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
     git('checkout', 'FETCH_HEAD', cwd=root)
