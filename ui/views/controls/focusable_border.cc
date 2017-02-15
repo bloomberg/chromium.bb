@@ -11,6 +11,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
@@ -43,27 +44,30 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setColor(GetCurrentColor(view));
 
+  gfx::ScopedCanvas scoped(canvas);
+  float dsf = canvas->UndoDeviceScaleFactor();
+
+  const int stroke_width_px =
+      ui::MaterialDesignController::IsSecondaryUiMaterial()
+          ? 1
+          : gfx::ToFlooredInt(dsf);
+  flags.setStrokeWidth(SkIntToScalar(stroke_width_px));
+
+  // Scale the rect and snap to pixel boundaries.
+  gfx::RectF rect(gfx::ScaleToEnclosingRect(view.GetLocalBounds(), dsf));
+  rect.Inset(gfx::InsetsF(stroke_width_px / 2.0f));
+
+  SkPath path;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    gfx::ScopedCanvas scoped(canvas);
-    float dsf = canvas->UndoDeviceScaleFactor();
-    // Scale the rect and snap to pixel boundaries.
-    gfx::RectF rect(gfx::ScaleToEnclosingRect(view.GetLocalBounds(), dsf));
-    rect.Inset(gfx::InsetsF(0.5f));
-    SkPath path;
+    flags.setAntiAlias(true);
     float corner_radius_px = kCornerRadiusDp * dsf;
     path.addRoundRect(gfx::RectFToSkRect(rect), corner_radius_px,
                       corner_radius_px);
-    const int kStrokeWidthPx = 1;
-    flags.setStrokeWidth(SkIntToScalar(kStrokeWidthPx));
-    flags.setAntiAlias(true);
-    canvas->DrawPath(path, flags);
   } else {
-    SkPath path;
-    path.addRect(gfx::RectToSkRect(view.GetLocalBounds()),
-                 SkPath::kCW_Direction);
-    flags.setStrokeWidth(SkIntToScalar(2));
-    canvas->DrawPath(path, flags);
+    path.addRect(gfx::RectFToSkRect(rect), SkPath::kCW_Direction);
   }
+
+  canvas->DrawPath(path, flags);
 }
 
 gfx::Insets FocusableBorder::GetInsets() const {
