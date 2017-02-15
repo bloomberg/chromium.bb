@@ -709,6 +709,7 @@ CrSettingsSiteSettingsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    // TODO(dbeam): split these up.
     'category_default_setting_tests.js',
     'category_setting_exceptions_tests.js',
     'site_details_tests.js',
@@ -733,6 +734,28 @@ TEST_F('CrSettingsSiteSettingsTest', 'SiteSettings', function() {
   usb_devices.registerTests();
   protocol_handlers.registerTests();
 
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteDataTest() {}
+
+CrSettingsSiteDataTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  browsePreload: 'chrome://md-settings/site_settings/site_data.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'site_data_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteDataTest', 'All', function() {
   mocha.run();
 });
 

@@ -7,6 +7,16 @@
  * 'site-data' handles showing the local storage summary list for all sites.
  */
 
+/**
+ * TODO(dbeam): upstream to polymer externs?
+ * @constructor
+ * @extends {Event}
+ */
+function DomRepeatEvent() {}
+
+/** @type {?} */
+DomRepeatEvent.prototype.model;
+
 Polymer({
   is: 'site-data',
 
@@ -24,9 +34,6 @@ Polymer({
 
     /** @private */
     confirmationDeleteMsg_: String,
-
-    /** @private */
-    idToDelete_: String,
   },
 
   /** @override */
@@ -52,7 +59,10 @@ Polymer({
     this.$.list.render();
   },
 
-  /** @private */
+  /**
+   * @return {boolean} Whether to show the multiple site remove button.
+   * @private
+   */
   isRemoveButtonVisible_: function(sites, renderedItemCount) {
     return renderedItemCount != 0;
   },
@@ -78,39 +88,20 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmDeleteMultipleSites_: function(e) {
+  onRemoveShowingSitesTap_: function(e) {
     e.preventDefault();
-    this.idToDelete_ = '';  // Delete all.
     this.confirmationDeleteMsg_ = loadTimeData.getString(
         'siteSettingsCookieRemoveMultipleConfirmation');
     this.$.confirmDeleteDialog.showModal();
   },
 
   /**
-   * Called when deletion for a single/multiple sites has been confirmed.
+   * Called when deletion for all showing sites has been confirmed.
    * @private
    */
   onConfirmDelete_: function() {
-    if (this.idToDelete_ != '')
-      this.onDeleteSite_();
-    else
-      this.onDeleteMultipleSites_();
     this.$.confirmDeleteDialog.close();
-  },
 
-  /**
-   * Deletes all site data for a given site.
-   * @private
-   */
-  onDeleteSite_: function() {
-    this.browserProxy.removeCookie(this.idToDelete_);
-  },
-
-  /**
-   * Deletes site data for multiple sites.
-   * @private
-   */
-  onDeleteMultipleSites_: function() {
     if (this.filterString_.length == 0) {
       this.removeAllCookies();
     } else {
@@ -122,6 +113,16 @@ Polymer({
       // We just deleted all items found by the filter, let's reset the filter.
       /** @type {SettingsSubpageSearchElement} */(this.$.filter).setValue('');
     }
+  },
+
+  /**
+   * Deletes all site data for a given site.
+   * @param {!DomRepeatEvent} e
+   * @private
+   */
+  onRemoveSiteTap_: function(e) {
+    e.stopPropagation();
+    this.browserProxy.removeCookie(e.model.item.id);
   },
 
   /**

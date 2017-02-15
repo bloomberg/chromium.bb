@@ -53,6 +53,8 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'getExceptionList',
     'observeProtocolHandlers',
     'observeProtocolHandlersEnabledState',
+    'reloadCookies',
+    'removeCookie',
     'removeProtocolHandler',
     'removeUsbDevice',
     'removeZoomLevel',
@@ -242,6 +244,16 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   fetchZoomLevels: function() {
     cr.webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
     this.methodCalled('fetchZoomLevels');
+  },
+
+  /** @override */
+  reloadCookies: function() {
+    return Promise.resolve({id: null, children: []});
+  },
+
+  /** @override */
+  removeCookie: function(path) {
+    this.methodCalled('removeCookie', path);
   },
 
   /** @override */
