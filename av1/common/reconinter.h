@@ -74,8 +74,12 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 #if CONFIG_CONVOLVE_ROUND
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND)
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-                             interp_filter, subpel_x, xs, subpel_y, ys,
-                             conv_params);
+#if CONFIG_DUAL_FILTER
+                             interp_filter,
+#else
+                             &interp_filter,
+#endif
+                             subpel_x, xs, subpel_y, ys, conv_params);
     else
 #endif
       av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
