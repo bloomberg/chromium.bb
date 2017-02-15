@@ -35,11 +35,11 @@ tests:
   - - foo
     - fu
 
-# _ in a back translation test mustn't be allowed to go below 0
+# A multipass test should fail if _ goes negative
 table: |
   include tables/chardefs.cti
   correct _["fu"] "oo"
 flags: {testmode: backward}
 tests:
   - - fu
-    - oo
+    - foo
