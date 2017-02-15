@@ -724,14 +724,17 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const {
   // aria-labelledby. So we need to explicitly call the style resolver to check
   // whether it's invisible or display:none, rather than relying on the style
   // cached in the LayoutObject.
-  Document* doc = getDocument();
-  if (doc && doc->frame() && getNode() && getNode()->isElementNode()) {
-    RefPtr<ComputedStyle> style =
-        doc->ensureStyleResolver().styleForElement(toElement(getNode()));
-    return style->display() == EDisplay::None ||
-           style->visibility() != EVisibility::kVisible;
+  Document* document = getDocument();
+  if (!document || !document->frame())
+    return false;
+  if (Node* node = getNode()) {
+    if (node->isConnected() && node->isElementNode()) {
+      RefPtr<ComputedStyle> style =
+          document->ensureStyleResolver().styleForElement(toElement(node));
+      return style->display() == EDisplay::None ||
+             style->visibility() != EVisibility::kVisible;
+    }
   }
-
   return false;
 }
 

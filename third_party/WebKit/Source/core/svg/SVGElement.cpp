@@ -243,6 +243,8 @@ void SVGElement::applyActiveWebAnimations() {
         map, *this, propertyFromAttribute(attribute)->baseValueBase());
     InvalidatableInterpolation::applyStack(entry.value, environment);
   }
+  if (!hasSVGRareData())
+    return;
   svgRareData()->setWebAnimatedAttributesDirty(false);
 }
 
