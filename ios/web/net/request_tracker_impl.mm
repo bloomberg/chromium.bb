@@ -269,7 +269,6 @@ struct TrackerCounts {
     }
   }
 
-  status_.security_bits = sslInfo_.security_bits;
   status_.connection_status = sslInfo_.connection_status;
 
   if (tracker_->has_mixed_content()) {
