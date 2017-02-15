@@ -156,7 +156,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   void OnIntentFiltersUpdated() override;
 
   // arc::ArcSessionManager::Observer:
-  void OnArcOptInChanged(bool enabled) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
  private:
   NoteTakingHelper();

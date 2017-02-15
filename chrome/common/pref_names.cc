@@ -24,7 +24,11 @@ const char kArcApps[] = "arc.apps";
 const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
 // A preference to indicate that Android's data directory should be removed.
 const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
-// A preference to keep Android apps enabled state.
+// A preference representing whether a user has opted in to use Google Play
+// Store on ARC.
+// TODO(hidehiko): For historical reason, now the preference name does not
+// directly reflect "Google Play Store". We should get and set the values via
+// utility methods (IsArcPlayStoreEnabled() and SetArcPlayStoreEnabled()).
 const char kArcEnabled[] = "arc.enabled";
 // A preference that indicated whether Android reported that it's compliant
 // with provided policies. When it's compliant, Android kiosk app will start.

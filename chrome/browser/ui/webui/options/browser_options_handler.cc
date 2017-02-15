@@ -1223,7 +1223,7 @@ void BrowserOptionsHandler::InitializePage() {
   if (arc::IsArcAllowedForProfile(profile) &&
       !arc::IsArcOptInVerificationDisabled()) {
     base::FundamentalValue is_arc_enabled(
-        arc::ArcSessionManager::Get()->IsArcEnabled());
+        arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled());
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.showAndroidAppsSection",
         is_arc_enabled);

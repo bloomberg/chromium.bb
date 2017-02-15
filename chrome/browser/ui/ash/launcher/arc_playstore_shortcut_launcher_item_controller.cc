@@ -31,8 +31,8 @@ ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_app_prefs);
 
-  const bool arc_was_enabled = arc_session_manager->IsArcEnabled();
-  arc_session_manager->EnableArc();
+  const bool arc_was_enabled = arc_session_manager->IsArcPlayStoreEnabled();
+  arc_session_manager->SetArcPlayStoreEnabled(true);
 
   // Deferred launcher.
   if (arc_app_prefs->IsRegistered(arc::kPlayStoreAppId) && arc_was_enabled) {

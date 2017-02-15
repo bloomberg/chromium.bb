@@ -825,9 +825,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
         std::vector<arc::mojom::AppInfo>());
   }
 
-  void EnableArc(bool enable) {
-    enable ? arc_test_.arc_session_manager()->EnableArc()
-           : arc_test_.arc_session_manager()->DisableArc();
+  void EnableArc(bool enabled) {
+    arc_test_.arc_session_manager()->SetArcPlayStoreEnabled(enabled);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -841,8 +840,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
                         bool arc_managed,
                         arc::ArcSessionManager::State state,
                         const std::string& pin_status) {
+    EXPECT_EQ(arc_enabled,
+              arc_test_.arc_session_manager()->IsArcPlayStoreEnabled());
     EXPECT_EQ(arc_managed, arc_test_.arc_session_manager()->IsArcManaged());
-    EXPECT_EQ(arc_enabled, arc_test_.arc_session_manager()->IsArcEnabled());
     EXPECT_EQ(state, arc_test_.arc_session_manager()->state());
     EXPECT_EQ(pin_status, GetPinnedAppStatus());
   }
@@ -3953,7 +3953,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnableArc(false);
-  EXPECT_FALSE(arc_test_.arc_session_manager()->IsArcEnabled());
+  EXPECT_FALSE(arc_test_.arc_session_manager()->IsArcPlayStoreEnabled());
   ASSERT_TRUE(prefs->GetAppIds().size());
 
   const std::string app_id =
@@ -3961,7 +3961,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
+  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcPlayStoreEnabled());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
 
@@ -3971,7 +3971,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
             launcher_controller_->GetShelfIDForAppID(app_id));
 
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
+  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcPlayStoreEnabled());
 
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));

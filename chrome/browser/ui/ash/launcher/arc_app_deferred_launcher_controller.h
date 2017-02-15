@@ -47,7 +47,7 @@ class ArcAppDeferredLauncherController
   void OnAppRemoved(const std::string& app_id) override;
 
   // arc::ArcSessionManager::Observer:
-  void OnArcOptInChanged(bool enabled) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // Removes entry from the list of tracking items.
   void Remove(const std::string& app_id);

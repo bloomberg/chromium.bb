@@ -142,11 +142,8 @@ void DeleteAppFolderFromFileThread(const base::FilePath& path) {
 }
 
 bool IsArcEnabled() {
-  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-  return arc_session_manager &&
-         arc_session_manager->state() !=
-             arc::ArcSessionManager::State::NOT_INITIALIZED &&
-         arc_session_manager->IsArcEnabled();
+  const auto* arc_session_manager = arc::ArcSessionManager::Get();
+  return arc_session_manager && arc_session_manager->IsArcPlayStoreEnabled();
 }
 
 bool GetInt64FromPref(const base::DictionaryValue* dict,
@@ -266,9 +263,8 @@ void ArcAppListPrefs::StartPrefs() {
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   CHECK(arc_session_manager);
 
-  if (arc_session_manager->state() !=
-      arc::ArcSessionManager::State::NOT_INITIALIZED)
-    OnArcOptInChanged(arc_session_manager->IsArcEnabled());
+  if (arc_session_manager->profile())
+    OnArcPlayStoreEnabledChanged(arc_session_manager->IsArcPlayStoreEnabled());
   arc_session_manager->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
@@ -596,7 +592,7 @@ void ArcAppListPrefs::RemoveAllApps() {
   DCHECK(ready_apps_.empty());
 }
 
-void ArcAppListPrefs::OnArcOptInChanged(bool enabled) {
+void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
   UpdateDefaultAppsHiddenState();
 
   if (enabled)

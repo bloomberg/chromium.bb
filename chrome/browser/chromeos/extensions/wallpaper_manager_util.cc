@@ -49,7 +49,7 @@ bool ShouldUseAndroidWallpapersApp(Profile* profile) {
   // Check if the ARC++ is enabled.
   const arc::ArcSessionManager* const arc_session_manager =
       arc::ArcSessionManager::Get();
-  if (!arc_session_manager || !arc_session_manager->IsArcEnabled())
+  if (!arc_session_manager || !arc_session_manager->IsArcPlayStoreEnabled())
     return false;
 
   // Check if Android Wallpapers App has been installed.

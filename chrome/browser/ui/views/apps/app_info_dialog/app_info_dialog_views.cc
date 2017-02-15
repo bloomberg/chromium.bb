@@ -147,7 +147,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
 
 #if defined(OS_CHROMEOS)
   // When ARC is enabled, show the "Manage supported links" link for Chrome.
-  if (arc::ArcSessionManager::Get()->IsArcEnabled() &&
+  if (arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled() &&
       app->id() == extension_misc::kChromeAppId)
     dialog_body_contents->AddChildView(new ArcAppInfoLinksPanel(profile, app));
 #endif

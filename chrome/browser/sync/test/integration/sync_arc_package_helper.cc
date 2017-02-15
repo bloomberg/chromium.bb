@@ -153,7 +153,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   DCHECK(arc_session_manager);
   ArcSessionManager::DisableUIForTesting();
   arc_session_manager->OnPrimaryUserProfilePrepared(profile);
-  arc_session_manager->EnableArc();
+  arc_session_manager->SetArcPlayStoreEnabled(true);
 
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);

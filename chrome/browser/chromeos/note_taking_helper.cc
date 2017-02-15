@@ -190,7 +190,7 @@ void NoteTakingHelper::OnIntentFiltersUpdated() {
     UpdateAndroidApps();
 }
 
-void NoteTakingHelper::OnArcOptInChanged(bool enabled) {
+void NoteTakingHelper::OnArcPlayStoreEnabledChanged(bool enabled) {
   android_enabled_ = enabled;
   if (!enabled) {
     android_apps_.clear();
@@ -230,7 +230,7 @@ NoteTakingHelper::NoteTakingHelper()
   // Check if the primary profile has already enabled ARC and watch for changes.
   auto session_manager = arc::ArcSessionManager::Get();
   session_manager->AddObserver(this);
-  android_enabled_ = session_manager->IsArcEnabled();
+  android_enabled_ = session_manager->IsArcPlayStoreEnabled();
 
   // ArcIntentHelperBridge will notify us about changes to the list of available
   // Android apps.

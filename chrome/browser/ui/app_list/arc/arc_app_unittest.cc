@@ -999,14 +999,14 @@ TEST_F(ArcPlayStoreAppTest, PlayStore) {
   ASSERT_TRUE(app_info);
   EXPECT_TRUE(app_info->ready);
 
-  arc_test()->arc_session_manager()->DisableArc();
+  arc_test()->arc_session_manager()->SetArcPlayStoreEnabled(false);
 
   app_info = prefs->GetApp(arc::kPlayStoreAppId);
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
 
   arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE);
-  EXPECT_TRUE(arc_test()->arc_session_manager()->IsArcEnabled());
+  EXPECT_TRUE(arc_test()->arc_session_manager()->IsArcPlayStoreEnabled());
 }
 
 // Test that icon is correctly extracted for shelf group.
@@ -1255,7 +1255,7 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   ValidateHaveApps(all_apps);
 
   // OptOut and default apps should exist minus first.
-  arc_test()->arc_session_manager()->DisableArc();
+  arc_test()->arc_session_manager()->SetArcPlayStoreEnabled(false);
   all_apps = fake_default_apps();
   all_apps.erase(all_apps.begin());
   ValidateHaveApps(all_apps);

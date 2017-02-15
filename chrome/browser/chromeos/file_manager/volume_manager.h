@@ -302,7 +302,7 @@ class VolumeManager : public KeyedService,
       base::File::Error error) override;
 
   // arc::ArcSessionManager::Observer overrides.
-  void OnArcOptInChanged(bool enabled) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();

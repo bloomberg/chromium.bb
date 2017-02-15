@@ -144,7 +144,7 @@ void ArcFileSystemOperationRunner::GetChildDocuments(
                                           callback);
 }
 
-void ArcFileSystemOperationRunner::OnArcOptInChanged(bool enabled) {
+void ArcFileSystemOperationRunner::OnArcPlayStoreEnabledChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStateChanged();
 }
@@ -161,7 +161,7 @@ void ArcFileSystemOperationRunner::OnInstanceClosed() {
 
 void ArcFileSystemOperationRunner::OnStateChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetShouldDefer(ArcSessionManager::Get()->IsArcEnabled() &&
+  SetShouldDefer(ArcSessionManager::Get()->IsArcPlayStoreEnabled() &&
                  !arc_bridge_service()->file_system()->has_instance());
 }
 

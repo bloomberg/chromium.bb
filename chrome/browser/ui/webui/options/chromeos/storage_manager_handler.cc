@@ -417,7 +417,7 @@ void StorageManagerHandler::UpdateArcSize() {
   Profile* const profile = Profile::FromWebUI(web_ui());
   if (!arc::IsArcAllowedForProfile(profile) ||
       arc::IsArcOptInVerificationDisabled() ||
-      !arc::ArcSessionManager::Get()->IsArcEnabled()) {
+      !arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled()) {
     return;
   }
 

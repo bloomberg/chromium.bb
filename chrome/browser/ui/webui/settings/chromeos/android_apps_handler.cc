@@ -65,7 +65,7 @@ std::unique_ptr<base::DictionaryValue>
 AndroidAppsHandler::BuildAndroidAppsInfo() {
   std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   bool app_ready = false;
-  if (arc::ArcSessionManager::Get()->IsArcEnabled()) {
+  if (arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled()) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         ArcAppListPrefs::Get(profile_)->GetApp(arc::kSettingsAppId);
     app_ready = app_info && app_info->ready;

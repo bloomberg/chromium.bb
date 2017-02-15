@@ -64,10 +64,10 @@ class ArcAuthNotificationDelegate
     StopObserving();
     if (button_index == 0) {
       UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_ACCEPTED);
-      arc::ArcSessionManager::Get()->EnableArc();
+      arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(true);
     } else {
       UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_DECLINED);
-      arc::ArcSessionManager::Get()->DisableArc();
+      arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(false);
     }
   }
 

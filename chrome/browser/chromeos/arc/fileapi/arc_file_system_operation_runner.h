@@ -80,7 +80,7 @@ class ArcFileSystemOperationRunner
                          const GetChildDocumentsCallback& callback);
 
   // ArcSessionManager::Observer overrides:
-  void OnArcOptInChanged(bool enabled) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // InstanceHolder<mojom::FileSystemInstance>::Observer overrides:
   void OnInstanceReady() override;

@@ -51,7 +51,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
 
     ArcSessionManager* session_manager = ArcSessionManager::Get();
     DCHECK(session_manager);
-    session_manager->EnableArc();
+    session_manager->SetArcPlayStoreEnabled(true);
 
     arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
     DCHECK(arc_app_list_pref_);

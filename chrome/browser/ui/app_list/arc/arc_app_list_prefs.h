@@ -225,7 +225,7 @@ class ArcAppListPrefs
   bool HasObserver(Observer* observer);
 
   // arc::ArcSessionManager::Observer:
-  void OnArcOptInChanged(bool enabled) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // ArcDefaultAppList::Delegate:
   void OnDefaultAppsReady() override;

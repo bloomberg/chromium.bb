@@ -141,7 +141,8 @@ void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
   Close(app_id);
 }
 
-void ArcAppDeferredLauncherController::OnArcOptInChanged(bool enabled) {
+void ArcAppDeferredLauncherController::OnArcPlayStoreEnabledChanged(
+    bool enabled) {
   if (enabled)
     return;
 

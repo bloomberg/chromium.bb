@@ -172,7 +172,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
 #if defined(OS_CHROMEOS)
   const arc::ArcSessionManager* arc_session_manager =
       arc::ArcSessionManager::Get();
-  if (arc_session_manager && arc_session_manager->IsArcEnabled()) {
+  if (arc_session_manager && arc_session_manager->IsArcPlayStoreEnabled()) {
     SET_STRING("sys-info",
                IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC);
   } else {

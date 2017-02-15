@@ -93,7 +93,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 
-  arc_session_manager_->EnableArc();
+  arc_session_manager_->SetArcPlayStoreEnabled(true);
   // Check initial conditions.
   EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
 

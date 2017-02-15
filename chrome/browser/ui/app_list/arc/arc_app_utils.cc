@@ -269,14 +269,14 @@ bool LaunchApp(content::BrowserContext* context,
     DCHECK(arc_session_manager);
 
     bool arc_activated = false;
-    if (!arc_session_manager->IsArcEnabled()) {
+    if (!arc_session_manager->IsArcPlayStoreEnabled()) {
       if (!prefs->IsDefault(app_id)) {
         NOTREACHED();
         return false;
       }
 
-      arc_session_manager->EnableArc();
-      if (!arc_session_manager->IsArcEnabled()) {
+      arc_session_manager->SetArcPlayStoreEnabled(true);
+      if (!arc_session_manager->IsArcPlayStoreEnabled()) {
         NOTREACHED();
         return false;
       }

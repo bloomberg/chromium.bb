@@ -410,7 +410,8 @@ void VolumeManager::Initialize() {
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
       arc::IsArcAllowedForProfile(profile_)) {
     arc::ArcSessionManager::Get()->AddObserver(this);
-    OnArcOptInChanged(arc::ArcSessionManager::Get()->IsArcEnabled());
+    OnArcPlayStoreEnabledChanged(
+        arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled());
   }
 }
 
@@ -742,7 +743,7 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VolumeManager::OnArcOptInChanged(bool enabled) {
+void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(arc::kMediaViewFeature));
   DCHECK(arc::IsArcAllowedForProfile(profile_));

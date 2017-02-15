@@ -230,14 +230,16 @@ void ArcSessionManager::MaybeReenableArc() {
   // The only case this happens should be in the special case for enterprise
   // "on managed lost" case. In that case, OnSessionStopped() should trigger
   // the RemoveArcData(), then this.
-  if (!reenable_arc_ || !IsArcEnabled())
+  // TODO(hidehiko): It looks necessary to reset |reenable_arc_| regardless of
+  // IsArcPlayStoreEnabled(). Fix it.
+  if (!reenable_arc_ || !IsArcPlayStoreEnabled())
     return;
 
   // Restart ARC anyway. Let the enterprise reporting instance decide whether
   // the ARC user data wipe is still required or not.
   reenable_arc_ = false;
   VLOG(1) << "Reenable ARC";
-  EnableArc();
+  OnOptInPreferenceChanged();
 }
 
 void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
@@ -248,8 +250,8 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   // container. Ignore all |result|s arriving while ARC is disabled, in order to
   // avoid popping up an error message triggered below. This code intentionally
   // does not support the case of reenabling.
-  if (!IsArcEnabled()) {
-    LOG(WARNING) << "Provisioning result received after Arc was disabled. "
+  if (!IsArcPlayStoreEnabled()) {
+    LOG(WARNING) << "Provisioning result received after ARC was disabled. "
                  << "Ignoring result " << static_cast<int>(result) << ".";
     return;
   }
@@ -502,7 +504,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
-  const bool arc_enabled = IsArcEnabled();
+  const bool arc_enabled = IsArcPlayStoreEnabled();
   if (!IsArcManaged()) {
     // Update UMA only for non-Managed cases.
     UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
@@ -519,7 +521,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   }
 
   for (auto& observer : observer_list_)
-    observer.OnArcOptInChanged(arc_enabled);
+    observer.OnArcPlayStoreEnabledChanged(arc_enabled);
 
   // Hide auth notification if it was opened before and arc.enabled pref was
   // explicitly set to true or false.
@@ -577,7 +579,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
     // Check Android management in parallel.
     // Note: Because the callback may be called in synchronous way (i.e. called
     // on the same stack), StartCheck() needs to be called *after* StartArc().
-    // Otherwise, DisableArc() which may be called in
+    // Otherwise, SetArcPlayStoreEnabled() which may be called in
     // OnBackgroundAndroidManagementChecked() could be ignored.
     android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
         profile_, context_->token_service(), context_->account_id(),
@@ -712,11 +714,7 @@ void ArcSessionManager::CancelAuthCode() {
   }
 
   StopArc();
-
-  if (IsArcManaged())
-    return;
-
-  DisableArc();
+  SetArcPlayStoreEnabled(false);
 }
 
 bool ArcSessionManager::IsArcManaged() const {
@@ -725,7 +723,7 @@ bool ArcSessionManager::IsArcManaged() const {
   return profile_->GetPrefs()->IsManagedPreference(prefs::kArcEnabled);
 }
 
-bool ArcSessionManager::IsArcEnabled() const {
+bool ArcSessionManager::IsArcPlayStoreEnabled() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!IsAllowed())
     return false;
@@ -734,30 +732,23 @@ bool ArcSessionManager::IsArcEnabled() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
 }
 
-void ArcSessionManager::EnableArc() {
+void ArcSessionManager::SetArcPlayStoreEnabled(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
-  if (IsArcEnabled()) {
-    OnOptInPreferenceChanged();
+  if (IsArcManaged()) {
+    VLOG(1) << "Whether Google Play Store is enabled is managed. Do nothing.";
     return;
   }
 
-  if (!IsArcManaged())
-    profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-}
-
-void ArcSessionManager::DisableArc() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile_);
-  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
 }
 
 void ArcSessionManager::RecordArcState() {
   // Only record Enabled state if ARC is allowed in the first place, so we do
   // not split the ARC population by devices that cannot run ARC.
   if (IsAllowed())
-    UpdateEnabledStateUMA(IsArcEnabled());
+    UpdateEnabledStateUMA(IsArcPlayStoreEnabled());
 }
 
 void ArcSessionManager::StartTermsOfServiceNegotiation() {
@@ -874,7 +865,7 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
       // Do nothing. ARC should be started already.
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      DisableArc();
+      SetArcPlayStoreEnabled(false);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       // This code should not be reached. For background check,

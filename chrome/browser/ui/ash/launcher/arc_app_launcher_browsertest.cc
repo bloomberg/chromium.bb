@@ -166,7 +166,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    arc::ArcSessionManager::Get()->EnableArc();
+    arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(true);
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
   app_host()->OnTaskDestroyed(3);
   EXPECT_FALSE(GetAppItemController(shelf_id2));
 
-  // Disable Arc, this removes app and as result kills shelf group 3.
-  arc::ArcSessionManager::Get()->DisableArc();
+  // Disable ARC, this removes app and as result kills shelf group 3.
+  arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(false);
   EXPECT_FALSE(GetAppItemController(shelf_id3));
 }

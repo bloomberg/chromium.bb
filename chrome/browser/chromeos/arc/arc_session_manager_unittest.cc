@@ -381,9 +381,9 @@ TEST_F(ArcSessionManagerTest, EnableDisablesArc) {
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-  arc_session_manager()->EnableArc();
+  arc_session_manager()->SetArcPlayStoreEnabled(true);
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
-  arc_session_manager()->DisableArc();
+  arc_session_manager()->SetArcPlayStoreEnabled(false);
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
@@ -754,7 +754,7 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
             arc_session_manager()->state());
   ReportResult(true);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->IsArcEnabled());
+  EXPECT_TRUE(arc_session_manager()->IsArcPlayStoreEnabled());
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
@@ -764,7 +764,8 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
             arc_session_manager()->state());
   ReportResult(false);
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  EXPECT_FALSE(!IsManagedUser() && arc_session_manager()->IsArcEnabled());
+  EXPECT_FALSE(!IsManagedUser() &&
+               arc_session_manager()->IsArcPlayStoreEnabled());
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
@@ -775,7 +776,8 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
   CloseLoginDisplayHost();
   ReportActorDestroyed();
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  EXPECT_FALSE(!IsManagedUser() && arc_session_manager()->IsArcEnabled());
+  EXPECT_FALSE(!IsManagedUser() &&
+               arc_session_manager()->IsArcPlayStoreEnabled());
 }
 
 }  // namespace arc

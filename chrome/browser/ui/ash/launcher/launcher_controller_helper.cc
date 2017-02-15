@@ -161,7 +161,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
     DCHECK(arc_session_manager);
     if (!arc_session_manager->IsAllowed())
       return false;
-    if (!arc_session_manager->IsArcEnabled() &&
+    if (!arc_session_manager->IsArcPlayStoreEnabled() &&
         arc_session_manager->IsArcManaged())
       return false;
   }

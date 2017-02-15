@@ -94,8 +94,9 @@ class ArcSessionManager : public ArcSessionObserver,
     // TODO(hidehiko): Rename the observer callback to OnArcSessionShutdown().
     virtual void OnArcBridgeShutdown() {}
 
-    // Called to notify that ARC enabled state has been updated.
-    virtual void OnArcOptInChanged(bool enabled) {}
+    // Called to notify that whether Google Play Store is enabled or not, which
+    // is represented by "arc.enabled" preference, is updated.
+    virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
 
     // Called to notify that ARC has been initialized successfully.
     virtual void OnArcInitialStart() {}
@@ -157,14 +158,17 @@ class ArcSessionManager : public ArcSessionObserver,
   // TODO(hidehiko): Look at the real usage, and write document.
   bool IsArcManaged() const;
 
-  // TODO(hidehiko): better to rename longer but descriptive one, e.g.
-  // IsArcPlayStoreEnabled().
-  // TODO(hidehiko): Look at the real usage, and write document.
-  bool IsArcEnabled() const;
+  // Returns the preference value of "arc.enabled", which means whether the
+  // user has opted in (or is opting in now) to use Google Play Store on ARC.
+  bool IsArcPlayStoreEnabled() const;
 
-  // This requires Arc to be allowed (|IsAllowed|)for current profile.
-  void EnableArc();
-  void DisableArc();
+  // Enables/disables Google Play Store on ARC. Currently, it is tied to
+  // ARC enabled state, too, so this also should trigger to enable/disable
+  // whole ARC system.
+  // TODO(hidehiko): De-couple the concept to enable ARC system and opt-in
+  // to use Google Play Store. Note that there is a plan to use ARC without
+  // Google Play Store, then ARC can run without opt-in.
+  void SetArcPlayStoreEnabled(bool enable);
 
   // Called from the Chrome OS metrics provider to record Arc.State
   // periodically.
@@ -184,7 +188,7 @@ class ArcSessionManager : public ArcSessionObserver,
   // Stops ARC without changing ArcEnabled preference.
   void StopArc();
 
-  // StopArc(), then EnableArc(). Between them data clear may happens.
+  // StopArc(), then restart. Between them data clear may happens.
   // This is a special method to support enterprise device lost case.
   // This can be called only when ARC is running.
   void StopAndEnableArc();

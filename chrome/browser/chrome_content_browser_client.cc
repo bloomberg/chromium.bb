@@ -3277,7 +3277,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
     const arc::ArcSessionManager* arc_session_manager =
         arc::ArcSessionManager::Get();
-    if (arc_session_manager && arc_session_manager->IsArcEnabled() &&
+    if (arc_session_manager && arc_session_manager->IsArcPlayStoreEnabled() &&
         !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
       prerender::PrerenderContents* prerender_contents =
           prerender::PrerenderContents::FromWebContents(

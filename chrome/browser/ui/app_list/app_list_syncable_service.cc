@@ -265,7 +265,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
       const arc::ArcSessionManager* arc_session_manager =
           arc::ArcSessionManager::Get();
       DCHECK(arc_session_manager);
-      if (!arc_session_manager->IsArcEnabled())
+      if (!arc_session_manager->IsArcPlayStoreEnabled())
         return;
     }
 #endif
