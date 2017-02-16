@@ -1,53 +1,7 @@
 [
   {
     "cmd": [
-      "python",
-      "-u",
-      "RECIPE_MODULE[depot_tools::cipd]/resources/bootstrap.py",
-      "--platform",
-      "linux-amd64",
-      "--dest-directory",
-      "[START_DIR]/cipd",
-      "--json-output",
-      "/path/to/tmp/json"
-    ],
-    "name": "install cipd",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@cipd instance_id: 40-chars-fake-of-the-package-instance_id@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"executable\": \"[START_DIR]/cipd/cipd\", @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"instance_id\": \"40-chars-fake-of-the-package-instance_id\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
-      "RECIPE_MODULE[depot_tools::cipd]/resources/bootstrap.py",
-      "--platform",
-      "linux-amd64",
-      "--dest-directory",
-      "[START_DIR]/cipd",
-      "--json-output",
-      "/path/to/tmp/json",
-      "--version",
-      "deadbeaf"
-    ],
-    "name": "install cipd (2)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@cipd instance_id: 40-chars-fake-of-the-package-instance_id@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"executable\": \"[START_DIR]/cipd/cipd\", @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"instance_id\": \"40-chars-fake-of-the-package-instance_id\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "ensure",
       "-root",
       "[START_DIR]/packages",
@@ -73,7 +27,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "search",
       "public/package/linux-amd64",
       "-tag",
@@ -98,7 +52,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "describe",
       "public/package/linux-amd64",
       "-version",
@@ -149,7 +103,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "ensure",
       "-root",
       "[START_DIR]/packages",
@@ -179,7 +133,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "search",
       "private/package/linux-amd64",
       "-tag",
@@ -204,7 +158,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "describe",
       "private/package/linux-amd64",
       "-version",
@@ -250,7 +204,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -274,7 +228,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -300,7 +254,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "pkg-register",
       "fake-package-path",
       "-json-output",
@@ -329,7 +283,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "create",
       "-pkg-def",
       "[START_DIR]/fake-package.yaml",
@@ -354,7 +308,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "set-tag",
       "fake-package",
       "-version",
@@ -384,7 +338,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "set-ref",
       "fake-package",
       "-version",
@@ -414,7 +368,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd/cipd",
+      "cipd",
       "search",
       "fake-package/linux-amd64",
       "-tag",
