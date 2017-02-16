@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/store.h"
 
 namespace catalog {
@@ -109,38 +110,6 @@ Entry::Entry(const std::string& name)
       display_name_(name) {}
 Entry::~Entry() {}
 
-std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
-  auto value = base::MakeUnique<base::DictionaryValue>();
-  value->SetString(Store::kNameKey, name_);
-  value->SetString(Store::kDisplayNameKey, display_name_);
-
-  auto specs = base::MakeUnique<base::DictionaryValue>();
-  for (const auto& it : interface_provider_specs_) {
-    auto spec = base::MakeUnique<base::DictionaryValue>();
-
-    auto provides = base::MakeUnique<base::DictionaryValue>();
-    for (const auto& i : it.second.provides) {
-      auto interfaces = base::MakeUnique<base::ListValue>();
-      for (const auto& interface_name : i.second)
-        interfaces->AppendString(interface_name);
-      provides->Set(i.first, std::move(interfaces));
-    }
-    spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey, std::move(provides));
-
-    auto requires = base::MakeUnique<base::DictionaryValue>();
-    for (const auto& i : it.second.requires) {
-      auto capabilities = base::MakeUnique<base::ListValue>();
-      for (const auto& capability : i.second)
-        capabilities->AppendString(capability);
-      requires->Set(i.first, std::move(capabilities));
-    }
-    spec->Set(Store::kInterfaceProviderSpecs_RequiresKey, std::move(requires));
-    specs->Set(it.first, std::move(spec));
-  }
-  value->Set(Store::kInterfaceProviderSpecsKey, std::move(specs));
-  return value;
-}
-
 // static
 std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
   const base::DictionaryValue* dictionary_value = nullptr;
@@ -206,6 +175,14 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
     entry->AddInterfaceProviderSpec(it.key(), spec);
   }
 
+  // Required files.
+  base::Optional<RequiredFileMap> required_files =
+      catalog::RetrieveRequiredFiles(value);
+  DCHECK(required_files);
+  for (const auto& iter : *required_files) {
+    entry->AddRequiredFilePath(iter.first, iter.second);
+  }
+
   if (value.HasKey(Store::kServicesKey)) {
     const base::ListValue* services = nullptr;
     value.GetList(Store::kServicesKey, &services);
@@ -244,6 +221,11 @@ void Entry::AddInterfaceProviderSpec(
     const std::string& name,
     const service_manager::InterfaceProviderSpec& spec) {
   interface_provider_specs_[name] = spec;
+}
+
+void Entry::AddRequiredFilePath(const std::string& name,
+                                const base::FilePath& path) {
+  required_file_paths_[name] = path;
 }
 
 }  // catalog

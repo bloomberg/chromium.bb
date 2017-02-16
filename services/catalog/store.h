@@ -23,6 +23,16 @@ class Store {
   static const char kInterfaceProviderSpecs_RequiresKey[];
   // Value is a list.
   static const char kServicesKey[];
+  // Value is a dictionary.
+  static const char kRequiredFilesKey[];
+  // Value is a string.
+  static const char kRequiredFilesKey_PathKey[];
+  // Value is a string.
+  static const char kRequiredFilesKey_PlatformKey[];
+  static const char kRequiredFilesKey_PlatformValue_Windows[];
+  static const char kRequiredFilesKey_PlatformValue_Linux[];
+  static const char kRequiredFilesKey_PlatformValue_MacOSX[];
+  static const char kRequiredFilesKey_PlatformValue_Android[];
 };
 
 }  // namespace catalog

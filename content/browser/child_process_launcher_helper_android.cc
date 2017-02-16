@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/apk_assets.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -89,32 +90,14 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   CHECK(!command_line()->HasSwitch(switches::kSingleProcess));
 
   std::unique_ptr<FileDescriptorInfo> files_to_register =
-      CreateDefaultPosixFilesToMap(*command_line(), child_process_id(),
-                                   mojo_client_handle());
-
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  base::MemoryMappedFile::Region region;
-  auto maybe_register = [&region, &files_to_register](int key, int fd) {
-    if (fd != -1)
-      files_to_register->ShareWithRegion(key, fd, region);
-  };
-  maybe_register(
-      kV8NativesDataDescriptor,
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region));
-  maybe_register(
-      kV8SnapshotDataDescriptor32,
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region, true));
-  maybe_register(
-      kV8SnapshotDataDescriptor64,
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region, false));
-
-  command_line()->AppendSwitch(::switches::kV8NativesPassedByFD);
-  command_line()->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-#endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
+      CreateDefaultPosixFilesToMap(child_process_id(), mojo_client_handle(),
+                                   true /* include_service_required_files */,
+                                   GetProcessType(), command_line());
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
-  int fd = base::i18n::GetIcuDataFileHandle(&region);
-  files_to_register->ShareWithRegion(kAndroidICUDataDescriptor, fd, region);
+  base::MemoryMappedFile::Region icu_region;
+  int fd = base::i18n::GetIcuDataFileHandle(&icu_region);
+  files_to_register->ShareWithRegion(kAndroidICUDataDescriptor, fd, icu_region);
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   return files_to_register;
@@ -177,6 +160,19 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
       base::Process process, bool background) {
   SetChildProcessInForeground(process.Handle(), !background);
+}
+
+// static
+void ChildProcessLauncherHelper::SetRegisteredFilesForService(
+    const std::string& service_name,
+    catalog::RequiredFileMap required_files) {
+  SetFilesToShareForServicePosix(service_name, std::move(required_files));
+}
+
+// static
+base::File OpenFileToShare(const base::FilePath& path,
+                           base::MemoryMappedFile::Region* region) {
+  return base::File(base::android::OpenApkAsset(path.value(), region));
 }
 
 }  // namespace internal

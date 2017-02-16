@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
@@ -113,6 +114,14 @@ void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   if (process.CanBackgroundProcesses())
     process.SetProcessBackgrounded(background);
+}
+
+// static
+void ChildProcessLauncherHelper::SetRegisteredFilesForService(
+    const std::string& service_name,
+    catalog::RequiredFileMap required_files) {
+  // No file passing from the manifest on Windows yet.
+  DCHECK(required_files.empty());
 }
 
 }  // namespace internal

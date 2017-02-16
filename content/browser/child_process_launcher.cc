@@ -150,6 +150,14 @@ bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
   return ChildProcessLauncherHelper::TerminateProcess(process, exit_code, wait);
 }
 
+// static
+void ChildProcessLauncher::SetRegisteredFilesForService(
+    const std::string& service_name,
+    catalog::RequiredFileMap required_files) {
+  ChildProcessLauncherHelper::SetRegisteredFilesForService(
+      service_name, std::move(required_files));
+}
+
 ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
     Client* client) {
   Client* ret = client_;

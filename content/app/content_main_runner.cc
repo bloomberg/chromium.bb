@@ -50,6 +50,7 @@
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -57,6 +58,7 @@
 #include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/shared_file_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -86,6 +88,7 @@
 #if defined(OS_POSIX)
 #include <signal.h>
 
+#include "base/file_descriptor_store.h"
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
 
@@ -145,9 +148,9 @@ namespace {
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor64
+#define kV8SnapshotDataDescriptor kV8Snapshot64DataDescriptor
 #else
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor32
+#define kV8SnapshotDataDescriptor kV8Snapshot32DataDescriptor
 #endif
 #endif
 
@@ -192,35 +195,22 @@ void InitializeV8IfNeeded(
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
-#if !defined(OS_ANDROID)
-    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor could be shared
-    // with child processes via file descriptors. On Android they are set in
-    // ChildProcessService::InternalInitChildProcess, otherwise set them here.
-    if (command_line.HasSwitch(switches::kV8NativesPassedByFD)) {
-      g_fds->Set(
-          kV8NativesDataDescriptor,
-          kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
-    }
-    if (command_line.HasSwitch(switches::kV8SnapshotPassedByFD)) {
-      g_fds->Set(
-          kV8SnapshotDataDescriptor,
-          kV8SnapshotDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
-    }
-#endif  // !OS_ANDROID
-    int v8_natives_fd = g_fds->MaybeGet(kV8NativesDataDescriptor);
-    int v8_snapshot_fd = g_fds->MaybeGet(kV8SnapshotDataDescriptor);
-    if (v8_snapshot_fd != -1) {
-      auto v8_snapshot_region = g_fds->GetRegion(kV8SnapshotDataDescriptor);
-      gin::V8Initializer::LoadV8SnapshotFromFD(
-          v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size);
+  base::FileDescriptorStore& file_descriptor_store =
+      base::FileDescriptorStore::GetInstance();
+  base::MemoryMappedFile::Region region;
+  base::ScopedFD v8_snapshot_fd =
+      file_descriptor_store.MaybeTakeFD(kV8SnapshotDataDescriptor, &region);
+  if (v8_snapshot_fd.is_valid()) {
+    gin::V8Initializer::LoadV8SnapshotFromFD(v8_snapshot_fd.get(),
+                                             region.offset, region.size);
     } else {
       gin::V8Initializer::LoadV8Snapshot();
     }
-    if (v8_natives_fd != -1) {
-      auto v8_natives_region = g_fds->GetRegion(kV8NativesDataDescriptor);
-      gin::V8Initializer::LoadV8NativesFromFD(
-          v8_natives_fd, v8_natives_region.offset, v8_natives_region.size);
+    base::ScopedFD v8_natives_fd =
+        file_descriptor_store.MaybeTakeFD(kV8NativesDataDescriptor, &region);
+    if (v8_natives_fd.is_valid()) {
+      gin::V8Initializer::LoadV8NativesFromFD(v8_natives_fd.get(),
+                                              region.offset, region.size);
     } else {
       gin::V8Initializer::LoadV8Natives();
     }
@@ -271,6 +261,27 @@ void SetupSignalHandlers() {
 
   // Always ignore SIGPIPE.  We check the return value of write().
   CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
+}
+
+void PopulateFDsFromCommandLine() {
+  const std::string& shared_file_param =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSharedFiles);
+  if (shared_file_param.empty())
+    return;
+
+  base::Optional<std::map<int, std::string>> shared_file_descriptors =
+      service_manager::ParseSharedFileSwitchValue(shared_file_param);
+  if (!shared_file_descriptors)
+    return;
+
+  for (const auto& descriptor : *shared_file_descriptors) {
+    base::MemoryMappedFile::Region region;
+    const std::string& key = descriptor.second;
+    base::ScopedFD fd = base::GlobalDescriptors::GetInstance()->TakeFD(
+        descriptor.first, &region);
+    base::FileDescriptorStore::GetInstance().Set(key, std::move(fd), region);
+  }
 }
 
 #endif  // OS_POSIX
@@ -595,8 +606,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     InitializeMac();
 #endif
 
-    // On Android, the command line is initialized when library is loaded and
-    // we have already started our TRACE_EVENT0.
+// On Android, the command line is initialized and the FDs set when the
+// library is loaded and we have already started our TRACE_EVENT0.
 #if !defined(OS_ANDROID)
     // argc/argv are ignored on Windows and Android; see command_line.h for
     // details.
@@ -609,6 +620,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 
     base::CommandLine::Init(argc, argv);
+
+#if defined(OS_POSIX)
+    PopulateFDsFromCommandLine();
+#endif
 
     base::EnableTerminationOnHeapCorruption();
 

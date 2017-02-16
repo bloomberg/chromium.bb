@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
@@ -34,38 +35,9 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-
-  std::unique_ptr<FileDescriptorInfo> files_to_register =
-      CreateDefaultPosixFilesToMap(*command_line(), child_process_id(),
-                                   mojo_client_handle());
-
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  bool snapshot_loaded = false;
-  base::MemoryMappedFile::Region unused_region;
-  base::PlatformFile natives_pf =
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&unused_region);
-  DCHECK_GE(natives_pf, 0);
-  files_to_register->Share(kV8NativesDataDescriptor, natives_pf);
-
-  base::MemoryMappedFile::Region snapshot_region;
-  base::PlatformFile snapshot_pf =
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(
-          &snapshot_region);
-  // Failure to load the V8 snapshot is not necessarily an error. V8 can start
-  // up (slower) without the snapshot.
-  if (snapshot_pf != -1) {
-    snapshot_loaded = true;
-    files_to_register->Share(kV8SnapshotDataDescriptor, snapshot_pf);
-  }
-  if (GetProcessType() != switches::kZygoteProcess) {
-    command_line()->AppendSwitch(::switches::kV8NativesPassedByFD);
-    if (snapshot_loaded) {
-      command_line()->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-    }
-  }
-#endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
-
-  return files_to_register;
+  return CreateDefaultPosixFilesToMap(child_process_id(), mojo_client_handle(),
+                                      true /* include_service_required_files */,
+                                      GetProcessType(), command_line());
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
@@ -170,6 +142,25 @@ void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   if (process.CanBackgroundProcesses())
     process.SetProcessBackgrounded(background);
+}
+
+// static
+void ChildProcessLauncherHelper::SetRegisteredFilesForService(
+    const std::string& service_name,
+    catalog::RequiredFileMap required_files) {
+  SetFilesToShareForServicePosix(service_name, std::move(required_files));
+}
+
+// static
+base::File OpenFileToShare(const base::FilePath& path,
+                           base::MemoryMappedFile::Region* region) {
+  base::FilePath exe_dir;
+  bool result = base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_dir);
+  DCHECK(result);
+  base::File file(exe_dir.Append(path),
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
+  *region = base::MemoryMappedFile::Region::kWholeFile;
+  return file;
 }
 
 }  // namespace internal

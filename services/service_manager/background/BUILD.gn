@@ -16,6 +16,7 @@ source_set("lib") {
   ]
   deps = [
     "//base",
+    "//services/catalog:constants",
     "//services/catalog:lib",
     "//services/service_manager",
     "//services/service_manager/public/cpp:sources",

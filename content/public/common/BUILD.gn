@@ -47,6 +47,13 @@ source_set("content_descriptors") {
   ]
 }
 
+source_set("content_descriptor_keys") {
+  sources = [
+    "content_descriptor_keys.cc",
+    "content_descriptor_keys.h",
+  ]
+}
+
 # Forces static linking for targets using the static_switches constants, even
 # in the component build. This config makes it impossible to use the static
 # switches target and use the rest of content at the same time, because the
@@ -256,6 +263,8 @@ source_set("common_sources") {
     "//url/ipc:url_ipc",
   ]
   deps = [
+    ":content_descriptor_keys",
+
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.
     "//components/mime_util",

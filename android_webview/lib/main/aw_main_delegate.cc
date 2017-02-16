@@ -37,7 +37,7 @@
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gin/public/isolate_holder.h"
@@ -132,15 +132,15 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     ui::GestureConfiguration::GetInstance()
         ->set_fling_touchscreen_tap_suppression_enabled(false);
 
-    base::android::RegisterApkAssetWithGlobalDescriptors(
-        kV8NativesDataDescriptor,
-        gin::V8Initializer::GetNativesFilePath().AsUTF8Unsafe());
-    base::android::RegisterApkAssetWithGlobalDescriptors(
-        kV8SnapshotDataDescriptor32,
-        gin::V8Initializer::GetSnapshotFilePath(true).AsUTF8Unsafe());
-    base::android::RegisterApkAssetWithGlobalDescriptors(
-        kV8SnapshotDataDescriptor64,
-        gin::V8Initializer::GetSnapshotFilePath(false).AsUTF8Unsafe());
+    base::android::RegisterApkAssetWithFileDescriptorStore(
+        content::kV8NativesDataDescriptor,
+        gin::V8Initializer::GetNativesFilePath());
+    base::android::RegisterApkAssetWithFileDescriptorStore(
+        content::kV8Snapshot32DataDescriptor,
+        gin::V8Initializer::GetSnapshotFilePath(true));
+    base::android::RegisterApkAssetWithFileDescriptorStore(
+        content::kV8Snapshot64DataDescriptor,
+        gin::V8Initializer::GetSnapshotFilePath(false));
   }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 

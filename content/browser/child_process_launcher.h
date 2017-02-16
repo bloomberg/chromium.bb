@@ -126,6 +126,12 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // previous  client.
   Client* ReplaceClientForTest(Client* client);
 
+  // Sets the files that should be mapped when a new child process is created
+  // for the service |service_name|.
+  static void SetRegisteredFilesForService(
+      const std::string& service_name,
+      catalog::RequiredFileMap required_files);
+
  private:
   friend class internal::ChildProcessLauncherHelper;
 

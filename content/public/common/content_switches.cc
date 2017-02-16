@@ -445,14 +445,6 @@ const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
 
-// Signals that the V8 natives file has been transfered to the child process
-// by a file descriptor.
-const char kV8NativesPassedByFD[] = "v8-natives-passed-by-fd";
-
-// Signals that the V8 startup snapshot file has been transfered to the child
-// process by a file descriptor.
-const char kV8SnapshotPassedByFD[] = "v8-snapshot-passed-by-fd";
-
 // Set strategies to cache V8 data in CacheStorage. (off, normal, or aggressive)
 const char kV8CacheStrategiesForCacheStorage[] =
     "v8-cache-strategies-for-cache-storage";
@@ -793,6 +785,11 @@ const char kSandboxIPCProcess[]             = "sandbox-ipc";
 // Set the value to '1' to enable the feature, and set to '0' to disable.
 // Defaults to disabled.
 const char kScrollEndEffect[] = "scroll-end-effect";
+
+// Describes the file descriptors passed to the child process. List:
+// <file id from manifest>:<global descriptor id>,<file id string from manifest>
+// :<global descriptor id>,...
+const char kSharedFiles[] = "shared-files";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.

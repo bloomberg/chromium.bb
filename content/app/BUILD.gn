@@ -27,6 +27,7 @@ template("implement_content_app") {
     "//content:sandbox_helper_win",
     "//content/public/common:common_sources",
     "//crypto",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//mojo/edk/system",
     "//ppapi/features",

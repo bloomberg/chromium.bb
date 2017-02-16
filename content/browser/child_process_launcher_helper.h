@@ -16,6 +16,7 @@
 #include "content/public/common/result_codes.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "services/catalog/public/cpp/manifest_parsing_util.h"
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -154,6 +155,10 @@ class ChildProcessLauncherHelper :
 
   static void SetProcessBackgroundedOnLauncherThread(
       base::Process process, bool background);
+
+  static void SetRegisteredFilesForService(
+      const std::string& service_name,
+      catalog::RequiredFileMap required_files);
 
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncherHelper>;

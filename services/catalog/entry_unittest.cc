@@ -78,17 +78,41 @@ TEST_F(EntryTest, ConnectionSpec) {
   EXPECT_EQ(specs, entry->interface_provider_specs());
 }
 
-TEST_F(EntryTest, Serialization) {
-  std::unique_ptr<base::Value> value;
-  std::unique_ptr<Entry> entry = ReadEntry("serialization", &value);
-
-  std::unique_ptr<base::DictionaryValue> serialized(entry->Serialize());
-
-  // We can't just compare values, since during deserialization some of the
-  // lists get converted to std::sets, which are sorted, so Value::Equals will
-  // fail.
-  std::unique_ptr<Entry> reconstituted = Entry::Deserialize(*serialized.get());
-  EXPECT_EQ(*entry, *reconstituted);
+TEST_F(EntryTest, RequiredFiles) {
+  std::unique_ptr<Entry> entry = ReadEntry("required_files", nullptr);
+  EXPECT_EQ("foo", entry->name());
+  EXPECT_EQ("Foo", entry->display_name());
+  auto required_files = entry->required_file_paths();
+  EXPECT_EQ(2U, required_files.size());
+  auto iter = required_files.find("all_platforms");
+  ASSERT_NE(required_files.end(), iter);
+  bool checked_platform_specific_file = false;
+#if defined(OS_WIN)
+  EXPECT_EQ(base::FilePath(L"/all/platforms/windows"), iter->second);
+  iter = required_files.find("windows_only");
+  ASSERT_NE(required_files.end(), iter);
+  EXPECT_EQ(base::FilePath(L"/windows/only"), iter->second);
+  checked_platform_specific_file = true;
+#elif defined(OS_LINUX)
+  EXPECT_EQ(base::FilePath("/all/platforms/linux"), iter->second);
+  iter = required_files.find("linux_only");
+  ASSERT_NE(required_files.end(), iter);
+  EXPECT_EQ(base::FilePath("/linux/only"), iter->second);
+  checked_platform_specific_file = true;
+#elif defined(OS_MACOSX)
+  EXPECT_EQ(base::FilePath("/all/platforms/macosx"), iter->second);
+  iter = required_files.find("macosx_only");
+  ASSERT_NE(required_files.end(), iter);
+  EXPECT_EQ(base::FilePath("/macosx/only"), iter->second);
+  checked_platform_specific_file = true;
+#elif defined(OS_ANDROID)
+  EXPECT_EQ(base::FilePath("/all/platforms/android"), iter->second);
+  iter = required_files.find("android_only");
+  ASSERT_NE(required_files.end(), iter);
+  EXPECT_EQ(base::FilePath("/android/only"), iter->second);
+  checked_platform_specific_file = true;
+#endif
+  EXPECT_TRUE(checked_platform_specific_file);
 }
 
 TEST_F(EntryTest, Malformed) {

@@ -16,6 +16,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/merge_dictionary.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -30,6 +31,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
+#include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/catalog/store.h"
 #include "services/device/device_service.h"
@@ -139,6 +141,13 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
       result = overlay_value->GetAsDictionary(&overlay_dictionary);
       DCHECK(result);
       MergeDictionary(manifest_dictionary, overlay_dictionary);
+    }
+
+    base::Optional<catalog::RequiredFileMap> required_files =
+        catalog::RetrieveRequiredFiles(*manifest_value);
+    if (required_files) {
+      ChildProcessLauncher::SetRegisteredFilesForService(
+          name.as_string(), std::move(*required_files));
     }
 
     auto result = manifests_.insert(

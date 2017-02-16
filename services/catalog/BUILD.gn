@@ -13,6 +13,13 @@ group("catalog") {
   ]
 }
 
+source_set("constants") {
+  sources = [
+    "store.cc",
+    "store.h",
+  ]
+}
+
 source_set("lib") {
   sources = [
     "catalog.cc",
@@ -26,13 +33,13 @@ source_set("lib") {
     "instance.cc",
     "instance.h",
     "manifest_provider.h",
-    "store.cc",
-    "store.h",
   ]
 
   deps = [
+    ":constants",
     "//base",
     "//components/filesystem:lib",
+    "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces",
     "//services/service_manager/public/cpp",
   ]

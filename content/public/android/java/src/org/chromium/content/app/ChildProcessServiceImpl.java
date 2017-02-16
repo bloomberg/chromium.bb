@@ -261,10 +261,19 @@ public class ChildProcessServiceImpl {
                             mMainThread.wait();
                         }
                     }
-                    for (FileDescriptorInfo fdInfo : mFdInfos) {
-                        nativeRegisterGlobalFileDescriptor(
-                                fdInfo.mId, fdInfo.mFd.detachFd(), fdInfo.mOffset, fdInfo.mSize);
+
+                    int[] fileIds = new int[mFdInfos.length];
+                    int[] fds = new int[mFdInfos.length];
+                    long[] regionOffsets = new long[mFdInfos.length];
+                    long[] regionSizes = new long[mFdInfos.length];
+                    for (int i = 0; i < mFdInfos.length; i++) {
+                        FileDescriptorInfo fdInfo = mFdInfos[i];
+                        fileIds[i] = fdInfo.mId;
+                        fds[i] = fdInfo.mFd.detachFd();
+                        regionOffsets[i] = fdInfo.mOffset;
+                        regionSizes[i] = fdInfo.mSize;
                     }
+                    nativeRegisterFileDescriptors(fileIds, fds, regionOffsets, regionSizes);
                     nativeInitChildProcessImpl(ChildProcessServiceImpl.this, mCpuCount,
                             mCpuFeatures);
                     if (mActivitySemaphore.tryAcquire()) {
@@ -402,12 +411,13 @@ public class ChildProcessServiceImpl {
     }
 
     /**
-     * Helper for registering FileDescriptorInfo objects with GlobalFileDescriptors.
+     * Helper for registering FileDescriptorInfo objects with GlobalFileDescriptors or
+     * FileDescriptorStore.
      * This includes the IPC channel, the crash dump signals and resource related
      * files.
      */
-    private static native void nativeRegisterGlobalFileDescriptor(
-            int id, int fd, long offset, long size);
+    private static native void nativeRegisterFileDescriptors(
+            int[] id, int[] fd, long[] offset, long[] size);
 
     /**
      * The main entry point for a child process. This should be called from a new thread since

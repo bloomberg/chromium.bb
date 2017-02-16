@@ -331,6 +331,8 @@ component("base") {
     "feature_list.cc",
     "feature_list.h",
     "file_descriptor_posix.h",
+    "file_descriptor_store.cc",
+    "file_descriptor_store.h",
     "file_version_info.h",
     "file_version_info_mac.h",
     "file_version_info_mac.mm",
@@ -1329,6 +1331,8 @@ component("base") {
     ]
 
     sources -= [
+      "file_descriptor_store.cc",
+      "file_descriptor_store.h",
       "memory/shared_memory_helper.cc",
       "memory/shared_memory_helper.h",
       "message_loop/message_pump_libevent.cc",

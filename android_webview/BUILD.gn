@@ -567,6 +567,7 @@ source_set("common") {
     "//content",
     "//content/public/app:both",
     "//content/public/browser",
+    "//content/public/common:content_descriptor_keys",
     "//content/public/common:service_names",
     "//crypto",
     "//gin",

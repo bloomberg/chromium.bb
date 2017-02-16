@@ -100,6 +100,8 @@ source_set("browser") {
     "//net:http_server",
     "//ppapi/features",
     "//printing/features",
+    "//services/catalog:constants",
+    "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces:constants",
     "//services/device:lib",
     "//services/device/public/interfaces:constants",
