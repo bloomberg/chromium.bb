@@ -12,6 +12,8 @@ source_set("lib") {
   sources = [
     "mus_demo.cc",
     "mus_demo.h",
+    "window_tree_data.cc",
+    "window_tree_data.h",
   ]
 
   public_deps = [

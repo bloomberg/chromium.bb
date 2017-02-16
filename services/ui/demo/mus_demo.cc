@@ -5,25 +5,17 @@
 #include "services/ui/demo/mus_demo.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/ui/demo/window_tree_data.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
-#include "ui/aura_extra/image_window_delegate.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace ui {
@@ -31,105 +23,9 @@ namespace demo {
 
 namespace {
 
-// Milliseconds between frames.
-const int64_t kFrameDelay = 33;
-
 // Size of square in pixels to draw.
 const int kSquareSize = 300;
 
-const SkColor kBgColor = SK_ColorRED;
-const SkColor kFgColor = SK_ColorYELLOW;
-
-void DrawSquare(const gfx::Rect& bounds,
-                double angle,
-                SkCanvas* canvas,
-                int size) {
-  // Create SkRect to draw centered inside the bounds.
-  gfx::Point top_left = bounds.CenterPoint();
-  top_left.Offset(-size / 2, -size / 2);
-  SkRect rect = SkRect::MakeXYWH(top_left.x(), top_left.y(), size, size);
-
-  // Set SkPaint to fill solid color.
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(kFgColor);
-
-  // Rotate the canvas.
-  const gfx::Size canvas_size = bounds.size();
-  if (angle != 0.0) {
-    canvas->translate(SkFloatToScalar(canvas_size.width() * 0.5f),
-                      SkFloatToScalar(canvas_size.height() * 0.5f));
-    canvas->rotate(angle);
-    canvas->translate(-SkFloatToScalar(canvas_size.width() * 0.5f),
-                      -SkFloatToScalar(canvas_size.height() * 0.5f));
-  }
-
-  canvas->drawRect(rect, paint);
-}
-
-}  // namespace
-
-class MusDemo::WindowTreeData {
- public:
-  explicit WindowTreeData(
-      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-      int square_size)
-      : square_size_(square_size) {
-    Init(std::move(window_tree_host));
-  }
-
- private:
-  // Initializes the window tree host and start drawing frames.
-  void Init(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
-
-  // Draws one frame, incrementing the rotation angle.
-  void DrawFrame();
-
-  // Helper function to retrieve the window to which we draw the bitmap.
-  aura::Window* bitmap_window() {
-    DCHECK(!window_tree_host_->window()->children().empty());
-    return window_tree_host_->window()->children()[0];
-  }
-
-  // The Window tree host corresponding to this data.
-  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
-
-  // Destroys itself when the window gets destroyed.
-  aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
-
-  // Timer for calling DrawFrame().
-  base::RepeatingTimer timer_;
-
-  // Current rotation angle for drawing.
-  double angle_ = 0.0;
-
-  // Size in pixels of the square to draw.
-  const int square_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeData);
-};
-
-void MusDemo::WindowTreeData::Init(
-    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
-  window_tree_host->InitHost();
-  window_tree_host->Show();
-  // Take ownership of the WTH.
-  window_tree_host_ = std::move(window_tree_host);
-
-  // Initialize the window for the bitmap.
-  window_delegate_ = new aura_extra::ImageWindowDelegate();
-  aura::Window* root_window = window_tree_host_->window();
-  aura::Window* bitmap_window = new aura::Window(window_delegate_);
-  bitmap_window->Init(LAYER_TEXTURED);
-  bitmap_window->SetBounds(gfx::Rect(root_window->bounds().size()));
-  bitmap_window->Show();
-  bitmap_window->SetName("Bitmap");
-  root_window->AddChild(bitmap_window);
-
-  // Draw initial frame and start the timer to regularly draw frames.
-  DrawFrame();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameDelay),
-               base::Bind(&WindowTreeData::DrawFrame, base::Unretained(this)));
 }
 
 MusDemo::MusDemo() {}
@@ -150,6 +46,8 @@ void MusDemo::OnStart() {
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       context()->connector(), this, this);
   window_tree_client_->ConnectAsWindowManager();
+
+  window_tree_data_ = base::MakeUnique<WindowTreeData>(kSquareSize);
 
   env_->SetWindowTreeClient(window_tree_client_.get());
 }
@@ -221,9 +119,8 @@ void MusDemo::OnWmWillCreateDisplay(const display::Display& display) {
 void MusDemo::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  DCHECK(!window_tree_data_);  // Only support one display.
-  window_tree_data_ = base::MakeUnique<WindowTreeData>(
-      std::move(window_tree_host), kSquareSize);
+  DCHECK(!window_tree_data_->IsInitialized());  // Only support one display.
+  window_tree_data_->Init(std::move(window_tree_host));
 }
 
 void MusDemo::OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) {
@@ -253,34 +150,6 @@ void MusDemo::OnWmSetClientArea(
 bool MusDemo::IsWindowActive(aura::Window* window) { return false; }
 
 void MusDemo::OnWmDeactivateWindow(aura::Window* window) {}
-
-void MusDemo::WindowTreeData::DrawFrame() {
-  angle_ += 2.0;
-  if (angle_ >= 360.0)
-    angle_ = 0.0;
-
-  const gfx::Rect& bounds = bitmap_window()->bounds();
-
-  // Allocate a bitmap of correct size.
-  SkBitmap bitmap;
-  SkImageInfo image_info = SkImageInfo::MakeN32(bounds.width(), bounds.height(),
-                                                kPremul_SkAlphaType);
-  bitmap.allocPixels(image_info);
-
-  // Draw the rotated square on background in bitmap.
-  SkCanvas canvas(bitmap);
-  canvas.clear(kBgColor);
-  // TODO(kylechar): Add GL drawing instead of software rasterization in future.
-  DrawSquare(bounds, angle_, &canvas, square_size_);
-  canvas.flush();
-
-  gfx::ImageSkiaRep image_skia_rep(bitmap, 1);
-  gfx::ImageSkia image_skia(image_skia_rep);
-  gfx::Image image(image_skia);
-
-  window_delegate_->SetImage(image);
-  bitmap_window()->SchedulePaintInRect(gfx::Rect(bounds.size()));
-}
 
 }  // namespace demo
 }  // namespace aura
