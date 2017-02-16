@@ -217,6 +217,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   LayoutRect debugRect() const override;
 
+  void autosizingMultiplerChanged() {
+    m_knownToHaveNoOverflowAndNoFallbackFonts = false;
+  }
+
  protected:
   void willBeDestroyed() override;
 

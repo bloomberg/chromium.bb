@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
-
 class TextAutosizerTest : public RenderingTest {
  private:
   void SetUp() override {
@@ -487,15 +486,15 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterFirstText) {
   setBodyInnerHTML(
       "<meta name='viewport' content='width=800'>"
       "<style>"
-      "    html { font-size: 16px; }"
-      "    body { width: 800px; margin: 0; overflow-y: hidden; }"
-      "    .supercluster { width:560px; }"
+      "  html { font-size: 16px; }"
+      "  body { width: 800px; margin: 0; overflow-y: hidden; }"
+      "  .supercluster { width:560px; }"
       "</style>"
       "<div class='supercluster'>"
-      "    <div id='longText'>short blah blah</div>"
+      "  <div id='longText'>short blah blah</div>"
       "</div>"
       "<div class='supercluster'>"
-      "    <div id='shortText'>short blah blah</div>"
+      "  <div id='shortText'>short blah blah</div>"
       "</div>");
   document().view()->updateAllLifecyclePhases();
 
@@ -531,15 +530,15 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterSecondText) {
   setBodyInnerHTML(
       "<meta name='viewport' content='width=800'>"
       "<style>"
-      "    html { font-size: 16px; }"
-      "    body { width: 800px; margin: 0; overflow-y: hidden; }"
-      "    .supercluster { width:560px; }"
+      "  html { font-size: 16px; }"
+      "  body { width: 800px; margin: 0; overflow-y: hidden; }"
+      "  .supercluster { width:560px; }"
       "</style>"
       "<div class='supercluster'>"
-      "    <div id='shortText'>short blah blah</div>"
+      "  <div id='shortText'>short blah blah</div>"
       "</div>"
       "<div class='supercluster'>"
-      "    <div id='longText'>short blah blah</div>"
+      "  <div id='longText'>short blah blah</div>"
       "</div>");
   document().view()->updateAllLifecyclePhases();
 
@@ -575,14 +574,14 @@ TEST_F(TextAutosizerTest, AddingSuperCluster) {
   setBodyInnerHTML(
       "<meta name='viewport' content='width=800'>"
       "<style>"
-      "    html { font-size: 16px; }"
-      "    body { width: 800px; margin: 0; overflow-y: hidden; }"
-      "    .supercluster { width:560px; }"
+      "  html { font-size: 16px; }"
+      "  body { width: 800px; margin: 0; overflow-y: hidden; }"
+      "  .supercluster { width:560px; }"
       "</style>"
       "<div>"
-      "    <div class='supercluster' id='shortText'>"
-      "        short blah blah"
-      "    </div>"
+      "  <div class='supercluster' id='shortText'>"
+      "      short blah blah"
+      "  </div>"
       "</div>"
       "<div id='container'></div>");
   document().view()->updateAllLifecyclePhases();
@@ -621,16 +620,16 @@ TEST_F(TextAutosizerTest, ChangingInheritedClusterTextInsideSuperCluster) {
   setBodyInnerHTML(
       "<meta name='viewport' content='width=800'>"
       "<style>"
-      "    html { font-size: 16px; }"
-      "    body { width: 800px; margin: 0; overflow-y: hidden; }"
-      "    .supercluster { width:560px; }"
-      "    .cluster{width:560px;}"
+      "  html { font-size: 16px; }"
+      "  body { width: 800px; margin: 0; overflow-y: hidden; }"
+      "  .supercluster { width:560px; }"
+      "  .cluster{width:560px;}"
       "</style>"
       "<div class='supercluster'>"
-      "    <div class='cluster' id='longText'>short blah blah</div>"
+      "  <div class='cluster' id='longText'>short blah blah</div>"
       "</div>"
       "<div class='supercluster'>"
-      "    <div class='cluster' id='shortText'>short blah blah</div>"
+      "  <div class='cluster' id='shortText'>short blah blah</div>"
       "</div>");
   document().view()->updateAllLifecyclePhases();
 
@@ -660,5 +659,97 @@ TEST_F(TextAutosizerTest, ChangingInheritedClusterTextInsideSuperCluster) {
       document().getElementById("shortText")->layoutObject();
   EXPECT_FLOAT_EQ(16.f, shortText->style()->specifiedFontSize());
   EXPECT_FLOAT_EQ(28.f, shortText->style()->computedFontSize());
+}
+
+TEST_F(TextAutosizerTest, AutosizeInnerContentOfRuby) {
+  setBodyInnerHTML(
+      "<meta name='viewport' content='width=800'>"
+      "<style>"
+      "  html { font-size: 16px; }"
+      "  body { width: 800px; margin: 0; overflow-y: hidden; }"
+      "</style>"
+      "<div id='autosized'>"
+      "  東京特許許可局許可局長　今日"
+      "  <ruby>"
+      "    <rb id='rubyInline'>急遽</rb>"
+      "    <rp>(</rp>"
+      "    <rt>きゅうきょ</rt>"
+      "    <rp>)</rp>"
+      "  </ruby>"
+      "  許可却下、<br><br>"
+      "  <span>"
+      "      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec "
+      "      sed diam facilisis, elementum elit at, elementum sem. Aliquam "
+      "      consectetur leo at nisi fermentum, vitae maximus libero "
+      "sodales. Sed "
+      "      laoreet congue ipsum, at tincidunt ante tempor sed. Cras eget "
+      "erat "
+      "      mattis urna vestibulum porta. Sed tempus vitae dui et suscipit. "
+      "      Curabitur laoreet accumsan pharetra. Nunc facilisis, elit sit "
+      "amet "
+      "      sollicitudin condimentum, ipsum velit ultricies mi, eget "
+      "dapibus nunc "
+      "      nulla nec sapien. Fusce dictum imperdiet aliquet."
+      "  </span>"
+      "  <ruby style='display:block'>"
+      "    <rb id='rubyBlock'>拼音</rb>"
+      "    <rt>pin yin</rt>"
+      "  </ruby>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* rubyInline = document().getElementById("rubyInline");
+  EXPECT_FLOAT_EQ(16.f,
+                  rubyInline->layoutObject()->style()->specifiedFontSize());
+  // (specified font-size = 16px) * (viewport width = 800px) /
+  // (window width = 320px) = 40px.
+  EXPECT_FLOAT_EQ(40.f,
+                  rubyInline->layoutObject()->style()->computedFontSize());
+
+  Element* rubyBlock = document().getElementById("rubyBlock");
+  EXPECT_FLOAT_EQ(16.f,
+                  rubyBlock->layoutObject()->style()->specifiedFontSize());
+  // (specified font-size = 16px) * (viewport width = 800px) /
+  // (window width = 320px) = 40px.
+  EXPECT_FLOAT_EQ(40.f, rubyBlock->layoutObject()->style()->computedFontSize());
+}
+
+TEST_F(TextAutosizerTest, ResizeAndGlyphOverflowChanged) {
+  document().settings()->setTextAutosizingWindowSizeOverride(IntSize(360, 640));
+  Element* html = document().body()->parentElement();
+  html->setInnerHTML(
+      "<head>"
+      "  <meta name='viewport' content='800'>"
+      "  <style>"
+      "    html { font-size:16px; font-family:'Times New Roman';}"
+      "  </style>"
+      "</head>"
+      "<body>"
+      "  <span id='autosized' style='font-size:10px'>"
+      "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do"
+      "    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim"
+      "    ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut"
+      "    aliquip ex ea commodo consequat. Duis aute irure dolor in"
+      "    reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla"
+      "    pariatur. Excepteur sint occaecat cupidatat non proident, sunt in"
+      "    culpa qui officia deserunt mollit anim id est laborum."
+      "  </span>"
+      "  <span style='font-size:8px'>n</span>"
+      "  <span style='font-size:9px'>n</span>"
+      "  <span style='font-size:10px'>n</span>"
+      "  <span style='font-size:11px'>n</span>"
+      "  <span style='font-size:12px'>n</span>"
+      "  <span style='font-size:13px'>n</span>"
+      "  <span style='font-size:14px'>n</span>"
+      "  <span style='font-size:15px'>n</span>"
+      "</body>",
+      ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
+
+  document().settings()->setTextAutosizingWindowSizeOverride(IntSize(640, 360));
+  document().view()->updateAllLifecyclePhases();
+
+  document().settings()->setTextAutosizingWindowSizeOverride(IntSize(360, 640));
+  document().view()->updateAllLifecyclePhases();
 }
 }  // namespace blink
