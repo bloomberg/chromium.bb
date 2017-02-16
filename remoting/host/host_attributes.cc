@@ -4,6 +4,10 @@
 
 #include "remoting/host/host_attributes.h"
 
+#if defined(OS_WIN)
+#include <D3DCommon.h>
+#endif
+
 #include <type_traits>
 
 #include "base/atomicops.h"
@@ -12,6 +16,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include "third_party/webrtc/modules/desktop_capture/win/dxgi_duplicator_controller.h"
 #include "third_party/webrtc/modules/desktop_capture/win/screen_capturer_win_directx.h"
 #endif
 
@@ -33,6 +38,58 @@ inline constexpr bool IsDebug() {
 #endif
 }
 
+inline constexpr bool IsChromeBranded() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return true;
+#elif defined(CHROMIUM_BUILD)
+  return false;
+#else
+  #error Only Chrome and Chromium brands are supported.
+#endif
+}
+
+inline constexpr bool IsChromiumBranded() {
+  return !IsChromeBranded();
+}
+
+inline constexpr bool IsOfficialBuild() {
+#if defined(OFFICIAL_BUILD)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool IsNonOfficialBuild() {
+  return !IsOfficialBuild();
+}
+
+#if defined(OS_WIN)
+inline bool MinD3DFeatureLevelGreatThan10() {
+  webrtc::DxgiDuplicatorController::D3dInfo info;
+  if (webrtc::DxgiDuplicatorController::Instance()->RetrieveD3dInfo(&info)) {
+    return info.min_feature_level >= D3D_FEATURE_LEVEL_10_0;
+  }
+  return false;
+}
+
+inline bool MinD3DFeatureLevelGreatThan11() {
+  webrtc::DxgiDuplicatorController::D3dInfo info;
+  if (webrtc::DxgiDuplicatorController::Instance()->RetrieveD3dInfo(&info)) {
+    return info.min_feature_level >= D3D_FEATURE_LEVEL_11_0;
+  }
+  return false;
+}
+
+inline bool MinD3DFeatureLevelGreatThan12() {
+  webrtc::DxgiDuplicatorController::D3dInfo info;
+  if (webrtc::DxgiDuplicatorController::Instance()->RetrieveD3dInfo(&info)) {
+    return info.min_feature_level >= D3D_FEATURE_LEVEL_12_0;
+  }
+  return false;
+}
+#endif
+
 // By using arraysize() macro in base/macros.h, it's illegal to have empty
 // arrays.
 //
@@ -45,10 +102,15 @@ inline constexpr bool IsDebug() {
 
 static constexpr Attribute kAttributes[] = {
   { "Debug-Build", &IsDebug },
+  { "ChromeBrand", &IsChromeBranded },
+  { "ChromiumBrand", &IsChromiumBranded },
+  { "OfficialBuild", &IsOfficialBuild },
+  { "NonOfficialBuild", &IsNonOfficialBuild },
 #if defined(OS_WIN)
   { "DirectX-Capturer", &webrtc::ScreenCapturerWinDirectx::IsSupported },
-  // TODO(zijiehe): Add DirectX version attributes. Blocked by change
-  // https://codereview.chromium.org/2468083002/.
+  { "MinD3DGT10", &MinD3DFeatureLevelGreatThan10 },
+  { "MinD3DGT11", &MinD3DFeatureLevelGreatThan11 },
+  { "MinD3DGT12", &MinD3DFeatureLevelGreatThan12 },
 #endif
 };
 
