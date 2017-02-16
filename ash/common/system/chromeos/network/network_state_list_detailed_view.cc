@@ -348,6 +348,7 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 
 void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
+  UpdateHeaderButtons();
   Layout();
 }
 
@@ -526,6 +527,14 @@ void NetworkStateListDetailedView::UpdateTechnologyButton(
 
 void NetworkStateListDetailedView::UpdateNetworkList() {
   network_list_view_->Update();
+}
+
+void NetworkStateListDetailedView::UpdateHeaderButtons() {
+  if (proxy_settings_button_md_) {
+    proxy_settings_button_md_->SetEnabled(
+        NetworkHandler::Get()->network_state_handler()->DefaultNetwork() !=
+        nullptr);
+  }
 }
 
 bool NetworkStateListDetailedView::OrderChild(views::View* view, int index) {

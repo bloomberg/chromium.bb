@@ -73,8 +73,8 @@ class NetworkStateListDetailedView
   // Update UI components.
   void UpdateTechnologyButton(TrayPopupHeaderButton* button,
                               const chromeos::NetworkTypePattern& technology);
-
   void UpdateNetworkList();
+  void UpdateHeaderButtons();
 
   bool OrderChild(views::View* view, int index);
 
