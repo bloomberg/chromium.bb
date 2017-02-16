@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 
 #include "base/bind.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/channel_info.h"
