@@ -65,6 +65,9 @@
                   '|media/midi/*_android.*' \
                   '|media/video/capture/android'
     },
+    'android_studio': {
+      'filepath': 'build/android/gradle/'
+    },
     'android_tab': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
     },
@@ -1501,6 +1504,7 @@
                         'lizeb+watch-android-loading@chromium.org'],
     'android_media': ['avayvod+watch@chromium.org',
                       'mlamouri+watch-media@chromium.org'],
+    'android_studio': ['wnwen+watch@chromium.org'],
     'android_tab': ['avayvod+watch@chromium.org',
                     'dtrainor@chromium.org'],
     'android_uma_settings': ['asvitkine+watch@chromium.org',
