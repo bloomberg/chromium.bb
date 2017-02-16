@@ -665,8 +665,10 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
     }
 
     // Init ANGLE platform now that we have the global display.
-    if (!InitializeANGLEPlatform(display)) {
-      LOG(ERROR) << "ANGLE Platform initialization failed.";
+    if (supports_angle_d3d || supports_angle_opengl || supports_angle_null) {
+      if (!InitializeANGLEPlatform(display)) {
+        LOG(ERROR) << "ANGLE Platform initialization failed.";
+      }
     }
 
     if (!eglInitialize(display, nullptr, nullptr)) {
