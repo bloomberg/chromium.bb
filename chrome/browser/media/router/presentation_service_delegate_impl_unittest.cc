@@ -155,21 +155,20 @@ class PresentationServiceDelegateImplTest
     PresentationRequest different_request(RenderFrameHostId(100, 200),
                                           {presentation_url2_},
                                           url::Origin(GURL(kFrameUrl)));
-    MediaRoute* media_route = new MediaRoute("differentRouteId", source2_,
-                                             "mediaSinkId", "", true, "", true);
-    media_route->set_incognito(incognito);
-    result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route),
-                                             "differentPresentationId");
+    MediaRoute media_route("differentRouteId", source2_, "mediaSinkId", "",
+                           true, "", true);
+    media_route.set_incognito(incognito);
+    result =
+        RouteRequestResult::FromSuccess(media_route, "differentPresentationId");
     delegate_impl_->OnRouteResponse(different_request, *result);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
     // Should trigger callback since request matches.
     EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
-    MediaRoute* media_route2 =
-        new MediaRoute("routeId", source1_, "mediaSinkId", "", true, "", true);
-    media_route2->set_incognito(incognito);
-    result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route2),
-                                             "presentationId");
+    MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, "",
+                            true);
+    media_route2.set_incognito(incognito);
+    result = RouteRequestResult::FromSuccess(media_route2, "presentationId");
     delegate_impl_->OnRouteResponse(request, *result);
   }
 
@@ -430,8 +429,8 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
       .Times(1);
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      base::MakeUnique<MediaRoute>("routeId", source1_, "mediaSinkId",
-                                   "description", true, "", true),
+      MediaRoute("routeId", source1_, "mediaSinkId", "description", true, "",
+                 true),
       kPresentationId);
   for (const auto& route_response_callback : route_response_callbacks)
     route_response_callback.Run(*result);

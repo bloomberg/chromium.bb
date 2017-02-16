@@ -37,4 +37,6 @@ std::string MediaSource::ToString() const {
   return "MediaSource[" + id_ + "]";
 }
 
+MediaSource::MediaSource() {}
+
 }  // namespace media_router

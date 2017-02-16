@@ -28,6 +28,7 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
 
 MediaRoute::MediaRoute(const MediaRoute& other) = default;
 
+MediaRoute::MediaRoute() {}
 MediaRoute::~MediaRoute() = default;
 
 bool MediaRoute::Equals(const MediaRoute& other) const {

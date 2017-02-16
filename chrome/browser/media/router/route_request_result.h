@@ -52,10 +52,14 @@ class RouteRequestResult {
   };
 
   static std::unique_ptr<RouteRequestResult> FromSuccess(
-      std::unique_ptr<MediaRoute> route,
+      const MediaRoute& route,
       const std::string& presentation_id);
   static std::unique_ptr<RouteRequestResult> FromError(const std::string& error,
                                                        ResultCode result_code);
+  RouteRequestResult(std::unique_ptr<MediaRoute> route,
+                     const std::string& presentation_id,
+                     const std::string& error,
+                     ResultCode result_code);
 
   ~RouteRequestResult();
 
@@ -68,11 +72,6 @@ class RouteRequestResult {
   ResultCode result_code() const { return result_code_; }
 
  private:
-  RouteRequestResult(std::unique_ptr<MediaRoute> route,
-                     const std::string& presentation_id,
-                     const std::string& error,
-                     ResultCode result_code);
-
   std::unique_ptr<MediaRoute> route_;
   std::string presentation_id_;
   GURL presentation_url_;

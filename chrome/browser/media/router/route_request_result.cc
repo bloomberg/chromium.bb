@@ -11,19 +11,19 @@ namespace media_router {
 
 // static
 std::unique_ptr<RouteRequestResult> RouteRequestResult::FromSuccess(
-    std::unique_ptr<MediaRoute> route,
+    const MediaRoute& route,
     const std::string& presentation_id) {
-  DCHECK(route);
-  return base::WrapUnique(new RouteRequestResult(
-      std::move(route), presentation_id, "", RouteRequestResult::OK));
+  return base::MakeUnique<RouteRequestResult>(
+      base::MakeUnique<MediaRoute>(route), presentation_id, std::string(),
+      RouteRequestResult::OK);
 }
 
 // static
 std::unique_ptr<RouteRequestResult> RouteRequestResult::FromError(
     const std::string& error,
     ResultCode result_code) {
-  return base::WrapUnique(
-      new RouteRequestResult(nullptr, "", error, result_code));
+  return base::MakeUnique<RouteRequestResult>(nullptr, std::string(), error,
+                                              result_code);
 }
 
 RouteRequestResult::RouteRequestResult(std::unique_ptr<MediaRoute> route,

@@ -16,6 +16,8 @@ MediaSink::MediaSink(const MediaSink::Id& sink_id,
 
 MediaSink::MediaSink(const MediaSink& other) = default;
 
+MediaSink::MediaSink() {}
+
 MediaSink::~MediaSink() {
 }
 

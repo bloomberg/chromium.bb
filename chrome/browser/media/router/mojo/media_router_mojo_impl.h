@@ -27,6 +27,7 @@
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/mojo/media_router.mojom.h"
+#include "chrome/browser/media/router/route_request_result.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -285,20 +286,20 @@ class MediaRouterMojoImpl : public MediaRouterBase,
           callback) override;
   void OnIssue(const IssueInfo& issue) override;
   void OnSinksReceived(const std::string& media_source,
-                       std::vector<mojom::MediaSinkPtr> sinks,
+                       const std::vector<MediaSink>& sinks,
                        const std::vector<url::Origin>& origins) override;
   void OnRoutesUpdated(
-      std::vector<mojom::MediaRoutePtr> routes,
+      const std::vector<MediaRoute>& routes,
       const std::string& media_source,
       const std::vector<std::string>& joinable_route_ids) override;
   void OnSinkAvailabilityUpdated(
       mojom::MediaRouter::SinkAvailability availability) override;
   void OnPresentationConnectionStateChanged(
       const std::string& route_id,
-      mojom::MediaRouter::PresentationConnectionState state) override;
+      content::PresentationConnectionState state) override;
   void OnPresentationConnectionClosed(
       const std::string& route_id,
-      mojom::MediaRouter::PresentationConnectionCloseReason reason,
+      content::PresentationConnectionCloseReason reason,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,
@@ -308,7 +309,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // to the ID of the route that was terminated.
   void OnTerminateRouteResult(const MediaRoute::Id& route_id,
                               const base::Optional<std::string>& error_text,
-                              mojom::RouteRequestResultCode result_code);
+                              RouteRequestResult::ResultCode result_code);
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
@@ -317,9 +318,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       bool is_incognito,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       bool is_join,
-      mojom::MediaRoutePtr media_route,
+      const base::Optional<MediaRoute>& media_route,
       const base::Optional<std::string>& error_text,
-      mojom::RouteRequestResultCode result_code);
+      RouteRequestResult::ResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
   // component extension. If |success| is false, the pending request queue is

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -116,7 +117,7 @@ void CastDeviceCache::OnSinksReceived(const MediaSinks& sinks) {
     // Hide all sinks which have a domain (ie, castouts) to meet privacy
     // requirements. This will be enabled once UI can display the domain. See
     // crbug.com/624016.
-    if (!sink.domain().empty())
+    if (sink.domain() && !sink.domain()->empty())
       continue;
 
     sinks_.push_back(sink);
@@ -194,7 +195,7 @@ void CastConfigClientMediaRouter::RequestDeviceRefresh() {
     sr->sink = ash::mojom::CastSink::New();
     sr->sink->id = sink.id();
     sr->sink->name = sink.name();
-    sr->sink->domain = sink.domain();
+    sr->sink->domain = sink.domain().value_or(std::string());
     items.push_back(std::move(sr));
   }
 

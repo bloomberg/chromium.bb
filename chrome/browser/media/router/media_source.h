@@ -24,6 +24,7 @@ class MediaSource {
 
   explicit MediaSource(const MediaSource::Id& id);
   explicit MediaSource(const GURL& presentation_url);
+  MediaSource();
   ~MediaSource();
 
   // Gets the ID of the media source.

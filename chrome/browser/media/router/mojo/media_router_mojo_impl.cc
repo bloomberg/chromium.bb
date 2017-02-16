@@ -23,7 +23,6 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
-#include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 #include "chrome/browser/media/router/route_message.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -175,7 +174,7 @@ void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
 
 void MediaRouterMojoImpl::OnSinksReceived(
     const std::string& media_source,
-    std::vector<mojom::MediaSinkPtr> sinks,
+    const std::vector<MediaSink>& sinks,
     const std::vector<url::Origin>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
@@ -185,15 +184,10 @@ void MediaRouterMojoImpl::OnSinksReceived(
     return;
   }
 
-  std::vector<MediaSink> sink_list;
-  sink_list.reserve(sinks.size());
-  for (size_t i = 0; i < sinks.size(); ++i)
-    sink_list.push_back(sinks[i].To<MediaSink>());
-
   auto* sinks_query = it->second.get();
   sinks_query->has_cached_result = true;
   sinks_query->origins = origins;
-  sinks_query->cached_sink_list.swap(sink_list);
+  sinks_query->cached_sink_list = sinks;
 
   if (!sinks_query->observers.might_have_observers()) {
     DVLOG_WITH_INSTANCE(1)
@@ -207,7 +201,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
 }
 
 void MediaRouterMojoImpl::OnRoutesUpdated(
-    std::vector<mojom::MediaRoutePtr> routes,
+    const std::vector<MediaRoute>& routes,
     const std::string& media_source,
     const std::vector<std::string>& joinable_route_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -221,13 +215,8 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
     return;
   }
 
-  std::vector<MediaRoute> routes_converted;
-  routes_converted.reserve(routes.size());
-  for (size_t i = 0; i < routes.size(); ++i)
-    routes_converted.push_back(routes[i].To<MediaRoute>());
-
   for (auto& observer : it->second->observers)
-    observer.OnRoutesUpdated(routes_converted, joinable_route_ids);
+    observer.OnRoutesUpdated(routes, joinable_route_ids);
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -235,25 +224,24 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     bool is_incognito,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     bool is_join,
-    mojom::MediaRoutePtr media_route,
+    const base::Optional<MediaRoute>& media_route,
     const base::Optional<std::string>& error_text,
-    mojom::RouteRequestResultCode result_code) {
+    RouteRequestResult::ResultCode result_code) {
   std::unique_ptr<RouteRequestResult> result;
-  if (media_route.is_null()) {
+  if (!media_route) {
     // An error occurred.
     const std::string& error = (error_text && !error_text->empty())
         ? *error_text : std::string("Unknown error.");
-    result = RouteRequestResult::FromError(
-        error, mojo::RouteRequestResultCodeFromMojo(result_code));
-  } else if (media_route->is_incognito != is_incognito) {
+    result = RouteRequestResult::FromError(error, result_code);
+  } else if (media_route->is_incognito() != is_incognito) {
     std::string error = base::StringPrintf(
         "Mismatch in incognito status: request = %d, response = %d",
-        is_incognito, media_route->is_incognito);
+        is_incognito, media_route->is_incognito());
     result = RouteRequestResult::FromError(
         error, RouteRequestResult::INCOGNITO_MISMATCH);
   } else {
-    result = RouteRequestResult::FromSuccess(
-        media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
+    result =
+        RouteRequestResult::FromSuccess(media_route.value(), presentation_id);
   }
 
   if (is_join)
@@ -712,31 +700,27 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
 
 void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
     const std::string& route_id,
-    mojom::MediaRouter::PresentationConnectionState state) {
-  NotifyPresentationConnectionStateChange(
-      route_id, mojo::PresentationConnectionStateFromMojo(state));
+    content::PresentationConnectionState state) {
+  NotifyPresentationConnectionStateChange(route_id, state);
 }
 
 void MediaRouterMojoImpl::OnPresentationConnectionClosed(
     const std::string& route_id,
-    mojom::MediaRouter::PresentationConnectionCloseReason reason,
+    content::PresentationConnectionCloseReason reason,
     const std::string& message) {
-  NotifyPresentationConnectionClose(
-      route_id, mojo::PresentationConnectionCloseReasonFromMojo(reason),
-      message);
+  NotifyPresentationConnectionClose(route_id, reason, message);
 }
 
 void MediaRouterMojoImpl::OnTerminateRouteResult(
     const MediaRoute::Id& route_id,
     const base::Optional<std::string>& error_text,
-    mojom::RouteRequestResultCode result_code) {
-  if (result_code != mojom::RouteRequestResultCode::OK) {
+    RouteRequestResult::ResultCode result_code) {
+  if (result_code != RouteRequestResult::OK) {
     LOG(WARNING) << "Failed to terminate route " << route_id
                  << ": result_code = " << result_code << ", "
                  << error_text.value_or(std::string());
   }
-  MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(
-      mojo::RouteRequestResultCodeFromMojo(result_code));
+  MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(result_code);
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(

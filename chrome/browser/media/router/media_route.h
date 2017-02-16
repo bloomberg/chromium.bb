@@ -44,60 +44,87 @@ class MediaRoute {
              const std::string& custom_controller_path,
              bool for_display);
   MediaRoute(const MediaRoute& other);
+  MediaRoute();
+
   ~MediaRoute();
 
-  // The media route identifier.
+  void set_media_route_id(const MediaRoute::Id& media_route_id) {
+    media_route_id_ = media_route_id;
+  }
   const MediaRoute::Id& media_route_id() const { return media_route_id_; }
 
-  // The media source being routed.
+  void set_media_source(const MediaSource& media_source) {
+    media_source_ = media_source;
+  }
   const MediaSource& media_source() const { return media_source_; }
 
-  // The ID of sink being routed to.
+  void set_media_sink_id(const MediaSink::Id& media_sink_id) {
+    media_sink_id_ = media_sink_id;
+  }
   const MediaSink::Id& media_sink_id() const { return media_sink_id_; }
 
-  // The description of the media route activity, for example
-  // "Playing Foo Bar Music All Access."
+  void set_description(const std::string& description) {
+    description_ = description;
+  }
+
   // TODO(kmarshall): Do we need to pass locale for bidi rendering?
   const std::string& description() const { return description_; }
 
-  // Returns |true| if the route is created locally (versus discovered
-  // by a media route provider.)
+  void set_local(bool is_local) { is_local_ = is_local; }
   bool is_local() const { return is_local_; }
 
-  // The custom controller path. This allows route provider to have custom route
-  // detail as well as its own route control features route control features in
-  // the media router dialog.
+  void set_custom_controller_path(const std::string& custom_controller_path) {
+    custom_controller_path_ = custom_controller_path;
+  }
   const std::string& custom_controller_path() const {
     return custom_controller_path_;
   }
 
+  void set_for_display(bool for_display) { for_display_ = for_display; }
   bool for_display() const { return for_display_; }
 
-  // Set this to true when the route was created by an incognito profile.
   void set_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
-
   bool is_incognito() const { return is_incognito_; }
 
-  // Set to |true| if the presentation associated with this route is an
-  // offscreen presentation.
   void set_offscreen_presentation(bool is_offscreen_presentation) {
     is_offscreen_presentation_ = is_offscreen_presentation;
   }
-
   bool is_offscreen_presentation() const { return is_offscreen_presentation_; }
 
   bool Equals(const MediaRoute& other) const;
 
  private:
+  // The media route identifier.
   MediaRoute::Id media_route_id_;
+
+  // The media source being routed.
   MediaSource media_source_;
+
+  // The ID of sink being routed to.
   MediaSink::Id media_sink_id_;
+
+  // The description of the media route activity, for example
+  // "Playing Foo Bar Music All Access."
   std::string description_;
-  bool is_local_;
+
+  // |true| if the route is created locally (versus discovered by a media route
+  // provider.)
+  bool is_local_ = false;
+
+  // The custom controller path. This allows route provider to have custom route
+  // detail as well as its own route control features route control features in
+  // the media router dialog.
   std::string custom_controller_path_;
-  bool for_display_;
-  bool is_incognito_;
-  bool is_offscreen_presentation_;
+
+  // |true| if the route can be displayed in the UI.
+  bool for_display_ = false;
+
+  // |true| if the route was created by an incognito profile.
+  bool is_incognito_ = false;
+
+  // |true| if the presentation associated with this route is an offscreen
+  // presentation.
+  bool is_offscreen_presentation_ = false;
 };
 
 }  // namespace media_router

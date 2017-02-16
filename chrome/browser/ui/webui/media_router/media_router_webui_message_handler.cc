@@ -98,15 +98,15 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
     sink_val->SetInteger("iconType", sink.icon_type());
-    if (!sink.description().empty())
-      sink_val->SetString("description", sink.description());
+    if (sink.description())
+      sink_val->SetString("description", *sink.description());
 
     bool is_pseudo_sink =
         base::StartsWith(sink.id(), "pseudo:", base::CompareCase::SENSITIVE);
-    if (!user_domain.empty() && !sink.domain().empty()) {
-      std::string domain = sink.domain();
+    if (!user_domain.empty() && sink.domain() && !sink.domain()->empty()) {
+      std::string domain = *sink.domain();
       // Convert default domains to user domain
-      if (sink.domain() == "default") {
+      if (domain == "default") {
         domain = user_domain;
         if (domain == Profile::kNoHostedDomainFound) {
           // Default domain will be empty for non-dasher accounts.

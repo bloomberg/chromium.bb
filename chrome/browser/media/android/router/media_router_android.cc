@@ -355,8 +355,8 @@ void MediaRouterAndroid::OnRouteCreated(
                    jis_local, std::string(),
                    true);  // TODO(avayvod): Populate for_display.
 
-  std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      base::MakeUnique<MediaRoute>(route), request->presentation_id);
+  std::unique_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromSuccess(route, request->presentation_id);
   for (const MediaRouteResponseCallback& callback : request->callbacks)
     callback.Run(*result);
 

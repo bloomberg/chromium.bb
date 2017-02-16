@@ -91,8 +91,6 @@ static_library("router") {
       "mojo/media_router_mojo_impl.h",
       "mojo/media_router_mojo_metrics.cc",
       "mojo/media_router_mojo_metrics.h",
-      "mojo/media_router_type_converters.cc",
-      "mojo/media_router_type_converters.h",
     ]
   }
 }
