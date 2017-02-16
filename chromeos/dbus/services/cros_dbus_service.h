@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "chromeos/chromeos_export.h"
@@ -15,22 +16,14 @@
 namespace dbus {
 class Bus;
 class ExportedObject;
+class ObjectPath;
 }
 
 namespace chromeos {
 
-// CrosDBusService is used to run a D-Bus service inside Chrome for Chrome
-// OS. The service will be registered as follows:
-//
-// Service name: org.chromium.LibCrosService (kLibCrosServiceName)
-// Object path: chromium/LibCrosService (kLibCrosServicePath)
-//
-// For historical reasons, the rather irrelevant name "LibCrosService" is
-// used in the D-Bus constants such as the service name.
-//
-// CrosDBusService exports D-Bus methods through service provider classes
-// that implement CrosDBusService::ServiceProviderInterface.
-
+// CrosDBusService is used to run a D-Bus service inside Chrome for Chrome OS.
+// It exports D-Bus methods through service provider classes that implement
+// CrosDBusService::ServiceProviderInterface.
 class CHROMEOS_EXPORT CrosDBusService {
  public:
   // CrosDBusService consists of service providers that implement this
@@ -48,20 +41,32 @@ class CHROMEOS_EXPORT CrosDBusService {
   using ServiceProviderList =
       std::vector<std::unique_ptr<ServiceProviderInterface>>;
 
-  // Initializes the global instance.
-  static void Initialize(ServiceProviderList service_providers);
-  // Destroys the global instance.
-  static void Shutdown();
+  // Creates, starts, and returns a new instance owning |service_name| and
+  // exporting |service_providers|'s methods on |object_path|. Static so a stub
+  // implementation can be used when not running on a device.
+  static std::unique_ptr<CrosDBusService> Create(
+      const std::string& service_name,
+      const dbus::ObjectPath& object_path,
+      ServiceProviderList service_providers);
+
+  virtual ~CrosDBusService();
 
  protected:
-  virtual ~CrosDBusService();
+  CrosDBusService();
 
  private:
   friend class CrosDBusServiceTest;
 
-  // Initializes the global instance for testing.
-  static void InitializeForTesting(dbus::Bus* bus,
-                                   ServiceProviderList service_providers);
+  // Creates, starts, and returns a real implementation of CrosDBusService that
+  // uses |bus|. Called by Create(), but can also be called directly by tests
+  // that need a non-stub implementation even when not running on a device.
+  static std::unique_ptr<CrosDBusService> CreateRealImpl(
+      dbus::Bus* bus,
+      const std::string& service_name,
+      const dbus::ObjectPath& object_path,
+      ServiceProviderList service_providers);
+
+  DISALLOW_COPY_AND_ASSIGN(CrosDBusService);
 };
 
 }  // namespace chromeos

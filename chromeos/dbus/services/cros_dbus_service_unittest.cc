@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/services/cros_dbus_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -34,8 +36,7 @@ class MockProxyResolutionService
 
 class CrosDBusServiceTest : public testing::Test {
  public:
-  CrosDBusServiceTest() {
-  }
+  CrosDBusServiceTest() = default;
 
   // Creates an instance of CrosDBusService with mocks injected.
   void SetUp() override {
@@ -47,16 +48,22 @@ class CrosDBusServiceTest : public testing::Test {
     // ShutdownAndBlock() will be called in TearDown().
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
-    // Create a mock exported object that behaves as
-    // org.chromium.CrosDBusService.
+    // CrosDBusService should take ownership of the service name passed to it.
+    const char kServiceName[] = "org.example.TestService";
+    EXPECT_CALL(
+        *mock_bus_.get(),
+        RequestOwnership(kServiceName,
+                         dbus::Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT, _))
+        .Times(1);
+
+    // Create a mock exported object.
+    const dbus::ObjectPath kObjectPath("/org/example/TestService");
     mock_exported_object_ =
-        new dbus::MockExportedObject(mock_bus_.get(),
-                                     dbus::ObjectPath(kLibCrosServicePath));
+        new dbus::MockExportedObject(mock_bus_.get(), kObjectPath);
 
     // |mock_bus_|'s GetExportedObject() will return mock_exported_object_|
     // for the given service name and the object path.
-    EXPECT_CALL(*mock_bus_.get(),
-                GetExportedObject(dbus::ObjectPath(kLibCrosServicePath)))
+    EXPECT_CALL(*mock_bus_.get(), GetExportedObject(kObjectPath))
         .WillOnce(Return(mock_exported_object_.get()));
 
     // Create a mock proxy resolution service.
@@ -66,25 +73,25 @@ class CrosDBusServiceTest : public testing::Test {
     // Start() will be called with |mock_exported_object_|.
     EXPECT_CALL(*mock_proxy_resolution_service_provider,
                 Start(Eq(mock_exported_object_))).WillOnce(Return());
+
     // Initialize the cros service with the mocks injected.
     CrosDBusService::ServiceProviderList service_providers;
     service_providers.push_back(
         std::move(mock_proxy_resolution_service_provider));
-    CrosDBusService::InitializeForTesting(mock_bus_.get(),
-                                          std::move(service_providers));
+    cros_dbus_service_ = CrosDBusService::CreateRealImpl(
+        mock_bus_.get(), kServiceName, kObjectPath,
+        std::move(service_providers));
   }
 
   void TearDown() override {
-    // Shutdown the cros service.
-    CrosDBusService::Shutdown();
-
-    // Shutdown the bus.
+    cros_dbus_service_.reset();
     mock_bus_->ShutdownAndBlock();
   }
 
  protected:
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
+  std::unique_ptr<CrosDBusService> cros_dbus_service_;
 };
 
 TEST_F(CrosDBusServiceTest, Start) {

@@ -144,6 +144,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -152,6 +153,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/features/features.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/touch/touch_device.h"
@@ -244,7 +246,9 @@ class DBusServices {
           base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
     }
     service_providers.push_back(base::MakeUnique<KioskInfoService>());
-    CrosDBusService::Initialize(std::move(service_providers));
+    cros_dbus_service_ = CrosDBusService::Create(
+        kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
+        std::move(service_providers));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -294,7 +298,7 @@ class DBusServices {
     LoginState::Shutdown();
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
-    CrosDBusService::Shutdown();
+    cros_dbus_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -305,6 +309,13 @@ class DBusServices {
   }
 
  private:
+  // Hosts providers for the "org.chromium.LibCrosService" D-Bus service owned
+  // by Chrome. The name of this service was chosen for historical reasons that
+  // are irrelevant now.
+  // TODO(derat): Move these providers into more-specific services that are
+  // split between different processes: http://crbug.com/692246
+  std::unique_ptr<CrosDBusService> cros_dbus_service_;
+
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
