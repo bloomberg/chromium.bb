@@ -52,7 +52,9 @@
             },
             {
                 "domain": "Runtime",
-                "include_types": ["StackTrace", "CallFrame", "RemoteObject", "ObjectPreview", "PropertyPreview", "EntryPreview", "CallArgument", "ExceptionDetails", "CustomPreview", "PropertyDescriptor", "InternalPropertyDescriptor", "ExecutionContextDescription", "ExecutionContextDestroyedNotification", "ExecutionContextCreatedNotification", "ExceptionThrownNotification", "ExceptionRevokedNotification", "ConsoleAPICalledNotification", "InspectRequestedNotification"]
+                "include_types": ["StackTrace", "CallFrame"],
+                "include_events": [],
+                "include": []
             },
             {
                 "domain": "Schema"
