@@ -10341,6 +10341,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests",
           "--use-angle=d3d9"
         ],
@@ -10533,6 +10549,22 @@
           ]
         },
         "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -10750,6 +10782,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -11221,6 +11269,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -11684,6 +11748,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -12194,6 +12274,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1430",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -12696,6 +12792,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -13209,6 +13321,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -13649,6 +13777,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -14099,6 +14243,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6779",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -14624,6 +14784,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -15110,6 +15286,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:041a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -15589,6 +15781,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0f02",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {
@@ -16191,6 +16399,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -16716,6 +16940,22 @@
       },
       {
         "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -17214,6 +17454,22 @@
           ]
         },
         "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests",
         "use_xvfb": false
       },
       {

@@ -1162,6 +1162,22 @@ COMMON_GTESTS = {
       '--test-launcher-retry-limit=0'
     ]
   },
+  # white_box tests should run where end2end tests run
+  'angle_white_box_tests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # There are only Windows white box tests for now.
+        # Enable on more configs when there will be relevant tests.
+        'os_types': ['win'],
+      },
+    ],
+    'desktop_args': [
+      # ANGLE test retries deliberately disabled to prevent flakiness.
+      # http://crbug.com/669196
+      '--test-launcher-retry-limit=0'
+    ]
+  },
   'angle_unittests': {
     'desktop_args': [
       '--use-gpu-in-tests',
