@@ -2487,9 +2487,11 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                            [supertx_size][1]++;
         td->counts->supertx_size[supertx_size]++;
 #if CONFIG_EXT_TX
-        if (get_ext_tx_types(supertx_size, bsize, 1) > 1 &&
+        if (get_ext_tx_types(supertx_size, bsize, 1, cm->reduced_tx_set_used) >
+                1 &&
             !xd->mi[0]->mbmi.skip) {
-          int eset = get_ext_tx_set(supertx_size, bsize, 1);
+          const int eset =
+              get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
           if (eset > 0) {
             ++td->counts
                   ->inter_ext_tx[eset][supertx_size][xd->mi[0]->mbmi.tx_type];
@@ -5135,6 +5137,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+#if CONFIG_EXT_TX
+  // Indicates whether or not to use a default reduced set for ext-tx
+  // rather than the potential full set of 16 transforms
+  cm->reduced_tx_set_used = 0;
+#endif  // CONFIG_EXT_TX
 
   // In the longer term the encoder should be generalized to match the
   // decoder such that we allow compound where one of the 3 buffers has a
@@ -5797,10 +5804,12 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     ++td->counts
           ->tx_size_totals[txsize_sqr_map[get_uv_tx_size(mbmi, &xd->plane[1])]];
 #if CONFIG_EXT_TX
-    if (get_ext_tx_types(tx_size, bsize, is_inter) > 1 && cm->base_qindex > 0 &&
-        !mbmi->skip &&
+    if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
+            1 &&
+        cm->base_qindex > 0 && !mbmi->skip &&
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      int eset = get_ext_tx_set(tx_size, bsize, is_inter);
+      const int eset =
+          get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       if (eset > 0) {
         if (is_inter) {
           ++td->counts
@@ -6684,7 +6693,7 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   MB_MODE_INFO *mbmi;
   TX_TYPE tx_type, best_tx_nostx;
 #if CONFIG_EXT_TX
-  int ext_tx_set;
+  const int ext_tx_set;
 #endif  // CONFIG_EXT_TX
   int tmp_rate_tx = 0, skip_tx = 0;
   int64_t tmp_dist_tx = 0, rd_tx, bestrd_tx = INT64_MAX;
@@ -6756,7 +6765,7 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   tx_size = max_txsize_lookup[bsize];
   av1_subtract_plane(x, bsize, 0);
 #if CONFIG_EXT_TX
-  ext_tx_set = get_ext_tx_set(tx_size, bsize, 1);
+  ext_tx_set = get_ext_tx_set(tx_size, bsize, 1, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
   for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
 #if CONFIG_VAR_TX
@@ -6792,7 +6801,7 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_VAR_TX
 
 #if CONFIG_EXT_TX
-    if (get_ext_tx_types(tx_size, bsize, 1) > 1 &&
+    if (get_ext_tx_types(tx_size, bsize, 1, cm->reduced_tx_set_used) > 1 &&
         !xd->lossless[xd->mi[0]->mbmi.segment_id] && this_rate != INT_MAX) {
       if (ext_tx_set > 0)
         this_rate +=

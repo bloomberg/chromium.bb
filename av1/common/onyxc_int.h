@@ -326,6 +326,10 @@ typedef struct AV1Common {
 
   int frame_parallel_decode;  // frame-based threading.
 
+#if CONFIG_EXT_TX
+  int reduced_tx_set_used;
+#endif  // CONFIG_EXT_TX
+
 // Context probabilities for reference frame prediction
 #if CONFIG_EXT_REFS
   MV_REFERENCE_FRAME comp_fwd_ref[FWD_REFS];

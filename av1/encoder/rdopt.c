@@ -1785,9 +1785,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 #if CONFIG_EXT_TX
-  if (get_ext_tx_types(tx_size, bs, is_inter) > 1 &&
+  if (get_ext_tx_types(tx_size, bs, is_inter, cm->reduced_tx_set_used) > 1 &&
       !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-    const int ext_tx_set = get_ext_tx_set(tx_size, bs, is_inter);
+    const int ext_tx_set =
+        get_ext_tx_set(tx_size, bs, is_inter, cm->reduced_tx_set_used);
     if (is_inter) {
       if (ext_tx_set > 0)
         rd_stats->rate +=
@@ -1885,7 +1886,8 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
   if (evaluate_rect_tx) {
     const TX_SIZE rect_tx_size = max_txsize_rect_lookup[bs];
     RD_STATS this_rd_stats;
-    ext_tx_set = get_ext_tx_set(rect_tx_size, bs, is_inter);
+    ext_tx_set =
+        get_ext_tx_set(rect_tx_size, bs, is_inter, cm->reduced_tx_set_used);
     if ((is_inter && ext_tx_used_inter[ext_tx_set][tx_type]) ||
         (!is_inter && ext_tx_used_intra[ext_tx_set][tx_type])) {
       rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type,
@@ -1912,7 +1914,7 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
       continue;
     if (max_tx_size >= TX_32X32 && n == TX_4X4) continue;
 #if CONFIG_EXT_TX
-    ext_tx_set = get_ext_tx_set(n, bs, is_inter);
+    ext_tx_set = get_ext_tx_set(n, bs, is_inter, cm->reduced_tx_set_used);
     if (is_inter) {
       if (!ext_tx_used_inter[ext_tx_set][tx_type]) continue;
       if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
@@ -1992,7 +1994,8 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif
 #if CONFIG_EXT_TX
-  ext_tx_set = get_ext_tx_set(mbmi->tx_size, bs, is_inter);
+  ext_tx_set =
+      get_ext_tx_set(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
 
   if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE)
@@ -2002,7 +2005,8 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
     prune = prune_tx_types(cpi, bs, x, xd, 0);
 #endif
 #if CONFIG_EXT_TX
-  if (get_ext_tx_types(mbmi->tx_size, bs, is_inter) > 1 &&
+  if (get_ext_tx_types(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used) >
+          1 &&
       !xd->lossless[mbmi->segment_id]) {
 #if CONFIG_PVQ
     od_rollback_buffer pre_buf, post_buf;
@@ -2039,7 +2043,8 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       od_encode_rollback(&x->daala_enc, &pre_buf);
 #endif
       if (this_rd_stats.rate == INT_MAX) continue;
-      if (get_ext_tx_types(mbmi->tx_size, bs, is_inter) > 1) {
+      if (get_ext_tx_types(mbmi->tx_size, bs, is_inter,
+                           cm->reduced_tx_set_used) > 1) {
         if (is_inter) {
           if (ext_tx_set > 0)
             this_rd_stats.rate +=
@@ -3096,8 +3101,10 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
   if (!is_lossless) {
     int rate_tx_type = 0;
 #if CONFIG_EXT_TX
-    if (get_ext_tx_types(tx_size, bsize, 0) > 1) {
-      const int eset = get_ext_tx_set(tx_size, bsize, 0);
+    if (get_ext_tx_types(tx_size, bsize, 0, cpi->common.reduced_tx_set_used) >
+        1) {
+      const int eset =
+          get_ext_tx_set(tx_size, bsize, 0, cpi->common.reduced_tx_set_used);
       rate_tx_type = cpi->intra_tx_type_costs[eset][txsize_sqr_map[tx_size]]
                                              [mbmi->mode][mbmi->tx_type];
     }
@@ -4126,9 +4133,11 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
           mbmi->min_tx_size, get_min_tx_size(mbmi->inter_tx_size[row][col]));
 
 #if CONFIG_EXT_TX
-  if (get_ext_tx_types(mbmi->min_tx_size, bsize, is_inter) > 1 &&
+  if (get_ext_tx_types(mbmi->min_tx_size, bsize, is_inter,
+                       cm->reduced_tx_set_used) > 1 &&
       !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-    int ext_tx_set = get_ext_tx_set(mbmi->min_tx_size, bsize, is_inter);
+    const int ext_tx_set = get_ext_tx_set(mbmi->min_tx_size, bsize, is_inter,
+                                          cm->reduced_tx_set_used);
     if (is_inter) {
       if (ext_tx_set > 0)
         rd_stats->rate +=
@@ -4185,7 +4194,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   RD_STATS rd_stats_stack[4];
 #endif
 #if CONFIG_EXT_TX
-  int ext_tx_set = get_ext_tx_set(max_tx_size, bsize, is_inter);
+  const int ext_tx_set =
+      get_ext_tx_set(max_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
 
   if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE)
@@ -11799,8 +11809,10 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
       if (!xd->lossless[mbmi->segment_id]) {
         int rate_tx_type = 0;
 #if CONFIG_EXT_TX
-        if (get_ext_tx_types(mbmi->tx_size, bsize, 1) > 1) {
-          const int eset = get_ext_tx_set(mbmi->tx_size, bsize, 1);
+        if (get_ext_tx_types(mbmi->tx_size, bsize, 1, cm->reduced_tx_set_used) >
+            1) {
+          const int eset =
+              get_ext_tx_set(mbmi->tx_size, bsize, 1, cm->reduced_tx_set_used);
           rate_tx_type =
               cpi->inter_tx_type_costs[eset][mbmi->tx_size][mbmi->tx_type];
         }

@@ -599,7 +599,9 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 static const int num_ext_tx_set_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2 };
 static const int num_ext_tx_set_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5 };
 
-static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter) {
+static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
+                                 int use_default) {
+  if (use_default) return is_inter ? 3 : 2;
   tx_size = txsize_sqr_map[tx_size];
 #if CONFIG_CB4X4
   (void)bs;
@@ -660,9 +662,9 @@ static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
   { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
 };
 
-static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs,
-                                   int is_inter) {
-  const int set = get_ext_tx_set(tx_size, bs, is_inter);
+static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
+                                   int use_default) {
+  const int set = get_ext_tx_set(tx_size, bs, is_inter, use_default);
   return is_inter ? num_ext_tx_set_inter[set] : num_ext_tx_set_intra[set];
 }
 

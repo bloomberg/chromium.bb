@@ -1295,7 +1295,8 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     const BLOCK_SIZE bsize = mbmi->sb_type;
-    if (get_ext_tx_types(tx_size, bsize, is_inter) > 1 &&
+    if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
+            1 &&
         ((!cm->seg.enabled && cm->base_qindex > 0) ||
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
@@ -1303,7 +1304,8 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      int eset = get_ext_tx_set(tx_size, bsize, is_inter);
+      const int eset =
+          get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       if (is_inter) {
         assert(ext_tx_used_inter[eset][mbmi->tx_type]);
         if (eset > 0) {
@@ -2609,8 +2611,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
     skip = write_skip(cm, xd, mbmi->segment_id_supertx, xd->mi[0], w);
 #if CONFIG_EXT_TX
-    if (get_ext_tx_types(supertx_size, bsize, 1) > 1 && !skip) {
-      int eset = get_ext_tx_set(supertx_size, bsize, 1);
+    if (get_ext_tx_types(supertx_size, bsize, 1, cm->reduced_tx_set_used) > 1 &&
+        !skip) {
+      const int eset =
+          get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
       if (eset > 0) {
         av1_write_token(w, av1_ext_tx_inter_tree[eset],
                         cm->fc->inter_ext_tx_prob[eset][supertx_size],
@@ -4484,6 +4488,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     if (!use_hybrid_pred) aom_wb_write_bit(wb, use_compound_pred);
 #endif  // !CONFIG_REF_ADAPT
   }
+
+#if CONFIG_EXT_TX
+  aom_wb_write_bit(wb, cm->reduced_tx_set_used);
+#endif  // CONFIG_EXT_TX
 
   write_tile_info(cm, wb);
 }

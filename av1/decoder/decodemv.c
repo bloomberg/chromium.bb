@@ -737,7 +737,8 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   if (!FIXED_TX_TYPE) {
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-    if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block) > 1 &&
+    if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block,
+                         cm->reduced_tx_set_used) > 1 &&
         ((!cm->seg.enabled && cm->base_qindex > 0) ||
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
@@ -745,7 +746,8 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      int eset = get_ext_tx_set(tx_size, mbmi->sb_type, inter_block);
+      const int eset = get_ext_tx_set(tx_size, mbmi->sb_type, inter_block,
+                                      cm->reduced_tx_set_used);
       FRAME_COUNTS *counts = xd->counts;
 
       if (inter_block) {
