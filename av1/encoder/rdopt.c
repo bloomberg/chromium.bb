@@ -4768,20 +4768,9 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_PVQ
-    // For chroma channels, multiply lambda by 0.5 when doing intra prediction
-    // NOTE: Chroma intra prediction itself has a separate RDO,
-    // though final chroma intra mode's D and R is simply added to
-    // those of luma then global RDO is performed to decide the modes of SB.
-    // Also, for chroma, the RDO cannot decide tx_size (follow luma's decision)
-    // or tx_type (DCT only), then only the intra prediction is
-    // chroma's own mode decision based on separate RDO.
-    // TODO(yushin) : Seek for more reasonable solution than this.
-    this_rd = RDCOST(x->rdmult >> (1 * PVQ_CHROMA_RD), x->rddiv, this_rate,
-                     tokenonly_rd_stats.dist);
     od_encode_rollback(&x->daala_enc, &buf);
-#else
-    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 #endif
+    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;

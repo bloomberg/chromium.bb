@@ -1155,9 +1155,6 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   int has_dc_skip = 1;
   int i;
   int off = od_qm_offset(tx_size, plane ? 1 : 0);
-#if PVQ_CHROMA_RD
-  double save_pvq_lambda;
-#endif
 
   DECLARE_ALIGNED(16, tran_low_t, coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, tran_low_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
@@ -1198,12 +1195,6 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
     in_int32[i] = coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
   }
 
-#if PVQ_CHROMA_RD
-  if (plane != 0) {
-    save_pvq_lambda = daala_enc->pvq_norm_lambda;
-    daala_enc->pvq_norm_lambda *= 0.8;
-  }
-#endif
   if (abs(in_int32[0] - ref_int32[0]) < pvq_dc_quant * 141 / 256) { /* 0.55 */
     out_int32[0] = 0;
   } else {
@@ -1260,9 +1251,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
   assert(*rate >= 0);
-#if PVQ_CHROMA_RD
-  if (plane != 0) daala_enc->pvq_norm_lambda = save_pvq_lambda;
-#endif
+
   return ac_dc_coded;
 }
 

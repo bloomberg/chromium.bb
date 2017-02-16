@@ -892,11 +892,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
     n = OD_DIV_R0(abs(in[0] - ref[0]), dc_quant);
     if (n == 0) {
       out[0] = 0;
-#if PVQ_CHROMA_RD
-    } else if (pli == 0) {
-#else
     } else {
-#endif
       int tell2;
       od_rollback_buffer dc_buf;
 
@@ -1010,11 +1006,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
       n = OD_DIV_R0(abs(in[0] - ref[0]), dc_quant);
       if (n == 0) {
         out[0] = 0;
-#if PVQ_CHROMA_RD
-      } else if (pli == 0) {
-#else
       } else {
-#endif
         int tell2;
         od_rollback_buffer dc_buf;
 
