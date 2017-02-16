@@ -23,6 +23,9 @@ DISPLAY_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 // scale factor is 1.0. This does not handle per-monitor DPI.
 DISPLAY_EXPORT float GetDPIScale();
 
+// Equivalent to GetDPIScale() but ignores the --force-device-scale-factor flag.
+float GetUnforcedDeviceScaleFactor();
+
 // Returns the equivalent DPI for |device_scaling_factor|.
 DISPLAY_EXPORT int GetDPIFromScalingFactor(float device_scaling_factor);
 

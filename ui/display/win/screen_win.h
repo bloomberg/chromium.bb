@@ -102,6 +102,13 @@ class DISPLAY_EXPORT ScreenWin : public Screen {
   // Returns |hwnd|'s scale factor.
   static float GetScaleFactorForHWND(HWND hwnd);
 
+  // Returns the system's global scale factor, ignoring the value of
+  // --force-device-scale-factor. Only use this if you are working with Windows
+  // metrics global to the system. Otherwise you should call
+  // GetScaleFactorForHWND() to get the correct scale factor for the monitor
+  // you are targeting.
+  static float GetSystemScaleFactor();
+
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const;
 

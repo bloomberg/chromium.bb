@@ -351,6 +351,11 @@ float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
   return screen_win_display.display().device_scale_factor();
 }
 
+// static
+float ScreenWin::GetSystemScaleFactor() {
+  return GetUnforcedDeviceScaleFactor();
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   NOTREACHED();
   return nullptr;
