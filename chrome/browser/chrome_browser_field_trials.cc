@@ -67,9 +67,9 @@ void InstantiatePersistentHistograms() {
 
   // Create persistent/shared memory and allow histograms to be stored in
   // it. Memory that is not actualy used won't be physically mapped by the
-  // system. BrowserMetrics usage, as reported in UMA, peaked around 3.0MiB
-  // as of 2016-12-20.
-  const size_t kAllocSize = 5 << 20;     // 5 MiB
+  // system. BrowserMetrics usage, as reported in UMA, has the 99.9 percentile
+  // around 4MiB as of 2017-02-16.
+  const size_t kAllocSize = 8 << 20;     // 8 MiB
   const uint32_t kAllocId = 0x935DDD43;  // SHA1(BrowserMetrics)
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
