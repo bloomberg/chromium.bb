@@ -874,11 +874,11 @@ base::string16 LocationBarView::GetLocationIconText() const {
 
 bool LocationBarView::ShouldShowKeywordBubble() const {
   return !omnibox_view_->model()->keyword().empty() &&
-      !omnibox_view_->model()->is_keyword_hint();
+         !omnibox_view_->model()->is_keyword_hint();
 }
 
 bool LocationBarView::ShouldShowLocationIconText() const {
-  if (!GetOmniboxView()->IsEditingOrEmpty() &&
+  if (!GetToolbarModel()->input_in_progress() &&
       (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme) ||
        GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme)))
     return true;
