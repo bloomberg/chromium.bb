@@ -223,7 +223,7 @@ void ViewsMusTestSuite::Initialize() {
   // setup for tests (e.g. to unlock the screen in the window manager).
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
 
-  EnsureCommandLineSwitch(switches::kOverrideUseGLWithOSMesaForTests);
+  EnsureCommandLineSwitch(switches::kOverrideUseSoftwareGLForTests);
 
   ViewsTestSuite::Initialize();
   service_manager_connections_ = base::MakeUnique<ServiceManagerConnection>();

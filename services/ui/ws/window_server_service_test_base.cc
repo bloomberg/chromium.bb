@@ -50,7 +50,7 @@ void EnsureCommandLineSwitch(const std::string& name) {
 WindowServerServiceTestBase::WindowServerServiceTestBase()
     : ServiceTest(kTestAppName) {
   EnsureCommandLineSwitch(switches::kUseTestConfig);
-  EnsureCommandLineSwitch(::switches::kOverrideUseGLWithOSMesaForTests);
+  EnsureCommandLineSwitch(::switches::kOverrideUseSoftwareGLForTests);
 }
 
 WindowServerServiceTestBase::~WindowServerServiceTestBase() {}

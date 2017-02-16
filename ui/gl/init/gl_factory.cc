@@ -29,14 +29,14 @@ bool InitializeGLOneOff() {
 
   // The default implementation is always the first one in list.
   GLImplementation impl = allowed_impls[0];
-  bool fallback_to_osmesa = false;
-  if (cmd->HasSwitch(switches::kOverrideUseGLWithOSMesaForTests)) {
-    impl = kGLImplementationOSMesaGL;
+  bool fallback_to_software_gl = false;
+  if (cmd->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
+    impl = GetSoftwareGLImplementation();
   } else if (cmd->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
         cmd->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "any") {
-      fallback_to_osmesa = true;
+      fallback_to_software_gl = true;
     } else if (requested_implementation_name ==
                kGLImplementationSwiftShaderName) {
       impl = kGLImplementationSwiftShaderGL;
@@ -57,18 +57,18 @@ bool InitializeGLOneOff() {
   bool disable_gl_drawing = cmd->HasSwitch(switches::kDisableGLDrawingForTests);
 
   return InitializeGLOneOffImplementation(
-      impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing);
+      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing);
 }
 
 bool InitializeGLOneOffImplementation(GLImplementation impl,
-                                      bool fallback_to_osmesa,
+                                      bool fallback_to_software_gl,
                                       bool gpu_service_logging,
                                       bool disable_gl_drawing) {
   bool initialized =
       InitializeStaticGLBindings(impl) && InitializeGLOneOffPlatform();
-  if (!initialized && fallback_to_osmesa) {
+  if (!initialized && fallback_to_software_gl) {
     ShutdownGL();
-    initialized = InitializeStaticGLBindings(kGLImplementationOSMesaGL) &&
+    initialized = InitializeStaticGLBindings(GetSoftwareGLImplementation()) &&
                   InitializeGLOneOffPlatform();
   }
   if (!initialized)

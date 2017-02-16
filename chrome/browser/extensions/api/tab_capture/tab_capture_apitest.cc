@@ -75,8 +75,8 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
       return true;
 #endif
 
-    // The tests are too slow to succeed with OSMesa on the bots.
-    if (UsingOSMesa())
+    // The tests are too slow to succeed with software GL on the bots.
+    if (UsingSoftwareGL())
       return true;
 
 #if defined(NDEBUG)

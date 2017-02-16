@@ -80,6 +80,10 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
   return kGLImplementationNone;
 }
 
+GLImplementation GetSoftwareGLImplementation() {
+  return kGLImplementationOSMesaGL;
+}
+
 const char* GetGLImplementationName(GLImplementation implementation) {
   for (size_t i = 0; i < arraysize(kGLImplementationNamePairs); ++i) {
     if (implementation == kGLImplementationNamePairs[i].implementation)

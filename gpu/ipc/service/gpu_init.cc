@@ -224,9 +224,9 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
                              initialize_one_off_time);
 
-  // OSMesa is expected to run very slowly, so disable the watchdog in that
-  // case.
-  if (gl::GetGLImplementation() == gl::kGLImplementationOSMesaGL) {
+  // Software GL is expected to run slowly, so disable the watchdog
+  // in that case.
+  if (gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
     if (watchdog_thread_)
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;

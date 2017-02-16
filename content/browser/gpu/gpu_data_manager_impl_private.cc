@@ -534,11 +534,13 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 
   gpu::GPUInfo gpu_info;
-  const bool force_osmesa =
+  const char* softwareGLImplementationName =
+      gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
+  const bool force_software_gl =
       (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-       gl::kGLImplementationOSMesaName) ||
-      command_line->HasSwitch(switches::kOverrideUseGLWithOSMesaForTests);
-  if (force_osmesa) {
+       softwareGLImplementationName) ||
+      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests);
+  if (force_software_gl) {
     // If using the OSMesa GL implementation, use fake vendor and device ids to
     // make sure it never gets blacklisted. This is better than simply
     // cancelling GPUInfo gathering as it allows us to proceed with loading the
@@ -547,9 +549,10 @@ void GpuDataManagerImplPrivate::Initialize() {
     gpu_info.gpu.vendor_id = 0xffff;
     gpu_info.gpu.device_id = 0xffff;
 
-    // Also declare the driver_vendor to be osmesa to be able to specify
-    // exceptions based on driver_vendor==osmesa for some blacklist rules.
-    gpu_info.driver_vendor = gl::kGLImplementationOSMesaName;
+    // Also declare the driver_vendor to be <software GL> to be able to
+    // specify exceptions based on driver_vendor==<software GL> for some
+    // blacklist rules.
+    gpu_info.driver_vendor = softwareGLImplementationName;
 
     // We are not going to call CollectBasicGraphicsInfo.
     // So mark it as collected.
@@ -594,12 +597,12 @@ void GpuDataManagerImplPrivate::Initialize() {
 
   std::string gpu_blacklist_string;
   std::string gpu_driver_bug_list_string;
-  if (!force_osmesa &&
+  if (!force_software_gl &&
       !command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
     gpu_blacklist_string = gpu::kSoftwareRenderingListJson;
   }
-  if (!force_osmesa &&
+  if (!force_software_gl &&
       !command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
     gpu_driver_bug_list_string = gpu::kGpuDriverBugListJson;
   }
@@ -740,8 +743,9 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
               IsFeatureBlacklisted(
                   gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
              (use_gl == "any")) {
-    command_line->AppendSwitchASCII(switches::kUseGL,
-                                    gl::kGLImplementationOSMesaName);
+    command_line->AppendSwitchASCII(
+        switches::kUseGL,
+        gl::GetGLImplementationName(gl::GetSoftwareGLImplementation()));
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }

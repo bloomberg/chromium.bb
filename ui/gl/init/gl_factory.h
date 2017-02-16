@@ -33,10 +33,11 @@ GL_INIT_EXPORT bool InitializeGLOneOff();
 
 // Initializes GL bindings using the provided parameters. This might be required
 // for use in tests, otherwise use InitializeGLOneOff() instead.
-GL_INIT_EXPORT bool InitializeGLOneOffImplementation(GLImplementation impl,
-                                                     bool fallback_to_osmesa,
-                                                     bool gpu_service_logging,
-                                                     bool disable_gl_drawing);
+GL_INIT_EXPORT bool InitializeGLOneOffImplementation(
+    GLImplementation impl,
+    bool fallback_to_software_gl,
+    bool gpu_service_logging,
+    bool disable_gl_drawing);
 
 // Clears GL bindings and resets GL implementation.
 GL_INIT_EXPORT void ShutdownGL();

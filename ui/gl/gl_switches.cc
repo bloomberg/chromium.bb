@@ -68,6 +68,7 @@ const char kUseANGLE[]                      = "use-angle";
 //  egl: whatever EGL / GLES2 the user has installed (Windows default - actually
 //       ANGLE).
 //  osmesa: The OSMesa software renderer.
+//  swiftshader: The SwiftShader software renderer.
 const char kUseGL[]                         = "use-gl";
 
 const char kSwiftShaderPath[]               = "swiftshader-path";
@@ -104,9 +105,9 @@ const char kEnableSgiVideoSync[] = "enable-sgi-video-sync";
 // the GL output will not be correct but tests will run faster.
 const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
 
-// Forces the use of OSMesa instead of hardware gpu.
-const char kOverrideUseGLWithOSMesaForTests[] =
-    "override-use-gl-with-osmesa-for-tests";
+// Forces the use of software GL instead of hardware gpu.
+const char kOverrideUseSoftwareGLForTests[] =
+    "override-use-software-gl-for-tests";
 
 // Disables specified comma separated GL Extensions if found.
 const char kDisableGLExtensions[] = "disable-gl-extensions";
@@ -125,7 +126,7 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kEnableSgiVideoSync,
     kGpuNoContextLost,
     kDisableGLDrawingForTests,
-    kOverrideUseGLWithOSMesaForTests,
+    kOverrideUseSoftwareGLForTests,
     kUseANGLE,
     kDisableDirectComposition,
     kEnableSwapBuffersWithBounds,
