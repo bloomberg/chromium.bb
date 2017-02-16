@@ -39,6 +39,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTScanner.h"
+#include "public/platform/Platform.h"
 #include "wtf/MathExtras.h"
 
 #define VTT_LOG_LEVEL 3
@@ -90,7 +91,9 @@ VTTRegion::VTTRegion()
       m_viewportAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY)),
       m_scroll(defaultScroll),
       m_currentTop(0),
-      m_scrollTimer(this, &VTTRegion::scrollTimerFired) {}
+      m_scrollTimer(Platform::current()->currentThread()->getWebTaskRunner(),
+                    this,
+                    &VTTRegion::scrollTimerFired) {}
 
 VTTRegion::~VTTRegion() {}
 

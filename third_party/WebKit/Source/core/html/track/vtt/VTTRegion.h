@@ -134,7 +134,7 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
   // soon as the animation for rolling out one line has finished, but
   // currently it is used also for non-scrolling regions to use a single
   // code path.
-  Timer<VTTRegion> m_scrollTimer;
+  TaskRunnerTimer<VTTRegion> m_scrollTimer;
 };
 
 }  // namespace blink
