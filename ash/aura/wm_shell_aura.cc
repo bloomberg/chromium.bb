@@ -140,8 +140,9 @@ bool WmShellAura::IsForceMaximizeOnFirstRun() {
 
 void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
                                            const gfx::Insets& insets) {
-  aura::Window* aura_window = WmWindow::GetAuraWindow(window);
-  Shell::GetInstance()->SetDisplayWorkAreaInsets(aura_window, insets);
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
 }
 
 bool WmShellAura::IsPinned() {

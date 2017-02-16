@@ -275,10 +275,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  if (!window_tree_host_manager_->UpdateWorkAreaOfDisplayNearestWindow(
-          contains, insets)) {
-    return;
-  }
+  wm_shell_->SetDisplayWorkAreaInsets(WmWindow::Get(contains), insets);
 }
 
 void Shell::OnLoginStateChanged(LoginStatus status) {
