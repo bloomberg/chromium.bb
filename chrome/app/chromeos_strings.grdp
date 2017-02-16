@@ -2379,7 +2379,7 @@ Press any key to continue exploring.
     Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
   </message>
   <message name="IDS_NETWORK_CELLULAR_ACTIVATED_TITLE" desc="Title for cellular activated notification">
-    Cellular Activated
+    Mobile Data Activated
   </message>
   <message name="IDS_NETWORK_CELLULAR_ACTIVATED" desc="Text of the cellular activated notification">
     Congratulations! Your '<ph name="name">$1<ex>Generic Wireless</ex></ph>' data service has been activated and is ready to go.
