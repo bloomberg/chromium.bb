@@ -404,8 +404,13 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_COUNTS *counts = xd->counts;
   const int ctx = get_tx_size_context(xd);
   const int depth =
+#if CONFIG_EC_MULTISYMBOL
+      aom_read_symbol(r, cm->fc->tx_size_cdf[tx_size_cat][ctx], tx_size_cat + 2,
+                      ACCT_STR);
+#else
       aom_read_tree(r, av1_tx_size_tree[tx_size_cat],
                     cm->fc->tx_size_probs[tx_size_cat][ctx], ACCT_STR);
+#endif
   const TX_SIZE tx_size = depth_to_tx_size(depth);
 #if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));

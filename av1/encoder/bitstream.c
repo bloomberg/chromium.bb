@@ -80,6 +80,7 @@ static struct av1_token palette_size_encodings[PALETTE_MAX_SIZE - 1];
 static struct av1_token palette_color_index_encodings[PALETTE_MAX_SIZE - 1]
                                                      [PALETTE_MAX_SIZE];
 #endif  // CONFIG_PALETTE
+#if !CONFIG_EC_MULTISYMBOL
 static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
   { { 0, 1 }, { 1, 1 } },                      // Max tx_size is 8X8
   { { 0, 1 }, { 2, 2 }, { 3, 2 } },            // Max tx_size is 16X16
@@ -88,6 +89,7 @@ static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
   { { 0, 1 }, { 2, 2 }, { 6, 3 }, { 14, 4 }, { 15, 4 } },  // Max tx_size 64X64
 #endif                                                     // CONFIG_TX64X64
 };
+#endif
 
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
@@ -456,9 +458,14 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         IMPLIES(is_rect_tx(tx_size), tx_size == max_txsize_rect_lookup[bsize]));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
+#if CONFIG_EC_MULTISYMBOL
+    aom_write_symbol(w, depth, cm->fc->tx_size_cdf[tx_size_cat][tx_size_ctx],
+                     tx_size_cat + 2);
+#else
     av1_write_token(w, av1_tx_size_tree[tx_size_cat],
                     cm->fc->tx_size_probs[tx_size_cat][tx_size_ctx],
                     &tx_size_encodings[tx_size_cat][depth]);
+#endif
   }
 }
 

@@ -1632,6 +1632,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
                      INTRA_MODES, INTRA_MODES);
   av1_tree_to_cdf(av1_segment_tree, fc->seg.tree_probs, fc->seg.tree_cdf);
+  for (int k = 0; k < MAX_TX_DEPTH; k++) {
+    av1_tree_to_cdf_1D(av1_tx_size_tree[k], fc->tx_size_probs[k],
+                       fc->tx_size_cdf[k], TX_SIZE_CONTEXTS);
+  }
 #endif
 #if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
@@ -1684,6 +1688,12 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
     av1_tree_to_cdf(av1_ext_tx_tree, fc->inter_ext_tx_prob[i],
                     fc->inter_ext_tx_cdf[i]);
 #endif
+  for (i = 0; i < MAX_TX_DEPTH; i++) {
+    for (j = 0; j < TX_SIZE_CONTEXTS; j++) {
+      av1_tree_to_cdf(av1_tx_size_tree[i], fc->tx_size_probs[i][j],
+                      fc->tx_size_cdf[i][j]);
+    }
+  }
 }
 #endif
 

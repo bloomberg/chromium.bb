@@ -243,6 +243,8 @@ typedef struct frame_contexts {
      multiple copies for adaptation in tiles easier */
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES]
                        [INTRA_MODES + CONFIG_EC_ADAPT];
+  aom_cdf_prob tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
+                          [MAX_TX_DEPTH + 1 + CONFIG_EC_ADAPT];
 #if !CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES]
                                [TX_TYPES + CONFIG_EC_ADAPT];
