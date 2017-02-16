@@ -34,9 +34,9 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
            toCSSPrimitiveValue(zoom)->getDoubleValue() == 100)))
       context->count(UseCounter::CSSZoomNotEqualToOne);
     if (token.id() == CSSValueReset)
-      context->count(UseCounter::CSSZoomReset);
+      context->countDeprecation(UseCounter::CSSZoomReset);
     if (token.id() == CSSValueDocument)
-      context->count(UseCounter::CSSZoomDocument);
+      context->countDeprecation(UseCounter::CSSZoomDocument);
   }
   return zoom;
 }

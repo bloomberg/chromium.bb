@@ -6,6 +6,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -143,6 +144,11 @@ KURL CSSParserContext::completeURL(const String& url) const {
 void CSSParserContext::count(UseCounter::Feature feature) const {
   if (isUseCounterRecordingEnabled())
     UseCounter::count(*m_document, feature);
+}
+
+void CSSParserContext::countDeprecation(UseCounter::Feature feature) const {
+  if (isUseCounterRecordingEnabled())
+    Deprecation::countDeprecation(*m_document, feature);
 }
 
 void CSSParserContext::count(CSSParserMode mode, CSSPropertyID property) const {

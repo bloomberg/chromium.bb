@@ -81,6 +81,7 @@ class CORE_EXPORT CSSParserContext
 
   void count(UseCounter::Feature) const;
   void count(CSSParserMode, CSSPropertyID) const;
+  void countDeprecation(UseCounter::Feature) const;
   bool isUseCounterRecordingEnabled() const { return m_document; }
   bool isDocumentHandleEqual(const Document* other) const;
 

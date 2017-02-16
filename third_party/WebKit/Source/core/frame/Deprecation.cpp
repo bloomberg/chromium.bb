@@ -411,6 +411,12 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("FileReaderSync in service workers", M59,
                            "5739144722513920");
 
+    case UseCounter::CSSZoomReset:
+      return willBeRemoved("\"zoom: reset\"", M59, "4997605029314560");
+
+    case UseCounter::CSSZoomDocument:
+      return willBeRemoved("\"zoom: document\"", M59, "4997605029314560");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

@@ -1,0 +1,3 @@
+CONSOLE WARNING: "zoom: reset" is deprecated and will be removed in M59, around June 2017. See https://www.chromestatus.com/features/4997605029314560 for more details.
+CONSOLE WARNING: "zoom: document" is deprecated and will be removed in M59, around June 2017. See https://www.chromestatus.com/features/4997605029314560 for more details.
+
