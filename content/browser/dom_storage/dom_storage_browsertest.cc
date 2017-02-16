@@ -85,6 +85,9 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
 #if defined(OS_ANDROID)
 #define MAYBE_DataPersists DISABLED_DataPersists
+#elif defined(OS_WIN)
+// Disabled on Windows due to flake (https://crbug.com/692885).
+#define MAYBE_DataPersists DISABLED_DataPersists
 #else
 #define MAYBE_DataPersists DataPersists
 #endif
