@@ -733,21 +733,12 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
-  const bool is_hands_off_mode =
-      (policy::DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
-       policy::ZeroTouchEnrollmentMode::HANDS_OFF);
-
-  // If there was an error while checking for update, return to the network
-  // selection screen if the OOBE isn't complete (unless it's in the zero-touch
-  // enrollment mode)  as we don't want to miss any critical update. Otherwise,
-  // we do not want to block users from being able to proceed to the login
-  // screen if there is any error checking for an update. They could use
-  // "browse without sign-in" feature to set up the network to be able to
-  // perform the update later.
-  if (is_out_of_box_ && !is_hands_off_mode)
-    ShowNetworkScreen();
-  else
-    OnUpdateCompleted();
+  // TODO(nkostylev): Update should be required during OOBE.
+  // We do not want to block users from being able to proceed to the login
+  // screen if there is any error checking for an update.
+  // They could use "browse without sign-in" feature to set up the network to be
+  // able to perform the update later.
+  OnUpdateCompleted();
 }
 
 void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {

@@ -592,38 +592,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
                                   ->GetCurrentTimezoneID()));
 }
 
-// This test verifies that if WizardController fails to check for update before
-// the OOBE is marked complete, it goes back the network selection screen and
-// thus prevents the user from proceeding to log in.
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
-                       ControlFlowErrorCheckingForUpdate) {
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  OnExit(*mock_network_screen_, BaseScreenDelegate::NETWORK_CONNECTED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(*mock_eula_screen_, BaseScreenDelegate::EULA_ACCEPTED);
-
-  // Let update screen smooth time process (time = 0ms).
-  content::RunAllPendingInMessageLoop();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
-  OnExit(*mock_update_screen_,
-         BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE);
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-}
-
 // This test verifies that if WizardController fails to apply a non-critical
 // update before the OOBE is marked complete, it allows the user to proceed to
 // log in.
@@ -799,9 +767,9 @@ class WizardControllerErrorUpdateAfterCompletedOobeTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerErrorUpdateAfterCompletedOobeTest);
 };
 
-// This test verifies that if WizardController fails to check for update or
-// apply an update (either critical or non-critical) after the OOBE is marked
-// complete, it allows the user to proceed to log in.
+// This test verifies that if WizardController fails to apply an update, either
+// critical or non-critical, after the OOBE is marked complete, it allows the
+// user to proceed to log in.
 IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
                        ControlFlowErrorUpdate) {
   const BaseScreenDelegate::ExitCodes update_screen_exit_code = GetParam();
@@ -838,8 +806,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
 INSTANTIATE_TEST_CASE_P(
     WizardControllerErrorUpdateAfterCompletedOobe,
     WizardControllerErrorUpdateAfterCompletedOobeTest,
-    testing::Values(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE,
-                    BaseScreenDelegate::UPDATE_ERROR_UPDATING,
+    testing::Values(BaseScreenDelegate::UPDATE_ERROR_UPDATING,
                     BaseScreenDelegate::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE));
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
