@@ -116,7 +116,34 @@ static void GenDomainTxfmRFVtable() {
 }
 #endif  // USE_DOMAINTXFMRF
 
+#define APPROXIMATE_SGR 1
+
+#if APPROXIMATE_SGR
+#define MAX_RADIUS 3  // Only 1, 2, 3 allowed
+#define MAX_EPS 80    // Max value of eps
+#define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
+#define SGRPROJ_MTABLE_BITS 30
+#define SGRPROJ_RECIP_BITS 16
+
+// TODO(debargha): This table can be substantially reduced since only a few
+// values are actually used.
+static int sgrproj_mtable[MAX_EPS][MAX_NELEM];
+
+static void GenSgrprojVtable() {
+  int e, n;
+  for (e = 1; e <= MAX_EPS; ++e)
+    for (n = 1; n <= MAX_NELEM; ++n) {
+      const int n2e = n * n * e;
+      sgrproj_mtable[e - 1][n - 1] =
+          (((1 << SGRPROJ_MTABLE_BITS) + n2e / 2) / n2e);
+    }
+}
+#endif  // APPROXIMATE_SGR
+
 void av1_loop_restoration_precal() {
+#if APPROXIMATE_SGR
+  GenSgrprojVtable();
+#endif  // APPROXIMATE_SGR
 #if USE_DOMAINTXFMRF
   GenDomainTxfmRFVtable();
 #endif  // USE_DOMAINTXFMRF
@@ -554,7 +581,37 @@ void decode_xq(int *xqd, int *xq) {
   xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0] - xqd[1];
 }
 
-#define APPROXIMATE_SGR 1
+#if APPROXIMATE_SGR
+static const uint16_t x_by_xplus1[256] = {
+  0,   128, 171, 192, 205, 213, 219, 224, 228, 230, 233, 235, 236, 238, 239,
+  240, 241, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247, 247, 247, 247,
+  248, 248, 248, 248, 249, 249, 249, 249, 249, 250, 250, 250, 250, 250, 250,
+  250, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 252, 252, 252, 252,
+  252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 253, 253,
+  253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253,
+  253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 254, 254, 254,
+  254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+  254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+  254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+  254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+  254, 254, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  256,
+};
+
+static const uint16_t one_by_x[MAX_NELEM] = {
+  65535, 32768, 21845, 16384, 13107, 10923, 9362, 8192, 7282, 6554,
+  5958,  5461,  5041,  4681,  4369,  4096,  3855, 3641, 3449, 3277,
+  3121,  2979,  2849,  2731,  2621,  2521,  2427, 2341, 2260, 2185,
+  2114,  2048,  1986,  1928,  1872,  1820,  1771, 1725, 1680, 1638,
+  1598,  1560,  1524,  1489,  1456,  1425,  1394, 1365, 1337,
+};
+#endif  // APPROXIMATE_SGR
+
 void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps,
                                 int32_t *tmpbuf) {
@@ -570,8 +627,6 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   boxsum(dgd, width, height, stride, r, 0, B, width);
   boxsum(dgd, width, height, stride, r, 1, A, width);
   boxnum(width, height, r, num, width);
-  // The following loop is optimized assuming r <= 2. If we allow
-  // r > 2, then the loop will need modifying.
   assert(r <= 3);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
@@ -591,10 +646,21 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
       // platforms with a 64-bit by 32-bit divide unit (eg, x86)
       // can do the division by q more efficiently.
       const uint32_t p = (uint32_t)((uint64_t)A[k] * n - (uint64_t)B[k] * B[k]);
+#if APPROXIMATE_SGR
+      const int s = sgrproj_mtable[eps - 1][n - 1];
+      const int z =
+          ((int64_t)s * (int64_t)p + (1 << (SGRPROJ_MTABLE_BITS - 1))) >>
+          SGRPROJ_MTABLE_BITS;
+      A[k] = x_by_xplus1[AOMMIN(z, 255)];
+      B[k] = ((SGRPROJ_SGR - A[k]) * (int64_t)B[k] * (int64_t)one_by_x[n - 1] +
+              (1 << (SGRPROJ_RECIP_BITS - 1))) >>
+             SGRPROJ_RECIP_BITS;
+#else
       const uint32_t q = (uint32_t)(p + n * n * eps);
       assert((uint64_t)A[k] * n - (uint64_t)B[k] * B[k] < (25 * 25U << 22));
       A[k] = (int32_t)(((uint64_t)p << SGRPROJ_SGR_BITS) + (q >> 1)) / q;
       B[k] = ((SGRPROJ_SGR - A[k]) * B[k] + (n >> 1)) / n;
+#endif  // APPROXIMATE_SGR
     }
   }
 #if APPROXIMATE_SGR

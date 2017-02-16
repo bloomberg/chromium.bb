@@ -504,7 +504,7 @@ typedef uint8_t TXFM_CONTEXT;
 #endif  // CONFIG_SUPERTX
 
 #if CONFIG_LOOP_RESTORATION
-#define USE_DOMAINTXFMRF 1
+#define USE_DOMAINTXFMRF 0
 typedef enum {
   RESTORE_NONE = 0,
   RESTORE_WIENER = 1,
