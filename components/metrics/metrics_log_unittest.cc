@@ -11,7 +11,7 @@
 
 #include "base/base64.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
@@ -289,8 +289,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   synthetic_trials.push_back(kSyntheticTrials[0]);
   synthetic_trials.push_back(kSyntheticTrials[1]);
 
-  log.RecordEnvironment(std::vector<MetricsProvider*>(), synthetic_trials,
-                        kInstallDate, kEnabledDate);
+  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
+                        synthetic_trials, kInstallDate, kEnabledDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -327,7 +327,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
   {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
-    log.RecordEnvironment(std::vector<MetricsProvider*>(),
+    log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                           std::vector<variations::ActiveGroupId>(),
                           kInstallDate, kEnabledDate);
     EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
@@ -353,7 +353,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     // Call RecordEnvironment() to record the pref again.
-    log.RecordEnvironment(std::vector<MetricsProvider*>(),
+    log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                           std::vector<variations::ActiveGroupId>(),
                           kInstallDate, kEnabledDate);
   }
@@ -379,14 +379,14 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
 
-  log_unknown.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log_unknown.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                                 synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_FALSE(log_unknown.system_profile().has_uma_default_state());
 
   client.set_enable_default(EnableMetricsDefault::OPT_IN);
   TestMetricsLog log_opt_in(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                             &client, &prefs_);
-  log_opt_in.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log_opt_in.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                                synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_opt_in.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_IN,
@@ -395,7 +395,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   client.set_enable_default(EnableMetricsDefault::OPT_OUT);
   TestMetricsLog log_opt_out(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
-  log_opt_out.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log_opt_out.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                                 synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_opt_out.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_OUT,
@@ -404,7 +404,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   client.set_reporting_is_managed(true);
   TestMetricsLog log_managed(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
-  log_managed.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log_managed.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                                 synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_managed.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_POLICY_FORCED_ENABLED,
@@ -419,12 +419,12 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
                      &client,
                      &prefs_);
   TestMetricsProvider* test_provider = new TestMetricsProvider();
-  ScopedVector<MetricsProvider> metrics_providers;
-  metrics_providers.push_back(test_provider);
-  log.RecordEnvironment(metrics_providers.get(),
+  std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
+  metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
+  log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>(), kInstallDate,
                         kEnabledDate);
-  log.RecordStabilityMetrics(metrics_providers.get(), base::TimeDelta(),
+  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =
       log.system_profile().stability();
@@ -449,12 +449,12 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   TestMetricsProvider* test_provider = new TestMetricsProvider();
-  ScopedVector<MetricsProvider> metrics_providers;
-  metrics_providers.push_back(test_provider);
-  log.RecordEnvironment(metrics_providers.get(),
+  std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
+  metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
+  log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>(), kInstallDate,
                         kEnabledDate);
-  log.RecordStabilityMetrics(metrics_providers.get(), base::TimeDelta(),
+  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =
       log.system_profile().stability();

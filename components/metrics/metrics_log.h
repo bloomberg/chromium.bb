@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -95,7 +96,7 @@ class MetricsLog {
   // synthetic trial such that the group is determined by the pref value. The
   // current environment is returned serialized as a string.
   std::string RecordEnvironment(
-      const std::vector<MetricsProvider*>& metrics_providers,
+      const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
       int64_t install_date,
       int64_t metrics_reporting_enabled_date);
@@ -116,13 +117,13 @@ class MetricsLog {
   // as number of incomplete shutdowns as well as extra breakpad and debugger
   // stats.
   void RecordStabilityMetrics(
-      const std::vector<MetricsProvider*>& metrics_providers,
+      const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
       base::TimeDelta incremental_uptime,
       base::TimeDelta uptime);
 
   // Records general metrics based on the specified |metrics_providers|.
   void RecordGeneralMetrics(
-      const std::vector<MetricsProvider*>& metrics_providers);
+      const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.

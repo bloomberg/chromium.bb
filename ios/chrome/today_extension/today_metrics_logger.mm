@@ -20,6 +20,7 @@
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/net/version_utils.h"
 #include "components/prefs/json_pref_store.h"
@@ -247,10 +248,10 @@ bool TodayMetricsLogger::CreateNewLog() {
                                  metrics_service_client_.get(),
                                  pref_service_.get()));
 
-  log_->RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                          std::vector<variations::ActiveGroupId>(),
-                          [install_date longLongValue],
-                          [enabled_date longLongValue]);
+  log_->RecordEnvironment(
+      std::vector<std::unique_ptr<metrics::MetricsProvider>>(),
+      std::vector<variations::ActiveGroupId>(), [install_date longLongValue],
+      [enabled_date longLongValue]);
 
   return true;
 }

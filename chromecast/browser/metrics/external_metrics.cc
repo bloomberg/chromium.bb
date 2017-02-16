@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -105,13 +107,11 @@ void ExternalMetrics::RecordSparseHistogram(
 }
 
 int ExternalMetrics::CollectEvents() {
-  ScopedVector< ::metrics::MetricSample> samples;
+  std::vector<std::unique_ptr<::metrics::MetricSample>> samples;
   ::metrics::SerializationUtils::ReadAndTruncateMetricsFromFile(
       uma_events_file_, &samples);
 
-  for (ScopedVector< ::metrics::MetricSample>::iterator it = samples.begin();
-       it != samples.end();
-       ++it) {
+  for (auto it = samples.begin(); it != samples.end(); ++it) {
     const ::metrics::MetricSample& sample = **it;
 
     switch (sample.type()) {

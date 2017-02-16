@@ -316,7 +316,7 @@ void MetricsService::InitializeMetricsRecordingState() {
                    base::Unretained(client_))));
   }
 
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->Init();
 }
 
@@ -377,7 +377,7 @@ void MetricsService::EnableRecording() {
   if (!log_manager_.current_log())
     OpenNewLog();
 
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->OnRecordingEnabled();
 
   base::RemoveActionCallback(action_callback_);
@@ -395,7 +395,7 @@ void MetricsService::DisableRecording() {
 
   base::RemoveActionCallback(action_callback_);
 
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->OnRecordingDisabled();
 
   PushPendingLogsToPersistentStorage();
@@ -469,7 +469,7 @@ void MetricsService::OnAppEnterBackground() {
 
   // Give providers a chance to persist histograms as part of being
   // backgrounded.
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->OnAppEnterBackground();
 
   // At this point, there's no way of knowing when the process will be
@@ -519,7 +519,7 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 }
 
 void MetricsService::ClearSavedStabilityMetrics() {
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->ClearSavedStabilityMetrics();
 
   // Reset the prefs that are managed by MetricsService/MetricsLog directly.
@@ -707,7 +707,7 @@ void MetricsService::GetUptimes(PrefService* pref,
 
 void MetricsService::NotifyOnDidCreateMetricsLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->OnDidCreateMetricsLog();
 }
 
@@ -768,10 +768,10 @@ void MetricsService::CloseCurrentLog() {
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
-  current_log->RecordStabilityMetrics(metrics_providers_.get(),
-                                      incremental_uptime, uptime);
+  current_log->RecordStabilityMetrics(metrics_providers_, incremental_uptime,
+                                      uptime);
 
-  current_log->RecordGeneralMetrics(metrics_providers_.get());
+  current_log->RecordGeneralMetrics(metrics_providers_);
   RecordCurrentHistograms();
   DVLOG(1) << "Generated an ongoing log.";
   log_manager_.FinishCurrentLog();
@@ -944,7 +944,7 @@ bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
   // response) in case they do any kind of setup work in preparation for
   // the later call to RecordInitialHistogramSnapshots().
   bool has_stability_metrics = false;
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     has_stability_metrics |= provider->HasInitialStabilityMetrics();
 
   return has_stability_metrics;
@@ -973,7 +973,7 @@ bool MetricsService::PrepareInitialStabilityLog(
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
   log_manager_.current_log()->RecordStabilityMetrics(
-      metrics_providers_.get(), base::TimeDelta(), base::TimeDelta());
+      metrics_providers_, base::TimeDelta(), base::TimeDelta());
   RecordCurrentStabilityHistograms();
 
   // Note: RecordGeneralMetrics() intentionally not called since this log is for
@@ -1006,9 +1006,9 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
   MetricsLog* current_log = log_manager_.current_log();
-  current_log->RecordStabilityMetrics(metrics_providers_.get(),
-                                      base::TimeDelta(), base::TimeDelta());
-  current_log->RecordGeneralMetrics(metrics_providers_.get());
+  current_log->RecordStabilityMetrics(metrics_providers_, base::TimeDelta(),
+                                      base::TimeDelta());
+  current_log->RecordGeneralMetrics(metrics_providers_);
   RecordCurrentHistograms();
 
   DVLOG(1) << "Generated an initial log.";
@@ -1215,7 +1215,7 @@ void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetSyntheticFieldTrialsOlderThan(log->creation_time(), &synthetic_trials);
   std::string serialized_environment = log->RecordEnvironment(
-      metrics_providers_.get(), synthetic_trials, GetInstallDate(),
+      metrics_providers_, synthetic_trials, GetInstallDate(),
       GetMetricsReportingEnabledDate());
   client_->OnEnvironmentUpdate(&serialized_environment);
 }
@@ -1229,7 +1229,7 @@ void MetricsService::RecordCurrentHistograms() {
   histogram_snapshot_manager_.PrepareDeltas(
       base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
       base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->RecordHistogramSnapshots(&histogram_snapshot_manager_);
 }
 
@@ -1240,7 +1240,7 @@ void MetricsService::RecordCurrentStabilityHistograms() {
   histogram_snapshot_manager_.PrepareDeltas(
       base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
       base::Histogram::kNoFlags, base::Histogram::kUmaStabilityHistogramFlag);
-  for (MetricsProvider* provider : metrics_providers_)
+  for (auto& provider : metrics_providers_)
     provider->RecordInitialHistogramSnapshots(&histogram_snapshot_manager_);
 }
 

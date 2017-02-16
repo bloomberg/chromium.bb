@@ -96,9 +96,7 @@ void DailyEvent::OnInterval(base::Time now) {
   pref_service_->SetInt64(pref_name_, last_fired_.ToInternalValue());
 
   // Notify all observers
-  for (ScopedVector<DailyEvent::Observer>::iterator it = observers_.begin();
-       it != observers_.end();
-       ++it) {
+  for (auto it = observers_.begin(); it != observers_.end(); ++it) {
     (*it)->OnDailyEvent();
   }
 }

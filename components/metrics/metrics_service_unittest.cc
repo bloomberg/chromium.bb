@@ -207,7 +207,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                         std::vector<variations::ActiveGroupId>(), 0, 0);
 
   // Record stability build time and version from previous session, so that
@@ -279,7 +279,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<MetricsProvider*>(),
+  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
                         std::vector<variations::ActiveGroupId>(), 0, 0);
 
   // Record stability build time and version from previous session, so that

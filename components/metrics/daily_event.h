@@ -6,9 +6,9 @@
 #define COMPONENTS_METRICS_DAILY_EVENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 
 class PrefRegistrySimple;
@@ -80,7 +80,7 @@ class DailyEvent {
   std::string histogram_name_;
 
   // A list of observers.
-  ScopedVector<Observer> observers_;
+  std::vector<std::unique_ptr<Observer>> observers_;
 
   // The time that the daily event was last fired.
   base::Time last_fired_;

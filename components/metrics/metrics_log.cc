@@ -7,9 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/build_time.h"
@@ -205,7 +203,7 @@ void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
 }
 
 void MetricsLog::RecordStabilityMetrics(
-    const std::vector<MetricsProvider*>& metrics_providers,
+    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
     base::TimeDelta incremental_uptime,
     base::TimeDelta uptime) {
   DCHECK(!closed_);
@@ -301,7 +299,7 @@ void MetricsLog::RecordStabilityMetrics(
 }
 
 void MetricsLog::RecordGeneralMetrics(
-    const std::vector<MetricsProvider*>& metrics_providers) {
+    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers) {
   if (local_state_->GetBoolean(prefs::kMetricsResetIds))
     UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
 
@@ -384,7 +382,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 }
 
 std::string MetricsLog::RecordEnvironment(
-    const std::vector<MetricsProvider*>& metrics_providers,
+    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
     const std::vector<variations::ActiveGroupId>& synthetic_trials,
     int64_t install_date,
     int64_t metrics_reporting_enabled_date) {
