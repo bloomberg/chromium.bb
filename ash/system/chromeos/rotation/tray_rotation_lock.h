@@ -56,15 +56,6 @@ class ASH_EXPORT TrayRotationLock
   // currently observing.
   void StopObservingRotation();
 
-  // Removes TrayRotationLock as a ShellObserver if currently observing.
-  void StopObservingShell();
-
-  // True while added as a ScreenOrientationController::Observer.
-  bool observing_rotation_;
-
-  // True while added as a ShellObserver.
-  bool observing_shell_;
-
   DISALLOW_COPY_AND_ASSIGN(TrayRotationLock);
 };
 
