@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/network/tray_vpn.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
@@ -114,15 +113,11 @@ class VpnDefaultView : public TrayItemMore,
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      *image = gfx::CreateVectorIcon(
-          kNetworkVpnIcon, TrayPopupItemStyle::GetIconColor(
-                               vpn && vpn->IsConnectedState()
-                                   ? TrayPopupItemStyle::ColorStyle::ACTIVE
-                                   : TrayPopupItemStyle::ColorStyle::INACTIVE));
-    } else {
-      *image = network_icon::GetVpnImage();
-    }
+    *image = gfx::CreateVectorIcon(
+        kNetworkVpnIcon, TrayPopupItemStyle::GetIconColor(
+                             vpn && vpn->IsConnectedState()
+                                 ? TrayPopupItemStyle::ColorStyle::ACTIVE
+                                 : TrayPopupItemStyle::ColorStyle::INACTIVE));
     if (!IsVpnConnected()) {
       if (label) {
         *label =

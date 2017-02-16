@@ -46,9 +46,6 @@ ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
 ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
                                                     SkColor badge_color);
 
-// Returns a vpn image suitable for use on a light background.
-ASH_EXPORT gfx::ImageSkia GetVpnImage();
-
 // Returns the label for |network| based on |icon_type|. |network| cannot be
 // nullptr.
 ASH_EXPORT base::string16 GetLabelForNetwork(

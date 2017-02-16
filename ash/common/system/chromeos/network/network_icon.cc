@@ -526,7 +526,8 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
                             strength_index);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
-    return GetVpnImage();
+    return gfx::CreateVectorIcon(kNetworkVpnIcon,
+                                 GetDefaultColorForIconType(ICON_TYPE_LIST));
   }
 
   NOTREACHED() << "Request for icon for unsupported type: " << network->type();
@@ -777,11 +778,6 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
   badges.bottom_right =
       gfx::CreateVectorIcon(kNetworkBadgeAddOtherIcon, badge_color);
   return NetworkIconImageSource::CreateImage(icon, badges);
-}
-
-gfx::ImageSkia GetVpnImage() {
-  return gfx::CreateVectorIcon(kNetworkVpnIcon,
-                               GetDefaultColorForIconType(ICON_TYPE_LIST));
 }
 
 base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
