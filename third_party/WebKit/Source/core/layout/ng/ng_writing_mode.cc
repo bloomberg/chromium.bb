@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_writing_mode.h"
 
+#include "core/layout/LayoutObject.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -20,6 +21,10 @@ NGWritingMode FromPlatformWritingMode(WritingMode mode) {
       NOTREACHED();
       return kHorizontalTopBottom;
   }
+}
+
+bool IsParallelWritingMode(NGWritingMode a, NGWritingMode b) {
+  return (a == kHorizontalTopBottom) == (b == kHorizontalTopBottom);
 }
 
 }  // namespace blink

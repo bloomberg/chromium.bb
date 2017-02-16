@@ -35,8 +35,7 @@ bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow =
-      (parent_space.WritingMode() == kHorizontalTopBottom) ==
-      (child_writing_mode == kHorizontalTopBottom);
+      IsParallelWritingMode(parent_space.WritingMode(), child_writing_mode);
 
   return child_style.display() == EDisplay::InlineBlock ||
          child_style.isFloating() || !is_in_parallel_flow;

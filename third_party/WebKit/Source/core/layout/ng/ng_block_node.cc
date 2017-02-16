@@ -279,10 +279,27 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 RefPtr<NGPhysicalBoxFragment> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
-  layout_box_->setOverrideContainingBlockContentLogicalWidth(
-      available_size.inline_size);
-  layout_box_->setOverrideContainingBlockContentLogicalHeight(
-      available_size.block_size);
+  LayoutObject* containing_block = layout_box_->containingBlock();
+  bool parallel_writing_mode;
+  if (!containing_block) {
+    parallel_writing_mode = true;
+  } else {
+    parallel_writing_mode = IsParallelWritingMode(
+        FromPlatformWritingMode(containing_block->styleRef().getWritingMode()),
+        FromPlatformWritingMode(Style().getWritingMode()));
+  }
+  if (parallel_writing_mode) {
+    layout_box_->setOverrideContainingBlockContentLogicalWidth(
+        available_size.inline_size);
+    layout_box_->setOverrideContainingBlockContentLogicalHeight(
+        available_size.block_size);
+  } else {
+    // OverrideContainingBlock should be in containing block writing mode.
+    layout_box_->setOverrideContainingBlockContentLogicalWidth(
+        available_size.block_size);
+    layout_box_->setOverrideContainingBlockContentLogicalHeight(
+        available_size.inline_size);
+  }
   // TODO(layout-ng): Does this handle scrollbars correctly?
   if (constraint_space.IsFixedSizeInline()) {
     layout_box_->setOverrideLogicalContentWidth(

@@ -49,16 +49,31 @@ NGConstraintSpace::NGConstraintSpace(
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
+  auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
+  bool parallel_containing_block = IsParallelWritingMode(
+      FromPlatformWritingMode(
+          box.containingBlock()->styleRef().getWritingMode()),
+      writing_mode);
   bool fixed_inline = false, fixed_block = false;
-  // XXX for orthogonal writing mode this is not right
-  LayoutUnit available_logical_width =
-      std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
+
+  LayoutUnit available_logical_width;
+  if (parallel_containing_block)
+    available_logical_width = box.containingBlockLogicalWidthForContent();
+  else
+    available_logical_width = box.perpendicularContainingBlockLogicalHeight();
+  available_logical_width = std::max(LayoutUnit(), available_logical_width);
+
   LayoutUnit available_logical_height;
   if (!box.parent()) {
     available_logical_height = box.view()->viewLogicalHeightForPercentages();
   } else if (box.containingBlock()) {
-    available_logical_height =
-        box.containingBlock()->availableLogicalHeightForPercentageComputation();
+    if (parallel_containing_block) {
+      available_logical_height =
+          box.containingBlock()
+              ->availableLogicalHeightForPercentageComputation();
+    } else {
+      available_logical_height = box.containingBlockLogicalWidthForContent();
+    }
   }
   NGLogicalSize percentage_size = {available_logical_width,
                                    available_logical_height};
@@ -79,8 +94,6 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
 
   bool is_new_fc =
       box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext();
-
-  auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
 
   FloatSize icb_float_size = box.view()->viewportSizeForViewportUnits();
   NGPhysicalSize initial_containing_block_size{

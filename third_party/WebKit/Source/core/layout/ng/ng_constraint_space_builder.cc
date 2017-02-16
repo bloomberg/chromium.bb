@@ -121,8 +121,8 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
     NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow = (parent_writing_mode_ == kHorizontalTopBottom) ==
-                             (out_writing_mode == kHorizontalTopBottom);
+  bool is_in_parallel_flow = IsParallelWritingMode(
+      static_cast<NGWritingMode>(parent_writing_mode_), out_writing_mode);
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
