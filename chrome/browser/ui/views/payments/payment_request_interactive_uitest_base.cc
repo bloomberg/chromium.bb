@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -191,12 +192,31 @@ void PaymentRequestInteractiveTestBase::SetEditorTextfieldValue(
   textfield->OnBlur();
 }
 
+void PaymentRequestInteractiveTestBase::SetComboboxValue(
+    const base::string16& value,
+    autofill::ServerFieldType type) {
+  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(combobox);
+  combobox->SelectValue(value);
+  combobox->OnContentsChanged();
+  combobox->OnBlur();
+}
+
 bool PaymentRequestInteractiveTestBase::IsEditorTextfieldInvalid(
     autofill::ServerFieldType type) {
   ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
       delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
   DCHECK(textfield);
   return textfield->invalid();
+}
+
+bool PaymentRequestInteractiveTestBase::IsEditorComboboxInvalid(
+    autofill::ServerFieldType type) {
+  ValidatingCombobox* combobox = static_cast<ValidatingCombobox*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(combobox);
+  return combobox->invalid();
 }
 
 void PaymentRequestInteractiveTestBase::WaitForAnimation() {

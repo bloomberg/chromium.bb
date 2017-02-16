@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
-#include "chrome/browser/ui/views/payments/validating_textfield.h"
+#include "chrome/browser/ui/views/payments/validation_delegate.h"
+#include "ui/base/models/simple_combobox_model.h"
 
 namespace payments {
 
@@ -25,22 +26,28 @@ class CreditCardEditorViewController : public EditorViewController {
   // EditorViewController:
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
-  std::unique_ptr<ValidatingTextfield::Delegate> CreateValidationDelegate(
+  std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
       const EditorField& field) override;
+  std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
+      const autofill::ServerFieldType& type) override;
 
  private:
-  class ValidationDelegate : public ValidatingTextfield::Delegate {
+  class CreditCardValidationDelegate : public ValidationDelegate {
    public:
-    explicit ValidationDelegate(const EditorField& field);
-    ~ValidationDelegate() override;
+    explicit CreditCardValidationDelegate(const EditorField& field);
+    ~CreditCardValidationDelegate() override;
 
-    // ValidatingTextfield::Delegate:
+    // ValidationDelegate:
     bool ValidateTextfield(views::Textfield* textfield) override;
+    bool ValidateCombobox(views::Combobox* combobox) override;
 
    private:
+    // Validates a specific |value|.
+    bool ValidateValue(const base::string16& value);
+
     EditorField field_;
 
-    DISALLOW_COPY_AND_ASSIGN(ValidationDelegate);
+    DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardEditorViewController);

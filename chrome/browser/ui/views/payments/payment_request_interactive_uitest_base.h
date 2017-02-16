@@ -86,10 +86,14 @@ class PaymentRequestInteractiveTestBase
   // Setting the |value| in the textfield of a given |type|.
   void SetEditorTextfieldValue(const base::string16& value,
                                autofill::ServerFieldType type);
+  // Setting the |value| in the combobox of a given |type|.
+  void SetComboboxValue(const base::string16& value,
+                        autofill::ServerFieldType type);
 
-  // Whether the editor textfield for the given |type| is currently in an
-  // invalid state.
+  // Whether the editor textfield/combobox for the given |type| is currently in
+  // an invalid state.
   bool IsEditorTextfieldInvalid(autofill::ServerFieldType type);
+  bool IsEditorComboboxInvalid(autofill::ServerFieldType type);
 
   // Sets proper animation delegates and waits for animation to finish.
   void WaitForAnimation();

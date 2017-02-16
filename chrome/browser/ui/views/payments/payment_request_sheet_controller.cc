@@ -19,8 +19,6 @@ namespace payments {
 PaymentRequestSheetController::PaymentRequestSheetController(
     PaymentRequest* request, PaymentRequestDialogView* dialog)
   : request_(request), dialog_(dialog) {
-  DCHECK(request_);
-  DCHECK(dialog_);
 }
 
 std::unique_ptr<views::Button>

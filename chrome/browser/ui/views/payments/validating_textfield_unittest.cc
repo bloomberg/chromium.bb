@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -20,19 +21,20 @@ class ValidatingTextfieldTest : public testing::Test {
   ~ValidatingTextfieldTest() override {}
 
  protected:
-  class ValidationDelegate : public ValidatingTextfield::Delegate {
+  class TestValidationDelegate : public ValidationDelegate {
    public:
-    ValidationDelegate() {}
-    ~ValidationDelegate() override {}
+    TestValidationDelegate() {}
+    ~TestValidationDelegate() override {}
 
-    // ValidatingTextfield::Delegate
+    // ValidationDelegate:
     bool ValidateTextfield(views::Textfield* textfield) override {
       // We really don't like textfields with more than 5 characters in them.
       return textfield->text().size() <= 5u;
     }
+    bool ValidateCombobox(views::Combobox* combobox) override { return true; }
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ValidationDelegate);
+    DISALLOW_COPY_AND_ASSIGN(TestValidationDelegate);
   };
 
  private:
@@ -40,7 +42,8 @@ class ValidatingTextfieldTest : public testing::Test {
 };
 
 TEST_F(ValidatingTextfieldTest, Validation) {
-  std::unique_ptr<ValidationDelegate> delegate(new ValidationDelegate());
+  std::unique_ptr<TestValidationDelegate> delegate(
+      new TestValidationDelegate());
   std::unique_ptr<ValidatingTextfield> textfield(
       new ValidatingTextfield(std::move(delegate)));
 

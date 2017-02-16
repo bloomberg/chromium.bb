@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
 
@@ -17,7 +18,6 @@ class FontList;
 }
 
 namespace ui {
-class ComboboxModel;
 class MenuModel;
 }
 
@@ -56,7 +56,10 @@ class VIEWS_EXPORT Combobox : public View,
   // The combobox's class name.
   static const char kViewClassName[];
 
-  // |model| is not owned by the combobox.
+  // |model| is owned by the combobox when using this constructor.
+  explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,
+                    Style style = STYLE_NORMAL);
+  // |model| is not owned by the combobox when using this constructor.
   explicit Combobox(ui::ComboboxModel* model, Style style = STYLE_NORMAL);
   ~Combobox() override;
 
@@ -159,7 +162,11 @@ class VIEWS_EXPORT Combobox : public View,
   // Returns the width of the combobox's arrow container.
   int GetArrowContainerWidth() const;
 
-  // Our model. Not owned.
+  // Optionally used to tie the lifetime of the model to this combobox. See
+  // constructor.
+  std::unique_ptr<ui::ComboboxModel> owned_model_;
+
+  // Reference to our model, which may be owned or not.
   ui::ComboboxModel* model_;
 
   // The visual style of this combobox.

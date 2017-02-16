@@ -4838,6 +4838,7 @@ test("unit_tests") {
         "../browser/ui/views/frame/web_contents_close_handler_unittest.cc",
         "../browser/ui/views/location_bar/icon_label_bubble_view_unittest.cc",
         "../browser/ui/views/omnibox/omnibox_view_views_unittest.cc",
+        "../browser/ui/views/payments/credit_card_editor_view_controller_unittest.cc",
         "../browser/ui/views/payments/validating_textfield_unittest.cc",
         "../browser/ui/views/payments/view_stack_unittest.cc",
         "../browser/ui/views/status_icons/status_tray_win_unittest.cc",

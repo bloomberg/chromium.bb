@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/payments/validating_textfield.h"
+#include "chrome/browser/ui/views/payments/validating_combobox.h"
 
 #include <utility>
 
 namespace payments {
 
-ValidatingTextfield::ValidatingTextfield(
+ValidatingCombobox::ValidatingCombobox(
+    std::unique_ptr<ui::ComboboxModel> model,
     std::unique_ptr<ValidationDelegate> delegate)
-    : Textfield(), delegate_(std::move(delegate)), was_blurred_(false) {}
+    : Combobox(std::move(model)),
+      delegate_(std::move(delegate)),
+      was_blurred_(false) {}
 
-ValidatingTextfield::~ValidatingTextfield() {}
+ValidatingCombobox::~ValidatingCombobox() {}
 
-void ValidatingTextfield::OnBlur() {
-  Textfield::OnBlur();
+void ValidatingCombobox::OnBlur() {
+  Combobox::OnBlur();
 
   // The first validation should be on a blur. The subsequent validations will
   // occur when the content changes.
@@ -25,7 +28,7 @@ void ValidatingTextfield::OnBlur() {
   }
 }
 
-void ValidatingTextfield::OnContentsChanged() {
+void ValidatingCombobox::OnContentsChanged() {
   // Validation on every keystroke only happens if the field has been validated
   // before as part of a blur.
   if (!was_blurred_)
@@ -34,9 +37,9 @@ void ValidatingTextfield::OnContentsChanged() {
   Validate();
 }
 
-void ValidatingTextfield::Validate() {
-  // ValidateTextfield may have side-effects, such as displaying errors.
-  SetInvalid(!delegate_->ValidateTextfield(this));
+void ValidatingCombobox::Validate() {
+  // ValidateCombobox may have side-effects, such as displaying errors.
+  SetInvalid(!delegate_->ValidateCombobox(this));
 }
 
 }  // namespace payments

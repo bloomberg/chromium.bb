@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "chrome/browser/ui/views/payments/validating_combobox.h"
+#include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
@@ -100,6 +102,10 @@ void EditorViewController::ContentsChanged(views::Textfield* sender,
   static_cast<ValidatingTextfield*>(sender)->OnContentsChanged();
 }
 
+void EditorViewController::OnPerformAction(views::Combobox* sender) {
+  static_cast<ValidatingCombobox*>(sender)->OnContentsChanged();
+}
+
 std::unique_ptr<views::View> EditorViewController::CreateInputField(
     const EditorField& field) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
@@ -126,19 +132,32 @@ std::unique_ptr<views::View> EditorViewController::CreateInputField(
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(field.label));
 
-  ValidatingTextfield* text_field =
-      new ValidatingTextfield(CreateValidationDelegate(field));
-  text_field->set_controller(this);
-  // Using autofill field type as a view ID (for testing).
-  text_field->set_id(static_cast<int>(field.type));
-  text_field->set_default_width_in_chars(
-      field.length_hint == EditorField::LengthHint::HINT_SHORT
-          ? kNumCharactersInShortField
-          : kNumCharactersInLongField);
+  if (field.control_type == EditorField::ControlType::TEXTFIELD) {
+    ValidatingTextfield* text_field =
+        new ValidatingTextfield(CreateValidationDelegate(field));
+    text_field->set_controller(this);
+    // Using autofill field type as a view ID (for testing).
+    text_field->set_id(static_cast<int>(field.type));
+    text_field->set_default_width_in_chars(
+        field.length_hint == EditorField::LengthHint::HINT_SHORT
+            ? kNumCharactersInShortField
+            : kNumCharactersInLongField);
 
-  text_fields_.insert(std::make_pair(text_field, field));
-  // |text_field| will now be owned by the layout.
-  layout->AddView(text_field);
+    text_fields_.insert(std::make_pair(text_field, field));
+    // |text_field| will now be owned by |row|.
+    layout->AddView(text_field);
+  } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
+    ValidatingCombobox* combobox = new ValidatingCombobox(
+        GetComboboxModelForType(field.type), CreateValidationDelegate(field));
+    // Using autofill field type as a view ID (for testing).
+    combobox->set_id(static_cast<int>(field.type));
+    combobox->set_listener(this);
+    comboboxes_.insert(std::make_pair(combobox, field));
+    // |combobox| will now be owned by |row|.
+    layout->AddView(combobox);
+  } else {
+    NOTREACHED();
+  }
 
   return row;
 }
