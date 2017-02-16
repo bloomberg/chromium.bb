@@ -322,9 +322,13 @@ public class ContextualSearchBarControl
      * Sets the quick action if one is available.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
+     * @param toolbarBackgroundColor The current toolbar background color. This may be used for
+     *                               icon tinting.
      */
-    public void setQuickAction(String quickActionUri, int quickActionCategory) {
-        mQuickActionControl.setQuickAction(quickActionUri, quickActionCategory);
+    public void setQuickAction(
+            String quickActionUri, int quickActionCategory, int toolbarBackgroundColor) {
+        mQuickActionControl.setQuickAction(
+                quickActionUri, quickActionCategory, toolbarBackgroundColor);
         if (mQuickActionControl.hasQuickAction()) {
             // TODO(twellington): should the quick action caption be stored separately from the
             // regular caption?

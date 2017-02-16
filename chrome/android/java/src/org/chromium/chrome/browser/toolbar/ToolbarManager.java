@@ -927,6 +927,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The primary toolbar color.
+     */
+    public int getPrimaryColor() {
+        return mToolbarModel.getPrimaryColor();
+    }
+
+    /**
      * Prevents the shadow from being rendered.
      */
     public void disableShadow() {

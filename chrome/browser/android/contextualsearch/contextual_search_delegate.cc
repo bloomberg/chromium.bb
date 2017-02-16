@@ -56,6 +56,7 @@ const char kActionCategoryAddress[] = "ADDRESS";
 const char kActionCategoryEmail[] = "EMAIL";
 const char kActionCategoryEvent[] = "EVENT";
 const char kActionCategoryPhone[] = "PHONE";
+const char kActionCategoryWebsite[] = "WEBSITE";
 
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
@@ -71,6 +72,7 @@ const int kSurroundingSizeForUI = 60;
 const int kContextualCardsNoIntegration = 0;
 const int kContextualCardsBarIntegration = 1;
 const int kContextualCardsSingleAction = 2;
+const int kContextualCardsUrlActions = 3;
 
 }  // namespace
 
@@ -236,6 +238,10 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchSingleActions)) {
     contextual_cards_version = kContextualCardsSingleAction;
+  }
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchUrlActions)) {
+    contextual_cards_version = kContextualCardsUrlActions;
   }
 
   if (field_trial_->GetContextualCardsVersion() != 0) {
@@ -545,25 +551,23 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
         *quick_action_category = QUICK_ACTION_CATEGORY_EVENT;
       } else if (quick_action_category_string == kActionCategoryPhone) {
         *quick_action_category = QUICK_ACTION_CATEGORY_PHONE;
+      } else if (quick_action_category_string == kActionCategoryWebsite) {
+        *quick_action_category = QUICK_ACTION_CATEGORY_WEBSITE;
       }
     }
   }
 
-  if (field_trial_->IsContextualCardsBarIntegrationEnabled() ||
-      base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchSingleActions)) {
-    // Any Contextual Cards integration.
-    // For testing purposes check if there was a diagnostic from Contextual
-    // Cards and output that into the log.
-    // TODO(donnd): remove after full Contextual Cards integration.
-    std::string contextual_cards_diagnostic;
-    dict->GetString("diagnostic", &contextual_cards_diagnostic);
-    if (contextual_cards_diagnostic.empty()) {
-      DVLOG(0) << "No diagnostic data in the response.";
-    } else {
-      DVLOG(0) << "The Contextual Cards backend response: ";
-      DVLOG(0) << contextual_cards_diagnostic;
-    }
+  // Any Contextual Cards integration.
+  // For testing purposes check if there was a diagnostic from Contextual
+  // Cards and output that into the log.
+  // TODO(donnd): remove after full Contextual Cards integration.
+  std::string contextual_cards_diagnostic;
+  dict->GetString("diagnostic", &contextual_cards_diagnostic);
+  if (contextual_cards_diagnostic.empty()) {
+    DVLOG(0) << "No diagnostic data in the response.";
+  } else {
+    DVLOG(0) << "The Contextual Cards backend response: ";
+    DVLOG(0) << contextual_cards_diagnostic;
   }
 }
 

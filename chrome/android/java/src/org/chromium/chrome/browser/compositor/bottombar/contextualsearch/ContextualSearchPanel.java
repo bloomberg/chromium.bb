@@ -291,7 +291,8 @@ public class ContextualSearchPanel extends OverlayPanel {
             if (getSearchBarControl().getQuickActionControl().hasQuickAction()
                     && isCoordinateInsideActionTarget(x)) {
                 mPanelMetrics.setWasQuickActionClicked();
-                getSearchBarControl().getQuickActionControl().sendIntent();
+                getSearchBarControl().getQuickActionControl().sendIntent(
+                        mActivity.getActivityTab());
             } else {
                 // super takes care of expanding the Panel when peeking.
                 super.handleBarClick(time, x, y);
@@ -566,7 +567,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();
-        getSearchBarControl().setQuickAction(quickActionUri, quickActionCategory);
+        getSearchBarControl().setQuickAction(quickActionUri, quickActionCategory,
+                mActivity.getToolbarManager().getPrimaryColor());
         getImageControl().setThumbnailUrl(thumbnailUrl);
     }
 

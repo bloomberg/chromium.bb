@@ -2451,6 +2451,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_PHONE" desc="Caption displayed in the Contextual Search bar prompting the user to call the selected phone number.">
         Call
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_WEBSITE" desc="Caption displayed in the Contextual Search bar prompting the user to navigate to a web page.">
+        Go to page
+      </message>
 
       <!-- Web apps -->
       <message name="IDS_WEBAPP_ACTIVITY_TITLE" desc="Title in recent tasks list for web apps, i.e. web pages that are shown in a separate window">

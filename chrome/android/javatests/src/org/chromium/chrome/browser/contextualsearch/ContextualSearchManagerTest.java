@@ -2880,4 +2880,29 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Assert that an intent was fired.
         assertEquals(1, mActivityMonitor.getHits());
     }
+
+    /**
+     * Tests that the current tab is navigated to the quick action URI for
+     * QuickActionCategory#WEBSITE.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testQuickActionUrl() throws InterruptedException, TimeoutException {
+        final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
+
+        // Simulate a tap to show the Bar, then set the quick action data.
+        simulateTapSearch("search");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mPanel.onSearchTermResolved("search", null, testUrl, QuickActionCategory.WEBSITE);
+            }
+        });
+
+        // Tap on the portion of the bar that should trigger the quick action.
+        clickPanelBar(0.95f);
+
+        // Assert that the URL was loaded.
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), testUrl);
+    }
 }
