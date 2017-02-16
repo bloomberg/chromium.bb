@@ -107,6 +107,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    cc::SharedBitmapManager* shared_bitmap_manager,
     int routing_id,
     uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -119,6 +120,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
       routing_id_(routing_id),
       compositor_frame_sink_id_(compositor_frame_sink_id),
       registry_(registry),
+      shared_bitmap_manager_(shared_bitmap_manager),
       sender_(RenderThreadImpl::current()->sync_compositor_message_filter()),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
@@ -185,16 +187,18 @@ bool SynchronousCompositorFrameSink::BindToClient(
       base::MakeUnique<SoftwareDevice>(&current_sw_canvas_));
   software_output_surface_ = output_surface.get();
 
-  // The shared_bitmap_manager and gpu_memory_buffer_manager here are null as
-  // this Display is only used for resourcesless software draws, where no
-  // resources are included in the frame swapped from the compositor. So there
-  // is no need for these.
+  // The gpu_memory_buffer_manager here is null as the Display is only used for
+  // resourcesless software draws, where no resources are included in the frame
+  // swapped from the compositor. So there is no need for it.
+  // The shared_bitmap_manager_ is provided for the Display to allocate
+  // resources.
+  // TODO(crbug.com/692814): The Display never sends its resources out of
+  // process so there is no reason for it to use a SharedBitmapManager.
   display_.reset(new cc::Display(
-      nullptr /* shared_bitmap_manager */,
-      nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      kRootFrameSinkId, nullptr /* begin_frame_source */,
-      std::move(output_surface), nullptr /* scheduler */,
-      nullptr /* texture_mailbox_deleter */));
+      shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
+      software_renderer_settings, kRootFrameSinkId,
+      nullptr /* begin_frame_source */, std::move(output_surface),
+      nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get());
   display_->SetVisible(true);
   return true;

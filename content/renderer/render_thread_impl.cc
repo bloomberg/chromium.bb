@@ -1985,8 +1985,8 @@ RenderThreadImpl::CreateCompositorFrameSink(
   if (sync_compositor_message_filter_) {
     return base::MakeUnique<SynchronousCompositorFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
-        GetGpuMemoryBufferManager(), routing_id, compositor_frame_sink_id,
-        CreateExternalBeginFrameSource(routing_id),
+        GetGpuMemoryBufferManager(), shared_bitmap_manager(), routing_id,
+        compositor_frame_sink_id, CreateExternalBeginFrameSource(routing_id),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue));
   }

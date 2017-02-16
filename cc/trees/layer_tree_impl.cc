@@ -987,8 +987,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
     TRACE_EVENT2(
         "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
         "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
-    bool can_render_to_separate_surface =
-        (!is_in_resourceless_software_draw_mode());
+    // TODO(crbug.com/692780): Remove this option entirely once this get to
+    // stable and proves it works.
+    bool can_render_to_separate_surface = true;
 
     // We verify visible rect calculations whenever we verify clip tree
     // calculations except when this function is explicitly passed a flag asking
