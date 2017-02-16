@@ -144,6 +144,9 @@ UsbDeviceAndroid::UsbDeviceAndroid(
     }
     descriptor_.configurations.push_back(config);
   }
+
+  if (configurations().size() > 0)
+    ActiveConfigurationChanged(configurations()[0].configuration_value);
 }
 
 UsbDeviceAndroid::~UsbDeviceAndroid() {}
