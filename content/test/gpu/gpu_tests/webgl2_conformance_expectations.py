@@ -212,6 +212,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=641149)
+    self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
+        ['mac'], bug=680278)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
         ['mac'], bug=654187)
@@ -693,7 +695,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
         ['linux', 'nvidia'], bug=679677)
-    self.Fail('conformance2/renderbuffers/framebuffer-test.html',
+    self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['linux', 'nvidia', 'opengl'], bug=680278)
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
