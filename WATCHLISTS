@@ -494,6 +494,9 @@
     'gn': {
       'filepath': 'tools/gn',
     },
+    'goma': {
+      'filepath': 'infra/config/cq.cfg',
+    },
     'gpu': {
       'filepath': 'gpu/',
     },
@@ -1879,6 +1882,7 @@
     'gn': ['agrieve+watch@chromium.org',
            'dpranke@chromium.org',
            'tfarina@chromium.org'],
+    'goma': ['goma+cc@google.com'],
     'gpu': ['piman+watch@chromium.org'],
     'history_ui': ['dbeam+watch-history@chromium.org',
                    'dubroy@chromium.org',
