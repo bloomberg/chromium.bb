@@ -57,9 +57,6 @@ class OmniboxView {
   OmniboxEditModel* model() { return model_.get(); }
   const OmniboxEditModel* model() const { return model_.get(); }
 
-  // Shared cross-platform focus handling.
-  void OnDidKillFocus();
-
   // Called when any relevant state changes other than changing tabs.
   virtual void Update() = 0;
 
