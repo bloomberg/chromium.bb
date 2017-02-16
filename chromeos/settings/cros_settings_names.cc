@@ -32,6 +32,8 @@ const char kAccountsPrefDeviceLocalAccountsKeyArcKioskClass[] =
     "arc_kiosk_class";
 const char kAccountsPrefDeviceLocalAccountsKeyArcKioskAction[] =
     "arc_kiosk_action";
+const char kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName[] =
+    "arc_kiosk_display_name";
 const char kAccountsPrefDeviceLocalAccountAutoLoginId[] =
     "cros.accounts.deviceLocalAccountAutoLoginId";
 const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =

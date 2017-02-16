@@ -35,8 +35,12 @@ const char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
 
 ArcKioskAppBasicInfo::ArcKioskAppBasicInfo(const std::string& package_name,
                                            const std::string& class_name,
-                                           const std::string& action)
-    : package_name_(package_name), class_name_(class_name), action_(action) {}
+                                           const std::string& action,
+                                           const std::string& display_name)
+    : package_name_(package_name),
+      class_name_(class_name),
+      action_(action),
+      display_name_(display_name) {}
 
 ArcKioskAppBasicInfo::ArcKioskAppBasicInfo(const ArcKioskAppBasicInfo& other) =
     default;
@@ -48,7 +52,8 @@ ArcKioskAppBasicInfo::~ArcKioskAppBasicInfo() {}
 bool ArcKioskAppBasicInfo::operator==(const ArcKioskAppBasicInfo& other) const {
   return this->package_name_ == other.package_name_ &&
          this->action_ == other.action_ &&
-         this->class_name_ == other.class_name_;
+         this->class_name_ == other.class_name_ &&
+         this->display_name_ == other.display_name_;
 }
 
 DeviceLocalAccount::DeviceLocalAccount(Type type,
@@ -170,6 +175,11 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
             it->arc_kiosk_app_info.action());
       }
+      if (!it->arc_kiosk_app_info.display_name().empty()) {
+        entry->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+            it->arc_kiosk_app_info.display_name());
+      }
     }
     list.Append(std::move(entry));
   }
@@ -250,6 +260,7 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
         std::string package_name;
         std::string class_name;
         std::string action;
+        std::string display_name;
         if (!entry->GetStringWithoutPathExpansion(
                 chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
                 &package_name)) {
@@ -264,8 +275,11 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
         entry->GetStringWithoutPathExpansion(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
             &action);
+        entry->GetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+            &display_name);
         const ArcKioskAppBasicInfo arc_kiosk_app(package_name, class_name,
-                                                 action);
+                                                 action, display_name);
 
         accounts.push_back(DeviceLocalAccount(arc_kiosk_app, account_id));
         break;

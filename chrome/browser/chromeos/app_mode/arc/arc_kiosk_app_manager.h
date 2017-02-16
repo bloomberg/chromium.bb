@@ -55,7 +55,7 @@ class ArcKioskAppManager {
     virtual void OnArcKioskAppsChanged() {}
 
    protected:
-    virtual ~ArcKioskAppManagerObserver() {}
+    virtual ~ArcKioskAppManagerObserver() = default;
   };
 
   static ArcKioskAppManager* Get();

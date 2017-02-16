@@ -29,6 +29,8 @@ CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountsKeyArcKioskClass[];
 CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountsKeyArcKioskAction[];
+CHROMEOS_EXPORT extern const char
+    kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName[];
 CHROMEOS_EXPORT extern const char kAccountsPrefDeviceLocalAccountAutoLoginId[];
 CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountAutoLoginDelay[];

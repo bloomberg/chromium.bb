@@ -221,6 +221,11 @@ void DecodeLoginPolicies(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
             entry->android_kiosk_app().action());
       }
+      if (entry->android_kiosk_app().has_display_name()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+            entry->android_kiosk_app().display_name());
+      }
     } else if (entry->has_deprecated_public_session_id()) {
       // Deprecated public session specification.
       entry_dict->SetStringWithoutPathExpansion(

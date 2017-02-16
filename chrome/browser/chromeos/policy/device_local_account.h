@@ -18,7 +18,8 @@ namespace policy {
 struct ArcKioskAppBasicInfo {
   ArcKioskAppBasicInfo(const std::string& package_name,
                        const std::string& class_name,
-                       const std::string& action);
+                       const std::string& action,
+                       const std::string& display_name);
   ArcKioskAppBasicInfo(const ArcKioskAppBasicInfo& other);
   ArcKioskAppBasicInfo();
   ~ArcKioskAppBasicInfo();
@@ -28,11 +29,13 @@ struct ArcKioskAppBasicInfo {
   const std::string& package_name() const { return package_name_; }
   const std::string& class_name() const { return class_name_; }
   const std::string& action() const { return action_; }
+  const std::string& display_name() const { return display_name_; }
 
  private:
   std::string package_name_;
   std::string class_name_;
   std::string action_;
+  std::string display_name_;
 };
 
 // This must match DeviceLocalAccountInfoProto.AccountType in

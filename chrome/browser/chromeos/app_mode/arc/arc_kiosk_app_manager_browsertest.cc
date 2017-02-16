@@ -114,6 +114,9 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
           kAccountsPrefDeviceLocalAccountsKeyArcKioskClass, app.class_name());
       entry->SetStringWithoutPathExpansion(
           kAccountsPrefDeviceLocalAccountsKeyArcKioskAction, app.action());
+      entry->SetStringWithoutPathExpansion(
+          kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+          app.display_name());
       device_local_accounts.Append(std::move(entry));
     }
     owner_settings_service_->Set(kAccountsPrefDeviceLocalAccounts,
@@ -142,10 +145,9 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
-  policy::ArcKioskAppBasicInfo app1("com.package.name1", std::string(),
-                                    std::string());
-  policy::ArcKioskAppBasicInfo app2("com.package.name2", std::string(),
-                                    std::string());
+  policy::ArcKioskAppBasicInfo app1("com.package.name1", "", "", "");
+  policy::ArcKioskAppBasicInfo app2("com.package.name2", "", "",
+                                    "display name");
   std::vector<policy::ArcKioskAppBasicInfo> init_apps{app1, app2};
 
   // Set initial list of apps.
@@ -160,6 +162,8 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ASSERT_EQ(2u, apps.size());
     ASSERT_EQ(app1, apps[0].app_info());
     ASSERT_EQ(app2, apps[1].app_info());
+    ASSERT_EQ(app1.package_name(), apps[0].name());
+    ASSERT_EQ(app2.display_name(), apps[1].name());
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
   }
 
@@ -178,14 +182,15 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ArcKioskAppManager::ArcKioskApps apps = manager()->GetAllApps();
     ASSERT_EQ(app1, apps[0].app_info());
     ASSERT_EQ(app2, apps[1].app_info());
+    ASSERT_EQ(app1.package_name(), apps[0].name());
+    ASSERT_EQ(app2.display_name(), apps[1].name());
     EXPECT_TRUE(manager()->GetAutoLaunchAccountId().is_valid());
     ASSERT_EQ(apps[1].account_id(), manager()->GetAutoLaunchAccountId());
   }
 
   // Create a new list of apps, where there is no app2 (is auto launch now),
   // and present a new app.
-  policy::ArcKioskAppBasicInfo app3("com.package.name3", std::string(),
-                                    std::string());
+  policy::ArcKioskAppBasicInfo app3("com.package.name3", "", "", "");
   std::vector<policy::ArcKioskAppBasicInfo> new_apps{app1, app3};
   {
     // Observer must be notified once: app list was updated.
@@ -198,6 +203,8 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ASSERT_EQ(2u, apps.size());
     ASSERT_EQ(app1, apps[0].app_info());
     ASSERT_EQ(app3, apps[1].app_info());
+    ASSERT_EQ(app1.package_name(), apps[0].name());
+    ASSERT_EQ(app3.package_name(), apps[1].name());
     // Auto launch app must be reset.
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
   }
