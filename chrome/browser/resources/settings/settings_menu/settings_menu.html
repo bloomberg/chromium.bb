@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -12,207 +12,173 @@
 <dom-module id="settings-menu">
   <template>
     <style include="settings-shared">
-      #about-menu[about-selected] {
+      :host {
+        display: block;
+        margin-top: 8px;
+      }
+
+      a[href],
+      #advancedButton {
+        --cr-selectable-focus: {
+          outline: auto 5px -webkit-focus-ring-color;
+        };
+        -webkit-margin-end: 2px;  /* Margin so selected outline is visible. */
+        -webkit-margin-start: 1px;
+        -webkit-padding-start: 23px;  /* 24px - 1px from margin for outline. */
+        color: var(--settings-nav-grey);
+        display: flex;
+        font-weight: 500;
+        min-height: 20px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        word-break: break-word;
+      }
+
+      a[href].iron-selected {
         color: var(--google-blue-700);
       }
 
       iron-icon {
         --iron-icon-fill-color: var(--settings-nav-grey);
         -webkit-margin-end: 24px;
+        vertical-align: top;
       }
 
-      .iron-selected:not(.menu-trigger) > iron-icon {
+      .iron-selected > iron-icon {
         fill: var(--google-blue-700);
       }
 
-      .menu-trigger span {
-        -webkit-margin-end: 16px;
+      #advancedButton {
+        -webkit-padding-end: 0;
+        background-color: unset;
+        height: unset;
+        margin-top: 8px;
+        text-transform: none;
+      }
+
+      #advancedButton:focus {
+        outline: none;
+      }
+
+      #advancedButton.keyboard-focus:focus {
+        outline: auto 5px -webkit-focus-ring-color;
+      }
+
+      #advancedButton > span {
         flex: 1;
       }
 
-      paper-menu {
-        --paper-menu-selected-item: {
-          font-weight: 500;
-        };
-        --paper-menu-focused-item-after: {
-          background: none;
-        };
-        color: var(--settings-nav-grey);
-        font-size: 100%;
-        padding: 0;
-      }
-
-      div[data-path] {
-        @apply(--settings-actionable);
-      }
-
-      #basicPage {
-        margin-top: 8px;
-      }
-
-      .page-menu > div {
-        margin-top: 8px;
-      }
-
-      .page-menu {
-        --paper-menu-selected-item: {
-          font-weight: 500;
-        };
-      }
-
-      paper-menu div {
-        position: relative;  /* Needed for paper-ripple. */
-      }
-
-      paper-ripple {
-        color: var(--google-blue-700);
-        opacity: .5;
-      }
-
-      .page-menu paper-menu {
-        --paper-menu-selected-item: {
-          color: var(--google-blue-700);
-          font-weight: 500;
-        };
-      }
-
-      .page-menu div {
-        -webkit-padding-start: 24px;
-        align-items: center;
-        display: flex;
-        font-size: 100%;
-        font-weight: 500;
-        min-height: 40px;
-        word-break: break-word;
-      }
-
-      .page-menu div iron-icon {
-        flex-shrink: 0;
+      #advancedButton > iron-icon {
+        -webkit-margin-end: 22px;  /* 24px - 2px from margin for outline. */
       }
 
       .separator {
         /* Per Alan@, this line is different from the other separator lines. */
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        margin-bottom: 8px;
         margin-top: 8px;
       }
     </style>
-    <paper-menu name="root-menu">
-      <div class="page-menu" id="basicPage">
-        <paper-menu attr-for-selected="data-path" class="menu-content"
-            id="basicMenu" selected="[[currentRoute.path]]">
+    <iron-selector id="topMenu" selectable="a" attr-for-selected="href"
+        on-iron-activate="onSelectorActivate_">
 <if expr="chromeos">
-          <div data-path="/internet" on-tap="openPage_">
-            <iron-icon icon="settings:network-wifi"></iron-icon>
-            $i18n{internetPageTitle}
-          </div>
-          <div data-path="/bluetooth" on-tap="openPage_">
-            <iron-icon icon="settings:bluetooth"></iron-icon>
-            $i18n{bluetoothPageTitle}
-          </div>
+      <a href="/internet">
+        <iron-icon icon="settings:network-wifi"></iron-icon>
+        $i18n{internetPageTitle}
+      </a>
+      <a href="/bluetooth">
+        <iron-icon icon="settings:bluetooth"></iron-icon>
+        $i18n{bluetoothPageTitle}
+      </a>
 </if>
-          <div id="people" data-path="/people" on-tap="openPage_"
-              hidden="[[!pageVisibility.people]]">
-            <iron-icon icon="settings:people"></iron-icon>
-            $i18n{peoplePageTitle}
-          </div>
-          <div data-path="/appearance" on-tap="openPage_"
-              hidden="[[!pageVisibility.appearance]]">
-            <iron-icon icon="settings:palette"></iron-icon>
-            $i18n{appearancePageTitle}
-          </div>
+      <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
+        <iron-icon icon="settings:people"></iron-icon>
+        $i18n{peoplePageTitle}
+      </a>
+      <a href="/appearance" hidden="[[!pageVisibility.appearance]]">
+        <iron-icon icon="settings:palette"></iron-icon>
+        $i18n{appearancePageTitle}
+      </a>
 <if expr="chromeos">
-          <div data-path="/device" on-tap="openPage_">
-            <iron-icon icon="settings:laptop-chromebook"></iron-icon>
-            $i18n{devicePageTitle}
-          </div>
+      <a href="/device">
+        <iron-icon icon="settings:laptop-chromebook"></iron-icon>
+        $i18n{devicePageTitle}
+      </a>
 </if>
-          <div data-path="/search" on-tap="openPage_">
-            <iron-icon icon="cr:search"></iron-icon>
-            $i18n{searchPageTitle}
-          </div>
+      <a href="/search">
+        <iron-icon icon="cr:search"></iron-icon>
+        $i18n{searchPageTitle}
+      </a>
 <if expr="chromeos">
-           <div data-path="/androidApps" on-tap="openPage_"
-               hidden="[[!showAndroidApps]]">
-             <iron-icon icon="settings:android"></iron-icon>
-             $i18n{androidAppsPageTitle}
-           </div>
+      <a href="/androidApps" hidden="[[!showAndroidApps]]">
+        <iron-icon icon="settings:android"></iron-icon>
+        $i18n{androidAppsPageTitle}
+      </a>
 </if>
 <if expr="not chromeos">
-          <div data-path="/defaultBrowser" on-tap="openPage_"
-              hidden="[[!pageVisibility.defaultBrowser]]">
-            <iron-icon icon="settings:web"></iron-icon>
-            $i18n{defaultBrowser}
-          </div>
+      <a href="/defaultBrowser" hidden="[[!pageVisibility.defaultBrowser]]">
+        <iron-icon icon="settings:web"></iron-icon>
+        $i18n{defaultBrowser}
+      </a>
 </if>
-          <div data-path="/onStartup" on-tap="openPage_"
-              hidden="[[!pageVisibility.onStartup]]">
-            <iron-icon icon="settings:power-settings-new"></iron-icon>
-            $i18n{onStartup}
-          </div>
-        </paper-menu>
-      </div>
-      <paper-submenu class="page-menu" id="advancedSubmenu" actionable
-          opened="{{advancedOpened}}"
-          hidden="[[!pageVisibility.advancedSettings]]">
-        <div class="menu-trigger">
-          <span>$i18n{advancedPageTitle}</span>
-          <iron-icon icon="[[arrowState_(advancedOpened)]]"></iron-icon>
-          <paper-ripple></paper-ripple>
-        </div>
-        <paper-menu attr-for-selected="data-path" class="menu-content"
-            id="advancedMenu" selected="[[currentRoute.path]]">
+      <a href="/onStartup" hidden="[[!pageVisibility.onStartup]]">
+        <iron-icon icon="settings:power-settings-new"></iron-icon>
+        $i18n{onStartup}
+      </a>
+      <paper-button toggles id="advancedButton"
+          aria-active-attribute="aria-expanded" active="{{advancedOpened}}">
+        <span>$i18n{advancedPageTitle}</span>
+        <iron-icon icon="[[arrowState_(advancedOpened)]]">
+        </iron-icon></paper-button>
+      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]">
+        <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
+            on-iron-activate="onSelectorActivate_">
 <if expr="chromeos">
-          <div data-path="/dateTime" on-tap="openPage_">
+          <a href="/dateTime">
             <iron-icon icon="settings:access-time"></iron-icon>
             $i18n{dateTimePageTitle}
-          </div>
+          </a>
 </if>
-          <div data-path="/privacy" on-tap="openPage_">
+          <a href="/privacy">
             <iron-icon icon="settings:security"></iron-icon>
             $i18n{privacyPageTitle}
-          </div>
-          <div data-path="/passwordsAndForms" on-tap="openPage_"
+          </a>
+          <a href="/passwordsAndForms"
               hidden="[[!pageVisibility.passwordsAndForms]]">
             <iron-icon icon="settings:assignment"></iron-icon>
             $i18n{passwordsAndAutofillPageTitle}
-          </div>
-          <div data-path="/languages" on-tap="openPage_">
+          </a>
+          <a href="/languages">
             <iron-icon icon="settings:language"></iron-icon>
             $i18n{languagesPageTitle}
-          </div>
-          <div data-path="/downloads" on-tap="openPage_">
+          </a>
+          <a href="/downloads">
             <iron-icon icon="cr:file-download"></iron-icon>
             $i18n{downloadsPageTitle}
-          </div>
-          <div data-path="/printing" on-tap="openPage_">
+          </a>
+          <a href="/printing">
             <iron-icon icon="cr:print"></iron-icon>
             $i18n{printingPageTitle}
-          </div>
-          <div data-path="/accessibility" on-tap="openPage_">
+          </a>
+          <a href="/accessibility">
             <iron-icon icon="settings:accessibility"></iron-icon>
             $i18n{a11yPageTitle}
-          </div>
+          </a>
 <if expr="not chromeos">
-          <div data-path="/system" on-tap="openPage_">
+          <a href="/system">
             <iron-icon icon="settings:build"></iron-icon>
             $i18n{systemPageTitle}
-          </div>
+          </a>
 </if>
-          <div data-path="/reset" on-tap="openPage_"
-              hidden="[[!pageVisibility.reset]]">
+          <a href="/reset" hidden="[[!pageVisibility.reset]]">
             <iron-icon icon="settings:restore"></iron-icon>
             $i18n{resetPageTitle}
-          </div>
-        </paper-menu>
-      </paper-submenu>
+          </a>
+        </iron-selector>
+      </iron-collapse>
       <div class="separator"></div>
-      <paper-submenu class="page-menu">
-        <div about-selected$="[[aboutSelected_]]" class="menu-trigger"
-            id="about-menu" on-tap="openPage_" data-path="/help">
-          $i18n{aboutPageTitle}
-        </div>
-      </paper-submenu>
-    </paper-menu>
+      <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
+    </iron-selector>
   </template>
   <script src="settings_menu.js"></script>
 </dom-module>

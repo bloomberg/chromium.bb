@@ -12,7 +12,6 @@ cr.define('settings_menu', function() {
       setup(function() {
         PolymerTest.clearBody();
         settingsMenu = document.createElement('settings-menu');
-        settingsMenu.currentRoute = settings.Route.BASIC;
         document.body.appendChild(settingsMenu);
       });
 
@@ -32,14 +31,14 @@ cr.define('settings_menu', function() {
       test('tapAdvanced', function() {
         assertFalse(settingsMenu.advancedOpened);
 
-        var advancedTrigger = settingsMenu.$$('#advancedSubmenu .menu-trigger');
-        assertTrue(!!advancedTrigger);
+        var advancedToggle = settingsMenu.$$('#advancedButton');
+        assertTrue(!!advancedToggle);
 
-        MockInteractions.tap(advancedTrigger);
+        MockInteractions.tap(advancedToggle);
         Polymer.dom.flush();
         assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
-        MockInteractions.tap(advancedTrigger);
+        MockInteractions.tap(advancedToggle);
         Polymer.dom.flush();
         assertFalse(settingsMenu.$.advancedSubmenu.opened);
       });
@@ -47,8 +46,7 @@ cr.define('settings_menu', function() {
       test('upAndDownIcons', function() {
         // There should be different icons for a top level menu being open
         // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
-        var ironIconElement = settingsMenu.$.advancedSubmenu.querySelector(
-            '.menu-trigger iron-icon');
+        var ironIconElement = settingsMenu.$$('#advancedButton iron-icon');
         assertTrue(!!ironIconElement);
 
         settingsMenu.advancedOpened = true;
@@ -61,13 +59,6 @@ cr.define('settings_menu', function() {
         assertNotEquals(openIcon, ironIconElement.icon);
       });
 
-      test('openResetSection', function() {
-        settingsMenu.currentRoute = settings.Route.RESET;
-        var advancedSubmenu = settingsMenu.$.advancedSubmenu;
-        assertEquals('/reset',
-            advancedSubmenu.querySelector('paper-menu').selected);
-      });
-
       // Test that navigating via the paper menu always clears the current
       // search URL parameter.
       test('clearsUrlSearchParam', function() {
@@ -78,6 +69,23 @@ cr.define('settings_menu', function() {
             settings.getQueryParameters().toString());
         MockInteractions.tap(settingsMenu.$.people);
         assertEquals('', settings.getQueryParameters().toString());
+      });
+    });
+
+    suite('SettingsMenuReset', function() {
+      setup(function() {
+        PolymerTest.clearBody();
+        settings.navigateTo(settings.Route.RESET, '');
+        settingsMenu = document.createElement('settings-menu');
+        document.body.appendChild(settingsMenu);
+      });
+
+      teardown(function() { settingsMenu.remove(); });
+
+      test('openResetSection', function() {
+        var selector = settingsMenu.$.subMenu;
+        var path = new window.URL(selector.selected).pathname;
+        assertEquals('/reset', path);
       });
     });
   }
