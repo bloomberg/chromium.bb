@@ -202,7 +202,11 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned fz) {
   r = dec->rng;
   OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
   OD_ASSERT(32768U <= r);
+#if CONFIG_EC_SMALLMUL
+  v = r - ((r >> 8) * (uint32_t)(32768U - fz) >> 7);
+#else
   v = fz * (uint32_t)r >> 15;
+#endif
   vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
   ret = 0;
   r_new = v;
@@ -381,7 +385,11 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *cdf, int nsyms) {
   ret = -1;
   do {
     u = v;
+#if CONFIG_EC_SMALLMUL
+    v = r - ((r >> 8) * (uint32_t)(32768U - cdf[++ret]) >> 7);
+#else
     v = cdf[++ret] * (uint32_t)r >> 15;
+#endif
   } while (v <= c);
   OD_ASSERT(v <= r);
   r = v - u;

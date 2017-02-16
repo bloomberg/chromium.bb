@@ -217,10 +217,21 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
   l = enc->low;
   r = enc->rng;
   OD_ASSERT(32768U <= r);
+#if CONFIG_EC_SMALLMUL
+  if (fl > 0) {
+    u = (r >> 8) * (uint32_t)(32768U - fl) >> 7;
+    v = (r >> 8) * (uint32_t)(32768U - fh) >> 7;
+    l += r - u;
+    r = u - v;
+  } else {
+    r -= (r >> 8) * (uint32_t)(32768U - fh) >> 7;
+  }
+#else
   u = fl * (uint32_t)r >> 15;
   v = fh * (uint32_t)r >> 15;
   r = v - u;
   l += u;
+#endif
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
   enc->entropy -= OD_LOG2((double)(fh - fl) / 32768.);
@@ -306,7 +317,11 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned fz) {
   l = enc->low;
   r = enc->rng;
   OD_ASSERT(32768U <= r);
+#if CONFIG_EC_SMALLMUL
+  v = r - ((r >> 8) * (uint32_t)(32768U - fz) >> 7);
+#else
   v = fz * (uint32_t)r >> 15;
+#endif
   if (val) l += v;
   r = val ? r - v : v;
   od_ec_enc_normalize(enc, l, r);

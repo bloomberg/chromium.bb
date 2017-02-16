@@ -286,6 +286,7 @@ EXPERIMENT_LIST="
     palette
     daala_ec
     rawbits
+    ec_smallmul
     pvq
     xiphrc
     cb4x4
@@ -500,6 +501,10 @@ post_process_cmdline() {
     if enabled rawbits && ! enabled daala_ec; then
       log_echo "rawbits requires daala_ec, so disabling rawbits"
       disable_feature rawbits
+    fi
+    if enabled ec_smallmul && ! enabled daala_ec; then
+      log_echo "ec_smallmul requires daala_ec, so disabling ec_smallmul"
+      disable_feature ec_smallmul
     fi
     if enabled ext_tile; then
       log_echo "ext_tile not compatible with reference_buffer, so"
