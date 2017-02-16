@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <GLES3/gl3.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -41,11 +42,7 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
                            textures_, 0);
   }
 
-  void SetUp() override {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    GLManager::Options options;
-    gl_.InitializeWithCommandLine(options, command_line);
-
+  void CheckStatus() {
     available_ =
         GLTestHelper::HasExtension("GL_CHROMIUM_screen_space_antialiasing");
     if (!available_) {
@@ -77,6 +74,13 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
     DeleteResources();
   }
 
+  void SetUp() override {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    GLManager::Options options;
+    gl_.InitializeWithCommandLine(options, command_line);
+    CheckStatus();
+  }
+
   void TearDown() override {
     if (available_)
       DeleteResources();
@@ -92,6 +96,18 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
   GLuint textures_ = 0;
   GLuint framebuffer_id_ = 0;
   bool available_ = false;
+};
+
+class GLApplyScreenSpaceAntialiasingCHROMIUMES3Test
+    : public GLApplyScreenSpaceAntialiasingCHROMIUMTest {
+ protected:
+  void SetUp() override {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    GLManager::Options options;
+    options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    gl_.InitializeWithCommandLine(options, command_line);
+    CheckStatus();
+  }
 };
 
 // TODO(dongseong.hwang): This test fails on the Nexus 9 GPU fyi bot.
@@ -162,6 +178,64 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
     GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   }
+}
+
+struct FormatType {
+  GLenum internal_format;
+  GLenum format;
+  GLenum type;
+};
+
+TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMES3Test, InternalFormat) {
+  if (!available_)
+    return;
+
+  FormatType format_type = {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+
+  uint8_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
+  glTexImage2D(GL_TEXTURE_2D, 0, format_type.internal_format, 1, 1, 0,
+               format_type.format, format_type.type, pixels);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textures_, 0);
+
+  // Only if the format is supported by FBO, supported by this extension.
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return;
+
+  glApplyScreenSpaceAntialiasingCHROMIUM();
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError())
+      << "internal_format: "
+      << gles2::GLES2Util::GetStringEnum(format_type.internal_format);
+
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+}
+
+TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMES3Test,
+       InternalFormatNotSupported) {
+  if (!available_)
+    return;
+
+  FormatType format_type = {GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT};
+
+  uint32_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
+  glTexImage2D(GL_TEXTURE_2D, 0, format_type.internal_format, 1, 1, 0,
+               format_type.format, format_type.type, pixels);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textures_, 0);
+
+  // Only if the format is supported by FBO, supported by this extension.
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return;
+
+  glApplyScreenSpaceAntialiasingCHROMIUM();
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError())
+      << "internal_format: "
+      << gles2::GLES2Util::GetStringEnum(format_type.internal_format);
 }
 
 TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, ImmutableTexture) {

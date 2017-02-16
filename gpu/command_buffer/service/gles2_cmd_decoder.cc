@@ -2025,6 +2025,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                            GLenum dest_target,
                                            TextureRef* source_texture_ref,
                                            TextureRef* dest_texture_ref);
+  bool CanUseCopyTextureCHROMIUMInternalFormat(GLenum dest_internal_format);
   CopyTextureMethod ValidateCopyTextureCHROMIUMInternalFormats(
       const char* function_name,
       TextureRef* source_texture_ref,
@@ -16226,6 +16227,44 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMTextures(
   return true;
 }
 
+bool GLES2DecoderImpl::CanUseCopyTextureCHROMIUMInternalFormat(
+    GLenum dest_internal_format) {
+  switch (dest_internal_format) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_RGB8:
+    case GL_RGBA8:
+    case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_R8:
+    case GL_R8UI:
+    case GL_RG8:
+    case GL_RG8UI:
+    case GL_SRGB8:
+    case GL_RGB565:
+    case GL_RGB8UI:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGBA8UI:
+    case GL_RGB9_E5:
+    case GL_R16F:
+    case GL_R32F:
+    case GL_RG16F:
+    case GL_RG32F:
+    case GL_RGB16F:
+    case GL_RGB32F:
+    case GL_RGBA16F:
+    case GL_RGBA32F:
+    case GL_R11F_G11F_B10F:
+      return true;
+    default:
+      return false;
+  }
+}
+
 CopyTextureMethod GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
     const char* function_name,
     TextureRef* source_texture_ref,
@@ -17390,6 +17429,20 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
         "glApplyScreenSpaceAntialiasingCHROMIUM";
     if (!InitializeCopyTextureCHROMIUM(kFunctionName))
       return;
+    for (uint32_t i = 0; i < group_->max_draw_buffers(); ++i) {
+      const Framebuffer::Attachment* attachment =
+          bound_framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0 + i);
+      if (attachment && attachment->IsTextureAttachment()) {
+        GLenum internal_format = attachment->internal_format();
+        if (!CanUseCopyTextureCHROMIUMInternalFormat(internal_format)) {
+          LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                             "Apply CMAA on framebuffer with attachment in "
+                             "invalid internalformat.");
+          return;
+        }
+      }
+    }
+
     apply_framebuffer_attachment_cmaa_intel_
         ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer,
                                               copy_texture_CHROMIUM_.get(),
