@@ -264,10 +264,8 @@ void ColorChooserView::SaturationValueView::OnSaturationValueChanged(
     SkScalar saturation,
     SkScalar value) {
   SkScalar scalar_size = SkIntToScalar(kSaturationValueSize - 1);
-  int x = SkScalarFloorToInt(SkScalarMul(saturation, scalar_size)) +
-      kBorderWidth;
-  int y = SkScalarFloorToInt(SkScalarMul(SK_Scalar1 - value, scalar_size)) +
-      kBorderWidth;
+  int x = SkScalarFloorToInt(saturation * scalar_size) + kBorderWidth;
+  int y = SkScalarFloorToInt((SK_Scalar1 - value) * scalar_size) + kBorderWidth;
   if (gfx::Point(x, y) == marker_position_)
     return;
 
