@@ -5,16 +5,17 @@
 #ifndef ThreadDebugger_h
 #define ThreadDebugger_h
 
+#include <v8-inspector.h>
+#include <v8-profiler.h>
+#include <v8.h>
+#include <memory>
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/CoreExport.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-#include <memory>
-#include <v8-inspector.h>
-#include <v8-profiler.h>
-#include <v8.h>
 
 namespace blink {
 
@@ -22,7 +23,8 @@ class ExecutionContext;
 class SourceLocation;
 
 // TODO(dgozman): rename this to ThreadInspector (and subclasses).
-class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient {
+class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
+                                   public V8PerIsolateData::Data {
   WTF_MAKE_NONCOPYABLE(ThreadDebugger);
 
  public:

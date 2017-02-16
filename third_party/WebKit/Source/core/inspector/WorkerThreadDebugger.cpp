@@ -56,11 +56,11 @@ const int kInvalidContextGroupId = 0;
 }  // namespace
 
 WorkerThreadDebugger* WorkerThreadDebugger::from(v8::Isolate* isolate) {
-  V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  if (!data->threadDebugger())
+  ThreadDebugger* debugger = ThreadDebugger::from(isolate);
+  if (!debugger)
     return nullptr;
-  ASSERT(data->threadDebugger()->isWorker());
-  return static_cast<WorkerThreadDebugger*>(data->threadDebugger());
+  DCHECK(debugger->isWorker());
+  return static_cast<WorkerThreadDebugger*>(debugger);
 }
 
 WorkerThreadDebugger::WorkerThreadDebugger(v8::Isolate* isolate)

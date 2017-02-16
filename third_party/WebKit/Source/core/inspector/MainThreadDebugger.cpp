@@ -30,6 +30,7 @@
 
 #include "core/inspector/MainThreadDebugger.h"
 
+#include <memory>
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -65,7 +66,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace blink {
 
@@ -216,11 +216,11 @@ int MainThreadDebugger::contextGroupId(LocalFrame* frame) {
 }
 
 MainThreadDebugger* MainThreadDebugger::instance() {
-  ASSERT(isMainThread());
-  V8PerIsolateData* data =
-      V8PerIsolateData::from(V8PerIsolateData::mainThreadIsolate());
-  ASSERT(data->threadDebugger() && !data->threadDebugger()->isWorker());
-  return static_cast<MainThreadDebugger*>(data->threadDebugger());
+  DCHECK(isMainThread());
+  ThreadDebugger* debugger =
+      ThreadDebugger::from(V8PerIsolateData::mainThreadIsolate());
+  DCHECK(debugger && !debugger->isWorker());
+  return static_cast<MainThreadDebugger*>(debugger);
 }
 
 void MainThreadDebugger::interruptMainThreadAndRun(

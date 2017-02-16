@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ValueCache.h"
-#include "core/inspector/MainThreadDebugger.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
@@ -267,12 +266,12 @@ void V8PerIsolateData::clearEndOfScopeTasks() {
 }
 
 void V8PerIsolateData::setThreadDebugger(
-    std::unique_ptr<ThreadDebugger> threadDebugger) {
+    std::unique_ptr<V8PerIsolateData::Data> threadDebugger) {
   ASSERT(!m_threadDebugger);
   m_threadDebugger = std::move(threadDebugger);
 }
 
-ThreadDebugger* V8PerIsolateData::threadDebugger() {
+V8PerIsolateData::Data* V8PerIsolateData::threadDebugger() {
   return m_threadDebugger.get();
 }
 

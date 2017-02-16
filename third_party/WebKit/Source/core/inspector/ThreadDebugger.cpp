@@ -41,7 +41,7 @@ ThreadDebugger* ThreadDebugger::from(v8::Isolate* isolate) {
   if (!isolate)
     return nullptr;
   V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  return data ? data->threadDebugger() : nullptr;
+  return data ? static_cast<ThreadDebugger*>(data->threadDebugger()) : nullptr;
 }
 
 // static

@@ -23,11 +23,11 @@ namespace {
 
 std::unique_ptr<v8_inspector::V8StackTrace> captureStackTrace(bool full) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  if (!data->threadDebugger() || !isolate->InContext())
+  ThreadDebugger* debugger = ThreadDebugger::from(isolate);
+  if (!debugger || !isolate->InContext())
     return nullptr;
   ScriptForbiddenScope::AllowUserAgentScript allowScripting;
-  return data->threadDebugger()->v8Inspector()->captureStackTrace(full);
+  return debugger->v8Inspector()->captureStackTrace(full);
 }
 }
 
@@ -80,9 +80,9 @@ std::unique_ptr<SourceLocation> SourceLocation::fromMessage(
     ExecutionContext* executionContext) {
   v8::Local<v8::StackTrace> stack = message->GetStackTrace();
   std::unique_ptr<v8_inspector::V8StackTrace> stackTrace = nullptr;
-  V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  if (data && data->threadDebugger())
-    stackTrace = data->threadDebugger()->v8Inspector()->createStackTrace(stack);
+  ThreadDebugger* debugger = ThreadDebugger::from(isolate);
+  if (debugger)
+    stackTrace = debugger->v8Inspector()->createStackTrace(stack);
 
   int scriptId = message->GetScriptOrigin().ScriptID()->Value();
   if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {

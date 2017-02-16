@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/RejectedPromises.h"
 
+#include <memory>
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -19,7 +20,6 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -81,11 +81,12 @@ class RejectedPromises::Message final {
     }
 
     if (m_shouldLogToConsole) {
-      V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
-      if (data->threadDebugger())
-        m_promiseRejectionId = data->threadDebugger()->promiseRejected(
-            m_scriptState->context(), m_errorMessage, reason,
-            std::move(m_location));
+      ThreadDebugger* debugger = ThreadDebugger::from(m_scriptState->isolate());
+      if (debugger) {
+        m_promiseRejectionId =
+            debugger->promiseRejected(m_scriptState->context(), m_errorMessage,
+                                      reason, std::move(m_location));
+      }
     }
 
     m_location.reset();
@@ -117,10 +118,11 @@ class RejectedPromises::Message final {
     }
 
     if (m_shouldLogToConsole && m_promiseRejectionId) {
-      V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
-      if (data->threadDebugger())
-        data->threadDebugger()->promiseRejectionRevoked(
-            m_scriptState->context(), m_promiseRejectionId);
+      ThreadDebugger* debugger = ThreadDebugger::from(m_scriptState->isolate());
+      if (debugger) {
+        debugger->promiseRejectionRevoked(m_scriptState->context(),
+                                          m_promiseRejectionId);
+      }
     }
   }
 
