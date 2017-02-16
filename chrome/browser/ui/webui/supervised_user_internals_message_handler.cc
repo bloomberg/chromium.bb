@@ -105,6 +105,9 @@ std::string FilteringBehaviorReasonToString(
       return "Manual";
     case supervised_user_error_page::WHITELIST:
       return "Whitelist";
+    case supervised_user_error_page::NOT_SIGNED_IN:
+      // Should never happen, only used for requests from WebView
+      NOTREACHED();
   }
   return "Unknown/invalid";
 }

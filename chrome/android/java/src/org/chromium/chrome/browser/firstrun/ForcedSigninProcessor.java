@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 
+import javax.annotation.Nullable;
+
 /**
  * A helper to perform all necessary steps for forced sign in.
  * The helper performs:
@@ -44,7 +46,7 @@ public final class ForcedSigninProcessor {
      * This is triggered once per Chrome Application lifetime and everytime the Account state
      * changes with early exit if an account has already been signed in.
      */
-    public static void start(final Context appContext) {
+    public static void start(final Context appContext, @Nullable final Runnable onComplete) {
         if (ChromeSigninController.get(appContext).isSignedIn()) return;
         new AndroidEduAndChildAccountHelper() {
             @Override
@@ -55,7 +57,7 @@ public final class ForcedSigninProcessor {
                 if (!isAndroidEduDevice && !hasChildAccount) return;
                 // Child account and EDU device at the same time is not supported.
                 assert !(isAndroidEduDevice && hasChildAccount);
-                processForcedSignIn(appContext);
+                processForcedSignIn(appContext, onComplete);
             }
         }.start(appContext);
     }
@@ -64,7 +66,8 @@ public final class ForcedSigninProcessor {
      * Processes the fully automatic non-FRE-related forced sign-in.
      * This is used to enforce the environment for Android EDU and child accounts.
      */
-    private static void processForcedSignIn(final Context appContext) {
+    private static void processForcedSignIn(
+            final Context appContext, @Nullable final Runnable onComplete) {
         final SigninManager signinManager = SigninManager.get(appContext);
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
@@ -85,10 +88,17 @@ public final class ForcedSigninProcessor {
                         // Since this is a forced signin, signout is not allowed.
                         AccountManagementFragment.setSignOutAllowedPreferenceValue(
                                 appContext, false);
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
                     }
 
                     @Override
-                    public void onSignInAborted() {}
+                    public void onSignInAborted() {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    }
                 });
             }
         });

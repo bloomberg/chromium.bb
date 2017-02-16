@@ -9,12 +9,15 @@
 
 namespace supervised_user_error_page {
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.supervisedusererrorpage
 enum FilteringBehaviorReason {
-  DEFAULT,
-  ASYNC_CHECKER,
-  BLACKLIST,
-  MANUAL,
-  WHITELIST
+  DEFAULT = 0,
+  ASYNC_CHECKER = 1,
+  BLACKLIST = 2,
+  MANUAL = 3,
+  WHITELIST = 4,
+  NOT_SIGNED_IN = 5,
 };
 
 int GetBlockMessageID(

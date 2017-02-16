@@ -70,8 +70,12 @@ void SupervisedUserContentProvider::ShouldProceed(
     const JavaParamRef<jobject>& query_result_jobj,
     const JavaParamRef<jstring>& url) {
   if (!profile_->IsSupervised()) {
-    // User isn't supervised
-    Java_SupervisedUserQueryReply_onQueryComplete(env, query_result_jobj);
+    // User isn't supervised, this can only happen if Chrome isn't signed in,
+    // in which case all requests should be rejected
+    Java_SupervisedUserQueryReply_onQueryFailed(
+        AttachCurrentThread(), query_result_jobj,
+        supervised_user_error_page::NOT_SIGNED_IN, false, true, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr);
     return;
   }
   SupervisedUserService* supervised_user_service =

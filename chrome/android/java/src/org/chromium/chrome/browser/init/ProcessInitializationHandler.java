@@ -206,7 +206,7 @@ public class ProcessInitializationHandler {
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                ForcedSigninProcessor.start(application);
+                ForcedSigninProcessor.start(application, null);
                 AccountsChangedReceiver.addObserver(
                         new AccountsChangedReceiver.AccountsChangedObserver() {
                             @Override
@@ -214,7 +214,7 @@ public class ProcessInitializationHandler {
                                 ThreadUtils.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        ForcedSigninProcessor.start(application);
+                                        ForcedSigninProcessor.start(application, null);
                                     }
                                 });
                             }

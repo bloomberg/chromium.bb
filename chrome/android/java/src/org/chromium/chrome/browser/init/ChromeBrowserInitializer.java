@@ -61,7 +61,7 @@ import java.util.Locale;
  */
 public class ChromeBrowserInitializer {
     private static final String TAG = "BrowserInitializer";
-    private static ChromeBrowserInitializer sChromeBrowserInitiliazer;
+    private static ChromeBrowserInitializer sChromeBrowserInitializer;
 
     private final Handler mHandler;
     private final ChromeApplication mApplication;
@@ -93,10 +93,10 @@ public class ChromeBrowserInitializer {
      * @return The singleton instance of {@link ChromeBrowserInitializer}.
      */
     public static ChromeBrowserInitializer getInstance(Context context) {
-        if (sChromeBrowserInitiliazer == null) {
-            sChromeBrowserInitiliazer = new ChromeBrowserInitializer(context);
+        if (sChromeBrowserInitializer == null) {
+            sChromeBrowserInitializer = new ChromeBrowserInitializer(context);
         }
-        return sChromeBrowserInitiliazer;
+        return sChromeBrowserInitializer;
     }
 
     private ChromeBrowserInitializer(Context context) {
@@ -438,5 +438,13 @@ public class ChromeBrowserInitializer {
                 }
             }
         };
+    }
+
+    /**
+     * For unit testing of clients.
+     * @param initializer The (dummy or mocked) initializer to use.
+     */
+    public static void setForTesting(ChromeBrowserInitializer initializer) {
+        sChromeBrowserInitializer = initializer;
     }
 }

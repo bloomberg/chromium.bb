@@ -71,6 +71,9 @@ int GetHistogramValueForFilteringBehavior(
           return FILTERING_BEHAVIOR_BLOCK_MANUAL;
         case supervised_user_error_page::DEFAULT:
           return FILTERING_BEHAVIOR_BLOCK_DEFAULT;
+        case supervised_user_error_page::NOT_SIGNED_IN:
+          // Should never happen, only used for requests from Webview
+          NOTREACHED();
       }
     case SupervisedUserURLFilter::INVALID:
       NOTREACHED();

@@ -13,6 +13,9 @@
       <message name="IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED" desc="A heading for the supervised user when they attempt to visit a site that is not permitted by the manager (and they can't ask for permission).">
         Looks like you don't have permission to visit this site
       </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_HEADER_NOT_SIGNED_IN" desc="A heading for the supervised user when the status cannot be established because they haven't signed in to Chrome).">
+        Please start and sign in to Chrome before using this app.
+      </message>
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the child user when they attempt to visit a site that is not permitted by their parent.">
         Looks like you need permission to visit this site
       </message>
@@ -72,6 +75,9 @@
       </message>
       <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL" desc="Message to be shown to a supervised user when a site is blocked due to a manual blacklist entry">
         Your manager can unblock it for you
+      </message>
+      <message name="IDS_SUPERVISED_USER_NOT_SIGNED_IN" desc="Message to be shown to a supervised user who is not signed in to Chrome">
+        Please start and sign in to Chrome so that Chrome can check whether you are allowed to access this site.
       </message>
 
 </grit-part>

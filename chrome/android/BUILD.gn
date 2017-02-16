@@ -247,6 +247,7 @@ android_library("chrome_java") {
     "//components/omnibox/browser:autocomplete_match_type_javagen",
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:investigated_scenario_java",
+    "//components/supervised_user_error_page:enums_srcjar",
   ]
 
   # Manifest used for linting (determining unused resources).

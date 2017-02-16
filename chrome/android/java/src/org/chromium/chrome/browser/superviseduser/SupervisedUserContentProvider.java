@@ -14,13 +14,18 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.UserManager;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
+import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.supervisedusererrorpage.FilteringBehaviorReason;
 import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -36,24 +41,78 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     private long mNativeSupervisedUserContentProvider;
     private boolean mChromeAlreadyStarted;
     private static Object sEnabledLock = new Object();
+    private static Object sContentProviderLock = new Object();
+
+    private static final String TAG = "SupervisedUserContent";
 
     // Three value "boolean" caching enabled state, null if not yet known.
     private static Boolean sEnabled;
 
-    private long getSupervisedUserContentProvider() throws ProcessInitException {
-        mChromeAlreadyStarted = LibraryLoader.isInitialized();
-        if (mNativeSupervisedUserContentProvider != 0) {
-            return mNativeSupervisedUserContentProvider;
-        }
-
-        ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
-
-        mNativeSupervisedUserContentProvider = nativeCreateSupervisedUserContentProvider();
-        return mNativeSupervisedUserContentProvider;
+    @VisibleForTesting
+    void startForcedSigninProcessor(Context appContext, Runnable onComplete) {
+        ForcedSigninProcessor.start(appContext, onComplete);
     }
 
-    void setNativeSupervisedUserContentProviderForTesting(long nativeProvider) {
-        mNativeSupervisedUserContentProvider = nativeProvider;
+    @VisibleForTesting
+    void listenForChildAccountStatusChange(Callback<Boolean> callback) {
+        ChildAccountService.listenForStatusChange(callback);
+    }
+
+    private long getSupervisedUserContentProvider() {
+        // This may lock for some time, but is always called on a background thread, and will only
+        // take significant time if the Chrome process isn't already running.
+        synchronized (sContentProviderLock) {
+            mChromeAlreadyStarted = LibraryLoader.isInitialized();
+            if (mNativeSupervisedUserContentProvider != 0) {
+                return mNativeSupervisedUserContentProvider;
+            }
+            final Context appContext = getContext().getApplicationContext();
+            final SupervisedUserReply<Long> reply = new SupervisedUserReply<>();
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ChromeBrowserInitializer.getInstance(appContext).handleSynchronousStartup();
+                    } catch (ProcessInitException e) {
+                        reply.onQueryFinished(0L);
+                        return;
+                    }
+                    final ChromeSigninController chromeSigninController =
+                            ChromeSigninController.get(appContext);
+                    if (chromeSigninController.isSignedIn()) {
+                        reply.onQueryFinished(nativeCreateSupervisedUserContentProvider());
+                        return;
+                    }
+                    // Try to sign in, Chrome needs to be signed in to get the URL filter.
+                    startForcedSigninProcessor(appContext, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!chromeSigninController.isSignedIn()) {
+                                reply.onQueryFinished(0L);
+                                return;
+                            }
+                            // Wait for the status change; Chrome can't check any URLs until this
+                            // has happened.
+                            listenForChildAccountStatusChange(new Callback<Boolean>() {
+                                @Override
+                                public void onResult(Boolean result) {
+                                    reply.onQueryFinished(
+                                            nativeCreateSupervisedUserContentProvider());
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            try {
+                Long result = reply.getResult();
+                if (result == null) return 0;
+                mNativeSupervisedUserContentProvider = result;
+                return mNativeSupervisedUserContentProvider;
+            } catch (InterruptedException e) {
+                return 0;
+            }
+        }
     }
 
     static class SupervisedUserReply<T> {
@@ -109,14 +168,15 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         // object also handles waiting for the reply.
         long startTimeMs = SystemClock.elapsedRealtime();
         final SupervisedUserQueryReply queryReply = new SupervisedUserQueryReply();
+        final long contentProvider = getSupervisedUserContentProvider();
+        if (contentProvider == 0) {
+            return new WebRestrictionsResult(
+                    false, new int[] {FilteringBehaviorReason.NOT_SIGNED_IN}, null);
+        }
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    nativeShouldProceed(getSupervisedUserContentProvider(), queryReply, url);
-                } catch (ProcessInitException e) {
-                    queryReply.onQueryFailedNoErrorData();
-                }
+                nativeShouldProceed(contentProvider, queryReply, url);
             }
         });
         try {
@@ -159,14 +219,12 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         // reply object for each query, and passing this through the callback structure. The reply
         // object also handles waiting for the reply.
         final SupervisedUserInsertReply insertReply = new SupervisedUserInsertReply();
+        final long contentProvider = getSupervisedUserContentProvider();
+        if (contentProvider == 0) return false;
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    nativeRequestInsert(getSupervisedUserContentProvider(), insertReply, url);
-                } catch (ProcessInitException e) {
-                    insertReply.onInsertRequestSendComplete(false);
-                }
+                nativeRequestInsert(contentProvider, insertReply, url);
             }
         });
         try {
@@ -176,26 +234,6 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         } catch (InterruptedException e) {
             return false;
         }
-    }
-
-    @Override
-    public Bundle call(String method, String arg, Bundle bundle) {
-        if (method.equals("setFilterForTesting")) setFilterForTesting();
-        return null;
-    }
-
-    void setFilterForTesting() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    nativeSetFilterForTesting(getSupervisedUserContentProvider());
-                } catch (ProcessInitException e) {
-                    // There is no way of returning anything sensible here, so ignore the error and
-                    // do nothing.
-                }
-            }
-        });
     }
 
     @CalledByNative
@@ -249,7 +287,38 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         Bundle appRestrictions = userManager
                 .getApplicationRestrictions(getContext().getPackageName());
         setEnabled(appRestrictions.getBoolean(SUPERVISED_USER_CONTENT_PROVIDER_ENABLED));
-    };
+    }
+
+    @Override
+    protected String[] getErrorColumnNames() {
+        String result[] = {"Reason", "Allow access requests", "Is child account",
+                "Profile image URL", "Second profile image URL", "Custodian", "Custodian email",
+                "Second custodian", "Second custodian email"};
+        return result;
+    }
+
+    // Helpers for testing.
+
+    @Override
+    public Bundle call(String method, String arg, Bundle bundle) {
+        if (method.equals("setFilterForTesting")) setFilterForTesting();
+        return null;
+    }
+
+    void setFilterForTesting() {
+        final long contentProvider = getSupervisedUserContentProvider();
+        if (contentProvider == 0) return;
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                nativeSetFilterForTesting(contentProvider);
+            }
+        });
+    }
+
+    void setNativeSupervisedUserContentProviderForTesting(long nativeProvider) {
+        mNativeSupervisedUserContentProvider = nativeProvider;
+    }
 
     @VisibleForTesting
     public static void enableContentProviderForTesting() {
@@ -266,11 +335,4 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
 
     private native void nativeSetFilterForTesting(long nativeSupervisedUserContentProvider);
 
-    @Override
-    protected String[] getErrorColumnNames() {
-        String result[] = {"Reason", "Allow access requests", "Is child account",
-                "Profile image URL", "Second profile image URL", "Custodian", "Custodian email",
-                "Second custodian", "Second custodian email"};
-        return result;
-    }
 }

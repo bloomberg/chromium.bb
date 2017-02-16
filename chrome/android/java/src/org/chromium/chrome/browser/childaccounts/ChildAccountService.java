@@ -12,15 +12,19 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerHelper;
 
 /**
- * This class serves as a simple interface for querying the child account information.
- * It has two methods namely, checkHasChildAccount(...) which is asynchronous and queries the
- * system directly for the information and the synchronous isChildAccount() which asks the native
- * side assuming it has been set correctly already.
+ * This class serves as a simple interface for querying the child account information. It has two
+ * methods for querying the child account information; checkHasChildAccount(...) which is
+ * asynchronous and queries the system directly for the information and the synchronous
+ * isChildAccount() which asks the native side assuming it has been set correctly already.
  *
  * The former method is used by ForcedSigninProcessor and FirstRunFlowSequencer to detect child
- * accounts since the native side is only activated on signing in.
- * Once signed in by the ForcedSigninProcessor, the ChildAccountInfoFetcher will notify the native
- * side and also takes responsibility for monitoring changes and taking a suitable action.
+ * accounts since the native side is only activated on signing in. Once signed in by the
+ * ForcedSigninProcessor, the ChildAccountInfoFetcher will notify the native side and also takes
+ * responsibility for monitoring changes and taking a suitable action.
+ *
+ * The class also provides an interface through which a client can listen for child account status
+ * changes. When the SupervisedUserContentProvider forces sign-in it waits for a status change
+ * before querying the URL filters.
  */
 public class ChildAccountService {
     private ChildAccountService() {
@@ -57,5 +61,15 @@ public class ChildAccountService {
         return nativeIsChildAccount();
     }
 
+    /**
+     * Set a callback to be called the next time a child account status change is received
+     * @param callback the callback to be called when the status changes.
+     */
+    public static void listenForStatusChange(Callback<Boolean> callback) {
+        nativeListenForChildStatusReceived(callback);
+    }
+
     private static native boolean nativeIsChildAccount();
+
+    private static native void nativeListenForChildStatusReceived(Callback<Boolean> callback);
 }

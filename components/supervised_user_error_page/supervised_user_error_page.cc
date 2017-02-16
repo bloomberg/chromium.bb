@@ -61,6 +61,8 @@ int GetBlockMessageID(FilteringBehaviorReason reason,
       if (single_parent)
         return IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT;
       return IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT;
+    case NOT_SIGNED_IN:
+      return IDS_SUPERVISED_USER_NOT_SIGNED_IN;
   }
   NOTREACHED();
   return 0;
@@ -96,7 +98,10 @@ std::string BuildHtml(bool allow_access_requests,
                     base::UTF8ToUTF16(second_custodian_email));
   base::string16 block_header;
   base::string16 block_message;
-  if (allow_access_requests) {
+  if (reason == FilteringBehaviorReason::NOT_SIGNED_IN) {
+    block_header =
+        l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_HEADER_NOT_SIGNED_IN);
+  } else if (allow_access_requests) {
     if (is_child_account) {
       block_header =
           l10n_util::GetStringUTF16(IDS_CHILD_BLOCK_INTERSTITIAL_HEADER);

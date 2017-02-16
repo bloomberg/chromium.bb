@@ -93,10 +93,10 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
         SupervisedUserContentProvider.enableContentProviderForTesting();
         Cursor cursor = client.query(mUri, null, "url = 'http://google.com'", null, null);
         assertNotNull(cursor);
-        assertEquals(WebRestrictionsContentProvider.PROCEED, cursor.getInt(0));
+        assertEquals(WebRestrictionsContentProvider.BLOCKED, cursor.getInt(0));
         cursor = client.query(mUri, null, "url = 'http://www.notgoogle.com'", null, null);
         assertNotNull(cursor);
-        assertEquals(WebRestrictionsContentProvider.PROCEED, cursor.getInt(0));
+        assertEquals(WebRestrictionsContentProvider.BLOCKED, cursor.getInt(0));
     }
 
     @SmallTest

@@ -11,9 +11,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import android.accounts.Account;
+import android.content.Context;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,9 +26,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DisableHistogramsRule;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider.SupervisedUserQueryReply;
+import org.chromium.components.signin.AccountManagerDelegate;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider.WebRestrictionsResult;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -41,20 +55,70 @@ public class SupervisedUserContentProviderUnitTest {
 
     @Before
     public void setUp() {
-        mSupervisedUserContentProvider = Mockito.spy(new SupervisedUserContentProvider());
-        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
+        // Ensure clean state (in particular not signed in).
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+
+        // Spy on the content provider so that we can watch its calls. Override methods that wrap
+        // things that can't be mocked (including native calls).
+        mSupervisedUserContentProvider = Mockito.spy(new SupervisedUserContentProvider() {
+            @Override
+            void startForcedSigninProcessor(Context context, Runnable onComplete) {
+                ChromeSigninController.get(RuntimeEnvironment.application)
+                        .setSignedInAccountName("Dummy");
+                onComplete.run();
+            }
+
+            @Override
+            void listenForChildAccountStatusChange(Callback<Boolean> callback) {
+                callback.onResult(true);
+            }
+
+            @Override
+            void nativeShouldProceed(long l, SupervisedUserQueryReply reply, String url) {
+                reply.onQueryComplete();
+            }
+
+            @Override
+            void nativeRequestInsert(long l, SupervisedUserInsertReply reply, String url) {
+                reply.onInsertRequestSendComplete(true);
+            }
+
+            @Override
+            long nativeCreateSupervisedUserContentProvider() {
+                return 5678L;
+            }
+        });
+    }
+
+    @After
+    public void shutDown() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+        ChromeBrowserInitializer.setForTesting(null);
     }
 
     @Test
-    public void testShouldProceed() throws InterruptedException {
+    public void testShouldProceed_PermittedUrl() {
+        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
         // Mock the native call for a permitted URL
+        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        assertThat(result.shouldProceed(), is(true));
+        verify(mSupervisedUserContentProvider)
+                .nativeShouldProceed(eq(1234L),
+                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
+                        eq("url"));
+    }
+
+    @Test
+    public void testShouldProceed_ForbiddenUrl() {
+        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
+        // Modify the result of the native call to make this a forbidden URL
         doAnswer(new Answer<Void>() {
 
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                Object args[] = invocation.getArguments();
-                ((SupervisedUserContentProvider.SupervisedUserQueryReply) args[1])
-                        .onQueryComplete();
+                invocation.<SupervisedUserQueryReply>getArgument(1).onQueryFailed(1, 2, 3, "url1",
+                        "url2", "custodian", "custodianEmail", "secondCustodian",
+                        "secondCustodianEmail");
                 return null;
             }
 
@@ -64,29 +128,6 @@ public class SupervisedUserContentProviderUnitTest {
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         anyString());
         WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
-        assertThat(result.shouldProceed(), is(true));
-        verify(mSupervisedUserContentProvider)
-                .nativeShouldProceed(eq(1234L),
-                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
-                        eq("url"));
-        // Mock the native call for a forbidden URL
-        doAnswer(new Answer<Void>() {
-
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                Object args[] = invocation.getArguments();
-                ((SupervisedUserContentProvider.SupervisedUserQueryReply) args[1])
-                        .onQueryFailed(1, 2, 3, "url1", "url2", "custodian", "custodianEmail",
-                                "secondCustodian", "secondCustodianEmail");
-                return null;
-            }
-
-        })
-                .when(mSupervisedUserContentProvider)
-                .nativeShouldProceed(anyLong(),
-                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
-                        anyString());
-        result = mSupervisedUserContentProvider.shouldProceed("url");
         assertThat(result.shouldProceed(), is(false));
         assertThat(result.errorIntCount(), is(3));
         assertThat(result.getErrorInt(0), is(1));
@@ -102,30 +143,22 @@ public class SupervisedUserContentProviderUnitTest {
     }
 
     @Test
-    public void testRequestInsert() throws InterruptedException {
-        // Mock native call.
-        doAnswer(new Answer<Void>() {
+    public void testRequestInsert_ok() {
+        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
 
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                Object args[] = invocation.getArguments();
-                ((SupervisedUserContentProvider.SupervisedUserInsertReply) args[1])
-                        .onInsertRequestSendComplete(true);
-                return null;
-            }
-
-        })
-                .when(mSupervisedUserContentProvider)
-                .nativeRequestInsert(anyLong(),
-                        any(SupervisedUserContentProvider.SupervisedUserInsertReply.class),
-                        anyString());
         assertThat(mSupervisedUserContentProvider.requestInsert("url"), is(true));
+
         verify(mSupervisedUserContentProvider)
                 .nativeRequestInsert(eq(1234L),
                         any(SupervisedUserContentProvider.SupervisedUserInsertReply.class),
                         eq("url"));
-        doAnswer(new Answer<Void>() {
+    }
 
+    @Test
+    public void testRequestInsert_failed() {
+        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
+        // Mock the native call to mock failure
+        doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 Object args[] = invocation.getArguments();
@@ -140,9 +173,81 @@ public class SupervisedUserContentProviderUnitTest {
                         any(SupervisedUserContentProvider.SupervisedUserInsertReply.class),
                         anyString());
         assertThat(mSupervisedUserContentProvider.requestInsert("url"), is(false));
-        verify(mSupervisedUserContentProvider, times(2))
+        verify(mSupervisedUserContentProvider)
                 .nativeRequestInsert(eq(1234L),
                         any(SupervisedUserContentProvider.SupervisedUserInsertReply.class),
                         eq("url"));
+    }
+
+    @Test
+    public void testShouldProceed_withStartupSignedIn() throws ProcessInitException {
+        // Set up a signed in user
+        ChromeSigninController.get(RuntimeEnvironment.application).setSignedInAccountName("Dummy");
+        // Mock things called during startup
+        ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
+        ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
+
+        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+
+        assertThat(result.shouldProceed(), is(true));
+        verify(mockBrowserInitializer).handleSynchronousStartup();
+        verify(mSupervisedUserContentProvider)
+                .nativeShouldProceed(eq(5678L),
+                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
+                        eq("url"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testShouldProceed_notSignedIn() throws ProcessInitException {
+        // Mock things called during startup
+        ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
+        ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
+        AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(
+                RuntimeEnvironment.application, mockDelegate);
+        Account account = new Account("Google", "Dummy");
+        when(mockDelegate.getAccountsByType("Google")).thenReturn(new Account[] {account});
+
+        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+
+        assertThat(result.shouldProceed(), is(true));
+        verify(mockBrowserInitializer).handleSynchronousStartup();
+        verify(mSupervisedUserContentProvider)
+                .startForcedSigninProcessor(any(Context.class), any(Runnable.class));
+        verify(mSupervisedUserContentProvider)
+                .listenForChildAccountStatusChange(any(Callback.class));
+        verify(mSupervisedUserContentProvider)
+                .nativeShouldProceed(eq(5678L),
+                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
+                        eq("url"));
+    }
+
+    @Test
+    public void testShouldProceed_cannotSignIn() throws ProcessInitException {
+        // Mock things called during startup
+        ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
+        ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
+        AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(
+                RuntimeEnvironment.application, mockDelegate);
+        Account account = new Account("Google", "Dummy");
+        when(mockDelegate.getAccountsByType("Google")).thenReturn(new Account[] {account});
+
+        // Change the behavior of the forced sign-in processor to not sign in.
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                invocation.<Runnable>getArgument(1).run();
+                return null;
+            }
+        })
+                .when(mSupervisedUserContentProvider)
+                .startForcedSigninProcessor(any(Context.class), any(Runnable.class));
+
+        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+
+        assertThat(result.shouldProceed(), is(false));
+        assertThat(result.getErrorInt(0), is(5));
     }
 }
