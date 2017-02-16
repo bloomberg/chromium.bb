@@ -884,7 +884,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 {
 	struct shared_output *so;
 	struct wl_event_loop *loop;
-	struct ss_seat *seat;
+	struct ss_seat *seat, *tmp;
 	int epoll_fd;
 
 	so = zalloc(sizeof *so);
@@ -972,7 +972,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	return so;
 
 err_display:
-	wl_list_for_each(seat, &so->seat_list, link)
+	wl_list_for_each_safe(seat, tmp, &so->seat_list, link)
 		ss_seat_destroy(seat);
 	wl_display_disconnect(so->parent.display);
 err_alloc:
