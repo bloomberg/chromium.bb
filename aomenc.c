@@ -2056,7 +2056,7 @@ int main(int argc, const char **argv_) {
       if (stream->config.cfg.g_profile > 1) {
         stream->config.use_16bit_internal = 1;
       }
-      if (profile_updated) {
+      if (profile_updated && !global.quiet) {
         fprintf(stderr,
                 "Warning: automatically upgrading to profile %d to "
                 "match input format.\n",
@@ -2080,7 +2080,7 @@ int main(int argc, const char **argv_) {
           default: break;
         }
       }
-      if (profile_updated) {
+      if (profile_updated && !global.quiet) {
         fprintf(stderr,
                 "Warning: automatically upgrading to profile %d to "
                 "match input format.\n",
