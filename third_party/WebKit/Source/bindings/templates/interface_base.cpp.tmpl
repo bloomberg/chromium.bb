@@ -714,7 +714,13 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
   {% if is_partial %}
   {{v8_class}}::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
   {% endif %}
+
   v8::Isolate* isolate = context->GetIsolate();
+  {% if has_conditional_attributes_on_prototype or methods | conditionally_exposed(is_partial) %}
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ExecutionContext* executionContext = toExecutionContext(context);
+  DCHECK(executionContext);
+  {% endif %}
 
 {% if unscopables %}
   v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));

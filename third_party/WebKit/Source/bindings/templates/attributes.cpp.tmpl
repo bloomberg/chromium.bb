@@ -507,8 +507,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro install_conditionally_enabled_attributes_on_prototype() %}
-ExecutionContext* executionContext = toExecutionContext(context);
-v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 {% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
 {% filter secure_context(attribute.secure_context_test) %}

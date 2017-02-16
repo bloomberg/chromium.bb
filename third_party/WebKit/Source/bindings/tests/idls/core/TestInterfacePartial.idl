@@ -53,4 +53,6 @@ typedef DOMString PartialString;
 
     attribute PartialEnumType partialPartialEnumTypeAttribute;
     void partialVoidMethodPartialCallbackTypeArg(PartialCallbackType partialCallbackTypeArg);
+
+    [SecureContext] attribute long partialSecureContextLongAttribute;
 };
