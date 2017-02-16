@@ -105,7 +105,6 @@ ThreadState::ThreadState()
       m_startOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
       m_endOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
       m_safePointScopeMarker(nullptr),
-      m_interruptors(),
       m_sweepForbidden(false),
       m_noAllocationCount(0),
       m_gcForbiddenCount(0),
@@ -1200,16 +1199,6 @@ void ThreadState::copyStackUntilSafePointScope() {
   m_safePointStackCopy.resize(slotCount);
   for (size_t i = 0; i < slotCount; ++i) {
     m_safePointStackCopy[i] = from[i];
-  }
-}
-
-void ThreadState::addInterruptor(
-    std::unique_ptr<BlinkGCInterruptor> interruptor) {
-  ASSERT(checkThread());
-  SafePointScope scope(BlinkGC::HeapPointersOnStack);
-  {
-    MutexLocker locker(m_heap->threadAttachMutex());
-    m_interruptors.push_back(std::move(interruptor));
   }
 }
 
