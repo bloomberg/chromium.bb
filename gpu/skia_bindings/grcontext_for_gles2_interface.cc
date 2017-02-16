@@ -29,7 +29,7 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
   if (gr_context_) {
     // The limit of the number of GPU resources we hold in the GrContext's
     // GPU cache.
-    static const int kMaxGaneshResourceCacheCount = 8196;
+    static const int kMaxGaneshResourceCacheCount = 16384;
     // The limit of the bytes allocated toward GPU resources in the GrContext's
     // GPU cache.
     static const size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
