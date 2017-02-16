@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -116,25 +117,37 @@ class ObservingAutofillClient
 
   void Wait() { message_loop_runner_->Run(); }
 
+  // Pump messages until idle, then return bool indicating whether the popup was
+  // shown.
+  bool DidPopupAppear() {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+    return popup_shown;
+  }
+
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
       const std::vector<autofill::Suggestion>& suggestions,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
-    message_loop_runner_->Quit();
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+    popup_shown = true;
   }
 
  private:
   explicit ObservingAutofillClient(content::WebContents* web_contents)
-      : message_loop_runner_(new content::MessageLoopRunner) {}
+      : message_loop_runner_(new content::MessageLoopRunner),
+        popup_shown(false) {}
   friend class content::WebContentsUserData<ObservingAutofillClient>;
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool popup_shown;
 
   DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
 
-// For simplicity we assume that password store contains only 1 credentials.
+// For simplicity we assume that password store contains only 1 credential.
 void CheckThatCredentialsStored(
     password_manager::TestPasswordStore* password_store,
     const base::string16& username,
@@ -1756,7 +1769,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        InFrameNavigationDoesNotClearPopupState) {
   // Mock out the AutofillClient so we know how long to wait. Unfortunately
-  // there isn't otherwise a good even to wait on to verify that the popup
+  // there isn't otherwise a good event to wait on to verify that the popup
   // would have been shown.
   password_manager::ContentPasswordManagerDriverFactory* driver_factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
@@ -1813,6 +1826,110 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                                                                      top + 1));
   // Make sure the popup would be shown.
   observing_autofill_client->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ShowFormNotSecureOnUsernameField) {
+  password_manager::ContentPasswordManagerDriverFactory* driver_factory =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          WebContents());
+  ObservingAutofillClient::CreateForWebContents(WebContents());
+  ObservingAutofillClient* observing_autofill_client =
+      ObservingAutofillClient::FromWebContents(WebContents());
+  password_manager::ContentPasswordManagerDriver* driver =
+      driver_factory->GetDriverForFrame(RenderViewHost()->GetMainFrame());
+  DCHECK(driver);
+  driver->GetPasswordAutofillManager()->set_autofill_client(
+      observing_autofill_client);
+
+  // We need to serve from a non-localhost context for the form to be treated as
+  // Not Secure.
+  host_resolver()->AddRule("example.com", "127.0.0.1");
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/password/password_form.html"));
+  observer.Wait();
+
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var inputRect = document.getElementById('username_field_no_name')"
+      ".getBoundingClientRect();"));
+
+  // Click on the username field to verify the warning is shown.
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(), "window.domAutomationController.send(inputRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(), "window.domAutomationController.send(inputRect.left);",
+      &left));
+
+  const char kHistogram[] =
+      "PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation";
+  base::HistogramTester histograms;
+
+  content::SimulateMouseClickAt(WebContents(), 0,
+                                blink::WebMouseEvent::Button::Left,
+                                gfx::Point(left + 1, top + 1));
+  // Ensure the warning would be shown.
+  observing_autofill_client->Wait();
+  // Ensure the histogram was updated.
+  histograms.ExpectUniqueSample(kHistogram, true, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       DoNotShowFormNotSecureOnUnrelatedField) {
+  password_manager::ContentPasswordManagerDriverFactory* driver_factory =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          WebContents());
+  ObservingAutofillClient::CreateForWebContents(WebContents());
+  ObservingAutofillClient* observing_autofill_client =
+      ObservingAutofillClient::FromWebContents(WebContents());
+  password_manager::ContentPasswordManagerDriver* driver =
+      driver_factory->GetDriverForFrame(RenderViewHost()->GetMainFrame());
+  DCHECK(driver);
+  driver->GetPasswordAutofillManager()->set_autofill_client(
+      observing_autofill_client);
+
+  // We need to serve from a non-localhost context for the form to be treated as
+  // Not Secure.
+  host_resolver()->AddRule("example.com", "127.0.0.1");
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/password/password_form.html"));
+  observer.Wait();
+
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var inputRect = document.getElementById('ef_extra')"
+      ".getBoundingClientRect();"));
+
+  // Click on the non-username text field.
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(), "window.domAutomationController.send(inputRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(), "window.domAutomationController.send(inputRect.left);",
+      &left));
+
+  const char kHistogram[] =
+      "PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation";
+  base::HistogramTester histograms;
+
+  content::SimulateMouseClickAt(WebContents(), 0,
+                                blink::WebMouseEvent::Button::Left,
+                                gfx::Point(left + 1, top + 1));
+  // Force a round-trip.
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "var noop = 'noop';"));
+  // Ensure the warning was not triggered.
+  ASSERT_FALSE(observing_autofill_client->DidPopupAppear());
+  // Ensure the histogram remains empty.
+  histograms.ExpectTotalCount(kHistogram, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
