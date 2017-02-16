@@ -388,10 +388,9 @@
     IPC_MESSAGE_FORWARD_WITH_PARAM_DELAY_REPLY(                                \
         msg_class, this, _IpcMessageHandlerClass::member_func)
 
-// TODO(jar): fix chrome frame to always supply |code| argument.
 #define IPC_MESSAGE_HANDLER_GENERIC(msg_class, code)                           \
     case msg_class::ID: {                                                      \
-        /* TRACK_RUN_IN_THIS_SCOPED_REGION(code);  TODO(jar) */                \
+        TRACK_RUN_IN_THIS_SCOPED_REGION(code);                                 \
         code;                                                                  \
       }                                                                        \
       break;
