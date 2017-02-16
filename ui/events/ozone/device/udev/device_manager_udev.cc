@@ -82,8 +82,8 @@ device::ScopedUdevMonitorPtr UdevCreateMonitor(struct udev* udev) {
 
 }  // namespace
 
-DeviceManagerUdev::DeviceManagerUdev() : udev_(UdevCreate()) {
-}
+DeviceManagerUdev::DeviceManagerUdev()
+    : udev_(UdevCreate()), controller_(FROM_HERE) {}
 
 DeviceManagerUdev::~DeviceManagerUdev() {
 }

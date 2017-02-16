@@ -45,6 +45,7 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
                           info.vendor_id(),
                           info.product_id()),
       input_device_fd_(std::move(fd)),
+      controller_(FROM_HERE),
       cursor_(cursor),
       dispatcher_(dispatcher) {
   x_abs_min_ = info.GetAbsMinimum(ABS_X);

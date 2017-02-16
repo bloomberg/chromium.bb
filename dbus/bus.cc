@@ -45,7 +45,7 @@ const char kServiceNameOwnerChangeMatchRule[] =
 class Watch : public base::MessagePumpLibevent::Watcher {
  public:
   explicit Watch(DBusWatch* watch)
-      : raw_watch_(watch) {
+      : raw_watch_(watch), file_descriptor_watcher_(FROM_HERE) {
     dbus_watch_set_data(raw_watch_, this, NULL);
   }
 

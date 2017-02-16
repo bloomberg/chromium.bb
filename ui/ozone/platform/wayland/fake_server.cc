@@ -355,7 +355,8 @@ FakeServer::FakeServer()
       pause_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       resume_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                    base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+                    base::WaitableEvent::InitialState::NOT_SIGNALED),
+      controller_(FROM_HERE) {}
 
 FakeServer::~FakeServer() {
   Resume();

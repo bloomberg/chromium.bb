@@ -14,7 +14,8 @@ namespace apps {
 
 UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
                                                    Delegate* delegate)
-    : named_pipe_(path.value()),
+    : server_listen_connection_watcher_(FROM_HERE),
+      named_pipe_(path.value()),
       delegate_(delegate),
       listen_handle_(mojo::edk::CreateServerHandle(named_pipe_)) {
   DCHECK(delegate_);

@@ -80,7 +80,8 @@ static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   }
 }
 
-ServiceProcessState::StateData::StateData() : set_action(false) {
+ServiceProcessState::StateData::StateData()
+    : watcher(FROM_HERE), set_action(false) {
   memset(sockets, -1, sizeof(sockets));
   memset(&old_action, 0, sizeof(old_action));
 }

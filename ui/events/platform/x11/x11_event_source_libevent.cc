@@ -133,7 +133,7 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
 }  // namespace
 
 X11EventSourceLibevent::X11EventSourceLibevent(XDisplay* display)
-    : event_source_(this, display) {
+    : event_source_(this, display), watcher_controller_(FROM_HERE) {
   AddEventWatcher();
 }
 

@@ -99,6 +99,7 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
 #if !defined(OS_ANDROID)
       upload_(upload),
 #endif
+      file_descriptor_watcher_(FROM_HERE),
       shutting_down_(false),
       worker_pool_token_(base::SequencedWorkerPool::GetSequenceToken()) {
   write_dump_file_sequence_checker_.DetachFromSequence();

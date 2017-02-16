@@ -25,7 +25,7 @@ const uint32_t kMaxShmVersion = 1;
 const uint32_t kMaxXdgShellVersion = 1;
 }  // namespace
 
-WaylandConnection::WaylandConnection() {}
+WaylandConnection::WaylandConnection() : controller_(FROM_HERE) {}
 
 WaylandConnection::~WaylandConnection() {}
 

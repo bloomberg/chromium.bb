@@ -90,7 +90,8 @@ class ChromeBrowserMainExtraPartsExo::WaylandWatcher {
 class ChromeBrowserMainExtraPartsExo::WaylandWatcher
     : public base::MessagePumpLibevent::Watcher {
  public:
-  explicit WaylandWatcher(exo::wayland::Server* server) : server_(server) {
+  explicit WaylandWatcher(exo::wayland::Server* server)
+      : controller_(FROM_HERE), server_(server) {
     base::MessageLoopForUI::current()->WatchFileDescriptor(
         server_->GetFileDescriptor(),
         true,  // persistent

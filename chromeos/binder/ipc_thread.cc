@@ -11,7 +11,10 @@ namespace binder {
 
 // IpcThreadPoller
 IpcThreadPoller::IpcThreadPoller(ThreadType type, Driver* driver)
-    : type_(type), driver_(driver), command_broker_(driver) {}
+    : type_(type),
+      driver_(driver),
+      command_broker_(driver),
+      watcher_(FROM_HERE) {}
 
 IpcThreadPoller::~IpcThreadPoller() {
   if (!command_broker_.ExitLooper()) {

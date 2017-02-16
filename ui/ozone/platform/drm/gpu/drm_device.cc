@@ -352,7 +352,7 @@ class DrmDevice::PageFlipManager {
 class DrmDevice::IOWatcher : public base::MessagePumpLibevent::Watcher {
  public:
   IOWatcher(int fd, DrmDevice::PageFlipManager* page_flip_manager)
-      : page_flip_manager_(page_flip_manager), fd_(fd) {
+      : page_flip_manager_(page_flip_manager), controller_(FROM_HERE), fd_(fd) {
     Register();
   }
 

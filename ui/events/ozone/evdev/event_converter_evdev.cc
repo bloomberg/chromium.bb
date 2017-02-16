@@ -28,8 +28,13 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                                          uint16_t product_id)
     : fd_(fd),
       path_(path),
-      input_device_(id, type, name, GetInputPathInSys(path), vendor_id,
-                    product_id) {}
+      input_device_(id,
+                    type,
+                    name,
+                    GetInputPathInSys(path),
+                    vendor_id,
+                    product_id),
+      controller_(FROM_HERE) {}
 
 EventConverterEvdev::~EventConverterEvdev() {
   DCHECK(!enabled_);
