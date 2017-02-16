@@ -143,6 +143,8 @@ class ExistingUserController
   friend class ExistingUserControllerPublicSessionTest;
   friend class MockLoginPerformerDelegate;
 
+  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
+
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
@@ -289,6 +291,9 @@ class ExistingUserController
   // AccountId of the last login attempt.
   AccountId last_login_attempt_account_id_ = EmptyAccountId();
 
+  // Whether the last login attempt was an auto login.
+  bool last_login_attempt_was_auto_login_ = false;
+
   // OOBE/login display host.
   LoginDisplayHost* host_;
 
@@ -369,8 +374,6 @@ class ExistingUserController
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
-
-  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;

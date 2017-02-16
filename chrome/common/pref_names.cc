@@ -731,6 +731,14 @@ const char kSessionLengthLimit[] = "session.length_limit";
 const char kSessionWaitForInitialUserActivity[] =
     "session.wait_for_initial_user_activity";
 
+// A preference of the last user session type. It is used with the
+// kLastSessionLength pref below to store the last user session info
+// on shutdown so that it could be reported on the next run.
+const char kLastSessionType[] = "session.last_session_type";
+
+// A preference of the last user session length.
+const char kLastSessionLength[] = "session.last_session_length";
+
 // Inactivity time in milliseconds while the system is on AC power before
 // the screen should be dimmed, turned off, or locked, before an
 // IdleActionImminent D-Bus signal should be sent, or before

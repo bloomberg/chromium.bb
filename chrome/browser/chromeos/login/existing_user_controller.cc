@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_context_initializer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_flow.h"
+#include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
@@ -739,6 +740,13 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
                                                    std::string() /* locale */));
   }
   ClearRecordedNames();
+
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    enterprise_user_session_metrics::RecordSignInEvent(
+        user_context, last_login_attempt_was_auto_login_);
+  }
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile,
@@ -1023,16 +1031,20 @@ void ExistingUserController::ResetAutoLoginTimer() {
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
   CHECK(auto_launch_ready_ && public_session_auto_login_account_id_.is_valid());
+  SigninSpecifics signin_specifics;
+  signin_specifics.is_auto_login = true;
   Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
                     public_session_auto_login_account_id_),
-        SigninSpecifics());
+        signin_specifics);
 }
 
 void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
   CHECK(auto_launch_ready_ && (arc_kiosk_auto_login_account_id_.is_valid()));
+  SigninSpecifics signin_specifics;
+  signin_specifics.is_auto_login = true;
   Login(UserContext(user_manager::USER_TYPE_ARC_KIOSK_APP,
                     arc_kiosk_auto_login_account_id_),
-        SigninSpecifics());
+        signin_specifics);
 }
 
 void ExistingUserController::StopAutoLoginTimer() {
@@ -1270,6 +1282,8 @@ void ExistingUserController::DoCompleteLogin(
 
 void ExistingUserController::DoLogin(const UserContext& user_context,
                                      const SigninSpecifics& specifics) {
+  last_login_attempt_was_auto_login_ = specifics.is_auto_login;
+
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
     if (!specifics.guest_mode_url.empty()) {
       guest_mode_url_ = GURL(specifics.guest_mode_url);

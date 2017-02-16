@@ -37,6 +37,10 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
   SessionLengthLimiter(Delegate* delegate, bool browser_restarted);
   ~SessionLengthLimiter() override;
 
+  // Returns the duration between |session_start_time_| and now if there is a
+  // valid |session_start_time_|. Otherwise, returns 0.
+  base::TimeDelta GetSessionDuration() const;
+
   // ui::UserActivityObserver:
   void OnUserActivity(const ui::Event* event) override;
 

@@ -107,6 +107,13 @@ SessionLengthLimiter::~SessionLengthLimiter() {
     ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
+base::TimeDelta SessionLengthLimiter::GetSessionDuration() const {
+  if (session_start_time_.is_null())
+    return base::TimeDelta();
+
+  return delegate_->GetCurrentTime() - session_start_time_;
+}
+
 void SessionLengthLimiter::OnUserActivity(const ui::Event* event) {
   if (user_activity_seen_)
     return;

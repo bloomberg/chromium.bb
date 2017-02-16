@@ -262,6 +262,8 @@ extern const char kSessionUserActivitySeen[];
 extern const char kSessionStartTime[];
 extern const char kSessionLengthLimit[];
 extern const char kSessionWaitForInitialUserActivity[];
+extern const char kLastSessionType[];
+extern const char kLastSessionLength[];
 extern const char kPowerAcScreenDimDelayMs[];
 extern const char kPowerAcScreenOffDelayMs[];
 extern const char kPowerAcScreenLockDelayMs[];
