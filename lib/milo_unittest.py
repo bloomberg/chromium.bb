@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import json
 import mock
 import os
 
@@ -44,4 +45,49 @@ class MiloClientTest(cros_test_lib.MockTestCase):
     self.assertEqual(resp['masterName'], 'chromeos')
     self.mock_request.assert_called_with('prpc/milo.Buildbot',
                                          'GetBuildbotBuildJSON', mock.ANY,
+                                         dryrun=False)
+
+  def testBuildInfoGetBuildbot(self):
+    """Test BuildInfoGetBuildbot."""
+    # Test data file is generated via:
+    # rpc call -format json luci-milo.appspot.com milo.BuildInfo.Get <<EOD
+    # {
+    #   "buildbot": {
+    #     "masterName": "tryserver.chromium.perf",
+    #     "builderName": "win_perf_bisect",
+    #     "buildNumber": 7170
+    #   }
+    # }
+    # EOD
+    with open(os.path.join(
+        TESTDATA_PATH, 'MiloClientTest.testBuildInfoGetBuildbot.json')) as f:
+      self.mock_request.return_value = json.load(f)
+    resp = self.client.BuildInfoGetBuildbot('tryserver.chromium.perf',
+                                            'win_perf_bisect', 7170)
+    # Look up based directly on protobufs data.
+    self.assertEqual(resp['step']['status'], 'SUCCESS')
+    self.assertEqual(resp['annotationStream']['prefix'],
+                     'bb/tryserver.chromium.perf/win_perf_bisect/7170')
+    self.assertEqual(resp['steps'].keys()[0:6],
+                     [(None,), None,
+                      ('setup_build',), 'setup_build',
+                      ('taskkill',), 'taskkill'])
+    # Root (level 0) step.
+    self.assertEqual(resp['steps'][None]['status'], 'SUCCESS')
+    # Level 1 step as scalar.
+    self.assertEqual(resp['steps']['setup_build']['stdoutStream']['name'],
+                     'recipes/steps/setup_build/0/stdout')
+    # Level 1 step as full tuple.
+    self.assertEqual(resp['steps'][('setup_build',)]['stdoutStream']['name'],
+                     'recipes/steps/setup_build/0/stdout')
+    # Level 1 non-leaf step.
+    self.assertEqual(resp['steps'][('ensure_goma',)]['started'],
+                     '2017-03-02T22:44:41.725726800Z')
+    # Level 2 leaf step..
+    self.assertEqual(resp['steps']
+                     [('ensure_goma', 'ensure_goma.ensure_installed')]
+                     ['stdoutStream']['name'],
+                     'recipes/steps/ensure_goma/0/steps/ensure_installed/'
+                     '0/stdout')
+    self.mock_request.assert_called_with('prpc/milo.BuildInfo', 'Get', mock.ANY,
                                          dryrun=False)
