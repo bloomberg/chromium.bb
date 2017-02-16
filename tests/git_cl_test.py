@@ -1134,14 +1134,16 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_base_calls(cls, issue=None, fetched_description=None):
-    return [
+    calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.git-cl-similarity'],),
          CERR1),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--bool', 'branch.master.git-find-copies'],),
          CERR1),
-      ] + cls._is_gerrit_calls(True) + [
+    ]
+    calls += cls._is_gerrit_calls(True)
+    calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.master.gerritissue'],),
@@ -1152,7 +1154,11 @@ class TestGitCl(TestCase):
            'refs/remotes/origin/master'],),
          'fake_ancestor_sha'),
         # Calls to verify branch point is ancestor
-      ] + cls._gerrit_ensure_auth_calls(issue=issue) + ([
+    ]
+    calls += cls._gerrit_ensure_auth_calls(issue=issue)
+
+    if issue:
+      calls += [
         (('GetChangeDetail', 'chromium-review.googlesource.com',
           '123456', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          {
@@ -1163,9 +1169,11 @@ class TestGitCl(TestCase):
            }},
            'status': 'NEW',
          }),
-      ] if issue else [
-      ]) + cls._git_sanity_checks('fake_ancestor_sha', 'master',
-                                  get_remote_branch=False) + [
+      ]
+
+    calls += cls._git_sanity_checks('fake_ancestor_sha', 'master',
+                                  get_remote_branch=False)
+    calls += [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
 
@@ -1174,18 +1182,23 @@ class TestGitCl(TestCase):
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
         ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
-      ] + ([
-      ] if issue else [
+    ]
+
+    if not issue:
+      calls += [
         ((['git',
            'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
          'foo'),
-      ]) + [
+      ]
+
+    calls += [
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git',
            'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
            'fake_ancestor_sha', 'HEAD'],),
          '+dat'),
-      ]
+    ]
+    return calls
 
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
