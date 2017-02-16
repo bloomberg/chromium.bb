@@ -34,9 +34,11 @@ endif ()
 
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
 if (NOT EXISTS "${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
-  message("No RTCD template for ${AOM_TARGET_CPU}, using generic.")
-  set(AOM_TARGET_CPU "generic")
+  message(FATAL_ERROR "No RTCD template for ${AOM_TARGET_CPU}. Create one, or "
+          "add -DAOM_TARGET_CPU=generic to your cmake command line for a "
+          "generic build of libaom and tools.")
 endif ()
+
 if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
   find_program(YASM_EXECUTABLE yasm $ENV{YASM_PATH})
   if (NOT YASM_EXECUTABLE)
