@@ -23,6 +23,8 @@
 namespace {
 // Stackview Vertical Margin.
 CGFloat kVerticalMargin = 5.0f;
+// Stackview Horizontal Margin.
+CGFloat kHorizontalMargin = 8.0f;
 }  // namespace
 
 @interface ToolbarViewController ()<ToolsMenuActions>
@@ -72,15 +74,19 @@ CGFloat kVerticalMargin = 5.0f;
   [self.view addSubview:self.stackView];
 
   // Set constraints.
+  [self.view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                 UIViewAutoresizingFlexibleHeight];
   [NSLayoutConstraint activateConstraints:@[
     [self.stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor
                                              constant:kVerticalMargin],
     [self.stackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
                                                 constant:-kVerticalMargin],
     [self.stackView.leadingAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.leadingAnchor],
+        constraintEqualToAnchor:self.view.leadingAnchor
+                       constant:kHorizontalMargin],
     [self.stackView.trailingAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
+        constraintEqualToAnchor:self.view.trailingAnchor
+                       constant:-kHorizontalMargin],
   ]];
 }
 

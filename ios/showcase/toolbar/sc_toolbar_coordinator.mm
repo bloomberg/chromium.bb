@@ -43,8 +43,8 @@ CGFloat kToolbarHeight = 50.0f;
       [[ToolbarViewController alloc] init];
   toolbarViewController.toolbarCommandHandler =
       static_cast<id<ToolbarCommands>>(self.alerter);
-  toolbarViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   [containerViewController addChildViewController:toolbarViewController];
+  toolbarViewController.view.frame = containerView.frame;
   [containerView addSubview:toolbarViewController.view];
   [toolbarViewController didMoveToParentViewController:containerViewController];
 
@@ -56,14 +56,6 @@ CGFloat kToolbarHeight = 50.0f;
         constraintEqualToAnchor:containerViewController.view.trailingAnchor],
     [containerView.centerYAnchor
         constraintEqualToAnchor:containerViewController.view.centerYAnchor],
-    [toolbarViewController.view.topAnchor
-        constraintEqualToAnchor:containerView.topAnchor],
-    [toolbarViewController.view.bottomAnchor
-        constraintEqualToAnchor:containerView.bottomAnchor],
-    [toolbarViewController.view.leadingAnchor
-        constraintEqualToAnchor:containerView.leadingAnchor],
-    [toolbarViewController.view.trailingAnchor
-        constraintEqualToAnchor:containerView.trailingAnchor],
   ]];
 
   [self.baseViewController pushViewController:containerViewController
