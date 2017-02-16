@@ -12,7 +12,8 @@
 <dom-module id="settings-search-engines-page">
   <template>
     <style include="settings-shared action-link">
-      .extension-engines {
+      .extension-engines,
+      #noOtherEngines {
         @apply(--settings-list-frame-padding);
       }
 
@@ -35,6 +36,9 @@
           on-tap="onAddSearchEngineTap_" id="addSearchEngine">
         $i18n{add}
       </paper-button>
+    </div>
+    <div id="noOtherEngines" hidden="[[otherEngines.length]]">
+      $i18n{searchEnginesNoOtherEngines}
     </div>
     <settings-search-engines-list engines="[[otherEngines]]" hide-headers>
     </settings-search-engines-list>
