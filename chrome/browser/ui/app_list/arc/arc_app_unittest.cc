@@ -769,8 +769,9 @@ TEST_F(ArcAppModelBuilderTest, RequestShortcutIcons) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
-  // Validate that no icon exists at the beginning and request icon for
-  // each supported scale factor. This will start asynchronous loading.
+  // Icons representations loading is done asynchronously and is started once
+  // the ArcAppItem is created. Wait for icons for all supported scales to be
+  // loaded.
   uint32_t expected_mask = 0;
   ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(shortcut));
   ASSERT_NE(nullptr, app_item);
@@ -778,12 +779,8 @@ TEST_F(ArcAppModelBuilderTest, RequestShortcutIcons) {
       ui::GetSupportedScaleFactors();
   for (auto& scale_factor : scale_factors) {
     expected_mask |= 1 << scale_factor;
-    const float scale = ui::GetScaleForScaleFactor(scale_factor);
     const base::FilePath icon_path =
         prefs->GetIconPath(ArcAppTest::GetAppId(shortcut), scale_factor);
-    EXPECT_FALSE(base::PathExists(icon_path));
-
-    app_item->icon().GetRepresentation(scale);
     WaitForIconReady(prefs, ArcAppTest::GetAppId(shortcut), scale_factor);
   }
 
@@ -1021,13 +1018,22 @@ TEST_F(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
       fake_apps().begin(), fake_apps().begin() + 1));
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // Store number of requests generated during the App List item creation.
+  const size_t initial_icon_request_count =
+      app_instance()->icon_requests().size();
 
   std::vector<arc::mojom::ShortcutInfo> shortcuts =
       arc_test()->fake_shortcuts();
+  shortcuts.resize(1);
   shortcuts[0].intent_uri +=
       ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
   app_instance()->SendInstallShortcuts(shortcuts);
   const std::string shortcut_id = ArcAppTest::GetAppId(shortcuts[0]);
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
 
   const std::string id_shortcut_exist =
       arc::ArcAppShelfId("arc_test_shelf_group", app_id).ToString();
@@ -1035,9 +1041,7 @@ TEST_F(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
       arc::ArcAppShelfId("arc_test_shelf_group_absent", app_id).ToString();
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(),
-                               app_list::kListIconSize,
-                               &delegate);
+  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
   EXPECT_EQ(0UL, delegate.update_image_cnt());
 
   // Shortcut exists, icon is requested from shortcut.
@@ -1049,7 +1053,7 @@ TEST_F(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   const size_t shortcut_request_cnt =
       app_instance()->shortcut_icon_requests().size();
   EXPECT_NE(0U, shortcut_request_cnt);
-  EXPECT_TRUE(app_instance()->icon_requests().empty());
+  EXPECT_EQ(initial_icon_request_count, app_instance()->icon_requests().size());
   for (const auto& request : app_instance()->shortcut_icon_requests()) {
     EXPECT_EQ(shortcuts[0].icon_resource_id, request->icon_resource_id());
   }
@@ -1059,10 +1063,13 @@ TEST_F(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   EXPECT_EQ(2UL, delegate.update_image_cnt());
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(app_instance()->icon_requests().empty());
+  EXPECT_TRUE(app_instance()->icon_requests().size() >
+              initial_icon_request_count);
   EXPECT_EQ(shortcut_request_cnt,
-      app_instance()->shortcut_icon_requests().size());
-  for (const auto& request : app_instance()->icon_requests()) {
+            app_instance()->shortcut_icon_requests().size());
+  for (size_t i = initial_icon_request_count;
+       i < app_instance()->icon_requests().size(); ++i) {
+    const auto& request = app_instance()->icon_requests()[i];
     EXPECT_TRUE(request->IsForApp(app));
   }
 }

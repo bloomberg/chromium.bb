@@ -73,23 +73,11 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void OnSearchEngineIsGoogleChanged(bool is_google) override;
 
  private:
-  class IconLoader;
-
   // Adds the ContentsView.
   void AddContentsViews();
 
   // Gets the PaginationModel owned by the AppsGridView.
   PaginationModel* GetAppsPaginationModel();
-
-  // Loads icon image for the apps in the selected page of |pagination_model_|.
-  // |parent| is used to determine the image scale factor to use.
-  void PreloadIcons(gfx::NativeView parent);
-
-  // Invoked when |icon_loading_wait_timer_| fires.
-  void OnIconLoadingWaitTimer();
-
-  // Invoked from an IconLoader when icon loading is finished or item is closed.
-  void OnIconLoaderFinished(IconLoader* loader);
 
   // Overridden from AppsGridViewDelegate:
   void ActivateApp(AppListItem* item, int event_flags) override;
@@ -109,14 +97,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Created by AppListView. Owned by views hierarchy.
   SearchBoxView* search_box_view_;
   ContentsView* contents_view_;  // Owned by views hierarchy.
-
-  // A timer that fires when maximum allowed time to wait for icon loading has
-  // passed.
-  base::OneShotTimer icon_loading_wait_timer_;
-
-  ScopedVector<IconLoader> pending_icon_loaders_;
-
-  base::WeakPtrFactory<AppListMainView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListMainView);
 };

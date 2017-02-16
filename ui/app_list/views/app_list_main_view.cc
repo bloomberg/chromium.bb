@@ -40,49 +40,6 @@
 
 namespace app_list {
 
-namespace {
-
-// The maximum allowed time to wait for icon loading in milliseconds.
-const int kMaxIconLoadingWaitTimeInMs = 50;
-
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// AppListMainView::IconLoader
-
-class AppListMainView::IconLoader : public AppListItemObserver {
- public:
-  IconLoader(AppListMainView* owner,
-             AppListItem* item,
-             float scale)
-      : owner_(owner),
-        item_(item) {
-    item_->AddObserver(this);
-
-    // Triggers icon loading for given |scale_factor|.
-    item_->icon().GetRepresentation(scale);
-  }
-
-  ~IconLoader() override { item_->RemoveObserver(this); }
-
- private:
-  // AppListItemObserver overrides:
-  void ItemIconChanged() override {
-    owner_->OnIconLoaderFinished(this);
-    // Note that IconLoader is released here.
-  }
-
-  void ItemBeingDestroyed() override {
-    owner_->OnIconLoaderFinished(this);
-    // Note that IconLoader is released here.
-  }
-
-  AppListMainView* owner_;
-  AppListItem* item_;
-
-  DISALLOW_COPY_AND_ASSIGN(IconLoader);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // AppListMainView:
 
@@ -90,14 +47,12 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_box_view_(nullptr),
-      contents_view_(nullptr),
-      weak_ptr_factory_(this) {
+      contents_view_(nullptr) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   model_->AddObserver(this);
 }
 
 AppListMainView::~AppListMainView() {
-  pending_icon_loaders_.clear();
   model_->RemoveObserver(this);
 }
 
@@ -111,9 +66,6 @@ void AppListMainView::Init(gfx::NativeView parent,
   app_list::PaginationModel* pagination_model = GetAppsPaginationModel();
   if (pagination_model->is_valid_page(initial_apps_page))
     pagination_model->SelectPage(initial_apps_page, false);
-
-  // Starts icon loading early.
-  PreloadIcons(parent);
 
   OnSearchEngineIsGoogleChanged(model_->search_engine_is_google());
 }
@@ -135,19 +87,7 @@ void AppListMainView::AddContentsViews() {
 }
 
 void AppListMainView::ShowAppListWhenReady() {
-  if (pending_icon_loaders_.empty()) {
-    icon_loading_wait_timer_.Stop();
-    GetWidget()->Show();
-    return;
-  }
-
-  if (icon_loading_wait_timer_.IsRunning())
-    return;
-
-  icon_loading_wait_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kMaxIconLoadingWaitTimeInMs),
-      this, &AppListMainView::OnIconLoadingWaitTimer);
+  GetWidget()->Show();
 }
 
 void AppListMainView::ResetForShow() {
@@ -159,18 +99,16 @@ void AppListMainView::ResetForShow() {
 }
 
 void AppListMainView::Close() {
-  icon_loading_wait_timer_.Stop();
   contents_view_->CancelDrag();
 }
 
 void AppListMainView::ModelChanged() {
-  pending_icon_loaders_.clear();
   model_->RemoveObserver(this);
   model_ = delegate_->GetModel();
   model_->AddObserver(this);
   search_box_view_->ModelChanged();
   delete contents_view_;
-  contents_view_ = NULL;
+  contents_view_ = nullptr;
   AddContentsViews();
   Layout();
 }
@@ -184,52 +122,6 @@ PaginationModel* AppListMainView::GetAppsPaginationModel() {
   return contents_view_->apps_container_view()
       ->apps_grid_view()
       ->pagination_model();
-}
-
-void AppListMainView::PreloadIcons(gfx::NativeView parent) {
-  float scale_factor = 1.0f;
-  if (parent)
-    scale_factor = ui::GetScaleFactorForNativeView(parent);
-
-  // The PaginationModel could have -1 as the initial selected page and
-  // assumes first page (i.e. index 0) will be used in this case.
-  const int selected_page =
-      std::max(0, GetAppsPaginationModel()->selected_page());
-
-  const AppsGridView* const apps_grid_view =
-      contents_view_->apps_container_view()->apps_grid_view();
-  const int tiles_per_page =
-      apps_grid_view->cols() * apps_grid_view->rows_per_page();
-
-  const int start_model_index = selected_page * tiles_per_page;
-  const int end_model_index =
-      std::min(static_cast<int>(model_->top_level_item_list()->item_count()),
-               start_model_index + tiles_per_page);
-
-  pending_icon_loaders_.clear();
-  for (int i = start_model_index; i < end_model_index; ++i) {
-    AppListItem* item = model_->top_level_item_list()->item_at(i);
-    if (item->icon().HasRepresentation(scale_factor))
-      continue;
-
-    pending_icon_loaders_.push_back(new IconLoader(this, item, scale_factor));
-  }
-}
-
-void AppListMainView::OnIconLoadingWaitTimer() {
-  GetWidget()->Show();
-}
-
-void AppListMainView::OnIconLoaderFinished(IconLoader* loader) {
-  ScopedVector<IconLoader>::iterator it = std::find(
-      pending_icon_loaders_.begin(), pending_icon_loaders_.end(), loader);
-  DCHECK(it != pending_icon_loaders_.end());
-  pending_icon_loaders_.erase(it);
-
-  if (pending_icon_loaders_.empty() && icon_loading_wait_timer_.IsRunning()) {
-    icon_loading_wait_timer_.Stop();
-    GetWidget()->Show();
-  }
 }
 
 void AppListMainView::NotifySearchBoxVisibilityChanged() {

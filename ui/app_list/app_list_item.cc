@@ -23,6 +23,7 @@ AppListItem::~AppListItem() {
 
 void AppListItem::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
+  icon_.EnsureRepsForSupportedScales();
   for (auto& observer : observers_)
     observer.ItemIconChanged();
 }

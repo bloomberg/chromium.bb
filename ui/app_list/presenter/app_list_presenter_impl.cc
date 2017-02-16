@@ -20,12 +20,12 @@ namespace app_list {
 namespace {
 
 // Duration for show/hide animation in milliseconds.
-const int kAnimationDurationMs = 200;
+constexpr int kAnimationDurationMs = 200;
 
 // The maximum shift in pixels when over-scroll happens.
-const int kMaxOverScrollShift = 48;
+constexpr int kMaxOverScrollShift = 48;
 
-ui::Layer* GetLayer(views::Widget* widget) {
+inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
@@ -164,16 +164,14 @@ void AppListPresenterImpl::ScheduleAnimation() {
   ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
 
-  gfx::Rect target_bounds;
+  gfx::Rect target_bounds = widget->GetWindowBoundsInScreen();
   gfx::Vector2d offset = presenter_delegate_->GetVisibilityAnimationOffset(
       widget->GetNativeView()->GetRootWindow());
   if (is_visible_) {
-    target_bounds = widget->GetWindowBoundsInScreen();
     gfx::Rect start_bounds = gfx::Rect(target_bounds);
     start_bounds.Offset(offset);
     widget->SetBounds(start_bounds);
   } else {
-    target_bounds = widget->GetWindowBoundsInScreen();
     target_bounds.Offset(offset);
   }
 
