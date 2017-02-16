@@ -108,6 +108,32 @@ function testDoesNotShowFakeboxIfNotGoogle() {
 }
 
 
+/**
+ * Tests that the embeddedSearch.newTabPage.mostVisited API is hooked up, and
+ * provides the correct data for the tiles (i.e. only IDs, no URLs).
+ */
+function testMostVisitedContents() {
+  // Check that the API is available and properly hooked up, so that it returns
+  // some data (see history::PrepopulatedPageList for the default contents).
+  assert(window.chrome.embeddedSearch.newTabPage.mostVisited.length > 0);
+
+  // Check that the items have the required fields: We expect a "restricted ID"
+  // (rid), but there mustn't be url, title, etc. Those are only available
+  // through getMostVisitedItemData(rid).
+  for (var mvItem of window.chrome.embeddedSearch.newTabPage.mostVisited) {
+    assert(isFinite(mvItem.rid));
+    assert(!mvItem.url);
+    assert(!mvItem.title);
+    assert(!mvItem.domain);
+  }
+
+  // Try to get an item's details via getMostVisitedItemData. This should fail,
+  // because that API is only available to the MV iframe.
+  assert(!window.chrome.embeddedSearch.newTabPage.getMostVisitedItemData(
+      window.chrome.embeddedSearch.newTabPage.mostVisited[0].rid));
+}
+
+
 
 // ****************************** ADVANCED TESTS ******************************
 // Advanced tests are controlled from the native side. The helpers here are
