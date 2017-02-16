@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 
 namespace ui {
 class Accelerator;
@@ -40,6 +41,14 @@ class ASH_EXPORT AcceleratorRouter {
   bool ShouldProcessAcceleratorNow(WmWindow* target,
                                    const ui::KeyEvent& event,
                                    const ui::Accelerator& accelerator);
+
+  // Records a histogram on how long the "Search" key is held when a user
+  // presses an accelerator that involes the "Search" key.
+  void RecordSearchKeyStats(const ui::Accelerator& accelerator);
+
+  enum SearchKeyState { RELEASED = 0, PRESSED, RECORDED };
+  SearchKeyState search_key_state_ = RELEASED;
+  base::TimeTicks search_key_pressed_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorRouter);
 };
