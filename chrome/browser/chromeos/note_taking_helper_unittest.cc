@@ -644,15 +644,15 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
   EXPECT_EQ(2, observer.num_updates());
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   EXPECT_EQ(3, observer.num_updates());
+  // Run ARC data removing operation.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(4, observer.num_updates());
 
   // Update intent filters and check that the observer is notified again after
   // apps are received.
   helper()->OnIntentFiltersUpdated();
-  EXPECT_EQ(4, observer.num_updates());
+  EXPECT_EQ(3, observer.num_updates());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(5, observer.num_updates());
+  EXPECT_EQ(4, observer.num_updates());
 }
 
 TEST_F(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {

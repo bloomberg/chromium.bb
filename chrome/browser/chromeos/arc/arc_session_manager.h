@@ -77,6 +77,9 @@ class ArcSessionManager : public ArcSessionObserver,
   // In the second (or later) boot case:
   //   STOPPED -> ACTIVE: when arc.enabled preference is checked that it is
   //     true. Practically, this is when the primary Profile gets ready.
+  //
+  // TODO(hidehiko): Fix the state machine, and update the comment including
+  // relationship with |enable_requested_|.
   enum class State {
     NOT_INITIALIZED,
     STOPPED,
@@ -166,6 +169,19 @@ class ArcSessionManager : public ArcSessionObserver,
   // Google Play Store, then ARC can run without opt-in.
   void SetArcPlayStoreEnabled(bool enable);
 
+  // Requests to enable ARC session. This starts ARC instance, or maybe starts
+  // Terms Of Service negotiation if they haven't been accepted yet.
+  // If it is already requested to enable, no-op.
+  // Currently, enabled/disabled is tied to whether Google Play Store is
+  // enabled or disabled. Please see also TODO of SetArcPlayStoreEnabled().
+  void RequestEnable();
+
+  // Requests to disable ARC session. This stops ARC instance, or quits Terms
+  // Of Service negotiation if it is the middle of the process (e.g. closing
+  // UI for manual negotiation if it is shown).
+  // If it is already requested to disable, no-op.
+  void RequestDisable();
+
   // Called from the Chrome OS metrics provider to record Arc.State
   // periodically.
   void RecordArcState();
@@ -218,6 +234,10 @@ class ArcSessionManager : public ArcSessionObserver,
   void SetAttemptUserExitCallbackForTesting(const base::Closure& callback);
 
  private:
+  // RequestEnable() has a check in order not to trigger starting procedure
+  // twice. This method can be called to bypass that check when restarting.
+  void RequestEnableImpl();
+
   // Negotiates the terms of service to user.
   void StartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
@@ -256,6 +276,11 @@ class ArcSessionManager : public ArcSessionObserver,
   // Registrar used to monitor ARC enabled state.
   PrefChangeRegistrar pref_change_registrar_;
 
+  // Whether ArcSessionManager is requested to enable (starting to run ARC
+  // instance) or not.
+  bool enable_requested_ = false;
+
+  // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   base::ObserverList<ArcSessionObserver> arc_session_observer_list_;
