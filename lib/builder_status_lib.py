@@ -7,8 +7,19 @@
 from __future__ import print_function
 
 import cPickle
+import os
 
+from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_logging as logging
+from chromite.lib import gs
+
+
+site_config = config_lib.GetConfig()
+
+BUILD_STATUS_URL = (
+    '%s/builder-status' % site_config.params.MANIFEST_VERSIONS_GS_URL)
+NUM_RETRIES = 20
 
 
 class BuilderStatus(object):
@@ -83,3 +94,54 @@ class BuilderStatus(object):
     """Returns a pickled dictionary representation of this builder status."""
     return cPickle.dumps(dict(status=self.status, message=self.message,
                               dashboard_url=self.dashboard_url))
+
+
+class BuilderStatusManager(object):
+  """Operations to manage BuilderStatus."""
+
+  @staticmethod
+  def GetStatusUrl(builder, version):
+    """Get the status URL in Google Storage for a given builder / version."""
+    return os.path.join(BUILD_STATUS_URL, version, builder)
+
+  @staticmethod
+  def _UnpickleBuildStatus(pickle_string):
+    """Returns a builder_status_lib.BuilderStatus obj from a pickled string."""
+    try:
+      status_dict = cPickle.loads(pickle_string)
+    except (cPickle.UnpicklingError, AttributeError, EOFError,
+            ImportError, IndexError, TypeError) as e:
+      # The above exceptions are listed as possible unpickling exceptions
+      # by http://docs.python.org/2/library/pickle
+      # In addition to the exceptions listed in the doc, we've also observed
+      # TypeError in the wild.
+      logging.warning('Failed with %r to unpickle status file.', e)
+      return BuilderStatus(
+          constants.BUILDER_STATUS_FAILED, message=None)
+
+    return BuilderStatus(**status_dict)
+
+  @staticmethod
+  def GetBuilderStatus(builder, version, retries=NUM_RETRIES):
+    """Returns a builder_status_lib.BuilderStatus obj for the given the builder.
+
+    Args:
+      builder: Builder to look at.
+      version: Version string.
+      retries: Number of retries for getting the status.
+
+    Returns:
+      A builder_status_lib.BuilderStatus instance containing the builder status
+      and any optional message associated with the status passed by the builder.
+      If no status is found for this builder then the returned
+      builder_status_lib.BuilderStatus object will have status STATUS_MISSING.
+    """
+    url = BuilderStatusManager.GetStatusUrl(builder, version)
+    ctx = gs.GSContext(retries=retries)
+    try:
+      output = ctx.Cat(url)
+    except gs.GSNoSuchKey:
+      return BuilderStatus(
+          constants.BUILDER_STATUS_MISSING, None)
+
+    return BuilderStatusManager._UnpickleBuildStatus(output)

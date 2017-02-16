@@ -13,10 +13,10 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import archive_lib
+from chromite.cbuildbot import tree_status
+from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import tree_status
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -78,7 +78,7 @@ class ChromeCommitter(object):
   def _GetLatestCanaryVersions(self):
     """Returns the latest CANDIDATES_TO_CONSIDER canary versions."""
     gs_handle = gs.GSContext()
-    version_paths = gs_handle.LS(manifest_version.BUILD_STATUS_URL)
+    version_paths = gs_handle.LS(builder_status_lib.BUILD_STATUS_URL)
 
     # Strip gs://<path> prefix and trailing /'s.
     versions = [os.path.basename(v.rstrip('/')) for v in version_paths]
@@ -118,7 +118,7 @@ class ChromeCommitter(object):
       version_scores[version] = 0
       failed_builders = []
       for builder in canaries:
-        status = manifest_version.BuildSpecsManager.GetBuildStatus(
+        status = builder_status_lib.BuilderStatusManager.GetBuilderStatus(
             builder, version, retries=0)
         if status:
           if status.Passed():

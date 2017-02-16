@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
 from chromite.lib import builder_status_lib
 from chromite.lib import constants
@@ -74,14 +73,15 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     for canary, results in zip(self.canaries, all_results):
       for version, status in zip(self.versions, results):
         expected[(canary, version)] = status
-    def _GetBuildStatus(canary, version, **_):
+    def _GetBuilderStatus(canary, version, **_):
       return expected[(canary, version)]
     self.PatchObject(self.committer, '_GetLatestCanaryVersions',
                      return_value=self.versions)
     self.PatchObject(self.committer, 'GetCanariesForChromeLKGM',
                      return_value=self.canaries)
-    self.PatchObject(manifest_version.BuildSpecsManager, 'GetBuildStatus',
-                     side_effect=_GetBuildStatus)
+    self.PatchObject(builder_status_lib.BuilderStatusManager,
+                     'GetBuilderStatus',
+                     side_effect=_GetBuilderStatus)
     self.committer.FindNewLKGM()
     self.assertTrue(self.committer._lkgm, lkgm)
 

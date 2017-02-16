@@ -20,7 +20,6 @@ from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import metadata_lib
 from chromite.lib import osutils
@@ -268,7 +267,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
-    m = self.PatchObject(self.manager, 'GetBuildStatus', return_value=missing)
+    m = self.PatchObject(builder_status_lib.BuilderStatusManager,
+                         'GetBuilderStatus', return_value=missing)
     self.manager.InitializeManifestVariables(info)
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
     m.assert_called_once_with(self.build_names[0], '1.2.5')
@@ -338,28 +338,6 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.manager.GetNextBuildSpec(retries=0)
     self.manager.UpdateStatus({self.build_names[0]: True})
 
-  def testUnpickleBuildStatus(self):
-    """Tests that _UnpickleBuildStatus returns the correct values."""
-    self.manager = self.BuildManager()
-    failed_msg = failures_lib.BuildFailureMessage(
-        'you failed', ['traceback'], True, 'taco', 'bot')
-    failed_input_status = builder_status_lib.BuilderStatus(
-        constants.BUILDER_STATUS_FAILED, failed_msg)
-    passed_input_status = builder_status_lib.BuilderStatus(
-        constants.BUILDER_STATUS_PASSED, None)
-
-    failed_output_status = self.manager._UnpickleBuildStatus(
-        failed_input_status.AsPickledDict())
-    passed_output_status = self.manager._UnpickleBuildStatus(
-        passed_input_status.AsPickledDict())
-    empty_string_status = self.manager._UnpickleBuildStatus('')
-
-    self.assertEqual(failed_input_status.AsFlatDict(),
-                     failed_output_status.AsFlatDict())
-    self.assertEqual(passed_input_status.AsFlatDict(),
-                     passed_output_status.AsFlatDict())
-    self.assertTrue(empty_string_status.Failed())
-
   def _GetBuildersStatus(self, builders, status_runs):
     """Test a call to BuildSpecsManager.GetBuildersStatus.
 
@@ -376,8 +354,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         builder_status_lib.BuilderStatus(final_status_dict.get(x).status, None)
         for x in builders
     ]
-    self.PatchObject(manifest_version.BuildSpecsManager,
-                     'GetBuildStatus',
+    self.PatchObject(builder_status_lib.BuilderStatusManager,
+                     'GetBuilderStatus',
                      side_effect=build_statuses)
 
     return self.manager.GetBuildersStatus(
@@ -472,8 +450,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         builder_status_lib.BuilderStatus(final_status_dict.get(x).status, None)
         for x in builders
     ]
-    self.PatchObject(manifest_version.BuildSpecsManager,
-                     'GetBuildStatus',
+    self.PatchObject(builder_status_lib.BuilderStatusManager,
+                     'GetBuilderStatus',
                      side_effect=build_statuses)
 
     return self.manager.GetBuildersStatus(

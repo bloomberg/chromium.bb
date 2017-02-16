@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import cPickle
 import datetime
 import fnmatch
 import glob
@@ -31,9 +30,6 @@ from chromite.lib import timeout_util
 
 site_config = config_lib.GetConfig()
 
-
-BUILD_STATUS_URL = (
-    '%s/builder-status' % site_config.params.MANIFEST_VERSIONS_GS_URL)
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
 
@@ -480,8 +476,9 @@ class BuildSpecsManager(object):
     if version is None:
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
-        self._latest_status = self.GetBuildStatus(self.build_names[0],
-                                                  self.latest)
+        self._latest_status = (
+            builder_status_lib.BuilderStatusManager.GetBuilderStatus(
+                self.build_names[0], self.latest))
         if self._latest_status.Missing():
           self.latest_unprocessed = self.latest
 
@@ -570,31 +567,6 @@ class BuildSpecsManager(object):
     """Returns True if the last build failed."""
     return self._latest_status and self._latest_status.Failed()
 
-  @staticmethod
-  def GetBuildStatus(builder, version, retries=NUM_RETRIES):
-    """Returns a builder_status_lib.BuilderStatus obj for the given the builder.
-
-    Args:
-      builder: Builder to look at.
-      version: Version string.
-      retries: Number of retries for getting the status.
-
-    Returns:
-      A builder_status_lib.BuilderStatus instance containing the builder status
-      and any optional message associated with the status passed by the builder.
-      If no status is found for this builder then the returned
-      builder_status_lib.BuilderStatus object will have status STATUS_MISSING.
-    """
-    url = BuildSpecsManager._GetStatusUrl(builder, version)
-    ctx = gs.GSContext(retries=retries)
-    try:
-      output = ctx.Cat(url)
-    except gs.GSNoSuchKey:
-      return builder_status_lib.BuilderStatus(
-          constants.BUILDER_STATUS_MISSING, None)
-
-    return BuildSpecsManager._UnpickleBuildStatus(output)
-
   def GetBuildersStatus(self, master_build_id, db, builders_array, pool=None,
                         timeout=3 * 60):
     """Get the statuses of the slave builders of the master.
@@ -645,7 +617,8 @@ class BuildSpecsManager(object):
     builder_statuses = {}
     for builder in builders_array:
       logging.debug("Checking for builder %s's status", builder)
-      builder_status = self.GetBuildStatus(builder, self.current_version)
+      builder_status = builder_status_lib.BuilderStatusManager.GetBuilderStatus(
+          builder, self.current_version)
       builder_statuses[builder] = builder_status
 
     if builds_timed_out:
@@ -653,23 +626,6 @@ class BuildSpecsManager(object):
                     ' reached.', int((timeout / 60) + 0.5))
 
     return builder_statuses
-
-  @staticmethod
-  def _UnpickleBuildStatus(pickle_string):
-    """Returns a builder_status_lib.BuilderStatus obj from a pickled string."""
-    try:
-      status_dict = cPickle.loads(pickle_string)
-    except (cPickle.UnpicklingError, AttributeError, EOFError,
-            ImportError, IndexError, TypeError) as e:
-      # The above exceptions are listed as possible unpickling exceptions
-      # by http://docs.python.org/2/library/pickle
-      # In addition to the exceptions listed in the doc, we've also observed
-      # TypeError in the wild.
-      logging.warning('Failed with %r to unpickle status file.', e)
-      return builder_status_lib.BuilderStatus(
-          constants.BUILDER_STATUS_FAILED, message=None)
-
-    return builder_status_lib.BuilderStatus(**status_dict)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
@@ -759,11 +715,6 @@ class BuildSpecsManager(object):
     self.RefreshManifestCheckout()
     raise GenerateBuildSpecException(last_error)
 
-  @staticmethod
-  def _GetStatusUrl(builder, version):
-    """Get the status URL in Google Storage for a given builder / version."""
-    return os.path.join(BUILD_STATUS_URL, version, builder)
-
   def _UploadStatus(self, version, status, message=None, fail_if_exists=False,
                     dashboard_url=None):
     """Upload build status to Google Storage.
@@ -790,7 +741,8 @@ class BuildSpecsManager(object):
 
     logging.info('Recording status %s for %s', status, self.build_names)
     for build_name in self.build_names:
-      url = BuildSpecsManager._GetStatusUrl(build_name, version)
+      url = builder_status_lib.BuilderStatusManager.GetStatusUrl(
+          build_name, version)
 
       ctx = gs.GSContext(dry_run=self.dry_run)
       # Check if the file already exists.
