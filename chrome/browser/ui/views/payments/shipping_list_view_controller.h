@@ -26,6 +26,9 @@ class ShippingListViewController : public PaymentRequestSheetController {
   std::unique_ptr<views::View> CreateView() override;
 
  private:
+  std::unique_ptr<views::Button> CreateAddressRow(
+      std::unique_ptr<views::View> content);
+
   DISALLOW_COPY_AND_ASSIGN(ShippingListViewController);
 };
 

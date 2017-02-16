@@ -106,11 +106,10 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 
   // The rows have extra inset compared to the header so that their right edge
   // lines up with the close button's X rather than its invisible right edge.
-  constexpr int kRowExtraRightInset = 8;
-  layout->SetInsets(kPaymentRequestRowVerticalInsets,
-                    kPaymentRequestRowHorizontalInsets,
-                    kPaymentRequestRowVerticalInsets,
-                    kPaymentRequestRowHorizontalInsets + kRowExtraRightInset);
+  layout->SetInsets(
+      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
+      kPaymentRequestRowVerticalInsets,
+      kPaymentRequestRowHorizontalInsets + kPaymentRequestRowExtraRightInset);
   row->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
