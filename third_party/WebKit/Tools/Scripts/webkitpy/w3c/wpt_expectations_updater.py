@@ -46,7 +46,7 @@ class WPTExpectationsUpdater(object):
             return 1
 
         rietveld = Rietveld(self.host.web)
-        builds = rietveld.latest_try_jobs(issue_number, self.get_try_bots())
+        builds = rietveld.latest_try_jobs(issue_number, self._get_try_bots())
         _log.debug('Latest try jobs: %r', builds)
         if not builds:
             _log.error('No try job information was collected.')
@@ -71,12 +71,6 @@ class WPTExpectationsUpdater(object):
     def get_issue_number(self):
         """Returns current CL number. Can be replaced in unit tests."""
         return GitCL(self.host).get_issue_number()
-
-    def get_try_bots(self):
-        """Returns try bot names. Can be replaced in unit tests."""
-        # TODO(qyearsley): This method is unnecessary; unit tests can set up
-        # a BuilderList with try builder names, instead of overriding this.
-        return self.host.builders.all_try_builder_names()
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
@@ -310,7 +304,7 @@ class WPTExpectationsUpdater(object):
     @memoized
     def all_try_builder_ports(self):
         """Returns a list of Port objects for all try builders."""
-        return [self.host.port_factory.get_from_builder_name(name) for name in self.get_try_bots()]
+        return [self.host.port_factory.get_from_builder_name(name) for name in self._get_try_bots()]
 
     @staticmethod
     def simplify_specifiers(specifiers, configuration_specifier_macros):  # pylint: disable=unused-argument
@@ -446,3 +440,6 @@ class WPTExpectationsUpdater(object):
         if not test_parser.test_doc:
             return False
         return test_parser.is_jstest()
+
+    def _get_try_bots(self):
+        return self.host.builders.all_try_builder_names()

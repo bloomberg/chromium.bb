@@ -433,7 +433,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         })
         updater = WPTExpectationsUpdater(host)
         updater.get_issue_number = lambda: '11112222'
-        updater.get_try_bots = lambda: ['test-builder-name']
         self.assertEqual(1, updater.run(args=[]))
         self.assertEqual(
             host.web.urls_fetched,
