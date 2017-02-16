@@ -44,6 +44,8 @@ namespace {
 const char kAppCacheKey[] = "appcache";
 const char kCacheKey[] = "cache";
 const char kCookiesKey[] = "cookies";
+const char kSessionCookiesKey[] = "sessionCookies";
+const char kPersistentCookiesKey[] = "persistentCookies";
 const char kFileSystemsKey[] = "fileSystems";
 const char kIndexedDBKey[] = "indexedDB";
 const char kLocalStorageKey[] = "localStorage";
@@ -61,6 +63,10 @@ uint32_t MaskForKey(const char* key) {
     return webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE;
   if (strcmp(key, kCacheKey) == 0)
     return webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE;
+  if (strcmp(key, kSessionCookiesKey) == 0)
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES;
+  if (strcmp(key, kPersistentCookiesKey) == 0)
+    return webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES;
   if (strcmp(key, kCookiesKey) == 0)
     return webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES;
   if (strcmp(key, kFileSystemsKey) == 0)

@@ -138,6 +138,8 @@ const uint32_t WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 3;
 const uint32_t WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB = 1 << 4;
 const uint32_t WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 5;
 const uint32_t WEB_VIEW_REMOVE_DATA_MASK_WEBSQL = 1 << 6;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES = 1 << 7;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES = 1 << 8;
 
 // Other.
 const char kWebViewContentScriptManagerKeyName[] =

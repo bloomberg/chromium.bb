@@ -2405,9 +2405,23 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, ClearData) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTestWithArg(
-      "platform_apps/web_view/common", "cleardata"))
-          << message_;
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("platform_apps/web_view/common", "cleardata"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewTest, ClearSessionCookies) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/web_view/common",
+                                        "cleardata_session"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewTest, ClearPersistentCookies) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/web_view/common",
+                                        "cleardata_persistent"))
+      << message_;
 }
 
 // Regression test for https://crbug.com/615429.

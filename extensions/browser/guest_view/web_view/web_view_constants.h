@@ -148,6 +148,8 @@ extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS;
 extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB;
 extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE;
 extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES;
 
 // Other.
 extern const char kWebViewContentScriptManagerKeyName[];

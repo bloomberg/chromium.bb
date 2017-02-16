@@ -32,6 +32,8 @@
           "appcache": { "type": "boolean", "optional": true, "description": "Websites' appcaches." },
           "cache": { "type": "boolean", "optional": true, "description": "Since Chrome 43.<br>The browser's cache. Note: when removing data, this clears the entire cache; it is not limited to the range you specify." },
           "cookies": { "type": "boolean", "optional": true, "description": "The partition's cookies." },
+          "sessionCookies": { "type": "boolean", "optional": true, "description": "The partition's session cookies." },
+          "persistentCookies": { "type": "boolean", "optional": true, "description": "The partition's persistent cookies." },
           "fileSystems": { "type": "boolean", "optional": true, "description": "Websites' filesystems." },
           "indexedDB": { "type": "boolean", "optional": true, "description": "Websites' IndexedDB data." },
           "localStorage": { "type": "boolean", "optional": true, "description": "Websites' local storage data." },

@@ -62,6 +62,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/canonical_cookie.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/url_constants.h"
@@ -87,8 +88,12 @@ uint32_t GetStoragePartitionRemovalMask(uint32_t web_view_removal_mask) {
   uint32_t mask = 0;
   if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE)
     mask |= StoragePartition::REMOVE_DATA_MASK_APPCACHE;
-  if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES)
+  if (web_view_removal_mask &
+      (webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES |
+       webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES |
+       webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES)) {
     mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
+  }
   if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS)
     mask |= StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
   if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB)
@@ -425,15 +430,41 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
     callback.Run();
     return;
   }
+
+  content::StoragePartition::CookieMatcherFunction cookie_matcher;
+
+  bool remove_session_cookies =
+      !!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES);
+  bool remove_persistent_cookies =
+      !!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES);
+  bool remove_all_cookies =
+      (!!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES)) ||
+      (remove_session_cookies && remove_persistent_cookies);
+
+  // Leaving the cookie_matcher unset will cause all cookies to be purged.
+  if (!remove_all_cookies) {
+    if (remove_session_cookies) {
+      cookie_matcher =
+          base::Bind([](const net::CanonicalCookie& cookie) -> bool {
+            return !cookie.IsPersistent();
+          });
+    } else if (remove_persistent_cookies) {
+      cookie_matcher =
+          base::Bind([](const net::CanonicalCookie& cookie) -> bool {
+            return cookie.IsPersistent();
+          });
+    }
+  }
+
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
           web_contents()->GetSiteInstance());
   partition->ClearData(
       storage_partition_removal_mask,
-      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-      content::StoragePartition::OriginMatcherFunction(), remove_since,
-      base::Time::Now(), callback);
+      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      content::StoragePartition::OriginMatcherFunction(), cookie_matcher,
+      remove_since, base::Time::Now(), callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {

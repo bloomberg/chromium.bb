@@ -23,7 +23,17 @@
           "cookies": {
             "type": "boolean",
             "optional": true,
-            "description": "The browser's cookies."
+            "description": "The Websites' cookies. This will remove both session and persistent cookies"
+          },
+          "sessionCookies": {
+            "type": "boolean",
+            "optional": true,
+            "description": "The Websites' session cookies."
+          },
+          "persistentCookies": {
+            "type": "boolean",
+            "optional": true,
+            "description": "The Websites' persistent cookies."
           },
           "fileSystems": {
             "type": "boolean",
