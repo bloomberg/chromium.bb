@@ -112,6 +112,9 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel");
     case ui::NativeTheme::kColorId_MenuItemSubtitleColor:
+      if (GtkVersionCheck(3, 20)) {
+        return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #accelerator");
+      }
       return GetFgColor(
           "GtkMenu#menu GtkMenuItem#menuitem GtkLabel.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
@@ -122,9 +125,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       if (GtkVersionCheck(3, 20)) {
         return GetSeparatorColor(
             "GtkMenu#menu GtkSeparator#separator.horizontal");
-      } else {
-        return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
       }
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:

@@ -389,7 +389,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Paints the right-side text.
-  void PaintMinorText(gfx::Canvas* canvas, bool render_selection);
+  void PaintMinorText(gfx::Canvas* canvas, SkColor color);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
@@ -398,6 +398,12 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the text that should be displayed on the end (right) of the menu
   // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
   base::string16 GetMinorText() const;
+
+  // Returns the text color for the current state.  |minor| specifies if the
+  // minor text or the normal text is desired.
+  SkColor GetTextColor(bool minor,
+                       bool render_selection,
+                       bool emphasized) const;
 
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions() const;
