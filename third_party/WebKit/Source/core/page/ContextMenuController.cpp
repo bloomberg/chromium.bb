@@ -113,20 +113,6 @@ void ContextMenuController::handleContextMenuEvent(Event* event) {
   showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenu(Event* event,
-                                            ContextMenuProvider* menuProvider) {
-  m_menuProvider = menuProvider;
-
-  m_contextMenu = createContextMenu(event);
-  if (!m_contextMenu) {
-    clearContextMenu();
-    return;
-  }
-
-  m_menuProvider->populateContextMenu(m_contextMenu.get());
-  showContextMenu(event);
-}
-
 void ContextMenuController::showContextMenuAtPoint(
     LocalFrame* frame,
     float x,

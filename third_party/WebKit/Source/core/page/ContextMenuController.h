@@ -60,7 +60,6 @@ class CORE_EXPORT ContextMenuController final
   void documentDetached(Document*);
 
   void handleContextMenuEvent(Event*);
-  void showContextMenu(Event*, ContextMenuProvider*);
   void showContextMenuAtPoint(LocalFrame*,
                               float x,
                               float y,
