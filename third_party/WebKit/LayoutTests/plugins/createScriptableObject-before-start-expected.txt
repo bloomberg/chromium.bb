@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: Blink Test Plugin: initializing
 Test for http://bugs.webkit.org/show_bug.cgi?id=12050 REGRESSION: Assertion failure in -[WebBaseNetscapePluginView willCallPlugInFunction] (plugin).
 
 No ASSERT means test PASS.

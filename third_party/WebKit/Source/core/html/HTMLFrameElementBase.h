@@ -54,6 +54,8 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   void setMarginWidth(int);
   void setMarginHeight(int);
 
+  void frameOwnerPropertiesChanged();
+
  private:
   bool supportsFocus() const final;
   void setFocused(bool) final;

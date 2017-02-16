@@ -186,7 +186,7 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void didAddContentSecurityPolicy(const String& headerValue,
                                    ContentSecurityPolicyHeaderType,
                                    ContentSecurityPolicyHeaderSource) override;
-  void didChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;
+  void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;
 
   void dispatchWillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) override;

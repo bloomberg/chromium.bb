@@ -34,17 +34,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 94, 728, 90],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 94, 728, 90],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 102, 712, 74],
-          "reason": "layoutObject insertion"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage IMG",
@@ -89,16 +79,24 @@
       "reason": "location change"
     },
     {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutView #document",
-      "reason": "style change"
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "layoutObject insertion"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "layoutObject insertion"
+      "reason": "location change"
     }
   ]
 }

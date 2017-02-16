@@ -21,7 +21,6 @@
 
 #include "core/layout/LayoutView.h"
 
-#include <inttypes.h>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
@@ -42,7 +41,6 @@
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -50,6 +48,7 @@
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
+#include <inttypes.h>
 
 namespace blink {
 
@@ -186,15 +185,6 @@ void LayoutView::updateLogicalWidth() {
 bool LayoutView::isChildAllowed(LayoutObject* child,
                                 const ComputedStyle&) const {
   return child->isBox();
-}
-
-bool LayoutView::canHaveChildren() const {
-  FrameOwner* owner = frame()->owner();
-  if (!owner)
-    return true;
-  if (!RuntimeEnabledFeatures::displayNoneIFrameCreatesNoLayoutObjectEnabled())
-    return true;
-  return !owner->isDisplayNone();
 }
 
 void LayoutView::layoutContent() {

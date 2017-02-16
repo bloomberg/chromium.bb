@@ -888,7 +888,7 @@ void FrameLoaderClientImpl::didAddContentSecurityPolicy(
 }
 
 void FrameLoaderClientImpl::didChangeFrameOwnerProperties(
-    HTMLFrameOwnerElement* frameElement) {
+    HTMLFrameElementBase* frameElement) {
   if (!m_webFrame->client())
     return;
 
@@ -898,8 +898,8 @@ void FrameLoaderClientImpl::didChangeFrameOwnerProperties(
           frameElement->browsingContextContainerName(),
           frameElement->scrollingMode(), frameElement->marginWidth(),
           frameElement->marginHeight(), frameElement->allowFullscreen(),
-          frameElement->allowPaymentRequest(), frameElement->isDisplayNone(),
-          frameElement->csp(), frameElement->delegatedPermissions()));
+          frameElement->allowPaymentRequest(), frameElement->csp(),
+          frameElement->delegatedPermissions()));
 }
 
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(

@@ -4502,19 +4502,12 @@ HTMLFrameOwnerElement* Document::localOwner() const {
 
 void Document::willChangeFrameOwnerProperties(int marginWidth,
                                               int marginHeight,
-                                              ScrollbarMode scrollingMode,
-                                              bool isDisplayNone) {
-  DCHECK(frame() && frame()->owner());
-  FrameOwner* owner = frame()->owner();
-
-  if (documentElement()) {
-    if (isDisplayNone != owner->isDisplayNone()) {
-      documentElement()->lazyReattachIfAttached();
-    }
-  }
-
+                                              ScrollbarMode scrollingMode) {
   if (!body())
     return;
+
+  DCHECK(frame() && frame()->owner());
+  FrameOwner* owner = frame()->owner();
 
   if (marginWidth != owner->marginWidth())
     body()->setIntegralAttribute(marginwidthAttr, marginWidth);

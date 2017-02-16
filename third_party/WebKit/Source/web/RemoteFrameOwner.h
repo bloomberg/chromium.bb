@@ -47,7 +47,6 @@ class RemoteFrameOwner final
   int marginHeight() const override { return m_marginHeight; }
   bool allowFullscreen() const override { return m_allowFullscreen; }
   bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
-  bool isDisplayNone() const override { return m_isDisplayNone; }
   AtomicString csp() const override { return m_csp; }
   const WebVector<mojom::blink::PermissionName>& delegatedPermissions()
       const override {
@@ -66,7 +65,6 @@ class RemoteFrameOwner final
   void setAllowPaymentRequest(bool allowPaymentRequest) {
     m_allowPaymentRequest = allowPaymentRequest;
   }
-  void setIsDisplayNone(bool isDisplayNone) { m_isDisplayNone = isDisplayNone; }
   void setCsp(const WebString& csp) { m_csp = csp; }
   void setDelegatedpermissions(
       const WebVector<mojom::blink::PermissionName>& delegatedPermissions) {
@@ -91,7 +89,6 @@ class RemoteFrameOwner final
   int m_marginHeight;
   bool m_allowFullscreen;
   bool m_allowPaymentRequest;
-  bool m_isDisplayNone;
   WebString m_csp;
   WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
 };
