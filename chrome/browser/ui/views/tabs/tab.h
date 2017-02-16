@@ -158,9 +158,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   static int GetPinnedWidth();
 
-  // Returns the height for immersive mode tabs.
-  static int GetImmersiveHeight();
-
   // Returns the inverse of the slope of the diagonal portion of the tab outer
   // border.  (This is a positive value, so it's specifically for the slope of
   // the leading edge.)
@@ -232,9 +229,6 @@ class Tab : public gfx::AnimationDelegate,
   // should be clipped against it.
   void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip);
 
-  // Paints with the "immersive mode" light-bar style.
-  void PaintImmersiveTab(gfx::Canvas* canvas);
-
   // Paints the background of an inactive tab.
   void PaintInactiveTabBackground(gfx::Canvas* canvas, const gfx::Path& clip);
 
@@ -296,9 +290,6 @@ class Tab : public gfx::AnimationDelegate,
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
-  // Returns the rectangle for the light bar in immersive mode.
-  gfx::Rect GetImmersiveBarRect() const;
-
   // The controller, never NULL.
   TabController* const controller_;
 
@@ -316,9 +307,6 @@ class Tab : public gfx::AnimationDelegate,
   // The offset used to animate the favicon location. This is used when the tab
   // crashes.
   int favicon_hiding_offset_;
-
-  // Step in the immersive loading progress indicator.
-  int immersive_loading_step_;
 
   bool should_display_crashed_favicon_;
 

@@ -74,10 +74,6 @@ class ImmersiveModeController {
   virtual void SetEnabled(bool enabled) = 0;
   virtual bool IsEnabled() const = 0;
 
-  // True if the miniature "tab indicators" should be hidden in the main browser
-  // view when immersive mode is enabled.
-  virtual bool ShouldHideTabIndicators() const = 0;
-
   // True when the top views are hidden due to immersive mode.
   virtual bool ShouldHideTopViews() const = 0;
 

@@ -186,9 +186,6 @@ class TabStrip : public views::View,
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(const gfx::Point& offset);
 
-  // Sets a painting style with miniature "tab indicator" rectangles at the top.
-  void SetImmersiveStyle(bool enable);
-
   // Returns the alpha that inactive tabs and the new tab button should use to
   // blend against the frame background.  Inactive tabs and the new tab button
   // differ in whether they change alpha when tab multiselection is occurring;
@@ -237,7 +234,6 @@ class TabStrip : public views::View,
       const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
       gfx::Path* clip) override;
   bool CanPaintThrobberToLayer() const override;
-  bool IsImmersiveStyle() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
@@ -260,9 +256,6 @@ class TabStrip : public views::View,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-
-  // Returns preferred height in immersive style.
-  static int GetImmersiveHeight();
 
  private:
   typedef std::vector<Tab*> Tabs;
@@ -649,9 +642,6 @@ class TabStrip : public views::View,
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.
   base::OneShotTimer resize_layout_timer_;
-
-  // True if tabs are painted as rectangular light-bars.
-  bool immersive_style_;
 
   // Our observers.
   typedef base::ObserverList<TabStripObserver> TabStripObservers;

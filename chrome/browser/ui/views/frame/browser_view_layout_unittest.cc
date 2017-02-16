@@ -99,7 +99,6 @@ class MockImmersiveModeController : public ImmersiveModeController {
   void Init(BrowserView* browser_view) override {}
   void SetEnabled(bool enabled) override {}
   bool IsEnabled() const override { return false; }
-  bool ShouldHideTabIndicators() const override { return false; }
   bool ShouldHideTopViews() const override { return false; }
   bool IsRevealed() const override { return false; }
   int GetTopContainerVerticalOffset(

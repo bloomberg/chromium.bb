@@ -21,7 +21,6 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
   void Init(BrowserView* browser_view) override;
   void SetEnabled(bool enabled) override;
   bool IsEnabled() const override;
-  bool ShouldHideTabIndicators() const override;
   bool ShouldHideTopViews() const override;
   bool IsRevealed() const override;
   int GetTopContainerVerticalOffset(

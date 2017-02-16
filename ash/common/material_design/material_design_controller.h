@@ -17,9 +17,6 @@ class ASH_EXPORT MaterialDesignController {
   static bool IsShelfMaterial();
 
   // Returns true.
-  static bool IsImmersiveModeMaterial();
-
-  // Returns true.
   static bool IsSystemTrayMenuMaterial();
 
   // Returns true.

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -1035,13 +1034,10 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
   // In Chrome OS Material Design, when shelf is hidden during auto hide state,
   // target bounds are also hidden. So the window can extend to the edge of
   // screen.
-  if (ash::MaterialDesignController::IsImmersiveModeMaterial()) {
-    return (state.visibility_state == SHELF_AUTO_HIDE &&
-            state.auto_hide_state == SHELF_AUTO_HIDE_SHOWN)
-               ? 1.0f
-               : 0.0f;
-  }
-  return (state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
+  return (state.visibility_state == SHELF_AUTO_HIDE &&
+          state.auto_hide_state == SHELF_AUTO_HIDE_SHOWN)
+             ? 1.0f
+             : 0.0f;
 }
 
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {

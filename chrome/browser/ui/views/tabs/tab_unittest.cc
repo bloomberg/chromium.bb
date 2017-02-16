@@ -26,7 +26,6 @@ class FakeTabController : public TabController {
  public:
   FakeTabController() {}
 
-  void set_immersive_style(bool value) { immersive_style_ = value; }
   void set_active_tab(bool value) { active_tab_ = value; }
   void set_paint_throbber_to_layer(bool value) {
     paint_throbber_to_layer_ = value;
@@ -73,7 +72,6 @@ class FakeTabController : public TabController {
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
-  bool IsImmersiveStyle() const override { return immersive_style_; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   int GetBackgroundResourceId(bool* custom_image) const override {
     *custom_image = false;
@@ -87,7 +85,6 @@ class FakeTabController : public TabController {
 
  private:
   ui::ListSelectionModel selection_model_;
-  bool immersive_style_ = false;
   bool active_tab_ = false;
   bool paint_throbber_to_layer_ = true;
 

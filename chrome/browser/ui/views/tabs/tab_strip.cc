@@ -593,8 +593,7 @@ TabStrip::TabStrip(TabStripController* controller)
       stacked_layout_(false),
       adjust_layout_(false),
       reset_to_shrink_on_exit_(false),
-      mouse_move_count_(0),
-      immersive_style_(false) {
+      mouse_move_count_(0) {
   Init();
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
@@ -1018,12 +1017,6 @@ void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   newtab_button_->set_background_offset(offset);
 }
 
-void TabStrip::SetImmersiveStyle(bool enable) {
-  if (immersive_style_ == enable)
-    return;
-  immersive_style_ = enable;
-}
-
 SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
 #if defined(USE_ASH)
   static const SkAlpha kInactiveTabAlphaAsh = 230;
@@ -1165,10 +1158,6 @@ void TabStrip::MaybeStartDrag(
     return;
   }
 
-  // Do not do any dragging of tabs when using the super short immersive style.
-  if (IsImmersiveStyle())
-    return;
-
   int model_index = GetModelIndexOfTab(tab);
   if (!IsValidModelIndex(model_index)) {
     CHECK(false);
@@ -1308,16 +1297,12 @@ bool TabStrip::ShouldPaintTab(
 bool TabStrip::CanPaintThrobberToLayer() const {
   // Disable layer-painting of throbbers if dragging, if any tab animation is in
   // progress, or if stacked tabs are enabled. Also disable in fullscreen: when
-  // "immersive" the tab strip could be sliding in or out while transitioning to
-  // or away from |immersive_style_| and, for other modes, there's no tab strip.
+  // "immersive" the tab strip could be sliding in or out; for other modes,
+  // there's no tab strip.
   const bool dragging = drag_controller_ && drag_controller_->started_drag();
   const views::Widget* widget = GetWidget();
   return widget && !touch_layout_ && !dragging && !IsAnimating() &&
          !widget->IsFullscreen();
-}
-
-bool TabStrip::IsImmersiveStyle() const {
-  return immersive_style_;
 }
 
 SkColor TabStrip::GetToolbarTopSeparatorColor() const {
@@ -1515,8 +1500,7 @@ gfx::Size TabStrip::GetPreferredSize() const {
         std::max(needed_tab_width, min_selected_width), largest_min_tab_width);
   }
   return gfx::Size(needed_tab_width + GetNewTabButtonWidth(),
-                   immersive_style_ ? Tab::GetImmersiveHeight()
-                                    : Tab::GetMinimumInactiveSize().height());
+                   Tab::GetMinimumInactiveSize().height());
 }
 
 void TabStrip::OnDragEntered(const DropTargetEvent& event) {
@@ -1614,11 +1598,6 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
       return ConvertPointToViewAndGetTooltipHandler(this, tab, point);
   }
   return this;
-}
-
-// static
-int TabStrip::GetImmersiveHeight() {
-  return Tab::GetImmersiveHeight();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

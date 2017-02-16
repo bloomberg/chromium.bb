@@ -39,7 +39,6 @@ class ImmersiveModeControllerAsh
   void Init(BrowserView* browser_view) override;
   void SetEnabled(bool enabled) override;
   bool IsEnabled() const override;
-  bool ShouldHideTabIndicators() const override;
   bool ShouldHideTopViews() const override;
   bool IsRevealed() const override;
   int GetTopContainerVerticalOffset(
@@ -57,10 +56,6 @@ class ImmersiveModeControllerAsh
 
   // Updates the browser root view's layout including window caption controls.
   void LayoutBrowserRootView();
-
-  // Updates whether the tab strip is painted in a short "light bar" style.
-  // Returns true if the visibility of the tab indicators has changed.
-  bool UpdateTabIndicators();
 
   // Used when running in mash to create |mash_reveal_widget_|. Does nothing
   // if already null.
@@ -100,18 +95,12 @@ class ImmersiveModeControllerAsh
   // fullscreen are enabled.
   bool observers_enabled_;
 
-  // Whether a short "light bar" version of the tab strip should be painted when
-  // the top-of-window views are closed. If |use_tab_indicators_| is false, the
-  // tab strip is not painted at all when the top-of-window views are closed.
-  bool use_tab_indicators_;
-
   // The current visible bounds of the find bar, in screen coordinates. This is
   // an empty rect if the find bar is not visible.
   gfx::Rect find_bar_visible_bounds_in_screen_;
 
   // The fraction of the TopContainerView's height which is visible. Zero when
-  // the top-of-window views are not revealed regardless of
-  // |use_tab_indicators_|.
+  // the top-of-window views are not revealed.
   double visible_fraction_;
 
   // When running in mash a widget is created to draw the top container. This

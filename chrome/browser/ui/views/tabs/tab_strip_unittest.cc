@@ -281,26 +281,6 @@ TEST_F(TabStripTest, VisibilityInOverflow) {
   EXPECT_TRUE(tab_strip_->tab_at(tab_strip_->tab_count() - 1)->visible());
 }
 
-TEST_F(TabStripTest, ImmersiveMode) {
-  // Immersive mode defaults to off.
-  EXPECT_FALSE(tab_strip_->IsImmersiveStyle());
-
-  // Tab strip defaults to normal tab height.
-  int normal_height = Tab::GetMinimumInactiveSize().height();
-  EXPECT_EQ(normal_height, tab_strip_->GetPreferredSize().height());
-
-  // Tab strip can toggle immersive mode.
-  tab_strip_->SetImmersiveStyle(true);
-  EXPECT_TRUE(tab_strip_->IsImmersiveStyle());
-
-  // Now tabs have the immersive height.
-  int immersive_height = Tab::GetImmersiveHeight();
-  EXPECT_EQ(immersive_height, tab_strip_->GetPreferredSize().height());
-
-  // Sanity-check immersive tabs are shorter than normal tabs.
-  EXPECT_LT(immersive_height, normal_height);
-}
-
 // Creates a tab strip in stacked layout mode and verifies that as we move
 // across the strip at the top, middle, and bottom, events will target each tab
 // in order.

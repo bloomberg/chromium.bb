@@ -41,11 +41,6 @@
 
 namespace {
 
-// Revealing the TopContainerView looks better if the animation starts and ends
-// just a few pixels before the view goes offscreen, which reduces the visual
-// "pop" as the 3-pixel tall "light bar" style tab strip becomes visible.
-const int kAnimationOffsetY = 3;
-
 // Converts from ImmersiveModeController::AnimateReveal to
 // ash::ImmersiveFullscreenController::AnimateReveal.
 ash::ImmersiveFullscreenController::AnimateReveal
@@ -115,7 +110,6 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       browser_view_(nullptr),
       native_window_(nullptr),
       observers_enabled_(false),
-      use_tab_indicators_(false),
       visible_fraction_(1) {}
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
@@ -145,10 +139,6 @@ bool ImmersiveModeControllerAsh::IsEnabled() const {
   return controller_->IsEnabled();
 }
 
-bool ImmersiveModeControllerAsh::ShouldHideTabIndicators() const {
-  return !use_tab_indicators_;
-}
-
 bool ImmersiveModeControllerAsh::ShouldHideTopViews() const {
   return controller_->IsEnabled() && !controller_->IsRevealed();
 }
@@ -162,15 +152,8 @@ int ImmersiveModeControllerAsh::GetTopContainerVerticalOffset(
   if (!IsEnabled())
     return 0;
 
-  // The TopContainerView is flush with the top of |browser_view_| when the
-  // top-of-window views are fully closed so that when the tab indicators are
-  // used, the "light bar" style tab strip is flush with the top of
-  // |browser_view_|.
-  if (!IsRevealed())
-    return 0;
-
-  int height = top_container_size.height() - kAnimationOffsetY;
-  return static_cast<int>(height * (visible_fraction_ - 1));
+  return static_cast<int>(top_container_size.height() *
+                          (visible_fraction_ - 1));
 }
 
 ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
@@ -230,32 +213,6 @@ void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
   widget->GetRootView()->Layout();
 }
 
-// TODO(yiyix|tdanderson): Once Chrome OS material design is enabled by default,
-// remove all code related to immersive mode hints (here, in TabStrip and
-// BrowserNonClientFrameViewAsh::OnPaint()). See crbug.com/614453.
-bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
-  if (ash::MaterialDesignController::IsImmersiveModeMaterial())
-    return false;
-
-  bool has_tabstrip = browser_view_->IsBrowserTypeNormal();
-  if (!IsEnabled() || !has_tabstrip) {
-    use_tab_indicators_ = false;
-  } else {
-    bool in_tab_fullscreen = browser_view_->browser()
-                                 ->exclusive_access_manager()
-                                 ->fullscreen_controller()
-                                 ->IsWindowFullscreenForTabOrPending();
-    use_tab_indicators_ = !in_tab_fullscreen;
-  }
-
-  bool show_tab_indicators = use_tab_indicators_ && !IsRevealed();
-  if (show_tab_indicators != browser_view_->tabstrip()->IsImmersiveStyle()) {
-    browser_view_->tabstrip()->SetImmersiveStyle(show_tab_indicators);
-    return true;
-  }
-  return false;
-}
-
 void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
   if (!chrome::IsRunningInMash())
     return;
@@ -305,7 +262,6 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   // not filling bounds opaquely.
   if (chrome::IsRunningInMash())
     browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
-  UpdateTabIndicators();
   LayoutBrowserRootView();
   CreateMashRevealWidget();
   for (Observer& observer : observers_)
@@ -316,7 +272,6 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
   DestroyMashRevealWidget();
   visible_fraction_ = 0;
   browser_view_->top_container()->DestroyLayer();
-  UpdateTabIndicators();
   LayoutBrowserRootView();
   for (Observer& observer : observers_)
     observer.OnImmersiveRevealEnded();
@@ -325,7 +280,6 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
   DestroyMashRevealWidget();
   browser_view_->top_container()->DestroyLayer();
-  UpdateTabIndicators();
   LayoutBrowserRootView();
 }
 
@@ -390,20 +344,12 @@ void ImmersiveModeControllerAsh::Observe(
     return;
   }
 
-  bool tab_indicator_visibility_changed = UpdateTabIndicators();
-
-  // Auto hide the shelf in immersive browser fullscreen. When auto hidden and
-  // Material Design is not enabled, the shelf displays a 3px 'light bar' when
-  // it is closed. When in immersive browser fullscreen and tab fullscreen, hide
-  // the shelf completely and prevent it from being revealed.
+  // Auto hide the shelf in immersive browser fullscreen.
   bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
       IsWindowFullscreenForTabOrPending();
   ash::wm::GetWindowState(native_window_)
       ->set_hide_shelf_when_fullscreen(in_tab_fullscreen);
   ash::Shell::GetInstance()->UpdateShelfVisibility();
-
-  if (tab_indicator_visibility_changed)
-    LayoutBrowserRootView();
 }
 
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,

@@ -448,12 +448,10 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
   // In immersive fullscreen, the infobar always starts near the top of the
-  // screen, just under the "light bar" rectangular stripes.
-  if (immersive_mode_controller_->IsEnabled()) {
+  // screen.
+  if (immersive_mode_controller_->IsEnabled())
     top = browser_view_->y();
-    if (!immersive_mode_controller_->ShouldHideTabIndicators())
-      top += TabStrip::GetImmersiveHeight();
-  }
+
   infobar_container_->SetVisible(InfobarVisible());
   infobar_container_->SetBounds(
       vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
