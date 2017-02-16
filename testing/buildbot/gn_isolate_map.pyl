@@ -1007,7 +1007,20 @@
   "webkit_layout_tests": {
     "label": "//:webkit_layout_tests",
     "type": "script",
-    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "args": [
+      "--xvfb",
+      "../../third_party/WebKit/Tools/Scripts/run-webkit-tests",
+      "--clobber-old-results",
+      "--debug-rwt-logging",
+      "--no-show-results",
+      "--results-directory", "${ISOLATED_OUTDIR}/layout-test-results",
+    ],
+  },
+  "webkit_layout_tests_exparchive": {
+    "label": "//:webkit_layout_tests_exparchive",
+    "type": "script",
+    "script": "//testing/scripts/run_isolated_script_test.py",
     "args": [
       "--xvfb",
       "../../third_party/WebKit/Tools/Scripts/run-webkit-tests",

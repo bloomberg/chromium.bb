@@ -908,9 +908,26 @@ if (!is_ios) {
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests
+
+  # The _exparchive at the end of the name indicates to the isolate recipe
+  # that the isolate should be archived separately using the `exparchive`
+  # command, rather than as part of the normal `batcharchive` command.
+  group("webkit_layout_tests_exparchive") {
+    testonly = true
+    deps = [
+      ":webkit_layout_tests",
+    ]
+    data_deps = [
+      ":webkit_layout_tests",
+    ]
+  }
+
+  # This target contains only a small subset of the layout tests,
+  # and is useful for testing with the regular isolate mechanism.
+  # To run the full layout test suite you need to use
+  # :webkit_layout_tests_exparchive, above, instead.
   group("webkit_layout_tests") {
     testonly = true
-
     data_deps = [
       "//content/shell:content_shell",
       "//tools/imagediff",
@@ -947,11 +964,18 @@ if (!is_ios) {
     data = [
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_as_googletest.py",
+      "//testing/scripts/run_isolated_script_test.py",
       "//third_party/WebKit/LayoutTests/",
       "//third_party/WebKit/Tools/Scripts/",
       "$root_build_dir/resources/inspector/",
     ]
+
+    if (is_android) {
+      data += [
+        "//third_party/catapult/",
+        "//build/android/",
+      ]
+    }
   }
 }
 

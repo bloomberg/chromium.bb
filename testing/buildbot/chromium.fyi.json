@@ -12444,6 +12444,42 @@
       }
     ]
   },
+  "WebKit Linux - RandomOrder": {
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "name": "webkit_layout_tests_exparchive",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 1
+        }
+      }
+    ]
+  },
+  "WebKit Mac - RandomOrder": {
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "name": "webkit_layout_tests_exparchive",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 1
+        }
+      }
+    ]
+  },
+  "WebKit Win - RandomOrder": {
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "name": "webkit_layout_tests_exparchive",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 1
+        }
+      }
+    ]
+  },
   "Win 10 Fast Ring": {
     "gtest_tests": [
       {
