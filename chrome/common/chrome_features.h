@@ -18,6 +18,10 @@ namespace features {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
+#if defined(OS_ANDROID)
+extern const base::Feature kAllowAutoplayUnmutedInWebappManifestScope;
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_MACOSX)
 extern const base::Feature kAppleScriptExecuteJavaScript;
 #endif  // defined(OS_MACOSX)
