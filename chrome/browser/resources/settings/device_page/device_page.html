@@ -23,42 +23,42 @@
       <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
             on-tap="onPointersTap_" actionable>
-          <div class="middle">
+          <div class="start">
             [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
           </div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="[[getPointersTitle_(hasMouse_,
-                                              hasTouchpad_)]]"></button>
+                  hasTouchpad_)]]"></button>
         </div>
         <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
             actionable>
-          <div class="middle">$i18n{keyboardTitle}</div>
+          <div class="start">$i18n{keyboardTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{keyboardTitle}"></button>
         </div>
         <template is="dom-if" if="[[hasStylus_]]">
           <div id="stylusRow" class="settings-box" on-tap="onStylusTap_"
               actionable>
-            <div class="middle">$i18n{stylusTitle}</div>
+            <div class="start">$i18n{stylusTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{stylusTitle}"></button>
           </div>
         </template>
         <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
             actionable>
-          <div class="middle">$i18n{displayTitle}</div>
+          <div class="start">$i18n{displayTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{displayTitle}"></button>
         </div>
         <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
             actionable>
-          <div class="middle">$i18n{storageTitle}</div>
+          <div class="start">$i18n{storageTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{storageTitle}"></button>
         </div>
         <template is="dom-if" if="[[enablePowerSettings_]]">
           <div id="powerRow" class="settings-box two-line">
-            <div class="middle">
+            <div class="start">
               <div>[[powerLabel_]]</div>
               <div class="secondary">[[batteryStatus_.statusText]]</div>
             </div>
