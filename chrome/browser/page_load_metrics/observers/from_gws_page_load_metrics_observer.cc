@@ -529,7 +529,7 @@ void FromGWSPageLoadMetricsObserver::OnUserInput(
 void FromGWSPageLoadMetricsLogger::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!ShouldLogPostCommitMetrics(extra_info.committed_url))
+  if (!ShouldLogPostCommitMetrics(extra_info.url))
     return;
 
   UserAbortType abort_type = extra_info.abort_type;
@@ -579,9 +579,8 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogFailedProvisionalLoadMetrics() {
          previously_committed_url_is_search_redirector_;
 }
 
-bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(
-    const GURL& committed_url) {
-  DCHECK(!committed_url.is_empty());
+bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(const GURL& url) {
+  DCHECK(!url.is_empty());
 
   // If this page has a URL on a known google search hostname, then it may be a
   // page associated with search (either a search results page, or a search
@@ -592,7 +591,7 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(
   // these cases are relatively uncommon, and we run the risk of logging metrics
   // for some search redirector URLs. Thus we choose the more conservative
   // approach of ignoring all urls on known search hostnames.
-  if (IsGoogleSearchHostname(committed_url.host_piece()))
+  if (IsGoogleSearchHostname(url.host_piece()))
     return false;
 
   // We're only interested in tracking navigations (e.g. clicks) initiated via
@@ -614,9 +613,9 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(
 bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
     const base::Optional<base::TimeDelta>& event,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  DCHECK(!info.committed_url.is_empty())
+  DCHECK(info.did_commit)
       << "ShouldLogForegroundEventAfterCommit called without committed URL.";
-  return ShouldLogPostCommitMetrics(info.committed_url) &&
+  return ShouldLogPostCommitMetrics(info.url) &&
          WasStartedInForegroundOptionalEventInForeground(event, info);
 }
 

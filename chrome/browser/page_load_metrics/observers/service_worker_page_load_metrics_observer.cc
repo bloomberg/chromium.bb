@@ -79,7 +79,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaint(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
       timing.first_contentful_paint.value() - timing.parse_start.value());
 
-  if (IsInboxSite(info.committed_url)) {
+  if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
         timing.first_contentful_paint.value());
@@ -100,7 +100,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoaded,
                       timing.dom_content_loaded_event_start.value());
-  if (IsInboxSite(info.committed_url)) {
+  if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoadedInbox,
                         timing.dom_content_loaded_event_start.value());
   }
@@ -116,7 +116,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
     return;
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
                       timing.load_event_start.value());
-  if (IsInboxSite(info.committed_url)) {
+  if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
                         timing.load_event_start.value());
   }

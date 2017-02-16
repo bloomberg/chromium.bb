@@ -294,7 +294,9 @@ PageLoadTracker::PageLoadTracker(
     : did_stop_tracking_(false),
       app_entered_background_(false),
       navigation_start_(navigation_handle->NavigationStart()),
+      url_(navigation_handle->GetURL()),
       start_url_(navigation_handle->GetURL()),
+      did_commit_(false),
       abort_type_(ABORT_NONE),
       abort_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
       started_in_foreground_(in_foreground),
@@ -317,7 +319,7 @@ PageLoadTracker::~PageLoadTracker() {
   if (did_stop_tracking_)
     return;
 
-  if (committed_url_.is_empty()) {
+  if (!did_commit_) {
     if (!failed_provisional_load_info_)
       RecordInternalError(ERR_NO_COMMIT_OR_FAILED_PROVISIONAL_LOAD);
 
@@ -335,7 +337,7 @@ PageLoadTracker::~PageLoadTracker() {
   for (const auto& observer : observers_) {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
-    } else if (!info.committed_url.is_empty()) {
+    } else if (did_commit_) {
       observer->OnComplete(timing_, info);
     }
   }
@@ -357,7 +359,7 @@ void PageLoadTracker::LogAbortChainHistograms(
   }
 
   // The following is only executed for committing trackers.
-  DCHECK(!committed_url_.is_empty());
+  DCHECK(did_commit_);
 
   // Note that histograms could be separated out by this commit's transition
   // type, but for simplicity they will all be bucketed together.
@@ -441,7 +443,8 @@ void PageLoadTracker::WillProcessNavigationResponse(
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
-  committed_url_ = navigation_handle->GetURL();
+  did_commit_ = true;
+  url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
   page_transition_ = navigation_handle->GetPageTransition();
   user_initiated_info_.user_gesture = navigation_handle->HasUserGesture();
@@ -459,6 +462,7 @@ void PageLoadTracker::FailedProvisionalLoad(
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
+  url_ = navigation_handle->GetURL();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnRedirect, navigation_handle);
 }
 
@@ -511,7 +515,7 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       metadata_.behavior_flags;
   if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
       valid_behavior_descendent) {
-    DCHECK(!committed_url_.is_empty());  // OnCommit() must be called first.
+    DCHECK(did_commit_);  // OnCommit() must be called first.
     // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
     // must be called before DispatchObserverTimingCallbacks, but its
     // implementation depends on the state of metadata_, so we need to update
@@ -607,7 +611,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
           !abort_user_initiated_info_.user_input_event));
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
-      user_initiated_info_, committed_url_, start_url_, abort_type_,
+      user_initiated_info_, url(), start_url_, did_commit_, abort_type_,
       abort_user_initiated_info_, time_to_abort, metadata_);
 }
 
@@ -658,7 +662,7 @@ bool PageLoadTracker::MatchesOriginalNavigation(
     content::NavigationHandle* navigation_handle) {
   // Neither navigation should have committed.
   DCHECK(!navigation_handle->HasCommitted());
-  DCHECK(committed_url_.is_empty());
+  DCHECK(!did_commit_);
   return navigation_handle->GetURL() == start_url_;
 }
 

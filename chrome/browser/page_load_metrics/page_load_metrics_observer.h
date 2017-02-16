@@ -111,8 +111,9 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& first_foreground_time,
       bool started_in_foreground,
       UserInitiatedInfo user_initiated_info,
-      const GURL& committed_url,
+      const GURL& url,
       const GURL& start_url,
+      bool did_commit,
       UserAbortType abort_type,
       UserInitiatedInfo abort_user_initiated_info,
       const base::Optional<base::TimeDelta>& time_to_abort,
@@ -134,12 +135,15 @@ struct PageLoadExtraInfo {
   // Whether the page load was initiated by a user.
   const UserInitiatedInfo user_initiated_info;
 
-  // Committed URL. If the page load did not commit, |committed_url| will be
-  // empty.
-  const GURL committed_url;
+  // Most recent URL for this page. Can be updated at navigation start, upon
+  // redirection, and at commit time.
+  const GURL url;
 
   // The URL that started the navigation, before redirects.
   const GURL start_url;
+
+  // Whether the navigation for this page load committed.
+  const bool did_commit;
 
   // The abort time and time to abort for this page load. If the page was not
   // aborted, |abort_type| will be |ABORT_NONE|.

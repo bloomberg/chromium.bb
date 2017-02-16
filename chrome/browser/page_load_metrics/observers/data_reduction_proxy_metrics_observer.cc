@@ -172,7 +172,7 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we send a pingback with data collected up to this point.
-  if (!info.committed_url.is_empty()) {
+  if (info.did_commit) {
     RecordPageSizeUMA();
     SendPingback(timing, info);
   }

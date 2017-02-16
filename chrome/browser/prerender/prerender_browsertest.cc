@@ -544,7 +544,7 @@ page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
   return page_load_metrics::PageLoadExtraInfo(
       base::TimeDelta(), base::TimeDelta(), false,
       page_load_metrics::UserInitiatedInfo::BrowserInitiated(), dest_url,
-      dest_url, page_load_metrics::ABORT_NONE,
+      dest_url, true /* did_commit */, page_load_metrics::ABORT_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
       base::TimeDelta(), page_load_metrics::PageLoadMetadata());
 }

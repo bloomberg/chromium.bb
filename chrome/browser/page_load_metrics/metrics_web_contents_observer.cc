@@ -157,7 +157,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
           ? web_contents()->GetOpener()->GetLastCommittedURL()
           : GURL::EmptyGURL();
   const GURL& currently_committed_url =
-      committed_load_ ? committed_load_->committed_url() : opener_url;
+      committed_load_ ? committed_load_->url() : opener_url;
   has_navigated_ = true;
 
   // We can have two provisional loads in some cases. E.g. a same-site
@@ -345,6 +345,7 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
 
   committed_load_ = std::move(tracker);
   committed_load_->Commit(navigation_handle);
+  DCHECK(committed_load_->did_commit());
 }
 
 void MetricsWebContentsObserver::NavigationStopped() {

@@ -51,8 +51,7 @@ HttpsEngagementPageLoadMetricsObserver::OnShown() {
 void HttpsEngagementPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!extra_info.committed_url.is_valid() ||
-      extra_info.committed_url.is_empty()) {
+  if (!extra_info.did_commit || !extra_info.url.is_valid()) {
     return;
   }
 
@@ -63,13 +62,13 @@ void HttpsEngagementPageLoadMetricsObserver::OnComplete(
   if (currently_in_foreground_)
     OnHidden(timing, extra_info);
 
-  if (extra_info.committed_url.SchemeIs(url::kHttpsScheme)) {
+  if (extra_info.url.SchemeIs(url::kHttpsScheme)) {
     if (engagement_service_)
       engagement_service_->RecordTimeOnPage(foreground_time_,
                                             HttpsEngagementService::HTTPS);
     UMA_HISTOGRAM_LONG_TIMES_100(internal::kHttpsEngagementHistogram,
                                  foreground_time_);
-  } else if (extra_info.committed_url.SchemeIs(url::kHttpScheme)) {
+  } else if (extra_info.url.SchemeIs(url::kHttpScheme)) {
     if (engagement_service_)
       engagement_service_->RecordTimeOnPage(foreground_time_,
                                             HttpsEngagementService::HTTP);

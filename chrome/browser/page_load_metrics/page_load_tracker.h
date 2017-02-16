@@ -198,11 +198,8 @@ class PageLoadTracker {
 
   bool MatchesOriginalNavigation(content::NavigationHandle* navigation_handle);
 
-  // Only valid to call post-commit.
-  const GURL& committed_url() const {
-    DCHECK(!committed_url_.is_empty());
-    return committed_url_;
-  }
+  bool did_commit() const { return did_commit_; }
+  const GURL& url() const { return url_; }
 
   base::TimeTicks navigation_start() const { return navigation_start_; }
 
@@ -241,6 +238,8 @@ class PageLoadTracker {
   // committed load.
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
+  void MaybeUpdateURL(content::NavigationHandle* navigation_handle);
+
   UserInputTracker input_tracker_;
 
   // Whether we stopped tracking this navigation after it was initiated. We may
@@ -255,11 +254,15 @@ class PageLoadTracker {
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
-  // The committed URL of this page load.
-  GURL committed_url_;
+  // The most recent URL of this page load. Updated at navigation start, upon
+  // redirection, and at commit time.
+  GURL url_;
 
   // The start URL for this page load (before redirects).
   GURL start_url_;
+
+  // Whether this page load committed.
+  bool did_commit_;
 
   std::unique_ptr<FailedProvisionalLoadInfo> failed_provisional_load_info_;
 

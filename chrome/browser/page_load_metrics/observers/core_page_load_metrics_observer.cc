@@ -558,7 +558,7 @@ CorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
-  if (!info.committed_url.is_empty()) {
+  if (info.did_commit) {
     RecordTimingHistograms(timing, info);
     RecordByteAndResourceHistograms(timing, info);
   }
@@ -702,7 +702,7 @@ void CorePageLoadMetricsObserver::RecordRappor(
       g_browser_process->rappor_service();
   if (!rappor_service)
     return;
-  if (info.committed_url.is_empty())
+  if (!info.did_commit)
     return;
 
   // Log the eTLD+1 of sites that show poor loading performance.
@@ -711,8 +711,7 @@ void CorePageLoadMetricsObserver::RecordRappor(
     std::unique_ptr<rappor::Sample> sample =
         rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
     sample->SetStringField(
-        "Domain",
-        rappor::GetDomainAndRegistrySampleFromGURL(info.committed_url));
+        "Domain", rappor::GetDomainAndRegistrySampleFromGURL(info.url));
     uint64_t bucket_index =
         RapporHistogramBucketIndex(timing.first_contentful_paint.value());
     sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
@@ -729,7 +728,6 @@ void CorePageLoadMetricsObserver::RecordRappor(
   if (timing.first_paint && !timing.first_meaningful_paint) {
     rappor::SampleDomainAndRegistryFromGURL(
         rappor_service,
-        internal::kRapporMetricsNameFirstMeaningfulPaintNotRecorded,
-        info.committed_url);
+        internal::kRapporMetricsNameFirstMeaningfulPaintNotRecorded, info.url);
   }
 }

@@ -99,7 +99,7 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
 
   void OnComplete(const PageLoadTiming& timing,
                   const PageLoadExtraInfo& extra_info) override {
-    completed_filtered_urls_->push_back(extra_info.committed_url);
+    completed_filtered_urls_->push_back(extra_info.url);
   }
 
  private:

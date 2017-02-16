@@ -50,14 +50,14 @@ void UkmPageLoadMetricsObserver::OnComplete(
 void UkmPageLoadMetricsObserver::SendMetricsToUkm(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.committed_url.is_empty() || !timing.first_contentful_paint)
+  if (!info.did_commit || !timing.first_contentful_paint)
     return;
 
   ukm::UkmService* ukm_service = g_browser_process->ukm_service();
   DCHECK(ukm_service);
 
   std::unique_ptr<ukm::UkmSource> source = base::MakeUnique<ukm::UkmSource>();
-  source->set_committed_url(info.committed_url);
+  source->set_committed_url(info.url);
   source->set_first_contentful_paint(timing.first_contentful_paint.value());
 
   ukm_service->RecordSource(std::move(source));
