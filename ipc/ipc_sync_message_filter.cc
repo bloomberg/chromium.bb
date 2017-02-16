@@ -172,10 +172,6 @@ void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   {
     base::AutoLock auto_lock(lock_);
     channel_ = channel;
-    Channel::AssociatedInterfaceSupport* support =
-        channel_->GetAssociatedInterfaceSupport();
-    if (support)
-      channel_associated_group_ = *support->GetAssociatedGroup();
 
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     shutdown_watcher_.StartWatching(

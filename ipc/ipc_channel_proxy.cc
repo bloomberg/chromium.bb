@@ -67,7 +67,6 @@ void ChannelProxy::Context::CreateChannel(
   Channel::AssociatedInterfaceSupport* support =
       channel_->GetAssociatedInterfaceSupport();
   if (support) {
-    associated_group_ = *support->GetAssociatedGroup();
     thread_safe_channel_ = support->CreateThreadSafeChannel();
 
     base::AutoLock l(pending_filters_lock_);
@@ -375,7 +374,6 @@ void ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(
 void ChannelProxy::Context::ClearChannel() {
   base::AutoLock l(channel_lifetime_lock_);
   channel_.reset();
-  associated_group_ = mojo::AssociatedGroup();
 }
 
 void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
@@ -558,10 +556,6 @@ void ChannelProxy::AddGenericAssociatedInterfaceForIOThread(
     const std::string& name,
     const GenericAssociatedInterfaceFactory& factory) {
   context()->AddGenericAssociatedInterfaceForIOThread(name, factory);
-}
-
-mojo::AssociatedGroup* ChannelProxy::GetAssociatedGroup() {
-  return context()->associated_group();
 }
 
 void ChannelProxy::GetGenericRemoteAssociatedInterface(

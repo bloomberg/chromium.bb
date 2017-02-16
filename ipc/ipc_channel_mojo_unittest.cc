@@ -920,8 +920,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   IPC::mojom::IndirectTestDriverAssociatedPtr driver;
   IPC::mojom::PingReceiverAssociatedPtr ping_receiver;
   proxy()->GetRemoteAssociatedInterface(&driver);
-  driver->GetPingReceiver(
-      mojo::MakeRequest(&ping_receiver, driver.associated_group()));
+  driver->GetPingReceiver(mojo::MakeRequest(&ping_receiver));
 
   base::RunLoop loop;
   ping_receiver->Ping(loop.QuitClosure());
@@ -1275,8 +1274,7 @@ TEST_F(IPCChannelProxyMojoTest, AssociatedRequestClose) {
   IPC::mojom::AssociatedInterfaceVendorAssociatedPtr vendor;
   proxy()->GetRemoteAssociatedInterface(&vendor);
   IPC::mojom::SimpleTestDriverAssociatedPtr tester;
-  vendor->GetTestInterface(
-      mojo::MakeRequest(&tester, vendor.associated_group()));
+  vendor->GetTestInterface(mojo::MakeRequest(&tester));
   base::RunLoop run_loop;
   tester.set_connection_error_handler(run_loop.QuitClosure());
   run_loop.Run();

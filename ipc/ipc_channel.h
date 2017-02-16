@@ -22,7 +22,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -92,10 +91,6 @@ class IPC_EXPORT Channel : public Sender {
 
     virtual ~AssociatedInterfaceSupport() {}
 
-    // Accesses the AssociatedGroup used to associate new interface endpoints
-    // with this Channel. Must be safe to call from any thread.
-    virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
-
     // Returns a ThreadSafeForwarded for this channel which can be used to
     // safely send mojom::Channel requests from arbitrary threads.
     virtual std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
@@ -128,8 +123,7 @@ class IPC_EXPORT Channel : public Sender {
     template <typename Interface>
     void GetRemoteAssociatedInterface(
         mojo::AssociatedInterfacePtr<Interface>* proxy) {
-      mojo::AssociatedInterfaceRequest<Interface> request =
-          mojo::MakeRequest(proxy, GetAssociatedGroup());
+      auto request = mojo::MakeRequest(proxy);
       GetGenericRemoteAssociatedInterface(
           Interface::Name_, request.PassHandle());
     }

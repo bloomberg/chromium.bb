@@ -21,7 +21,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -187,10 +186,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
                    factory));
   }
 
-  // Gets the AssociatedGroup used to create new associated endpoints on this
-  // ChannelProxy.
-  mojo::AssociatedGroup* GetAssociatedGroup();
-
   // Requests an associated interface from the remote endpoint.
   void GetGenericRemoteAssociatedInterface(
       const std::string& name,
@@ -200,8 +195,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   template <typename Interface>
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::MakeRequest(proxy, GetAssociatedGroup());
+    auto request = mojo::MakeRequest(proxy);
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
   }
 
@@ -221,9 +215,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
       scoped_refptr<mojo::ThreadSafeAssociatedInterfacePtr<Interface>>*
           out_ptr) {
     mojo::AssociatedInterfacePtrInfo<Interface> ptr_info;
-    mojo::AssociatedInterfaceRequest<Interface> request;
-    GetAssociatedGroup()->CreateAssociatedInterface(
-        mojo::AssociatedGroup::WILL_PASS_REQUEST, &ptr_info, &request);
+    auto request = mojo::MakeRequest(&ptr_info);
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
     *out_ptr = mojo::ThreadSafeAssociatedInterfacePtr<Interface>::Create(
         std::move(ptr_info), ipc_task_runner());
@@ -313,7 +305,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
     void ClearChannel();
 
-    mojo::AssociatedGroup* associated_group() { return &associated_group_; }
     mojom::Channel& thread_safe_channel() {
       return thread_safe_channel_->proxy();
     }
@@ -354,8 +345,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // listener threads.
     base::ProcessId peer_pid_;
     base::Lock peer_pid_lock_;
-
-    mojo::AssociatedGroup associated_group_;
 
     // A thread-safe mojom::Channel interface we use to make remote interface
     // requests from the proxy thread.

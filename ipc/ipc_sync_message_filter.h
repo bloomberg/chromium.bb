@@ -17,7 +17,6 @@
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
 #include "ipc/mojo_event.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -55,8 +54,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   template <typename Interface>
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::MakeRequest(proxy, &channel_associated_group_);
+    auto request = mojo::MakeRequest(proxy);
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
   }
 
@@ -111,10 +109,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   MojoEvent shutdown_mojo_event_;
 
   scoped_refptr<IOMessageLoopObserver> io_message_loop_observer_;
-
-  // The AssociatedGroup for the underlying channel, used to construct new
-  // associated interface endpoints.
-  mojo::AssociatedGroup channel_associated_group_;
 
   base::WeakPtrFactory<SyncMessageFilter> weak_factory_;
 

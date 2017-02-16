@@ -106,7 +106,6 @@ class IPC_EXPORT ChannelMojo
       std::unique_ptr<mojo::MessageReceiver> responder);
 
   // Channel::AssociatedInterfaceSupport:
-  mojo::AssociatedGroup* GetAssociatedGroup() override;
   std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
   CreateThreadSafeChannel() override;
   void AddGenericAssociatedInterface(

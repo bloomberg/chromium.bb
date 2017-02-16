@@ -468,11 +468,6 @@ MojoResult ChannelMojo::WriteToMessageAttachmentSet(
   return MOJO_RESULT_OK;
 }
 
-mojo::AssociatedGroup* ChannelMojo::GetAssociatedGroup() {
-  DCHECK(bootstrap_);
-  return bootstrap_->GetAssociatedGroup();
-}
-
 void ChannelMojo::AddGenericAssociatedInterface(
     const std::string& name,
     const GenericAssociatedInterfaceFactory& factory) {
