@@ -34,3 +34,8 @@ PASS
 Frame: '<!--framePath //<!--frame6-->-->'
 --------
 PASS
+
+--------
+Frame: '<!--framePath //<!--frame7-->-->'
+--------
+PASS

@@ -6,6 +6,8 @@ if (window.testRunner) {
 
 function getExpectedLastModified(lastModified) {
     var date = new Date(lastModified);
+    if (isNaN(date.getTime()))
+      return "illformed-date";
     var month = ('0' + (date.getMonth() + 1)).slice(-2);
     var day = ('0' + date.getDate()).slice(-2);
     var hour = ('0' + date.getHours()).slice(-2);
@@ -27,4 +29,5 @@ test('Mon, 21-Nov-2008 01:03:33 GMT');
 test('Mon, 21-Feb-2008 01:03:33 GMT');
 test('Mon, 03-Feb-2008 01:03:33 GMT');
 test('Mon, 3-Mar-2008 01:03:33 GMT');
+test('Something ill-formed');
 </script>

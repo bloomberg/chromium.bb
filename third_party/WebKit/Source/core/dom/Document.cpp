@@ -4673,9 +4673,12 @@ String Document::lastModified() const {
       const AtomicString& httpLastModified =
           documentLoader->response().httpHeaderField(HTTPNames::Last_Modified);
       if (!httpLastModified.isEmpty()) {
-        date.setMillisecondsSinceEpochForDateTime(
-            convertToLocalTime(parseDate(httpLastModified)));
-        foundDate = true;
+        double dateValue = parseDate(httpLastModified);
+        if (!std::isnan(dateValue)) {
+          date.setMillisecondsSinceEpochForDateTime(
+              convertToLocalTime(dateValue));
+          foundDate = true;
+        }
       }
     }
   }
