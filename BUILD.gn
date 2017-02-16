@@ -970,6 +970,10 @@ if (!is_ios) {
       "$root_build_dir/resources/inspector/",
     ]
 
+    if (is_win) {
+      data += [ "//third_party/apache-win32/" ]
+    }
+
     if (is_android) {
       data += [
         "//third_party/catapult/",
