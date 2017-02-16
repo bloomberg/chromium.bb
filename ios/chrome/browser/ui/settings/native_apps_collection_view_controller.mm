@@ -11,10 +11,13 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -28,7 +31,7 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -50,7 +53,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface NativeAppsCollectionViewController ()<
     SKStoreProductViewControllerDelegate> {
-  net::URLRequestContextGetter* _requestContextGetter;  // weak
+  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
   base::scoped_nsobject<NSArray> _nativeAppsInSettings;
   BOOL _userDidSomething;
 }
@@ -100,7 +103,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (net::URLRequestContextGetter*)requestContextGetter {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    _requestContextGetter = requestContextGetter;
+    _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
+        requestContextGetter, web::WebThread::GetBlockingPool());
     base::RecordAction(base::UserMetricsAction("MobileGALOpenSettings"));
     _storeKitLauncher = self;
 
@@ -210,17 +214,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Fetch the real icon.
     base::WeakNSObject<NativeAppsCollectionViewController> weakSelf(self);
     id<NativeAppMetadata> metadata = [self nativeAppAtIndex:indexPath.item];
-    [metadata
-        fetchSmallIconWithContext:_requestContextGetter
-                  completionBlock:^(UIImage* image) {
-                    base::scoped_nsobject<NativeAppsCollectionViewController>
-                        strongSelf([weakSelf retain]);
-                    if (!image || !strongSelf)
-                      return;
-                    appItem.icon = image;
-                    [strongSelf.get().collectionView
-                        reloadItemsAtIndexPaths:@[ indexPath ]];
-                  }];
+    [metadata fetchSmallIconWithImageFetcher:_imageFetcher.get()
+                             completionBlock:^(UIImage* image) {
+                               base::scoped_nsobject<
+                                   NativeAppsCollectionViewController>
+                                   strongSelf([weakSelf retain]);
+                               if (!image || !strongSelf)
+                                 return;
+                               appItem.icon = image;
+                               [strongSelf.get().collectionView
+                                   reloadItemsAtIndexPaths:@[ indexPath ]];
+                             }];
   }
 }
 

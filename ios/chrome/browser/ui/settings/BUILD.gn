@@ -116,6 +116,7 @@ source_set("settings") {
     "//components/google/core/browser",
     "//components/handoff",
     "//components/history/core/browser",
+    "//components/image_fetcher/ios",
     "//components/keyed_service/core",
     "//components/metrics",
     "//components/password_manager/core/browser",

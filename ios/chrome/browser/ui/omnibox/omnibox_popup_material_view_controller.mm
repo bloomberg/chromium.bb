@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -26,7 +27,6 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
-#include "ios/web/public/image_fetcher/image_data_fetcher.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -88,7 +88,7 @@ UIColor* BackgroundColorIncognito() {
   OmniboxPopupViewIOS* _popupView;  // weak, owns us
 
   // Fetcher for Answers in Suggest images.
-  std::unique_ptr<web::ImageDataFetcher> imageFetcher_;
+  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher_;
 
   // The data source.
   AutocompleteResult _currentResult;
@@ -110,9 +110,10 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark -
 #pragma mark Initialization
 
-- (instancetype)initWithPopupView:(OmniboxPopupViewIOS*)view
-                      withFetcher:
-                          (std::unique_ptr<web::ImageDataFetcher>)imageFetcher {
+- (instancetype)
+initWithPopupView:(OmniboxPopupViewIOS*)view
+      withFetcher:(std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
+                      imageFetcher {
   if ((self = [super init])) {
     _popupView = view;
     imageFetcher_ = std::move(imageFetcher);
@@ -248,8 +249,8 @@ UIColor* BackgroundColorIncognito() {
   const BOOL answerImagePresent =
       answerPresent && match.answer->second_line().image_url().is_valid();
   if (answerImagePresent) {
-    web::ImageFetchedCallback callback =
-        ^(const GURL& original_url, int response_code, NSData* data) {
+    image_fetcher::IOSImageDataFetcherCallback callback =
+        ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
           if (data) {
             UIImage* image =
                 [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
@@ -258,8 +259,8 @@ UIColor* BackgroundColorIncognito() {
             }
           }
         };
-    imageFetcher_->StartDownload(match.answer->second_line().image_url(),
-                                 callback);
+    imageFetcher_->FetchImageDataWebpDecoded(
+        match.answer->second_line().image_url(), callback);
 
     // Answers in suggest do not support RTL, left align only.
     CGFloat imageLeftPadding =

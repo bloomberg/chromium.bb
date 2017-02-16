@@ -33,8 +33,9 @@
   return nil;
 }
 
-- (void)fetchSmallIconWithContext:(net::URLRequestContextGetter*)contextGetter
-                  completionBlock:(void (^)(UIImage*))block {
+- (void)fetchSmallIconWithImageFetcher:
+            (image_fetcher::IOSImageDataFetcherWrapper*)imageFetcher
+                       completionBlock:(void (^)(UIImage*))block {
   block(nil);
 }
 

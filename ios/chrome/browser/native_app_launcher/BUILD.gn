@@ -61,6 +61,7 @@ source_set("native_app_launcher_internal") {
   deps = [
     ":native_app_launcher",
     "//base",
+    "//components/image_fetcher/ios",
     "//components/infobars/core",
     "//ios/chrome/browser",
     "//ios/chrome/browser/infobars",

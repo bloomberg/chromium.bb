@@ -63,6 +63,7 @@ source_set("omnibox_internal") {
     "//base",
     "//base:i18n",
     "//components/favicon/ios",
+    "//components/image_fetcher/ios",
     "//components/keyed_service/core",
     "//components/open_from_clipboard",
     "//components/resources",

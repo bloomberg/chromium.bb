@@ -13,6 +13,10 @@
 class GURL;
 @class UIImage;
 
+namespace image_fetcher {
+class IOSImageDataFetcherWrapper;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -59,9 +63,11 @@ class URLRequestContextGetter;
 // Returns the URL to test if the app is installed.
 - (NSURL*)appURLforURL:(NSURL*)url;
 
-// Calls |block| with the application icon. |contextGetter| must not be nil.
-- (void)fetchSmallIconWithContext:(net::URLRequestContextGetter*)contextGetter
-                  completionBlock:(void (^)(UIImage*))block;
+// Calls |block| with the application icon. |imageFetcher| must be kept alive
+// during the fetch.
+- (void)fetchSmallIconWithImageFetcher:
+            (image_fetcher::IOSImageDataFetcherWrapper*)imageFetcher
+                       completionBlock:(void (^)(UIImage*))block;
 
 // Returns whether this native application can open the |url|.
 - (BOOL)canOpenURL:(const GURL&)url;

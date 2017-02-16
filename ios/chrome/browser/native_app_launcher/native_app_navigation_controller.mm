@@ -6,8 +6,11 @@
 
 #import <StoreKit/StoreKit.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/installation_notifier.h"
@@ -20,9 +23,9 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/url_request/url_request_context_getter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,8 +51,8 @@ using base::UserMetricsAction;
   // WebState provides access to the *TabHelper objects. This will eventually
   // replace the need to have |_tab| in this object.
   web::WebState* _webState;
-  // A reference to the URLRequestContextGetter needed to fetch icons.
-  scoped_refptr<net::URLRequestContextGetter> _requestContextGetter;
+  // ImageFetcher needed to fetch the icons.
+  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
   // DEPRECATED: Tab hosting the infobar and is also used for accessing Tab
   // states such as navigation manager and whether it is a pre-rendered tab.
   // Use |webState| whenever possible.
@@ -66,7 +69,8 @@ using base::UserMetricsAction;
   self = [super init];
   if (self) {
     DCHECK(context);
-    _requestContextGetter = context;
+    _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
+        context, web::WebThread::GetBlockingPool());
     DCHECK(webState);
     _webState = webState;
     // Allows |tab| to be nil for unit testing. If not nil, it should have the
@@ -167,8 +171,8 @@ using base::UserMetricsAction;
 }
 
 - (void)fetchSmallIconWithCompletionBlock:(void (^)(UIImage*))block {
-  [_metadata fetchSmallIconWithContext:_requestContextGetter.get()
-                       completionBlock:block];
+  [_metadata fetchSmallIconWithImageFetcher:_imageFetcher.get()
+                            completionBlock:block];
 }
 
 - (void)openStore {

@@ -9,8 +9,8 @@
 
 #include "components/omnibox/browser/autocomplete_result.h"
 
-namespace web {
-class ImageDataFetcher;
+namespace image_fetcher {
+class IOSImageDataFetcherWrapper;
 }
 
 class OmniboxPopupViewIOS;
@@ -23,9 +23,10 @@ class OmniboxPopupViewIOS;
 
 // Designated initializer.  Creates a table view with UITableViewStylePlain.
 // Takes ownership of |imageFetcher|.
-- (instancetype)initWithPopupView:(OmniboxPopupViewIOS*)view
-                      withFetcher:
-                          (std::unique_ptr<web::ImageDataFetcher>)imageFetcher;
+- (instancetype)
+initWithPopupView:(OmniboxPopupViewIOS*)view
+      withFetcher:(std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
+                      imageFetcher;
 
 // Updates the current data and forces a redraw. If animation is YES, adds
 // CALayer animations to fade the OmniboxPopupMaterialRows in.
