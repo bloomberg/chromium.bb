@@ -37,6 +37,7 @@ namespace base {
 class FilePath;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace quota_internals {
