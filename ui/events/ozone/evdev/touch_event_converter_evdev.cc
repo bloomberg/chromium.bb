@@ -302,7 +302,7 @@ void TouchEventConverterEvdev::SetPalmSuppressionCallback(
 
 void TouchEventConverterEvdev::ProcessMultitouchEvent(
     const input_event& input) {
-  if (touch_logging_enabled_)
+  if (touch_logging_enabled_ && !has_pen_)
     touch_evdev_debug_buffer_.ProcessEvent(current_slot_, &input);
 
   if (input.type == EV_SYN) {
