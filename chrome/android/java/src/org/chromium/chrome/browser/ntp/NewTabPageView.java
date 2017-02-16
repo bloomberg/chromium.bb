@@ -252,8 +252,6 @@ public class NewTabPageView
         mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
                 scrollPosition, scrollOffset);
 
-        mRecyclerView.setUpSwipeToDismiss();
-
         setupScrollHandling();
 
         // When the NewTabPageAdapter's data changes we need to invalidate any previous

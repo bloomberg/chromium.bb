@@ -65,7 +65,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
                 mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.setAdapter(adapter);
-        mRecyclerView.setUpSwipeToDismiss();
     }
 
     @Override

@@ -176,7 +176,7 @@ public abstract class CardViewHolder
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
         if (getAdapterPosition() != mRecyclerView.getNewTabPageAdapter().getFirstCardPosition()) {
             // Not the first card, we can't peek anyway.
-            setPeekingPercentage(0f);
+            setNotPeeking();
         } else {
             mRecyclerView.updatePeekingCard(this);
         }
@@ -241,26 +241,24 @@ public abstract class CardViewHolder
     }
 
     /**
-     * Change the width, padding and child opacity of the card to give a smooth transition as the
-     * user scrolls.
+     * Resets the appearance of the card to not peeking.
+     */
+    public void setNotPeeking() {
+        setPeekingPercentage(0);
+    }
+
+    /**
+     * Change the width, padding and child opacity of the card to give a smooth transition from
+     * peeking to fully expanded as the user scrolls.
      * @param availableSpace space (pixels) available between the bottom of the screen and the
      *                       above-the-fold section, where the card can peek.
-     * @param canPeek whether the screen size allows having a peeking card.
      */
-    public void updatePeek(int availableSpace, boolean canPeek) {
-        float peekingPercentage;
-
-        if (!canPeek) {
-            peekingPercentage = 0f;
-        } else {
-            // If 1 padding unit (|mMaxPeekPadding|) is visible, the card is fully peeking. This is
-            // reduced as the card is scrolled up, until 2 padding units are visible and the card is
-            // not peeking anymore at all. Anything not between 0 and 1 is clamped.
-            peekingPercentage =
-                    MathUtils.clamp(2f - (float) availableSpace / mMaxPeekPadding, 0f, 1f);
-        }
-
-        setPeekingPercentage(peekingPercentage);
+    public void updatePeek(int availableSpace) {
+        // If 1 padding unit (|mMaxPeekPadding|) is visible, the card is fully peeking. This is
+        // reduced as the card is scrolled up, until 2 padding units are visible and the card is
+        // not peeking anymore at all. Anything not between 0 and 1 is clamped.
+        setPeekingPercentage(
+                MathUtils.clamp(2f - (float) availableSpace / mMaxPeekPadding, 0f, 1f));
     }
 
     /**

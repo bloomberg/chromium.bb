@@ -30,7 +30,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.R.string;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
@@ -64,18 +63,19 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     public static final NewTabPageViewHolder.PartialBindCallback RESET_FOR_DISMISS_CALLBACK =
             new ResetForDismissCallback();
 
-
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
 
     private final int mToolbarHeight;
     private final int mSearchBoxTransitionLength;
     private final int mPeekingHeight;
-    private final int mMaxHeaderHeight;
+
     /** How much of the first card is visible above the fold with the increased visibility UI. */
     private final int mPeekingCardBounceDistance;
+
     /** The peeking card animates in the first time it is made visible. */
     private boolean mFirstCardAnimationRun;
+
     /** We have tracked that the user has caused an impression after viewing the animation. */
     private boolean mCardImpressionAfterAnimationTracked;
 
@@ -125,7 +125,6 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         Resources res = context.getResources();
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
-        mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
         mPeekingCardBounceDistance =
                 res.getDimensionPixelSize(R.dimen.snippets_peeking_card_bounce_distance);
         mSearchBoxTransitionLength =
@@ -146,12 +145,6 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             @Override
             public void onChildViewDetachedFromWindow(View view) {}
         });
-    }
-
-    /**
-     * Sets up swipe-to-dismiss functionality.
-     */
-    public void setUpSwipeToDismiss() {
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchCallbacks());
         helper.attachToRecyclerView(this);
     }
@@ -318,26 +311,23 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * be correct, prefer {@link #updatePeekingCardAndHeader} that updates both together.
      */
     public void updatePeekingCard(CardViewHolder peekingCard) {
+        if (!shouldPeekFirstCard()) {
+            peekingCard.setNotPeeking();
+            return;
+        }
+
         SectionHeaderViewHolder header = findFirstHeader();
         if (header == null) {
             // No header, we must have scrolled quite far. Fallback to a non animated (full bleed)
             // card.
-            peekingCard.updatePeek(0, /* shouldAnimate */ false);
+            peekingCard.setNotPeeking();
             return;
         }
 
-        // Peeking is disabled in the card offset field trial and the increased visibility feature.
-        if (CardsVariationParameters.getFirstCardOffsetDp() != 0
-                || SnippetsConfig.isIncreasedCardVisibilityEnabled()
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
-            peekingCard.updatePeek(0, /* shouldAnimate */ false);
-            return;
-        }
-
-        // Here we consider that if the header is animating (is not completely expanded), the card
-        // should as well. In that case, the space below the header is what we have available.
-        boolean shouldAnimate = header.itemView.getHeight() < mMaxHeaderHeight;
-        peekingCard.updatePeek(getHeight() - header.itemView.getBottom(), shouldAnimate);
+        // The space below the header is what we have available.
+        // TODO(bauerb): The header position isn't always accurate at this point, if the height has
+        // been changed in the layout params but the layout pass hasn't run yet.
+        peekingCard.updatePeek(getHeight() - header.itemView.getBottom());
     }
 
     public NewTabPageAdapter getNewTabPageAdapter() {
@@ -410,7 +400,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * Finds the above the fold view.
      * @return The view for above the fold or null, if it is not present.
      */
-    public NewTabPageLayout findAboveTheFoldView() {
+    private NewTabPageLayout findAboveTheFoldView() {
         int position = getNewTabPageAdapter().getAboveTheFoldPosition();
         if (position == RecyclerView.NO_POSITION) return null;
 
@@ -607,13 +597,36 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         viewHolder.itemView.setAlpha(alpha);
     }
 
+    private boolean shouldAnimateFirstCard() {
+        // The "bouncing" animation for the first card is only enabled if
+        // 1) there is space for it, ...
+        if (!mHasSpaceForPeekingCard) return false;
+
+        // ... 2) the corresponding feature is enabled, ...
+        if (!SnippetsConfig.isIncreasedCardVisibilityEnabled()) return false;
+
+        // ... 3) and the animation hasn't run yet.
+        return !mFirstCardAnimationRun;
+    }
+
+    private boolean shouldPeekFirstCard() {
+        // Peeking above the fold is only enabled if there is space.
+        if (!mHasSpaceForPeekingCard) return false;
+
+        // It's also disabled in the card offset field trial...
+        if (CardsVariationParameters.getFirstCardOffsetDp() > 0) return false;
+
+        // ...and in the increased visibility (bouncing animation) feature.
+        return !SnippetsConfig.isIncreasedCardVisibilityEnabled();
+    }
+
     /**
      * To be triggered when a snippet is bound to a ViewHolder.
      */
     public void onSnippetBound(View cardView) {
         // Animate the peeking card.
         // We only run if the feature is enabled and once per NTP.
-        if (!SnippetsConfig.isIncreasedCardVisibilityEnabled() || mFirstCardAnimationRun) return;
+        if (!shouldAnimateFirstCard()) return;
         mFirstCardAnimationRun = true;
 
         // We only want an animation to run if we are not scrolled.
