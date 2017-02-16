@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 
@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
  * Implementation of ImageView that allows to tint the color of the image view for all
  * image view states using chrome:tint attribute in XML.
  */
-public class TintedImageView extends ImageView {
+public class TintedImageView extends AppCompatImageView {
     private ColorStateList mTint;
 
     public TintedImageView(Context context) {
