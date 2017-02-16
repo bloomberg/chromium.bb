@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -239,8 +240,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::RendererScheduler* renderer_scheduler,
-    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces,
-    content::ChildMemoryCoordinatorImpl* memory_coordinator)
+    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
@@ -252,8 +252,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       renderer_scheduler_(renderer_scheduler),
       blink_interface_provider_(
-          new BlinkInterfaceProviderImpl(remote_interfaces)),
-      memory_coordinator_(memory_coordinator) {
+          new BlinkInterfaceProviderImpl(remote_interfaces)) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -1293,8 +1292,11 @@ void RendererBlinkPlatformImpl::workerContextCreated(
 
 //------------------------------------------------------------------------------
 void RendererBlinkPlatformImpl::requestPurgeMemory() {
-  DCHECK(memory_coordinator_);
-  memory_coordinator_->PurgeMemory();
+  // TODO(tasak|bashi): We should use ChildMemoryCoordinator here, but
+  // ChildMemoryCoordinator isn't always available as it's only initialized
+  // when kMemoryCoordinatorV0 is enabled.
+  // Use ChildMemoryCoordinator when memory coordinator is always enabled.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
 }
 
 }  // namespace content
