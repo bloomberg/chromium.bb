@@ -125,8 +125,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   size_t basic_input_streams() const { return basic_input_streams_.size(); }
 
  protected:
-  friend class media::AudioManagerDeleter;
-
   ~AudioManagerMac() override;
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,

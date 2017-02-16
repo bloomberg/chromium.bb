@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -287,9 +289,7 @@ void AudioManagerDeleter::operator()(const AudioManager* instance) const {
   // uses a state that is destroyed in ~BrowserMainLoop().
   // See http://crbug.com/623703 for more details.
   DCHECK(instance->GetTaskRunner()->BelongsToCurrentThread());
-  AudioManagerMac* mac_instance =
-      static_cast<AudioManagerMac*>(const_cast<AudioManager*>(instance));
-  delete mac_instance;
+  delete instance;
 #else
   // AudioManager must be destroyed on the audio thread.
   if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance)) {

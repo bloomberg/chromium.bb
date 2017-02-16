@@ -261,6 +261,7 @@ class MEDIA_EXPORT AudioManager {
 
  private:
   friend class base::DeleteHelper<AudioManager>;
+  friend class AudioManagerDeleter;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
