@@ -29,7 +29,12 @@ PushPullFIFO::PushPullFIFO(unsigned numberOfChannels, size_t fifoLength)
   m_fifoBus = AudioBus::create(numberOfChannels, m_fifoLength);
 }
 
-PushPullFIFO::~PushPullFIFO() {}
+PushPullFIFO::~PushPullFIFO() {
+#if OS(ANDROID)
+  // Log when PushPullFIFO is destructed. (crbug.com/692423)
+  LOG(WARNING) << "[WebAudio/PushPullFIFO] going away...";
+#endif
+}
 
 // Push the data from |inputBus| to FIFO. The size of push is determined by
 // the length of |inputBus|.
@@ -83,6 +88,13 @@ void PushPullFIFO::push(const AudioBus* inputBus) {
 // Pull the data out of FIFO to |outputBus|. If remaining frame in the FIFO
 // is less than the frames to pull, provides remaining frame plus the silence.
 void PushPullFIFO::pull(AudioBus* outputBus, size_t framesRequested) {
+#if OS(ANDROID)
+  if (!outputBus) {
+    // Log when outputBus is invalid. (crbug.com/692423)
+    LOG(WARNING) << "[WebAudio/PushPullFIFO::pull] outputBus = " << outputBus;
+  }
+#endif
+
   CHECK(outputBus);
   SECURITY_CHECK(framesRequested <= outputBus->length());
   SECURITY_CHECK(framesRequested <= m_fifoLength);
