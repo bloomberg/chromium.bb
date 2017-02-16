@@ -454,8 +454,8 @@ class BluetoothDetailedView : public TrayDetailsView {
       WmShell::Get()->system_tray_delegate()->ToggleBluetooth();
     else if (sender == settings_)
       ShowSettings();
-
-    NOTREACHED();
+    else
+      NOTREACHED();
   }
 
   void CreateExtraTitleRowButtons() override {
