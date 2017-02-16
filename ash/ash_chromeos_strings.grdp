@@ -265,15 +265,6 @@
     Set wallpaper...
   </message>
 
-  <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
-    SMS
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_SMS_MESSAGES" desc="The label used in the default status tray view for SMS with the number of messages.">
-    SMS messages: <ph name="MESSAGE_COUNT">$1<ex>3</ex></ph>
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_SMS_NUMBER" desc="Sender for SMS messagees in the system tray.">
-    SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
     Performance tracing enabled
   </message>

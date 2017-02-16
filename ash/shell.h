@@ -109,6 +109,7 @@ class ScreenPositionController;
 class SessionStateDelegate;
 struct ShellInitParams;
 class ShutdownObserver;
+class SmsObserver;
 class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
@@ -131,6 +132,7 @@ class WindowWatcher;
 
 namespace test {
 class ShellTestApi;
+class SmsObserverTest;
 }
 
 // Shell is a singleton object that presents the Shell API and implements the
@@ -407,6 +409,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   friend class RootWindowController;
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
+  friend class SmsObserverTest;
 
   explicit Shell(std::unique_ptr<WmShell> wm_shell);
   ~Shell() override;
@@ -525,6 +528,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Listens for shutdown and updates DisplayConfigurator.
   std::unique_ptr<ShutdownObserver> shutdown_observer_;
+
+  // Listens for new sms messages and shows notifications.
+  std::unique_ptr<SmsObserver> sms_observer_;
 
   // Implements content::ScreenOrientationController for Chrome OS.
   std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;

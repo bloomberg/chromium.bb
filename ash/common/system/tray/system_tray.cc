@@ -21,7 +21,6 @@
 #include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
 #include "ash/common/system/chromeos/network/tray_network.h"
-#include "ash/common/system/chromeos/network/tray_sms.h"
 #include "ash/common/system/chromeos/network/tray_vpn.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
@@ -284,7 +283,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   tray_network_ = new TrayNetwork(this);
   AddTrayItem(base::WrapUnique(tray_network_));
   AddTrayItem(base::MakeUnique<TrayVPN>(this));
-  AddTrayItem(base::MakeUnique<TraySms>(this));
   AddTrayItem(base::MakeUnique<TrayBluetooth>(this));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(base::WrapUnique(tray_cast_));

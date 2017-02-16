@@ -29,6 +29,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
+#include "ash/common/system/chromeos/network/sms_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -845,6 +846,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     screen_orientation_controller_.reset(new ScreenOrientationController());
     screen_layout_observer_.reset(new ScreenLayoutObserver());
   }
+  sms_observer_.reset(new SmsObserver());
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

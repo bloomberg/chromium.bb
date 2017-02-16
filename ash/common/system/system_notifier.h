@@ -35,6 +35,7 @@ ASH_EXPORT extern const char kNotifierScreenshot[];
 ASH_EXPORT extern const char kNotifierScreenCapture[];
 ASH_EXPORT extern const char kNotifierScreenShare[];
 ASH_EXPORT extern const char kNotifierSessionLengthTimeout[];
+ASH_EXPORT extern const char kNotifierSms[];
 ASH_EXPORT extern const char kNotifierSupervisedUser[];
 ASH_EXPORT extern const char kNotifierWebUsb[];
 
