@@ -11,20 +11,20 @@
 // [1] https://rawgit.com/w3c/mediacapture-record/master/MediaRecorder.html#MediaRecorderOptions
 
 function makeExpectedBitrateAsyncTest(options, testName, expectedBps) {
-    async_test(function(test) {
-        const constraints = {video: true,  audio: true};
+  async_test(function(test) {
+    const constraints = {video: true,  audio: true};
 
-        const gotStream = test.step_func(function(stream) {
-            var recorder = new MediaRecorder(stream, options);
-            assert_equals(recorder.videoBitsPerSecond, expectedBps.video, 'video');
-            assert_equals(recorder.audioBitsPerSecond, expectedBps.audio, 'audio');
+    const gotStream = test.step_func(function(stream) {
+      var recorder = new MediaRecorder(stream, options);
+      assert_equals(recorder.videoBitsPerSecond, expectedBps.video, 'video');
+      assert_equals(recorder.audioBitsPerSecond, expectedBps.audio, 'audio');
 
-            test.done();
-        });
+      test.done();
+    });
 
-        const onError = test.unreached_func('Error creating MediaStream.');
-        navigator.webkitGetUserMedia(constraints, gotStream, onError);
-    }, testName);
+    const onError = test.unreached_func('Error creating MediaStream.');
+    navigator.webkitGetUserMedia(constraints, gotStream, onError);
+  }, testName);
 };
 
 const kTooSmallBps = 1000;
