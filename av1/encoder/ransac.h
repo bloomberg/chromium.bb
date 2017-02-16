@@ -20,23 +20,20 @@
 #include "av1/common/warped_motion.h"
 
 typedef int (*RansacFunc)(int *matched_points, int npoints,
-                          int *number_of_inliers, int *best_inlier_mask,
-                          double *best_params);
+                          int *number_of_inliers, double *best_params);
 
 /* Each of these functions fits a motion model from a set of
    corresponding points in 2 frames using RANSAC. */
 int ransac_homography(int *matched_points, int npoints, int *number_of_inliers,
-                      int *best_inlier_indices, double *best_params);
+                      double *best_params);
 int ransac_affine(int *matched_points, int npoints, int *number_of_inliers,
-                  int *best_inlier_indices, double *best_params);
+                  double *best_params);
 int ransac_hortrapezoid(int *matched_points, int npoints,
-                        int *number_of_inliers, int *best_inlier_indices,
-                        double *best_params);
+                        int *number_of_inliers, double *best_params);
 int ransac_vertrapezoid(int *matched_points, int npoints,
-                        int *number_of_inliers, int *best_inlier_indices,
-                        double *best_params);
+                        int *number_of_inliers, double *best_params);
 int ransac_rotzoom(int *matched_points, int npoints, int *number_of_inliers,
-                   int *best_inlier_indices, double *best_params);
+                   double *best_params);
 int ransac_translation(int *matched_points, int npoints, int *number_of_inliers,
-                       int *best_inlier_indices, double *best_params);
+                       double *best_params);
 #endif  // AV1_ENCODER_RANSAC_H_
