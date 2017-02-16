@@ -299,6 +299,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
     return m_backgroundPaintsOntoScrollingContentsLayer;
   }
 
+  bool drawsBackgroundOntoContentLayer() {
+    return m_drawsBackgroundOntoContentLayer;
+  }
+
  private:
   IntRect recomputeInterestRect(const GraphicsLayer*) const;
   static bool interestRectChangedEnoughToRepaint(
@@ -695,6 +699,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // layer and the graphics layer because the scrolling contents layer is
   // clipped by the padding box.
   unsigned m_backgroundPaintsOntoGraphicsLayer : 1;
+
+  bool m_drawsBackgroundOntoContentLayer;
 
   friend class CompositedLayerMappingTest;
 };

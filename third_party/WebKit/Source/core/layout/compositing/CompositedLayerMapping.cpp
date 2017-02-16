@@ -178,7 +178,8 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
       m_backgroundLayerPaintsFixedRootBackground(false),
       m_scrollingContentsAreEmpty(false),
       m_backgroundPaintsOntoScrollingContentsLayer(false),
-      m_backgroundPaintsOntoGraphicsLayer(false) {
+      m_backgroundPaintsOntoGraphicsLayer(false),
+      m_drawsBackgroundOntoContentLayer(false) {
   if (layer.isRootLayer() && layoutObject()->frame()->isMainFrame())
     m_isMainFrameLayoutViewLayer = true;
 
@@ -1691,6 +1692,8 @@ void CompositedLayerMapping::updateDrawsContent() {
     m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
   }
 
+  m_drawsBackgroundOntoContentLayer = false;
+
   if (hasPaintedContent && isAcceleratedCanvas(layoutObject())) {
     CanvasRenderingContext* context =
         toHTMLCanvasElement(layoutObject()->node())->renderingContext();
@@ -1700,6 +1703,7 @@ void CompositedLayerMapping::updateDrawsContent() {
       if (contentLayerSupportsDirectBackgroundComposition(layoutObject())) {
         bgColor = layoutObjectBackgroundColor();
         hasPaintedContent = false;
+        m_drawsBackgroundOntoContentLayer = true;
       }
       contentLayer->setBackgroundColor(bgColor.rgb());
     }

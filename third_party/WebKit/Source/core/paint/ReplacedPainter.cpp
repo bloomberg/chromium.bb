@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/api/SelectionState.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
@@ -34,6 +35,14 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo,
   if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
     if (m_layoutReplaced.style()->visibility() == EVisibility::kVisible &&
         m_layoutReplaced.hasBoxDecorationBackground()) {
+      if (m_layoutReplaced.hasLayer() &&
+          m_layoutReplaced.layer()->compositingState() ==
+              PaintsIntoOwnBacking &&
+          m_layoutReplaced.layer()
+              ->compositedLayerMapping()
+              ->drawsBackgroundOntoContentLayer())
+        return;
+
       m_layoutReplaced.paintBoxDecorationBackground(paintInfo,
                                                     adjustedPaintOffset);
     }
