@@ -92,11 +92,10 @@ const int kMenuEdgeEffectivePadding =
     kMenuExtraMarginFromLeftEdge + (kMenuButtonSize - kMenuIconSize) / 2;
 
 const int kHitRegionPadding = 4;
-const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x99);
+const SkColor kTraySeparatorColor = SkColorSetA(SK_ColorWHITE, 0x99);
 const int kSeparatorWidth = 1;
 
-const SkColor kHorizontalSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
-const int kHorizontalSeparatorHeight = 24;
+const SkColor kMenuSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
 const SkColor kTrayPopupInkDropBaseColor = SK_ColorBLACK;
 const float kTrayPopupInkDropRippleOpacity = 0.06f;

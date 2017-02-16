@@ -116,7 +116,7 @@ FindBarView::FindBarView(FindBarHost* host)
       find_text_(new views::Textfield),
       match_count_text_(new MatchCountLabel()),
       focus_forwarder_view_(new FocusForwarderView(find_text_)),
-      separator_(new views::Separator(views::Separator::VERTICAL)),
+      separator_(new views::Separator()),
       find_previous_button_(new views::VectorIconButton(this)),
       find_next_button_(new views::VectorIconButton(this)),
       close_button_(new views::VectorIconButton(this)) {

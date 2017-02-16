@@ -420,8 +420,8 @@ void ContentSettingBubbleContents::Init() {
     if (!layout_delegate->IsHarmonyMode()) {
       layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kSingleColumnSetId);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
-                      GridLayout::FILL, GridLayout::FILL);
+      layout->AddView(new views::Separator(), 1, 1, GridLayout::FILL,
+                      GridLayout::FILL);
     }
     layout->AddPaddingRow(0, related_control_vertical_spacing);
   }

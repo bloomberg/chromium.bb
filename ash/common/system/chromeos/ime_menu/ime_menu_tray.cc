@@ -143,7 +143,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
-                                      kHorizontalSeparatorColor),
+                                      kMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
     auto* box_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
@@ -282,7 +282,7 @@ class ImeButtonsView : public views::View,
       SetLayoutManager(box_layout);
       SetBorder(views::CreatePaddedBorder(
           views::CreateSolidSidedBorder(kSeparatorWidth, 0, 0, 0,
-                                        kHorizontalSeparatorColor),
+                                        kMenuSeparatorColor),
           gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth,
                       GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET))));
     } else {

@@ -88,15 +88,12 @@ extern const int kTrayNotificationContentsWidth;
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
 
-// Color and width of a line used to separate tray items in the shelf and
-// system menu.
-extern const SkColor kSeparatorColor;
+// Color and width of a line used to separate tray items in the shelf.
+extern const SkColor kTraySeparatorColor;
 ASH_EXPORT extern const int kSeparatorWidth;
 
-// The color and height of the horizontal separator used in the material design
-// system menu (i.e., the vertical line used to separate elements horizontally).
-extern const SkColor kHorizontalSeparatorColor;
-extern const int kHorizontalSeparatorHeight;
+// The color of the separators used in the system menu.
+extern const SkColor kMenuSeparatorColor;
 
 // The size and foreground color of the icons appearing in the material design
 // system tray.

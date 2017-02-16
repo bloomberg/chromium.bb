@@ -230,8 +230,7 @@ bool PaletteTray::ShowPalette() {
   bubble_view->AddChildView(title_view);
 
   // Add horizontal separator.
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
+  views::Separator* separator = new views::Separator();
   separator->SetColor(kPaletteSeparatorColor);
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));

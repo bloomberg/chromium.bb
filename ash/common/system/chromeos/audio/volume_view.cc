@@ -204,9 +204,8 @@ VolumeView::VolumeView(SystemTrayItem* owner,
     more_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
     tri_view_->AddView(TriView::Container::END, more_button_);
   } else {
-    separator_ = new views::Separator(views::Separator::VERTICAL);
+    separator_ = new views::Separator();
     separator_->SetColor(kButtonStrokeColor);
-    separator_->SetPreferredSize(kSeparatorSize);
     separator_->SetBorder(views::CreateEmptyBorder(kSeparatorVerticalInset, 0,
                                                    kSeparatorVerticalInset,
                                                    kBoxLayoutPadding));

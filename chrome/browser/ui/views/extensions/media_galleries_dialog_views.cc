@@ -138,8 +138,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
     // Header and separator line.
     if (!section_headers[i].empty() && !entries.empty()) {
-      views::Separator* separator = new views::Separator(
-          views::Separator::HORIZONTAL);
+      views::Separator* separator = new views::Separator();
       scroll_container->AddChildView(separator);
 
       views::Label* header = new views::Label(section_headers[i]);

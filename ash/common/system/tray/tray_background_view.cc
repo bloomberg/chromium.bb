@@ -586,10 +586,10 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
       !separator_visible_) {
     return;
   }
-  //  In the given |canvas|, for a horizontal shelf draw a separator line to the
-  //  right or left of the TrayBackgroundView when the system is LTR or RTL
-  //  aligned, respectively. For a vertical shelf draw the separator line
-  //  underneath the items instead.
+  // In the given |canvas|, for a horizontal shelf draw a separator line to the
+  // right or left of the TrayBackgroundView when the system is LTR or RTL
+  // aligned, respectively. For a vertical shelf draw the separator line
+  // underneath the items instead.
   const bool horizontal_shelf = IsHorizontalAlignment(shelf_alignment_);
   const gfx::Rect local_bounds = GetLocalBounds();
   const int height = kTrayItemSize;
@@ -601,7 +601,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   cc::PaintFlags flags;
-  flags.setColor(kSeparatorColor);
+  flags.setColor(kTraySeparatorColor);
   flags.setAntiAlias(true);
 
   const gfx::Rect bounds = horizontal_shelf

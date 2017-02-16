@@ -13,43 +13,28 @@ namespace views {
 // static
 const char Separator::kViewClassName[] = "Separator";
 
-// The separator size in pixels.
-const int kSeparatorSize = 1;
+// static
+const int Separator::kThickness = 1;
 
-Separator::Separator(Orientation orientation)
-    : orientation_(orientation),
-      color_overridden_(false),
-      size_(kSeparatorSize) {
-  SetColorFromNativeTheme();
-}
+Separator::Separator() {}
 
-Separator::~Separator() {
-}
+Separator::~Separator() {}
 
 void Separator::SetColor(SkColor color) {
-  color_ = color;
-  color_overridden_ = true;
+  overridden_color_ = color;
   SchedulePaint();
 }
 
-void Separator::SetPreferredSize(int size) {
-  if (size != size_) {
-    size_ = size;
-    PreferredSizeChanged();
-  }
-}
-
-void Separator::SetColorFromNativeTheme() {
-  color_ = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_SeparatorColor);
+void Separator::SetPreferredHeight(int height) {
+  preferred_height_ = height;
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Separator, View overrides:
 
 gfx::Size Separator::GetPreferredSize() const {
-  gfx::Size size =
-      orientation_ == HORIZONTAL ? gfx::Size(1, size_) : gfx::Size(size_, 1);
+  gfx::Size size(kThickness, preferred_height_);
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
@@ -60,12 +45,15 @@ void Separator::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void Separator::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRect(GetContentsBounds(), color_);
-}
+  SkColor color = overridden_color_
+                      ? *overridden_color_
+                      : GetNativeTheme()->GetSystemColor(
+                            ui::NativeTheme::kColorId_SeparatorColor);
 
-void Separator::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (!color_overridden_)
-    SetColorFromNativeTheme();
+  // The separator fills its bounds, but avoid filling partial pixels.
+  float dsf = canvas->UndoDeviceScaleFactor();
+  gfx::RectF contents = gfx::ScaleRect(gfx::RectF(GetContentsBounds()), dsf);
+  canvas->FillRect(gfx::ToEnclosedRect(contents), color);
 }
 
 const char* Separator::GetClassName() const {

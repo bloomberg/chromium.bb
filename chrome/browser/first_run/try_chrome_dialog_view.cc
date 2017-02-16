@@ -233,7 +233,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     // and the 'make default' checkbox and the OK button on the same row.
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
     layout->StartRow(0, 6);
-    separator = new views::Separator(views::Separator::HORIZONTAL);
+    separator = new views::Separator();
     layout->AddView(separator);
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 

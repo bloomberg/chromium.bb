@@ -439,7 +439,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   layout->AddView(header_);
 
   layout->StartRow(0, content_column);
-  separator_ = new views::Separator(views::Separator::HORIZONTAL);
+  separator_ = new views::Separator();
   layout->AddView(separator_);
 
   layout->AddPaddingRow(1, kHeaderMarginBottom);

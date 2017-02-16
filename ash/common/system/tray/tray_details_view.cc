@@ -132,7 +132,6 @@ class ScrollContentsView : public views::View {
   }
 
  private:
-  const SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
   const int kShadowOffsetY = 2;
   const int kShadowBlur = 2;
   // TODO(fukino): Remove this constant once we stop maintaining pre-MD design.
@@ -218,7 +217,7 @@ class ScrollContentsView : public views::View {
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                        kSeparatorColor);
+                        kMenuSeparatorColor);
     flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
@@ -342,12 +341,10 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
     tri_view_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
                                                   kTitleRowPaddingBottom, 0));
     AddChildViewAt(tri_view_, 0);
-    views::Separator* separator =
-        new views::Separator(views::Separator::HORIZONTAL);
-    separator->SetColor(kHorizontalSeparatorColor);
-    separator->SetPreferredSize(kSeparatorWidth);
+    views::Separator* separator = new views::Separator();
+    separator->SetColor(kMenuSeparatorColor);
     separator->SetBorder(views::CreateEmptyBorder(
-        kTitleRowProgressBarHeight - kSeparatorWidth, 0, 0, 0));
+        kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
     AddChildViewAt(separator, kTitleRowSeparatorIndex);
   } else {
     title_row_ = new SpecialPopupRow();

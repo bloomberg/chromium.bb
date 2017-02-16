@@ -142,8 +142,7 @@ void SpecialPopupRow::AddViewAfterContent(views::View* view,
   }
 
   if (add_separator) {
-    views::Separator* separator =
-        new views::Separator(views::Separator::VERTICAL);
+    views::Separator* separator = new views::Separator();
     separator->SetColor(ash::kBorderDarkColor);
     separator->SetBorder(
         views::CreateEmptyBorder(kSeparatorInset, 0, kSeparatorInset, 0));

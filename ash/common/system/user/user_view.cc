@@ -188,7 +188,7 @@ class ActiveUserBorder : public views::Border {
         gfx::Rect(
             0, view.height() - kMenuSeparatorVerticalPadding - kSeparatorWidth,
             view.width(), kSeparatorWidth),
-        kHorizontalSeparatorColor);
+        kMenuSeparatorColor);
   }
 
   gfx::Insets GetInsets() const override {

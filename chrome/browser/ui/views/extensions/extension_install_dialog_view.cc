@@ -249,8 +249,8 @@ void ExtensionInstallDialogView::InitView() {
   if (prompt_->ShouldShowPermissions()) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_set_id);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 3, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL);
+    layout->AddView(new views::Separator(), 3, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL);
   }
 
   const int content_width =

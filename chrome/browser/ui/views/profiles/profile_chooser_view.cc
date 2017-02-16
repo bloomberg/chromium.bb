@@ -701,7 +701,7 @@ class TitleCard : public views::View {
     layout->StartRowWithPadding(1, 0, 0, kVerticalSpacing);
     layout->AddView(title_card);
     layout->StartRowWithPadding(1, 1, 0, kVerticalSpacing);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->AddView(new views::Separator());
 
     layout->StartRow(1, 1);
     layout->AddView(view);
@@ -1294,7 +1294,7 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
     layout->StartRow(1, 0);
     layout->AddView(sync_error_view);
     layout->StartRow(0, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->AddView(new views::Separator());
   }
 
   if (!current_profile_view) {
@@ -1309,7 +1309,7 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
   if (!IsProfileChooser(view_mode_)) {
     DCHECK(current_profile_accounts);
     layout->StartRow(0, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->AddView(new views::Separator());
     layout->StartRow(1, 0);
     layout->AddView(current_profile_accounts);
   }
@@ -1317,14 +1317,14 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
   if (browser_->profile()->IsSupervised()) {
     if (!switches::IsMaterialDesignUserMenu()) {
       layout->StartRow(0, 0);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+      layout->AddView(new views::Separator());
     }
     layout->StartRow(1, 0);
     layout->AddView(CreateSupervisedUserDisclaimerView());
   }
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+  layout->AddView(new views::Separator());
 
   if (option_buttons_view) {
     layout->StartRow(0, 0);
@@ -1886,7 +1886,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     open_other_profile_indexes_map_[button] = index;
 
     layout->StartRow(1, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->AddView(new views::Separator());
     layout->StartRow(1, 0);
     layout->AddView(button);
   }
@@ -1961,7 +1961,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
 
   if (!switches::IsMaterialDesignUserMenu() && ShouldShowGoIncognito()) {
     layout->StartRow(1, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->AddView(new views::Separator());
 
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     go_incognito_button_ = new BackgroundColorHoverButton(
@@ -1975,7 +1975,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   if (display_lock) {
     if (!switches::IsMaterialDesignUserMenu()) {
       layout->StartRow(1, 0);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+      layout->AddView(new views::Separator());
     }
 
     lock_button_ = new BackgroundColorHoverButton(
@@ -2332,7 +2332,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
 
   // Adds "Add person" button.
   layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+  layout->AddView(new views::Separator());
 
   const int kIconSize = 24;
   add_person_button_ = new BackgroundColorHoverButton(
@@ -2344,7 +2344,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
 
   // Adds "Disconnect your Google Account" button.
   layout->StartRow(1, 0);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+  layout->AddView(new views::Separator());
 
   disconnect_button_ = new BackgroundColorHoverButton(
       this, l10n_util::GetStringUTF16(IDS_PROFILES_DISCONNECT_BUTTON),

@@ -293,7 +293,7 @@ void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
   if (show_separator) {
     view->SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
-                                      kHorizontalSeparatorColor),
+                                      kMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
   } else {
@@ -324,10 +324,9 @@ views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
 }
 
 views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
-  separator->SetPreferredSize(kHorizontalSeparatorHeight);
-  separator->SetColor(kHorizontalSeparatorColor);
+  views::Separator* separator = new views::Separator();
+  separator->SetPreferredHeight(24);
+  separator->SetColor(kMenuSeparatorColor);
   return separator;
 }
 
@@ -416,12 +415,10 @@ gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
 }
 
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
-  separator->SetColor(kHorizontalSeparatorColor);
-  separator->SetPreferredSize(kSeparatorWidth);
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kMenuSeparatorColor);
   separator->SetBorder(views::CreateEmptyBorder(
-      kMenuSeparatorVerticalPadding - kSeparatorWidth,
+      kMenuSeparatorVerticalPadding - views::Separator::kThickness,
       left_inset
           ? kMenuExtraMarginFromLeftEdge + kMenuButtonSize +
                 kTrayPopupLabelHorizontalPadding
@@ -431,12 +428,10 @@ views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
 }
 
 views::Separator* TrayPopupUtils::CreateListSubHeaderSeparator() {
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
-  separator->SetColor(kHorizontalSeparatorColor);
-  separator->SetPreferredSize(kSeparatorWidth);
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kMenuSeparatorColor);
   separator->SetBorder(views::CreateEmptyBorder(
-      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0));
+      kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
 }
 

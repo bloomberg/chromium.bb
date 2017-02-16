@@ -31,6 +31,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -578,6 +579,10 @@ TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
   RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
+}
+
+TEST_F(SystemTrayTest, SeparatorThickness) {
+  EXPECT_EQ(kSeparatorWidth, views::Separator::kThickness);
 }
 
 }  // namespace test
