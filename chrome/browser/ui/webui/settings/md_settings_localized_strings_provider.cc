@@ -1466,7 +1466,6 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"searchPageTitle", IDS_SETTINGS_SEARCH},
-      {"searchExplanation", IDS_SETTINGS_SEARCH_EXPLANATION},
       {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
       {"searchEnginesManageDescription",
        IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_DESCRIPTION},
@@ -1489,6 +1488,10 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
                          chrome::kHotwordLearnMoreURL);
   html_source->AddString("manageAudioHistoryUrl",
                          chrome::kManageAudioHistoryURL);
+  base::string16 search_explanation_text = l10n_util::GetStringFUTF16(
+      IDS_SETTINGS_SEARCH_EXPLANATION,
+      base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
+  html_source->AddString("searchExplanation", search_explanation_text);
 }
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
