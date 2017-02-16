@@ -3825,6 +3825,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       if (!draw_buffers_explicitly_enabled_)
         resources.MaxDrawBuffers = 1;
       resources.EXT_shader_texture_lod = shader_texture_lod_explicitly_enabled_;
+      resources.NV_draw_buffers =
+          draw_buffers_explicitly_enabled_ && features().nv_draw_buffers;
       break;
     case CONTEXT_TYPE_WEBGL2:
       shader_spec = SH_WEBGL2_SPEC;
@@ -3845,6 +3847,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           features().ext_frag_depth ? 1 : 0;
       resources.EXT_shader_texture_lod =
           features().ext_shader_texture_lod ? 1 : 0;
+      resources.NV_draw_buffers =
+          features().nv_draw_buffers ? 1 : 0;
       resources.EXT_blend_func_extended =
           features().ext_blend_func_extended ? 1 : 0;
       break;
