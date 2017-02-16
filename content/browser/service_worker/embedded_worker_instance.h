@@ -41,7 +41,6 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 struct EmbeddedWorkerStartParams;
-class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 
 // This gives an interface to control one EmbeddedWorker instance, which
@@ -142,7 +141,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // that is, when |process_id()| returns a valid process id.
   bool is_new_process() const;
   int worker_devtools_agent_route_id() const;
-  MessagePortMessageFilter* message_port_message_filter() const;
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);

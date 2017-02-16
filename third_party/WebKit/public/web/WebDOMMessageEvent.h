@@ -54,8 +54,7 @@ class WebDOMMessageEvent : public WebDOMEvent {
       const WebString& origin = WebString(),
       const WebFrame* sourceFrame = nullptr,
       const WebDocument& targetDocument = WebDocument(),
-      const WebMessagePortChannelArray& channels =
-          WebMessagePortChannelArray());
+      WebMessagePortChannelArray channels = WebMessagePortChannelArray());
   WebDOMMessageEvent() {}
 
   BLINK_EXPORT WebSerializedScriptValue data() const;

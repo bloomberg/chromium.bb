@@ -108,10 +108,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual void didHandlePaymentRequestEvent(int paymentRequestEventID,
                                             WebServiceWorkerEventResult,
                                             double eventDispatchTime) = 0;
-  virtual void postMessageToClient(
-      const WebString& clientUUID,
-      const WebString& message,
-      std::unique_ptr<WebMessagePortChannelArray>) = 0;
+  virtual void postMessageToClient(const WebString& clientUUID,
+                                   const WebString& message,
+                                   WebMessagePortChannelArray) = 0;
   virtual void skipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) = 0;
   virtual void claim(

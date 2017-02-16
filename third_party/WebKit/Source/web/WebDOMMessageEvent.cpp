@@ -48,7 +48,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     const WebString& origin,
     const WebFrame* sourceFrame,
     const WebDocument& targetDocument,
-    const WebMessagePortChannelArray& channels)
+    WebMessagePortChannelArray channels)
     : WebDOMMessageEvent(MessageEvent::create()) {
   DOMWindow* window = nullptr;
   if (sourceFrame)
@@ -56,7 +56,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   MessagePortArray* ports = nullptr;
   if (!targetDocument.isNull()) {
     Document* coreDocument = targetDocument;
-    ports = MessagePort::toMessagePortArray(coreDocument, channels);
+    ports = MessagePort::toMessagePortArray(coreDocument, std::move(channels));
   }
   // Use an empty array for |ports| when it is null because this function
   // is used to implement postMessage().
@@ -79,12 +79,10 @@ WebString WebDOMMessageEvent::origin() const {
 }
 
 WebMessagePortChannelArray WebDOMMessageEvent::releaseChannels() {
-  MessagePortChannelArray* channels = constUnwrap<MessageEvent>()->channels();
-  WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
-  if (channels) {
-    for (size_t i = 0; i < channels->size(); ++i)
-      webChannels[i] = (*channels)[i].release();
-  }
+  MessagePortChannelArray channels = unwrap<MessageEvent>()->releaseChannels();
+  WebMessagePortChannelArray webChannels(channels.size());
+  for (size_t i = 0; i < channels.size(); ++i)
+    webChannels[i] = std::move(channels[i]);
   return webChannels;
 }
 

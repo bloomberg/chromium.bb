@@ -28,6 +28,7 @@ class WebWorkerContentSettingsClientProxy;
 }
 
 namespace content {
+class MessagePort;
 class SharedWorkerDevToolsAgent;
 class WebApplicationCacheHostImpl;
 class WebMessagePortChannelImpl;
@@ -88,9 +89,11 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   bool Send(IPC::Message* message);
 
   // WebSharedWorker will own |channel|.
-  void ConnectToChannel(WebMessagePortChannelImpl* channel);
+  void ConnectToChannel(int connection_request_id,
+                        std::unique_ptr<WebMessagePortChannelImpl> channel);
 
-  void OnConnect(int sent_message_port_id, int routing_id);
+  void OnConnect(int connection_request_id,
+                 const MessagePort& sent_message_port);
   void OnTerminateWorkerContext();
 
   int route_id_;
@@ -100,8 +103,9 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   blink::WebSharedWorker* impl_ = nullptr;
   std::unique_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
-  typedef std::vector<WebMessagePortChannelImpl*> PendingChannelList;
-  PendingChannelList pending_channels_;
+  using PendingChannel = std::pair<int /* connection_request_id */,
+                                   std::unique_ptr<WebMessagePortChannelImpl>>;
+  std::vector<PendingChannel> pending_channels_;
 
   ScopedChildProcessReference process_ref_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;

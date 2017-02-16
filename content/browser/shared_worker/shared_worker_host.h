@@ -25,6 +25,7 @@ class Message;
 
 namespace content {
 
+class MessagePort;
 class SharedWorkerMessageFilter;
 class SharedWorkerInstance;
 
@@ -45,9 +46,9 @@ class SharedWorkerHost {
 
   // Returns true iff the given message from a renderer process was forwarded to
   // the worker.
-  bool FilterConnectionMessage(int route_id,
-                               int sent_message_port_id,
-                               SharedWorkerMessageFilter* incoming_filter);
+  bool SendConnectToWorker(int worker_route_id,
+                           const MessagePort& port,
+                           SharedWorkerMessageFilter* filter);
 
   // Handles the shutdown of the filter. If the worker has no other client,
   // sends TerminateWorkerContext message to shut it down.
@@ -69,7 +70,7 @@ class SharedWorkerHost {
   void WorkerReadyForInspection();
   void WorkerScriptLoaded();
   void WorkerScriptLoadFailed();
-  void WorkerConnected(int message_port_id);
+  void WorkerConnected(int connection_request_id);
   void AllowFileSystem(const GURL& url,
                        std::unique_ptr<IPC::Message> reply_msg);
   void AllowIndexedDB(const GURL& url,
@@ -97,16 +98,16 @@ class SharedWorkerHost {
   class FilterInfo {
    public:
     FilterInfo(SharedWorkerMessageFilter* filter, int route_id)
-        : filter_(filter), route_id_(route_id), message_port_id_(0) {}
+        : filter_(filter), route_id_(route_id), connection_request_id_(0) {}
     SharedWorkerMessageFilter* filter() const { return filter_; }
     int route_id() const { return route_id_; }
-    int message_port_id() const { return message_port_id_; }
-    void set_message_port_id(int id) { message_port_id_ = id; }
+    int connection_request_id() const { return connection_request_id_; }
+    void set_connection_request_id(int id) { connection_request_id_ = id; }
 
    private:
     SharedWorkerMessageFilter* filter_;
     const int route_id_;
-    int message_port_id_;
+    int connection_request_id_;
   };
 
   using FilterList = std::list<FilterInfo>;
@@ -116,12 +117,9 @@ class SharedWorkerHost {
 
   void RemoveFilters(SharedWorkerMessageFilter* filter);
   bool HasFilter(SharedWorkerMessageFilter* filter, int route_id) const;
-  void Connect(int route_id,
-               int sent_message_port_id,
-               SharedWorkerMessageFilter* incoming_filter);
-  void SetMessagePortID(SharedWorkerMessageFilter* filter,
-                        int route_id,
-                        int message_port_id);
+  void SetConnectionRequestID(SharedWorkerMessageFilter* filter,
+                              int route_id,
+                              int connection_request_id);
   void AllowFileSystemResponse(std::unique_ptr<IPC::Message> reply_msg,
                                bool allowed);
 
@@ -139,6 +137,7 @@ class SharedWorkerHost {
 
   const int worker_process_id_;
   const int worker_route_id_;
+  int next_connection_request_id_;
   bool termination_message_sent_ = false;
   bool closed_ = false;
   const base::TimeTicks creation_time_;

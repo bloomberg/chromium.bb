@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
-#include "content/browser/android/app_web_message_port_service_impl.h"
+#include "content/browser/android/app_web_message_port.h"
 #include "content/browser/android/background_sync_network_observer_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/child_process_launcher_android.h"
@@ -35,7 +35,7 @@
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
-    {"AppWebMessagePortService", content::RegisterAppWebMessagePortService},
+    {"AppWebMessagePort", content::RegisterAppWebMessagePort},
     {"AudioFocusDelegate", content::AudioFocusDelegateAndroid::Register},
     {"BrowserStartupController", content::RegisterBrowserStartupController},
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},

@@ -113,7 +113,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/app_web_message_port_message_filter.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "content/browser/media/android/media_player_renderer.h"
 #include "media/base/audio_renderer_sink.h"
@@ -616,18 +615,6 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   }
   return remote_associated_interfaces_.get();
 }
-
-#if defined(OS_ANDROID)
-scoped_refptr<AppWebMessagePortMessageFilter>
-RenderFrameHostImpl::GetAppWebMessagePortMessageFilter(int routing_id) {
-  if (!app_web_message_port_message_filter_) {
-    app_web_message_port_message_filter_ =
-        new AppWebMessagePortMessageFilter(routing_id);
-    GetProcess()->AddFilter(app_web_message_port_message_filter_.get());
-  }
-  return app_web_message_port_message_filter_;
-}
-#endif
 
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // Works around the crashes seen in https://crbug.com/501863, where the

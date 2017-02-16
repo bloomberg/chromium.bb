@@ -20,6 +20,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/date_time_suggestion.h"
 #include "content/common/frame_replication_state.h"
+#include "content/common/message_port.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/resize_params.h"
 #include "content/common/text_input_state.h"
@@ -708,8 +709,8 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached, uint64_t /* document_id */)
 // A renderer sends this to the browser process when it wants to connect to a
 // worker.
 IPC_MESSAGE_CONTROL2(ViewHostMsg_ConnectToWorker,
-                     int /* route_id */,
-                     int /* sent_message_port_id */)
+                     int32_t /* worker_route_id */,
+                     content::MessagePort /* port */)
 
 // Tells the browser that a specific Appcache manifest in the current page
 // was accessed.

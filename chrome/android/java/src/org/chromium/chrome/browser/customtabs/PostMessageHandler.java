@@ -14,10 +14,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.AppWebMessagePortService;
-import org.chromium.content.browser.AppWebMessagePortService.MessageChannelObserver;
-import org.chromium.content.browser.PostMessageSender;
-import org.chromium.content.browser.PostMessageSender.PostMessageSenderDelegate;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.MessagePort.MessageCallback;
 import org.chromium.content_public.browser.WebContents;
@@ -27,21 +23,12 @@ import org.chromium.content_public.browser.WebContentsObserver;
  * A class that handles postMessage communications with a designated {@link CustomTabsSessionToken}.
  */
 public class PostMessageHandler extends PostMessageServiceConnection {
-    private static AppWebMessagePortService sService;
-
     private final MessageCallback mMessageCallback;
     private WebContents mWebContents;
     private boolean mMessageChannelCreated;
     private boolean mBoundToService;
     private AppWebMessagePort[] mChannel;
-    private PostMessageSender mPostMessageSender;
-    private PostMessageSenderDelegate mSenderDelegate;
     private Uri mOrigin;
-
-    private static AppWebMessagePortService getAppWebMessagePortService() {
-        if (sService == null) sService = new AppWebMessagePortService();
-        return sService;
-    }
 
     /**
      * Basic constructor. Everytime the given {@link CustomTabsSessionToken} is associated with a
@@ -111,52 +98,20 @@ public class PostMessageHandler extends PostMessageServiceConnection {
     }
 
     private void initializeWithWebContents(final WebContents webContents) {
-        final AppWebMessagePortService service = getAppWebMessagePortService();
-        mChannel = (AppWebMessagePort[]) webContents.createMessageChannel(service);
+        mChannel = (AppWebMessagePort[]) webContents.createMessageChannel();
         mChannel[0].setMessageCallback(mMessageCallback, null);
-        mSenderDelegate = new PostMessageSenderDelegate() {
-            @Override
-            public void postMessageToWeb(
-                    String frameName, String message, String targetOrigin,
-                    int[] sentPortIds) {
-                if (webContents.isDestroyed()) {
-                    disconnectChannel();
-                    unbindFromContext(ContextUtils.getApplicationContext());
-                    return;
-                }
-                webContents.postMessageToFrame(
-                        frameName, message, mOrigin.toString(), targetOrigin, sentPortIds);
-            }
 
-            @Override
-            public void onPostMessageQueueEmpty() {}
+        webContents.postMessageToFrame(
+                null, "", mOrigin.toString(), "", new AppWebMessagePort[] {mChannel[1]});
 
-            @Override
-            public boolean isPostMessageSenderReady() {
-                return true;
-            }
-        };
-        mPostMessageSender = new PostMessageSender(
-                mSenderDelegate, getAppWebMessagePortService());
-        service.addObserver(new MessageChannelObserver() {
-            @Override
-            public void onMessageChannelCreated() {
-                service.removeObserver(this);
-                if (mChannel == null) return;
-                mPostMessageSender.postMessage(
-                        null, "", "", new AppWebMessagePort[] {mChannel[1]});
-                mMessageChannelCreated = true;
-                if (mBoundToService) notifyMessageChannelReady(null);
-            }
-        });
+        mMessageChannelCreated = true;
+        if (mBoundToService) notifyMessageChannelReady(null);
     }
 
     private void disconnectChannel() {
         if (mChannel == null) return;
         mChannel[0].close();
         mChannel = null;
-        mSenderDelegate = null;
-        mPostMessageSender = null;
         mWebContents = null;
     }
 

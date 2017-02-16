@@ -51,7 +51,7 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   }
   void postMessageToClient(const WebString& uuid,
                            const WebString&,
-                           WebMessagePortChannelArray*) override {
+                           WebMessagePortChannelArray) override {
     NOTREACHED();
   }
   void skipWaiting(

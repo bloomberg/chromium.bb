@@ -877,13 +877,11 @@ void ServiceWorkerDispatcher::OnPostMessage(
   }
 
   blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(
-          params.message_ports, params.new_routing_ids,
-          base::ThreadTaskRunnerHandle::Get());
+      WebMessagePortChannelImpl::CreateFromMessagePorts(params.message_ports);
 
   found->second->dispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker),
-      blink::WebString::fromUTF16(params.message), ports);
+      blink::WebString::fromUTF16(params.message), std::move(ports));
 }
 
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,

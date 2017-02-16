@@ -110,12 +110,12 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(
     int eventID,
     const WebString& message,
     const WebSecurityOrigin& sourceOrigin,
-    const WebMessagePortChannelArray& webChannels,
+    WebMessagePortChannelArray webChannels,
     const WebServiceWorkerClientInfo& client) {
   WebSerializedScriptValue value =
       WebSerializedScriptValue::fromString(message);
-  MessagePortArray* ports =
-      MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+  MessagePortArray* ports = MessagePort::toMessagePortArray(
+      m_workerGlobalScope, std::move(webChannels));
   String origin;
   if (!sourceOrigin.isUnique())
     origin = sourceOrigin.toString();
@@ -136,12 +136,12 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(
     int eventID,
     const WebString& message,
     const WebSecurityOrigin& sourceOrigin,
-    const WebMessagePortChannelArray& webChannels,
+    WebMessagePortChannelArray webChannels,
     std::unique_ptr<WebServiceWorker::Handle> handle) {
   WebSerializedScriptValue value =
       WebSerializedScriptValue::fromString(message);
-  MessagePortArray* ports =
-      MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+  MessagePortArray* ports = MessagePort::toMessagePortArray(
+      m_workerGlobalScope, std::move(webChannels));
   String origin;
   if (!sourceOrigin.isUnique())
     origin = sourceOrigin.toString();

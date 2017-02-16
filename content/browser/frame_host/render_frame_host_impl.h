@@ -78,7 +78,6 @@ class Range;
 }
 
 namespace content {
-class AppWebMessagePortMessageFilter;
 class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
 class FeaturePolicy;
@@ -312,11 +311,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
-
-#if defined(OS_ANDROID)
-  scoped_refptr<AppWebMessagePortMessageFilter>
-  GetAppWebMessagePortMessageFilter(int routing_id);
-#endif
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The
@@ -1044,12 +1038,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::ServiceInfo renderer_info_;
 
   int on_connect_handler_id_ = 0;
-
-#if defined(OS_ANDROID)
-  // The filter for MessagePort messages between an Android apps and web.
-  scoped_refptr<AppWebMessagePortMessageFilter>
-      app_web_message_port_message_filter_;
-#endif
 
   std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;
 

@@ -342,10 +342,6 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jstring>& frame_id,
       const base::android::JavaParamRef<jstring>& message,
       const base::android::JavaParamRef<jstring>& target_origin,
-      const base::android::JavaParamRef<jintArray>& sent_ports);
-  void CreateMessageChannel(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobjectArray>& ports);
 
   void GrantFileSchemeAccesstoChildProcess(

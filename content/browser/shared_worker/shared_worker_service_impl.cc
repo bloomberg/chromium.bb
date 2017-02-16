@@ -355,13 +355,12 @@ blink::WebWorkerCreationError SharedWorkerServiceImpl::CreateWorker(
 }
 
 void SharedWorkerServiceImpl::ConnectToWorker(SharedWorkerMessageFilter* filter,
-                                              int route_id,
-                                              int sent_message_port_id) {
+                                              int worker_route_id,
+                                              const MessagePort& port) {
   for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
        iter != worker_hosts_.end();
        ++iter) {
-    if (iter->second->FilterConnectionMessage(route_id, sent_message_port_id,
-                                              filter))
+    if (iter->second->SendConnectToWorker(worker_route_id, port, filter))
       return;
   }
 }
@@ -436,11 +435,11 @@ void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
 }
 
 void SharedWorkerServiceImpl::WorkerConnected(SharedWorkerMessageFilter* filter,
-                                              int message_port_id,
+                                              int connection_request_id,
                                               int worker_route_id) {
   if (SharedWorkerHost* host =
           FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
-    host->WorkerConnected(message_port_id);
+    host->WorkerConnected(connection_request_id);
 }
 
 void SharedWorkerServiceImpl::AllowFileSystem(SharedWorkerMessageFilter* filter,

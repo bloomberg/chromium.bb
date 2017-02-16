@@ -66,12 +66,11 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   ~InProcessWorkerObjectProxy() override;
 
   void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
-                                 std::unique_ptr<MessagePortChannelArray>);
+                                 MessagePortChannelArray);
   void processUnhandledException(int exceptionId, WorkerThread*);
-  void processMessageFromWorkerObject(
-      PassRefPtr<SerializedScriptValue> message,
-      std::unique_ptr<MessagePortChannelArray> channels,
-      WorkerThread*);
+  void processMessageFromWorkerObject(PassRefPtr<SerializedScriptValue> message,
+                                      MessagePortChannelArray channels,
+                                      WorkerThread*);
 
   // ThreadedMessagingProxyBase overrides.
   void reportException(const String& errorMessage,

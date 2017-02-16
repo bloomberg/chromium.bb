@@ -31,6 +31,7 @@ class BlobStorageContext;
 
 namespace content {
 
+class MessagePort;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
@@ -232,7 +233,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Dispatches message event to the document.
   void PostMessageToClient(ServiceWorkerVersion* version,
                            const base::string16& message,
-                           const std::vector<int>& sent_message_ports);
+                           const std::vector<MessagePort>& sent_message_ports);
 
   // Notifies the client that its controller used a feature, for UseCounter
   // purposes. This can only be called if IsProviderForClient() is true.

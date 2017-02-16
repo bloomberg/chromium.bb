@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/common/message_port.h"
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -137,8 +138,7 @@ IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
   IPC_STRUCT_MEMBER(int, provider_id)
   IPC_STRUCT_MEMBER(content::ServiceWorkerObjectInfo, service_worker_info)
   IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(std::vector<int>, message_ports)
-  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
+  IPC_STRUCT_MEMBER(std::vector<content::MessagePort>, message_ports)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
@@ -214,7 +214,7 @@ IPC_MESSAGE_CONTROL5(
     int /* provider_id */,
     base::string16 /* message */,
     url::Origin /* source_origin */,
-    std::vector<int> /* sent_message_ports */)
+    std::vector<content::MessagePort> /* sent_message_ports */)
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process. When this provider is
@@ -311,7 +311,7 @@ IPC_MESSAGE_ROUTED3(
     ServiceWorkerHostMsg_PostMessageToClient,
     std::string /* uuid */,
     base::string16 /* message */,
-    std::vector<int> /* sent_message_ports */)
+    std::vector<content::MessagePort> /* sent_message_ports */)
 
 // ServiceWorker -> Browser message to request that the ServiceWorkerStorage
 // cache |data| associated with |url|.

@@ -60,7 +60,6 @@ class ChildConnection;
 class GpuClient;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
-class MessagePortMessageFilter;
 class NotificationMessageFilter;
 #if BUILDFLAG(ENABLE_WEBRTC)
 class P2PSocketDispatcherHost;
@@ -257,10 +256,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
-  }
-
-  MessagePortMessageFilter* message_port_message_filter() const {
-    return message_port_message_filter_.get();
   }
 
   NotificationMessageFilter* notification_message_filter() const {
@@ -474,9 +469,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<RenderWidgetHelper> widget_helper_;
 
   scoped_refptr<RenderFrameMessageFilter> render_frame_message_filter_;
-
-  // The filter for MessagePort messages coming from the renderer.
-  scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;
 
   // The filter for Web Notification messages coming from the renderer. Holds a
   // closure per notification that must be freed when the notification closes.

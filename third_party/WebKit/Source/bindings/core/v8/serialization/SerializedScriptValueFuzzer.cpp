@@ -37,8 +37,7 @@ class WebMessagePortChannelImpl final : public WebMessagePortChannel {
  public:
   // WebMessagePortChannel
   void setClient(WebMessagePortChannelClient* client) override {}
-  void destroy() override { delete this; }
-  void postMessage(const WebString&, WebMessagePortChannelArray*) {
+  void postMessage(const WebString&, WebMessagePortChannelArray) {
     NOTIMPLEMENTED();
   }
   bool tryGetMessage(WebString*, WebMessagePortChannelArray&) { return false; }

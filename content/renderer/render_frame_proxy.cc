@@ -451,7 +451,7 @@ void RenderFrameProxy::forwardPostMessage(
     params.target_origin = target_origin.toString().utf16();
 
   params.message_ports =
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(event.releaseChannels());
+      WebMessagePortChannelImpl::ExtractMessagePorts(event.releaseChannels());
 
   // Include the routing ID for the source frame (if one exists), which the
   // browser process will translate into the routing ID for the equivalent

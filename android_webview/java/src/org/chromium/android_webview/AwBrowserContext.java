@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
-import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.ContentViewStatics;
 
 /**
@@ -26,7 +25,6 @@ public class AwBrowserContext {
 
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
-    private AppWebMessagePortService mMessagePortService;
     private AwServiceWorkerController mServiceWorkerController;
     private Context mApplicationContext;
 
@@ -51,13 +49,6 @@ public class AwBrowserContext {
             mFormDatabase = new AwFormDatabase();
         }
         return mFormDatabase;
-    }
-
-    public AppWebMessagePortService getMessagePortService() {
-        if (mMessagePortService == null) {
-            mMessagePortService = new AppWebMessagePortService();
-        }
-        return mMessagePortService;
     }
 
     public AwServiceWorkerController getServiceWorkerController() {

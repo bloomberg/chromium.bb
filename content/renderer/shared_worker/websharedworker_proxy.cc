@@ -9,7 +9,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/view_messages.h"
-#include "content/common/worker_messages.h"
 #include "ipc/message_router.h"
 
 namespace content {
@@ -20,7 +19,6 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(
     blink::WebMessagePortChannel* channel)
     : route_id_(MSG_ROUTING_NONE),
       router_(ChildThreadImpl::current()->GetRouter()),
-      message_port_id_(MSG_ROUTING_NONE),
       listener_(std::move(listener)) {
   connect(params, channel);
 }
@@ -40,14 +38,11 @@ void WebSharedWorkerProxy::connect(ViewHostMsg_CreateWorker_Params params,
   router_->AddRoute(route_id_, this);
   listener_->workerCreated(reply.error);
 
-  DCHECK_EQ(MSG_ROUTING_NONE, message_port_id_);
-  WebMessagePortChannelImpl* webchannel =
-        static_cast<WebMessagePortChannelImpl*>(channel);
-  message_port_id_ = webchannel->message_port_id();
-  DCHECK_NE(MSG_ROUTING_NONE, message_port_id_);
-  webchannel->QueueMessages();
-  // |webchannel| is intentionally leaked here: it'll be removed at
-  // WebMessagePortChannelImpl::OnMessagesQueued().
+  // Accept ownership of the channel.
+  std::unique_ptr<WebMessagePortChannelImpl> channel_impl(
+      static_cast<WebMessagePortChannelImpl*>(channel));
+
+  message_port_ = channel_impl->ReleaseMessagePort();
 
   // An actual connection request will be issued on OnWorkerCreated().
 }
@@ -68,9 +63,10 @@ bool WebSharedWorkerProxy::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebSharedWorkerProxy::OnWorkerCreated() {
-  // The worker is created - now send off the connection request.
-  router_->Send(
-      new ViewHostMsg_ConnectToWorker(route_id_, message_port_id_));
+  DCHECK(message_port_.GetHandle().is_valid());
+
+  // The worker is created - now send off the connect message.
+  router_->Send(new ViewHostMsg_ConnectToWorker(route_id_, message_port_));
 }
 
 void WebSharedWorkerProxy::OnWorkerScriptLoadFailed() {

@@ -19,14 +19,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
-import org.chromium.content_public.browser.MessagePortService;
+import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.SmartClipCallback;
 import org.chromium.content_public.browser.WebContents;
@@ -342,17 +341,25 @@ import java.util.UUID;
 
     @Override
     public void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin, int[] sentPortIds) {
-        nativePostMessageToFrame(mNativeWebContentsAndroid, frameName, message,
-                sourceOrigin, targetOrigin, sentPortIds);
+            String sourceOrigin, String targetOrigin, MessagePort[] ports) {
+        if (ports != null) {
+            for (MessagePort port : ports) {
+                if (port.isClosed() || port.isTransferred()) {
+                    throw new IllegalStateException("Port is already closed or transferred");
+                }
+                if (port.isStarted()) {
+                    throw new IllegalStateException("Port is already started");
+                }
+            }
+        }
+        nativePostMessageToFrame(
+                mNativeWebContentsAndroid, frameName, message, sourceOrigin, targetOrigin, ports);
     }
 
     @Override
-    public AppWebMessagePort[] createMessageChannel(MessagePortService service)
+    public AppWebMessagePort[] createMessageChannel()
             throws IllegalStateException {
-        AppWebMessagePort[] ports = ((AppWebMessagePortService) service).createMessageChannel();
-        nativeCreateMessageChannel(mNativeWebContentsAndroid, ports);
-        return ports;
+        return AppWebMessagePort.createPair();
     }
 
     @Override
@@ -579,9 +586,7 @@ import java.util.UUID;
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
     private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameName,
-            String message, String sourceOrigin, String targetOrigin, int[] sentPortIds);
-    private native void nativeCreateMessageChannel(
-            long nativeWebContentsAndroid, AppWebMessagePort[] ports);
+            String message, String sourceOrigin, String targetOrigin, MessagePort[] ports);
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);

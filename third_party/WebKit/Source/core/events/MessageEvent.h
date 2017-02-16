@@ -63,7 +63,7 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(std::move(data), origin, lastEventId, source, ports,
                             suborigin);
   }
-  static MessageEvent* create(std::unique_ptr<MessagePortChannelArray> channels,
+  static MessageEvent* create(MessagePortChannelArray channels,
                               PassRefPtr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& lastEventId = String(),
@@ -123,9 +123,8 @@ class CORE_EXPORT MessageEvent final : public Event {
   EventTarget* source() const { return m_source.get(); }
   MessagePortArray ports(bool& isNull) const;
   MessagePortArray ports() const;
-  MessagePortChannelArray* channels() const {
-    return m_channels ? m_channels.get() : nullptr;
-  }
+
+  MessagePortChannelArray releaseChannels() { return std::move(m_channels); }
 
   const AtomicString& interfaceName() const override;
 
@@ -190,7 +189,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                const String& origin,
                const String& lastEventId,
                EventTarget* source,
-               std::unique_ptr<MessagePortChannelArray>,
+               MessagePortChannelArray,
                const String& suborigin);
 
   MessageEvent(const String& data,
@@ -210,11 +209,11 @@ class CORE_EXPORT MessageEvent final : public Event {
   String m_origin;
   String m_lastEventId;
   Member<EventTarget> m_source;
-  // m_ports are the MessagePorts in an engtangled state, and m_channels are
+  // m_ports are the MessagePorts in an entangled state, and m_channels are
   // the MessageChannels in a disentangled state. Only one of them can be
   // non-empty at a time. entangleMessagePorts() moves between the states.
   Member<MessagePortArray> m_ports;
-  std::unique_ptr<MessagePortChannelArray> m_channels;
+  MessagePortChannelArray m_channels;
   String m_suborigin;
 };
 

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/message_port.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "url/gurl.h"
@@ -79,8 +80,8 @@ IPC_SYNC_MESSAGE_CONTROL0_0(WorkerProcessHostMsg_ForceKillWorker)
 IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 
 IPC_MESSAGE_ROUTED2(WorkerMsg_Connect,
-                    int /* sent_message_port_id */,
-                    int /* routing_id */)
+                    int /* connection_request_id */,
+                    content::MessagePort /* sent_message_port */)
 
 IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 
@@ -115,5 +116,5 @@ IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoadFailed,
                      int /* worker_route_id */)
 
 IPC_MESSAGE_CONTROL2(WorkerHostMsg_WorkerConnected,
-                     int /* message_port_id */,
+                     int /* connection_request_id */,
                      int /* worker_route_id */)

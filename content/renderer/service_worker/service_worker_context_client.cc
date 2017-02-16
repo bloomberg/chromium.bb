@@ -33,7 +33,6 @@
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/message_port_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -127,17 +126,6 @@ ServiceWorkerStatusCode EventResultToStatus(
   }
   NOTREACHED() << "Got invalid result: " << result;
   return SERVICE_WORKER_ERROR_FAILED;
-}
-
-void SendPostMessageToClientOnMainThread(
-    ThreadSafeSender* sender,
-    int routing_id,
-    const std::string& uuid,
-    const base::string16& message,
-    std::unique_ptr<blink::WebMessagePortChannelArray> channels) {
-  sender->Send(new ServiceWorkerHostMsg_PostMessageToClient(
-      routing_id, uuid, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
 blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
@@ -839,17 +827,10 @@ ServiceWorkerContextClient::createServiceWorkerProvider() {
 void ServiceWorkerContextClient::postMessageToClient(
     const blink::WebString& uuid,
     const blink::WebString& message,
-    blink::WebMessagePortChannelArray* channels) {
-  // This may send channels for MessagePorts, and all internal book-keeping
-  // messages for MessagePort (e.g. QueueMessages) are sent from main thread
-  // (with thread hopping), so we need to do the same thread hopping here not
-  // to overtake those messages.
-  std::unique_ptr<blink::WebMessagePortChannelArray> channel_array(channels);
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SendPostMessageToClientOnMainThread,
-                 base::RetainedRef(sender_), GetRoutingID(), uuid.utf8(),
-                 message.utf16(), base::Passed(&channel_array)));
+    blink::WebMessagePortChannelArray channels) {
+  Send(new ServiceWorkerHostMsg_PostMessageToClient(
+      GetRoutingID(), uuid.utf8(), message.utf16(),
+      WebMessagePortChannelImpl::ExtractMessagePorts(std::move(channels))));
 }
 
 void ServiceWorkerContextClient::focus(
@@ -967,15 +948,14 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       base::MakeUnique<DispatchExtendableMessageEventCallback>(callback));
 
   blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(event->message_ports,
-                                             event->new_routing_ids,
-                                             main_thread_task_runner_);
+      WebMessagePortChannelImpl::CreateFromMessagePipeHandles(
+          std::move(event->message_ports));
   if (event->source.client_info.IsValid()) {
     blink::WebServiceWorkerClientInfo web_client =
         ToWebServiceWorkerClientInfo(event->source.client_info);
     proxy_->dispatchExtendableMessageEvent(
         request_id, blink::WebString::fromUTF16(event->message),
-        event->source_origin, ports, web_client);
+        event->source_origin, std::move(ports), web_client);
     return;
   }
 
@@ -990,7 +970,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       dispatcher->GetOrCreateServiceWorker(std::move(handle));
   proxy_->dispatchExtendableMessageEvent(
       request_id, blink::WebString::fromUTF16(event->message),
-      event->source_origin, ports, WebServiceWorkerImpl::CreateHandle(worker));
+      event->source_origin, std::move(ports),
+      WebServiceWorkerImpl::CreateHandle(worker));
 }
 
 void ServiceWorkerContextClient::OnInstallEvent(int request_id) {

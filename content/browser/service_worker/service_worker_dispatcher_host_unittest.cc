@@ -15,7 +15,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -45,11 +44,10 @@ static void SaveStatusCallback(bool* called,
   *out = status;
 }
 
-void SetUpDummyMessagePort(std::vector<int>* ports) {
-  int port_id = -1;
-  MessagePortService::GetInstance()->Create(MSG_ROUTING_NONE, nullptr,
-                                            &port_id);
-  ports->push_back(port_id);
+void SetUpDummyMessagePort(std::vector<MessagePort>* ports) {
+  // Let the other end of the pipe close.
+  mojo::MessagePipe pipe;
+  ports->push_back(MessagePort(std::move(pipe.handle0)));
 }
 
 }  // namespace
@@ -63,7 +61,7 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
       ServiceWorkerContextWrapper* context_wrapper,
       ResourceContext* resource_context,
       EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id, nullptr, resource_context),
+      : ServiceWorkerDispatcherHost(process_id, resource_context),
         bad_messages_received_count_(0),
         helper_(helper) {
     Init(context_wrapper);
@@ -238,7 +236,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<int>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const ServiceWorkerDispatcherHost::StatusCallback& callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
@@ -717,23 +715,17 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
   // Dispatch ExtendableMessageEvent.
-  std::vector<int> ports;
+  std::vector<MessagePort> ports;
   SetUpDummyMessagePort(&ports);
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
-  for (int port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-
-  // Messages should be held until ports are created at the destination.
-  for (int port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
 
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
 
@@ -751,22 +743,16 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
-  std::vector<int> ports;
+  std::vector<MessagePort> ports;
   SetUpDummyMessagePort(&ports);
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
-  for (int port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
-
-  // The error callback should clean up the ports and handle.
-  for (int port : ports)
-    EXPECT_FALSE(MessagePortService::GetInstance()->AreMessagesHeld(port));
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {

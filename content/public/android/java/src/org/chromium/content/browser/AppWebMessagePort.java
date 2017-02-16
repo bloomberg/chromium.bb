@@ -9,6 +9,8 @@ import android.os.Looper;
 import android.os.Message;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.MessagePort;
 
 import java.util.Arrays;
@@ -18,16 +20,6 @@ import java.util.Arrays;
  * http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#message-channels
  *
  * State management:
- *
- * Initially a message port will be in a pending state. It will be ready once it is created in
- * content/ (in IO thread) and a message port id is assigned.
- * A pending message port cannnot be transferred, and cannot send or receive messages. However,
- * these details are hidden from the user. If a message port is in the pending state:
- * 1. Any messages posted in this port will be queued until the port is ready
- * 2. Transferring the port using a message channel will cause the message (and any subsequent
- *    messages sent) to be queued until the port is ready
- * 3. Transferring the pending port via postMessageToFrame will cause the message (and all
- *    subsequent messages posted via postMessageToFrame) to be queued until the port is ready.
  *
  * A message port can be in transferred state while a transfer is pending or complete. An
  * application cannot use a transferred port to post messages. If a transferred port
@@ -48,7 +40,7 @@ import java.util.Arrays;
  * the code below
  *  1.  var c1 = new MessageChannel();
  *  2.  var c2 = new MessageChannel();
- *  3.  c1.port2.onmessage= function(e) { console.log("1"); }
+ *  3.  c1.port2.onmessage = function(e) { console.log("1"); }
  *  4.  c2.port2.onmessage = function(e) {
  *  5.     e.ports[0].onmessage = function(f) {
  *  6.          console.log("3");
@@ -73,25 +65,13 @@ import java.util.Arrays;
  * transferring data. As a return, it simplifies implementation and prevents hard
  * to debug, racy corner cases while receiving/sending data.
  */
-public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMessageSenderDelegate {
-    private static final String TAG = "MessagePort";
-    private static final int PENDING = -1;
+@JNINamespace("content")
+public class AppWebMessagePort implements MessagePort {
+    private static final String TAG = "AppWebMessagePort";
+    private static final long UNINITIALIZED_PORT_NATIVE_PTR = 0;
 
-    // the what value for POST_MESSAGE
-    private static final int POST_MESSAGE = 1;
-
-    private static class PostMessageFromWeb {
-        public AppWebMessagePort port;
-        public String message;
-        public AppWebMessagePort[] sentPorts;
-
-        public PostMessageFromWeb(
-                AppWebMessagePort port, String message, AppWebMessagePort[] sentPorts) {
-            this.port = port;
-            this.message = message;
-            this.sentPorts = sentPorts;
-        }
-    }
+    // The |what| value for handleMessage.
+    private static final int MESSAGES_AVAILABLE = 1;
 
     // Implements the handler to handle messageport messages received from web.
     // These messages are received on IO thread and normally handled in main
@@ -102,9 +82,9 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
         }
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == POST_MESSAGE) {
-                PostMessageFromWeb m = (PostMessageFromWeb) msg.obj;
-                m.port.onMessage(m.message, m.sentPorts);
+            if (msg.what == MESSAGES_AVAILABLE) {
+                AppWebMessagePort port = (AppWebMessagePort) msg.obj;
+                port.dispatchReceivedMessages();
                 return;
             }
             throw new IllegalStateException("undefined message");
@@ -114,35 +94,38 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
     private static final MessageHandler sDefaultHandler =
             new MessageHandler(Looper.getMainLooper());
 
-    private int mPortId = PENDING;
+    private long mNativeAppWebMessagePort = UNINITIALIZED_PORT_NATIVE_PTR;
     private MessageCallback mMessageCallback;
-    private AppWebMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
     private boolean mStarted;
-    private boolean mReleasedMessages;
-    private PostMessageSender mPostMessageSender;
     private MessageHandler mHandler;
     private final Object mLock = new Object();
 
-    public AppWebMessagePort(AppWebMessagePortService messagePortService) {
-        mMessagePortService = messagePortService;
-        mPostMessageSender = new PostMessageSender(this, mMessagePortService);
-        mMessagePortService.addObserver(mPostMessageSender);
+    // Called to create an entangled pair of ports.
+    public static AppWebMessagePort[] createPair() {
+        AppWebMessagePort[] ports =
+            new AppWebMessagePort[] { new AppWebMessagePort(), new AppWebMessagePort() };
+        nativeInitializeAppWebMessagePortPair(ports);
+        return ports;
     }
 
     @Override
     public boolean isReady() {
-        return mPortId != PENDING;
+        return mNativeAppWebMessagePort != UNINITIALIZED_PORT_NATIVE_PTR;
     }
 
-    public int portId() {
-        return mPortId;
+    @CalledByNative
+    private void setNativeAppWebMessagePort(long nativeAppWebMessagePort) {
+        mNativeAppWebMessagePort = nativeAppWebMessagePort;
     }
 
-    public void setPortId(int id) {
-        mPortId = id;
-        releaseMessages();
+    @CalledByNative
+    private long releaseNativePortForTransfer() {
+        mTransferred = true;
+        long port = mNativeAppWebMessagePort;
+        mNativeAppWebMessagePort = UNINITIALIZED_PORT_NATIVE_PTR;
+        return port;
     }
 
     @Override
@@ -150,16 +133,19 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
         if (mTransferred) {
             throw new IllegalStateException("Port is already transferred");
         }
+        if (mClosed) return;
+        mClosed = true;
+        // Synchronize with dispatchReceivedMessages to ensure that the native
+        // port is not closed too soon, but avoid holding mLock while calling
+        // nativeCloseMessagePort as that could result in a dead-lock (racing
+        // with onMessagesAvailable).
+        long port = UNINITIALIZED_PORT_NATIVE_PTR;
         synchronized (mLock) {
-            if (mClosed) return;
-            mClosed = true;
+            port = mNativeAppWebMessagePort;
+            mNativeAppWebMessagePort = UNINITIALIZED_PORT_NATIVE_PTR;
         }
-        // If the port is already ready, and no messages are waiting in the
-        // queue to be transferred, onPostMessageQueueEmpty() callback is not
-        // received (it is received only after messages are purged). In this
-        // case do the cleanup here.
-        if (isReady() && mPostMessageSender.isMessageQueueEmpty()) {
-            cleanup();
+        if (port != UNINITIALIZED_PORT_NATIVE_PTR) {
+            nativeCloseMessagePort(port);
         }
     }
 
@@ -173,10 +159,6 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
         return mTransferred;
     }
 
-    public void setTransferred() {
-        mTransferred = true;
-    }
-
     @Override
     public boolean isStarted() {
         return mStarted;
@@ -185,6 +167,9 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
     // Only called on UI thread
     @Override
     public void setMessageCallback(MessageCallback messageCallback, Handler handler) {
+        if (isClosed() || isTransferred()) {
+            throw new IllegalStateException("Port is already closed or transferred");
+        }
         mStarted = true;
         synchronized (mLock) {
             mMessageCallback = messageCallback;
@@ -192,40 +177,41 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
                 mHandler = new MessageHandler(handler.getLooper());
             }
         }
-        releaseMessages();
+        nativeStartReceivingMessages(mNativeAppWebMessagePort);
     }
 
-    // Only called on IO thread.
-    public void onReceivedMessage(String message, AppWebMessagePort[] sentPorts) {
+    // Called on a background thread.
+    @CalledByNative
+    private void onMessagesAvailable() {
         synchronized (mLock) {
-            PostMessageFromWeb m = new PostMessageFromWeb(this, message, sentPorts);
             Handler handler = mHandler != null ? mHandler : sDefaultHandler;
-            Message msg = handler.obtainMessage(POST_MESSAGE, m);
+            Message msg = handler.obtainMessage(MESSAGES_AVAILABLE, this);
             handler.sendMessage(msg);
         }
     }
 
-    private void releaseMessages() {
-        if (mReleasedMessages || !isReady() || mMessageCallback == null) {
+    // This method is called by nativeDispatchNextMessage while mLock is held.
+    @CalledByNative
+    private void onReceivedMessage(String message, AppWebMessagePort[] ports) {
+        if (mMessageCallback == null) {
+            Log.w(TAG, "No handler set for port [" + mNativeAppWebMessagePort
+                    + "], dropping message " + message);
             return;
         }
-        mReleasedMessages = true;
-        mMessagePortService.releaseMessages(mPortId);
+        mMessageCallback.onMessage(message, ports);
     }
 
-    // This method may be called on a different thread than UI thread.
-    public void onMessage(String message, AppWebMessagePort[] ports) {
-        synchronized (mLock) {
-            if (isClosed()) {
-                Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
-                return;
+    // This method may be called on either the UI thread or a background thread.
+    private void dispatchReceivedMessages() {
+        // Dispatch all of the available messages unless interrupted by close().
+        // NOTE: nativeDispatchNextMessage returns true and calls onReceivedMessage
+        // if a message is available else it returns false.
+        while (true) {
+            synchronized (mLock) {
+                if (!(isReady() && nativeDispatchNextMessage(mNativeAppWebMessagePort))) {
+                    break;
+                }
             }
-            if (mMessageCallback == null) {
-                Log.w(TAG,
-                        "No handler set for port [" + mPortId + "], dropping message " + message);
-                return;
-            }
-            mMessageCallback.onMessage(message, ports);
         }
     }
 
@@ -240,37 +226,24 @@ public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMes
                 if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }
+                if (port.isClosed() || port.isTransferred()) {
+                    throw new IllegalStateException("Port is already closed or transferred");
+                }
+                if (port.isStarted()) {
+                    throw new IllegalStateException("Port is already started");
+                }
             }
             ports = Arrays.copyOf(sentPorts, sentPorts.length, AppWebMessagePort[].class);
         }
         mStarted = true;
-        mPostMessageSender.postMessage(null, message, null, ports);
+        nativePostMessage(mNativeAppWebMessagePort, message, ports);
     }
 
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public boolean isPostMessageSenderReady() {
-        return isReady();
-    }
+    private static native void nativeInitializeAppWebMessagePortPair(AppWebMessagePort[] ports);
 
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public void onPostMessageQueueEmpty() {
-        if (isClosed()) {
-            cleanup();
-        }
-    }
-
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public void postMessageToWeb(
-            String frameName, String message, String targetOrigin, int[] sentPortIds) {
-        mMessagePortService.postMessage(mPortId, message, sentPortIds);
-    }
-
-    private void cleanup() {
-        mMessagePortService.removeObserver(mPostMessageSender);
-        mPostMessageSender = null;
-        mMessagePortService.closePort(mPortId);
-    }
+    private native void nativeCloseMessagePort(long nativeAppWebMessagePort);
+    private native void nativePostMessage(long nativeAppWebMessagePort, String message,
+                                          AppWebMessagePort[] ports);
+    private native boolean nativeDispatchNextMessage(long nativeAppWebMessagePort);
+    private native void nativeStartReceivingMessages(long nativeAppWebMessagePort);
 }

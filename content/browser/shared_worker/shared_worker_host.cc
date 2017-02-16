@@ -6,8 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
-#include "content/browser/message_port_message_filter.h"
-#include "content/browser/message_port_service.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
@@ -57,6 +55,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
       worker_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
+      next_connection_request_id_(1),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -89,14 +88,18 @@ void SharedWorkerHost::Start(bool pause_on_start) {
     info.filter()->Send(new ViewMsg_WorkerCreated(info.route_id()));
 }
 
-bool SharedWorkerHost::FilterConnectionMessage(
-    int route_id,
-    int sent_message_port_id,
-    SharedWorkerMessageFilter* incoming_filter) {
-  if (!IsAvailable() || !HasFilter(incoming_filter, route_id))
+bool SharedWorkerHost::SendConnectToWorker(int worker_route_id,
+                                           const MessagePort& port,
+                                           SharedWorkerMessageFilter* filter) {
+  if (!IsAvailable() || !HasFilter(filter, worker_route_id))
     return false;
 
-  Connect(route_id, sent_message_port_id, incoming_filter);
+  int connection_request_id = next_connection_request_id_++;
+
+  SetConnectionRequestID(filter, worker_route_id, connection_request_id);
+
+  // Send the connect message with the new connection_request_id.
+  Send(new WorkerMsg_Connect(worker_route_id_, connection_request_id, port));
   return true;
 }
 
@@ -171,9 +174,11 @@ void SharedWorkerHost::WorkerScriptLoadFailed() {
     info.filter()->Send(new ViewMsg_WorkerScriptLoadFailed(info.route_id()));
 }
 
-void SharedWorkerHost::WorkerConnected(int message_port_id) {
+void SharedWorkerHost::WorkerConnected(int connection_request_id) {
+  if (!instance_)
+    return;
   for (const FilterInfo& info : filters_) {
-    if (info.message_port_id() != message_port_id)
+    if (info.connection_request_id() != connection_request_id)
       continue;
     info.filter()->Send(
         new ViewMsg_WorkerConnected(info.route_id(), used_features_));
@@ -259,32 +264,12 @@ bool SharedWorkerHost::HasFilter(SharedWorkerMessageFilter* filter,
   return false;
 }
 
-void SharedWorkerHost::Connect(int route_id,
-                               int sent_message_port_id,
-                               SharedWorkerMessageFilter* incoming_filter) {
-  DCHECK(IsAvailable());
-  DCHECK(HasFilter(incoming_filter, route_id));
-  DCHECK(worker_render_filter_);
-
-  int new_routing_id = worker_render_filter_->GetNextRoutingID();
-  MessagePortService::GetInstance()->UpdateMessagePort(
-      sent_message_port_id,
-      worker_render_filter_->message_port_message_filter(), new_routing_id);
-  SetMessagePortID(incoming_filter, route_id, sent_message_port_id);
-  Send(new WorkerMsg_Connect(worker_route_id_, sent_message_port_id,
-                             new_routing_id));
-
-  // Send any queued messages for the sent port.
-  MessagePortService::GetInstance()->SendQueuedMessagesIfPossible(
-      sent_message_port_id);
-}
-
-void SharedWorkerHost::SetMessagePortID(SharedWorkerMessageFilter* filter,
-                                        int route_id,
-                                        int message_port_id) {
-  for (FilterInfo& info : filters_) {
-    if (info.filter() == filter && info.route_id() == route_id) {
-      info.set_message_port_id(message_port_id);
+void SharedWorkerHost::SetConnectionRequestID(SharedWorkerMessageFilter* filter,
+                                              int route_id,
+                                              int connection_request_id) {
+  for (FilterList::iterator i = filters_.begin(); i != filters_.end(); ++i) {
+    if (i->filter() == filter && i->route_id() == route_id) {
+      i->set_connection_request_id(connection_request_id);
       return;
     }
   }

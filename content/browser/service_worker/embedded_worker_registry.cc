@@ -179,19 +179,14 @@ void EmbeddedWorkerRegistry::OnReportConsoleMessage(
                                  line_number, source_url);
 }
 
-void EmbeddedWorkerRegistry::AddChildProcessSender(
-    int process_id,
-    IPC::Sender* sender,
-    MessagePortMessageFilter* message_port_message_filter) {
+void EmbeddedWorkerRegistry::AddChildProcessSender(int process_id,
+                                                   IPC::Sender* sender) {
   process_sender_map_[process_id] = sender;
-  process_message_port_message_filter_map_[process_id] =
-      message_port_message_filter;
   DCHECK(!base::ContainsKey(worker_process_map_, process_id));
 }
 
 void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
   process_sender_map_.erase(process_id);
-  process_message_port_message_filter_map_.erase(process_id);
   std::map<int, std::set<int> >::iterator found =
       worker_process_map_.find(process_id);
   if (found != worker_process_map_.end()) {
@@ -225,11 +220,6 @@ bool EmbeddedWorkerRegistry::CanHandle(int embedded_worker_id) const {
     return false;
   }
   return true;
-}
-
-MessagePortMessageFilter*
-EmbeddedWorkerRegistry::MessagePortMessageFilterForProcess(int process_id) {
-  return process_message_port_message_filter_map_[process_id];
 }
 
 EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(

@@ -74,8 +74,7 @@ class PrintDataSetter : public content::WebContentsObserver {
     if (cloud_devices::IsCloudPrintURL(url)) {
       base::string16 origin = base::UTF8ToUTF16(url.GetOrigin().spec());
       content::MessagePortProvider::PostMessageToFrame(
-          web_contents(), origin, origin, message_data_,
-          std::vector<int>());
+          web_contents(), origin, origin, message_data_);
     }
   }
 

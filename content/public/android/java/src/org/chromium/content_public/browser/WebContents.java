@@ -270,7 +270,7 @@ public interface WebContents extends Parcelable {
      * Dispatches a Message event to the specified frame.
      */
     void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin, int[] sentPortIds);
+            String sourceOrigin, String targetOrigin, MessagePort[] ports);
 
     /**
      * Creates a message channel for sending postMessage requests and returns the ports for
@@ -278,7 +278,7 @@ public interface WebContents extends Parcelable {
      * @param service The message port service to register the channel with.
      * @return The ports that forms the ends of the message channel created.
      */
-    MessagePort[] createMessageChannel(MessagePortService service);
+    MessagePort[] createMessageChannel();
 
     /**
      * Returns whether the initial empty page has been accessed by a script from another

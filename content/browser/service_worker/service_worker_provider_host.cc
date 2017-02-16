@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
@@ -441,14 +440,9 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     const base::string16& message,
-    const std::vector<int>& sent_message_ports) {
+    const std::vector<MessagePort>& sent_message_ports) {
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
-
-  std::vector<int> new_routing_ids;
-  dispatcher_host_->message_port_message_filter()->
-      UpdateMessagePortsWithNewRoutes(sent_message_ports,
-                                      &new_routing_ids);
 
   ServiceWorkerMsg_MessageToDocument_Params params;
   params.thread_id = kDocumentMainThreadId;
@@ -456,7 +450,6 @@ void ServiceWorkerProviderHost::PostMessageToClient(
   params.service_worker_info = GetOrCreateServiceWorkerHandle(version);
   params.message = message;
   params.message_ports = sent_message_ports;
-  params.new_routing_ids = new_routing_ids;
   Send(new ServiceWorkerMsg_MessageToDocument(params));
 }
 

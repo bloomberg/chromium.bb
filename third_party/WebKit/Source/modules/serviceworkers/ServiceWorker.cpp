@@ -63,7 +63,7 @@ void ServiceWorker::postMessage(ScriptState* scriptState,
   }
 
   // Disentangle the port in preparation for sending it to the remote context.
-  std::unique_ptr<MessagePortChannelArray> channels =
+  MessagePortChannelArray channels =
       MessagePort::disentanglePorts(scriptState->getExecutionContext(), ports,
                                     exceptionState);
   if (exceptionState.hadException())
@@ -75,12 +75,12 @@ void ServiceWorker::postMessage(ScriptState* scriptState,
   }
 
   WebString messageString = message->toWireString();
-  std::unique_ptr<WebMessagePortChannelArray> webChannels =
+  WebMessagePortChannelArray webChannels =
       MessagePort::toWebMessagePortChannelArray(std::move(channels));
   m_handle->serviceWorker()->postMessage(
       client->provider(), messageString,
       WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()),
-      webChannels.release());
+      std::move(webChannels));
 }
 
 void ServiceWorker::internalsTerminate() {

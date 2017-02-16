@@ -12,17 +12,18 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
-namespace content {
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
-class AppWebMessagePortService;
+namespace content {
 class WebContents;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {
  public:
   // Posts a MessageEvent to the main frame using the given source and target
-  // origins and data. The caller may also provide any message port ids as
-  // part of the message.
+  // origins and data.
   // See https://html.spec.whatwg.org/multipage/comms.html#messageevent for
   // further information on message events.
   // Should be called on UI thread.
@@ -30,11 +31,16 @@ class CONTENT_EXPORT MessagePortProvider {
       WebContents* web_contents,
       const base::string16& source_origin,
       const base::string16& target_origin,
-      const base::string16& data,
-      const std::vector<int>& ports);
+      const base::string16& data);
 
 #if defined(OS_ANDROID)
-  static content::AppWebMessagePortService* GetAppWebMessagePortService();
+  static void PostMessageToFrame(
+      WebContents* web_contents,
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& source_origin,
+      const base::android::JavaParamRef<jstring>& target_origin,
+      const base::android::JavaParamRef<jstring>& data,
+      const base::android::JavaParamRef<jobjectArray>& ports);
 #endif
 
  private:

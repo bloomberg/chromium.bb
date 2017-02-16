@@ -185,9 +185,8 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
     }
   }
 
-  std::unique_ptr<MessagePortChannelArray> channels =
-      MessagePort::disentanglePorts(getExecutionContext(), ports,
-                                    exceptionState);
+  MessagePortChannelArray channels = MessagePort::disentanglePorts(
+      getExecutionContext(), ports, exceptionState);
   if (exceptionState.hadException())
     return;
 

@@ -247,7 +247,7 @@ class WebServiceWorkerContextClient {
   // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
   virtual void postMessageToClient(const WebString& uuid,
                                    const WebString&,
-                                   WebMessagePortChannelArray*) = 0;
+                                   WebMessagePortChannelArray) = 0;
 
   // Ownership of the passed callbacks is transferred to the callee, callee
   // should delete the callbacks after run.

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "content/common/message_port.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerConnectListener.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
@@ -57,7 +58,7 @@ class WebSharedWorkerProxy : private IPC::Listener {
 
   IPC::MessageRouter* const router_;
 
-  int message_port_id_;
+  MessagePort message_port_;
   std::unique_ptr<blink::WebSharedWorkerConnectListener> listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);

@@ -62,13 +62,13 @@ class WebServiceWorkerContextProxy {
       int eventID,
       const WebString& message,
       const WebSecurityOrigin& sourceOrigin,
-      const WebMessagePortChannelArray&,
+      WebMessagePortChannelArray,
       const WebServiceWorkerClientInfo&) = 0;
   virtual void dispatchExtendableMessageEvent(
       int eventID,
       const WebString& message,
       const WebSecurityOrigin& sourceOrigin,
-      const WebMessagePortChannelArray&,
+      WebMessagePortChannelArray,
       std::unique_ptr<WebServiceWorker::Handle>) = 0;
   virtual void dispatchInstallEvent(int eventID) = 0;
   virtual void dispatchFetchEvent(int fetchEventID,

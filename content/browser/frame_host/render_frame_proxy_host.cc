@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/message_port_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
@@ -319,26 +318,8 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     }
   }
 
-  if (!params.message_ports.empty()) {
-    // Updating the message port information has to be done in the IO thread;
-    // MessagePortMessageFilter::RouteMessageEventWithMessagePorts will send
-    // FrameMsg_PostMessageEvent after it's done. Note that a trivial solution
-    // would've been to post a task on the IO thread to do the IO-thread-bound
-    // work, and make that post a task back to WebContentsImpl in the UI
-    // thread. But we cannot do that, since there's nothing to guarantee that
-    // WebContentsImpl stays alive during the round trip.
-    scoped_refptr<MessagePortMessageFilter> message_port_message_filter(
-        static_cast<RenderProcessHostImpl*>(target_rfh->GetProcess())
-            ->message_port_message_filter());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&MessagePortMessageFilter::RouteMessageEventWithMessagePorts,
-                   message_port_message_filter, target_rfh->GetRoutingID(),
-                   new_params));
-  } else {
-    target_rfh->Send(
-        new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
-  }
+  target_rfh->Send(
+      new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
 }
 
 void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {

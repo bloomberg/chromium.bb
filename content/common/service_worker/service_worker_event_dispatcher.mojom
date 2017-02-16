@@ -32,8 +32,7 @@ struct FetchEventPreloadHandle {
 struct ExtendableMessageEvent {
   mojo.common.mojom.String16 message;
   url.mojom.Origin source_origin;
-  array<int32> message_ports;
-  array<int32> new_routing_ids;
+  array<handle<message_pipe>> message_ports;
   ExtendableMessageEventSource source;
 };
 

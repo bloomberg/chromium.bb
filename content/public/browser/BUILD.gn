@@ -22,7 +22,6 @@ source_set("browser_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "android/app_web_message_port_service.h",
     "android/browser_media_player_manager_register.cc",
     "android/browser_media_player_manager_register.h",
     "android/compositor.h",
@@ -147,7 +146,6 @@ source_set("browser_sources") {
     "memory_coordinator_delegate.h",
     "memory_pressure_controller.cc",
     "memory_pressure_controller.h",
-    "message_port_delegate.h",
     "message_port_provider.h",
     "native_web_keyboard_event.h",
     "navigation_controller.cc",

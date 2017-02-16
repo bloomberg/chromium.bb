@@ -37,7 +37,6 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
-class MessagePortMessageFilter;
 class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
@@ -271,8 +270,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback);
 
-  MessagePortMessageFilter* NewMessagePortMessageFilter();
-
   std::unique_ptr<service_manager::InterfaceRegistry> CreateInterfaceRegistry(
       MockRenderProcessHost* rph);
 
@@ -304,9 +301,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;
-
-  std::vector<scoped_refptr<MessagePortMessageFilter>>
-      message_port_message_filters_;
 
   base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 

@@ -159,8 +159,8 @@ void ServiceWorkerGlobalScopeClientImpl::didHandlePaymentRequestEvent(
 void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(
     const WebString& clientUUID,
     const WebString& message,
-    std::unique_ptr<WebMessagePortChannelArray> webChannels) {
-  m_client.postMessageToClient(clientUUID, message, webChannels.release());
+    WebMessagePortChannelArray webChannels) {
+  m_client.postMessageToClient(clientUUID, message, std::move(webChannels));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::skipWaiting(

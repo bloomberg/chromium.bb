@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   void postMessage(blink::WebServiceWorkerProvider* provider,
                    const blink::WebString& message,
                    const blink::WebSecurityOrigin& source_origin,
-                   blink::WebMessagePortChannelArray* channels) override;
+                   blink::WebMessagePortChannelArray channels) override;
   void terminate() override;
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given

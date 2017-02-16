@@ -58,7 +58,7 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
                               ContentSecurityPolicy*,
                               const String& referrerPolicy);
   void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
-                                      std::unique_ptr<MessagePortChannelArray>);
+                                      MessagePortChannelArray);
 
   void workerThreadCreated() override;
   void parentObjectDestroyed() override;
@@ -68,7 +68,7 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   // These methods come from worker context thread via
   // InProcessWorkerObjectProxy and are called on the parent context thread.
   void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
-                                 std::unique_ptr<MessagePortChannelArray>);
+                                 MessagePortChannelArray);
   void dispatchErrorEvent(const String& errorMessage,
                           std::unique_ptr<SourceLocation>,
                           int exceptionId);
@@ -100,10 +100,10 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
 
   struct QueuedTask {
     RefPtr<SerializedScriptValue> message;
-    std::unique_ptr<MessagePortChannelArray> channels;
+    MessagePortChannelArray channels;
 
     QueuedTask(RefPtr<SerializedScriptValue> message,
-               std::unique_ptr<MessagePortChannelArray> channels);
+               MessagePortChannelArray channels);
     ~QueuedTask();
   };
 

@@ -29,7 +29,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/android/app_web_message_port_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
@@ -574,24 +573,9 @@ void WebContentsAndroid::PostMessageToFrame(
     const JavaParamRef<jstring>& jmessage,
     const JavaParamRef<jstring>& jsource_origin,
     const JavaParamRef<jstring>& jtarget_origin,
-    const JavaParamRef<jintArray>& jsent_ports) {
-  base::string16 source_origin(ConvertJavaStringToUTF16(env, jsource_origin));
-  base::string16 target_origin(ConvertJavaStringToUTF16(env, jtarget_origin));
-  base::string16 message(ConvertJavaStringToUTF16(env, jmessage));
-  std::vector<int> ports;
-
-  if (!jsent_ports.is_null())
-    base::android::JavaIntArrayToIntVector(env, jsent_ports, &ports);
+    const JavaParamRef<jobjectArray>& jports) {
   content::MessagePortProvider::PostMessageToFrame(
-      web_contents_, source_origin, target_origin, message, ports);
-}
-
-void WebContentsAndroid::CreateMessageChannel(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobjectArray>& ports) {
-  content::MessagePortProvider::GetAppWebMessagePortService()
-      ->CreateMessageChannel(env, ports, web_contents_);
+      web_contents_, env, jsource_origin, jtarget_origin, jmessage, jports);
 }
 
 jboolean WebContentsAndroid::HasAccessedInitialDocument(

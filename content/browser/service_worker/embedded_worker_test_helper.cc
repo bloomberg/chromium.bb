@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -36,28 +35,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
-
-class MockMessagePortMessageFilter : public MessagePortMessageFilter {
- public:
-  MockMessagePortMessageFilter()
-      : MessagePortMessageFilter(
-            base::Bind(&base::AtomicSequenceNumber::GetNext,
-                       base::Unretained(&next_routing_id_))) {}
-
-  bool Send(IPC::Message* message) override {
-    message_queue_.push_back(base::WrapUnique(message));
-    return true;
-  }
-
- private:
-  ~MockMessagePortMessageFilter() override {}
-  base::AtomicSequenceNumber next_routing_id_;
-  std::vector<std::unique_ptr<IPC::Message>> message_queue_;
-};
-
-}  // namespace
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     MockEmbeddedWorkerInstanceClient(
@@ -235,8 +212,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  registry()->AddChildProcessSender(mock_render_process_id_, this,
-                                    NewMessagePortMessageFilter());
+  registry()->AddChildProcessSender(mock_render_process_id_, this);
 
   // Setup process level interface registry.
   render_process_interface_registry_ =
@@ -252,8 +228,7 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 
 void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(const GURL& pattern,
                                                            int process_id) {
-  registry()->AddChildProcessSender(process_id, this,
-                                    NewMessagePortMessageFilter());
+  registry()->AddChildProcessSender(process_id, this);
   wrapper_->process_manager()->AddProcessReferenceToPattern(pattern,
                                                             process_id);
 }
@@ -626,14 +601,6 @@ void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
   DCHECK(context());
   return context()->embedded_worker_registry();
-}
-
-MessagePortMessageFilter*
-EmbeddedWorkerTestHelper::NewMessagePortMessageFilter() {
-  scoped_refptr<MessagePortMessageFilter> filter(
-      new MockMessagePortMessageFilter);
-  message_port_message_filters_.push_back(filter);
-  return filter.get();
 }
 
 std::unique_ptr<service_manager::InterfaceRegistry>

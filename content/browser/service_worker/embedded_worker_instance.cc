@@ -817,11 +817,6 @@ int EmbeddedWorkerInstance::worker_devtools_agent_route_id() const {
   return MSG_ROUTING_NONE;
 }
 
-MessagePortMessageFilter* EmbeddedWorkerInstance::message_port_message_filter()
-    const {
-  return registry_->MessagePortMessageFilterForProcess(process_id());
-}
-
 void EmbeddedWorkerInstance::AddListener(Listener* listener) {
   listener_list_.AddObserver(listener);
 }

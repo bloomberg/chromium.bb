@@ -75,24 +75,22 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void entangle(WebMessagePortChannelUniquePtr);
   WebMessagePortChannelUniquePtr disentangle();
 
-  // Returns nullptr if the passed-in array is nullptr/empty.
-  static std::unique_ptr<WebMessagePortChannelArray>
-      toWebMessagePortChannelArray(std::unique_ptr<MessagePortChannelArray>);
+  static WebMessagePortChannelArray toWebMessagePortChannelArray(
+      MessagePortChannelArray);
 
   // Returns an empty array if the passed array is empty.
-  static MessagePortArray* toMessagePortArray(
-      ExecutionContext*,
-      const WebMessagePortChannelArray&);
+  static MessagePortArray* toMessagePortArray(ExecutionContext*,
+                                              WebMessagePortChannelArray);
 
-  // Returns nullptr if there is an exception, or if the passed-in array is
+  // Returns an empty array if there is an exception, or if the passed array is
   // nullptr/empty.
-  static std::unique_ptr<MessagePortChannelArray>
-  disentanglePorts(ExecutionContext*, const MessagePortArray&, ExceptionState&);
+  static MessagePortChannelArray disentanglePorts(ExecutionContext*,
+                                                  const MessagePortArray&,
+                                                  ExceptionState&);
 
-  // Returns an empty array if the passed array is nullptr/empty.
-  static MessagePortArray* entanglePorts(
-      ExecutionContext&,
-      std::unique_ptr<MessagePortChannelArray>);
+  // Returns an empty array if the passed array is empty.
+  static MessagePortArray* entanglePorts(ExecutionContext&,
+                                         MessagePortChannelArray);
 
   bool started() const { return m_started; }
 
@@ -134,7 +132,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
  protected:
   explicit MessagePort(ExecutionContext&);
   bool tryGetMessage(RefPtr<SerializedScriptValue>& message,
-                     std::unique_ptr<MessagePortChannelArray>& channels);
+                     MessagePortChannelArray& channels);
 
  private:
   // WebMessagePortChannelClient implementation.

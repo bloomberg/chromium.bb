@@ -56,6 +56,7 @@ class HttpResponseInfo;
 
 namespace content {
 
+class MessagePort;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
@@ -659,9 +660,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClearCachedMetadata(const GURL& url);
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
 
-  void OnPostMessageToClient(const std::string& client_uuid,
-                             const base::string16& message,
-                             const std::vector<int>& sent_message_ports);
+  void OnPostMessageToClient(
+      const std::string& client_uuid,
+      const base::string16& message,
+      const std::vector<MessagePort>& sent_message_ports);
   void OnFocusClient(int request_id, const std::string& client_uuid);
   void OnNavigateClient(int request_id,
                         const std::string& client_uuid,

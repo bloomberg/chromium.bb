@@ -29,7 +29,6 @@ class Sender;
 namespace content {
 
 class EmbeddedWorkerInstance;
-class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 
 // Acts as a thin stub between MessageFilter and each EmbeddedWorkerInstance,
@@ -90,10 +89,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
                               const GURL& source_url);
 
   // Keeps a map from process_id to sender information.
-  void AddChildProcessSender(
-      int process_id,
-      IPC::Sender* sender,
-      MessagePortMessageFilter* message_port_message_filter);
+  void AddChildProcessSender(int process_id, IPC::Sender* sender);
   void RemoveChildProcessSender(int process_id);
 
   // Returns an embedded worker instance for given |embedded_worker_id|.
@@ -101,8 +97,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   // Returns true if |embedded_worker_id| is managed by this registry.
   bool CanHandle(int embedded_worker_id) const;
-
-  MessagePortMessageFilter* MessagePortMessageFilterForProcess(int process_id);
 
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
@@ -114,8 +108,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   using WorkerInstanceMap = std::map<int, EmbeddedWorkerInstance*>;
   using ProcessToSenderMap = std::map<int, IPC::Sender*>;
-  using ProcessToMessagePortMessageFilterMap =
-      std::map<int, MessagePortMessageFilter*>;
 
   EmbeddedWorkerRegistry(
       const base::WeakPtr<ServiceWorkerContextCore>& context,
@@ -145,7 +137,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   WorkerInstanceMap worker_map_;
   ProcessToSenderMap process_sender_map_;
-  ProcessToMessagePortMessageFilterMap process_message_port_message_filter_map_;
 
   // Map from process_id to embedded_worker_id.
   // This map only contains starting and running workers.

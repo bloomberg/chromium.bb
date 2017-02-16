@@ -15,17 +15,18 @@ struct ViewHostMsg_CreateWorker_Params;
 struct ViewHostMsg_CreateWorker_Reply;
 
 namespace content {
-class MessagePortMessageFilter;
 class ResourceContext;
 
 // Handles SharedWorker related IPC messages for one renderer process by
 // forwarding them to the SharedWorkerServiceImpl singleton.
 class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
  public:
+  using NextRoutingIDCallback = base::Callback<int(void)>;
+
   SharedWorkerMessageFilter(int render_process_id,
                             ResourceContext* resource_context,
                             const WorkerStoragePartition& partition,
-                            MessagePortMessageFilter* message_port_filter);
+                            const NextRoutingIDCallback& callback);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -33,10 +34,6 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
 
   int GetNextRoutingID();
   int render_process_id() const { return render_process_id_; }
-
-  MessagePortMessageFilter* message_port_message_filter() const {
-    return message_port_message_filter_;
-  }
 
  protected:
   // This is protected, so we can define sub classes for testing.
@@ -57,7 +54,7 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
   const int render_process_id_;
   ResourceContext* const resource_context_;
   const WorkerStoragePartition partition_;
-  MessagePortMessageFilter* const message_port_message_filter_;
+  NextRoutingIDCallback next_routing_id_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SharedWorkerMessageFilter);
 };

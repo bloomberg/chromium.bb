@@ -181,6 +181,10 @@ void BlobTransportController::InitiateBlobTransfer(
                  base::Unretained(BlobTransportController::GetInstance()), uuid,
                  base::Passed(std::move(consolidation)),
                  base::Passed(std::move(main_runner))));
+
+  // Measure how much jank the following synchronous IPC introduces.
+  SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterBlobTime");
+
   sender->Send(
       new BlobStorageMsg_RegisterBlob(uuid, content_type, "", descriptions));
 }

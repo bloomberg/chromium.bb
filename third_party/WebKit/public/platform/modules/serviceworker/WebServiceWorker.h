@@ -43,7 +43,6 @@ namespace blink {
 class WebSecurityOrigin;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProxy;
-typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
 class WebServiceWorker {
  public:
@@ -76,7 +75,7 @@ class WebServiceWorker {
   virtual void postMessage(WebServiceWorkerProvider*,
                            const WebString&,
                            const WebSecurityOrigin&,
-                           WebMessagePortChannelArray*) = 0;
+                           WebMessagePortChannelArray) = 0;
 
   virtual void terminate() {}
 };

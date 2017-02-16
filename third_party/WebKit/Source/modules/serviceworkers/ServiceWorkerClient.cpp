@@ -70,13 +70,13 @@ void ServiceWorkerClient::postMessage(ScriptState* scriptState,
                                       ExceptionState& exceptionState) {
   ExecutionContext* context = scriptState->getExecutionContext();
   // Disentangle the port in preparation for sending it to the remote context.
-  std::unique_ptr<MessagePortChannelArray> channels =
+  MessagePortChannelArray channels =
       MessagePort::disentanglePorts(context, ports, exceptionState);
   if (exceptionState.hadException())
     return;
 
   WebString messageString = message->toWireString();
-  std::unique_ptr<WebMessagePortChannelArray> webChannels =
+  WebMessagePortChannelArray webChannels =
       MessagePort::toWebMessagePortChannelArray(std::move(channels));
   ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(
       m_uuid, messageString, std::move(webChannels));

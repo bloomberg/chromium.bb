@@ -97,7 +97,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data,
                            const String& origin,
                            const String& lastEventId,
                            EventTarget* source,
-                           std::unique_ptr<MessagePortChannelArray> channels,
+                           MessagePortChannelArray channels,
                            const String& suborigin)
     : Event(EventTypeNames::message, false, false),
       m_dataType(DataTypeSerializedScriptValue),

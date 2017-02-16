@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.os.Handler;
 import android.support.test.filters.SmallTest;
 import android.webkit.JavascriptInterface;
 
@@ -18,7 +17,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -501,8 +499,6 @@ public class PostMessageTest extends AwTestBase {
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPendingPortCanBeTransferredInPendingPort() throws Throwable {
         loadPage(TITLE_FROM_POSTMESSAGE_TO_CHANNEL);
-        final TestMessagePort testPort =
-                new TestMessagePort(getAwBrowserContext().getMessagePortService());
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -800,87 +796,6 @@ public class PostMessageTest extends AwTestBase {
             }
         });
         expectTitle("24");
-    }
-
-    private static class TestMessagePort extends AppWebMessagePort {
-        private boolean mReady;
-        private AppWebMessagePort mPort;
-        private final Object mLock = new Object();
-
-        public TestMessagePort(AppWebMessagePortService service) {
-            super(service);
-        }
-
-        public void setMessagePort(AppWebMessagePort port) {
-            mPort = port;
-        }
-
-        public void setReady(boolean ready) {
-            synchronized (mLock) {
-                mReady = ready;
-            }
-        }
-        @Override
-        public boolean isReady() {
-            synchronized (mLock) {
-                return mReady;
-            }
-        }
-        @Override
-        public int portId() {
-            return mPort.portId();
-        }
-        @Override
-        public void setPortId(int id) {
-            mPort.setPortId(id);
-        }
-        @Override
-        public void close() {
-            mPort.close();
-        }
-        @Override
-        public boolean isClosed() {
-            return mPort.isClosed();
-        }
-        @Override
-        public void setMessageCallback(MessageCallback messageCallback, Handler handler) {
-            mPort.setMessageCallback(messageCallback, handler);
-        }
-        @Override
-        public void onMessage(String message, AppWebMessagePort[] sentPorts) {
-            mPort.onMessage(message, sentPorts);
-        }
-        @Override
-        public void postMessage(String message, MessagePort[] sentPorts)
-                throws IllegalStateException {
-            mPort.postMessage(message, sentPorts);
-        }
-    }
-
-    // Post a message with a pending port to a frame and then post a message that
-    // is pending after that. Make sure that when first message becomes ready,
-    // the subsequent not-ready message is not sent.
-    @SmallTest
-    @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testPostMessageToFrameNotSendsPendingMessages() throws Throwable {
-        loadPage(TITLE_FROM_POSTMESSAGE_TO_FRAME);
-        final TestMessagePort testPort =
-                new TestMessagePort(getAwBrowserContext().getMessagePortService());
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AppWebMessagePort[] channel = mAwContents.createMessageChannel();
-                mAwContents.postMessageToFrame(
-                        null, "1", mWebServer.getBaseUrl(), new AppWebMessagePort[] {channel[1]});
-                mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(), null);
-                AppWebMessagePort[] channel2 = mAwContents.createMessageChannel();
-                // Test port is in a pending state so it should not be transferred.
-                testPort.setMessagePort(channel2[0]);
-                mAwContents.postMessageToFrame(
-                        null, "3", mWebServer.getBaseUrl(), new AppWebMessagePort[] {testPort});
-            }
-        });
-        expectTitle("12");
     }
 
     private static final String WORKER_MESSAGE = "from_worker";

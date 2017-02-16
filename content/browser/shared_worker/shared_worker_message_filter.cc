@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "content/browser/message_port_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
@@ -27,14 +26,13 @@ SharedWorkerMessageFilter::SharedWorkerMessageFilter(
     int render_process_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
-    MessagePortMessageFilter* message_port_message_filter)
+    const NextRoutingIDCallback& next_routing_id_callback)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
       partition_(partition),
-      message_port_message_filter_(message_port_message_filter) {
-}
+      next_routing_id_callback_(next_routing_id_callback) {}
 
 SharedWorkerMessageFilter::~SharedWorkerMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -89,7 +87,7 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 int SharedWorkerMessageFilter::GetNextRoutingID() {
-  return message_port_message_filter_->GetNextRoutingID();
+  return next_routing_id_callback_.Run();
 }
 
 void SharedWorkerMessageFilter::OnCreateWorker(

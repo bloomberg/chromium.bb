@@ -36,8 +36,6 @@ target(link_target_type, "renderer") {
     "accessibility/render_accessibility_impl.h",
     "android/address_detector.cc",
     "android/address_detector.h",
-    "android/app_web_message_port_client.cc",
-    "android/app_web_message_port_client.h",
     "android/content_detector.cc",
     "android/content_detector.h",
     "android/disambiguation_popup_helper.cc",

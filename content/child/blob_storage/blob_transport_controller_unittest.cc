@@ -133,7 +133,8 @@ class BlobTransportControllerTest : public testing::Test {
     ASSERT_TRUE(register_message);
     std::tuple<std::string, std::string, std::string, std::vector<DataElement>>
         register_contents;
-    BlobStorageMsg_RegisterBlob::Read(register_message, &register_contents);
+    BlobStorageMsg_RegisterBlob::ReadSendParam(register_message,
+                                               &register_contents);
     EXPECT_EQ(expected_uuid, std::get<0>(register_contents));
     EXPECT_EQ(expected_content_type, std::get<1>(register_contents));
     if (descriptions)

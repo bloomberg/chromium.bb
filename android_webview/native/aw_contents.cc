@@ -56,7 +56,6 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "content/public/browser/android/app_web_message_port_service.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
@@ -1334,28 +1333,14 @@ void AwContents::PostMessageToFrame(JNIEnv* env,
                                     const JavaParamRef<jstring>& frame_name,
                                     const JavaParamRef<jstring>& message,
                                     const JavaParamRef<jstring>& target_origin,
-                                    const JavaParamRef<jintArray>& sent_ports) {
+                                    const JavaParamRef<jobjectArray>& ports) {
   // Use an empty source origin for android webview.
-  base::string16 source_origin;
-  base::string16 j_target_origin(ConvertJavaStringToUTF16(env, target_origin));
-  base::string16 j_message(ConvertJavaStringToUTF16(env, message));
-  std::vector<int> j_ports;
-
-  if (sent_ports != nullptr)
-    base::android::JavaIntArrayToIntVector(env, sent_ports, &j_ports);
-
   content::MessagePortProvider::PostMessageToFrame(web_contents_.get(),
-                                                   source_origin,
-                                                   j_target_origin,
-                                                   j_message,
-                                                   j_ports);
-}
-
-void AwContents::CreateMessageChannel(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj,
-                                      const JavaParamRef<jobjectArray>& ports) {
-  content::MessagePortProvider::GetAppWebMessagePortService()
-      ->CreateMessageChannel(env, ports, web_contents_.get());
+                                                   env,
+                                                   nullptr,
+                                                   target_origin,
+                                                   message,
+                                                   ports);
 }
 
 void AwContents::GrantFileSchemeAccesstoChildProcess(

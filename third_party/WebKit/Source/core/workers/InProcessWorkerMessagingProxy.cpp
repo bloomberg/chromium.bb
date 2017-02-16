@@ -119,7 +119,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(
 
 void InProcessWorkerMessagingProxy::postMessageToWorkerObject(
     PassRefPtr<SerializedScriptValue> message,
-    std::unique_ptr<MessagePortChannelArray> channels) {
+    MessagePortChannelArray channels) {
   DCHECK(isParentContextThread());
   if (!m_workerObject || askedToTerminate())
     return;
@@ -132,7 +132,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerObject(
 
 void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
     PassRefPtr<SerializedScriptValue> message,
-    std::unique_ptr<MessagePortChannelArray> channels) {
+    MessagePortChannelArray channels) {
   DCHECK(isParentContextThread());
   if (askedToTerminate())
     return;
@@ -240,7 +240,7 @@ bool InProcessWorkerMessagingProxy::hasPendingActivity() const {
 
 InProcessWorkerMessagingProxy::QueuedTask::QueuedTask(
     RefPtr<SerializedScriptValue> message,
-    std::unique_ptr<MessagePortChannelArray> channels)
+    MessagePortChannelArray channels)
     : message(std::move(message)), channels(std::move(channels)) {}
 
 InProcessWorkerMessagingProxy::QueuedTask::~QueuedTask() = default;

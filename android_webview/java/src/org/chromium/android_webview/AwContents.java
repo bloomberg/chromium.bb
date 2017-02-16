@@ -58,11 +58,9 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
-import org.chromium.content.browser.PostMessageSender;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -100,7 +98,7 @@ import java.util.concurrent.Callable;
  * continuous build &amp; test in the open source SDK-based tree).
  */
 @JNINamespace("android_webview")
-public class AwContents implements SmartClipProvider, PostMessageSender.PostMessageSenderDelegate {
+public class AwContents implements SmartClipProvider {
     private static final String TAG = "AwContents";
     private static final boolean TRACE = false;
     private static final int NO_WARN = 0;
@@ -338,8 +336,6 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
     private AwViewMethods mAwViewMethods;
     private final FullScreenTransitionsState mFullScreenTransitionsState;
-
-    private PostMessageSender mPostMessageSender;
 
     // This flag indicates that ShouldOverrideUrlNavigation should be posted
     // through the resourcethrottle. This is only used for popup windows.
@@ -1197,11 +1193,6 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
         // Remove pending messages
         mContentsClient.getCallbackHelper().removeCallbacksAndMessages();
-
-        if  (mPostMessageSender != null) {
-            mBrowserContext.getMessagePortService().removeObserver(mPostMessageSender);
-            mPostMessageSender = null;
-        }
 
         if (mIsAttachedToWindow) {
             Log.w(TAG, "WebView.destroy() called while WebView is still attached to window.");
@@ -2285,33 +2276,17 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     public void postMessageToFrame(
             String frameName, String message, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyedOrNoOperation(WARN)) return;
-        if (mPostMessageSender == null) {
-            AppWebMessagePortService service = mBrowserContext.getMessagePortService();
-            mPostMessageSender = new PostMessageSender(this, service);
-            service.addObserver(mPostMessageSender);
+        if (sentPorts != null) {
+            for (MessagePort port : sentPorts) {
+                if (port.isClosed() || port.isTransferred()) {
+                    throw new IllegalStateException("Port is already closed or transferred");
+                }
+                if (port.isStarted()) {
+                    throw new IllegalStateException("Port is already started");
+                }
+            }
         }
-        mPostMessageSender.postMessage(frameName, message, targetOrigin,
-                (AppWebMessagePort[]) sentPorts);
-    }
-
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public boolean isPostMessageSenderReady() {
-        return true;
-    }
-
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public void onPostMessageQueueEmpty() { }
-
-    // Implements PostMessageSender.PostMessageSenderDelegate interface method.
-    @Override
-    public void postMessageToWeb(String frameName, String message, String targetOrigin,
-            int[] sentPortIds) {
-        if (TRACE) Log.i(TAG, "%s postMessageToWeb. TargetOrigin=%s", this, targetOrigin);
-        if (isDestroyedOrNoOperation(NO_WARN)) return;
-        nativePostMessageToFrame(mNativeAwContents, frameName, message, targetOrigin,
-                sentPortIds);
+        nativePostMessageToFrame(mNativeAwContents, frameName, message, targetOrigin, sentPorts);
     }
 
     /**
@@ -2320,9 +2295,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     public AppWebMessagePort[] createMessageChannel() {
         if (TRACE) Log.i(TAG, "%s createMessageChannel", this);
         if (isDestroyedOrNoOperation(WARN)) return null;
-        AppWebMessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
-        nativeCreateMessageChannel(mNativeAwContents, ports);
-        return ports;
+        return AppWebMessagePort.createPair();
     }
 
     public boolean hasAccessedInitialDocument() {
@@ -3449,10 +3422,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             long resources);
 
     private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
-            String message, String targetOrigin, int[] msgPorts);
-
-    private native void nativeCreateMessageChannel(
-            long nativeAwContents, AppWebMessagePort[] ports);
+            String message, String targetOrigin, MessagePort[] ports);
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);

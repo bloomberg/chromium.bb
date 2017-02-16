@@ -30,7 +30,7 @@ class Origin;
 
 namespace content {
 
-class MessagePortMessageFilter;
+class MessagePort;
 class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
@@ -49,7 +49,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
  public:
   ServiceWorkerDispatcherHost(
       int render_process_id,
-      MessagePortMessageFilter* message_port_message_filter,
       ResourceContext* resource_context);
 
   void Init(ServiceWorkerContextWrapper* context_wrapper);
@@ -80,10 +79,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
-
-  MessagePortMessageFilter* message_port_message_filter() {
-    return message_port_message_filter_;
-  }
 
  protected:
   ~ServiceWorkerDispatcherHost() override;
@@ -169,11 +164,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnDecrementServiceWorkerRefCount(int handle_id);
   void OnIncrementRegistrationRefCount(int registration_handle_id);
   void OnDecrementRegistrationRefCount(int registration_handle_id);
-  void OnPostMessageToWorker(int handle_id,
-                             int provider_id,
-                             const base::string16& message,
-                             const url::Origin& source_origin,
-                             const std::vector<int>& sent_message_ports);
+  void OnPostMessageToWorker(
+      int handle_id,
+      int provider_id,
+      const base::string16& message,
+      const url::Origin& source_origin,
+      const std::vector<MessagePort>& sent_message_ports);
 
   void OnTerminateWorker(int handle_id);
 
@@ -181,7 +177,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<int>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const StatusCallback& callback);
   template <typename SourceInfo>
@@ -189,7 +185,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<int>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback,
       const SourceInfo& source_info);
@@ -197,13 +193,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<int>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       const ExtendableMessageEventSource& source,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback);
   template <typename SourceInfo>
   void DidFailToDispatchExtendableMessageEvent(
-      const std::vector<int>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       const SourceInfo& source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);
@@ -275,7 +271,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                                         ServiceWorkerStatusCode status);
 
   const int render_process_id_;
-  MessagePortMessageFilter* const message_port_message_filter_;
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 

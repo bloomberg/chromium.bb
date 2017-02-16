@@ -93,10 +93,9 @@ class ServiceWorkerGlobalScopeClientImpl final
   void didHandlePaymentRequestEvent(int paymentRequestEventID,
                                     WebServiceWorkerEventResult,
                                     double eventDispatchTime) override;
-  void postMessageToClient(
-      const WebString& clientUUID,
-      const WebString& message,
-      std::unique_ptr<WebMessagePortChannelArray>) override;
+  void postMessageToClient(const WebString& clientUUID,
+                           const WebString& message,
+                           WebMessagePortChannelArray) override;
   void skipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override;
   void claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override;

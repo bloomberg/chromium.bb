@@ -180,10 +180,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       blink::WebDataSource* data_source) override;
   blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
 
-  void postMessageToClient(
-      const blink::WebString& uuid,
-      const blink::WebString& message,
-      blink::WebMessagePortChannelArray* channels) override;
+  void postMessageToClient(const blink::WebString& uuid,
+                           const blink::WebString& message,
+                           blink::WebMessagePortChannelArray channels) override;
   void focus(const blink::WebString& uuid,
              std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void navigate(

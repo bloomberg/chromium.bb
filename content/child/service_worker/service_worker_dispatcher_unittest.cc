@@ -138,7 +138,7 @@ class MockWebServiceWorkerProviderClientImpl
   void dispatchMessageEvent(
       std::unique_ptr<blink::WebServiceWorker::Handle> handle,
       const blink::WebString& message,
-      const blink::WebMessagePortChannelArray& channels) override {
+      blink::WebMessagePortChannelArray channels) override {
     // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
     // The destruction releases ServiceWorkerHandleReference.
     is_dispatch_message_event_called_ = true;

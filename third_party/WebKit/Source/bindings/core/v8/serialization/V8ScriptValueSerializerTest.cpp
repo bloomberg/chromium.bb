@@ -63,7 +63,7 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
                                        : scope.getExceptionState();
 
   // Extract message ports and disentangle them.
-  std::unique_ptr<MessagePortChannelArray> channels;
+  MessagePortChannelArray channels;
   if (transferables) {
     channels = MessagePort::disentanglePorts(scope.getExecutionContext(),
                                              transferables->messagePorts,
@@ -239,8 +239,7 @@ class WebMessagePortChannelImpl final : public WebMessagePortChannel {
  public:
   // WebMessagePortChannel
   void setClient(WebMessagePortChannelClient* client) override {}
-  void destroy() override { delete this; }
-  void postMessage(const WebString&, WebMessagePortChannelArray*) {
+  void postMessage(const WebString&, WebMessagePortChannelArray) {
     NOTIMPLEMENTED();
   }
   bool tryGetMessage(WebString*, WebMessagePortChannelArray&) { return false; }

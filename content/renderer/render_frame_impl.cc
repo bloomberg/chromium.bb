@@ -235,7 +235,6 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
-#include "content/renderer/android/app_web_message_port_client.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -1239,10 +1238,6 @@ void RenderFrameImpl::Initialize() {
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
 
-#if defined(OS_ANDROID)
-  new AppWebMessagePortClient(this);
-#endif
-
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // render_thread may be NULL in tests.
   InputHandlerManager* input_handler_manager =
@@ -2210,9 +2205,7 @@ void RenderFrameImpl::OnPostMessageEvent(
 
   // If the message contained MessagePorts, create the corresponding endpoints.
   blink::WebMessagePortChannelArray channels =
-      WebMessagePortChannelImpl::CreatePorts(
-          params.message_ports, params.new_routing_ids,
-          base::ThreadTaskRunnerHandle::Get().get());
+      WebMessagePortChannelImpl::CreateFromMessagePorts(params.message_ports);
 
   WebSerializedScriptValue serialized_script_value;
   if (params.is_data_raw_string) {
@@ -2241,7 +2234,9 @@ void RenderFrameImpl::OnPostMessageEvent(
 
   WebDOMMessageEvent msg_event(serialized_script_value,
                                WebString::fromUTF16(params.source_origin),
-                               source_frame, frame_->document(), channels);
+                               source_frame,
+                               frame_->document(),
+                               std::move(channels));
   frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
