@@ -28,6 +28,10 @@
 
 namespace net {
 
+// The maximum time to wait for the alternate job to complete before resuming
+// the main job.
+const int kMaxDelayTimeForMainJobSecs = 3;
+
 std::unique_ptr<base::Value> NetLogJobControllerCallback(
     const GURL* url,
     bool is_preconnect,
@@ -659,8 +663,10 @@ const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog(
 
 void HttpStreamFactoryImpl::JobController::MaybeSetWaitTimeForMainJob(
     const base::TimeDelta& delay) {
-  if (main_job_is_blocked_)
-    main_job_wait_time_ = delay;
+  if (main_job_is_blocked_) {
+    main_job_wait_time_ = std::min(
+        delay, base::TimeDelta::FromSeconds(kMaxDelayTimeForMainJobSecs));
+  }
 }
 
 bool HttpStreamFactoryImpl::JobController::HasPendingMainJob() const {
