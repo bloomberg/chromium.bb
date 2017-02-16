@@ -329,7 +329,8 @@ public class BottomSheet
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
     private boolean isToolbarAndroidViewHidden() {
-        return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0;
+        return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0
+                || mControlContainer.getVisibility() != VISIBLE;
     }
 
     /**

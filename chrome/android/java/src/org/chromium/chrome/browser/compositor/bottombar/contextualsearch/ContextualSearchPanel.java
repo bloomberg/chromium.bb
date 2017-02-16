@@ -398,6 +398,16 @@ public class ContextualSearchPanel extends OverlayPanel {
         return barShadowOpacity;
     }
 
+    @Override
+    public boolean shouldHideAndroidBrowserControls() {
+        // Account for the Chrome Home bottom sheet when making this decision. If the bottom sheet
+        // is being used, Contextual Search will show in place of the toolbar. This means that the
+        // Android view needs to be hidden immediately when the Contextual Search bar starts
+        // peeking.
+        return (mActivity != null && mActivity.getBottomSheet() != null && isShowing())
+                || super.shouldHideAndroidBrowserControls();
+    }
+
     // ============================================================================================
     // Animation Handling
     // ============================================================================================
