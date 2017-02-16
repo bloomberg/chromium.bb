@@ -23,6 +23,8 @@ source_set("tools") {
 
 source_set("tools_ui") {
   sources = [
+    "menu_overflow_controls_stackview.h",
+    "menu_overflow_controls_stackview.mm",
     "menu_view_controller.h",
     "menu_view_controller.mm",
   ]
@@ -32,7 +34,9 @@ source_set("tools_ui") {
   deps = [
     "//base",
     "//base:i18n",
+    "//ios/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/toolbar:toolbar_components_ui",
     "//ios/third_party/material_roboto_font_loader_ios",
   ]
 }

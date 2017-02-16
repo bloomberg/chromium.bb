@@ -11,8 +11,11 @@
 #include "base/i18n/rtl.h"
 #import "base/logging.h"
 #import "base/macros.h"
+#import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
+#import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,10 +40,13 @@ const CGFloat kMenuItemHeight = 48;
 
 @interface MenuViewController ()
 @property(nonatomic, readonly) NSArray<MenuItem*>* menuItems;
+@property(nonatomic, strong)
+    MenuOverflowControlsStackView* toolbarOverflowStackView;
 @end
 
 @implementation MenuViewController
 @synthesize menuItems = _menuItems;
+@synthesize toolbarOverflowStackView = _toolbarOverflowStackView;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -96,6 +102,7 @@ const CGFloat kMenuItemHeight = 48;
     menuButton.translatesAutoresizingMaskIntoConstraints = NO;
     menuButton.tintColor = [UIColor blackColor];
     [menuButton setTitle:item.title forState:UIControlStateNormal];
+    [menuButton setContentEdgeInsets:UIEdgeInsetsMakeDirected(0, 10.0f, 0, 0)];
     [menuButton.titleLabel
         setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
     [menuButton.titleLabel setTextAlignment:NSTextAlignmentNatural];
@@ -117,16 +124,32 @@ const CGFloat kMenuItemHeight = 48;
   menu.distribution = UIStackViewDistributionFillEqually;
   menu.alignment = UIStackViewAlignmentLeading;
 
+  // Stack view to hold overflow ToolbarButtons.
+  if (self.traitCollection.horizontalSizeClass ==
+      UIUserInterfaceSizeClassCompact) {
+    self.toolbarOverflowStackView =
+        [[MenuOverflowControlsStackView alloc] init];
+    // PLACEHOLDER: ToolsMenuButton might end up being part of the MenuVC's view
+    // instead of the StackView. We are waiting confirmation on this.
+    [self.toolbarOverflowStackView.toolsMenuButton
+               addTarget:nil
+                  action:@selector(closeToolsMenu:)
+        forControlEvents:UIControlEventTouchUpInside];
+    [menu insertArrangedSubview:self.toolbarOverflowStackView atIndex:0];
+    [NSLayoutConstraint activateConstraints:@[
+      [self.toolbarOverflowStackView.leadingAnchor
+          constraintEqualToAnchor:menu.leadingAnchor],
+      [self.toolbarOverflowStackView.trailingAnchor
+          constraintEqualToAnchor:menu.trailingAnchor],
+    ]];
+  }
+
   [self.view addSubview:menu];
   [NSLayoutConstraint activateConstraints:@[
-    [menu.leadingAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.leadingAnchor],
-    [menu.trailingAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
-    [menu.bottomAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.bottomAnchor],
-    [menu.topAnchor
-        constraintEqualToAnchor:self.view.layoutMarginsGuide.topAnchor],
+    [menu.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+    [menu.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+    [menu.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    [menu.topAnchor constraintEqualToAnchor:self.view.topAnchor],
   ]];
 }
 

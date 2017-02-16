@@ -23,22 +23,33 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
+    "toolbar_view_controller.h",
+    "toolbar_view_controller.mm",
+  ]
+  deps = [
+    ":toolbar_components_ui",
+    "//base",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/tools",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("toolbar_components_ui") {
+  sources = [
     "toolbar_button+factory.h",
     "toolbar_button+factory.mm",
     "toolbar_button.h",
     "toolbar_button.mm",
     "toolbar_component_options.h",
-    "toolbar_view_controller.h",
-    "toolbar_view_controller.mm",
   ]
   deps = [
     "//base",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
-    "//ios/clean/chrome/browser/ui/actions",
-    "//ios/clean/chrome/browser/ui/animators",
-    "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/tools",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

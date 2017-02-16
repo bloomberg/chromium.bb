@@ -84,6 +84,12 @@ CGFloat kVerticalMargin = 5.0f;
   ]];
 }
 
+- (void)viewWillLayoutSubviews {
+  // This forces the ToolMenu to close whenever a Device Rotation, iPad
+  // Multitasking change, etc. happens.
+  [self.toolbarCommandHandler closeToolsMenu];
+}
+
 #pragma mark - Components Setup
 
 - (void)setUpToolbarButtons {
