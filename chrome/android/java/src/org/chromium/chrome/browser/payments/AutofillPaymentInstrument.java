@@ -154,6 +154,11 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         if (!mIsWaitingForFullCardDetails) sendIntrumentDetails();
     }
 
+    @Override
+    public void onCouldNotNormalize(AutofillProfile profile) {
+        onAddressNormalized(null);
+    }
+
     /**
      * Stringify the card details and send the resulting string and the method name to the
      * registered callback.

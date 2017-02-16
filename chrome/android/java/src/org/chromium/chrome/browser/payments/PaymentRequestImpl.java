@@ -1465,7 +1465,6 @@ public class PaymentRequestImpl
     public void onPaymentResponseReady(PaymentResponse response) {
         mClient.onPaymentResponse(response);
         mPaymentResponseHelper = null;
-        PersonalDataManager.getInstance().cancelPendingAddressNormalizations();
     }
 
     /**

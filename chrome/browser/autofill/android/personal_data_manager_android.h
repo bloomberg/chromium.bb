@@ -9,28 +9,17 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "third_party/libaddressinput/chromium/chrome_address_validator.h"
+#include "components/payments/address_normalizer.h"
 
 namespace autofill {
 
 // Android wrapper of the PersonalDataManager which provides access from the
 // Java layer. Note that on Android, there's only a single profile, and
 // therefore a single instance of this wrapper.
-class PersonalDataManagerAndroid
-    : public PersonalDataManagerObserver,
-      public LoadRulesListener,
-      public base::SupportsWeakPtr<PersonalDataManagerAndroid> {
+class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
-  // The interface for the normalization request.
-  class Delegate {
-   public:
-    virtual void OnRulesSuccessfullyLoaded() = 0;
-    virtual ~Delegate() {}
-  };
-
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
 
   // Returns true if personal data manager has loaded the initial data.
@@ -300,35 +289,17 @@ class PersonalDataManagerAndroid
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& region_code);
 
-  // Callback of the address validator that is called when the validator has
-  // finished loading the rules for a region.
-  void OnAddressValidationRulesLoaded(const std::string& region_code,
-                                      bool success) override;
-
   // Normalizes the address of the profile associated with the |jguid|
   // synchronously if the |jregion_code| rules have finished loading. Otherwise
   // sets up the task to start the address normalization when the rules have
   // finished loading. In either case, sends the normalized profile to the
-  // |jdelegate|. Returns whether the normalization will happen asynchronously.
-  jboolean StartAddressNormalization(
+  // |jdelegate|.
+  void StartAddressNormalization(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid,
       const base::android::JavaParamRef<jstring>& jregion_code,
       const base::android::JavaParamRef<jobject>& jdelegate);
-
-  // Normalizes the address of the profile associated with the |guid| with the
-  // rules associates with the |region_code|. Should only be called when the
-  // rules have finished loading.
-  base::android::ScopedJavaLocalRef<jobject> NormalizeAddress(
-      const std::string& guid,
-      const std::string& region_code,
-      JNIEnv* env);
-
-  // Cancels the pending address normalization task.
-  void CancelPendingAddressNormalizations(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
 
   // Checks whether the Autofill PersonalDataManager has profiles.
   jboolean HasProfiles(JNIEnv* env,
@@ -387,11 +358,7 @@ class PersonalDataManagerAndroid
   PersonalDataManager* personal_data_manager_;
 
   // The address validator used to normalize addresses.
-  AddressValidator address_validator_;
-
-  // Map associating a region code to pending normalizations.
-  std::map<std::string, std::vector<std::unique_ptr<Delegate>>>
-      pending_normalization_;
+  payments::AddressNormalizer address_normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };

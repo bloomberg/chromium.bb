@@ -72,6 +72,14 @@ public class PersonalDataManager {
          */
         @CalledByNative("NormalizedAddressRequestDelegate")
         void onAddressNormalized(AutofillProfile profile);
+
+        /**
+         * Called when the address could not be normalized.
+         *
+         * @param profile The non normalized profile.
+         */
+        @CalledByNative("NormalizedAddressRequestDelegate")
+        void onCouldNotNormalize(AutofillProfile profile);
     }
 
     /**
@@ -811,20 +819,11 @@ public class PersonalDataManager {
      * @param guid The GUID of the profile to normalize.
      * @param regionCode The region code indicating which rules to use for normalization.
      * @param delegate The object requesting the normalization.
-     *
-     * @return Whether the normalization will happen asynchronously.
      */
-    public boolean normalizeAddress(
+    public void normalizeAddress(
             String guid, String regionCode, NormalizedAddressRequestDelegate delegate) {
         ThreadUtils.assertOnUiThread();
-        return nativeStartAddressNormalization(
-                mPersonalDataManagerAndroid, guid, regionCode, delegate);
-    }
-
-    /** Cancels the pending address normalizations. */
-    public void cancelPendingAddressNormalizations() {
-        ThreadUtils.assertOnUiThread();
-        nativeCancelPendingAddressNormalizations(mPersonalDataManagerAndroid);
+        nativeStartAddressNormalization(mPersonalDataManagerAndroid, guid, regionCode, delegate);
     }
 
     /**
@@ -955,10 +954,8 @@ public class PersonalDataManager {
             WebContents webContents, CreditCard card, FullCardRequestDelegate delegate);
     private native void nativeLoadRulesForRegion(
             long nativePersonalDataManagerAndroid, String regionCode);
-    private native boolean nativeStartAddressNormalization(long nativePersonalDataManagerAndroid,
+    private native void nativeStartAddressNormalization(long nativePersonalDataManagerAndroid,
             String guid, String regionCode, NormalizedAddressRequestDelegate delegate);
-    private native void nativeCancelPendingAddressNormalizations(
-            long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();

@@ -138,4 +138,9 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
         // Wait for the payment details before sending the response.
         if (!mIsWaitingForPaymentsDetails) mDelegate.onPaymentResponseReady(mPaymentResponse);
     }
+
+    @Override
+    public void onCouldNotNormalize(AutofillProfile profile) {
+        onAddressNormalized(null);
+    }
 }
