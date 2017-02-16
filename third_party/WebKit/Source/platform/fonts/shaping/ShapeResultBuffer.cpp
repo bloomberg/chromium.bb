@@ -17,15 +17,14 @@ namespace blink {
 
 namespace {
 
-inline void addIsSkipInkException(GlyphBuffer* glyphBuffer,
-                                  const TextRun& run,
-                                  unsigned characterIndex) {
+inline bool isSkipInkException(const GlyphBuffer& glyphBuffer,
+                               const TextRun& run,
+                               unsigned characterIndex) {
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
-  DCHECK(!run.is8Bit()) << "8Bit() is always false, better to avoid to call";
-  UChar32 baseCharacter = run.codepointAt(characterIndex);
-  glyphBuffer->addIsSkipInkException(
-      Character::isCJKIdeographOrSymbol(baseCharacter));
+  return glyphBuffer.type() == GlyphBuffer::Type::TextIntercepts &&
+         !run.is8Bit() &&
+         Character::isCJKIdeographOrSymbol(run.codepointAt(characterIndex));
 }
 
 inline void addGlyphToBuffer(GlyphBuffer* glyphBuffer,
@@ -38,9 +37,9 @@ inline void addGlyphToBuffer(GlyphBuffer* glyphBuffer,
   FloatPoint startOffset = HB_DIRECTION_IS_HORIZONTAL(direction)
                                ? FloatPoint(advance, 0)
                                : FloatPoint(0, advance);
-  glyphBuffer->add(glyphData.glyph, fontData, startOffset + glyphData.offset);
-  if (glyphBuffer->hasSkipInkExceptions())
-    addIsSkipInkException(glyphBuffer, run, characterIndex);
+  if (!isSkipInkException(*glyphBuffer, run, characterIndex)) {
+    glyphBuffer->add(glyphData.glyph, fontData, startOffset + glyphData.offset);
+  }
 }
 
 inline void addEmphasisMark(GlyphBuffer* buffer,
@@ -233,11 +232,10 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
       for (const auto& glyphData : run->m_glyphData) {
         ASSERT(!glyphData.offset.height());
 
-        glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
-                         advance + glyphData.offset.width());
-        if (glyphBuffer->hasSkipInkExceptions()) {
-          addIsSkipInkException(glyphBuffer, textRun,
-                                characterIndex + glyphData.characterIndex);
+        if (!isSkipInkException(*glyphBuffer, textRun,
+                                characterIndex + glyphData.characterIndex)) {
+          glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
+                           advance + glyphData.offset.width());
         }
 
         advance += glyphData.advance;

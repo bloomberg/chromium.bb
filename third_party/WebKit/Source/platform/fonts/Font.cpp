@@ -260,12 +260,7 @@ class GlyphBufferBloberizer {
         m_endIndex(m_buffer.size()),
         m_blobCount(0),
         m_rotation(buffer.isEmpty() ? NoRotation : computeBlobRotation(
-                                                       buffer.fontDataAt(0))) {
-    if (m_buffer.hasSkipInkExceptions()) {
-      while (m_endIndex > 0 && m_buffer.isSkipInkException(m_endIndex - 1))
-        m_endIndex--;
-    }
-  }
+                                                       buffer.fontDataAt(0))) {}
 
   bool done() const { return m_index >= m_endIndex; }
   unsigned blobCount() const { return m_blobCount; }
@@ -275,11 +270,6 @@ class GlyphBufferBloberizer {
     const BlobRotation currentRotation = m_rotation;
 
     while (m_index < m_endIndex) {
-      if (m_buffer.hasSkipInkExceptions()) {
-        while (m_index < m_endIndex && m_buffer.isSkipInkException(m_index))
-          m_index++;
-      }
-
       const SimpleFontData* fontData = m_buffer.fontDataAt(m_index);
       ASSERT(fontData);
 
@@ -293,8 +283,7 @@ class GlyphBufferBloberizer {
       }
 
       const unsigned start = m_index++;
-      while (m_index < m_endIndex && m_buffer.fontDataAt(m_index) == fontData &&
-             !m_buffer.isSkipInkException(m_index))
+      while (m_index < m_endIndex && m_buffer.fontDataAt(m_index) == fontData)
         m_index++;
 
       appendRun(start, m_index - start, fontData);
@@ -439,11 +428,7 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
 
   DCHECK(!runInfo.cachedTextBlob);
 
-  GlyphBuffer glyphBuffer;
-  // Compute skip-ink exceptions in the GlyphBuffer.
-  // Skip the computation if 8Bit(), no such characters in Latin-1.
-  if (!runInfo.run.is8Bit())
-    glyphBuffer.saveSkipInkExceptions();
+  GlyphBuffer glyphBuffer(GlyphBuffer::Type::TextIntercepts);
   buildGlyphBuffer(runInfo, glyphBuffer);
 
   // Get the number of intervals, without copying the actual values by
