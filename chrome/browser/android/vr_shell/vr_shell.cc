@@ -429,6 +429,12 @@ void VrShell::DoUiAction(const UiAction action,
     case ZOOM_OUT:  // Not handled yet.
     case ZOOM_IN:   // Not handled yet.
       return;
+    case SHOW_TAB: {
+      int id;
+      CHECK(arguments->GetInteger("id", &id));
+      delegate_provider_->ShowTab(id);
+      break;
+    }
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
@@ -461,6 +467,9 @@ void VrShell::DoUiAction(const UiAction action,
                                ui::PageTransition::PAGE_TRANSITION_TYPED);
       break;
     }
+    case SHOW_TAB:
+      // Not handled in Java.
+      break;
     default:
       NOTREACHED();
   }

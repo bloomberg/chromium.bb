@@ -43,6 +43,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                            jlong timebase_nanos, jdouble interval_seconds);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void ShowTab(int id);
 
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
   void OnVRVsyncProviderRequest(device::mojom::VRVSyncProviderRequest request);

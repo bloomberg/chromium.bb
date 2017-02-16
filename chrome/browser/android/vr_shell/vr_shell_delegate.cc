@@ -118,6 +118,11 @@ void VrShellDelegate::OnResume(JNIEnv* env,
   }
 }
 
+void VrShellDelegate::ShowTab(int id) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_VrShellDelegate_showTab(env, j_vr_shell_delegate_.obj(), id);
+}
+
 void VrShellDelegate::SetDeviceProvider(
     device::GvrDeviceProvider* device_provider) {
   CHECK(!device_provider_);

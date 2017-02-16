@@ -56,6 +56,7 @@ enum UiAction {
   LOAD_URL,
   OMNIBOX_CONTENT,
   SET_CONTENT_PAUSED,
+  SHOW_TAB,
 };
 
 class VrMetricsHelper;

@@ -726,6 +726,10 @@ var vrShellUi = (function() {
       // view.
       let domTab = this.domTabTemplate.cloneNode(true);
       domTab.removeAttribute('id');
+      domTab.addEventListener('click', function() {
+        api.doAction(api.Action.SHOW_TAB, {'id': domTab.tab.id});
+      });
+      domTab.tab = tab;
       this.domTabClip.appendChild(domTab);
       this.domTabs[this.getQualifiedTabId(tab)] = domTab;
       return domTab;
