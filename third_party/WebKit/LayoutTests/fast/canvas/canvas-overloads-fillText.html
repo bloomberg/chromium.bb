@@ -1,9 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-overloads-fillText.js"></script>
+<script>
+var ctx = document.createElement('canvas').getContext('2d');
+
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'fillText' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
+}
+
+test(function(t) {
+    assert_throws(null, function() {ctx.fillText();}, ExpectedNotEnoughArgumentsMessage(0));
+    assert_throws(null, function() {ctx.fillText('moo');}, ExpectedNotEnoughArgumentsMessage(1));
+    assert_throws(null, function() {ctx.fillText('moo',0);}, ExpectedNotEnoughArgumentsMessage(2));
+    assert_equals(ctx.fillText('moo',0,0), undefined);
+    assert_equals(ctx.fillText('moo',0,0,0), undefined);
+    assert_equals(ctx.fillText('moo',0,0,0,0), undefined);    
+}, "Test the behavior of CanvasRenderingContext2D.fillText() when called with different numbers of arguments.");
+</script>
 </body>
-</html>

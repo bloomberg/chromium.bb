@@ -1,21 +1,15 @@
-<!DOCTYPE html>
-<html>
-<body>
-<p>Regression test for bug <a href="http://webkit.org/b/106244">106244</a></p>
-<p>Test passes by not crashing.</p>
-<canvas id="test"></canvas>
-</body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-if (window.testRunner)
-   testRunner.dumpAsText();
+test(function(t) {
 
-var canvas = document.getElementById("test");
-var context = canvas.getContext("2d");
-for (x = 0; x < 100; x++) {
-     context.restore();
-     context.save();
-     context.save();
-     context.measureText("a", 0, 0, 0);
-}
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext("2d");
+    for (x = 0; x < 100; x++) {
+        context.restore();
+        context.save();
+        context.save();
+        context.measureText("a", 0, 0, 0);
+    }
+}, 'Regression test for bug http://webkit.org/b/106244. Test passes by not crashing.');
 </script>
-</html>

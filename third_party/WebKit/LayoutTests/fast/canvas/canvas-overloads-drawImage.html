@@ -1,9 +1,38 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-overloads-drawImage.js"></script>
+<script>
+test(function(t) {
+
+    var ctx = document.createElement('canvas').getContext('2d');
+    
+    var imageElement = document.createElement("img");
+    assert_throws(null, function() {ctx.drawImage();});
+    assert_throws(null, function() {ctx.drawImage(imageElement);});
+    assert_throws(null, function() {ctx.drawImage(imageElement, 0);});
+    assert_equals(ctx.drawImage(imageElement, 0, 0), undefined);
+    assert_throws(null, function() {ctx.drawImage(imageElement, 0, 0, 0);});
+    assert_equals(ctx.drawImage(imageElement, 0, 0, 0, 0), undefined);
+    assert_throws(null, function() {ctx.drawImage(imageElement, 0, 0, 0, 0, 0);});
+    assert_throws(null, function() {ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0);});
+    assert_throws(null, function() {ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0);});
+    assert_equals(ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+    assert_equals(ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+    assert_equals(ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+    
+    var canvasElement = document.createElement("canvas");
+    assert_throws(null, function() {ctx.drawImage(canvasElement);});
+    assert_throws(null, function() {ctx.drawImage(canvasElement, 0);});
+    assert_equals(ctx.drawImage(canvasElement, 0, 0), undefined);
+    assert_throws(null, function() {ctx.drawImage(canvasElement, 0, 0, 0);});
+    assert_equals(ctx.drawImage(canvasElement, 0, 0, 0, 0), undefined);
+    assert_throws(null, function() {ctx.drawImage(canvasElement, 0, 0, 0, 0, 0);});
+    assert_throws(null, function() {ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0);});
+    assert_throws(null, function() {ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0);});
+    assert_equals(ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+    assert_equals(ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+    assert_equals(ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), undefined);
+
+}, "Test the behavior of CanvasRenderingContext2D.drawImage() when called with different numbers of arguments.");
+</script>
 </body>
-</html>
