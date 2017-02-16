@@ -504,3 +504,19 @@ const v8::FunctionCallbackInfo<v8::Value>& info
    ] %}
 {{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}
 {%- endmacro %}
+
+{##############################################################################}
+{% macro install_conditionally_enabled_attributes_on_prototype() %}
+ExecutionContext* executionContext = toExecutionContext(context);
+v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+{% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}
+{% filter exposed(attribute.exposed_test) %}
+{% filter secure_context(attribute.secure_context_test) %}
+{% filter runtime_enabled(attribute.runtime_enabled_feature_name) %}
+const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
+V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+{% endfilter %}{# runtime_enabled #}
+{% endfilter %}{# secure_context #}
+{% endfilter %}{# exposed #}
+{% endfor %}
+{% endmacro %}
