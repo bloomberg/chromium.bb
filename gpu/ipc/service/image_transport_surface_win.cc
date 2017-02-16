@@ -29,11 +29,6 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   scoped_refptr<gl::GLSurface> surface;
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
       gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
-    // TODO(stanisc): http://crbug.com/659844:
-    // Force DWM based gl::VSyncProviderWin provider to avoid video playback
-    // smoothness issues. Once that issue is fixed, passing a nullptr
-    // vsync_provider would result in assigning a default VSyncProvider inside
-    // the Initialize call.
     std::unique_ptr<gfx::VSyncProvider> vsync_provider(
         new gl::VSyncProviderWin(surface_handle));
     if (base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays)) {

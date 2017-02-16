@@ -31,6 +31,7 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"
+#include "ui/gl/sync_control_vsync_provider.h"
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 extern "C" {
@@ -135,6 +136,41 @@ bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
 bool g_use_direct_composition = false;
+
+class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
+ public:
+  explicit EGLSyncControlVSyncProvider(EGLSurface surface)
+      : SyncControlVSyncProvider(),
+        surface_(surface) {
+  }
+
+  ~EGLSyncControlVSyncProvider() override {}
+
+ protected:
+  bool GetSyncValues(int64_t* system_time,
+                     int64_t* media_stream_counter,
+                     int64_t* swap_buffer_counter) override {
+    uint64_t u_system_time, u_media_stream_counter, u_swap_buffer_counter;
+    bool result = eglGetSyncValuesCHROMIUM(
+        g_display, surface_, &u_system_time,
+        &u_media_stream_counter, &u_swap_buffer_counter) == EGL_TRUE;
+    if (result) {
+      *system_time = static_cast<int64_t>(u_system_time);
+      *media_stream_counter = static_cast<int64_t>(u_media_stream_counter);
+      *swap_buffer_counter = static_cast<int64_t>(u_swap_buffer_counter);
+    }
+    return result;
+  }
+
+  bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
+    return false;
+  }
+
+ private:
+  EGLSurface surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(EGLSyncControlVSyncProvider);
+};
 
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
@@ -429,31 +465,6 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   if (init_displays->empty()) {
     init_displays->push_back(DEFAULT);
   }
-}
-
-EGLSyncControlVSyncProvider::EGLSyncControlVSyncProvider(EGLSurface surface)
-    : SyncControlVSyncProvider(), surface_(surface) {}
-
-EGLSyncControlVSyncProvider::~EGLSyncControlVSyncProvider() {}
-
-bool EGLSyncControlVSyncProvider::GetSyncValues(int64_t* system_time,
-                                                int64_t* media_stream_counter,
-                                                int64_t* swap_buffer_counter) {
-  uint64_t u_system_time, u_media_stream_counter, u_swap_buffer_counter;
-  bool result = eglGetSyncValuesCHROMIUM(g_display, surface_, &u_system_time,
-                                         &u_media_stream_counter,
-                                         &u_swap_buffer_counter) == EGL_TRUE;
-  if (result) {
-    *system_time = static_cast<int64_t>(u_system_time);
-    *media_stream_counter = static_cast<int64_t>(u_media_stream_counter);
-    *swap_buffer_counter = static_cast<int64_t>(u_swap_buffer_counter);
-  }
-  return result;
-}
-
-bool EGLSyncControlVSyncProvider::GetMscRate(int32_t* numerator,
-                                             int32_t* denominator) {
-  return false;
 }
 
 GLSurfaceEGL::GLSurfaceEGL() {}
