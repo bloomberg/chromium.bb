@@ -1158,6 +1158,7 @@ source_set("unit_tests") {
     "layout/LayoutBoxModelObjectTest.cpp",
     "layout/LayoutBoxTest.cpp",
     "layout/LayoutInlineTest.cpp",
+    "layout/LayoutMediaTest.cpp",
     "layout/LayoutMultiColumnFlowThreadTest.cpp",
     "layout/LayoutObjectTest.cpp",
     "layout/LayoutPartTest.cpp",

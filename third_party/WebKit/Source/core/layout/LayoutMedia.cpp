@@ -112,10 +112,15 @@ void LayoutMedia::layout() {
 }
 
 bool LayoutMedia::isChildAllowed(LayoutObject* child,
-                                 const ComputedStyle&) const {
+                                 const ComputedStyle& style) const {
   // Two types of child layout objects are allowed: media controls
   // and the text track container. Filter children by node type.
   ASSERT(child->node());
+
+  // Out-of-flow positioned or floating child breaks layout hierarchy.
+  // This check can be removed if ::-webkit-media-controls is made internal.
+  if (style.hasOutOfFlowPosition() || style.isFloating())
+    return false;
 
   // The user agent stylesheet (mediaControls.css) has
   // ::-webkit-media-controls { display: flex; }. If author style
