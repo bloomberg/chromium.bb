@@ -61,7 +61,6 @@ void ValidateRenderFrameId(int render_process_id,
 
 AudioRendererHost::AudioRendererHost(int render_process_id,
                                      media::AudioManager* audio_manager,
-                                     media::AudioSystem* audio_system,
                                      AudioMirroringManager* mirroring_manager,
                                      MediaStreamManager* media_stream_manager,
                                      const std::string& salt)
@@ -72,7 +71,7 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       media_stream_manager_(media_stream_manager),
       salt_(salt),
       validate_render_frame_id_function_(&ValidateRenderFrameId),
-      authorization_handler_(audio_system,
+      authorization_handler_(audio_manager_,
                              media_stream_manager,
                              render_process_id_,
                              salt) {

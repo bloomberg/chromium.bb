@@ -10,7 +10,6 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
-#include "media/audio/audio_system.h"
 #include "media/base/limits.h"
 
 namespace {
@@ -35,16 +34,26 @@ media::AudioParameters TryToFixAudioParameters(
              : media::AudioParameters::UnavailableDeviceParams();
 }
 
+media::AudioParameters GetDeviceParametersOnDeviceThread(
+    media::AudioManager* audio_manager,
+    const std::string& unique_id) {
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
+
+  return media::AudioDeviceDescription::IsDefaultDevice(unique_id)
+             ? audio_manager->GetDefaultOutputStreamParameters()
+             : audio_manager->GetOutputStreamParameters(unique_id);
+}
+
 }  // namespace
 
 namespace content {
 
 AudioOutputAuthorizationHandler::AudioOutputAuthorizationHandler(
-    media::AudioSystem* audio_system,
+    media::AudioManager* audio_manager,
     MediaStreamManager* media_stream_manager,
     int render_process_id,
     const std::string& salt)
-    : audio_system_(audio_system),
+    : audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       permission_checker_(base::MakeUnique<MediaDevicesPermissionChecker>()),
       render_process_id_(render_process_id),
@@ -182,8 +191,18 @@ void AudioOutputAuthorizationHandler::GetDeviceParameters(
     const std::string& raw_device_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!raw_device_id.empty());
-  audio_system_->GetOutputStreamParameters(
-      raw_device_id,
+  base::PostTaskAndReplyWithResult(
+      // Note: In the case of a shutdown, the task to delete |audio_manager_| is
+      // posted to the audio thread after the IO thread is stopped, so the task
+      // to delete the audio manager hasn't been posted yet. This means that
+      // unretained is safe here.
+      // Mac is a special case. Since the audio manager lives on the UI thread
+      // on Mac, this task is posted to the UI thread, but tasks posted to the
+      // UI task runner will be ignored when the shutdown has progressed to
+      // deleting the audio manager, so this is still safe.
+      audio_manager_->GetTaskRunner(), FROM_HERE,
+      base::Bind(&GetDeviceParametersOnDeviceThread,
+                 base::Unretained(audio_manager_), raw_device_id),
       base::Bind(&AudioOutputAuthorizationHandler::DeviceParametersReceived,
                  weak_factory_.GetWeakPtr(), std::move(cb), false,
                  raw_device_id));
