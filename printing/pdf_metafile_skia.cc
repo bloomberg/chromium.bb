@@ -12,9 +12,11 @@
 #include "base/files/file.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_record.h"
+#include "cc/paint/paint_recorder.h"
 #include "printing/print_settings.h"
 #include "third_party/skia/include/core/SkDocument.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
@@ -77,7 +79,7 @@ sk_sp<SkDocument> MakePdfDocument(SkWStream* wStream) {
 namespace printing {
 
 struct Page {
-  Page(SkSize s, sk_sp<SkPicture> c) : size_(s), content_(std::move(c)) {}
+  Page(SkSize s, sk_sp<cc::PaintRecord> c) : size_(s), content_(std::move(c)) {}
   Page(Page&& that) : size_(that.size_), content_(std::move(that.content_)) {}
   Page(const Page&) = default;
   Page& operator=(const Page&) = default;
@@ -87,17 +89,17 @@ struct Page {
     return *this;
   }
   SkSize size_;
-  sk_sp<SkPicture> content_;
+  sk_sp<cc::PaintRecord> content_;
 };
 
 struct PdfMetafileSkiaData {
-  SkPictureRecorder recorder_;  // Current recording
+  cc::PaintRecorder recorder_;  // Current recording
 
   std::vector<Page> pages_;
   std::unique_ptr<SkStreamAsset> pdf_data_;
 
   // The scale factor is used because Blink occasionally calls
-  // SkCanvas::getTotalMatrix() even though the total matrix is not as
+  // PaintCanvas::getTotalMatrix() even though the total matrix is not as
   // meaningful for a vector canvas as for a raster canvas.
   float scale_factor_;
   SkSize size_;
@@ -135,7 +137,7 @@ void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   DCHECK(!data_->recorder_.getRecordingCanvas());
 
   float inverse_scale = 1.0 / scale_factor;
-  SkCanvas* canvas = data_->recorder_.beginRecording(
+  cc::PaintCanvas* canvas = data_->recorder_.beginRecording(
       inverse_scale * page_size.width(), inverse_scale * page_size.height());
   // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
   if (content_area != gfx::Rect(page_size)) {
@@ -154,7 +156,7 @@ void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   // http://crbug.com/469656
 }
 
-SkCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
+cc::PaintCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const float& scale_factor) {
@@ -166,10 +168,10 @@ bool PdfMetafileSkia::FinishPage() {
   if (!data_->recorder_.getRecordingCanvas())
     return false;
 
-  sk_sp<SkPicture> pic = data_->recorder_.finishRecordingAsPicture();
+  sk_sp<cc::PaintRecord> pic = data_->recorder_.finishRecordingAsPicture();
   if (data_->scale_factor_ != 1.0f) {
-    SkCanvas* canvas = data_->recorder_.beginRecording(data_->size_.width(),
-                                                       data_->size_.height());
+    cc::PaintCanvas* canvas = data_->recorder_.beginRecording(
+        data_->size_.width(), data_->size_.height());
     canvas->scale(data_->scale_factor_, data_->scale_factor_);
     canvas->drawPicture(pic);
     pic = data_->recorder_.finishRecordingAsPicture();
@@ -198,7 +200,8 @@ bool PdfMetafileSkia::FinishDocument() {
   }
 
   for (const Page& page : data_->pages_) {
-    SkCanvas* canvas = doc->beginPage(page.size_.width(), page.size_.height());
+    cc::PaintCanvas* canvas(
+        doc->beginPage(page.size_.width(), page.size_.height()));
     canvas->drawPicture(page.content_);
     doc->endPage();
   }
@@ -309,7 +312,7 @@ PdfMetafileSkia::PdfMetafileSkia(SkiaDocumentType type)
 std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage(
     SkiaDocumentType type) {
   // If we only ever need the metafile for the last page, should we
-  // only keep a handle on one SkPicture?
+  // only keep a handle on one PaintRecord?
   std::unique_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia(type));
 
   if (data_->pages_.size() == 0)

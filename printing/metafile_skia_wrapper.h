@@ -5,10 +5,9 @@
 #ifndef PRINTING_METAFILE_SKIA_WRAPPER_H_
 #define PRINTING_METAFILE_SKIA_WRAPPER_H_
 
+#include "cc/paint/paint_canvas.h"
 #include "printing/printing_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-
-class SkCanvas;
 
 namespace printing {
 
@@ -20,10 +19,10 @@ class PdfMetafileSkia;
 // as long as the canvas.
 class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
  public:
-  static void SetMetafileOnCanvas(const SkCanvas& canvas,
+  static void SetMetafileOnCanvas(cc::PaintCanvas* canvas,
                                   PdfMetafileSkia* metafile);
 
-  static PdfMetafileSkia* GetMetafileFromCanvas(const SkCanvas& canvas);
+  static PdfMetafileSkia* GetMetafileFromCanvas(cc::PaintCanvas* canvas);
 
  private:
   explicit MetafileSkiaWrapper(PdfMetafileSkia* metafile);

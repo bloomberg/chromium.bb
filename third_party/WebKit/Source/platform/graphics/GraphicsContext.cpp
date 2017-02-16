@@ -272,7 +272,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds) {
   DCHECK(!m_canvas);
   m_canvas = m_paintRecorder.beginRecording(bounds, nullptr);
   if (m_hasMetaData)
-    skia::GetMetaData(*m_canvas) = m_metaData;
+    m_canvas->getMetaData() = m_metaData;
 }
 
 namespace {

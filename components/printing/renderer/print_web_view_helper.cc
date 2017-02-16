@@ -1889,12 +1889,12 @@ void PrintWebViewHelper::PrintPageInternal(
   float scale_factor = css_scale_factor;
 #endif
 
-  SkCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-      page_size, canvas_area, scale_factor);
+  cc::PaintCanvas* canvas =
+      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
   if (!canvas)
     return;
 
-  MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (params.params.display_header_footer) {

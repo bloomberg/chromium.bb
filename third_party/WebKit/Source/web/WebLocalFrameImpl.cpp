@@ -303,7 +303,7 @@ class ChromePrintContext : public PrintContext {
       return 0;
 
     IntRect pageRect = m_pageRects[pageNumber];
-    PaintRecordBuilder builder(pageRect, &skia::GetMetaData(*canvas));
+    PaintRecordBuilder builder(pageRect, &canvas->getMetaData());
     builder.context().setPrinting(true);
 
     float scale = spoolPage(builder, pageNumber);
@@ -330,7 +330,7 @@ class ChromePrintContext : public PrintContext {
     int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
     IntRect allPagesRect(0, 0, pageWidth, totalHeight);
 
-    PaintRecordBuilder builder(allPagesRect, &skia::GetMetaData(*canvas));
+    PaintRecordBuilder builder(allPagesRect, &canvas->getMetaData());
     builder.context().setPrinting(true);
 
     {

@@ -15,7 +15,6 @@
 #include "printing/page_size_margins.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace printing {
 
@@ -135,13 +134,13 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
       params.display_header_footer ? gfx::Rect(*page_size) : content_area;
 
   {
-    SkCanvas* canvas = metafile->GetVectorCanvasForNewPage(
+    cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
         *page_size, canvas_area, scale_factor);
     if (!canvas)
       return;
 
-    MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-    skia::SetIsPreviewMetafile(*canvas, is_preview);
+    MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
+    cc::SetIsPreviewMetafile(canvas, is_preview);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     if (params.display_header_footer) {
       PrintHeaderAndFooter(static_cast<blink::WebCanvas*>(canvas),

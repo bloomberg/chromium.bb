@@ -111,15 +111,6 @@ SK_API SkBitmap ReadPixels(SkCanvas* canvas);
 // the pixmap to empty.
 SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
-// Following routines are used in print preview workflow to mark the
-// preview metafile.
-SK_API SkMetaData& GetMetaData(const SkCanvas& canvas);
-
-#if defined(OS_MACOSX)
-SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
-SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
-#endif
-
 }  // namespace skia
 
 #endif  // SKIA_EXT_PLATFORM_CANVAS_H_
