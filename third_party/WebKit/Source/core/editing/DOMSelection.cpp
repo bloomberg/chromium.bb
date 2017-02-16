@@ -81,6 +81,13 @@ bool DOMSelection::isBaseFirstInSelection() const {
   return selection.base() <= selection.extent();
 }
 
+const Position& DOMSelection::anchorPosition() const {
+  DCHECK(frame());
+  return frame()->selection().selectionInDOMTree().base();
+}
+
+// TODO(tkent): Following four functions based on VisibleSelection should be
+// removed.
 static Position anchorPosition(const VisibleSelection& selection) {
   Position anchor =
       selection.isBaseFirst() ? selection.start() : selection.end();
@@ -405,7 +412,10 @@ void DOMSelection::extend(Node* node,
                           int offset,
                           ExceptionState& exceptionState) {
   DCHECK(node);
+  // https://www.w3.org/TR/selection-api/#dom-selection-extend
 
+  // 2. If the context object is empty, throw an InvalidStateError exception and
+  // abort these steps.
   if (rangeCount() == 0) {
     exceptionState.throwDOMException(
         InvalidStateError, "This Selection object doesn't have any Ranges.");
@@ -421,25 +431,51 @@ void DOMSelection::extend(Node* node,
   if (exceptionState.hadException())
     return;
 
+  // 1. If node's root is not the document associated with the context object,
+  // abort these steps.
   if (!isValidForPosition(node))
     return;
 
+  // 3. Let oldAnchor and oldFocus be the context object's anchor and focus, and
+  // let newFocus be the boundary point (node, offset).
+  const Position& oldAnchor = anchorPosition();
+  DCHECK(!oldAnchor.isNull());
+  const Position newFocus(node, offset);
+
   clearCachedRangeIfSelectionOfDocument();
-  const Position& base = frame()->selection().base();
-  if (base.isNull()) {
-    // TODO(editing-dev): We should throw |InvalidStateError| if selection is
-    // none to follow the spec.
-    frame()->selection().setSelection(SelectionInDOMTree::Builder()
-                                          .collapse(Position(node, offset))
-                                          .setIsDirectional(true)
-                                          .build());
-    return;
+
+  // 4. Let newRange be a new range.
+  Range* newRange = Range::create(*frame()->document());
+
+  // 5. If node's root is not the same as the context object's range's root, set
+  // newRange's start and end to newFocus.
+  // E.g. oldAnchor might point in shadow Text node in TextControlElement.
+  if (oldAnchor.anchorNode()->treeRoot() != node->treeRoot()) {
+    newRange->setStart(node, offset);
+    newRange->setEnd(node, offset);
+
+  } else if (oldAnchor <= newFocus) {
+    // 6. Otherwise, if oldAnchor is before or equal to newFocus, set newRange's
+    // start to oldAnchor, then set its end to newFocus.
+    newRange->setStart(oldAnchor.anchorNode(),
+                       oldAnchor.offsetInContainerNode());
+    newRange->setEnd(node, offset);
+
+  } else {
+    // 7. Otherwise, set newRange's start to newFocus, then set its end to
+    // oldAnchor.
+    newRange->setStart(node, offset);
+    newRange->setEnd(oldAnchor.anchorNode(), oldAnchor.offsetInContainerNode());
   }
-  frame()->selection().setSelection(SelectionInDOMTree::Builder()
-                                        .collapse(base)
-                                        .extend(Position(node, offset))
-                                        .setIsDirectional(true)
-                                        .build());
+
+  // 8. Set the context object's range to newRange.
+  SelectionInDOMTree::Builder builder;
+  if (newRange->collapsed())
+    builder.collapse(newFocus);
+  else
+    builder.collapse(oldAnchor).extend(newFocus);
+  frame()->selection().setSelection(builder.setIsDirectional(true).build());
+  cacheRangeIfSelectionOfDocument(newRange);
 }
 
 Range* DOMSelection::getRangeAt(int index,
@@ -469,7 +505,7 @@ Range* DOMSelection::primaryRangeOrNull() const {
 }
 
 Range* DOMSelection::createRangeFromSelectionEditor() const {
-  Position anchor = anchorPosition(visibleSelection());
+  Position anchor = blink::anchorPosition(visibleSelection());
   if (isSelectionOfDocument() && !anchor.anchorNode()->isInShadowTree())
     return frame()->selection().firstRange();
 

@@ -165,9 +165,9 @@ test(() => assert_selection(
     [
         '<div id="host">',
             '<span id="ghi">ghi</span>',
-            '<b id="def">def</b>',
+            '<b id="def">|def</b>',
             '<span id="jkl">jkl</span>',
-            '<b id="abc">^abc|</b>',
+            '<b id="abc">^abc</b>',
             '<span id="mno">mno</span>',
         '</div>',
     ].join(''),
@@ -197,9 +197,9 @@ test(() => assert_selection(
     [
         '<div id="host">',
             '<span id="ghi">ghi</span>',
-            '<b id="def" slot="def">def</b>',
+            '<b id="def" slot="def">|def</b>',
             '<span id="jkl">jkl</span>',
-            '<b id="abc" slot="abc">^abc|</b>',
+            '<b id="abc" slot="abc">^abc</b>',
             '<span id="mno">mno</span>',
         '</div>',
     ].join(''),

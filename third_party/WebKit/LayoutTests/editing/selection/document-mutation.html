@@ -61,7 +61,7 @@ test_selection(
 test_selection(
     '<p>Abcd efgh T^he Range i|jkl</p>',
     selection => doDelete(selection, 5, 8),
-    '<p>Abcd  ^Range i|jkl</p>',
+    '<p>Abcd ^ Range i|jkl</p>',
     'deleteData(5, 8)');
 
 test_selection(

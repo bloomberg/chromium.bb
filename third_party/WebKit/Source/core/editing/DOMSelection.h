@@ -111,6 +111,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   // Convenience methods for accessors, does not check m_frame present.
   const VisibleSelection& visibleSelection() const;
   bool isBaseFirstInSelection() const;
+  const Position& anchorPosition() const;
 
   Node* shadowAdjustedNode(const Position&) const;
   int shadowAdjustedOffset(const Position&) const;

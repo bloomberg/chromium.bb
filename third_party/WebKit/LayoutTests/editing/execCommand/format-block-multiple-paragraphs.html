@@ -25,7 +25,7 @@ test(() => assert_selection(
   'formatBlock blockquote',
   [
     '<div contenteditable>',
-      '<blockquote>hello<br>world|</blockquote>',
+      '^<blockquote>hello<br>world</blockquote>|',
     '</div>',
   ].join('')), '1 select all children BLOCKQUOTE');
 
@@ -51,7 +51,7 @@ test(() => assert_selection(
   'formatBlock blockquote',
   [
     '<div contenteditable>',
-      '<blockquote>hello<br>world<br>Blink|</blockquote>',
+      '^<blockquote>hello<br>world<br>Blink</blockquote>|',
     '</div>',
   ].join('')), '3 select all children PRE');
 

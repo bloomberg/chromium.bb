@@ -6,6 +6,6 @@
     test(() => assert_selection(
         '<div contentEditable><ul><li>|</li></ul></div>',
         'indent',
-        '<div contenteditable><ul><ul><li>|</li></ul></ul></div>'),
+        '<div contenteditable><ul><ul><li></li></ul>|</ul></div>'),
         'This is crash test');
 </script>

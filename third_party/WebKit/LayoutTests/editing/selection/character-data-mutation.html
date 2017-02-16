@@ -17,7 +17,7 @@ function test_selection(sample, closure, expected, description) {
 test_selection(
     '<div contenteditable><span>he^llo</span> wo|rld</div>',
     selection => selection.document.querySelector('span').remove(),
-    '<div contenteditable> ^wo|rld</div>',
+    '<div contenteditable>^ wo|rld</div>',
     'Remove the parent of startContainer');
 
 // set nodeValue
@@ -30,7 +30,7 @@ test_selection(
 test_selection(
     '<div contenteditable><span>he^llo</span> wo|rld</div>',
     selection => selection.document.querySelector('div').lastChild.nodeValue = 'a',
-    '<div contenteditable><span>he^llo|</span>a</div>',
+    '<div contenteditable><span>he^llo</span>|a</div>',
     'Replace nodeValue of endContainer');
 
 // appendData
@@ -75,7 +75,7 @@ test_selection(
 test_selection(
     '<div contenteditable><span>he^llo</span> wo|rld</div>',
     selection => selection.document.querySelector('span').firstChild.deleteData(1, 4),
-    '<div contenteditable><span>h</span>^ wo|rld</div>',
+    '<div contenteditable><span>h^</span> wo|rld</div>',
     'deleteData(1, 4) in startContainer');
 
 test_selection(
@@ -93,7 +93,7 @@ test_selection(
 test_selection(
     '<div contenteditable><span>he^llo</span> wo|rld</div>',
     selection => selection.document.querySelector('div').lastChild.deleteData(0, 3),
-    '<div contenteditable><span>he^llo|</span>rld</div>',
+    '<div contenteditable><span>he^llo</span>|rld</div>',
     'deleteData(0, 3) in endContainer');
 
 test_selection(
