@@ -306,7 +306,7 @@ class CORE_EXPORT UseCounter {
     VTTCueRenderLineNotAuto = 413,
     VTTCueRenderPositionNot50 = 414,
     VTTCueRenderSizeNot100 = 415,
-    VTTCueRenderAlignNotMiddle = 416,
+    VTTCueRenderAlignNotCenter = 416,
     // The above items are available in M36 branch.
 
     ElementRequestPointerLock = 417,

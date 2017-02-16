@@ -136,7 +136,7 @@ class VTTCue final : public TextTrackCue {
   };
   WritingDirection getWritingDirection() const { return m_writingDirection; }
 
-  enum CueAlignment { Start = 0, Middle, End, Left, Right, NumberOfAlignments };
+  enum CueAlignment { Start = 0, Center, End, Left, Right, NumberOfAlignments };
   CueAlignment getCueAlignment() const { return m_cueAlignment; }
 
   ExecutionContext* getExecutionContext() const override;

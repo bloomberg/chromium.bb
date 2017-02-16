@@ -23,7 +23,7 @@ async_test(function(t) {
         assert_equals(textCue.line, "auto");
         assert_equals(textCue.position, "auto");
         assert_equals(textCue.size, 100);
-        assert_equals(textCue.align, "middle");
+        assert_equals(textCue.align, "center");
 
         // Modify cue values.
         textCue.startTime = 1.1;
@@ -84,7 +84,7 @@ async_test(function(t) {
         // On setting, the text track cue text alignment must be set to the value given in the first cell
         // of the row in the table above whose second cell is a case-sensitive match for the new value.
         textCue.align = "End";
-        assert_equals(textCue.align, "middle");
+        assert_equals(textCue.align, "center");
         textCue.align = "end";
         assert_equals(textCue.align, "end");
     });

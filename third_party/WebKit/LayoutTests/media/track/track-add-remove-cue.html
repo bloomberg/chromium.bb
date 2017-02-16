@@ -29,7 +29,7 @@ async_test(function(t) {
         assert_equals(textCue.line, "auto");
         assert_equals(textCue.position, "auto");
         assert_equals(textCue.size, 100);
-        assert_equals(textCue.align, "middle");
+        assert_equals(textCue.align, "center");
 
         // Remove the unadded track, make sure it throws correctly.
         assert_throws("NotFoundError", function() { trackElement.track.removeCue(textCue); });
@@ -58,7 +58,7 @@ async_test(function(t) {
         assert_equals(newCue.line, "auto");
         assert_equals(newCue.position, "auto");
         assert_equals(newCue.size, 100);
-        assert_equals(newCue.align, "middle");
+        assert_equals(newCue.align, "center");
 
         trackElement.track.removeCue(textCue);
         assert_equals(textCue.track, null);

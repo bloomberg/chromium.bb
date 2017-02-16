@@ -79,9 +79,9 @@ static const String& startKeyword() {
   return start;
 }
 
-static const String& middleKeyword() {
-  DEFINE_STATIC_LOCAL(const String, middle, ("middle"));
-  return middle;
+static const String& centerKeyword() {
+  DEFINE_STATIC_LOCAL(const String, center, ("center"));
+  return center;
 }
 
 static const String& endKeyword() {
@@ -239,7 +239,7 @@ VTTCue::VTTCue(Document& document,
       m_textPosition(std::numeric_limits<float>::quiet_NaN()),
       m_cueSize(100),
       m_writingDirection(Horizontal),
-      m_cueAlignment(Middle),
+      m_cueAlignment(Center),
       m_vttNodeTree(nullptr),
       m_cueBackgroundBox(HTMLDivElement::create(document)),
       m_snapToLines(true),
@@ -396,8 +396,8 @@ const String& VTTCue::align() const {
   switch (m_cueAlignment) {
     case Start:
       return startKeyword();
-    case Middle:
-      return middleKeyword();
+    case Center:
+      return centerKeyword();
     case End:
       return endKeyword();
     case Left:
@@ -414,8 +414,8 @@ void VTTCue::setAlign(const String& value) {
   CueAlignment alignment = m_cueAlignment;
   if (value == startKeyword())
     alignment = Start;
-  else if (value == middleKeyword())
-    alignment = Middle;
+  else if (value == centerKeyword())
+    alignment = Center;
   else if (value == endKeyword())
     alignment = End;
   else if (value == leftKeyword())
@@ -599,8 +599,8 @@ float VTTCue::calculateComputedTextPosition() const {
     case End:
     case Right:
       return 100;
-    // 4. If the cue text alignment is middle, return 50 and abort these steps.
-    case Middle:
+    // 4. If the cue text alignment is center, return 50 and abort these steps.
+    case Center:
       return 50;
     default:
       NOTREACHED();
@@ -647,7 +647,7 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const {
   // vertical growing right; let block-flow be 'rl'.
   displayParameters.writingMode = displayWritingModeMap[m_writingDirection];
 
-  // Resolve the cue alignment to one of the values {start, end, middle}.
+  // Resolve the cue alignment to one of the values {start, end, center}.
   CueAlignment computedCueAlignment = calculateComputedCueAlignment();
 
   // 4. Determine the value of maximum size for cue as per the appropriate
@@ -658,7 +658,7 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const {
     maximumSize = 100 - computedTextPosition;
   } else if (computedCueAlignment == End) {
     maximumSize = computedTextPosition;
-  } else if (computedCueAlignment == Middle) {
+  } else if (computedCueAlignment == Center) {
     maximumSize = computedTextPosition <= 50 ? computedTextPosition
                                              : (100 - computedTextPosition);
     maximumSize = maximumSize * 2;
@@ -687,7 +687,7 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const {
         displayParameters.position.setX(computedTextPosition -
                                         displayParameters.size);
         break;
-      case Middle:
+      case Center:
         displayParameters.position.setX(computedTextPosition -
                                         displayParameters.size / 2);
         break;
@@ -704,7 +704,7 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const {
         displayParameters.position.setY(computedTextPosition -
                                         displayParameters.size);
         break;
-      case Middle:
+      case Center:
         displayParameters.position.setY(computedTextPosition -
                                         displayParameters.size / 2);
         break;
@@ -857,8 +857,8 @@ void VTTCue::updateDisplay(HTMLDivElement& container) {
   if (m_cueSize != 100)
     UseCounter::count(document(), UseCounter::VTTCueRenderSizeNot100);
 
-  if (m_cueAlignment != Middle)
-    UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotMiddle);
+  if (m_cueAlignment != Center)
+    UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotCenter);
 
   VTTCueBox* displayBox = getDisplayTree();
   if (!region()) {
@@ -1050,10 +1050,10 @@ void VTTCue::parseSettings(const VTTRegionMap* regionMap,
         if (input.scanRun(valueRun, startKeyword()))
           m_cueAlignment = Start;
 
-        // 2. If value is a case-sensitive match for the string "middle",
-        //    then let cue's WebVTT cue text alignment be middle alignment.
-        else if (input.scanRun(valueRun, middleKeyword()))
-          m_cueAlignment = Middle;
+        // 2. If value is a case-sensitive match for the string "center",
+        //    then let cue's WebVTT cue text alignment be center alignment.
+        else if (input.scanRun(valueRun, centerKeyword()))
+          m_cueAlignment = Center;
 
         // 3. If value is a case-sensitive match for the string "end", then
         //    let cue's WebVTT cue text alignment be end alignment.

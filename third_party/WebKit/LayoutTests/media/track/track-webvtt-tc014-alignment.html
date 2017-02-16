@@ -9,10 +9,10 @@ check_cues_from_track("captions-webvtt/tc014-alignment-ltr.vtt", testTrack);
 
 check_cues_from_track("captions-webvtt/tc014-alignment-bad.vtt", function(track) {
     var expected = [
-        { align: "middle" },
-        { align: "middle" },
-        { align: "middle" },
-        { align: "middle" }
+        { align: "center" },
+        { align: "center" },
+        { align: "center" },
+        { align: "center" }
     ];
 
     assert_cues_match(track.cues, expected);
@@ -21,9 +21,9 @@ check_cues_from_track("captions-webvtt/tc014-alignment-bad.vtt", function(track)
 function testTrack(track) {
     var expected = [
         { align: "start" },
-        { align: "middle" },
+        { align: "center" },
         { align: "end" },
-        { align: "middle" }
+        { align: "center" }
     ];
 
     assert_cues_match(track.cues, expected);

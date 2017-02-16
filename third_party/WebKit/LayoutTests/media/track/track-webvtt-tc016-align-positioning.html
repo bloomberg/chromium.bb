@@ -32,7 +32,7 @@ async_test(function(t) {
     function testTrack(index) {
         var expected = [
             { position : 10, align : "start"  },
-            { position : 20, align : "middle" },
+            { position : 20, align : "center" },
             { position : 80, align : "end"    }
         ];
 
@@ -41,9 +41,9 @@ async_test(function(t) {
 
     function testTrackError(index) {
         var expected = [
-            { position : 10,     align : "middle" },
-            { position : "auto", align : "middle" },
-            { position : "auto", align : "middle" }
+            { position : 10,     align : "center" },
+            { position : "auto", align : "center" },
+            { position : "auto", align : "center" }
         ];
 
         assert_cues_match(video.textTracks[index].cues, expected);
