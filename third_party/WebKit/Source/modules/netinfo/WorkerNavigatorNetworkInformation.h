@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class NetworkInformation;
 class ScriptState;
 class WorkerNavigator;

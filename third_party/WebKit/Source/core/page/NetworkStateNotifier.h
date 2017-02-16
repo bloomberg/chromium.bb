@@ -26,15 +26,15 @@
 #ifndef NetworkStateNotifier_h
 #define NetworkStateNotifier_h
 
+#include <memory>
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContext.h"
+#include "platform/WebTaskRunner.h"
 #include "public/platform/WebConnectionType.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,7 +45,7 @@ class CORE_EXPORT NetworkStateNotifier {
  public:
   class NetworkStateObserver {
    public:
-    // Will be called on the thread of the context passed in addObserver.
+    // Will be called on the task runner that is passed in addObserver.
     virtual void connectionChange(WebConnectionType,
                                   double maxBandwidthMbps) = 0;
   };
@@ -110,12 +110,12 @@ class CORE_EXPORT NetworkStateNotifier {
   void setOverride(bool onLine, WebConnectionType, double maxBandwidthMbps);
   void clearOverride();
 
-  // Must be called on the context's thread. An added observer must be removed
-  // before its ExecutionContext is deleted. It's possible for an observer to
-  // be called twice for the same event if it is first removed and then added
-  // during notification.
-  void addObserver(NetworkStateObserver*, ExecutionContext*);
-  void removeObserver(NetworkStateObserver*, ExecutionContext*);
+  // Must be called on the given task runner. An added observer must be removed
+  // before the observer or its execution context goes away. It's possible for
+  // an observer to be called twice for the same event if it is first removed
+  // and then added during notification.
+  void addObserver(NetworkStateObserver*, WebTaskRunner*);
+  void removeObserver(NetworkStateObserver*, WebTaskRunner*);
 
  private:
   struct ObserverList {
@@ -149,23 +149,21 @@ class CORE_EXPORT NetworkStateNotifier {
   };
 
   // The ObserverListMap is cross-thread accessed, adding/removing Observers
-  // running within an ExecutionContext. Kept off-heap to ease cross-thread
-  // allocation and use; the observers are (already) responsible for explicitly
-  // unregistering while finalizing.
+  // running on a task runner.
   using ObserverListMap =
-      HashMap<UntracedMember<ExecutionContext>, std::unique_ptr<ObserverList>>;
+      HashMap<WebTaskRunner*, std::unique_ptr<ObserverList>>;
 
   void notifyObservers(WebConnectionType, double maxBandwidthMbps);
-  void notifyObserversOfConnectionChangeOnContext(WebConnectionType,
-                                                  double maxBandwidthMbps,
-                                                  ExecutionContext*);
+  void notifyObserversOfConnectionChangeOnTaskRunner(WebConnectionType,
+                                                     double maxBandwidthMbps,
+                                                     WebTaskRunner*);
 
-  ObserverList* lockAndFindObserverList(ExecutionContext*);
+  ObserverList* lockAndFindObserverList(WebTaskRunner*);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
-  void collectZeroedObservers(ObserverList*, ExecutionContext*);
+  void collectZeroedObservers(ObserverList*, WebTaskRunner*);
 
   mutable Mutex m_mutex;
   NetworkState m_state;

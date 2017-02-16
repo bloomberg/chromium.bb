@@ -31,6 +31,7 @@
 #include "core/page/NetworkStateNotifier.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
@@ -89,9 +90,13 @@ class NetworkStateNotifierTest : public ::testing::Test {
     m_notifier.setWebConnection(WebConnectionTypeUnknown, 0.0);
   }
 
-  ExecutionContext* getExecutionContext() { return m_document.get(); }
+  WebTaskRunner* getTaskRunner() {
+    return TaskRunnerHelper::get(TaskType::Networking, m_document.get()).get();
+  }
 
-  ExecutionContext* executionContext2() { return m_document2.get(); }
+  WebTaskRunner* getTaskRunner2() {
+    return TaskRunnerHelper::get(TaskType::Networking, m_document2.get()).get();
+  }
 
  protected:
   void setConnection(WebConnectionType type, double maxBandwidthMbps) {
@@ -101,17 +106,16 @@ class NetworkStateNotifierTest : public ::testing::Test {
 
   void addObserverOnNotification(StateObserver* observer,
                                  StateObserver* observerToAdd) {
-    observer->setNotificationCallback(bind(
-        &NetworkStateNotifier::addObserver, WTF::unretained(&m_notifier),
-        WTF::unretained(observerToAdd), wrapPersistent(getExecutionContext())));
+    observer->setNotificationCallback(
+        bind(&NetworkStateNotifier::addObserver, WTF::unretained(&m_notifier),
+             WTF::unretained(observerToAdd), WTF::unretained(getTaskRunner())));
   }
 
   void removeObserverOnNotification(StateObserver* observer,
                                     StateObserver* observerToRemove) {
-    observer->setNotificationCallback(
-        bind(&NetworkStateNotifier::removeObserver,
-             WTF::unretained(&m_notifier), WTF::unretained(observerToRemove),
-             wrapPersistent(getExecutionContext())));
+    observer->setNotificationCallback(bind(
+        &NetworkStateNotifier::removeObserver, WTF::unretained(&m_notifier),
+        WTF::unretained(observerToRemove), WTF::unretained(getTaskRunner())));
   }
 
   bool verifyObservations(const StateObserver& observer,
@@ -130,7 +134,7 @@ class NetworkStateNotifierTest : public ::testing::Test {
 
 TEST_F(NetworkStateNotifierTest, AddObserver) {
   StateObserver observer;
-  m_notifier.addObserver(&observer, getExecutionContext());
+  m_notifier.addObserver(&observer, getTaskRunner());
   EXPECT_TRUE(verifyObservations(observer, WebConnectionTypeNone,
                                  kNoneMaxBandwidthMbps));
 
@@ -142,9 +146,9 @@ TEST_F(NetworkStateNotifierTest, AddObserver) {
 
 TEST_F(NetworkStateNotifierTest, RemoveObserver) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.removeObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.removeObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer1, WebConnectionTypeNone,
@@ -155,8 +159,8 @@ TEST_F(NetworkStateNotifierTest, RemoveObserver) {
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserver) {
   StateObserver observer1;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.removeObserver(&observer1, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.removeObserver(&observer1, getTaskRunner());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer1, WebConnectionTypeNone,
@@ -165,7 +169,7 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserver) {
 
 TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
   addObserverOnNotification(&observer1, &observer2);
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -177,7 +181,7 @@ TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying) {
   StateObserver observer1;
-  m_notifier.addObserver(&observer1, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
   removeObserverOnNotification(&observer1, &observer1);
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -191,8 +195,8 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner());
   removeObserverOnNotification(&observer1, &observer1);
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -210,8 +214,8 @@ TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner());
   removeObserverOnNotification(&observer2, &observer1);
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -227,9 +231,9 @@ TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying) {
   StateObserver observer1, observer2, observer3;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, getExecutionContext());
-  m_notifier.addObserver(&observer3, getExecutionContext());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner());
+  m_notifier.addObserver(&observer3, getTaskRunner());
   removeObserverOnNotification(&observer1, &observer2);
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -243,8 +247,8 @@ TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, executionContext2());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner2());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer1, WebConnectionTypeBluetooth,
@@ -255,9 +259,9 @@ TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver) {
 
 TEST_F(NetworkStateNotifierTest, RemoveContext) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, executionContext2());
-  m_notifier.removeObserver(&observer2, executionContext2());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner2());
+  m_notifier.removeObserver(&observer2, getTaskRunner2());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer1, WebConnectionTypeBluetooth,
@@ -268,10 +272,10 @@ TEST_F(NetworkStateNotifierTest, RemoveContext) {
 
 TEST_F(NetworkStateNotifierTest, RemoveAllContexts) {
   StateObserver observer1, observer2;
-  m_notifier.addObserver(&observer1, getExecutionContext());
-  m_notifier.addObserver(&observer2, executionContext2());
-  m_notifier.removeObserver(&observer1, getExecutionContext());
-  m_notifier.removeObserver(&observer2, executionContext2());
+  m_notifier.addObserver(&observer1, getTaskRunner());
+  m_notifier.addObserver(&observer2, getTaskRunner2());
+  m_notifier.removeObserver(&observer1, getTaskRunner());
+  m_notifier.removeObserver(&observer2, getTaskRunner2());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer1, WebConnectionTypeNone,
@@ -282,7 +286,7 @@ TEST_F(NetworkStateNotifierTest, RemoveAllContexts) {
 
 TEST_F(NetworkStateNotifierTest, SetOverride) {
   StateObserver observer;
-  m_notifier.addObserver(&observer, getExecutionContext());
+  m_notifier.addObserver(&observer, getTaskRunner());
 
   m_notifier.setOnLine(true);
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
@@ -320,12 +324,12 @@ TEST_F(NetworkStateNotifierTest, SetOverride) {
   EXPECT_EQ(WebConnectionTypeNone, m_notifier.connectionType());
   EXPECT_EQ(kNoneMaxBandwidthMbps, m_notifier.maxBandwidth());
 
-  m_notifier.removeObserver(&observer, getExecutionContext());
+  m_notifier.removeObserver(&observer, getTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, NoExtraNotifications) {
   StateObserver observer;
-  m_notifier.addObserver(&observer, getExecutionContext());
+  m_notifier.addObserver(&observer, getTaskRunner());
 
   setConnection(WebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps);
   EXPECT_TRUE(verifyObservations(observer, WebConnectionTypeBluetooth,
@@ -348,7 +352,7 @@ TEST_F(NetworkStateNotifierTest, NoExtraNotifications) {
                                  kBluetoothMaxBandwidthMbps));
   EXPECT_EQ(observer.callbackCount(), 3);
 
-  m_notifier.removeObserver(&observer, getExecutionContext());
+  m_notifier.removeObserver(&observer, getTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, NoNotificationOnInitialization) {
@@ -356,7 +360,7 @@ TEST_F(NetworkStateNotifierTest, NoNotificationOnInitialization) {
   Persistent<Document> document(Document::create());
   StateObserver observer;
 
-  notifier.addObserver(&observer, document.get());
+  notifier.addObserver(&observer, getTaskRunner());
   testing::runPendingTasks();
   EXPECT_EQ(observer.callbackCount(), 0);
 
