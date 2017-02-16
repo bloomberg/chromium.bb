@@ -1152,9 +1152,20 @@ class TestGitCl(TestCase):
            'refs/remotes/origin/master'],),
          'fake_ancestor_sha'),
         # Calls to verify branch point is ancestor
-      ] + (cls._gerrit_ensure_auth_calls(issue=issue) +
-           cls._git_sanity_checks('fake_ancestor_sha', 'master',
-                                  get_remote_branch=False)) + [
+      ] + cls._gerrit_ensure_auth_calls(issue=issue) + ([
+        (('GetChangeDetail', 'chromium-review.googlesource.com',
+          '123456', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
+         {
+           'change_id': '123456789',
+           'current_revision': 'sha1_of_current_revision',
+           'revisions': { 'sha1_of_current_revision': {
+             'commit': {'message': fetched_description},
+           }},
+           'status': 'NEW',
+         }),
+      ] if issue else [
+      ]) + cls._git_sanity_checks('fake_ancestor_sha', 'master',
+                                  get_remote_branch=False) + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
 
@@ -1164,15 +1175,6 @@ class TestGitCl(TestCase):
          'M\t.gitignore\n'),
         ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
       ] + ([
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          '123456', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
-         {
-           'change_id': '123456789',
-           'current_revision': 'sha1_of_current_revision',
-           'revisions': { 'sha1_of_current_revision': {
-             'commit': {'message': fetched_description},
-           }},
-         }),
       ] if issue else [
         ((['git',
            'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),

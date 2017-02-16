@@ -1503,10 +1503,11 @@ class Changelist(object):
       base_branch = self.GetCommonAncestorWithUpstream()
       git_diff_args = [base_branch, 'HEAD']
 
-    # Make sure authenticated to codereview before running potentially expensive
-    # hooks.  It is a fast, best efforts check. Codereview still can reject the
-    # authentication during the actual upload.
+    # Fast best-effort checks to abort before running potentially
+    # expensive hooks if uploading is likely to fail anyway. Passing these
+    # checks does not guarantee that uploading will not fail.
     self._codereview_impl.EnsureAuthenticated(force=options.force)
+    self._codereview_impl.EnsureCanUploadPatchset()
 
     # Apply watchlists on upload.
     change = self.GetChange(base_branch, None)
@@ -1756,6 +1757,15 @@ class _ChangelistCodereviewBase(object):
         applicable.
     """
     raise NotImplementedError()
+
+  def EnsureCanUploadPatchset(self):
+    """Best effort check that uploading isn't supposed to fail for predictable
+    reasons.
+
+    This method should raise informative exception if uploading shouldn't
+    proceed.
+    """
+    pass
 
   def CMDUploadChange(self, options, args, change):
     """Uploads a change to codereview."""
@@ -2309,6 +2319,26 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                      cookie_auth.get_gitcookies_path(),
                      cookie_auth.get_netrc_path(),
                      cookie_auth.get_new_password_message(git_host)))
+
+  def EnsureCanUploadPatchset(self):
+    """Best effort check that uploading isn't supposed to fail for predictable
+    reasons.
+
+    This method should raise informative exception if uploading shouldn't
+    proceed.
+    """
+    if not self.GetIssue():
+      return
+
+    # Warm change details cache now to avoid RPCs later, reducing latency for
+    # developers.
+    self.FetchDescription()
+
+    status = self._GetChangeDetail()['status']
+    if status in ('MERGED', 'ABANDONED'):
+      DieWithError('Change %s has been %s, new uploads are not allowed' %
+                   (self.GetIssueURL(),
+                    'submitted' if status == 'MERGED' else 'abandoned'))
 
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsetting issue."""
