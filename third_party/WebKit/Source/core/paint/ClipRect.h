@@ -37,10 +37,9 @@ class ClipRect {
   USING_FAST_MALLOC(ClipRect);
 
  public:
-  ClipRect() : m_hasRadius(false), m_isClippedByClipCss(false) {}
+  ClipRect() : m_hasRadius(false) {}
 
-  ClipRect(const LayoutRect& rect)
-      : m_rect(rect), m_hasRadius(false), m_isClippedByClipCss(false) {}
+  ClipRect(const LayoutRect& rect) : m_rect(rect), m_hasRadius(false) {}
 
   const LayoutRect& rect() const { return m_rect; }
 
@@ -70,19 +69,11 @@ class ClipRect {
   bool isEmpty() const { return m_rect.isEmpty(); }
   bool intersects(const HitTestLocation&) const;
 
-  // These have no semantic use. They are used for use-counting.
-  bool isClippedByClipCss() const { return m_isClippedByClipCss; }
-  ClipRect& setIsClippedByClipCss() {
-    m_isClippedByClipCss = true;
-    return *this;
-  }
-
   String toString() const { return m_rect.toString(); }
 
  private:
   LayoutRect m_rect;
   bool m_hasRadius;
-  bool m_isClippedByClipCss;
 };
 
 inline ClipRect intersection(const ClipRect& a, const ClipRect& b) {

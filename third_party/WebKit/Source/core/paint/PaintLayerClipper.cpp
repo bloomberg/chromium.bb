@@ -103,13 +103,11 @@ static void applyClipRects(const ClipRectsContext& context,
   }
   if (box.hasClip()) {
     LayoutRect newClip = box.clipRect(offset);
-    clipRects.setPosClipRect(
-        intersection(newClip, clipRects.posClipRect()).setIsClippedByClipCss());
+    clipRects.setPosClipRect(intersection(newClip, clipRects.posClipRect()));
     clipRects.setOverflowClipRect(
-        intersection(newClip, clipRects.overflowClipRect())
-            .setIsClippedByClipCss());
-    clipRects.setFixedClipRect(intersection(newClip, clipRects.fixedClipRect())
-                                   .setIsClippedByClipCss());
+        intersection(newClip, clipRects.overflowClipRect()));
+    clipRects.setFixedClipRect(
+        intersection(newClip, clipRects.fixedClipRect()));
   }
 }
 
@@ -384,9 +382,7 @@ void PaintLayerClipper::calculateRects(
     // Clip applies to *us* as well, so go ahead and update the damageRect.
     LayoutRect newPosClip = toLayoutBox(layoutObject).clipRect(offset);
     backgroundRect.intersect(newPosClip);
-    backgroundRect.setIsClippedByClipCss();
     foregroundRect.intersect(newPosClip);
-    foregroundRect.setIsClippedByClipCss();
   }
 }
 
