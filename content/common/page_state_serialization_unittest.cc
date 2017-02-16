@@ -439,5 +439,9 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_v22) {
   TestBackwardsCompat(22);
 }
 
+TEST_F(PageStateSerializationTest, BackwardsCompat_v23) {
+  TestBackwardsCompat(23);
+}
+
 }  // namespace
 }  // namespace content

@@ -116,6 +116,9 @@ class WebHistoryItem {
 
   BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
+  BLINK_EXPORT bool didSaveScrollOrScaleState() const;
+  BLINK_EXPORT void setDidSaveScrollOrScaleState(bool);
+
 #if BLINK_IMPLEMENTATION
   BLINK_EXPORT WebHistoryItem(HistoryItem*);
   BLINK_EXPORT WebHistoryItem& operator=(HistoryItem*);

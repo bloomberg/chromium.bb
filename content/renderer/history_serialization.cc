@@ -54,6 +54,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   state->document_sequence_number =
       item.documentSequenceNumber();
   state->page_scale_factor = item.pageScaleFactor();
+  state->did_save_scroll_or_scale_state = item.didSaveScrollOrScaleState();
   ToNullableString16Vector(item.getDocumentState(), &state->document_state);
 
   state->http_body.http_content_type =
@@ -102,6 +103,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
   item.setVisualViewportScrollOffset(state.visual_viewport_scroll_offset);
   item.setScrollOffset(state.scroll_offset);
   item.setPageScaleFactor(state.page_scale_factor);
+  item.setDidSaveScrollOrScaleState(state.did_save_scroll_or_scale_state);
 
   // These values are generated at WebHistoryItem construction time, and we
   // only want to override those new values with old values if the old values

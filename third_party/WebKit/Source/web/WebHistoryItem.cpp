@@ -198,6 +198,15 @@ WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const {
   return results;
 }
 
+bool WebHistoryItem::didSaveScrollOrScaleState() const {
+  return m_private->didSaveScrollOrScaleState();
+}
+
+void WebHistoryItem::setDidSaveScrollOrScaleState(
+    bool hasSaveScrollOrScaleState) {
+  m_private->setDidSaveScrollOrScaleState(hasSaveScrollOrScaleState);
+}
+
 WebHistoryItem::WebHistoryItem(HistoryItem* item) : m_private(item) {}
 
 WebHistoryItem& WebHistoryItem::operator=(HistoryItem* item) {

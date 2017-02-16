@@ -1335,9 +1335,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Verify that reloading a page with url anchor scrolls to correct position.
-// Disabled due to flakiness: https://crbug.com/672545.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       DISABLED_ReloadWithUrlAnchor) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/reload-with-url-anchor.html#d2"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
@@ -1353,6 +1351,41 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), script, &value));
   EXPECT_EQ(100, value);
+}
+
+// Verify that reloading a page with url anchor and scroll scrolls to correct
+// position.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ReloadWithUrlAnchorAndScroll) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/reload-with-url-anchor.html#d2"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  std::string script_scroll_down = "window.scroll(0, 10)";
+  EXPECT_TRUE(ExecuteScript(shell(), script_scroll_down));
+
+  std::string get_div_scroll_top =
+      "domAutomationController.send(document.getElementById('div').scrollTop)";
+  std::string get_window_scroll_y =
+      "domAutomationController.send(window.scrollY)";
+  int div_scroll_top = 0;
+  int window_scroll_y = 0;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractInt(shell(), get_div_scroll_top, &div_scroll_top));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), get_window_scroll_y,
+                                         &window_scroll_y));
+  EXPECT_EQ(100, div_scroll_top);
+  EXPECT_EQ(10, window_scroll_y);
+
+  // Reload.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractInt(shell(), get_div_scroll_top, &div_scroll_top));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), get_window_scroll_y,
+                                         &window_scroll_y));
+  EXPECT_EQ(100, div_scroll_top);
+  EXPECT_EQ(10, window_scroll_y);
 }
 
 // Verify that empty GURL navigations are not classified as SAME_PAGE.

@@ -36,6 +36,7 @@
 
 #include "core/loader/FrameLoader.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -102,7 +103,6 @@
 #include "wtf/AutoReset.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using blink::WebURLRequest;
 
@@ -421,6 +421,8 @@ void FrameLoader::setHistoryItemStateForCommit(
     return;
   m_currentItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
   m_currentItem->setScrollOffset(oldItem->getScrollOffset());
+  m_currentItem->setDidSaveScrollOrScaleState(
+      oldItem->didSaveScrollOrScaleState());
   m_currentItem->setVisualViewportScrollOffset(
       oldItem->visualViewportScrollOffset());
   m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
@@ -1413,6 +1415,8 @@ void FrameLoader::restoreScrollPositionAndViewStateForLoadType(
     return;
   }
   if (!needsHistoryItemRestore(loadType))
+    return;
+  if (!m_currentItem->didSaveScrollOrScaleState())
     return;
 
   bool shouldRestoreScroll =
