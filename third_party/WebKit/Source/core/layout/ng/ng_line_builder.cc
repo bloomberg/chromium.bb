@@ -131,7 +131,7 @@ void NGLineBuilder::CreateLineUpToLastBreakOpportunity() {
     BidiReorder(&line_item_chunks);
 
   NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText,
-                                 inline_box_->GetLayoutObject());
+                                 inline_box_);
   text_builder.SetWritingMode(constraint_space_->WritingMode());
   LayoutUnit inline_offset;
   for (const auto& line_item_chunk : line_item_chunks) {
@@ -154,7 +154,7 @@ void NGLineBuilder::CreateLineUpToLastBreakOpportunity() {
     TextDirection css_direction = style->direction();
     text_builder.SetDirection(css_direction);
     RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
-        inline_box_, line_item_chunk.index, line_item_chunk.start_offset,
+        line_item_chunk.index, line_item_chunk.start_offset,
         line_item_chunk.end_offset);
 
     fragments_.push_back(std::move(text_fragment));

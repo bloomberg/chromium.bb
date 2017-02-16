@@ -60,13 +60,11 @@ class NGBlockLayoutAlgorithmTest
   RefPtr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       NGConstraintSpace* space,
       NGBlockNode* first_child) {
-    NGBlockNode parent(style_.get());
-    parent.SetFirstChild(first_child);
+    NGBlockNode* node = new NGBlockNode(style_.get());
+    node->SetFirstChild(first_child);
 
     RefPtr<NGPhysicalFragment> fragment =
-        NGBlockLayoutAlgorithm(/* layout_object */ nullptr, style_.get(),
-                               first_child, space)
-            .Layout();
+        NGBlockLayoutAlgorithm(node, space).Layout();
 
     return toNGPhysicalBoxFragment(fragment.get());
   }
@@ -75,11 +73,13 @@ class NGBlockLayoutAlgorithmTest
   RunBlockLayoutAlgorithmForElement(Element* element) {
     LayoutNGBlockFlow* block_flow =
         toLayoutNGBlockFlow(element->layoutObject());
+    NGBlockNode* node = new NGBlockNode(block_flow);
     NGConstraintSpace* space =
         NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-    RefPtr<NGPhysicalBoxFragment> fragment = RunBlockLayoutAlgorithm(
-        space, new NGBlockNode(element->layoutObject()->slowFirstChild()));
-    return std::make_pair(std::move(fragment), space);
+
+    RefPtr<NGPhysicalFragment> fragment =
+        NGBlockLayoutAlgorithm(node, space).Layout();
+    return std::make_pair(toNGPhysicalBoxFragment(fragment.get()), space);
   }
 
   MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {
@@ -88,8 +88,10 @@ class NGBlockLayoutAlgorithmTest
     NGConstraintSpace* space =
         ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
                                  NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    NGBlockLayoutAlgorithm algorithm(/* layout_object */ nullptr, style_.get(),
-                                     first_child, space);
+    NGBlockNode* node = new NGBlockNode(style_.get());
+    node->SetFirstChild(first_child);
+
+    NGBlockLayoutAlgorithm algorithm(node, space);
     EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes().has_value());
     return *algorithm.ComputeMinAndMaxContentSizes();
   }

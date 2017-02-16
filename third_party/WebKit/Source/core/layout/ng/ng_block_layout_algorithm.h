@@ -28,15 +28,11 @@ class NGPhysicalFragment;
 class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
  public:
   // Default constructor.
-  // @param layout_object The layout object associated with this block.
-  // @param style Style reference of the block that is being laid out.
-  // @param first_child Our first child; the algorithm will use its NextSibling
-  //                    method to access all the children.
+  // @param node The input node to perform layout upon.
   // @param space The constraint space which the algorithm should generate a
   //              fragment within.
-  NGBlockLayoutAlgorithm(LayoutObject* layout_object,
-                         PassRefPtr<const ComputedStyle> style,
-                         NGLayoutInputNode* first_child,
+  // @param break_token The break token from which the layout should start.
+  NGBlockLayoutAlgorithm(NGBlockNode* node,
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
@@ -122,11 +118,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     return *space_for_current_child_.get();
   }
 
-  const ComputedStyle& Style() const { return *style_; }
+  const ComputedStyle& Style() const { return node_->Style(); }
 
-  RefPtr<const ComputedStyle> style_;
-
-  Persistent<NGLayoutInputNode> first_child_;
+  Persistent<NGBlockNode> node_;
   Persistent<NGConstraintSpace> constraint_space_;
 
   // The break token from which we are currently resuming layout.

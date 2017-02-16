@@ -73,8 +73,7 @@ class NGInlineNodeTest : public ::testing::Test {
     NGTextLayoutAlgorithm algorithm(node, constraint_space);
     algorithm.LayoutInline(&line_builder);
 
-    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox,
-                                       /* layout_object */ nullptr);
+    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox, node);
     line_builder.CreateFragments(&fragment_builder);
     RefPtr<NGPhysicalBoxFragment> fragment = fragment_builder.ToBoxFragment();
     for (const auto& child : fragment->Children()) {

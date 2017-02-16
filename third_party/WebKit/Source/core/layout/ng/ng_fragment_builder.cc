@@ -14,11 +14,11 @@ namespace blink {
 
 // TODO(ikilpatrick): Make writing mode and direction be in the constructor.
 NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
-                                     LayoutObject* layout_object)
+                                     NGLayoutInputNode* node)
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
-      layout_object_(layout_object) {}
+      node_(node) {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {
@@ -171,14 +171,13 @@ RefPtr<NGPhysicalBoxFragment> NGFragmentBuilder::ToBoxFragment() {
   }
 
   return adoptRef(new NGPhysicalBoxFragment(
-      layout_object_, physical_size, overflow_.ConvertToPhysical(writing_mode_),
-      children_, out_of_flow_descendants_, out_of_flow_positions_,
-      unpositioned_floats_, positioned_floats_, bfc_offset_, end_margin_strut_,
-      break_token));
+      node_->GetLayoutObject(), physical_size,
+      overflow_.ConvertToPhysical(writing_mode_), children_,
+      out_of_flow_descendants_, out_of_flow_positions_, unpositioned_floats_,
+      positioned_floats_, bfc_offset_, end_margin_strut_, break_token));
 }
 
 RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
-    NGInlineNode* node,
     unsigned index,
     unsigned start_offset,
     unsigned end_offset) {
@@ -190,8 +189,8 @@ RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
   Vector<Persistent<NGFloatingObject>> empty_positioned_floats;
 
   return adoptRef(new NGPhysicalTextFragment(
-      layout_object_, node, index, start_offset, end_offset,
-      size_.ConvertToPhysical(writing_mode_),
+      node_->GetLayoutObject(), toNGInlineNode(node_), index, start_offset,
+      end_offset, size_.ConvertToPhysical(writing_mode_),
       overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
       out_of_flow_positions_, empty_unpositioned_floats,
       empty_positioned_floats));

@@ -300,20 +300,14 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
-    LayoutObject* layout_object,
-    PassRefPtr<const ComputedStyle> style,
-    NGLayoutInputNode* first_child,
+    NGBlockNode* node,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : style_(style),
-      first_child_(first_child),
+    : node_(node),
       constraint_space_(constraint_space),
       break_token_(break_token),
       builder_(WTF::wrapUnique(
-          new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox,
-                                layout_object))) {
-  DCHECK(style_);
-}
+          new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox, node))) {}
 
 Optional<MinAndMaxContentSizes>
 NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
@@ -324,7 +318,7 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
     return sizes;
 
   // TODO: handle floats & orthogonal children.
-  for (NGLayoutInputNode* node = first_child_; node;
+  for (NGLayoutInputNode* node = node_->FirstChild(); node;
        node = node->NextSibling()) {
     Optional<MinAndMaxContentSizes> child_minmax;
     if (node->Type() == NGLayoutInputNode::kLegacyInline) {
@@ -409,7 +403,7 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
     current_child_ = token->InputNode();
   } else {
     content_size_ = border_and_padding_.block_start;
-    current_child_ = first_child_;
+    current_child_ = node_->FirstChild();
   }
 
   curr_margin_strut_ = ConstraintSpace().MarginStrut();
@@ -508,7 +502,7 @@ void NGBlockLayoutAlgorithm::LayoutInlineChildren(NGInlineNode* current_child) {
   current_child->LayoutInline(space_for_current_child_, &line_builder);
   // TODO(kojii): The wrapper fragment should not be needed.
   NGFragmentBuilder wrapper_fragment_builder(NGPhysicalFragment::kFragmentBox,
-                                             current_child->GetLayoutObject());
+                                             current_child);
   line_builder.CreateFragments(&wrapper_fragment_builder);
   RefPtr<NGPhysicalBoxFragment> child_fragment =
       wrapper_fragment_builder.ToBoxFragment();

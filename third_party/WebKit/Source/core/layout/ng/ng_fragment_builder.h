@@ -13,13 +13,12 @@
 
 namespace blink {
 
-class NGInlineNode;
 class NGPhysicalBoxFragment;
 class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final {
  public:
-  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, LayoutObject*);
+  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, NGLayoutInputNode*);
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
@@ -91,8 +90,7 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   // Creates the fragment. Can only be called once.
   RefPtr<NGPhysicalBoxFragment> ToBoxFragment();
-  RefPtr<NGPhysicalTextFragment> ToTextFragment(NGInlineNode*,
-                                                unsigned index,
+  RefPtr<NGPhysicalTextFragment> ToTextFragment(unsigned index,
                                                 unsigned start_offset,
                                                 unsigned end_offset);
 
@@ -133,7 +131,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGWritingMode writing_mode_;
   TextDirection direction_;
 
-  LayoutObject* layout_object_;
+  Persistent<NGLayoutInputNode> node_;
 
   NGLogicalSize size_;
   NGLogicalSize overflow_;

@@ -86,8 +86,7 @@ RefPtr<NGPhysicalFragment> NGBlockNode::Layout(
   }
 
   RefPtr<NGPhysicalFragment> fragment =
-      NGBlockLayoutAlgorithm(GetLayoutObject(), &Style(), FirstChild(),
-                             constraint_space, CurrentBreakToken())
+      NGBlockLayoutAlgorithm(this, constraint_space, CurrentBreakToken())
           .Layout();
 
   fragment_ = toNGPhysicalBoxFragment(fragment.get());
@@ -121,8 +120,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGBlockLayoutAlgorithm minmax_algorithm(layout_box_, &Style(), FirstChild(),
-                                          constraint_space);
+  NGBlockLayoutAlgorithm minmax_algorithm(this, constraint_space);
   Optional<MinAndMaxContentSizes> maybe_sizes =
       minmax_algorithm.ComputeMinAndMaxContentSizes();
   if (maybe_sizes.has_value())
@@ -305,7 +303,7 @@ RefPtr<NGPhysicalBoxFragment> NGBlockNode::RunOldLayout(
   LayoutRect overflow = layout_box_->layoutOverflowRect();
   // TODO(layout-ng): This does not handle writing modes correctly (for
   // overflow)
-  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, layout_box_);
+  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, this);
   builder.SetInlineSize(layout_box_->logicalWidth())
       .SetBlockSize(layout_box_->logicalHeight())
       .SetDirection(layout_box_->styleRef().direction())
