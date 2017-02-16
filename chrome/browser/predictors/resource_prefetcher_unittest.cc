@@ -61,17 +61,27 @@ class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
   explicit TestResourcePrefetcherDelegate(base::MessageLoop* loop)
       : request_context_getter_(
             new net::TestURLRequestContextGetter(loop->task_runner())) {}
-  ~TestResourcePrefetcherDelegate() { }
+  ~TestResourcePrefetcherDelegate() override {}
 
   net::URLRequestContext* GetURLRequestContext() override {
     return request_context_getter_->GetURLRequestContext();
   }
 
-  MOCK_METHOD1(ResourcePrefetcherFinished,
-               void(ResourcePrefetcher* prefetcher));
+  void ResourcePrefetcherFinished(
+      ResourcePrefetcher* prefetcher,
+      std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats) override {
+    prefetcher_ = prefetcher;
+  }
+
+  bool ResourcePrefetcherFinishedCalled(ResourcePrefetcher* for_prefetcher) {
+    ResourcePrefetcher* prefetcher = prefetcher_;
+    prefetcher_ = nullptr;
+    return prefetcher == for_prefetcher;
+  }
 
  private:
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  ResourcePrefetcher* prefetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourcePrefetcherDelegate);
 };
@@ -220,12 +230,12 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
   OnAuthRequired("http://m.google.com/resource3.css");
   CheckPrefetcherState(1, 0, 1);
 
-  // Expect the final call.
-  EXPECT_CALL(prefetcher_delegate_,
-              ResourcePrefetcherFinished(Eq(prefetcher_.get())));
-
   OnResponse("http://yahoo.com/resource3.png");
   CheckPrefetcherState(0, 0, 0);
+
+  // Expect the final call.
+  EXPECT_TRUE(
+      prefetcher_delegate_.ResourcePrefetcherFinishedCalled(prefetcher_.get()));
 }
 
 TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
@@ -264,12 +274,12 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
   OnResponse("http://yahoo.com/resource2.png");
   CheckPrefetcherState(1, 1, 1);
 
-  // Expect the final call.
-  EXPECT_CALL(prefetcher_delegate_,
-              ResourcePrefetcherFinished(Eq(prefetcher_.get())));
-
   OnResponse("http://m.google.com/resource1.jpg");
   CheckPrefetcherState(0, 1, 0);
+
+  // Expect the final call.
+  EXPECT_TRUE(
+      prefetcher_delegate_.ResourcePrefetcherFinishedCalled(prefetcher_.get()));
 }
 
 TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
@@ -310,10 +320,6 @@ TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorCachePatternHistogram, 1);
 
-  // Expect the final call.
-  EXPECT_CALL(prefetcher_delegate_,
-              ResourcePrefetcherFinished(Eq(prefetcher_.get())));
-
   OnResponse("http://www.google.com/resource6.png");
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorCachePatternHistogram, 2);
@@ -321,6 +327,10 @@ TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
       internal::kResourcePrefetchPredictorPrefetchedCountHistogram, 2, 1);
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchedSizeHistogram, 1);
+
+  // Expect the final call.
+  EXPECT_TRUE(
+      prefetcher_delegate_.ResourcePrefetcherFinishedCalled(prefetcher_.get()));
 }
 
 }  // namespace predictors

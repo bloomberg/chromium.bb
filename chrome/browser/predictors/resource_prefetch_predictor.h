@@ -47,6 +47,18 @@ constexpr char kResourcePrefetchPredictorCountHistogram[] =
     "ResourcePrefetchPredictor.LearningCount";
 constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
     "ResourcePrefetchPredictor.PrefetchingDuration";
+constexpr char kResourcePrefetchPredictorPrefetchMissesCountCached[] =
+    "ResourcePrefetchPredictor.PrefetchMissesCount.Cached";
+constexpr char kResourcePrefetchPredictorPrefetchMissesCountNotCached[] =
+    "ResourcePrefetchPredictor.PrefetchMissesCount.NotCached";
+constexpr char kResourcePrefetchPredictorPrefetchHitsCountCached[] =
+    "ResourcePrefetchPredictor.PrefetchHitsCount.Cached";
+constexpr char kResourcePrefetchPredictorPrefetchHitsCountNotCached[] =
+    "ResourcePrefetchPredictor.PrefetchHitsCount.NotCached";
+constexpr char kResourcePrefetchPredictorPrefetchHitsSize[] =
+    "ResourcePrefetchPredictor.PrefetchHitsSizeKB";
+constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
+    "ResourcePrefetchPredictor.PrefetchMissesSizeKB";
 }  // namespace internal
 
 class TestObserver;
@@ -174,7 +186,9 @@ class ResourcePrefetchPredictor
 
   // Called when ResourcePrefetcher is finished, i.e. there is nothing pending
   // in flight.
-  void OnPrefetchingFinished(const GURL& main_frame_url);
+  void OnPrefetchingFinished(
+      const GURL& main_frame_url,
+      std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats);
 
   // Returns true if prefetching data exists for the |main_frame_url|.
   virtual bool IsUrlPrefetchable(const GURL& main_frame_url);
@@ -222,7 +236,6 @@ class ResourcePrefetchPredictor
     INITIALIZING = 1,
     INITIALIZED = 2
   };
-
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
 
@@ -288,8 +301,7 @@ class ResourcePrefetchPredictor
   // database has been read.
   void OnHistoryAndCacheLoaded();
 
-  // Removes data for navigations where the onload never fired. Will cleanup
-  // inflight_navigations_ and inflight_prefetches_.
+  // Cleanup inflight_navigations_, inflight_prefetches_, and prefetcher_stats_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
 
   // Deletes all URLs from the predictor database, the caches and removes all
@@ -372,6 +384,9 @@ class ResourcePrefetchPredictor
 
   std::map<GURL, base::TimeTicks> inflight_prefetches_;
   NavigationMap inflight_navigations_;
+
+  std::map<GURL, std::unique_ptr<ResourcePrefetcher::PrefetcherStats>>
+      prefetcher_stats_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
