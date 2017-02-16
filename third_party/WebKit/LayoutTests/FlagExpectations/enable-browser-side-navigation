@@ -1,9 +1,5 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
-# https://crbug.com/608372: PlzNavigate: support POST navigations
-#  Layout test does not end for unknown reasons.
-crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
-crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Timeout ]
 
 # https://crbug.com/551000: PlzNavigate: DevTools support
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]

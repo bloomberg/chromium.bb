@@ -75,10 +75,15 @@ void UpdateLoadFlagsWithCacheFlags(
       break;
     case FrameMsg_Navigate_Type::SAME_DOCUMENT:
     case FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT:
-    case FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT:
-    case FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT:
       if (is_post)
         *load_flags |= net::LOAD_VALIDATE_CACHE;
+      break;
+    case FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT:
+    case FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT:
+      if (is_post) {
+        *load_flags |=
+            net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+      }
       break;
   }
 }
