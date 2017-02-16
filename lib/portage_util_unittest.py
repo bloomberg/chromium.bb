@@ -959,14 +959,14 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
-    ply_image = 'media-gfx/ply-image'
-    ply_image_project = 'chromiumos/third_party/ply-image'
+    frecon = 'sys-apps/frecon'
+    frecon_project = 'chromiumos/platform/frecon'
     this = 'chromeos-base/chromite'
     this_project = 'chromiumos/chromite'
     matches = [
-        ([ply_image], set([ply_image_project])),
+        ([frecon], set([frecon_project])),
         ([this], set([this_project])),
-        ([ply_image, this], set([ply_image_project, this_project]))
+        ([frecon, this], set([frecon_project, this_project]))
     ]
     if portage_util.FindOverlays(constants.BOTH_OVERLAYS):
       for packages, projects in matches:
