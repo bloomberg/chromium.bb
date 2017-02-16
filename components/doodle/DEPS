@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/google/core/browser",
+  "+net/base",
+  "+net/http/http_status_code.h",
+  "+net/url_request",
+]
