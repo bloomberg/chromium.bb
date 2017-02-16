@@ -10,6 +10,7 @@ import time
 
 from devil.android import device_errors
 from devil.android import flag_changer
+from devil.android.sdk import shared_prefs
 from devil.utils import reraiser_thread
 from pylib import valgrind_tools
 from pylib.android import logdog_logcat_monitor
@@ -109,6 +110,30 @@ class LocalDeviceInstrumentationTestRun(
                                   self._test_instance.package_info.package],
                                 check_return=True)
 
+      def edit_shared_prefs():
+        for pref in self._test_instance.edit_shared_prefs:
+          prefs = shared_prefs.SharedPrefs(dev, pref['package'],
+                                           pref['filename'])
+          prefs.Load()
+          for key in pref.get('remove', []):
+            try:
+              prefs.Remove(key)
+            except KeyError:
+              logging.warning("Attempted to remove non-existent key %s", key)
+          for key, value in pref.get('set', {}).iteritems():
+            if isinstance(value, bool):
+              prefs.SetBoolean(key, value)
+            elif isinstance(value, basestring):
+              prefs.SetString(key, value)
+            elif isinstance(value, long) or isinstance(value, int):
+              prefs.SetLong(key, value)
+            elif isinstance(value, list):
+              prefs.SetStringSet(key, value)
+            else:
+              raise ValueError("Given invalid value type %s for key %s" % (
+                  str(type(value)), key))
+          prefs.Commit()
+
       def push_test_data():
         device_root = posixpath.join(dev.GetExternalStoragePath(),
                                      'chromium_tests_root')
@@ -139,7 +164,8 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
-      steps = (install_apk, push_test_data, create_flag_changer)
+      steps = (install_apk, edit_shared_prefs, push_test_data,
+               create_flag_changer)
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(steps)
       else:
