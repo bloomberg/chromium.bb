@@ -7,6 +7,19 @@
  * 'settings-privacy-page' is the settings page containing privacy and
  * security settings.
  */
+(function() {
+
+/**
+ * Must be kept in sync with the C++ enum of the same name.
+ * @enum {number}
+ */
+var NetworkPredictionOptions = {
+  ALWAYS: 0,
+  WIFI_ONLY: 1,
+  NEVER: 2,
+  DEFAULT: 1
+};
+
 Polymer({
   is: 'settings-privacy-page',
 
@@ -63,6 +76,17 @@ Polymer({
 
     /** @private */
     showClearBrowsingDataDialog_: Boolean,
+
+    /**
+     * Used for HTML bindings. This is defined as a property rather than within
+     * the ready callback, because the value needs to be available before
+     * local DOM initialization - otherwise, the toggle has unexpected behavior.
+     * @private
+     */
+    networkPredictionEnum_: {
+      type: Object,
+      value: NetworkPredictionOptions,
+    },
   },
 
   ready: function() {
@@ -223,3 +247,4 @@ Polymer({
                  : this.i18n('siteSettingsBlocked');
   },
 });
+})();

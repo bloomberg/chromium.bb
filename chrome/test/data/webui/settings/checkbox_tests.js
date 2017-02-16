@@ -30,14 +30,14 @@ cr.define('settings_checkbox', function() {
         document.body.appendChild(testElement);
       });
 
-      test('responds to checked attribute', function() {
+      test('value changes on tap', function() {
         assertTrue(testElement.checked);
 
-        testElement.removeAttribute('checked');
+        MockInteractions.tap(testElement.$.checkbox);
         assertFalse(testElement.checked);
         assertFalse(pref.value);
 
-        testElement.setAttribute('checked', '');
+        MockInteractions.tap(testElement.$.checkbox);
         assertTrue(testElement.checked);
         assertTrue(pref.value);
       });
@@ -71,11 +71,11 @@ cr.define('settings_checkbox', function() {
         testElement.set('pref', prefNum);
         assertTrue(testElement.checked);
 
-        testElement.removeAttribute('checked');
+        MockInteractions.tap(testElement.$.checkbox);
         assertFalse(testElement.checked);
         assertEquals(0, prefNum.value);
 
-        testElement.setAttribute('checked', '');
+        MockInteractions.tap(testElement.$.checkbox);
         assertTrue(testElement.checked);
         assertEquals(1, prefNum.value);
       });

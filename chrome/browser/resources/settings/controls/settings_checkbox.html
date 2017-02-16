@@ -30,9 +30,8 @@
       }
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
-      <!-- TODO(dbeam): should we be calling notifyChangedByUserInteraction
-           somewhere here like we do for settings-toggle-button? -->
       <paper-checkbox id="checkbox" checked="{{checked}}"
+          on-change="notifyChangedByUserInteraction"
           disabled="[[controlDisabled_(disabled, pref)]]">
         <div>[[label]] <content></content></div>
         <div class="secondary">[[subLabel]]</div>
