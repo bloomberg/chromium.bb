@@ -83,13 +83,13 @@ void IntranetRedirectDetector::FinishSleep() {
         semantics {
           sender: "Intranet Redirect Detector"
           description:
-            "This component sends a request to a randomly generated and "
-            "therefore unlikely to exist URL. If Chrome receives a valid HTTP "
-            "response, this indicates that the computer is behind a gateway, "
-            "e.g., in a hotel where the user needs to pay for internet access. "
-            "Chrome can prompt the user to login to the gateway to unlock "
-            "access to the web."
-          trigger: "When IP address of the computer changes."
+            "This component sends requests to three randomly generated, and "
+            "thus likely nonexistent, hostnames.  If at least two redirect to "
+            "the same hostname, this suggests the ISP is hijacking NXDOMAIN, "
+            "and the omnibox should treat similar redirected navigations as "
+            "'failed' when deciding whether to prompt the user with a 'did you "
+            "mean to navigate' infobar for certain search inputs."
+          trigger: "On startup and when IP address of the computer changes."
           data: "None, this is just an empty request."
           destination: OTHER
         }
