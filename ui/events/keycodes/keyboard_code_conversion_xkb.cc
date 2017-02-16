@@ -62,7 +62,7 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::KANA_MODE;
     case XKB_KEY_Eisu_Shift:
     case XKB_KEY_Eisu_toggle:
-      return DomKey::EISU;
+      return DomKey::ALPHANUMERIC;
     case XKB_KEY_Hangul:
       return DomKey::HANGUL_MODE;
     case XKB_KEY_Hangul_Hanja:
