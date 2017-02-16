@@ -23,7 +23,14 @@ class PaymentRequestCreditCardEditorTest
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCreditCardEditorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
+// Flaky on Win.  http://crbug.com/691185
+#if defined(OS_WIN)
+#define MAYBE_EnteringValidData DISABLED_EnteringValidData
+#else
+#define MAYBE_EnteringValidData EnteringValidData
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       MAYBE_EnteringValidData) {
   InvokePaymentRequestUI();
 
   OpenPaymentMethodScreen();
