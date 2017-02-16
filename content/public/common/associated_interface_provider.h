@@ -11,10 +11,6 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
-namespace mojo {
-class AssociatedGroup;
-}
-
 namespace content {
 
 // A helper interface for connecting to remote Channel-associated interfaces.
@@ -39,15 +35,10 @@ class AssociatedInterfaceProvider {
   virtual void GetInterface(const std::string& name,
                             mojo::ScopedInterfaceEndpointHandle handle) = 0;
 
-  // Returns an AssociatedGroup for the provider. This may be used to create
-  // new associated endpoints for use with Channel-associated interfaces.
-  virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
-
   // Templated helper for GetInterface().
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::MakeRequest(proxy, GetAssociatedGroup());
+    auto request = mojo::MakeRequest(proxy);
     GetInterface(Interface::Name_, request.PassHandle());
   }
 

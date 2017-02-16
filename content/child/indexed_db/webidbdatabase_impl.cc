@@ -692,9 +692,7 @@ CallbacksAssociatedPtrInfo
 WebIDBDatabaseImpl::IOThreadHelper::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
   CallbacksAssociatedPtrInfo ptr_info;
-  indexed_db::mojom::CallbacksAssociatedRequest request;
-  database_.associated_group()->CreateAssociatedInterface(
-      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }

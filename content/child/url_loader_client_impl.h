@@ -20,10 +20,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace mojo {
-class AssociatedGroup;
-}  // namespace mojo
-
 namespace net {
 struct RedirectInfo;
 }  // namespace net
@@ -41,8 +37,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~URLLoaderClientImpl() override;
 
-  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info,
-            mojo::AssociatedGroup* associated_group);
+  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info);
 
   // Sets |is_deferred_|. From now, the received messages are not dispatched
   // to clients until UnsetDefersLoading is called.

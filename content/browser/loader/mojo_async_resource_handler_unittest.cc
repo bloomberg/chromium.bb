@@ -371,11 +371,8 @@ class MojoAsyncResourceHandlerTestBase {
                                 mojo::MakeRequest(&url_loader_factory_));
 
     url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_proxy_,
-                          url_loader_factory_.associated_group()),
-        kRouteId, kRequestId, request,
-        url_loader_client_.CreateRemoteAssociatedPtrInfo(
-            url_loader_factory_.associated_group()));
+        mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId, request,
+        url_loader_client_.CreateRemoteAssociatedPtrInfo());
 
     url_loader_factory_.FlushForTesting();
     DCHECK(weak_binding);

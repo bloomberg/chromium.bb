@@ -479,9 +479,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendUpgradeNeeded(
     return;
 
   ::indexed_db::mojom::DatabaseAssociatedPtrInfo ptr_info;
-  ::indexed_db::mojom::DatabaseAssociatedRequest request;
-  callbacks_.associated_group()->CreateAssociatedInterface(
-      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(database), std::move(request));
   callbacks_->UpgradeNeeded(std::move(ptr_info), old_version, data_loss,
                             data_loss_message, metadata);
@@ -495,9 +493,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessDatabase(
 
   ::indexed_db::mojom::DatabaseAssociatedPtrInfo ptr_info;
   if (database) {
-    ::indexed_db::mojom::DatabaseAssociatedRequest request;
-    callbacks_.associated_group()->CreateAssociatedInterface(
-        mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+    auto request = mojo::MakeRequest(&ptr_info);
     mojo::MakeStrongAssociatedBinding(std::move(database), std::move(request));
   }
   callbacks_->SuccessDatabase(std::move(ptr_info), metadata);
@@ -516,9 +512,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursor(
     return;
 
   ::indexed_db::mojom::CursorAssociatedPtrInfo ptr_info;
-  ::indexed_db::mojom::CursorAssociatedRequest request;
-  callbacks_.associated_group()->CreateAssociatedInterface(
-      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(cursor), std::move(request));
   callbacks_->SuccessCursor(std::move(ptr_info), key, primary_key,
                             std::move(value));

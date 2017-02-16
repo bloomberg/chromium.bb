@@ -603,8 +603,7 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
       RenderProcessHostImpl* process =
           static_cast<RenderProcessHostImpl*>(GetProcess());
       process->GetRemoteRouteProvider()->GetRoute(
-          GetRoutingID(),
-          mojo::MakeRequest(&remote_interfaces, channel->GetAssociatedGroup()));
+          GetRoutingID(), mojo::MakeRequest(&remote_interfaces));
     } else {
       // The channel may not be initialized in some tests environments. In this
       // case we set up a dummy interface provider.

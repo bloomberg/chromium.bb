@@ -9,10 +9,6 @@
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
 
-namespace mojo {
-class AssociatedGroup;
-}
-
 namespace content {
 
 // DownloadedTempFileImpl is created on the download_to_file mode of resource
@@ -26,11 +22,10 @@ class CONTENT_EXPORT DownloadedTempFileImpl final
   // That means:
   //  * The DownloadedTempFile object created here is essentially owned by the
   //    client. It keeps alive until the client destroys the other endpoint.
-  //  * The resulting interface is associated to the given |associated_group|,
-  //    all Mojo IPCs messages that share |associated_group| will arrive in a
-  //    sequence.
-  static mojom::DownloadedTempFileAssociatedPtrInfo
-  Create(mojo::AssociatedGroup* associated_group, int child_id, int request_id);
+  //  * The resulting interface will be associated to the same message pipe on
+  //    which the returned pointer info object is sent.
+  static mojom::DownloadedTempFileAssociatedPtrInfo Create(int child_id,
+                                                           int request_id);
 
   static mojom::DownloadedTempFilePtr CreateForTesting(int child_id,
                                                        int request_id);

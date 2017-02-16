@@ -14,10 +14,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "url/gurl.h"
 
-namespace mojo {
-class AssociatedGroup;
-}  // namespace mojo
-
 namespace content {
 
 class ResourceDispatcher;
@@ -46,8 +42,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
 
   // Takes ownership of |web_task_runner|.
   WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
-                   mojom::URLLoaderFactory* url_loader_factory,
-                   mojo::AssociatedGroup* associated_group);
+                   mojom::URLLoaderFactory* url_loader_factory);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const GURL& url,

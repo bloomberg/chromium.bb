@@ -62,10 +62,6 @@ void AssociatedInterfaceProviderImpl::GetInterface(
   return proxy_->GetAssociatedInterface(name, std::move(request));
 }
 
-mojo::AssociatedGroup* AssociatedInterfaceProviderImpl::GetAssociatedGroup() {
-  return proxy_.associated_group();
-}
-
 void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(
     const std::string& name,
     const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>& binder) {

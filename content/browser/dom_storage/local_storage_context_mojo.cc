@@ -338,7 +338,7 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
     // We were not given a subdirectory. Use a memory backed database.
     file_service_connection_->GetInterface(&leveldb_service_);
     leveldb_service_->OpenInMemory(
-        MakeRequest(&database_, leveldb_service_.associated_group()),
+        MakeRequest(&database_),
         base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
                    weak_ptr_factory_.GetWeakPtr(), true));
   }
@@ -373,7 +373,7 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   options->create_if_missing = true;
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
-      MakeRequest(&database_, leveldb_service_.associated_group()),
+      MakeRequest(&database_),
       base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
                  weak_ptr_factory_.GetWeakPtr(), false));
 }

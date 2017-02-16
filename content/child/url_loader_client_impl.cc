@@ -9,7 +9,6 @@
 #include "content/child/resource_dispatcher.h"
 #include "content/child/url_response_body_consumer.h"
 #include "content/common/resource_messages.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {
@@ -30,9 +29,8 @@ URLLoaderClientImpl::~URLLoaderClientImpl() {
 }
 
 void URLLoaderClientImpl::Bind(
-    mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info,
-    mojo::AssociatedGroup* associated_group) {
-  binding_.Bind(client_ptr_info, associated_group);
+    mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info) {
+  binding_.Bind(client_ptr_info);
 }
 
 void URLLoaderClientImpl::SetDefersLoading() {

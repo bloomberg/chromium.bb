@@ -33,8 +33,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         base::MakeUnique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         blink::WebURLRequest::LoadingIPCType::Mojo,
-        url_loader_factory_proxy_.get(),
-        url_loader_factory_proxy_.associated_group());
+        url_loader_factory_proxy_.get());
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();

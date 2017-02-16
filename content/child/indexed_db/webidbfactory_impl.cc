@@ -124,9 +124,7 @@ FactoryAssociatedPtr& WebIDBFactoryImpl::IOThreadHelper::GetService() {
 CallbacksAssociatedPtrInfo WebIDBFactoryImpl::IOThreadHelper::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
   CallbacksAssociatedPtrInfo ptr_info;
-  indexed_db::mojom::CallbacksAssociatedRequest request;
-  GetService().associated_group()->CreateAssociatedInterface(
-      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }
@@ -135,9 +133,7 @@ DatabaseCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::IOThreadHelper::GetDatabaseCallbacksProxy(
     std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
   DatabaseCallbacksAssociatedPtrInfo ptr_info;
-  indexed_db::mojom::DatabaseCallbacksAssociatedRequest request;
-  GetService().associated_group()->CreateAssociatedInterface(
-      mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+  auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
 }

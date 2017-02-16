@@ -109,10 +109,9 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
 }
 
 mojom::URLLoaderClientAssociatedPtrInfo
-TestURLLoaderClient::CreateRemoteAssociatedPtrInfo(
-    mojo::AssociatedGroup* associated_group) {
+TestURLLoaderClient::CreateRemoteAssociatedPtrInfo() {
   mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info;
-  binding_.Bind(&client_ptr_info, associated_group);
+  binding_.Bind(&client_ptr_info);
   return client_ptr_info;
 }
 

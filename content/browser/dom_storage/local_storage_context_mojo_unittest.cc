@@ -79,10 +79,9 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
 
   TestLevelDBObserver() : binding_(this) {}
 
-  mojom::LevelDBObserverAssociatedPtrInfo Bind(
-      mojo::AssociatedGroup* associated_group) {
+  mojom::LevelDBObserverAssociatedPtrInfo Bind() {
     mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-    binding_.Bind(&ptr_info, associated_group);
+    binding_.Bind(&ptr_info);
     return ptr_info;
   }
 
@@ -178,7 +177,6 @@ class LocalStorageContextMojoTest : public testing::Test {
   base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   MockLevelDBDatabase db_;
-  mojo::AssociatedGroup associated_group_;
   mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
   scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
@@ -461,7 +459,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
 
   TestLevelDBObserver observer;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->AddObserver(observer.Bind(wrapper.associated_group()));
+  wrapper->AddObserver(observer.Bind());
   base::RunLoop().RunUntilIdle();
 
   context()->DeleteStorage(origin1);
@@ -505,7 +503,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
 
   TestLevelDBObserver observer;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->AddObserver(observer.Bind(wrapper.associated_group()));
+  wrapper->AddObserver(observer.Bind());
   wrapper->Put(StdStringToUint8Vector("key2"), value, "source",
                base::Bind(&NoOpSuccess));
   base::RunLoop().RunUntilIdle();

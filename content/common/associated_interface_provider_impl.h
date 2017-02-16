@@ -29,7 +29,6 @@ class AssociatedInterfaceProviderImpl : public AssociatedInterfaceProvider {
   // AssociatedInterfaceProvider:
   void GetInterface(const std::string& name,
                     mojo::ScopedInterfaceEndpointHandle handle) override;
-  mojo::AssociatedGroup* GetAssociatedGroup() override;
   void OverrideBinderForTesting(
       const std::string& name,
       const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>& binder)

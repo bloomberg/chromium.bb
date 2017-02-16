@@ -2536,9 +2536,7 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
     if (thread) {
       mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
       thread->GetRemoteRouteProvider()->GetRoute(
-          routing_id_,
-          mojo::MakeRequest(&remote_interfaces,
-                            thread->channel()->GetAssociatedGroup()));
+          routing_id_, mojo::MakeRequest(&remote_interfaces));
       remote_associated_interfaces_.reset(
           new AssociatedInterfaceProviderImpl(std::move(remote_interfaces)));
     } else {

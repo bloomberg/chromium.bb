@@ -31,10 +31,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace mojo {
-class AssociatedGroup;
-}  // namespace mojo
-
 namespace net {
 struct RedirectInfo;
 }
@@ -102,8 +98,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const url::Origin& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
-      mojom::URLLoaderFactory* url_loader_factory,
-      mojo::AssociatedGroup* associated_group);
+      mojom::URLLoaderFactory* url_loader_factory);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.

@@ -77,10 +77,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
 
   void ClearHasReceivedRedirect();
   // Creates an AssociatedPtrInfo, binds it to |*this| and returns it. The
-  // returned PtrInfo is marked as remote, i.e., expected to be passed to the
-  // remote endpoint.
-  mojom::URLLoaderClientAssociatedPtrInfo CreateRemoteAssociatedPtrInfo(
-      mojo::AssociatedGroup* associated_group);
+  // returned PtrInfo is expected to be passed to the remote endpoint.
+  mojom::URLLoaderClientAssociatedPtrInfo CreateRemoteAssociatedPtrInfo();
 
   void Unbind();
 

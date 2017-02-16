@@ -40,7 +40,6 @@
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
@@ -362,8 +361,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   Context(WebURLLoaderImpl* loader,
           ResourceDispatcher* resource_dispatcher,
-          mojom::URLLoaderFactory* factory,
-          mojo::AssociatedGroup* associated_group);
+          mojom::URLLoaderFactory* factory);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -416,7 +414,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   // These are owned by the Blink::Platform singleton.
   mojom::URLLoaderFactory* url_loader_factory_;
-  mojo::AssociatedGroup* associated_group_;
 };
 
 // A thin wrapper class for Context to ensure its lifetime while it is
@@ -451,16 +448,14 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
                                    ResourceDispatcher* resource_dispatcher,
-                                   mojom::URLLoaderFactory* url_loader_factory,
-                                   mojo::AssociatedGroup* associated_group)
+                                   mojom::URLLoaderFactory* url_loader_factory)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
-      url_loader_factory_(url_loader_factory),
-      associated_group_(associated_group) {}
+      url_loader_factory_(url_loader_factory) {}
 
 void WebURLLoaderImpl::Context::Cancel() {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
@@ -638,7 +633,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       std::move(resource_request), request.requestorID(), task_runner_,
       extra_data->frame_origin(),
       base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
-      request.getLoadingIPCType(), url_loader_factory_, associated_group_);
+      request.getLoadingIPCType(), url_loader_factory_);
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -1036,12 +1031,8 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 // WebURLLoaderImpl -----------------------------------------------------------
 
 WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
-                                   mojom::URLLoaderFactory* url_loader_factory,
-                                   mojo::AssociatedGroup* associated_group)
-    : context_(new Context(this,
-                           resource_dispatcher,
-                           url_loader_factory,
-                           associated_group)) {}
+                                   mojom::URLLoaderFactory* url_loader_factory)
+    : context_(new Context(this, resource_dispatcher, url_loader_factory)) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();

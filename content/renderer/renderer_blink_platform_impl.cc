@@ -78,7 +78,6 @@
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -307,7 +306,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : nullptr,
-      url_loader_factory_.get(), url_loader_factory_.associated_group());
+      url_loader_factory_.get());
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

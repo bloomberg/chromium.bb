@@ -195,8 +195,8 @@ void MojoAsyncResourceHandler::OnResponseStarted(
 
   mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file_ptr;
   if (!response->head.download_file_path.empty()) {
-    downloaded_file_ptr = DownloadedTempFileImpl::Create(
-        binding_.associated_group(), info->GetChildID(), info->GetRequestID());
+    downloaded_file_ptr = DownloadedTempFileImpl::Create(info->GetChildID(),
+                                                         info->GetRequestID());
     rdh_->RegisterDownloadedTempFile(info->GetChildID(), info->GetRequestID(),
                                      response->head.download_file_path);
   }

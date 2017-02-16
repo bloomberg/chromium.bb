@@ -181,9 +181,8 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, completion_status));
   }
 
-  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* ptr_info,
-            mojo::AssociatedGroup* associated_group) {
-    binding_.Bind(ptr_info, associated_group);
+  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* ptr_info) {
+    binding_.Bind(ptr_info);
   }
 
  private:
@@ -586,13 +585,11 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr), std::move(on_response), request);
   mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
-  url_loader_client->Bind(&url_loader_client_associated_ptr_info,
-                          url_loader_factory.associated_group());
+  url_loader_client->Bind(&url_loader_client_associated_ptr_info);
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
 
   url_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_associated_ptr,
-                        url_loader_factory.associated_group()),
+      mojo::MakeRequest(&url_loader_associated_ptr),
       original_info->GetRouteID(), request_id, request,
       std::move(url_loader_client_associated_ptr_info));
 
