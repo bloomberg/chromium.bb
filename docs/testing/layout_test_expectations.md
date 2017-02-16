@@ -163,11 +163,6 @@ removes the `[ NeedsRebaseline ]` entry from TestExpectations.
   since they're clearly not getting fixed anytime soon.
 * [W3CImportExpectations](../../third_party/WebKit/LayoutTests/W3CImportExpectations):
   A record of which W3C tests should be imported or skipped.
-* [WPTServeExpectations](../../third_party/WebKit/LayoutTests/WPTServeExpectations):
-  Expectations for tests that fail differently when run under the W3C's wptserve
-  HTTP server with the `--enable-wptserve flag`. This is an experimental feature
-  at this time.
-
 
 ### Flag-specific expectations files
 

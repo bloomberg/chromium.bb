@@ -184,10 +184,8 @@ A row of dots in the script's output indicates one or more tests that passed.
 ## Test expectations
 
 The
-[TestExpectations](../../WebKit/LayoutTests/TestExpectations) file (and related
-files, including
-[skia_test_expectations.txt](../../skia/skia_test_expectations.txt))
-contains the list of all known layout test failures. See the
+[TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations) file (and related
+files) contains the list of all known layout test failures. See the
 [Layout Test Expectations documentation](./layout_test_expectations.md) for more
 on this.
 
@@ -209,7 +207,7 @@ There are two ways to run layout tests with additional command-line arguments:
   suppressions in this file override the main TestExpectations file.
 
 * Using a *virtual test suite* defined in
-  [LayoutTests/VirtualTestSuites](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/LayoutTests/VirtualTestSuites).
+  [LayoutTests/VirtualTestSuites](../../third_party/WebKit/LayoutTests/VirtualTestSuites).
   A virtual test suite runs a subset of layout tests under a specific path with
   additional flags. For example, you could test a (hypothetical) new mode for
   repainting using the following virtual test suite:
@@ -324,10 +322,10 @@ finding the problem.
 * If you're lucky, your test is one that runs properly when you navigate to it
   in content_shell normally. In that case, build the Debug content_shell
   project, fire it up in your favorite debugger, and load the test file either
-  from a file:// URL.
+  from a `file:` URL.
     * You'll probably be starting and stopping the content_shell a lot. In VS,
       to save navigating to the test every time, you can set the URL to your
-      test (file: or http:) as the command argument in the Debugging section of
+      test (`file:` or `http:`) as the command argument in the Debugging section of
       the content_shell project Properties.
     * If your test contains a JS call, DOM manipulation, or other distinctive
       piece of code that you think is failing, search for that in the Chrome
@@ -338,7 +336,7 @@ finding the problem.
 * If your test only works in full layout-test mode, or if you find it simpler to
   debug without all the overhead of an interactive session, start the
   content_shell with the command-line flag `--run-layout-test`, followed by the
-  URL (file: or http:) to your test. More information about running layout tests
+  URL (`file:` or `http:`) to your test. More information about running layout tests
   in content_shell can be found [here](./layout_tests_in_content_shell.md).
     * In VS, you can do this in the Debugging section of the content_shell
       project Properties.
@@ -424,7 +422,7 @@ machine?
 * Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
   link to open the devtools with the test loaded.
 * You may need to replace devtools.html with inspector.html in your URL (or you
-  can use local chrome inspection of content_shell from chrome://inspect
+  can use local chrome inspection of content_shell from `chrome://inspect`
   instead)
 * In the loaded devtools, set any required breakpoints and execute `test()` in
   the console to actually start the test.

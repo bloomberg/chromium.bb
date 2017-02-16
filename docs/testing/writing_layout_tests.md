@@ -227,7 +227,7 @@ For example, the most popular Blink-specific API is `testRunner`, which is
 implemented in
 [components/test_runner/test_runner.h](../../components/test_runner/test_runner.h)
 and
-[components/test_runner/test_runner.cpp](../../components/test_runner/test_runner.cpp).
+[components/test_runner/test_runner.cc](../../components/test_runner/test_runner.cc).
 By skimming the `TestRunnerBindings::Install` method, we learn that the
 testRunner API is presented by the `window.testRunner` and
 `window.layoutTestsController` objects, which are synonyms. Reading the
@@ -254,7 +254,7 @@ See the [components/test_runner/](../../components/test_runner/) directory and
 for other useful APIs. For example, `window.eventSender`
 ([components/test_runner/event_sender.h](../../components/test_runner/event_sender.h)
 and
-[components/test_runner/event_sender.cpp](../../components/test_runner/event_sender.cpp))
+[components/test_runner/event_sender.cc](../../components/test_runner/event_sender.cc))
 has methods that simulate events input such as keyboard / mouse input and
 drag-and-drop.
 
