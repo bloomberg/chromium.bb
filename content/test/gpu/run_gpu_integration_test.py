@@ -14,13 +14,14 @@ path_util.SetupTelemetryPaths()
 
 from telemetry.testing import browser_test_runner
 
-def PostprocessJSON(file_name):
+def PostprocessJSON(file_name, run_test_args):
   def TrimPrefix(s):
     return s[1 + s.rfind('.'):]
   with open(file_name) as f:
     test_result = json.load(f)
   test_result['successes'] = map(TrimPrefix, test_result['successes'])
   test_result['failures'] = map(TrimPrefix, test_result['failures'])
+  test_result['run_test_args'] = run_test_args
   with open(file_name, 'w') as f:
     json.dump(test_result, f)
 
@@ -39,7 +40,7 @@ def main():
     help=('Full path for json results'))
   option, _ = parser.parse_known_args(rest_args)
   if option.write_abbreviated_json_results_to:
-    PostprocessJSON(option.write_abbreviated_json_results_to)
+    PostprocessJSON(option.write_abbreviated_json_results_to, rest_args)
   return retval
 
 if __name__ == '__main__':
