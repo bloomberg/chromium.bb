@@ -16,8 +16,8 @@ test(function(){
       selection.setBaseAndExtent(base, 0, extent, 0);
     },
     [
-      '<div contenteditable>|<table id="base"><tbody>',
-        '<tr><td contenteditable="false" id="extent">foo</td></tr>',
+      '<div contenteditable><table id="base">^<tbody>',
+        '<tr><td contenteditable="false" id="extent">|foo</td></tr>',
       '</tbody></table></div>'
     ].join('')
     );

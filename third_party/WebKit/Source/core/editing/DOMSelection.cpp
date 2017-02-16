@@ -74,6 +74,13 @@ const VisibleSelection& DOMSelection::visibleSelection() const {
   return frame()->selection().selection();
 }
 
+bool DOMSelection::isBaseFirstInSelection() const {
+  DCHECK(frame());
+  const SelectionInDOMTree& selection =
+      frame()->selection().selectionInDOMTree();
+  return selection.base() <= selection.extent();
+}
+
 static Position anchorPosition(const VisibleSelection& selection) {
   Position anchor =
       selection.isBaseFirst() ? selection.start() : selection.end();
@@ -96,7 +103,7 @@ static Position extentPosition(const VisibleSelection& selection) {
 
 Node* DOMSelection::anchorNode() const {
   if (Range* range = primaryRangeOrNull()) {
-    if (!frame() || visibleSelection().isBaseFirst())
+    if (!frame() || isBaseFirstInSelection())
       return range->startContainer();
     return range->endContainer();
   }
@@ -105,7 +112,7 @@ Node* DOMSelection::anchorNode() const {
 
 int DOMSelection::anchorOffset() const {
   if (Range* range = primaryRangeOrNull()) {
-    if (!frame() || visibleSelection().isBaseFirst())
+    if (!frame() || isBaseFirstInSelection())
       return range->startOffset();
     return range->endOffset();
   }
@@ -114,7 +121,7 @@ int DOMSelection::anchorOffset() const {
 
 Node* DOMSelection::focusNode() const {
   if (Range* range = primaryRangeOrNull()) {
-    if (!frame() || visibleSelection().isBaseFirst())
+    if (!frame() || isBaseFirstInSelection())
       return range->endContainer();
     return range->startContainer();
   }
@@ -123,7 +130,7 @@ Node* DOMSelection::focusNode() const {
 
 int DOMSelection::focusOffset() const {
   if (Range* range = primaryRangeOrNull()) {
-    if (!frame() || visibleSelection().isBaseFirst())
+    if (!frame() || isBaseFirstInSelection())
       return range->endOffset();
     return range->startOffset();
   }
@@ -317,12 +324,26 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
   // See "svg/text/textpath-reference-crash.html"
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
+  Position basePosition(baseNode, baseOffset);
+  Position extentPosition(extentNode, extentOffset);
   frame()->selection().setSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtentDeprecated(Position(baseNode, baseOffset),
-                                      Position(extentNode, extentOffset))
+          .setBaseAndExtentDeprecated(basePosition, extentPosition)
           .setIsDirectional(true)
           .build());
+
+  Range* newRange = Range::create(baseNode->document());
+  if (extentPosition.isNull()) {
+    newRange->setStart(baseNode, baseOffset);
+    newRange->setEnd(baseNode, baseOffset);
+  } else if (basePosition < extentPosition) {
+    newRange->setStart(baseNode, baseOffset);
+    newRange->setEnd(extentNode, extentOffset);
+  } else {
+    newRange->setStart(extentNode, extentOffset);
+    newRange->setEnd(baseNode, baseOffset);
+  }
+  cacheRangeIfSelectionOfDocument(newRange);
 }
 
 void DOMSelection::modify(const String& alterString,
@@ -471,6 +492,8 @@ bool DOMSelection::isSelectionOfDocument() const {
 
 void DOMSelection::cacheRangeIfSelectionOfDocument(Range* range) const {
   if (!isSelectionOfDocument())
+    return;
+  if (!frame())
     return;
   frame()->selection().cacheRangeOfDocument(range);
 }

@@ -26,7 +26,7 @@ Reset, and added id and title:
 |   id="test_span"
 |   style="font-weight: 900;"
 |   title="hello, world"
-|   "<#selection-anchor>test<#selection-focus>"
+|   "test"
 
 Unbolding should remove the CSS style but shouldn't remove the span:
 | <span>
@@ -50,7 +50,7 @@ Redo should remove the style attribute again:
 Reset, and added color:blue:
 | <span>
 |   style="font-weight: 900; color: blue;"
-|   "<#selection-anchor>test<#selection-focus>"
+|   "test"
 
 Unbolding should remove the font-weight but shouldn't remove the style attribute:
 | <span>

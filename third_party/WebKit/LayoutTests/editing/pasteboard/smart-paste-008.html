@@ -19,7 +19,8 @@ test(function() {
 
     internals.settings.setEditingBehavior('win');
 
-    selection.setBaseAndExtent(sample, 0, sample, 0);
+    var foo = document.getElementById('foo');
+    selection.selectAllChildren(foo);
     var rects = window.getSelection().getRangeAt(0).getClientRects();
     var x = rects[0].left;
     var y = rects[0].top;
@@ -30,13 +31,13 @@ test(function() {
     eventSender.mouseUp();
     document.execCommand('copy');
 
-    selection.collapse(document.getElementById('foo').firstChild, 1);
+    selection.collapse(foo.firstChild, 1);
     selection.extend(document.getElementById('bar').firstChild, 1);
     document.execCommand('paste');
 
     assert_equals(sample.innerHTML, '<div id="foo">f foo bar</div>', 'innerHTML');
     assert_true(selection.isCollapsed, 'isCollapsed');
-    assert_equals(selection.anchorNode, document.getElementById('foo').firstChild, 'anchorNode');
+    assert_equals(selection.anchorNode, foo.firstChild, 'anchorNode');
     assert_equals(selection.anchorOffset, 5, 'anchorOffset');
 });
 </script>
