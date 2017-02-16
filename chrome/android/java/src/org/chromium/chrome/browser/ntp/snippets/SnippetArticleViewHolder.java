@@ -245,6 +245,9 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (horizontalStyle == HorizontalDisplayStyle.NARROW) return false;
         if (verticalStyle == VerticalDisplayStyle.FLAT) return false;
 
+        // When article's description is empty, we do not want empty space.
+        if (mArticle != null && TextUtils.isEmpty(mArticle.mPreviewText)) return false;
+
         return true;
     }
 
