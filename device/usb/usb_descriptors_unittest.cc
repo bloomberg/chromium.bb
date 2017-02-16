@@ -225,14 +225,14 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
       .WillOnce(InvokeCallback(kDeviceDescriptor, sizeof(kDeviceDescriptor)));
   EXPECT_CALL(*device_handle,
               ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0201, 0x0000, _,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0200, 0x0000, _,
                               _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kConfig1Descriptor, sizeof(kConfig1Descriptor)));
   EXPECT_CALL(*device_handle,
               ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
-                              UsbDeviceHandle::DEVICE, 0x06, 0x0202, 0x0000, _,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0201, 0x0000, _,
                               _, _, _))
       .Times(2)
       .WillRepeatedly(

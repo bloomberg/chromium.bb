@@ -149,7 +149,7 @@ void OnReadDeviceDescriptor(
       num_configurations,
       base::Bind(OnDoneReadingConfigDescriptors, device_handle,
                  base::Passed(&desc), callback));
-  for (uint8_t i = 1; i <= num_configurations; ++i) {
+  for (uint8_t i = 0; i < num_configurations; ++i) {
     scoped_refptr<IOBufferWithSize> header = new IOBufferWithSize(4);
     device_handle->ControlTransfer(
         USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
