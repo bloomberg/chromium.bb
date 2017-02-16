@@ -175,6 +175,9 @@ class _ProjectEntry(object):
   def Gradle(self):
     return self.BuildConfig()['gradle']
 
+  def Javac(self):
+    return self.BuildConfig()['javac']
+
   def GetType(self):
     """Returns the target type from its .build_config."""
     return self.DepsInfo()['type']
@@ -195,9 +198,12 @@ class _ProjectEntry(object):
 
 class _ProjectContextGenerator(object):
   """Helper class to generate gradle build files"""
-  def __init__(self, project_dir, use_gradle_process_resources):
+  def __init__(self, project_dir, build_vars, use_gradle_process_resources,
+      jinja_processor):
     self.project_dir = project_dir
+    self.build_vars = build_vars
     self.use_gradle_process_resources = use_gradle_process_resources
+    self.jinja_processor = jinja_processor
 
   def _GenJniLibs(self, entry):
     native_section = entry.BuildConfig().get('native')
@@ -223,6 +229,31 @@ class _ProjectContextGenerator(object):
       res_dirs.append(os.path.join(self.EntryOutputDir(entry), _RES_SUBDIR))
     return res_dirs
 
+  def _GenCustomManifest(self, entry):
+    """Returns the path to the generated AndroidManifest.xml."""
+    javac = entry.Javac()
+    resource_packages = javac['resource_packages']
+    output_file = os.path.join(
+        self.EntryOutputDir(entry), 'AndroidManifest.xml')
+
+    if not resource_packages:
+      logging.error('Target ' + entry.GnTarget() + ' includes resources from '
+          'unknown package. Unable to process with gradle.')
+      return _DEFAULT_ANDROID_MANIFEST_PATH
+    elif len(resource_packages) > 1:
+      logging.error('Target ' + entry.GnTarget() + ' includes resources from '
+          'multiple packages. Unable to process with gradle.')
+      return _DEFAULT_ANDROID_MANIFEST_PATH
+
+    variables = {}
+    variables['compile_sdk_version'] = self.build_vars['android_sdk_version']
+    variables['package'] = resource_packages[0]
+
+    data = self.jinja_processor.Render(_TemplatePath('manifest'), variables)
+    _WriteFile(output_file, data)
+
+    return output_file
+
   def _Relativize(self, entry, paths):
     return _RebasePath(paths, self.EntryOutputDir(entry))
 
@@ -246,15 +277,22 @@ class _ProjectContextGenerator(object):
 
   def Generate(self, entry):
     variables = {}
-    android_test_manifest = entry.Gradle().get(
-        'android_manifest', _DEFAULT_ANDROID_MANIFEST_PATH)
-    variables['android_manifest'] = self._Relativize(
-        entry, android_test_manifest)
     java_dirs, excludes = self._GenJavaDirs(entry)
     variables['java_dirs'] = self._Relativize(entry, java_dirs)
     variables['java_excludes'] = excludes
     variables['jni_libs'] = self._Relativize(entry, self._GenJniLibs(entry))
     variables['res_dirs'] = self._Relativize(entry, self._GenResDirs(entry))
+    android_manifest = entry.Gradle().get('android_manifest')
+    if not android_manifest:
+      # Gradle uses package id from manifest when generating R.class. So, we
+      # need to generate a custom manifest if we let gradle process resources.
+      # We cannot simply set android.defaultConfig.applicationId because it is
+      # not supported for library targets.
+      if variables['res_dirs']:
+        android_manifest = self._GenCustomManifest(entry)
+      else:
+        android_manifest = _DEFAULT_ANDROID_MANIFEST_PATH
+    variables['android_manifest'] = self._Relativize(entry, android_manifest)
     deps = [_ProjectEntry.FromBuildConfigPath(p)
             for p in entry.Gradle()['dependent_android_projects']]
     variables['android_project_deps'] = [d.ProjectName() for d in deps]
@@ -544,8 +582,10 @@ def main():
 
   _gradle_output_dir = os.path.abspath(
       args.project_dir.replace('$CHROMIUM_OUTPUT_DIR', output_dir))
-  generator = _ProjectContextGenerator(
-      _gradle_output_dir, args.use_gradle_process_resources)
+  jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
+  build_vars = _ReadBuildVars(output_dir)
+  generator = _ProjectContextGenerator(_gradle_output_dir, build_vars,
+      args.use_gradle_process_resources, jinja_processor)
   logging.warning('Creating project at: %s', generator.project_dir)
 
   if args.all:
@@ -576,8 +616,6 @@ def main():
   logging.info('Creating %d projects for targets.', len(entries))
 
   logging.warning('Writing .gradle files...')
-  jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
-  build_vars = _ReadBuildVars(output_dir)
   project_entries = []
   zip_tuples = []
   generated_inputs = []
