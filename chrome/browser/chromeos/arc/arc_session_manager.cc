@@ -624,8 +624,6 @@ void ArcSessionManager::ShutdownSession() {
   // STOPPED state immediately here.
   if (state_ != State::NOT_INITIALIZED && state_ != State::REMOVING_DATA_DIR)
     SetState(State::STOPPED);
-  for (auto& observer : observer_list_)
-    observer.OnArcBridgeShutdown();
 }
 
 void ArcSessionManager::AddObserver(Observer* observer) {

@@ -90,10 +90,6 @@ class ArcSessionManager : public ArcSessionObserver,
    public:
     virtual ~Observer() = default;
 
-    // Called to notify that ARC session is shut down.
-    // TODO(hidehiko): Rename the observer callback to OnArcSessionShutdown().
-    virtual void OnArcBridgeShutdown() {}
-
     // Called to notify that whether Google Play Store is enabled or not, which
     // is represented by "arc.enabled" preference, is updated.
     virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}

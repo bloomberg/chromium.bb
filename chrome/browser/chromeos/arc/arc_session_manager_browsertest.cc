@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -64,34 +65,33 @@ constexpr char kFakeGaiaId[] = "1234567890";
 
 namespace arc {
 
-// Observer of ARC bridge shutdown.
-class ArcSessionManagerShutdownObserver : public ArcSessionManager::Observer {
+// Waits for the "arc.enabled" preference value from true to false.
+class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
  public:
-  ArcSessionManagerShutdownObserver() {
-    ArcSessionManager::Get()->AddObserver(this);
-  }
+  ArcPlayStoreDisabledWaiter() { ArcSessionManager::Get()->AddObserver(this); }
 
-  ~ArcSessionManagerShutdownObserver() override {
+  ~ArcPlayStoreDisabledWaiter() override {
     ArcSessionManager::Get()->RemoveObserver(this);
   }
 
   void Wait() {
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  // ArcSessionManager::Observer:
-  void OnArcBridgeShutdown() override {
-    if (!run_loop_)
-      return;
-    run_loop_->Quit();
+    base::RunLoop run_loop;
+    base::AutoReset<base::RunLoop*> reset(&run_loop_, &run_loop);
+    run_loop.Run();
   }
 
  private:
-  std::unique_ptr<base::RunLoop> run_loop_;
+  // ArcSessionManager::Observer override:
+  void OnArcPlayStoreEnabledChanged(bool enabled) override {
+    if (!enabled) {
+      DCHECK(run_loop_);
+      run_loop_->Quit();
+    }
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerShutdownObserver);
+  base::RunLoop* run_loop_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreDisabledWaiter);
 };
 
 class ArcSessionManagerTest : public InProcessBrowserTest {
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   EnableArc();
   token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
                                                    base::Time::Max());
-  ArcSessionManagerShutdownObserver().Wait();
+  ArcPlayStoreDisabledWaiter().Wait();
   ASSERT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
             ArcSessionManager::Get()->state());
   ArcDataRemovedWaiter().Wait();
