@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
@@ -106,17 +107,17 @@ void NativeProcessLauncherImpl::Core::Launch(
     const GURL& origin,
     const std::string& native_host_name,
     const LaunchedCallback& callback) {
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&Core::DoLaunchOnThreadPool, this,
-                            origin, native_host_name, callback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::USER_VISIBLE),
+                           base::Bind(&Core::DoLaunchOnThreadPool, this, origin,
+                                      native_host_name, callback));
 }
 
 void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     const GURL& origin,
     const std::string& native_host_name,
     const LaunchedCallback& callback) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   if (!NativeMessagingHostManifest::IsValidName(native_host_name)) {
     PostErrorResult(callback, RESULT_INVALID_NAME);
     return;
