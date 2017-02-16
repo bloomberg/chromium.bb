@@ -11,7 +11,7 @@ normal browser session.
 A popular pattern used in these tests is to rely on the user to perform some
 manual steps in order to run the test case in a normal browser session. These
 tests are effectively
-[manual tests](http://testthewebforward.org/docs/manual-test.html), with
+[manual tests](http://web-platform-tests.org/writing-tests/manual.html), with
 additional JavaScript code that automatically performs the desired manual steps,
 when loaded in an environment that exposes the needed testing APIs.
 
@@ -26,7 +26,7 @@ the following benefits.
 * The manual tests can run in other browsers, making it easy to check whether
   our behavior matches other browsers.
 * The layout tests can form the basis for manual tests that are contributed to
-  the [Web Platform Tests Project](https://github.com/w3c/web-platform-tests).
+  [web-platform-tests](./web_platform_tests.md).
 
 Therefore, the desirability of adding a manual fallback to a test heavily
 depends on whether the feature under test is a Web Platform feature or a

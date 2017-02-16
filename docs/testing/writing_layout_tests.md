@@ -13,13 +13,12 @@ or XHTML) and lives in
 Layout tests should be used to accomplish one of the following goals:
 
 1. The entire surface of Blink that is exposed to the Web should be covered by
-   tests that we contribute to the
-   [Web Platform Tests Project](./web_platform_tests.md) (WPT). This helps us
-   avoid regressions, and helps us identify Web Platform areas where the major
-   browsers don't have interoperable implementations. Furthermore, by
-   contributing to projects such as WPT, we share the burden of writing tests
-   with the other browser vendors, and we help all the browsers get better. This
-   is very much in line with our goal to move the Web forward.
+   tests that we contribute to [web-platform-tests](./web_platform_tests.md)
+   (WPT). This helps us avoid regressions, and helps us identify Web Platform
+   areas where the major browsers don't have interoperable implementations.
+   Furthermore, by contributing to projects such as WPT, we share the burden of
+   writing tests with the other browser vendors, and we help all the browsers
+   get better. This is very much in line with our goal to move the Web forward.
 2. When a Blink feature cannot be tested using the tools provided by WPT, and
    cannot be easily covered by
    [C++ unit tests](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/web/tests/?q=webframetest&sq=package:chromium&type=cs),
@@ -74,7 +73,7 @@ There are four broad types of layout tests, listed in the order of preference.
 
 Tests should be written under the assumption that they will be upstreamed
 to the WPT project. To this end, tests should follow the
-[WPT guidelines](http://testthewebforward.org/docs/writing-tests.html).
+[WPT guidelines](http://web-platform-tests.org/writing-tests/).
 
 
 There is no style guide that applies to all layout tests. However, some projects
@@ -100,12 +99,12 @@ framework is used by the tests in the
 which is shared with all the other browser vendors, so `testharness.js` tests
 are more accessible to browser developers.
 
-As a shared framework, `testharness.js` enjoys high-quality documentation, such
-as [a tutorial](http://testthewebforward.org/docs/testharness-tutorial.html) and
-[API documentation](https://github.com/w3c/testharness.js/blob/master/docs/api.md).
-Layout tests should follow the recommendations of the above documents.
+See the [API documentation](https://github.com/w3c/testharness.js/blob/master/docs/api.md)
+for a thorough introduction to `testharness.js`.
+
+Layout tests should follow the recommendations of the above documentation.
 Furthermore, layout tests should include relevant
-[metadata](http://testthewebforward.org/docs/css-metadata.html). The
+[metadata](http://web-platform-tests.org/writing-tests/css-metadata.html). The
 specification URL (in `<link rel="help">`) is almost always relevant, and is
 incredibly helpful to a developer who needs to understand the test quickly.
 
@@ -353,8 +352,8 @@ be slower as well. Therefore, they should only be used for functionality that
 cannot be covered by JavaScript tests.
 
 New reference tests should follow the
-[WPT reftests guidelines](http://testthewebforward.org/docs/reftests.html). The
-most important points are summarized below.
+[WPT reftests guidelines](http://web-platform-tests.org/writing-tests/reftests.html).
+The most important points are summarized below.
 
 * &#x1F6A7; The test page declares the reference page using a
   `<link rel="match">` or `<link rel="mismatch">`, depending on whether the test
@@ -426,7 +425,7 @@ tests**.
 Pixel tests should still follow the principles laid out above. Pixel tests pose
 unique challenges to the desire to have *self-describing* and *cross-platform*
 tests. The
-[WPT test style guidelines](http://testthewebforward.org/docs/test-style-guidelines.html)
+[WPT rendering test guidelines](http://web-platform-tests.org/writing-tests/rendering.html)
 contain useful guidance. The most relevant pieces of advice are below.
 
 * Whenever possible, use a green paragraph / page / square to indicate success.

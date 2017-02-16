@@ -1,4 +1,4 @@
-# Web Platform Tests
+# web-platform-tests
 
 Interoperability between browsers is
 [critical](https://www.chromium.org/blink/platform-predictability) to Chromium's
@@ -16,6 +16,9 @@ repository, where tests are imported into
 [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
 and any changes to the imported tests are also exported to web-platform-tests.
 
+See http://web-platform-tests.org/ for general documentation on
+web-platform-tests, including tips for writing and reviewing tests.
+
 [TOC]
 
 ## Importing tests
@@ -26,15 +29,15 @@ Chromium has mirrors
 GitHub repos, and periodically imports a subset of the tests so that they are
 run as part of the regular Blink layout test testing process.
 
-The goal of this process are to be able to run Web Platform Tests unmodified
+The goal of this process are to be able to run web-platform-tests unmodified
 locally just as easily as we can run the Blink tests, and ensure that we are
-tracking tip-of-tree in the Web Platform Tests repository as closely as
+tracking tip-of-tree in the web-platform-tests repository as closely as
 possible, and running as many of the tests as possible.
 
 ### Automatic import process
 
-There is an automatic process for updating the Chromium copy of the Web Platform
-Tests. The import is done by the builder [w3c-test-autoroller
+There is an automatic process for updating the Chromium copy of
+web-platform-tests. The import is done by the builder [w3c-test-autoroller
 builder](https://build.chromium.org/p/chromium.infra.cron/builders/w3c-test-autoroller).
 
 The easiest way to check the status of recent imports is to look at:
@@ -79,7 +82,7 @@ you can also run `wpt-import --allow-local-commits`, but this is not required.
 
 ## Writing tests
 
-To contribute changes to Web Platform Tests, just commit your changes directly
+To contribute changes to web-platform-tests, just commit your changes directly
 to [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
 and the changes will be automatically upstreamed within 24 hours.
 
@@ -104,7 +107,7 @@ Most tests are written using testharness.js, see
 
 ### Write tests against specifications
 
-Tests in Web Platform Tests are expected to match behavior defined by the
+Tests in web-platform-tests are expected to match behavior defined by the
 relevant specification. In other words, all assertions that a test makes
 should be derived from a specification's normative requirements, and not go
 beyond them. It is often necessary to change the specification to clarify what
@@ -155,10 +158,8 @@ resolve the conflict.
 
 ### Direct pull requests
 
-It's still possible to make direct pull requests to web-platform-tests. The
-processes for getting new tests committed the W3C repos are at
-http://testthewebforward.org/docs/. Some specifics are at
-http://testthewebforward.org/docs/github-101.html.
+It's still possible to make direct pull requests to web-platform-tests, see
+http://web-platform-tests.org/appendix/github-intro.html.
 
 ## Reviewing tests
 

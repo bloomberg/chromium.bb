@@ -108,11 +108,11 @@ class TestCopier(object):
             jstests = 0
 
             # Files in 'tools' are not for browser testing, so we skip them.
-            # See: http://testthewebforward.org/docs/test-format-guidelines.html#tools
+            # See: http://web-platform-tests.org/writing-tests/general-guidelines.html#tools
             dirs_to_skip = ('.git', 'test-plan', 'tools')
 
             # We copy all files in 'support', including HTML without metadata.
-            # See: http://testthewebforward.org/docs/test-format-guidelines.html#support-files
+            # See: http://web-platform-tests.org/writing-tests/general-guidelines.html#support-files
             dirs_to_include = ('resources', 'support')
 
             if dirs:

@@ -20,7 +20,7 @@ capture the context that rests in the head of an experienced Blink engineer.
 ## General Principles
 
 This section contains guidelines adopted from
-[Test the Web Forward's Test Format Guidelines](http://testthewebforward.org/docs/test-format-guidelines.html)
+[web-platform-tests documentation](http://web-platform-tests.org/writing-tests/general-guidelines.html)
 and
 [WebKit's Wiki page on Writing good test cases](https://trac.webkit.org/wiki/Writing%20Layout%20Tests%20for%20DumpRenderTree),
 with Blink-specific flavoring.
@@ -93,7 +93,7 @@ feature being tested.
 `testharness.js` makes a test self-describing when used correctly. Other types
 of tests, such as reference tests and
 [tests with manual fallback](./layout_tests_with_manual_fallback.md),
-[must be carefully designed](http://testthewebforward.org/docs/test-style-guidelines.html)
+[must be carefully designed](http://web-platform-tests.org/writing-tests/manual.html#requirements-for-a-manual-test)
 to be self-describing.
 
 ### Minimal

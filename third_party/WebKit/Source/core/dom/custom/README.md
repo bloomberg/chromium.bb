@@ -86,7 +86,7 @@ The custom element layout tests are generally in
 third_party/WebKit/LayoutTests/custom-elements.
 
 All custom elements layout tests use the [W3C web-platform-tests
-harness](http://testthewebforward.org/docs/) and follow its style. The
+harness](http://web-platform-tests.org/) and follow its style. The
 W3C is not very prescriptive, so be consistent with other custom
 elements tests.
 
