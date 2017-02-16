@@ -26,6 +26,7 @@
 
 namespace content {
 class PopupMenuHelper;
+class RenderWidgetHostViewMac;
 class WebContentsImpl;
 class WebContentsViewDelegate;
 class WebContentsViewMac;
@@ -127,6 +128,13 @@ class WebContentsViewMac : public WebContentsView,
 
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
+
+  using RenderWidgetHostViewCreateFunction =
+      RenderWidgetHostViewMac* (*)(RenderWidgetHost*, bool);
+
+  // Used to override the creation of RenderWidgetHostViews in tests.
+  CONTENT_EXPORT static void InstallCreateHookForTests(
+      RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
   // Returns the fullscreen view, if one exists; otherwise, returns the content

@@ -72,6 +72,10 @@ bool RenderWidgetHostDelegate::HasMouseLock(
   return false;
 }
 
+RenderWidgetHostImpl* RenderWidgetHostDelegate::GetMouseLockWidget() {
+  return nullptr;
+}
+
 TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
   return nullptr;
 }

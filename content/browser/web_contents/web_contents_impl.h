@@ -660,6 +660,7 @@ class CONTENT_EXPORT WebContentsImpl
   void LostCapture(RenderWidgetHostImpl* render_widget_host) override;
   void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
   bool HasMouseLock(RenderWidgetHostImpl* render_widget_host) override;
+  RenderWidgetHostImpl* GetMouseLockWidget() override;
   void OnRenderFrameProxyVisibilityChanged(bool visible) override;
   void SendScreenRects() override;
   void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) override;

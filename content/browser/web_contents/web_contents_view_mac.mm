@@ -80,6 +80,9 @@ STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::WebDragOperationEvery);
 
 namespace {
 
+WebContentsViewMac::RenderWidgetHostViewCreateFunction
+    g_create_render_widget_host_view = nullptr;
+
 content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(view);
@@ -102,6 +105,13 @@ content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
 }  // namespace
 
 namespace content {
+
+// static
+void WebContentsViewMac::InstallCreateHookForTests(
+    RenderWidgetHostViewCreateFunction create_render_widget_host_view) {
+  CHECK_EQ(nullptr, g_create_render_widget_host_view);
+  g_create_render_widget_host_view = create_render_widget_host_view;
+}
 
 // static
 void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
@@ -350,8 +360,11 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
         render_widget_host->GetView());
   }
 
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(
-      render_widget_host, is_guest_view_hack);
+  RenderWidgetHostViewMac* view =
+      g_create_render_widget_host_view
+          ? g_create_render_widget_host_view(render_widget_host,
+                                             is_guest_view_hack)
+          : new RenderWidgetHostViewMac(render_widget_host, is_guest_view_hack);
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate> >
         rw_delegate(

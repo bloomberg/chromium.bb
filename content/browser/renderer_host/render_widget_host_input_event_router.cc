@@ -173,8 +173,26 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseEvent* event,
     const ui::LatencyInfo& latency) {
-  RenderWidgetHostViewBase* target;
+  RenderWidgetHostViewBase* target = nullptr;
   gfx::Point transformed_point;
+
+  // When the mouse is locked, directly route the events to the widget that
+  // holds the lock and return.
+  if (root_view->IsMouseLocked()) {
+    target = RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
+                 ->delegate()
+                 ->GetMouseLockWidget()
+                 ->GetView();
+    if (!root_view->TransformPointToCoordSpaceForView(
+            gfx::Point(event->x, event->y), target, &transformed_point))
+      return;
+
+    event->x = transformed_point.x();
+    event->y = transformed_point.y();
+    target->ProcessMouseEvent(*event, latency);
+    return;
+  }
+
   const int mouse_button_modifiers = blink::WebInputEvent::LeftButtonDown |
                                      blink::WebInputEvent::MiddleButtonDown |
                                      blink::WebInputEvent::RightButtonDown;
@@ -247,6 +265,15 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseWheelEvent* event,
     const ui::LatencyInfo& latency) {
+  if (root_view->IsMouseLocked()) {
+    RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
+        ->delegate()
+        ->GetMouseLockWidget()
+        ->GetView()
+        ->ProcessMouseEvent(*event, latency);
+    return;
+  }
+
   gfx::Point transformed_point;
   RenderWidgetHostViewBase* target = FindEventTarget(
       root_view, gfx::Point(event->x, event->y), &transformed_point);

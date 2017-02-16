@@ -60,6 +60,13 @@ class CONTENT_EXPORT WebContentsViewAura
     init_rwhv_with_null_parent_for_testing_ = set;
   }
 
+  using RenderWidgetHostViewCreateFunction =
+      RenderWidgetHostViewAura* (*)(RenderWidgetHost*, bool);
+
+  // Used to override the creation of RenderWidgetHostViews in tests.
+  static void InstallCreateHookForTests(
+      RenderWidgetHostViewCreateFunction create_render_widget_host_view);
+
  private:
   class WindowObserver;
 

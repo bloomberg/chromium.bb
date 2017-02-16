@@ -623,6 +623,9 @@ test("content_browsertests") {
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/net_info_browsertest.cc",
     "../browser/payments/payment_app_browsertest.cc",
+    "../browser/pointer_lock_browsertest.cc",
+    "../browser/pointer_lock_browsertest.h",
+    "../browser/pointer_lock_browsertest_mac.mm",
     "../browser/presentation/presentation_browsertest.cc",
     "../browser/renderer_host/input/composited_scrolling_browsertest.cc",
     "../browser/renderer_host/input/main_thread_event_queue_browsertest.cc",
@@ -833,6 +836,8 @@ test("content_browsertests") {
     sources -= [
       "../browser/battery_status/battery_monitor_impl_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
+      "../browser/pointer_lock_browsertest.cc",
+      "../browser/pointer_lock_browsertest.h",
     ]
     deps += [
       ":content_browsertests_java",

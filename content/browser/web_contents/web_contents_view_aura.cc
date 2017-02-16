@@ -90,6 +90,9 @@ WebContentsView* CreateWebContentsView(
 
 namespace {
 
+WebContentsViewAura::RenderWidgetHostViewCreateFunction
+    g_create_render_widget_host_view = nullptr;
+
 bool IsScrollEndEffectEnabled() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kScrollEndEffect) == "1";
@@ -511,6 +514,13 @@ class WebContentsViewAura::WindowObserver
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
 
+// static
+void WebContentsViewAura::InstallCreateHookForTests(
+    RenderWidgetHostViewCreateFunction create_render_widget_host_view) {
+  CHECK_EQ(nullptr, g_create_render_widget_host_view);
+  g_create_render_widget_host_view = create_render_widget_host_view;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, public:
 
@@ -847,7 +857,11 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
   }
 
   RenderWidgetHostViewAura* view =
-      new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack);
+      g_create_render_widget_host_view
+          ? g_create_render_widget_host_view(render_widget_host,
+                                             is_guest_view_hack)
+          : new RenderWidgetHostViewAura(render_widget_host,
+                                         is_guest_view_hack);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =

@@ -1990,6 +1990,13 @@ bool WebContentsImpl::HasMouseLock(RenderWidgetHostImpl* render_widget_host) {
          GetTopLevelRenderWidgetHostView()->IsMouseLocked();
 }
 
+RenderWidgetHostImpl* WebContentsImpl::GetMouseLockWidget() {
+  if (GetTopLevelRenderWidgetHostView()->IsMouseLocked())
+    return mouse_lock_widget_;
+
+  return nullptr;
+}
+
 void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
   if (visible && !GetOuterWebContents()->IsHidden())
     WasShown();
