@@ -36,6 +36,9 @@ const char kCustomizationId[] = "customization_id";
 const char kExecutablePath[] = "executable_path";
 const char kExecutablePathName[] = "executable_path_name";
 #endif
+#if defined(OS_CHROMEOS)
+const char kFirmwareVersion[] = "firmware_version";
+#endif
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 const char kFlashPlugin[] = "flash_plugin";
 const char kFlashVersion[] = "flash_version";

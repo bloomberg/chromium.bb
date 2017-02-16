@@ -34,6 +34,9 @@
   <message name="IDS_VERSION_UI_CUSTOMIZATION_ID" desc="label for the device customization ID if present on the about:version page">
     Customization ID
   </message>
+  <message name="IDS_VERSION_UI_FIRMWARE_VERSION" desc="label for the firmware version on the about:version page">
+    Firmware Version
+  </message>
 </if>
   <message name="IDS_VERSION_UI_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
     Executable Path

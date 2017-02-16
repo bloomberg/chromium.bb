@@ -41,6 +41,14 @@ function returnOsVersion(osVersion) {
 }
 
 /**
+ * Callback from the backend with the firmware version to display.
+ * @param {string} firmwareVersion
+ */
+function returnOsFirmwareVersion(firmwareVersion) {
+  $('firmware_version').textContent = firmwareVersion;
+}
+
+/**
  * Callback from the backend with the ARC version to display.
  * @param {string} arcVersion The ARC version to display.
  */

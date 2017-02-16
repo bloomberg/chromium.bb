@@ -8,12 +8,9 @@
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/web_ui.h"
 
-VersionHandlerChromeOS::VersionHandlerChromeOS()
-    : weak_factory_(this) {
-}
+VersionHandlerChromeOS::VersionHandlerChromeOS() : weak_factory_(this) {}
 
-VersionHandlerChromeOS::~VersionHandlerChromeOS() {
-}
+VersionHandlerChromeOS::~VersionHandlerChromeOS() {}
 
 void VersionHandlerChromeOS::HandleRequestVersionInfo(
     const base::ListValue* args) {
@@ -24,6 +21,12 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
       base::Bind(&chromeos::version_loader::GetVersion,
                  chromeos::version_loader::VERSION_FULL),
       base::Bind(&VersionHandlerChromeOS::OnVersion,
+                 weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&chromeos::version_loader::GetFirmware),
+      base::Bind(&VersionHandlerChromeOS::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
@@ -39,6 +42,11 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {
   base::StringValue arg(version);
   web_ui()->CallJavascriptFunctionUnsafe("returnOsVersion", arg);
+}
+
+void VersionHandlerChromeOS::OnOSFirmware(const std::string& version) {
+  base::StringValue arg(version);
+  web_ui()->CallJavascriptFunctionUnsafe("returnOsFirmwareVersion", arg);
 }
 
 void VersionHandlerChromeOS::OnARCVersion(const std::string& version) {

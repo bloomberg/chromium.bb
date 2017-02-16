@@ -93,6 +93,8 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddLocalizedString(version_ui::kPlatform, IDS_PLATFORM_LABEL);
   html_source->AddLocalizedString(version_ui::kCustomizationId,
                                   IDS_VERSION_UI_CUSTOMIZATION_ID);
+  html_source->AddLocalizedString(version_ui::kFirmwareVersion,
+                                  IDS_VERSION_UI_FIRMWARE_VERSION);
 #else
   html_source->AddLocalizedString(version_ui::kOSName, IDS_VERSION_UI_OS);
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());

@@ -24,6 +24,7 @@ class VersionHandlerChromeOS : public VersionHandler {
 
   // Callbacks from chromeos::VersionLoader.
   void OnVersion(const std::string& version);
+  void OnOSFirmware(const std::string& version);
   void OnARCVersion(const std::string& version);
 
  private:
