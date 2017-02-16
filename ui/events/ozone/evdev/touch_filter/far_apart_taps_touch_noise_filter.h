@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_
-#define UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_
+#define UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/events/ozone/evdev/touch_noise/touch_noise_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/touch_filter.h"
 
 namespace ui {
 
-class FarApartTapsTouchNoiseFilter : public TouchNoiseFilter {
+class FarApartTapsTouchNoiseFilter : public TouchFilter {
  public:
   FarApartTapsTouchNoiseFilter() {}
   ~FarApartTapsTouchNoiseFilter() override {}
 
-  // TouchNoiseFilter:
+  // TouchFilter:
   void Filter(const std::vector<InProgressTouchEvdev>& touches,
               base::TimeTicks time,
               std::bitset<kNumTouchEvdevSlots>* slots_with_noise) override;
@@ -43,4 +43,4 @@ class FarApartTapsTouchNoiseFilter : public TouchNoiseFilter {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_FAR_APART_TAPS_TOUCH_NOISE_FILTER_H_

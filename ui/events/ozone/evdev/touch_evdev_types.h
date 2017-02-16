@@ -32,6 +32,12 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   // Whether the touch is going to be canceled.
   bool cancelled = false;
 
+  // Whether the touch is delayed at first appearance. Will not be reported yet.
+  bool delayed = false;
+
+  // Whether the touch was delayed before.
+  bool was_delayed = false;
+
   bool was_touching = false;
   bool touching = false;
   float x = 0;

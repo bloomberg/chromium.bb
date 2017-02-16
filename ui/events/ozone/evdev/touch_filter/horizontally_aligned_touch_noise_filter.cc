@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/touch_noise/horizontally_aligned_touch_noise_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/horizontally_aligned_touch_noise_filter.h"
 
 #include <inttypes.h>
 #include <cmath>

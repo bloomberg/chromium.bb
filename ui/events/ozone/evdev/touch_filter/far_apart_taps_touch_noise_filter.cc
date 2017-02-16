@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/touch_noise/far_apart_taps_touch_noise_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/far_apart_taps_touch_noise_filter.h"
 
 #include <stddef.h>
 

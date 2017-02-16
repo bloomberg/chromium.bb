@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/touch_noise/single_position_touch_noise_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/single_position_touch_noise_filter.h"
 
 #include <inttypes.h>
 

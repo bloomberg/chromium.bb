@@ -129,6 +129,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableZeroCopy,
 #if defined(USE_OZONE)
     ::switches::kExtraTouchNoiseFiltering,
+    ::switches::kEdgeTouchFiltering,
 #endif
     ::switches::kHostWindowBounds,
     ::switches::kMainFrameResizesAreOrientationChanges,

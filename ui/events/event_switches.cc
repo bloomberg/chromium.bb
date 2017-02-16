@@ -31,6 +31,9 @@ const char kExtraTouchNoiseFiltering[] = "touch-noise-filtering";
 
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";
+
+// Tells Chrome to do edge touch filtering. Useful for convertible tablet.
+const char kEdgeTouchFiltering[] = "edge-touch-filtering";
 #endif
 
 }  // namespace switches

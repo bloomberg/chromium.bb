@@ -21,6 +21,7 @@ EVENTS_BASE_EXPORT extern const char kTouchDevices[];
 #if defined(USE_X11) || defined(USE_OZONE)
 EVENTS_BASE_EXPORT extern const char kExtraTouchNoiseFiltering[];
 EVENTS_BASE_EXPORT extern const char kTouchCalibration[];
+EVENTS_BASE_EXPORT extern const char kEdgeTouchFiltering[];
 #endif
 
 }  // namespace switches

@@ -32,7 +32,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
-#include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
+#include "ui/events/ozone/evdev/touch_filter/false_touch_finder.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace {
@@ -110,10 +110,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
                           devinfo.product_id()),
       input_device_fd_(std::move(fd)),
       dispatcher_(dispatcher) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExtraTouchNoiseFiltering)) {
-    touch_noise_finder_.reset(new TouchNoiseFinder);
-  }
+
   touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 
@@ -209,6 +206,18 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   }
   if (cancelled_state)
     CancelAllTouches();
+
+  bool touch_noise_filtering =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExtraTouchNoiseFiltering);
+  bool edge_touch_filtering =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEdgeTouchFiltering);
+  if (touch_noise_filtering || edge_touch_filtering) {
+    false_touch_finder_.reset(new FalseTouchFinder(touch_noise_filtering,
+                                                  edge_touch_filtering,
+                                                  GetTouchscreenSize()));
+  }
 }
 
 void TouchEventConverterEvdev::Reinitialize() {
@@ -427,15 +436,33 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
 
 EventType TouchEventConverterEvdev::GetEventTypeForTouch(
     const InProgressTouchEvdev& touch) {
-  if (touch.was_cancelled)
+
+  bool touch_is_alive =
+      touch.touching && !touch.delayed && !touch.cancelled;
+  bool touch_was_alive =
+      touch.was_touching && !touch.was_delayed && !touch.was_cancelled;
+
+  // Delaying an already live touch is not possible.
+  DCHECK(!touch_was_alive || !touch.delayed);
+
+  if ((!touch_was_alive && !touch_is_alive) || touch.was_cancelled) {
+    // Ignore this touch; it was never born or has already died.
     return ET_UNKNOWN;
+  }
 
-  if (touch.cancelled)
-    return touch.was_touching ? ET_TOUCH_CANCELLED : ET_UNKNOWN;
+  if (!touch_was_alive) {
+    // This touch has just been born.
+    return ET_TOUCH_PRESSED;
+  }
 
-  if (touch.touching)
-    return touch.was_touching ? ET_TOUCH_MOVED : ET_TOUCH_PRESSED;
-  return touch.was_touching ? ET_TOUCH_RELEASED : ET_UNKNOWN;
+  if (!touch_is_alive) {
+    // This touch was alive but is now dead.
+    if (touch.cancelled)
+      return ET_TOUCH_CANCELLED;  // Cancelled by driver or noise filter.
+    return ET_TOUCH_RELEASED;  // Finger lifted.
+  }
+
+  return ET_TOUCH_MOVED;
 }
 
 void TouchEventConverterEvdev::ReportTouchEvent(
@@ -468,14 +495,14 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
     dropped_events_ = false;
   }
 
-  if (touch_noise_finder_)
-    touch_noise_finder_->HandleTouches(events_, timestamp);
+  if (false_touch_finder_)
+    false_touch_finder_->HandleTouches(events_, timestamp);
 
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
     if (event->altered && (event->cancelled ||
-                           (touch_noise_finder_ &&
-                            touch_noise_finder_->SlotHasNoise(event->slot)))) {
+                           (false_touch_finder_ &&
+                            false_touch_finder_->SlotHasNoise(event->slot)))) {
       CancelAllTouches();
       break;
     }
@@ -489,6 +516,9 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
     if (enable_palm_suppression_callback_)
       enable_palm_suppression_callback_.Run(event->tool_code > 0);
 
+    if (false_touch_finder_)
+      event->delayed = false_touch_finder_->SlotShouldDelay(event->slot);
+
     EventType event_type = GetEventTypeForTouch(*event);
     // The tool type is fixed with the touch pressed event and does not change.
     if (event_type == ET_TOUCH_PRESSED)
@@ -498,6 +528,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
 
     event->was_cancelled = event->cancelled;
     event->was_touching = event->touching;
+    event->was_delayed = event->delayed;
     event->altered = false;
     event->btn_left.changed = false;
     event->btn_right.changed = false;
