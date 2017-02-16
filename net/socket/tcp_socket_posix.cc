@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -144,8 +144,6 @@ TCPSocketPosix::TCPSocketPosix(
     NetLog* net_log,
     const NetLogSource& source)
     : socket_performance_watcher_(std::move(socket_performance_watcher)),
-      tick_clock_(new base::DefaultTickClock()),
-      rtt_notifications_minimum_interval_(base::TimeDelta::FromSeconds(1)),
       use_tcp_fastopen_(false),
       tcp_fastopen_write_attempted_(false),
       tcp_fastopen_connected_(false),
@@ -483,11 +481,6 @@ void TCPSocketPosix::EndLoggingMultipleConnectAttempts(int net_error) {
   }
 }
 
-void TCPSocketPosix::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
-}
-
 void TCPSocketPosix::AcceptCompleted(
     std::unique_ptr<TCPSocketPosix>* tcp_socket,
     IPEndPoint* address,
@@ -723,13 +716,6 @@ int TCPSocketPosix::TcpFastOpenWrite(IOBuffer* buf,
 
 void TCPSocketPosix::NotifySocketPerformanceWatcher() {
 #if defined(TCP_INFO)
-  const base::TimeTicks now_ticks = tick_clock_->NowTicks();
-  // Do not notify |socket_performance_watcher_| if the last notification was
-  // recent than |rtt_notifications_minimum_interval_| ago. This helps in
-  // reducing the overall overhead of the tcp_info syscalls.
-  if (now_ticks - last_rtt_notification_ < rtt_notifications_minimum_interval_)
-    return;
-
   // Check if |socket_performance_watcher_| is interested in receiving a RTT
   // update notification.
   if (!socket_performance_watcher_ ||
@@ -751,7 +737,6 @@ void TCPSocketPosix::NotifySocketPerformanceWatcher() {
 
   socket_performance_watcher_->OnUpdatedRTTAvailable(
       base::TimeDelta::FromMicroseconds(info.tcpi_rtt));
-  last_rtt_notification_ = now_ticks;
 #endif  // defined(TCP_INFO)
 }
 
