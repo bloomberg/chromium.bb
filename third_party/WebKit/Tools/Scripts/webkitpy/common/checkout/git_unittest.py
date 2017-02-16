@@ -231,6 +231,7 @@ class GitTestWithMock(unittest.TestCase):
             ' M d/modified.txt',
             ' D d/deleted.txt',
             '?? d/untracked.txt',
+            '?? a',
             'D  d/deleted.txt',
             'M  d/modified-staged.txt',
             'A  d/added-staged.txt',
@@ -243,4 +244,5 @@ class GitTestWithMock(unittest.TestCase):
                 'd/modified.txt': 'M',
                 'd/deleted.txt': 'D',
                 'd/untracked.txt': '?',
+                'a': '?',
             })

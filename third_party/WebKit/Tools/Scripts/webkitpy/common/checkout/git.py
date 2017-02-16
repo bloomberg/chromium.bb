@@ -168,7 +168,7 @@ class Git(object):
             return {}  # No changes.
         unstaged_changes = {}
         for line in change_lines.split('\x00'):
-            assert len(line) > 4, 'Unexpected change line format %s' % line
+            assert len(line) >= 4, 'Unexpected change line format %s' % line
             if line[1] == ' ':
                 continue  # Already staged for commit.
             path = line[3:]
