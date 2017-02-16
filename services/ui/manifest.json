@@ -31,6 +31,9 @@
         "display_controller": [
           "display::mojom::DisplayController"
         ],
+        "display_output_protection": [
+          "display::mojom::OutputProtection"
+        ],
         "display_test": [
           "display::mojom::TestDisplayController"
         ],

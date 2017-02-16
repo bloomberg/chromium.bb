@@ -51,13 +51,14 @@
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],
         "content_utility": [ "browser" ],
+        "file": [ "file:filesystem", "file:leveldb" ],
+        "media": [ "media:media" ],
+        "ui": [ "display_output_protection" ],
         "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",
           "service_manager:user_id"
         ],
-        "file": [ "file:filesystem", "file:leveldb" ],
-        "media": [ "media:media" ],
         "shape_detection": [
           "barcode_detection",
           "face_detection"

@@ -24,6 +24,8 @@ source_set("display") {
   if (use_ozone) {
     if (is_chromeos) {
       sources += [
+        "output_protection.cc",
+        "output_protection.h",
         "screen_manager_ozone_internal.cc",
         "screen_manager_ozone_internal.h",
       ]

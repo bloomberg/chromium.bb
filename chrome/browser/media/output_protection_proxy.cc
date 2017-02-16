@@ -46,7 +46,7 @@ void OutputProtectionProxy::EnableProtection(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
-  output_protection_delegate_.EnableProtection(desired_method_mask, callback);
+  output_protection_delegate_.SetProtection(desired_method_mask, callback);
 #else   // defined(OS_CHROMEOS)
   NOTIMPLEMENTED();
   callback.Run(false);

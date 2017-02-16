@@ -11,7 +11,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/system/devicemode.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/display/output_protection.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/chromeos/touch_transform_controller.h"
@@ -135,6 +137,7 @@ void ScreenManagerOzoneInternal::SetPrimaryDisplayId(int64_t display_id) {
 void ScreenManagerOzoneInternal::AddInterfaces(
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::DisplayController>(this);
+  registry->AddInterface<mojom::OutputProtection>(this);
   registry->AddInterface<mojom::TestDisplayController>(this);
 }
 
@@ -387,6 +390,14 @@ void ScreenManagerOzoneInternal::Create(
     const service_manager::Identity& remote_identity,
     mojom::DisplayControllerRequest request) {
   controller_bindings_.AddBinding(this, std::move(request));
+}
+
+void ScreenManagerOzoneInternal::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::OutputProtectionRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<OutputProtection>(display_configurator()),
+      std::move(request));
 }
 
 void ScreenManagerOzoneInternal::Create(

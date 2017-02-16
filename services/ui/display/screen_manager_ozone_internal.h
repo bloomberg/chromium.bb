@@ -16,6 +16,7 @@
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
+#include "services/ui/public/interfaces/display/output_protection.mojom.h"
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -40,6 +41,7 @@ class ScreenManagerOzoneInternal
       public DisplayObserver,
       public DisplayManager::Delegate,
       public service_manager::InterfaceFactory<mojom::DisplayController>,
+      public service_manager::InterfaceFactory<mojom::OutputProtection>,
       public service_manager::InterfaceFactory<mojom::TestDisplayController> {
  public:
   ScreenManagerOzoneInternal();
@@ -93,6 +95,10 @@ class ScreenManagerOzoneInternal
   // mojo::InterfaceFactory<mojom::DisplayController>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::DisplayControllerRequest request) override;
+
+  // mojo::InterfaceFactory<mojom:OutputProtection>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::OutputProtectionRequest request) override;
 
   // mojo::InterfaceFactory<mojom::TestDisplayController>:
   void Create(const service_manager::Identity& remote_identity,

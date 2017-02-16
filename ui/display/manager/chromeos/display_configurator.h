@@ -44,35 +44,28 @@ class UpdateDisplayConfigurationTask;
 class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     : public NativeDisplayObserver {
  public:
-  typedef uint64_t ContentProtectionClientId;
-  static const ContentProtectionClientId kInvalidClientId = 0;
-
-  typedef base::Callback<void(bool /* success */)> ConfigurationCallback;
-
-  typedef base::Callback<void(bool /* success */)> EnableProtectionCallback;
-
-  struct QueryProtectionResponse {
-    // True if the query succeeded, false otherwise.
-    bool success = false;
-
-    // The type of connected display links, which is a bitmask of
-    // DisplayConnectionType values.
-    uint32_t link_mask = 0;
-
-    // The desired protection methods, which is a bitmask of the
-    // ContentProtectionMethod values.
-    uint32_t protection_mask = 0;
+  enum : uint64_t {
+    INVALID_CLIENT_ID = 0,
   };
 
-  typedef base::Callback<void(const QueryProtectionResponse&)>
-      QueryProtectionCallback;
+  using ConfigurationCallback = base::Callback<void(bool /* success */)>;
 
-  typedef base::Callback<void(bool /* success */)> DisplayControlCallback;
+  using SetProtectionCallback = base::Callback<void(bool /* success */)>;
 
-  typedef std::vector<DisplaySnapshot*> DisplayStateList;
+  // link_mask: The type of connected display links, which is a bitmask of
+  // DisplayConnectionType values.
+  // protection_mask: The desired protection methods, which is a bitmask of the
+  // ContentProtectionMethod values.
+  using QueryProtectionCallback =
+      base::Callback<void(bool /* success */,
+                          uint32_t /* link_mask */,
+                          uint32_t /* protection_mask */)>;
+  using DisplayControlCallback = base::Callback<void(bool /* success */)>;
+
+  using DisplayStateList = std::vector<DisplaySnapshot*>;
 
   // Mapping a display_id to a protection request bitmask.
-  typedef std::map<int64_t, uint32_t> ContentProtections;
+  using ContentProtections = std::map<int64_t, uint32_t>;
 
   class Observer {
    public:
@@ -263,14 +256,14 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Registers a client for display protection and requests a client id. Returns
   // 0 if requesting failed.
-  ContentProtectionClientId RegisterContentProtectionClient();
+  uint64_t RegisterContentProtectionClient();
 
   // Unregisters the client.
-  void UnregisterContentProtectionClient(ContentProtectionClientId client_id);
+  void UnregisterContentProtectionClient(uint64_t client_id);
 
   // Queries link status and protection status. |callback| is used to respond
   // to the query.
-  void QueryContentProtectionStatus(ContentProtectionClientId client_id,
+  void QueryContentProtectionStatus(uint64_t client_id,
                                     int64_t display_id,
                                     const QueryProtectionCallback& callback);
 
@@ -278,10 +271,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // |protection_mask| is the desired protection methods, which is a bitmask
   // of the ContentProtectionMethod values.
   // Returns true when the protection request has been made.
-  void EnableContentProtection(ContentProtectionClientId client_id,
-                               int64_t display_id,
-                               uint32_t protection_mask,
-                               const EnableProtectionCallback& callback);
+  void SetContentProtection(uint64_t client_id,
+                            int64_t display_id,
+                            uint32_t protection_mask,
+                            const SetProtectionCallback& callback);
 
   // Checks the available color profiles for |display_id| and fills the result
   // into |profiles|.
@@ -310,8 +303,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   class DisplayLayoutManagerImpl;
 
   // Mapping a client to its protection request.
-  typedef std::map<ContentProtectionClientId, ContentProtections>
-      ProtectionRequests;
+  using ProtectionRequests = std::map<uint64_t, ContentProtections>;
 
   // Updates |pending_*| members and applies the passed-in state. |callback| is
   // invoked (perhaps synchronously) on completion.
@@ -365,13 +357,13 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // are responsible for destroying the task, replying to the caller that made
   // the task and starting the a new content protection task if one is queued.
   void OnContentProtectionQueried(
-      ContentProtectionClientId client_id,
+      uint64_t client_id,
       int64_t display_id,
       QueryContentProtectionTask::Response response);
-  void OnContentProtectionEnabled(ContentProtectionClientId client_id,
-                                  int64_t display_id,
-                                  uint32_t desired_method_mask,
-                                  bool success);
+  void OnSetContentProtectionCompleted(uint64_t client_id,
+                                       int64_t display_id,
+                                       uint32_t desired_method_mask,
+                                       bool success);
   void OnContentProtectionClientUnregistered(bool success);
 
   // Callbacks used to signal when the native platform has released/taken
@@ -437,7 +429,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   std::queue<base::Closure> content_protection_tasks_;
   std::queue<QueryProtectionCallback> query_protection_callbacks_;
-  std::queue<EnableProtectionCallback> enable_protection_callbacks_;
+  std::queue<SetProtectionCallback> set_protection_callbacks_;
 
   // True if the caller wants to force the display configuration process.
   bool force_configure_;
@@ -457,7 +449,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   base::OneShotTimer configure_timer_;
 
   // Id for next display protection client.
-  ContentProtectionClientId next_display_protection_client_id_;
+  uint64_t next_display_protection_client_id_;
 
   // Display protection requests of each client.
   ProtectionRequests client_protection_requests_;
