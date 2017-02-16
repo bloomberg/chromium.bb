@@ -41,7 +41,7 @@ EnumSet<E, Min, Max> Difference(EnumSet<E, Min, Max> set1,
 template <typename E, E MinEnumValue, E MaxEnumValue>
 class EnumSet {
  public:
-  typedef E EnumType;
+  using EnumType = E;
   static const E kMinValue = MinEnumValue;
   static const E kMaxValue = MaxEnumValue;
   static const size_t kValueCount = kMaxValue - kMinValue + 1;
@@ -49,7 +49,7 @@ class EnumSet {
 
  private:
   // Declaration needed by Iterator.
-  typedef std::bitset<kValueCount> EnumBitSet;
+  using EnumBitSet = std::bitset<kValueCount>;
 
  public:
   // Iterator is a forward-only read-only iterator for EnumSet.  Its

@@ -22,7 +22,7 @@ enum TestEnum {
   TEST_5
 };
 
-typedef EnumSet<TestEnum, TEST_MIN, TEST_MAX> TestEnumSet;
+using TestEnumSet = EnumSet<TestEnum, TEST_MIN, TEST_MAX>;
 
 class EnumSetTest : public ::testing::Test {};
 

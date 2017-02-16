@@ -10,7 +10,7 @@
 
 namespace syncer {
 
-typedef testing::Test AttachmentIdProtoTest;
+using AttachmentIdProtoTest = testing::Test;
 
 // Verify that that we generate a proto with a properly formatted unique_id
 // field.

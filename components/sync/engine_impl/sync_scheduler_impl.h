@@ -266,7 +266,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // A map tracking LOCAL NudgeSource invocations of ScheduleNudge* APIs,
   // organized by datatype. Each datatype that was part of the types requested
   // in the call will have its TimeTicks value updated.
-  typedef std::map<ModelType, base::TimeTicks> ModelTypeTimeMap;
+  using ModelTypeTimeMap = std::map<ModelType, base::TimeTicks>;
   ModelTypeTimeMap last_local_nudges_by_model_type_;
 
   // Used as an "anti-reentrancy defensive assertion".

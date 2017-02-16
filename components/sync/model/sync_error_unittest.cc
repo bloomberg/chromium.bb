@@ -13,7 +13,7 @@ namespace {
 
 using std::string;
 
-typedef testing::Test SyncErrorTest;
+using SyncErrorTest = testing::Test;
 
 TEST_F(SyncErrorTest, Unset) {
   SyncError error;

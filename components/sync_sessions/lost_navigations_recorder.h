@@ -23,8 +23,8 @@ namespace sync_sessions {
 // being reflected in the history page.
 class LostNavigationsRecorder : public syncer::LocalChangeObserver {
  public:
-  typedef SessionID::id_type id_type;
-  typedef std::set<id_type> IdSet;
+  using id_type = SessionID::id_type;
+  using IdSet = std::set<id_type>;
   enum RecorderState { RECORDER_STATE_NOT_SYNCING, RECORDER_STATE_SYNCING };
 
   LostNavigationsRecorder();

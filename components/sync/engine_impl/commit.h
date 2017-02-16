@@ -36,8 +36,8 @@ class SyncCycle;
 // PostAndProcessCommitResponse() functions.  So they ended up here.
 class Commit {
  public:
-  typedef std::map<ModelType, std::unique_ptr<CommitContribution>>
-      ContributionMap;
+  using ContributionMap =
+      std::map<ModelType, std::unique_ptr<CommitContribution>>;
 
   Commit(ContributionMap contributions,
          const sync_pb::ClientToServerMessage& message,

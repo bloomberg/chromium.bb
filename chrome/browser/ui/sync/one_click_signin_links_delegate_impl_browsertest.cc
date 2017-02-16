@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-typedef InProcessBrowserTest OneClickSigninLinksDelegateBrowserTest;
+using OneClickSigninLinksDelegateBrowserTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(OneClickSigninLinksDelegateBrowserTest, AdvancedLink) {
   std::unique_ptr<OneClickSigninLinksDelegate> delegate_(

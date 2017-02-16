@@ -113,7 +113,7 @@ int TestValue::g_delete_count = 0;
 
 }  // namespace
 
-typedef ProtoValuePtr<TestValue> TestPtr;
+using TestPtr = ProtoValuePtr<TestValue>;
 
 class ProtoValuePtrTest : public testing::Test {
  public:

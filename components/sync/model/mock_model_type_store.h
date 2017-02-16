@@ -44,21 +44,20 @@ namespace syncer {
 class MockModelTypeStore : public ModelTypeStore {
  public:
   // Signatures for all ModelTypeStore virtual functions.
-  typedef base::Callback<void(const ReadAllDataCallback&)> ReadAllDataSignature;
-  typedef base::Callback<void(const IdList&, const ReadDataCallback&)>
-      ReadDataSignature;
-  typedef base::Callback<void(const ReadMetadataCallback& callback)>
-      ReadAllMetadataSignature;
-  typedef base::Callback<void(std::unique_ptr<WriteBatch>, CallbackWithResult)>
-      CommitWriteBatchSignature;
-  typedef base::Callback<
-      void(WriteBatch*, const std::string&, const std::string&)>
-      WriteRecordSignature;
-  typedef base::Callback<void(WriteBatch*, const std::string&)>
-      WriteGlobalMetadataSignature;
-  typedef base::Callback<void(WriteBatch*, const std::string&)>
-      DeleteRecordSignature;
-  typedef base::Callback<void(WriteBatch*)> DeleteGlobalMetadataSignature;
+  using ReadAllDataSignature = base::Callback<void(const ReadAllDataCallback&)>;
+  using ReadDataSignature =
+      base::Callback<void(const IdList&, const ReadDataCallback&)>;
+  using ReadAllMetadataSignature =
+      base::Callback<void(const ReadMetadataCallback& callback)>;
+  using CommitWriteBatchSignature =
+      base::Callback<void(std::unique_ptr<WriteBatch>, CallbackWithResult)>;
+  using WriteRecordSignature =
+      base::Callback<void(WriteBatch*, const std::string&, const std::string&)>;
+  using WriteGlobalMetadataSignature =
+      base::Callback<void(WriteBatch*, const std::string&)>;
+  using DeleteRecordSignature =
+      base::Callback<void(WriteBatch*, const std::string&)>;
+  using DeleteGlobalMetadataSignature = base::Callback<void(WriteBatch*)>;
 
   MockModelTypeStore();
   ~MockModelTypeStore() override;

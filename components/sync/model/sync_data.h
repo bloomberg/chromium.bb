@@ -110,7 +110,7 @@ class SyncData {
   // Necessary since we forward-declare sync_pb::SyncEntity; see
   // comments in immutable.h.
   struct ImmutableSyncEntityTraits {
-    typedef sync_pb::SyncEntity* Wrapper;
+    using Wrapper = sync_pb::SyncEntity*;
 
     static void InitializeWrapper(Wrapper* wrapper);
 
@@ -123,8 +123,8 @@ class SyncData {
     static void Swap(sync_pb::SyncEntity* t1, sync_pb::SyncEntity* t2);
   };
 
-  typedef Immutable<sync_pb::SyncEntity, ImmutableSyncEntityTraits>
-      ImmutableSyncEntity;
+  using ImmutableSyncEntity =
+      Immutable<sync_pb::SyncEntity, ImmutableSyncEntityTraits>;
 
   // Equal to kInvalidId iff this is local.
   int64_t id_;
@@ -198,7 +198,7 @@ class SyncDataRemote : public SyncData {
 // gmock printer helper.
 void PrintTo(const SyncData& sync_data, std::ostream* os);
 
-typedef std::vector<SyncData> SyncDataList;
+using SyncDataList = std::vector<SyncData>;
 
 }  // namespace syncer
 

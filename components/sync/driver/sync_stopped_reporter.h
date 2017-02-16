@@ -25,7 +25,7 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
  public:
   enum Result { RESULT_SUCCESS, RESULT_ERROR, RESULT_TIMEOUT };
 
-  typedef base::Callback<void(const Result&)> ResultCallback;
+  using ResultCallback = base::Callback<void(const Result&)>;
 
   SyncStoppedReporter(
       const GURL& sync_service_url,

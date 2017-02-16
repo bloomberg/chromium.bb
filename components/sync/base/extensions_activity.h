@@ -35,7 +35,7 @@ class ExtensionsActivity
     uint32_t bookmark_write_count;
   };
 
-  typedef std::map<std::string, Record> Records;
+  using Records = std::map<std::string, Record>;
 
   ExtensionsActivity();
 

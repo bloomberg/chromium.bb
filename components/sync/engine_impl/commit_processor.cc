@@ -14,7 +14,7 @@
 
 namespace syncer {
 
-typedef std::map<ModelType, size_t> TypeToIndexMap;
+using TypeToIndexMap = std::map<ModelType, size_t>;
 
 CommitProcessor::CommitProcessor(CommitContributorMap* commit_contributor_map)
     : commit_contributor_map_(commit_contributor_map) {}

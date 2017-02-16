@@ -19,7 +19,7 @@ namespace syncer {
 
 // A container that maps ModelType to serialized
 // DataTypeProgressMarkers.
-typedef std::map<ModelType, std::string> ProgressMarkerMap;
+using ProgressMarkerMap = std::map<ModelType, std::string>;
 
 std::unique_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
     const ProgressMarkerMap& marker_map);

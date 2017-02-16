@@ -113,12 +113,12 @@ class BookmarkModelAssociator
   bool CryptoReadyIfNecessary() override;
 
  private:
-  typedef std::map<int64_t, int64_t> BookmarkIdToSyncIdMap;
-  typedef std::map<int64_t, const bookmarks::BookmarkNode*>
-      SyncIdToBookmarkNodeMap;
-  typedef std::set<int64_t> DirtyAssociationsSyncIds;
-  typedef std::vector<const bookmarks::BookmarkNode*> BookmarkList;
-  typedef std::stack<const bookmarks::BookmarkNode*> BookmarkStack;
+  using BookmarkIdToSyncIdMap = std::map<int64_t, int64_t>;
+  using SyncIdToBookmarkNodeMap =
+      std::map<int64_t, const bookmarks::BookmarkNode*>;
+  using DirtyAssociationsSyncIds = std::set<int64_t>;
+  using BookmarkList = std::vector<const bookmarks::BookmarkNode*>;
+  using BookmarkStack = std::stack<const bookmarks::BookmarkNode*>;
 
   // Add association between native node and sync node to the maps.
   void AddAssociation(const bookmarks::BookmarkNode* node, int64_t sync_id);

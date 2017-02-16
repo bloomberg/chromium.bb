@@ -195,8 +195,8 @@ enum { BIT_TEMPS_COUNT = BIT_TEMPS_END - BIT_TEMPS_BEGIN };
 
 struct EntryKernel {
  private:
-  typedef ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
-  typedef ProtoValuePtr<sync_pb::AttachmentMetadata> AttachmentMetadataPtr;
+  using EntitySpecificsPtr = ProtoValuePtr<sync_pb::EntitySpecifics>;
+  using AttachmentMetadataPtr = ProtoValuePtr<sync_pb::AttachmentMetadata>;
 
   std::string string_fields[STRING_FIELDS_COUNT];
   EntitySpecificsPtr specifics_fields[PROTO_FIELDS_COUNT];
@@ -395,22 +395,21 @@ class EntryKernelLessByMetaHandle {
   }
 };
 
-typedef std::set<const EntryKernel*,
-                 EntryKernelLessByMetaHandle<const EntryKernel*>>
-    EntryKernelSet;
+using EntryKernelSet =
+    std::set<const EntryKernel*,
+             EntryKernelLessByMetaHandle<const EntryKernel*>>;
 
-typedef std::set<
-    std::unique_ptr<EntryKernel>,
-    EntryKernelLessByMetaHandle<const std::unique_ptr<EntryKernel>&>>
-    OwnedEntryKernelSet;
+using OwnedEntryKernelSet =
+    std::set<std::unique_ptr<EntryKernel>,
+             EntryKernelLessByMetaHandle<const std::unique_ptr<EntryKernel>&>>;
 
 struct EntryKernelMutation {
   EntryKernel original, mutated;
 };
 
-typedef std::map<int64_t, EntryKernelMutation> EntryKernelMutationMap;
+using EntryKernelMutationMap = std::map<int64_t, EntryKernelMutation>;
 
-typedef Immutable<EntryKernelMutationMap> ImmutableEntryKernelMutationMap;
+using ImmutableEntryKernelMutationMap = Immutable<EntryKernelMutationMap>;
 
 std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation);

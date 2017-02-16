@@ -16,7 +16,7 @@ class Profile;
 class TemplateURL;
 class TemplateURLService;
 
-typedef std::map<std::string, const TemplateURL*> GUIDToTURLMap;
+using GUIDToTURLMap = std::map<std::string, const TemplateURL*>;
 
 namespace search_engines_helper {
 

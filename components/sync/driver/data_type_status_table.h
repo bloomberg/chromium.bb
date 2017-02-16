@@ -16,7 +16,7 @@ namespace syncer {
 // Class to keep track of data types that have encountered an error during sync.
 class DataTypeStatusTable {
  public:
-  typedef std::map<ModelType, SyncError> TypeErrorMap;
+  using TypeErrorMap = std::map<ModelType, SyncError>;
 
   DataTypeStatusTable();
   DataTypeStatusTable(const DataTypeStatusTable& other);

@@ -60,7 +60,7 @@ class AttachmentId {
   // Necessary since we forward-declare sync_pb::AttachmentIdProto; see comments
   // in immutable.h.
   struct ImmutableAttachmentIdProtoTraits {
-    typedef sync_pb::AttachmentIdProto* Wrapper;
+    using Wrapper = sync_pb::AttachmentIdProto*;
     static void InitializeWrapper(Wrapper* wrapper);
     static void DestroyWrapper(Wrapper* wrapper);
     static const sync_pb::AttachmentIdProto& Unwrap(const Wrapper& wrapper);
@@ -69,9 +69,8 @@ class AttachmentId {
                      sync_pb::AttachmentIdProto* t2);
   };
 
-  typedef Immutable<sync_pb::AttachmentIdProto,
-                    ImmutableAttachmentIdProtoTraits>
-      ImmutableAttachmentIdProto;
+  using ImmutableAttachmentIdProto =
+      Immutable<sync_pb::AttachmentIdProto, ImmutableAttachmentIdProtoTraits>;
 
   ImmutableAttachmentIdProto proto_;
 
@@ -80,8 +79,8 @@ class AttachmentId {
 
 // All public interfaces use AttachmentIdList. AttachmentIdSet is used in
 // implementations of algorithms where set properties are needed.
-typedef std::vector<AttachmentId> AttachmentIdList;
-typedef std::set<AttachmentId> AttachmentIdSet;
+using AttachmentIdList = std::vector<AttachmentId>;
+using AttachmentIdSet = std::set<AttachmentId>;
 
 }  // namespace syncer
 

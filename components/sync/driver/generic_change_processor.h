@@ -35,7 +35,7 @@ namespace syncable {
 class Entry;
 }  // namespace syncable
 
-typedef std::vector<SyncData> SyncDataList;
+using SyncDataList = std::vector<SyncData>;
 
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
 // is created for each datatype and lives on the datatype's sequence. It then

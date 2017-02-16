@@ -50,7 +50,7 @@
 
 using browser_sync::ProfileSyncService;
 
-typedef GoogleServiceAuthError AuthError;
+using AuthError = GoogleServiceAuthError;
 
 namespace sync_ui_util {
 

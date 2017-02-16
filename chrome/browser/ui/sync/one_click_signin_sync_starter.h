@@ -97,7 +97,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     SYNC_SETUP_FAILURE
   };
 
-  typedef base::Callback<void(SyncSetupResult)> Callback;
+  using Callback = base::Callback<void(SyncSetupResult)>;
 
   // |profile| must not be NULL, however |browser| can be. When using the
   // OneClickSigninSyncStarter from a browser, provide both.

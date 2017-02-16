@@ -40,7 +40,7 @@ syncer::ModelTypeSet MakeSet(syncer::ModelType type1,
 
 // An ordered list of model types sets to migrate.  Used by
 // RunMigrationTest().
-typedef std::deque<syncer::ModelTypeSet> MigrationList;
+using MigrationList = std::deque<syncer::ModelTypeSet>;
 
 // Utility functions to make a MigrationList out of a small number of
 // model types / model type sets.

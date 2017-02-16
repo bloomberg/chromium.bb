@@ -61,21 +61,19 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
     MAX_CONFIGURE_RESULT
   };
 
-  typedef base::Callback<
-      void(ConfigureResult, const SyncMergeResult&, const SyncMergeResult&)>
-      StartCallback;
+  using StartCallback = base::Callback<
+      void(ConfigureResult, const SyncMergeResult&, const SyncMergeResult&)>;
 
-  typedef base::Callback<void(ModelType, const SyncError&)> ModelLoadCallback;
+  using ModelLoadCallback = base::Callback<void(ModelType, const SyncError&)>;
 
-  typedef base::Callback<void(const ModelType,
-                              std::unique_ptr<base::ListValue>)>
-      AllNodesCallback;
+  using AllNodesCallback =
+      base::Callback<void(const ModelType, std::unique_ptr<base::ListValue>)>;
 
-  typedef base::Callback<void(ModelType, const StatusCounters&)>
-      StatusCountersCallback;
+  using StatusCountersCallback =
+      base::Callback<void(ModelType, const StatusCounters&)>;
 
-  typedef std::map<ModelType, std::unique_ptr<DataTypeController>> TypeMap;
-  typedef std::map<ModelType, DataTypeController::State> StateMap;
+  using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
+  using StateMap = std::map<ModelType, DataTypeController::State>;
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.

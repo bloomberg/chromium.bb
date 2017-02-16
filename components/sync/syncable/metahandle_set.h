@@ -12,7 +12,7 @@
 namespace syncer {
 namespace syncable {
 
-typedef std::set<int64_t> MetahandleSet;
+using MetahandleSet = std::set<int64_t>;
 
 }  // namespace syncable
 }  // namespace syncer

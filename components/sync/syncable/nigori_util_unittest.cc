@@ -11,7 +11,7 @@
 namespace syncer {
 namespace syncable {
 
-typedef testing::Test NigoriUtilTest;
+using NigoriUtilTest = testing::Test;
 
 TEST(NigoriUtilTest, SpecificsNeedsEncryption) {
   ModelTypeSet encrypted_types;

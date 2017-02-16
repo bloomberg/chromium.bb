@@ -35,9 +35,9 @@ class JsEventDetails {
   // Copy constructor and assignment operator welcome.
 
  private:
-  typedef Immutable<base::DictionaryValue,
-                    HasSwapMemFnByPtr<base::DictionaryValue>>
-      ImmutableDictionaryValue;
+  using ImmutableDictionaryValue =
+      Immutable<base::DictionaryValue,
+                HasSwapMemFnByPtr<base::DictionaryValue>>;
 
   ImmutableDictionaryValue details_;
 };

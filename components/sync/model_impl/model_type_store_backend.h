@@ -55,7 +55,7 @@ enum StoreInitResultForHistogram {
 class ModelTypeStoreBackend
     : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
-  typedef std::unordered_map<std::string, ModelTypeStoreBackend*> BackendMap;
+  using BackendMap = std::unordered_map<std::string, ModelTypeStoreBackend*>;
 
   // Helper function to create in memory environment for leveldb.
   static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();

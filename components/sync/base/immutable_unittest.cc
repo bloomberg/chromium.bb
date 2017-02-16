@@ -87,9 +87,9 @@ class TokenBase {
   scoped_refptr<TokenCore> core_;
 };
 
-typedef TokenBase<USE_DEFAULT_SWAP> Token;
-typedef TokenBase<USE_FAST_SWAP_VIA_ADL> ADLToken;
-typedef TokenBase<USE_FAST_SWAP_VIA_SPECIALIZATION> SpecializationToken;
+using Token = TokenBase<USE_DEFAULT_SWAP>;
+using ADLToken = TokenBase<USE_FAST_SWAP_VIA_ADL>;
+using SpecializationToken = TokenBase<USE_FAST_SWAP_VIA_SPECIALIZATION>;
 
 void swap(ADLToken& t1, ADLToken& t2) {
   t1.Swap(&t2);

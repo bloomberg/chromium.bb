@@ -37,7 +37,7 @@ struct WriteTransactionInfo {
   ImmutableEntryKernelMutationMap mutations;
 };
 
-typedef Immutable<WriteTransactionInfo> ImmutableWriteTransactionInfo;
+using ImmutableWriteTransactionInfo = Immutable<WriteTransactionInfo>;
 
 }  // namespace syncable
 }  // namespace syncer

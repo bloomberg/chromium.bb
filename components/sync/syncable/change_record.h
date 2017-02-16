@@ -60,9 +60,9 @@ struct ChangeRecord {
   linked_ptr<ExtraPasswordChangeRecordData> extra;
 };
 
-typedef std::vector<ChangeRecord> ChangeRecordList;
+using ChangeRecordList = std::vector<ChangeRecord>;
 
-typedef Immutable<ChangeRecordList> ImmutableChangeRecordList;
+using ImmutableChangeRecordList = Immutable<ChangeRecordList>;
 
 }  // namespace syncer
 

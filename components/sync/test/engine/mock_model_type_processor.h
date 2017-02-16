@@ -35,7 +35,7 @@ namespace syncer {
 // on their value.
 class MockModelTypeProcessor : public ModelTypeProcessor {
  public:
-  typedef base::Callback<void()> DisconnectCallback;
+  using DisconnectCallback = base::Callback<void()>;
 
   MockModelTypeProcessor();
   ~MockModelTypeProcessor() override;

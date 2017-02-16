@@ -11,7 +11,7 @@ namespace syncer {
 
 namespace {
 
-typedef testing::Test SyncMergeResultTest;
+using SyncMergeResultTest = testing::Test;
 
 TEST_F(SyncMergeResultTest, Unset) {
   SyncMergeResult merge_result(BOOKMARKS);

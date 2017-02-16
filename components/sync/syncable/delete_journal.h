@@ -23,7 +23,7 @@ struct BookmarkDeleteJournal {
   bool is_folder;
   sync_pb::EntitySpecifics specifics;
 };
-typedef std::vector<BookmarkDeleteJournal> BookmarkDeleteJournalList;
+using BookmarkDeleteJournalList = std::vector<BookmarkDeleteJournal>;
 
 // Static APIs for passing delete journals between syncable namspace
 // and syncer namespace.

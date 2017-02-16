@@ -1604,7 +1604,7 @@ struct TestData {
 };
 
 // Map from bookmark node ID to its version.
-typedef std::map<int64_t, int64_t> BookmarkNodeVersionMap;
+using BookmarkNodeVersionMap = std::map<int64_t, int64_t>;
 
 // TODO(ncarter): Integrate the existing TestNode/PopulateNodeFromString code
 // in the bookmark model unittest, to make it simpler to set up test data

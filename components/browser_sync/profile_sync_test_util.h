@@ -59,9 +59,9 @@ void RegisterPrefsForProfileSyncService(
 class ProfileSyncServiceBundle {
  public:
 #if defined(OS_CHROMEOS)
-  typedef FakeSigninManagerBase FakeSigninManagerType;
+  using FakeSigninManagerType = FakeSigninManagerBase;
 #else
-  typedef FakeSigninManager FakeSigninManagerType;
+  using FakeSigninManagerType = FakeSigninManager;
 #endif
 
   ProfileSyncServiceBundle();

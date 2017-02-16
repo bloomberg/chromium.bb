@@ -27,7 +27,7 @@ using syncer::syncable::WriteTransaction;
 
 namespace sync_sessions {
 namespace {
-typedef SessionID::id_type id_type;
+using id_type = SessionID::id_type;
 
 const char kTab1SyncTag[] = "tab-YWRkcjHvv74=";
 const char kTab2SyncTag[] = "tab-2FyZDHvv74=";

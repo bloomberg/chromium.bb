@@ -19,7 +19,7 @@ namespace syncer {
 // The standard implementation of DataTypeErrorHandler.
 class DataTypeErrorHandlerImpl : public DataTypeErrorHandler {
  public:
-  typedef base::Callback<void(const SyncError&)> ErrorCallback;
+  using ErrorCallback = base::Callback<void(const SyncError&)>;
 
   DataTypeErrorHandlerImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,

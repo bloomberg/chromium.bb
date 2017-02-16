@@ -125,7 +125,7 @@ class TabNodePool {
 
  private:
   friend class SyncTabNodePoolTest;
-  typedef std::map<int, SessionID::id_type> TabNodeIDToTabIDMap;
+  using TabNodeIDToTabIDMap = std::map<int, SessionID::id_type>;
 
   // Adds |tab_node_id| to free node pool.
   // |change_output| *must* be provided. It is the TabNodePool's link to

@@ -88,7 +88,7 @@ class UpdateSieve {
   }
 
  private:
-  typedef std::map<ModelType, int64_t> ModelTypeToVersionMap;
+  using ModelTypeToVersionMap = std::map<ModelType, int64_t>;
 
   static UpdateSieve::ModelTypeToVersionMap MessageToVersionMap(
       const sync_pb::GetUpdatesMessage& get_updates_message) {

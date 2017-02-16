@@ -33,9 +33,9 @@ class AttachmentService {
     GET_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
-  typedef base::Callback<void(const GetOrDownloadResult&,
-                              std::unique_ptr<AttachmentMap> attachments)>
-      GetOrDownloadCallback;
+  using GetOrDownloadCallback =
+      base::Callback<void(const GetOrDownloadResult&,
+                          std::unique_ptr<AttachmentMap> attachments)>;
 
   // An interface that embedder code implements to be notified about different
   // events that originate from AttachmentService.

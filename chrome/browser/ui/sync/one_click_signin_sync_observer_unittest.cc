@@ -92,8 +92,8 @@ class OneClickTestProfileSyncService
 
 class TestOneClickSigninSyncObserver : public OneClickSigninSyncObserver {
  public:
-  typedef base::Callback<void(TestOneClickSigninSyncObserver*)>
-      DestructionCallback;
+  using DestructionCallback =
+      base::Callback<void(TestOneClickSigninSyncObserver*)>;
 
   TestOneClickSigninSyncObserver(content::WebContents* web_contents,
                                  const GURL& continue_url,

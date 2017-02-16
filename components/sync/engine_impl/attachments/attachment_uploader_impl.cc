@@ -92,7 +92,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
                          const GoogleServiceAuthError& error) override;
 
  private:
-  typedef std::vector<UploadCallback> UploadCallbackList;
+  using UploadCallbackList = std::vector<UploadCallback>;
 
   void GetToken();
 

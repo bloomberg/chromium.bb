@@ -27,7 +27,7 @@ struct StringOrdinalTraits {
   static const size_t kMinLength = 1;
 };
 
-typedef Ordinal<StringOrdinalTraits> StringOrdinal;
+using StringOrdinal = Ordinal<StringOrdinalTraits>;
 
 static_assert(StringOrdinal::kZeroDigit == 'a',
               "StringOrdinal has incorrect zero digit");

@@ -22,14 +22,14 @@ class SyncChange;
 
 class LocalChangeObserver;
 
-typedef std::vector<SyncChange> SyncChangeList;
+using SyncChangeList = std::vector<SyncChange>;
 
 // An interface for services that handle receiving SyncChanges.
 class SyncChangeProcessor {
  public:
   // Whether a context change should force a datatype refresh or not.
   enum ContextRefreshStatus { NO_REFRESH, REFRESH_NEEDED };
-  typedef base::Callback<void(const SyncData&)> GetSyncDataCallback;
+  using GetSyncDataCallback = base::Callback<void(const SyncData&)>;
 
   SyncChangeProcessor();
   virtual ~SyncChangeProcessor();

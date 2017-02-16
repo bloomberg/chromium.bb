@@ -56,9 +56,9 @@ struct UpdateResponseData {
   std::string encryption_key_name;
 };
 
-typedef std::vector<CommitRequestData> CommitRequestDataList;
-typedef std::vector<CommitResponseData> CommitResponseDataList;
-typedef std::vector<UpdateResponseData> UpdateResponseDataList;
+using CommitRequestDataList = std::vector<CommitRequestData>;
+using CommitResponseDataList = std::vector<CommitResponseData>;
+using UpdateResponseDataList = std::vector<UpdateResponseData>;
 
 }  // namespace syncer
 

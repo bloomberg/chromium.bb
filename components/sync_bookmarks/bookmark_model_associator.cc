@@ -94,10 +94,9 @@ class BookmarkNodeFinder {
   // Maps bookmark node titles to instances, duplicates allowed.
   // Titles are converted to the sync internal format before
   // being used as keys for the map.
-  typedef base::hash_multimap<std::string,
-                              const BookmarkNode*> BookmarkNodeMap;
-  typedef std::pair<BookmarkNodeMap::iterator,
-                    BookmarkNodeMap::iterator> BookmarkNodeRange;
+  using BookmarkNodeMap = base::hash_multimap<std::string, const BookmarkNode*>;
+  using BookmarkNodeRange =
+      std::pair<BookmarkNodeMap::iterator, BookmarkNodeMap::iterator>;
 
   // Converts and truncates bookmark titles in the form sync does internally
   // to avoid mismatches due to sync munging titles.
@@ -801,7 +800,7 @@ struct FolderInfo {
   const BookmarkNode* parent;
   int64_t sync_id;
 };
-typedef std::vector<FolderInfo> FolderInfoList;
+using FolderInfoList = std::vector<FolderInfo>;
 
 void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
     syncer::BaseTransaction* trans,

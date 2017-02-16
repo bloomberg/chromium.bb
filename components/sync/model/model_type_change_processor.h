@@ -24,8 +24,8 @@ class ModelTypeSyncBridge;
 // Interface used by the ModelTypeSyncBridge to inform sync of local changes.
 class ModelTypeChangeProcessor {
  public:
-  typedef base::Callback<void(std::unique_ptr<ActivationContext>)>
-      StartCallback;
+  using StartCallback =
+      base::Callback<void(std::unique_ptr<ActivationContext>)>;
 
   // A factory function to make an implementation of ModelTypeChangeProcessor.
   static std::unique_ptr<ModelTypeChangeProcessor> Create(

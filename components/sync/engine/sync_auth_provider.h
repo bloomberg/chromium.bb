@@ -17,9 +17,9 @@ namespace syncer {
 // engine.
 class SyncAuthProvider {
  public:
-  typedef base::Callback<void(const GoogleServiceAuthError& error,
-                              const std::string& token)>
-      RequestTokenCallback;
+  using RequestTokenCallback =
+      base::Callback<void(const GoogleServiceAuthError& error,
+                          const std::string& token)>;
 
   virtual ~SyncAuthProvider() {}
 

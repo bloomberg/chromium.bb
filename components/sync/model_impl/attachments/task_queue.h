@@ -76,7 +76,7 @@ class TaskQueue : base::NonThreadSafe {
   // This callback is invoked by the queue with a task to be handled.  The
   // callee is expected to (eventually) call |MarkAsSucceeded|, |MarkAsFailed|,
   // or |Cancel| to signify completion of the task.
-  typedef base::Callback<void(const T&)> HandleTaskCallback;
+  using HandleTaskCallback = base::Callback<void(const T&)>;
 
   // Construct a TaskQueue.
   //

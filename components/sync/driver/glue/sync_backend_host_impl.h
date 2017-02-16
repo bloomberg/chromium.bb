@@ -47,7 +47,7 @@ class SyncPrefs;
 // definition for documentation of public methods.
 class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
  public:
-  typedef SyncStatus Status;
+  using Status = SyncStatus;
 
   SyncBackendHostImpl(const std::string& name,
                       SyncClient* sync_client,

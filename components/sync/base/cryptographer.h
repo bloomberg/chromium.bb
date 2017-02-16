@@ -185,7 +185,7 @@ class Cryptographer {
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
  private:
-  typedef std::map<std::string, linked_ptr<const Nigori>> NigoriMap;
+  using NigoriMap = std::map<std::string, linked_ptr<const Nigori>>;
 
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.

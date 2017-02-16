@@ -25,7 +25,7 @@ class ModelNeutralWriteTransaction;
 class Directory;
 }
 
-typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
+using SyncEntityList = std::vector<const sync_pb::SyncEntity*>;
 
 // Processes all the updates associated with a single ModelType.
 void ProcessDownloadedUpdates(syncable::Directory* dir,

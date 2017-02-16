@@ -106,23 +106,23 @@ class ModelTypeStore {
     std::unique_ptr<MetadataChangeList> metadata_change_list_;
   };
 
-  typedef std::vector<Record> RecordList;
-  typedef std::vector<std::string> IdList;
+  using RecordList = std::vector<Record>;
+  using IdList = std::vector<std::string>;
 
-  typedef base::Callback<void(Result result,
-                              std::unique_ptr<ModelTypeStore> store)>
-      InitCallback;
-  typedef base::Callback<void(Result result)> CallbackWithResult;
-  typedef base::Callback<void(Result result,
-                              std::unique_ptr<RecordList> data_records,
-                              std::unique_ptr<IdList> missing_id_list)>
-      ReadDataCallback;
-  typedef base::Callback<void(Result result,
-                              std::unique_ptr<RecordList> data_records)>
-      ReadAllDataCallback;
-  typedef base::Callback<void(base::Optional<ModelError> error,
-                              std::unique_ptr<MetadataBatch> metadata_batch)>
-      ReadMetadataCallback;
+  using InitCallback =
+      base::Callback<void(Result result,
+                          std::unique_ptr<ModelTypeStore> store)>;
+  using CallbackWithResult = base::Callback<void(Result result)>;
+  using ReadDataCallback =
+      base::Callback<void(Result result,
+                          std::unique_ptr<RecordList> data_records,
+                          std::unique_ptr<IdList> missing_id_list)>;
+  using ReadAllDataCallback =
+      base::Callback<void(Result result,
+                          std::unique_ptr<RecordList> data_records)>;
+  using ReadMetadataCallback =
+      base::Callback<void(base::Optional<ModelError> error,
+                          std::unique_ptr<MetadataBatch> metadata_batch)>;
 
   // CreateStore takes |path| and |blocking_task_runner|. Here is how to get
   // task runner in production code:

@@ -164,10 +164,10 @@ enum ModelType {
   MODEL_TYPE_COUNT,
 };
 
-typedef EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>
-    ModelTypeSet;
-typedef EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelTypeSet;
-typedef std::map<ModelType, const char*> ModelTypeNameMap;
+using ModelTypeSet =
+    EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
+using FullModelTypeSet = EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
+using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);

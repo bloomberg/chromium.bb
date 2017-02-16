@@ -39,7 +39,7 @@ class EntityChange {
   EntityDataPtr data_;
 };
 
-typedef std::vector<EntityChange> EntityChangeList;
+using EntityChangeList = std::vector<EntityChange>;
 
 }  // namespace syncer
 

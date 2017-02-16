@@ -30,8 +30,8 @@ class AttachmentUploader {
     UPLOAD_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
-  typedef base::Callback<void(const UploadResult&, const AttachmentId&)>
-      UploadCallback;
+  using UploadCallback =
+      base::Callback<void(const UploadResult&, const AttachmentId&)>;
 
   virtual ~AttachmentUploader();
 

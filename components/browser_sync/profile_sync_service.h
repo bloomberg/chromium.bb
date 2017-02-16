@@ -176,8 +176,8 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  typedef syncer::SyncEngine::Status Status;
-  typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
+  using Status = syncer::SyncEngine::Status;
+  using PlatformSyncAllowedProvider = base::Callback<bool(void)>;
 
   enum SyncEventCodes {
     MIN_SYNC_EVENT_CODE = 0,

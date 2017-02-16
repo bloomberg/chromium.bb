@@ -23,7 +23,7 @@ struct NodeOrdinalTraits {
   static const size_t kMinLength = 8;
 };
 
-typedef Ordinal<NodeOrdinalTraits> NodeOrdinal;
+using NodeOrdinal = Ordinal<NodeOrdinalTraits>;
 
 static_assert(static_cast<char>(NodeOrdinal::kZeroDigit) == '\x00',
               "NodeOrdinal has incorrect zero digit");

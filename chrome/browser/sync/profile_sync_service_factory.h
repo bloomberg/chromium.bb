@@ -28,8 +28,8 @@ class SyncService;
 
 class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  typedef base::Callback<std::unique_ptr<syncer::SyncClient>(Profile*)>
-      SyncClientFactory;
+  using SyncClientFactory =
+      base::Callback<std::unique_ptr<syncer::SyncClient>(Profile*)>;
 
   static browser_sync::ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);

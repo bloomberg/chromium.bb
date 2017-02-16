@@ -144,8 +144,8 @@ OAuth2TokenService* TokenServiceProvider::GetTokenService() {
 
 class AttachmentDownloaderImplTest : public testing::Test {
  protected:
-  typedef std::map<AttachmentId, AttachmentDownloader::DownloadResult>
-      ResultsMap;
+  using ResultsMap =
+      std::map<AttachmentId, AttachmentDownloader::DownloadResult>;
 
   enum HashHeaderType {
     HASH_HEADER_NONE,

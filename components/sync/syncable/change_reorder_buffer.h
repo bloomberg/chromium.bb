@@ -67,10 +67,10 @@ class ChangeReorderBuffer {
 
  private:
   class Traversal;
-  typedef std::map<int64_t, ChangeRecord::Action> OperationMap;
-  typedef std::map<int64_t, sync_pb::EntitySpecifics> SpecificsMap;
-  typedef std::map<int64_t, linked_ptr<ExtraPasswordChangeRecordData>>
-      ExtraDataMap;
+  using OperationMap = std::map<int64_t, ChangeRecord::Action>;
+  using SpecificsMap = std::map<int64_t, sync_pb::EntitySpecifics>;
+  using ExtraDataMap =
+      std::map<int64_t, linked_ptr<ExtraPasswordChangeRecordData>>;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.

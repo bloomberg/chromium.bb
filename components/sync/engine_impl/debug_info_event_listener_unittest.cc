@@ -8,7 +8,7 @@
 
 namespace syncer {
 
-typedef testing::Test DebugInfoEventListenerTest;
+using DebugInfoEventListenerTest = testing::Test;
 
 TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
   DebugInfoEventListener debug_info_event_listener;

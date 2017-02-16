@@ -54,7 +54,7 @@ const char kEmail[] = "test_user@gmail.com";
 
 class FakeDataTypeManager : public syncer::DataTypeManager {
  public:
-  typedef base::Callback<void(syncer::ConfigureReason)> ConfigureCalled;
+  using ConfigureCalled = base::Callback<void(syncer::ConfigureReason)>;
 
   explicit FakeDataTypeManager(const ConfigureCalled& configure_called)
       : configure_called_(configure_called) {}
@@ -128,9 +128,8 @@ class FakeSyncEngineCollectDeleteDirParam : public FakeSyncEngine {
 // called.
 class SyncEngineCaptureClearServerData : public FakeSyncEngine {
  public:
-  typedef base::Callback<void(
-      const syncer::SyncManager::ClearServerDataCallback&)>
-      ClearServerDataCalled;
+  using ClearServerDataCalled =
+      base::Callback<void(const syncer::SyncManager::ClearServerDataCallback&)>;
   explicit SyncEngineCaptureClearServerData(
       const ClearServerDataCalled& clear_server_data_called)
       : clear_server_data_called_(clear_server_data_called) {}

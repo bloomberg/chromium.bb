@@ -123,13 +123,13 @@ class FaviconCache : public syncer::SyncableService,
 
 
   // Map of favicon url to favicon image.
-  typedef std::map<GURL, linked_ptr<SyncedFaviconInfo> > FaviconMap;
-  typedef std::set<linked_ptr<SyncedFaviconInfo>,
-                   FaviconRecencyFunctor> RecencySet;
+  using FaviconMap = std::map<GURL, linked_ptr<SyncedFaviconInfo>>;
+  using RecencySet =
+      std::set<linked_ptr<SyncedFaviconInfo>, FaviconRecencyFunctor>;
   // Map of page url to task id (for favicon loading).
-  typedef std::map<GURL, base::CancelableTaskTracker::TaskId> PageTaskMap;
+  using PageTaskMap = std::map<GURL, base::CancelableTaskTracker::TaskId>;
   // Map of page url to favicon url.
-  typedef std::map<GURL, GURL> PageFaviconMap;
+  using PageFaviconMap = std::map<GURL, GURL>;
 
   // Helper method to perform OnReceivedSyncFavicon work without worrying about
   // whether caller holds a sync transaction.

@@ -47,11 +47,11 @@ class SessionsHierarchy {
 
  private:
   // A collection of tab URLs.
-  typedef std::multiset<std::string> Window;
+  using Window = std::multiset<std::string>;
 
   // A collection of Windows (an instance of this collection represents a
   // sessions hierarchy).
-  typedef std::multiset<Window> WindowContainer;
+  using WindowContainer = std::multiset<Window>;
 
   // The windows of the sessions hierarchy.
   WindowContainer windows_;

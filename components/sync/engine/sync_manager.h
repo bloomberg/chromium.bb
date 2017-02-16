@@ -269,7 +269,7 @@ class SyncManager {
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
   };
 
-  typedef base::Callback<void(void)> ClearServerDataCallback;
+  using ClearServerDataCallback = base::Callback<void(void)>;
 
   SyncManager();
   virtual ~SyncManager();

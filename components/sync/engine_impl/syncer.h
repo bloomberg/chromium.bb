@@ -34,7 +34,7 @@ class SyncCycle;
 // lock contention, or on tasks posted to other threads.
 class Syncer {
  public:
-  typedef std::vector<int64_t> UnsyncedMetaHandles;
+  using UnsyncedMetaHandles = std::vector<int64_t>;
 
   explicit Syncer(CancelationSignal* cancelation_signal);
   virtual ~Syncer();

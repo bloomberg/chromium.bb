@@ -48,10 +48,10 @@ class SyncApiComponentFactory {
   // data type controllers.
   // |disabled_types| and |enabled_types| control the disable/enable state of
   // types that are on or off by default (respectively).
-  typedef base::Callback<void(SyncService* sync_service,
-                              ModelTypeSet disabled_types,
-                              ModelTypeSet enabled_types)>
-      RegisterDataTypesMethod;
+  using RegisterDataTypesMethod =
+      base::Callback<void(SyncService* sync_service,
+                          ModelTypeSet disabled_types,
+                          ModelTypeSet enabled_types)>;
 
   // The various factory methods for the data type model associators
   // and change processors all return this struct.  This is needed

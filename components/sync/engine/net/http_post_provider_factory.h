@@ -15,7 +15,7 @@ class URLFetcher;
 
 namespace syncer {
 
-typedef base::Callback<void(net::URLFetcher*)> BindToTrackerCallback;
+using BindToTrackerCallback = base::Callback<void(net::URLFetcher*)>;
 
 class HttpPostProviderInterface;
 

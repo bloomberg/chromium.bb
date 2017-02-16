@@ -64,7 +64,7 @@ class InMemoryAttachmentStore : public AttachmentStoreBackend,
     std::set<AttachmentStore::Component> components;
   };
 
-  typedef std::map<AttachmentId, AttachmentEntry> AttachmentEntryMap;
+  using AttachmentEntryMap = std::map<AttachmentId, AttachmentEntry>;
   AttachmentEntryMap attachments_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryAttachmentStore);

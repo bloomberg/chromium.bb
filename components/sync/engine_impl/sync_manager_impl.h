@@ -200,7 +200,7 @@ class SyncManagerImpl
 
   base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
-  typedef std::map<ModelType, NotificationInfo> NotificationInfoMap;
+  using NotificationInfoMap = std::map<ModelType, NotificationInfo>;
 
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry.  Note that a node's index may change without its
@@ -291,7 +291,7 @@ class SyncManagerImpl
   // forwarded to the observer slightly later, at the TRANSACTION_ENDING step
   // by HandleTransactionEndingChangeEvent. The list is cleared after observer
   // finishes processing.
-  typedef std::map<int, ImmutableChangeRecordList> ChangeRecordMap;
+  using ChangeRecordMap = std::map<int, ImmutableChangeRecordList>;
   ChangeRecordMap change_records_;
 
   SyncManager::ChangeDelegate* change_delegate_;

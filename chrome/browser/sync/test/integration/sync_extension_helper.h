@@ -94,12 +94,12 @@ class SyncExtensionHelper {
     bool incognito_enabled;
   };
 
-  typedef std::map<std::string, ExtensionState> ExtensionStateMap;
-  typedef std::map<std::string, scoped_refptr<extensions::Extension> >
-      ExtensionNameMap;
-  typedef std::map<Profile*, ExtensionNameMap> ProfileExtensionNameMap;
-  typedef std::map<std::string, std::string> StringMap;
-  typedef std::map<std::string, extensions::Manifest::Type> TypeMap;
+  using ExtensionStateMap = std::map<std::string, ExtensionState>;
+  using ExtensionNameMap =
+      std::map<std::string, scoped_refptr<extensions::Extension>>;
+  using ProfileExtensionNameMap = std::map<Profile*, ExtensionNameMap>;
+  using StringMap = std::map<std::string, std::string>;
+  using TypeMap = std::map<std::string, extensions::Manifest::Type>;
 
   friend struct base::DefaultSingletonTraits<SyncExtensionHelper>;
 

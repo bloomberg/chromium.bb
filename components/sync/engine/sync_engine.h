@@ -42,10 +42,10 @@ class UnrecoverableErrorHandler;
 // interface will handle crossing threads if necessary.
 class SyncEngine : public ModelTypeConfigurer {
  public:
-  typedef SyncStatus Status;
-  typedef base::Callback<std::unique_ptr<HttpPostProviderFactory>(
-      CancelationSignal*)>
-      HttpPostProviderFactoryGetter;
+  using Status = SyncStatus;
+  using HttpPostProviderFactoryGetter =
+      base::Callback<std::unique_ptr<HttpPostProviderFactory>(
+          CancelationSignal*)>;
 
   // Utility struct for holding initialization options.
   struct InitParams {

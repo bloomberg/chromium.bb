@@ -23,9 +23,9 @@ namespace syncer {
 
 namespace {
 
-typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
-typedef std::map<ModelType, SyncEntityList> TypeSyncEntityMap;
-typedef std::map<ModelType, size_t> TypeToIndexMap;
+using SyncEntityList = std::vector<const sync_pb::SyncEntity*>;
+using TypeSyncEntityMap = std::map<ModelType, SyncEntityList>;
+using TypeToIndexMap = std::map<ModelType, size_t>;
 
 bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
   syncable::Directory* dir = context->directory();

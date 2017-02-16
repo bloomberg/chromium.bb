@@ -63,8 +63,8 @@ class Attachment {
              const scoped_refptr<base::RefCountedMemory>& data);
 };
 
-typedef std::vector<Attachment> AttachmentList;
-typedef std::map<AttachmentId, Attachment> AttachmentMap;
+using AttachmentList = std::vector<Attachment>;
+using AttachmentMap = std::map<AttachmentId, Attachment>;
 
 }  // namespace syncer
 

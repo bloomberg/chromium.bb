@@ -217,7 +217,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   //                                          APP_SETTINGS }
   //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
   // etc.
-  typedef std::map<ModelType, ModelTypeSet> PrefGroupsMap;
+  using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
   PrefGroupsMap pref_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);

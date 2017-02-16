@@ -19,7 +19,7 @@
 namespace syncer {
 
 // Ordered list of SyncChange's.
-typedef std::vector<SyncChange> SyncChangeList;
+using SyncChangeList = std::vector<SyncChange>;
 
 namespace {
 

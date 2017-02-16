@@ -31,8 +31,8 @@ class DirectoryUpdateHandler;
 class ModelTypeWorker;
 class UpdateHandler;
 
-typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
-typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
+using UpdateHandlerMap = std::map<ModelType, UpdateHandler*>;
+using CommitContributorMap = std::map<ModelType, CommitContributor*>;
 
 // Keeps track of the sets of active update handlers and commit contributors.
 class ModelTypeRegistry : public ModelTypeConnector,
@@ -106,8 +106,8 @@ class ModelTypeRegistry : public ModelTypeConnector,
   base::WeakPtr<ModelTypeConnector> AsWeakPtr();
 
  private:
-  typedef std::map<ModelType, std::unique_ptr<DataTypeDebugInfoEmitter>>
-      DataTypeDebugInfoEmitterMap;
+  using DataTypeDebugInfoEmitterMap =
+      std::map<ModelType, std::unique_ptr<DataTypeDebugInfoEmitter>>;
 
   void OnEncryptionStateChanged();
 

@@ -13,8 +13,8 @@ namespace syncer {
 class ModelTypeWorker;
 struct UserShare;
 
-typedef base::Callback<bool(ModelType, UserShare*, ModelTypeWorker*)>
-    UssMigrator;
+using UssMigrator =
+    base::Callback<bool(ModelType, UserShare*, ModelTypeWorker*)>;
 
 // Pulls all the data for |type| out of the directory and sends it to |worker|
 // as the result of an initial GetUpdates. Returns whether migration succeeded.

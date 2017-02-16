@@ -22,7 +22,7 @@ class DeviceInfo;
 // local device.
 class LocalDeviceInfoProvider {
  public:
-  typedef base::CallbackList<void(void)>::Subscription Subscription;
+  using Subscription = base::CallbackList<void(void)>::Subscription;
 
   virtual ~LocalDeviceInfoProvider() {}
 

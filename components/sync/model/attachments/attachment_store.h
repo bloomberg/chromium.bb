@@ -57,16 +57,15 @@ class AttachmentStore {
     SYNC,
   };
 
-  typedef base::Callback<void(const Result&)> InitCallback;
-  typedef base::Callback<void(const Result&,
-                              std::unique_ptr<AttachmentMap>,
-                              std::unique_ptr<AttachmentIdList>)>
-      ReadCallback;
-  typedef base::Callback<void(const Result&)> WriteCallback;
-  typedef base::Callback<void(const Result&)> DropCallback;
-  typedef base::Callback<void(const Result&,
-                              std::unique_ptr<AttachmentMetadataList>)>
-      ReadMetadataCallback;
+  using InitCallback = base::Callback<void(const Result&)>;
+  using ReadCallback = base::Callback<void(const Result&,
+                                           std::unique_ptr<AttachmentMap>,
+                                           std::unique_ptr<AttachmentIdList>)>;
+  using WriteCallback = base::Callback<void(const Result&)>;
+  using DropCallback = base::Callback<void(const Result&)>;
+  using ReadMetadataCallback =
+      base::Callback<void(const Result&,
+                          std::unique_ptr<AttachmentMetadataList>)>;
 
   ~AttachmentStore();
 

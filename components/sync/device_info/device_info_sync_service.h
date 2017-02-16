@@ -90,7 +90,7 @@ class DeviceInfoSyncService : public SyncableService, public DeviceInfoTracker {
   std::unique_ptr<SyncErrorFactory> error_handler_;
 
   // Cache of all syncable and local data.
-  typedef std::map<std::string, SyncData> SyncDataMap;
+  using SyncDataMap = std::map<std::string, SyncData>;
   SyncDataMap all_data_;
 
   // Registered observers, not owned.

@@ -101,7 +101,7 @@ class UpdateSieve {
   int64_t GetMinVersion() const { return min_version_; }
 
  private:
-  typedef std::map<ModelType, int64_t> ModelTypeToVersionMap;
+  using ModelTypeToVersionMap = std::map<ModelType, int64_t>;
 
   // Creates an UpdateSieve.
   UpdateSieve(const ModelTypeToVersionMap request_from_version,

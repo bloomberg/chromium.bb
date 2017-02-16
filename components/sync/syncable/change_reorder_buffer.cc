@@ -29,8 +29,8 @@ namespace syncer {
 // methods can be used to explore the nodes in root-to-leaf order.
 class ChangeReorderBuffer::Traversal {
  public:
-  typedef pair<int64_t, int64_t> ParentChildLink;
-  typedef set<ParentChildLink> LinkSet;
+  using ParentChildLink = pair<int64_t, int64_t>;
+  using LinkSet = set<ParentChildLink>;
 
   Traversal() : top_(kInvalidId) {}
 

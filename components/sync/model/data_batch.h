@@ -14,7 +14,7 @@
 
 namespace syncer {
 
-typedef std::pair<std::string, std::unique_ptr<EntityData>> KeyAndData;
+using KeyAndData = std::pair<std::string, std::unique_ptr<EntityData>>;
 
 // Interface used by the processor to read data requested from the service.
 class DataBatch {

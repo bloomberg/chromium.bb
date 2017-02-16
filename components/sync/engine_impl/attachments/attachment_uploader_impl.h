@@ -81,8 +81,8 @@ class AttachmentUploaderImpl : public AttachmentUploader,
 
  private:
   class UploadState;
-  typedef std::string UniqueId;
-  typedef std::unordered_map<UniqueId, std::unique_ptr<UploadState>> StateMap;
+  using UniqueId = std::string;
+  using StateMap = std::unordered_map<UniqueId, std::unique_ptr<UploadState>>;
 
   void OnUploadStateStopped(const UniqueId& unique_id);
 

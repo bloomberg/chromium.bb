@@ -36,7 +36,7 @@ class SyncableService : public SyncChangeProcessor,
   // Run() on your flare by calling MergeDataAndStartSyncing. The ModelType
   // parameter is included so that the recieving end can track usage and timing
   // statistics, make optimizations or tradeoffs by type, etc.
-  typedef base::Callback<void(ModelType)> StartSyncFlare;
+  using StartSyncFlare = base::Callback<void(ModelType)>;
 
   // Informs the service to begin syncing the specified synced datatype |type|.
   // The service should then merge |initial_sync_data| into it's local data,

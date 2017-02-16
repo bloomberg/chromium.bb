@@ -30,9 +30,8 @@ class AttachmentDownloader {
     DOWNLOAD_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
-  typedef base::Callback<void(const DownloadResult&,
-                              std::unique_ptr<Attachment>)>
-      DownloadCallback;
+  using DownloadCallback =
+      base::Callback<void(const DownloadResult&, std::unique_ptr<Attachment>)>;
 
   virtual ~AttachmentDownloader();
 

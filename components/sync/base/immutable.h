@@ -187,7 +187,7 @@ class ImmutableCore
 
 template <typename T>
 struct DefaultImmutableTraits {
-  typedef T Wrapper;
+  using Wrapper = T;
 
   static void InitializeWrapper(Wrapper* wrapper) {}
 

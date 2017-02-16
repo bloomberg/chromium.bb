@@ -59,7 +59,7 @@ class MockSyncer : public Syncer {
 
 MockSyncer::MockSyncer() : Syncer(nullptr) {}
 
-typedef std::vector<TimeTicks> SyncShareTimes;
+using SyncShareTimes = std::vector<TimeTicks>;
 
 void QuitLoopNow() {
   // We use QuitNow() instead of Quit() as the latter may get stalled

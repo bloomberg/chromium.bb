@@ -17,7 +17,7 @@ namespace syncer {
 
 class DataTypeErrorHandler {
  public:
-  typedef base::Callback<void(const SyncError&)> ErrorCallback;
+  using ErrorCallback = base::Callback<void(const SyncError&)>;
 
   virtual ~DataTypeErrorHandler() {}
 

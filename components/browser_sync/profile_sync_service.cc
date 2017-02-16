@@ -116,7 +116,7 @@ namespace browser_sync {
 
 namespace {
 
-typedef GoogleServiceAuthError AuthError;
+using AuthError = GoogleServiceAuthError;
 
 const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 

@@ -31,9 +31,9 @@ struct LargeOrdinalTraits {
   static const size_t kMinLength = 1;
 };
 
-typedef Ordinal<TestOrdinalTraits> TestOrdinal;
-typedef Ordinal<LongOrdinalTraits> LongOrdinal;
-typedef Ordinal<LargeOrdinalTraits> LargeOrdinal;
+using TestOrdinal = Ordinal<TestOrdinalTraits>;
+using LongOrdinal = Ordinal<LongOrdinalTraits>;
+using LargeOrdinal = Ordinal<LargeOrdinalTraits>;
 
 static_assert(TestOrdinal::kZeroDigit == '0',
               "incorrect TestOrdinal zero digit");

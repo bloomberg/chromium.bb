@@ -94,7 +94,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   void AddEventToQueue(const sync_pb::DebugEventInfo& event_info);
   void CreateAndAddEvent(sync_pb::SyncEnums::SingletonDebugEventType type);
 
-  typedef std::deque<sync_pb::DebugEventInfo> DebugEventInfoQueue;
+  using DebugEventInfoQueue = std::deque<sync_pb::DebugEventInfo>;
   DebugEventInfoQueue events_;
 
   // True indicates we had to drop one or more events to keep our limit of
