@@ -316,36 +316,43 @@ void BaseResourceThrottle::StartDisplayingBlockingPageHelper(
 }
 
 // Static
+void BaseResourceThrottle::NotifySubresourceFilterOfBlockedResource(
+    const security_interstitials::UnsafeResource& resource) {
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+  DCHECK(web_contents);
+  // Once activated, the subresource filter will filter subresources, but is
+  // triggered when the main frame document matches Safe Browsing blacklists.
+  if (!resource.is_subresource) {
+    using subresource_filter::ContentSubresourceFilterDriverFactory;
+    ContentSubresourceFilterDriverFactory* driver_factory =
+        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+
+    // Content embedders (such as Android Webview) do not have a driver_factory.
+    if (driver_factory) {
+      // For a redirect chain of A -> B -> C, the subresource filter expects C
+      // as the resource URL and [A, B] as redirect URLs.
+      std::vector<GURL> redirect_parent_urls;
+      if (!resource.redirect_urls.empty()) {
+        redirect_parent_urls.push_back(resource.original_url);
+        redirect_parent_urls.insert(redirect_parent_urls.end(),
+                                    resource.redirect_urls.begin(),
+                                    std::prev(resource.redirect_urls.end()));
+      }
+      driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
+          resource.url, redirect_parent_urls, resource.threat_type,
+          resource.threat_metadata.threat_pattern_type);
+    }
+  }
+}
+
+// Static
 void BaseResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<BaseResourceThrottle>& throttle,
     scoped_refptr<BaseUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {
-    // Once activated, the subresource filter will filter subresources, but is
-    // triggered when the main frame document matches Safe Browsing blacklists.
-    if (!resource.is_subresource) {
-      using subresource_filter::ContentSubresourceFilterDriverFactory;
-      ContentSubresourceFilterDriverFactory* driver_factory =
-          ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-      // Content embedders (such as Android Webview) does not have a
-      // driver_factory.
-      if (driver_factory) {
-        // For a redirect chain of A -> B -> C, the subresource filter expects C
-        // as the resource URL and [A, B] as redirect URLs.
-        std::vector<GURL> redirect_parent_urls;
-        if (!resource.redirect_urls.empty()) {
-          redirect_parent_urls.push_back(resource.original_url);
-          redirect_parent_urls.insert(redirect_parent_urls.end(),
-                                      resource.redirect_urls.begin(),
-                                      std::prev(resource.redirect_urls.end()));
-        }
-        driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-            resource.url, redirect_parent_urls, resource.threat_type,
-            resource.threat_metadata.threat_pattern_type);
-      }
-    }
-
+    NotifySubresourceFilterOfBlockedResource(resource);
     ui_manager->DisplayBlockingPage(resource);
     return;
   }

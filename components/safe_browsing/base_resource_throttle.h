@@ -86,6 +86,12 @@ class BaseResourceThrottle
 
   ~BaseResourceThrottle() override;
 
+  // If our blocked resource is the main frame, this calls
+  // ContentSubresourceFilterDriverFactory's
+  // OnMainResourceMatchedSafeBrowsingBlacklist method.
+  static void NotifySubresourceFilterOfBlockedResource(
+      const security_interstitials::UnsafeResource& resource);
+
   // Does nothing in the base class. Override this to destroy prerender contents
   // in chrome.
   virtual void MaybeDestroyPrerenderContents(
