@@ -19973,6 +19973,11 @@
      {}
     ]
    ],
+   "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/navigate-window.https-expected.txt": [
     [
      {}
@@ -20539,6 +20544,11 @@
     ]
    ],
    "service-workers/service-worker/resources/performance-timeline-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/postmessage-blob-url.js": [
     [
      {}
     ]
@@ -22248,6 +22258,11 @@
      {}
     ]
    ],
+   "webvtt/interfaces-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up-ref.html": [
     [
      {}
@@ -23738,6 +23753,36 @@
      {}
     ]
    ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/align-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/getCueAsHTML-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/line-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/snapToLines-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/text-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-api-for-browsers/vttcue-interface/vertical-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/buildtests.py": [
     [
      {}
@@ -23764,6 +23809,26 @@
     ]
    ],
    "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/dat/tree-building.dat": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building-expected.txt": [
     [
      {}
     ]
@@ -24269,6 +24334,11 @@
     ]
    ],
    "workers/support/WorkerDataCloneErr.js": [
+    [
+     {}
+    ]
+   ],
+   "workers/support/WorkerFetchURL.js": [
     [
      {}
     ]
@@ -47051,6 +47121,12 @@
      {}
     ]
    ],
+   "service-workers/service-worker/postmessage-blob-url.https.html": [
+    [
+     "/service-workers/service-worker/postmessage-blob-url.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/postmessage-msgport-to-client.https.html": [
     [
      "/service-workers/service-worker/postmessage-msgport-to-client.https.html",
@@ -50155,6 +50231,12 @@
      {}
     ]
    ],
+   "workers/SharedWorker_blobUrl.html": [
+    [
+     "/workers/SharedWorker_blobUrl.html",
+     {}
+    ]
+   ],
    "workers/WorkerGlobalScope_ErrorEvent_colno.htm": [
     [
      "/workers/WorkerGlobalScope_ErrorEvent_colno.htm",
@@ -51187,7 +51269,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "90cf1a8bd5dcd433e78ffb409f1850ed5307ebb7",
+   "bab41edaaed8a4198a5d8367086e03bbfe6c6a04",
    "support"
   ],
   "./README.md": [
@@ -59495,7 +59577,7 @@
    "testharness"
   ],
   "html/dom/reflection-metadata-expected.txt": [
-   "38aa91ed730ef0f6fa9ea6d9941a681eba261b15",
+   "6cd0f738b34dcfd16495e4f8f6a42d3c635d5d1c",
    "support"
   ],
   "html/dom/reflection-metadata.html": [
@@ -63431,7 +63513,7 @@
    "support"
   ],
   "html/resources/common.js": [
-   "6b4bdb2032fb40bf9ccdf6d827cfd367f34a78f9",
+   "0f18ee2c61b99893cfe2a3d1ff549b170a8d715d",
    "support"
   ],
   "html/semantics/disabled-elements/disabledElement.html": [
@@ -77758,6 +77840,10 @@
    "43a68bb3d01c58f7388cc4fa7783862d20c72c14",
    "support"
   ],
+  "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
+   "5a4c54cd0c2d1c01faae53525a18e82091b27bcd",
+   "support"
+  ],
   "service-workers/service-worker/multi-globals/url-parsing.https.html": [
    "4d24eb48ca2eeca6f6b9dab65f4913563fa3ed39",
    "testharness"
@@ -77804,6 +77890,10 @@
   ],
   "service-workers/service-worker/performance-timeline.https.html": [
    "bb5f72f8ec9194689d1a77a1d2d3e902233bb2d3",
+   "testharness"
+  ],
+  "service-workers/service-worker/postmessage-blob-url.https.html": [
+   "4ffd522eacbd5ecee11b921d4acc3442ef296514",
    "testharness"
   ],
   "service-workers/service-worker/postmessage-msgport-to-client.https.html": [
@@ -78324,6 +78414,10 @@
   ],
   "service-workers/service-worker/resources/performance-timeline-worker.js": [
    "fc275abc58d82c338ff369ba62994bd3d5609a67",
+   "support"
+  ],
+  "service-workers/service-worker/resources/postmessage-blob-url.js": [
+   "728244e7f0b717aec29c3057bde7a6ba12768587",
    "support"
   ],
   "service-workers/service-worker/resources/postmessage-msgport-to-client-worker.js": [
@@ -81711,7 +81805,7 @@
    "testharness"
   ],
   "webstorage/event_no_duplicates.html": [
-   "50011333297d4a240afc288b4b39cb751471b6a4",
+   "494b19e190ed7d6af964aceffad9f261a02e4125",
    "testharness"
   ],
   "webstorage/event_session_key.html": [
@@ -81897,6 +81991,10 @@
   "webvr/idlharness.html": [
    "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
    "testharness"
+  ],
+  "webvtt/interfaces-expected.txt": [
+   "4907c3ebbeabc6a3160cf4ce80973799ba3eb105",
+   "support"
   ],
   "webvtt/interfaces.html": [
    "612566f403696557e64a686a1ab68956431666ef",
@@ -83970,25 +84068,49 @@
    "2126e9f28c1fbb6ea721d25d3ac70022639f5597",
    "reftest"
   ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/align-expected.txt": [
+   "a5259a0f1562ea709363669a567eab8ddcb9f1e9",
+   "support"
+  ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/align.html": [
    "49a9bf76b1a8d907e48ca95d3e8d3b0afc306566",
    "testharness"
+  ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/getCueAsHTML-expected.txt": [
+   "1ad453df49e45ff18cd6a6681ecad254f18c10ee",
+   "support"
   ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/getCueAsHTML.html": [
    "79c03cfbda74f1047bd88886fa6ab44ce0c9cded",
    "testharness"
   ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/line-expected.txt": [
+   "3e11ceaab25e30c8c1aabed811b884bdccda9441",
+   "support"
+  ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/line.html": [
    "f76ca4b827ed42faa1c46e6a8a6a4dc66938f6e3",
    "testharness"
+  ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/snapToLines-expected.txt": [
+   "c456dfc5bb6f8a876ed57b51c7158f5e88e3fff3",
+   "support"
   ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/snapToLines.html": [
    "365542b9a68ddb679408e5b9df16ff77027e125a",
    "testharness"
   ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/text-expected.txt": [
+   "c070481c2ea2189090684786662a3009d3ba544a",
+   "support"
+  ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/text.html": [
    "a02594bd42c9564554bb876b1d931a28877b8315",
    "testharness"
+  ],
+  "webvtt/webvtt-api-for-browsers/vttcue-interface/vertical-expected.txt": [
+   "e3069a394386c4d75cd72d8c500a2f45aa3a9536",
+   "support"
   ],
   "webvtt/webvtt-api-for-browsers/vttcue-interface/vertical.html": [
    "a0754c219568a19cbd244b7adabaffb0afc6eedc",
@@ -84018,17 +84140,33 @@
    "4b8777b30361d5193137991be3b3268013a03fe9",
    "support"
   ],
+  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities-expected.txt": [
+   "29e42c09bd27c48a49d9b6aa0e0fd16ea5da0711",
+   "support"
+  ],
   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/entities.html": [
    "43183d8d79641b451636efc22aa70431ec0ab1f7",
    "testharness"
+  ],
+  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags-expected.txt": [
+   "3768f200574695dce4b07621326a7e5adbd40fce",
+   "support"
   ],
   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tags.html": [
    "5c1bb0dace4c7c18b0265c568f81a5594424ed6b",
    "testharness"
   ],
+  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps-expected.txt": [
+   "8fcbf5fca8bb232149483622df65c3c27cb18e37",
+   "support"
+  ],
   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/timestamps.html": [
    "9096541716f4318972db549f8a1fce33ca810b2a",
    "testharness"
+  ],
+  "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building-expected.txt": [
+   "01db79fae355d94eda333db5a11c9dc28e5e317e",
+   "support"
   ],
   "webvtt/webvtt-file-format-parsing/webvtt-cue-text-parsing-rules/tests/tree-building.html": [
    "a812b24c8c9a8adbf05ea51a20e8b102a697cc88",
@@ -84177,6 +84315,10 @@
   "workers/README.md": [
    "2660d9dbe4f7a2947ec78b14e6418554c8204d6b",
    "support"
+  ],
+  "workers/SharedWorker_blobUrl.html": [
+   "d74620a63e7d911ef60b995cabf6b360c2c46a4f",
+   "testharness"
   ],
   "workers/WorkerGlobalScope_ErrorEvent_colno.htm": [
    "8ceb41543f928c918010000d638099faeb674980",
@@ -84587,11 +84729,11 @@
    "testharness"
   ],
   "workers/data-url-shared.html": [
-   "dd3dd0aa1275681b21b9f3df869571cf402f3d3a",
+   "50debec2192e5a6b0b18ce53942fc08ff0f2df11",
    "testharness"
   ],
   "workers/data-url.html": [
-   "34eb5cd50c0b9d2e2bec65c3de51f8405da0d745",
+   "50abaf936cfb58ba14e6870c9b7f239f5d54f59c",
    "testharness"
   ],
   "workers/interfaces.idl": [
@@ -85116,6 +85258,10 @@
   ],
   "workers/support/WorkerDataCloneErr.js": [
    "96307fbfbf50db2efa97f46449cb04789ce47cd1",
+   "support"
+  ],
+  "workers/support/WorkerFetchURL.js": [
+   "ac8c81ce2d0e4833bf1d61a18a05b2ce531b576a",
    "support"
   ],
   "workers/support/WorkerLocation.js": [
