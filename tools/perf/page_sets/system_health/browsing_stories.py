@@ -177,6 +177,7 @@ class QqMobileStory(_NewsBrowsingStory):
   URL = 'http://news.qq.com'
   ITEM_SELECTOR = '.list .full a'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class RedditDesktopStory(_NewsBrowsingStory):
@@ -311,6 +312,7 @@ class GoogleIndiaDesktopStory(_NewsBrowsingStory):
   _SEARCH_BUTTON_SELECTOR = 'button[aria-label="Google Search"]'
   _SEARCH_PAGE_2_SELECTOR = 'a[aria-label=\'Page 2\']'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
   def _DidLoadDocument(self, action_runner):
     action_runner.Wait(2)

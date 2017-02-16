@@ -31,6 +31,7 @@ class LoadGoogleStory(_LoadingStory):
 class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadYahooStory(_LoadingStory):
@@ -47,6 +48,7 @@ class LoadTaobaoDesktopStory(_LoadingStory):
   NAME = 'load:search:taobao'
   URL = 'https://world.taobao.com/'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadTaobaoMobileStory(_LoadingStory):
@@ -54,11 +56,13 @@ class LoadTaobaoMobileStory(_LoadingStory):
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
   URL = 'http://m.intl.taobao.com/?ali_trackid'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadYandexStory(_LoadingStory):
   NAME = 'load:search:yandex'
   URL = 'https://yandex.ru/touchsearch?text=science'
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadEbayStory(_LoadingStory):
@@ -91,6 +95,7 @@ class LoadVkStory(_LoadingStory):
   # indefinitely on mobile
   # (see https://github.com/chromium/web-page-replay/issues/71).
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadInstagramStory(_LoadingStory):
@@ -155,6 +160,7 @@ class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'
   # Using "https://" hangs and shows "This site can't be reached".
   URL = 'http://news.qq.com'
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadRedditDesktopStory(_LoadingStory):
@@ -178,6 +184,7 @@ class LoadSohuMobileStory(_LoadingStory):
   # always fails to completely load due to
   # https://github.com/chromium/web-page-replay/issues/74.
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INTERNATIONAL]
 
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
