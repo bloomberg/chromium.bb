@@ -93,7 +93,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-        if (article.mIsAssetDownload) {
+        if (article.isAssetDownload()) {
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
                     || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
@@ -119,7 +119,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         // We explicitly open an offline page only for offline page downloads. For all other
         // sections the URL is opened and it is up to Offline Pages whether to open its offline
         // page (e.g. when offline).
-        if (article.isDownload() && !article.mIsAssetDownload) {
+        if (article.isDownload() && !article.isAssetDownload()) {
             assert article.getOfflinePageOfflineId() != null;
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW

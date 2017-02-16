@@ -20,11 +20,11 @@ public class DownloadFilter {
     // These statics are used for UMA logging. Please update the AndroidDownloadFilterType enum in
     // histograms.xml if these change.
     public static final int FILTER_ALL = 0;
-    static final int FILTER_PAGE = 1;
-    static final int FILTER_VIDEO = 2;
-    static final int FILTER_AUDIO = 3;
+    public static final int FILTER_PAGE = 1;
+    public static final int FILTER_VIDEO = 2;
+    public static final int FILTER_AUDIO = 3;
     public static final int FILTER_IMAGE = 4;
-    static final int FILTER_DOCUMENT = 5;
+    public static final int FILTER_DOCUMENT = 5;
     public static final int FILTER_OTHER = 6;
     public static final int FILTER_BOUNDARY = 7;
 

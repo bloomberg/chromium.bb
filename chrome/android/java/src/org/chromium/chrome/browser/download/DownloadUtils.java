@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -656,5 +657,46 @@ public class DownloadUtils {
         }
         int remainingLength = limit - extensionLength;
         return fileName.substring(0, remainingLength) + ELLIPSIS + fileName.substring(index);
+    }
+
+    /**
+     * Return an icon for a given file type.
+     * @param fileType Type of the file as returned by DownloadFilter
+     * @return Resource ID of the corresponding icon
+     */
+    public static int getIconResId(int fileType) {
+        switch (fileType) {
+            case DownloadFilter.FILTER_PAGE:
+                return R.drawable.ic_drive_site_white_24dp;
+            case DownloadFilter.FILTER_VIDEO:
+                return R.drawable.ic_play_arrow_white_24dp;
+            case DownloadFilter.FILTER_AUDIO:
+                return R.drawable.ic_music_note_white_24dp;
+            case DownloadFilter.FILTER_IMAGE:
+                return R.drawable.ic_image_white_24dp;
+            case DownloadFilter.FILTER_DOCUMENT:
+                return R.drawable.ic_drive_text_white_24dp;
+            default:
+                return R.drawable.ic_drive_file_white_24dp;
+        }
+    }
+
+    /**
+     * Return a background color for the file type icon.
+     * @param context Context from which to extract the resources
+     * @return Background color
+     */
+    public static int getIconBackgroundColor(Context context) {
+        return ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
+    }
+
+    /**
+     * Return a foreground color list for the file type icon.
+     * @param context Context from which to extract the resources
+     * @return a foreground color list
+     */
+    public static ColorStateList getIconForegroundColorList(Context context) {
+        return ApiCompatibilityUtils.getColorStateList(
+                context.getResources(), R.color.white_mode_tint);
     }
 }

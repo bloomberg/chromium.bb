@@ -31,7 +31,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private final int mMargin;
     private final int mIconBackgroundColor;
     private final int mIconBackgroundColorSelected;
-    private final ColorStateList mWhiteTint;
+    private final ColorStateList mIconForegroundColorList;
 
     private DownloadHistoryItemWrapper mItem;
     private int mIconResId;
@@ -62,12 +62,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public DownloadItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mMargin = context.getResources().getDimensionPixelSize(R.dimen.downloads_item_margin);
-        mIconBackgroundColor =
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
+        mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
         mIconBackgroundColorSelected =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
-        mWhiteTint =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
+        mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
     }
 
     @Override
@@ -117,7 +115,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
         if (TextUtils.equals(getFilePath(), filePath) && thumbnail != null
-                && thumbnail.getWidth() != 0 && thumbnail.getHeight() != 0) {
+                && thumbnail.getWidth() > 0 && thumbnail.getHeight() > 0) {
+            assert !thumbnail.isRecycled();
             setThumbnailBitmap(thumbnail);
         }
     }
@@ -140,32 +139,16 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         int fileType = item.getFilterType();
         mThumbnailBitmap = null;
         if (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete()) {
-            mThumbnailBitmap = thumbnailProvider.getThumbnail(this);
+            Bitmap cached_thumbnail = thumbnailProvider.getThumbnail(this);
+            if (cached_thumbnail != null && !cached_thumbnail.isRecycled()) {
+                mThumbnailBitmap = cached_thumbnail;
+            }
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
         }
 
         // Pick what icon to display for the item.
-        mIconResId = R.drawable.ic_drive_file_white_24dp;
-        switch (fileType) {
-            case DownloadFilter.FILTER_PAGE:
-                mIconResId = R.drawable.ic_drive_site_white_24dp;
-                break;
-            case DownloadFilter.FILTER_VIDEO:
-                mIconResId = R.drawable.ic_play_arrow_white_24dp;
-                break;
-            case DownloadFilter.FILTER_AUDIO:
-                mIconResId = R.drawable.ic_music_note_white_24dp;
-                break;
-            case DownloadFilter.FILTER_IMAGE:
-                mIconResId = R.drawable.ic_image_white_24dp;
-                break;
-            case DownloadFilter.FILTER_DOCUMENT:
-                mIconResId = R.drawable.ic_drive_text_white_24dp;
-                break;
-            default:
-        }
-
+        mIconResId = DownloadUtils.getIconResId(fileType);
         updateIconView();
 
         Context context = mFilesizeView.getContext();
@@ -245,15 +228,16 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         if (isChecked()) {
             mIconView.setBackgroundColor(mIconBackgroundColorSelected);
             mIconView.setImageResource(R.drawable.ic_check_googblue_24dp);
-            mIconView.setTint(mWhiteTint);
+            mIconView.setTint(mIconForegroundColorList);
         } else if (mThumbnailBitmap != null) {
+            assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);
             mIconView.setImageBitmap(mThumbnailBitmap);
             mIconView.setTint(null);
         } else {
             mIconView.setBackgroundColor(mIconBackgroundColor);
             mIconView.setImageResource(mIconResId);
-            mIconView.setTint(mWhiteTint);
+            mIconView.setTint(mIconForegroundColorList);
         }
     }
 

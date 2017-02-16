@@ -55,7 +55,7 @@ public class SnippetArticle {
     private boolean mImpressionTracked;
 
     /** Whether the linked article represents an asset download. */
-    public boolean mIsAssetDownload;
+    private boolean mIsAssetDownload;
 
     /** The path to the asset download (only for asset download articles). */
     private File mAssetDownloadFile;
@@ -122,6 +122,11 @@ public class SnippetArticle {
     /** @return whether a snippet is either offline page or asset download. */
     public boolean isDownload() {
         return mCategory == KnownCategories.DOWNLOADS;
+    }
+
+    /** @return whether a snippet is asset download. */
+    public boolean isAssetDownload() {
+        return mIsAssetDownload;
     }
 
     /**
