@@ -88,10 +88,11 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   enum State {
     NO_ERROR,
     ERROR,
-    // Initial state, before we've initialized the CDM, allocated the surface,
-    // and started codec allocation.  From here, we'll transition either to
-    // WAITING_FOR_CODEC or NO_ERROR (or, of course, ERROR).
-    BEFORE_SURFACE_ALLOC,
+    // We have requested a surface, but haven't allocated it yet.  When the
+    // surface arrives, we'll transition to WAITING_FOR_CODEC, NO_ERROR, or
+    // ERROR.  This is also the initial state, before we've even requested a
+    // surface, just because it's convenient.
+    WAITING_FOR_SURFACE,
     // Set when we are asynchronously constructing the codec.  Will transition
     // to NO_ERROR or ERROR depending on success.
     WAITING_FOR_CODEC,
@@ -108,16 +109,22 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     DRAIN_FOR_DESTROY,
   };
 
+  // Entry point for configuring / reconfiguring a codec with a new surface.
   // Start surface creation by trying to allocate the surface id.  Will either
   // InitializePictureBufferManager if the surface is available immediately, or
-  // will wait for OnSurfaceAvailable to do it.
+  // will wait for OnSurfaceAvailable to do it.  This will transition |state_|
+  // to WAITING_FOR_SURFACE or WAITING_FOR_CODEC, as needed (or NO_ERROR if it
+  // gets the surface and the codec without waiting).
   void StartSurfaceCreation();
 
-  // Initialize of the picture buffer manager.  This is to be called when the
-  // SurfaceView in |surface_id_|, if any, is no longer busy.  On failure, it
-  // will set |state_| to ERROR.  On success, it will proceed to either sync or
-  // async codec config.  Note that we might not actually have a codec when this
-  // returns, however.
+  // Initialize of the picture buffer manager to use the current surface, once
+  // it is available.  This is not normally called directly, but rather via
+  // StartSurfaceCreation.  If we have a media codec already, then this will
+  // attempt to setSurface the new surface.  Otherwise, it will start codec
+  // config using the new surface.  In that case, there might not be a codec
+  // ready even if this succeeds, but async config will be started.  If
+  // setSurface fails, this will not replace the codec.  On failure, this will
+  // transition |state_| to ERROR.
   void InitializePictureBufferManager();
 
   // A part of destruction process that is sometimes postponed after the drain.
