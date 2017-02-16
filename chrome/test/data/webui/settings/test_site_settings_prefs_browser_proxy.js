@@ -15,6 +15,7 @@ var prefsEmpty = {
     geolocation: '',
     javascript: '',
     mic: '',
+    midiDevices: '',
     notifications: '',
     plugins: '',
     popups: '',
@@ -28,6 +29,7 @@ var prefsEmpty = {
     geolocation: [],
     javascript: [],
     mic: [],
+    midiDevices: [],
     notifications: [],
     plugins: [],
     popups: [],
@@ -165,6 +167,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.defaults.javascript;
     } else if (contentType == settings.ContentSettingsTypes.MIC) {
       pref = this.prefs_.defaults.mic;
+    } else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES) {
+      pref = this.prefs_.defaults.midiDevices;
     } else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS) {
       pref = this.prefs_.defaults.notifications;
     } else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS) {
@@ -205,6 +209,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.javascript;
     else if (contentType == settings.ContentSettingsTypes.MIC)
       pref = this.prefs_.exceptions.mic;
+    else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES)
+      pref = this.prefs_.exceptions.midiDevices;
     else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS)
       pref = this.prefs_.exceptions.notifications;
     else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS)

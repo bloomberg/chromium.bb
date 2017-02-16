@@ -59,6 +59,7 @@ cr.define('site_list', function() {
           images: [],
           javascript: [],
           mic: [],
+          midiDevices: [],
           notifications: [],
           plugins: [],
           protectedContent: [],
@@ -151,6 +152,7 @@ cr.define('site_list', function() {
           mic: [],
           notifications: [],
           plugins: [],
+          midiDevices: [],
           protectedContent: [],
           popups: [],
           unsandboxed_plugins: [],
@@ -185,6 +187,7 @@ cr.define('site_list', function() {
           images: [],
           javascript: [],
           mic: [],
+          midiDevices: [],
           notifications: [
             {
               embeddingOrigin: 'https://google.com',

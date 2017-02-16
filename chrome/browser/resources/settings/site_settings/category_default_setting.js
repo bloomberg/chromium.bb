@@ -92,6 +92,7 @@ Polymer({
       case settings.ContentSettingsTypes.MIC:
       case settings.ContentSettingsTypes.NOTIFICATIONS:
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
+      case settings.ContentSettingsTypes.MIDI_DEVICES:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,

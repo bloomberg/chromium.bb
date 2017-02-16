@@ -258,6 +258,23 @@
             aria-describedby="handlersSecondary"></button>
       </div>
     </template>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.MIDI_DEVICES]]"
+        data-route="SITE_SETTINGS_MIDI_DEVICES"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:music-note"></iron-icon>
+      <div class="middle">
+        $i18n{siteSettingsMidiDevices}
+        <div class="secondary" id="midiDevicesSecondary">
+          [[defaultSettingLabel_(
+              default_.midiSysex,
+              '$i18nPolymer{siteSettingsMidiDevicesAsk}',
+              '$i18nPolymer{siteSettingsMidiDevicesBlock}')]]
+        </div>
+      </div>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{siteSettingsMidiDevices}"></button>
+    </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
         data-route="SITE_SETTINGS_ZOOM_LEVELS"
         on-tap="onTapNavigate_" actionable>

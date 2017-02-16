@@ -1786,6 +1786,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS" desc="Label for the unsandboxed plugin access site settings.">
     Unsandboxed plugin access
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DEVICES" desc="Label for the MIDI devices in site settings.">
+    MIDI devices
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DEVICES_ASK" desc="The ask label for MIDI devices in site settings.">
+    Ask when a site wants to use system exclusive messages to access MIDI devices
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DEVICES_ASK_RECOMMENDED" desc="The ask label for MIDI devices in site settings (with the 'recommended' suffix).">
+    Ask when a site wants to use system exclusive messages to access MIDI devices (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DEVICES_BLOCK" desc="The block label for MIDI devices in site settings.">
+    Do not allow any sites to use system exclusive messages to access MIDI devices
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES" desc="Label for the USB devices in site settings.">
     USB devices
   </message>

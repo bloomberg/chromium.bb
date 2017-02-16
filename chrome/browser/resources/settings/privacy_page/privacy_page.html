@@ -390,6 +390,19 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
+      <template is="dom-if" route-path="/content/midiDevices" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsMidiDevices}">
+          <category-default-setting
+              toggle-off-label="$i18n{siteSettingsMidiDevicesBlock}"
+              toggle-on-label=
+                  "$i18n{siteSettingsMidiDevicesAskRecommended}"
+              category="{{ContentSettingsTypes.MIDI_DEVICES}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.MIDI_DEVICES}}">
+          </category-setting-exceptions>
+        </settings-subpage>
+      </template>
       <template is="dom-if" route-path="/content/usbDevices" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUsbDevices}">
           <usb-devices></usb-devices>
