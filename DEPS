@@ -513,7 +513,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'f172b30356d821d180fa4ecfa3e71c7274a32de4',
 
     'src/third_party/custom_tabs_client/src':
-      Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'f68fb050a78be781cbaacb7a34a96ca902dda0f3',
+      Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + '3c95e2dda9b292653ff13454f093e5ff136814d2',
 
     'src/third_party/gvr-android-sdk/src':
       Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + '8d1395957283ee13ebe2bc672ba24e5ca4ec343f',
