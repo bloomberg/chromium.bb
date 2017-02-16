@@ -110,6 +110,24 @@
             ]
         }
     ],
+    "AutofillCreditCardDropdownVariations": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "LastUsedDateAndExpDate_Experiment",
+                    "params": {
+                        "show_expiration_date": "true"
+                    },
+                    "enable_features": [
+                        "AutofillCreditCardLastUsedDateDisplay"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillCreditCardPopup": [
         {
             "platforms": [
