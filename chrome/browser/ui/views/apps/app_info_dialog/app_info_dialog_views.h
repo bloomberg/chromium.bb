@@ -34,10 +34,11 @@ class AppInfoDialog : public views::View,
                 const extensions::Extension* app);
   ~AppInfoDialog() override;
 
+  views::View* arc_app_info_links_for_test() { return arc_app_info_links_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AppInfoDialogAshTest,
                            PinButtonsAreFocusedAfterPinUnpin);
-
   // Closes the dialog.
   void Close();
 
@@ -51,13 +52,14 @@ class AppInfoDialog : public views::View,
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // UI elements of the dialog.
-  views::View* dialog_header_;
-  views::ScrollView* dialog_body_;
-  views::View* dialog_footer_;
+  views::View* dialog_header_ = nullptr;
+  views::ScrollView* dialog_body_ = nullptr;
+  views::View* dialog_footer_ = nullptr;
+  views::View* arc_app_info_links_ = nullptr;
 
   Profile* profile_;
   std::string app_id_;
-  extensions::ExtensionRegistry* extension_registry_;
+  extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoDialog);
 };

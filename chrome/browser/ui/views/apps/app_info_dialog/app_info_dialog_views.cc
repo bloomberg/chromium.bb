@@ -35,6 +35,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h"
 #endif
 
@@ -110,12 +112,7 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
 AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const extensions::Extension* app)
-    : dialog_header_(NULL),
-      dialog_body_(NULL),
-      dialog_footer_(NULL),
-      profile_(profile),
-      app_id_(app->id()),
-      extension_registry_(NULL) {
+    : profile_(profile), app_id_(app->id()) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(layout);
@@ -146,10 +143,17 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));
 
 #if defined(OS_CHROMEOS)
-  // When ARC is enabled, show the "Manage supported links" link for Chrome.
-  if (arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled() &&
-      app->id() == extension_misc::kChromeAppId)
-    dialog_body_contents->AddChildView(new ArcAppInfoLinksPanel(profile, app));
+  // When ARC is enabled and the Settings app is available, show the
+  // "Manage supported links" link for Chrome.
+  if (app->id() == extension_misc::kChromeAppId &&
+      arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled()) {
+    const ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
+    if (arc_app_list_prefs &&
+        arc_app_list_prefs->IsRegistered(arc::kSettingsAppId)) {
+      arc_app_info_links_ = new ArcAppInfoLinksPanel(profile, app);
+      dialog_body_contents->AddChildView(arc_app_info_links_);
+    }
+  }
 #endif
 
   // Clip the scrollable view so that the scrollbar appears. As long as this

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_system.h"
@@ -25,9 +26,26 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "components/arc/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+namespace {
+
+std::vector<arc::mojom::AppInfoPtr> GetArcSettingsAppInfo() {
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  arc::mojom::AppInfoPtr app(arc::mojom::AppInfo::New());
+  app->name = "settings";
+  app->package_name = "com.android.settings";
+  app->activity = "com.android.settings.Settings";
+  app->sticky = false;
+  apps.push_back(std::move(app));
+  return apps;
+}
+
+}  // namespace
 #endif
 
 namespace test {
@@ -69,35 +87,19 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
-    arc::ArcSessionManager::DisableUIForTesting();
-    arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
-        base::MakeUnique<arc::ArcSessionRunner>(
-            base::Bind(arc::FakeArcSession::Create)));
-    arc_session_manager_->OnPrimaryUserProfilePrepared(
-        extension_environment_.profile());
+    arc_test_.SetUp(extension_environment_.profile());
 #endif
-    widget_ = views::DialogDelegate::CreateDialogWidget(
-        new views::DialogDelegateView(), GetContext(), nullptr);
-    widget_->AddObserver(this);
     extension_ = extension_environment_.MakePackagedApp(kTestExtensionId, true);
-    dialog_ = new AppInfoDialog(widget_->GetNativeWindow(),
-                                extension_environment_.profile(),
-                                extension_.get());
-
-    widget_->GetContentsView()->AddChildView(dialog_);
-    widget_->Show();
+    chrome_app_ = extension_environment_.MakePackagedApp(
+        extension_misc::kChromeAppId, true);
   }
 
   void TearDown() override {
-    if (!widget_destroyed_)
-      widget_->CloseNow();
-    EXPECT_TRUE(widget_destroyed_);
+    CloseAppInfo();
     extension_ = nullptr;
+    chrome_app_ = nullptr;
 #if defined(OS_CHROMEOS)
-    if (arc_session_manager_) {
-      arc_session_manager_->Shutdown();
-      arc_session_manager_ = nullptr;
-    }
+    arc_test_.TearDown();
 #endif
     BrowserWithTestWindowTest::TearDown();
   }
@@ -109,17 +111,41 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 
   void DestroyProfile(TestingProfile* profile) override {
 #if defined(OS_CHROMEOS)
-    if (arc_session_manager_) {
-      arc_session_manager_->Shutdown();
-      arc_session_manager_ = nullptr;
-    }
+    arc_test_.TearDown();
 #endif
   }
 
  protected:
+  void ShowAppInfo(const std::string& app_id) {
+    ShowAppInfoForProfile(app_id, extension_environment_.profile());
+  }
+
+  void ShowAppInfoForProfile(const std::string& app_id, Profile* profile) {
+    const extensions::Extension* extension =
+        extensions::ExtensionSystem::Get(profile)
+            ->extension_service()
+            ->GetExtensionById(app_id, true);
+    DCHECK(extension);
+
+    DCHECK(!widget_);
+    widget_ = views::DialogDelegate::CreateDialogWidget(
+        new views::DialogDelegateView(), GetContext(), nullptr);
+    widget_->AddObserver(this);
+    dialog_ = new AppInfoDialog(widget_->GetNativeWindow(), profile, extension);
+
+    widget_->GetContentsView()->AddChildView(dialog_);
+    widget_->Show();
+  }
+
+  void CloseAppInfo() {
+    if (widget_)
+      widget_->CloseNow();
+    base::RunLoop().RunUntilIdle();
+    DCHECK(!widget_);
+  }
+
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroyed(views::Widget* widget) override {
-    widget_destroyed_ = true;
     widget_->RemoveObserver(this);
     widget_ = NULL;
   }
@@ -134,12 +160,12 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 
  protected:
   views::Widget* widget_ = nullptr;
-  bool widget_destroyed_ = false;
   AppInfoDialog* dialog_ = nullptr;  // Owned by |widget_|'s views hierarchy.
   scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<extensions::Extension> chrome_app_;
   extensions::TestExtensionEnvironment extension_environment_;
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
+  ArcAppTest arc_test_;
 #endif
 
  private:
@@ -148,26 +174,28 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 
 // Tests that the dialog closes when the current app is uninstalled.
 TEST_F(AppInfoDialogViewsTest, UninstallingAppClosesDialog) {
+  ShowAppInfo(kTestExtensionId);
+  ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
   UninstallApp(kTestExtensionId);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(widget_destroyed_);
+  EXPECT_FALSE(widget_);
 }
 
 // Tests that the dialog does not close when a different app is uninstalled.
 TEST_F(AppInfoDialogViewsTest, UninstallingOtherAppDoesNotCloseDialog) {
+  ShowAppInfo(kTestExtensionId);
   extension_environment_.MakePackagedApp(kTestOtherExtensionId, true);
-
+  ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
   UninstallApp(kTestOtherExtensionId);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(widget_destroyed_);
+  EXPECT_TRUE(widget_);
 }
 
 // Tests that the dialog closes when the current profile is destroyed.
 TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
+  ShowAppInfo(kTestExtensionId);
   // First delete the test browser window. This ensures the test harness isn't
   // surprised by it being closed in response to the profile deletion below.
   // Note the base class doesn't own the profile, so that part is skipped.
@@ -177,16 +205,17 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
   // triggered by the DeleteProfile() call rather than the line above.
   base::RunLoop().RunUntilIdle();
 
+  ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
   extension_environment_.DeleteProfile();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(widget_destroyed_);
+  EXPECT_FALSE(widget_);
 }
 
 // Tests that the dialog does not close when a different profile is destroyed.
 TEST_F(AppInfoDialogViewsTest, DestroyedOtherProfileDoesNotCloseDialog) {
+  ShowAppInfo(kTestExtensionId);
   std::unique_ptr<TestingProfile> other_profile(new TestingProfile);
   extension_environment_.CreateExtensionServiceForProfile(other_profile.get());
 
@@ -196,16 +225,17 @@ TEST_F(AppInfoDialogViewsTest, DestroyedOtherProfileDoesNotCloseDialog) {
       ->extension_service()
       ->AddExtension(other_app.get());
 
+  ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
   other_profile.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(widget_destroyed_);
+  EXPECT_TRUE(widget_);
 }
 
 // Tests that clicking the View in Store link opens a browser tab and closes the
 // dialog cleanly.
 TEST_F(AppInfoDialogViewsTest, ViewInStore) {
+  ShowAppInfo(kTestExtensionId);
   EXPECT_TRUE(extension_->from_webstore());  // Otherwise there is no link.
   views::Link* link = test::AppInfoDialogTestApi(dialog_).view_in_store_link();
   EXPECT_TRUE(link);
@@ -213,12 +243,12 @@ TEST_F(AppInfoDialogViewsTest, ViewInStore) {
   TabStripModel* tabs = browser()->tab_strip_model();
   EXPECT_EQ(0, tabs->count());
 
+  ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
   link->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0));
 
+  ASSERT_TRUE(widget_);
   EXPECT_TRUE(widget_->IsClosed());
-  EXPECT_FALSE(widget_destroyed_);
 
   EXPECT_EQ(1, tabs->count());
   content::WebContents* web_contents = tabs->GetWebContentsAt(0);
@@ -229,5 +259,44 @@ TEST_F(AppInfoDialogViewsTest, ViewInStore) {
   EXPECT_EQ(GURL(url), web_contents->GetURL());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(widget_destroyed_);
+  EXPECT_FALSE(widget_);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
+  ShowAppInfo(extension_misc::kChromeAppId);
+  EXPECT_FALSE(widget_->IsClosed());
+  // App Info should not have ARC App info links section because ARC Settings
+  // app is not available yet.
+  EXPECT_FALSE(dialog_->arc_app_info_links_for_test());
+
+  // Re-show App Info but with ARC Settings app enabled.
+  CloseAppInfo();
+  ArcAppListPrefs* arc_prefs =
+      ArcAppListPrefs::Get(extension_environment_.profile());
+  ASSERT_TRUE(arc_prefs);
+  arc::mojom::AppHost* app_host = arc_prefs;
+  app_host->OnAppListRefreshed(GetArcSettingsAppInfo());
+  EXPECT_TRUE(arc_prefs->IsRegistered(arc::kSettingsAppId));
+  ShowAppInfo(extension_misc::kChromeAppId);
+  EXPECT_FALSE(widget_->IsClosed());
+  EXPECT_TRUE(dialog_->arc_app_info_links_for_test());
+
+  // Re-show App Info but for non-primary profile.
+  CloseAppInfo();
+  std::unique_ptr<TestingProfile> other_profile =
+      base::MakeUnique<TestingProfile>();
+  extension_environment_.CreateExtensionServiceForProfile(other_profile.get());
+  scoped_refptr<const extensions::Extension> other_app =
+      extension_environment_.MakePackagedApp(extension_misc::kChromeAppId,
+                                             true);
+  extensions::ExtensionSystem::Get(other_profile.get())
+      ->extension_service()
+      ->AddExtension(other_app.get());
+  ShowAppInfoForProfile(extension_misc::kChromeAppId, other_profile.get());
+  EXPECT_FALSE(widget_->IsClosed());
+  // The ARC App info links are not available if ARC is not allowed for
+  // secondary profile.
+  EXPECT_FALSE(dialog_->arc_app_info_links_for_test());
+}
+#endif
