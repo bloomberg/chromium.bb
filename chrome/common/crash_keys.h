@@ -144,6 +144,10 @@ extern const char kSendAction[];
 // In the CrApplication, records information about the current event.
 extern const char kNSEvent[];
 
+// TEMPORARY: Information about Toolbar.nib, stored right after it's supposed
+// to have loaded.  https://crbug.com/685985
+extern const char kToolbarNibInfo[];
+
 }  // namespace mac
 #endif
 

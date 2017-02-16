@@ -89,6 +89,8 @@ const char kSendAction[] = "sendaction";
 
 const char kNSEvent[] = "nsevent";
 
+const char kToolbarNibInfo[] = "toolbar-nib-info";
+
 }  // namespace mac
 #endif
 
@@ -162,6 +164,7 @@ size_t RegisterChromeCrashKeys() {
     { mac::kNSExceptionTrace, kMediumSize },
     { mac::kSendAction, kMediumSize },
     { mac::kNSEvent, kMediumSize },
+    { mac::kToolbarNibInfo, kMediumSize },
     { mac::kZombie, kMediumSize },
     { mac::kZombieTrace, kMediumSize },
     // content/:
