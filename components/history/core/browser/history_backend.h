@@ -872,10 +872,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // of inheritance from base::SupportsUserData).
   std::unique_ptr<HistoryBackendHelper> supports_user_data_helper_;
 
-  // Used to manage syncing of the typed urls datatype. This will be null before
-  // Init is called.
-  std::unique_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
-
   // Listens for the system being under memory pressure.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
@@ -889,6 +885,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // List of observers
   base::ObserverList<HistoryBackendObserver> observers_;
+
+  // Used to manage syncing of the typed urls datatype. This will be null before
+  // Init is called. Defined after observers_ because it unregisters itself as
+  // observer during destruction.
+  std::unique_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);
 };
