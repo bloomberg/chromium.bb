@@ -34,7 +34,7 @@ bool SupportedCodecProfileLevelsMemo::IsSupportedVideoConfig(
   for (const auto& supported_profile_info : codec_profile_levels_) {
     if (codec == supported_profile_info.codec &&
         profile == supported_profile_info.profile &&
-        level == supported_profile_info.level) {
+        level <= supported_profile_info.level) {
       return true;
     }
   }

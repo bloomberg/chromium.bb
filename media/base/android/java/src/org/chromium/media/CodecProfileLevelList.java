@@ -179,7 +179,7 @@ class CodecProfileLevelList {
                     case CodecProfileLevel.AVCLevel12:
                         return 12;
                     case CodecProfileLevel.AVCLevel13:
-                        return 14;
+                        return 13;
                     case CodecProfileLevel.AVCLevel2:
                         return 20;
                     case CodecProfileLevel.AVCLevel21:
