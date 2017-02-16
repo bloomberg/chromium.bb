@@ -55,7 +55,7 @@
 #include <EGL/eglext.h>
 
 #include <cairo-gl.h>
-#else /* HAVE_CAIRO_EGL */
+#elif !defined(ENABLE_EGL) /* platform.h defines these if EGL is enabled */
 typedef void *EGLDisplay;
 typedef void *EGLConfig;
 typedef void *EGLContext;
