@@ -52,7 +52,9 @@ Polymer({
       this.currentChannel_ = info.currentChannel;
       this.targetChannel_ = info.targetChannel;
       // Pre-populate radio group with target channel.
-      this.$$('paper-radio-group').select(this.targetChannel_);
+      var radioGroup = this.$$('paper-radio-group');
+      radioGroup.select(this.targetChannel_);
+      radioGroup.focus();
     }.bind(this));
   },
 
