@@ -179,7 +179,7 @@ void TestIntraPred32(AvxPredFunc const *pred_funcs) {
     "f162b51ed618d28b936974cff4391da5",
 #if CONFIG_ALT_INTRA
     "297e8fbb5d33c29b12b228fa9d7c40a4",
-    "7177dd1ae3b49441f997d439a5bd451a"
+    "a08d5b7e104c5fc2b203789ee5f725a7"
 #else
     "9e1370c6d42e08d357d9612c93a71cfc",
 #endif  // CONFIG_ALT_INTRA
