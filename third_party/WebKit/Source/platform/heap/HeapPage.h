@@ -127,23 +127,24 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
 class NormalPageArena;
 class PageMemory;
 
-// HeapObjectHeader is 4 byte (32 bit) that has the following layout:
+// HeapObjectHeader is a 64-bit object that has the following layout:
 //
-// | gcInfoIndex (14 bit) |
-// | DOM mark bit (1 bit) |
-// | size (14 bit)        |
-// | dead bit (1 bit)     |
-// | freed bit (1 bit)    |
-// | mark bit (1 bit)     |
+// | random magic value (32 bits) |
+// | gcInfoIndex (14 bits)        |
+// | DOM mark bit (1 bit)         |
+// | size (14 bits)               |
+// | dead bit (1 bit)             |
+// | freed bit (1 bit)            |
+// | mark bit (1 bit)             |
 //
-// - For non-large objects, 14 bit is enough for |size| because the blink
-//   page size is 2^17 byte and each object is guaranteed to be aligned with
-//   2^3 byte.
+// - For non-large objects, 14 bits are enough for |size| because the Blink
+//   page size is 2^17 bytes and each object is guaranteed to be aligned on a
+//   2^3 byte boundary.
 // - For large objects, |size| is 0. The actual size of a large object is
-//   stored in LargeObjectPage::m_payloadSize.
+//   stored in |LargeObjectPage::m_payloadSize|.
 // - 1 bit used to mark DOM trees for V8.
-// - 14 bit is enough for gcInfoIndex because there are less than 2^14 types
-//   in Blink.
+// - 14 bits are enough for |gcInfoIndex| because there are fewer than 2^14
+//   types in Blink.
 const size_t headerWrapperMarkBitMask = 1u << 17;
 const size_t headerGCInfoIndexShift = 18;
 const size_t headerGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
@@ -170,14 +171,14 @@ class PLATFORM_EXPORT HeapObjectHeader {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  // If gcInfoIndex is 0, this header is interpreted as a free list header.
+  // If |gcInfoIndex| is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
   HeapObjectHeader(size_t size, size_t gcInfoIndex) {
     m_magic = getMagic();
     // sizeof(HeapObjectHeader) must be equal to or smaller than
-    // allocationGranurarity, because HeapObjectHeader is used as a header
-    // for an freed entry.  Given that the smallest entry size is
-    // allocationGranurarity, HeapObjectHeader must fit into the size.
+    // |allocationGranularity|, because |HeapObjectHeader| is used as a header
+    // for a freed entry. Given that the smallest entry size is
+    // |allocationGranurarity|, |HeapObjectHeader| must fit into the size.
     static_assert(
         sizeof(HeapObjectHeader) <= allocationGranularity,
         "size of HeapObjectHeader must be smaller than allocationGranularity");
@@ -227,9 +228,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // manage its integrity on its own, without requiring outside callers to
   // explicitly check.
   bool checkHeader() const;
-  // Zap magic number with a new magic number that means there was once an
-  // object allocated here, but it was freed because nobody marked it during
-  // GC.
+
+  // Zap |m_magic| with a new magic number that means there was once an object
+  // allocated here, but it was freed because nobody marked it during GC.
   void zapMagic();
 
   void finalize(Address, size_t);
@@ -295,9 +296,9 @@ inline size_t blinkPagePayloadSize() {
   return blinkPageSize - 2 * blinkGuardPageSize;
 }
 
-// Blink heap pages are aligned to the Blink heap page size.
-// Therefore, the start of a Blink page can be obtained by
-// rounding down to the Blink page size.
+// Blink heap pages are aligned to the Blink heap page size. Therefore, the
+// start of a Blink page can be obtained by rounding down to the Blink page
+// size.
 inline Address roundToBlinkPageStart(Address address) {
   return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) &
                                    blinkPageBaseMask);
@@ -309,7 +310,7 @@ inline Address roundToBlinkPageEnd(Address address) {
          blinkPageSize;
 }
 
-// Masks an address down to the enclosing blink page base address.
+// Masks an address down to the enclosing Blink page base address.
 inline Address blinkPageAddress(Address address) {
   return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) &
                                    blinkPageBaseMask);
@@ -320,34 +321,33 @@ inline bool vTableInitialized(void* objectPointer) {
 }
 
 #if DCHECK_IS_ON()
-// Sanity check for a page header address: the address of the page
-// header should be OS page size away from being Blink page size
-// aligned.
+
+// Sanity check for a page header address: the address of the page header should
+// be 1 OS page size away from being Blink page size-aligned.
 inline bool isPageHeaderAddress(Address address) {
   return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) -
            blinkGuardPageSize);
 }
 
 // Callback used for unit testing the marking of conservative pointers
-// (checkAndMarkPointer().) For each pointer that has been discovered
-// to point to a heap object, the callback is invoked with a pointer
-// to its header. If the callback returns |true|, the object will not
-// be marked.
+// (|checkAndMarkPointer|). For each pointer that has been discovered to point
+// to a heap object, the callback is invoked with a pointer to its header. If
+// the callback returns true, the object will not be marked.
 using MarkedPointerCallbackForTesting = bool (*)(HeapObjectHeader*);
 #endif
 
-// BasePage is a base class for NormalPage and LargeObjectPage.
+// |BasePage| is a base class for |NormalPage| and |LargeObjectPage|.
 //
-// - NormalPage is a page whose size is |blinkPageSize|. NormalPage can contain
-//   multiple objects in the page. An object whose size is smaller than
-//   |largeObjectSizeThreshold| is stored in NormalPage.
+// - |NormalPage| is a page whose size is |blinkPageSize|. A |NormalPage| can
+//   contain multiple objects. An object whose size is smaller than
+//   |largeObjectSizeThreshold| is stored in a |NormalPage|.
 //
-// - LargeObjectPage is a page that contains only one object. The object size
+// - |LargeObjectPage| is a page that contains only one object. The object size
 //   is arbitrary. An object whose size is larger than |blinkPageSize| is stored
-//   as a single project in LargeObjectPage.
+//   as a single project in |LargeObjectPage|.
 //
 // Note: An object whose size is between |largeObjectSizeThreshold| and
-// |blinkPageSize| can go to either of NormalPage or LargeObjectPage.
+// |blinkPageSize| can go to either of |NormalPage| or |LargeObjectPage|.
 class BasePage {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -365,9 +365,9 @@ class BasePage {
   }
   BasePage* next() const { return m_next; }
 
-  // virtual methods are slow. So performance-sensitive methods
-  // should be defined as non-virtual methods on NormalPage and LargeObjectPage.
-  // The following methods are not performance-sensitive.
+  // Virtual methods are slow. So performance-sensitive methods should be
+  // defined as non-virtual methods on |NormalPage| and |LargeObjectPage|. The
+  // following methods are not performance-sensitive.
   virtual size_t objectPayloadSizeForTesting() = 0;
   virtual bool isEmpty() = 0;
   virtual void removeFromHeap() = 0;
@@ -378,14 +378,14 @@ class BasePage {
 #if defined(ADDRESS_SANITIZER)
   virtual void poisonUnmarkedObjects() = 0;
 #endif
-  // Check if the given address points to an object in this
-  // heap page. If so, find the start of that object and mark it
-  // using the given Visitor. Otherwise do nothing. The pointer must
-  // be within the same aligned blinkPageSize as the this-pointer.
+
+  // Check if the given address points to an object in this heap page. If so,
+  // find the start of that object and mark it using the given |Visitor|.
+  // Otherwise do nothing. The pointer must be within the same aligned
+  // |blinkPageSize| as |this|.
   //
-  // This is used during conservative stack scanning to
-  // conservatively mark all objects that could be referenced from
-  // the stack.
+  // This is used during conservative stack scanning to conservatively mark all
+  // objects that could be referenced from the stack.
   virtual void checkAndMarkPointer(Visitor*, Address) = 0;
 #if DCHECK_IS_ON()
   virtual void checkAndMarkPointer(Visitor*,
@@ -432,11 +432,8 @@ class BasePage {
   BaseArena* m_arena;
   BasePage* m_next;
 
-  // Track the sweeping state of a page. Set to true once
-  // the lazy sweep completes has processed it.
-  //
-  // Set to false at the start of a sweep, true  upon completion
-  // of lazy sweeping.
+  // Track the sweeping state of a page. Set to false at the start of a sweep,
+  // true  upon completion of lazy sweeping.
   bool m_swept;
   friend class BaseArena;
 };
@@ -476,15 +473,15 @@ class NormalPage final : public BasePage {
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
 #if DCHECK_IS_ON()
-  // Returns true for the whole blinkPageSize page that the page is on, even
-  // for the header, and the unmapped guard page at the start. That ensures
-  // the result can be used to populate the negative page cache.
+  // Returns true for the whole |blinkPageSize| page that the page is on, even
+  // for the header, and the unmapped guard page at the start. That ensures the
+  // result can be used to populate the negative page cache.
   bool contains(Address) override;
 #endif
   size_t size() override { return blinkPageSize; }
   static size_t pageHeaderSize() {
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
+    // Compute the amount of padding we have to add to a header to make the size
+    // of the header plus the padding a multiple of 8 bytes.
     size_t paddingSize = (sizeof(NormalPage) + allocationGranularity -
                           (sizeof(HeapObjectHeader) % allocationGranularity)) %
                          allocationGranularity;
@@ -493,8 +490,8 @@ class NormalPage final : public BasePage {
 
   inline NormalPageArena* arenaForNormalPage() const;
 
-  // Context object holding the state of the arena page compaction pass,
-  // passed in when compacting individual pages.
+  // Context object holding the state of the arena page compaction pass, passed
+  // in when compacting individual pages.
   class CompactionContext {
     STACK_ALLOCATED();
 
@@ -503,11 +500,11 @@ class NormalPage final : public BasePage {
     NormalPage* m_currentPage = nullptr;
     // Offset into |m_currentPage| to the next free address.
     size_t m_allocationPoint = 0;
-    // Chain of available pages to use for compaction. Page compaction
-    // picks the next one when the current one is exhausted.
+    // Chain of available pages to use for compaction. Page compaction picks the
+    // next one when the current one is exhausted.
     BasePage* m_availablePages = nullptr;
-    // Chain of pages that have been compacted. Page compaction will
-    // add compacted pages once the current one becomes exhausted.
+    // Chain of pages that have been compacted. Page compaction will add
+    // compacted pages once the current one becomes exhausted.
     BasePage** m_compactedPages = nullptr;
   };
 
@@ -557,17 +554,17 @@ class LargeObjectPage final : public BasePage {
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
 #if DCHECK_IS_ON()
-  // Returns true for any address that is on one of the pages that this
-  // large object uses. That ensures that we can use a negative result to
-  // populate the negative page cache.
+  // Returns true for any address that is on one of the pages that this large
+  // object uses. That ensures that we can use a negative result to populate the
+  // negative page cache.
   bool contains(Address) override;
 #endif
   virtual size_t size() {
     return pageHeaderSize() + sizeof(HeapObjectHeader) + m_payloadSize;
   }
   static size_t pageHeaderSize() {
-    // Compute the amount of padding we have to add to a header to make
-    // the size of the header plus the padding a multiple of 8 bytes.
+    // Compute the amount of padding we have to add to a header to make the size
+    // of the header plus the padding a multiple of 8 bytes.
     size_t paddingSize = (sizeof(LargeObjectPage) + allocationGranularity -
                           (sizeof(HeapObjectHeader) % allocationGranularity)) %
                          allocationGranularity;
@@ -592,18 +589,18 @@ class LargeObjectPage final : public BasePage {
 #endif
 };
 
-// A HeapDoesNotContainCache provides a fast way of taking an arbitrary
-// pointer-sized word, and determining whether it cannot be interpreted as a
-// pointer to an area that is managed by the garbage collected Blink heap.  This
-// is a cache of 'pages' that have previously been determined to be wholly
-// outside of the heap.  The size of these pages must be smaller than the
-// allocation alignment of the heap pages.  We determine off-heap-ness by
-// rounding down the pointer to the nearest page and looking up the page in the
-// cache.  If there is a miss in the cache we can determine the status of the
-// pointer precisely using the heap RegionTree.
+// |HeapDoesNotContainCache| provides a fast way to determine whether an
+// aribtrary pointer-sized word can be interpreted as a pointer to an area that
+// is managed by the garbage collected Blink heap. This is a cache of 'pages'
+// that have previously been determined to be wholly outside of the heap. The
+// size of these pages must be smaller than the allocation alignment of the heap
+// pages. We determine off-heap-ness by rounding down the pointer to the nearest
+// page and looking up the page in the cache. If there is a miss in the cache we
+// can determine the status of the pointer precisely using the heap
+// |RegionTree|.
 //
-// The HeapDoesNotContainCache is a negative cache, so it must be flushed when
-// memory is added to the heap.
+// This is a negative cache, so it must be flushed when memory is added to the
+// heap.
 class HeapDoesNotContainCache {
   USING_FAST_MALLOC(HeapDoesNotContainCache);
 
@@ -620,12 +617,11 @@ class HeapDoesNotContainCache {
 
   // Perform a lookup in the cache.
   //
-  // If lookup returns false, the argument address was not found in
-  // the cache and it is unknown if the address is in the Blink
-  // heap.
+  // If lookup returns false, the argument address was not found in the cache
+  // and it is unknown if the address is in the Blink heap.
   //
-  // If lookup returns true, the argument address was found in the
-  // cache which means the address is not in the heap.
+  // If lookup returns true, the argument address was found in the cache which
+  // means the address is not in the heap.
   PLATFORM_EXPORT bool lookup(Address);
 
   // Add an entry to the cache.
@@ -650,8 +646,8 @@ class FreeList {
   void addToFreeList(Address, size_t);
   void clear();
 
-  // Returns a bucket number for inserting a FreeListEntry of a given size.
-  // All FreeListEntries in the given bucket, n, have size >= 2^n.
+  // Returns a bucket number for inserting a |FreeListEntry| of a given size.
+  // All entries in the given bucket, n, have size >= 2^n.
   static int bucketIndexForSize(size_t);
 
   // Returns true if the freelist snapshot is captured.
@@ -666,7 +662,7 @@ class FreeList {
  private:
   int m_biggestFreeListIndex;
 
-  // All FreeListEntries in the nth list have size >= 2^n.
+  // All |FreeListEntry|s in the nth list have size >= 2^n.
   FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
   size_t freeListSize() const;
@@ -674,14 +670,14 @@ class FreeList {
   friend class NormalPageArena;
 };
 
-// Each thread has a number of thread arenas (e.g., Generic arenas,
-// typed arenas for Node, arenas for collection backings etc)
-// and BaseArena represents each thread arena.
+// Each thread has a number of thread arenas (e.g., Generic arenas, typed arenas
+// for |Node|, arenas for collection backings, etc.) and |BaseArena| represents
+// each thread arena.
 //
-// BaseArena is a parent class of NormalPageArena and LargeObjectArena.
-// NormalPageArena represents a part of a heap that contains NormalPages
-// and LargeObjectArena represents a part of a heap that contains
-// LargeObjectPages.
+// |BaseArena| is a parent class of |NormalPageArena| and |LargeObjectArena|.
+// |NormalPageArena| represents a part of a heap that contains |NormalPage|s,
+// and |LargeObjectArena| represents a part of a heap that contains
+// |LargeObjectPage|s.
 class PLATFORM_EXPORT BaseArena {
   USING_FAST_MALLOC(BaseArena);
 
@@ -708,8 +704,8 @@ class PLATFORM_EXPORT BaseArena {
 #endif
   Address lazySweep(size_t, size_t gcInfoIndex);
   void sweepUnsweptPage();
-  // Returns true if we have swept all pages within the deadline.
-  // Returns false otherwise.
+  // Returns true if we have swept all pages within the deadline. Returns false
+  // otherwise.
   bool lazySweepWithDeadline(double deadlineSeconds);
   void completeSweep();
 
@@ -729,7 +725,7 @@ class PLATFORM_EXPORT BaseArena {
 
   ThreadState* m_threadState;
 
-  // Index into the page pools.  This is used to ensure that the pages of the
+  // Index into the page pools. This is used to ensure that the pages of the
   // same type go into the correct page pool and thus avoid type confusion.
   int m_index;
 };
@@ -813,10 +809,11 @@ class LargeObjectArena final : public BaseArena {
   Address lazySweepPages(size_t, size_t gcInfoIndex) override;
 };
 
-// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
-// pages are aligned at blinkPageBase plus the size of a guard size.
+// Mask an address down to the enclosing oilpan heap base page. All Oilpan heap
+// pages are aligned at |blinkPageBase| plus the size of a guard size.
+//
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
-// typed arenas.  This is only exported to enable tests in HeapTest.cpp.
+// typed arenas. This is only exported to enable tests in HeapTest.cpp.
 PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object) {
   Address address = reinterpret_cast<Address>(const_cast<void*>(object));
   BasePage* page = reinterpret_cast<BasePage*>(blinkPageAddress(address) +
@@ -827,9 +824,8 @@ PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object) {
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   size_t result = m_encoded & headerSizeMask;
-  // Large objects should not refer to header->size().
-  // The actual size of a large object is stored in
-  // LargeObjectPage::m_payloadSize.
+  // Large objects should not refer to header->size(). The actual size of a
+  // large object is stored in |LargeObjectPage::m_payloadSize|.
   ASSERT(result != largeObjectSizeInHeader);
   ASSERT(!pageFromObject(this)->isLargeObjectPage());
   return result;
