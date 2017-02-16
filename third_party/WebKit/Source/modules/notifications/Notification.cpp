@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/modules/v8/V8NotificationAction.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -42,6 +43,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "modules/notifications/NotificationAction.h"
@@ -374,8 +376,14 @@ ScriptPromise Notification::requestPermission(
     }
   }
 
+  if (!UserGestureIndicator::processingUserGesture()) {
+    PerformanceMonitor::reportGenericViolation(
+        context, PerformanceMonitor::kDiscouragedAPIUse,
+        "Only request notification permission in response to a user gesture.",
+        0, nullptr);
+  }
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      context, "Notification.requestPermission", true, true);
+      context, "Notification.requestPermission", true);
 
   return NotificationManager::from(context)->requestPermission(
       scriptState, deprecatedCallback);

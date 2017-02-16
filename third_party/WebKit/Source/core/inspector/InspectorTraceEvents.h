@@ -381,10 +381,6 @@ std::unique_ptr<TracedValue> endData(const HitTestRequest&,
                                      const HitTestResult&);
 }
 
-namespace InspectorInstrumentedAPIEvent {
-std::unique_ptr<TracedValue> data(const String&);
-}
-
 CORE_EXPORT String toHexString(const void* p);
 CORE_EXPORT void setCallStack(TracedValue*);
 

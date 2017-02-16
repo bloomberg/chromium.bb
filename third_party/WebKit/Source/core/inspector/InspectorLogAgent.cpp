@@ -165,6 +165,8 @@ Response InspectorLogAgent::clear() {
 }
 
 static PerformanceMonitor::Violation parseViolation(const String& name) {
+  if (name == ViolationSetting::NameEnum::DiscouragedAPIUse)
+    return PerformanceMonitor::kDiscouragedAPIUse;
   if (name == ViolationSetting::NameEnum::LongTask)
     return PerformanceMonitor::kLongTask;
   if (name == ViolationSetting::NameEnum::LongLayout)
@@ -220,6 +222,7 @@ void InspectorLogAgent::reportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                double time,
                                                SourceLocation* location) {
+  location->takeStackTrace();
   ConsoleMessage* message = ConsoleMessage::create(
       ViolationMessageSource, VerboseMessageLevel, text, location->clone());
   consoleMessageAdded(message);

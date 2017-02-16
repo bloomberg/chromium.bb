@@ -126,7 +126,7 @@ void reportBlockedEvent(ExecutionContext* context,
 
   PerformanceMonitor::reportGenericViolation(
       context, PerformanceMonitor::kBlockedEvent, messageText, delayedSeconds,
-      getFunctionLocation(context, registeredListener->listener()).get());
+      getFunctionLocation(context, registeredListener->listener()));
   registeredListener->setBlockedEventWarningEmitted();
 }
 
@@ -239,6 +239,18 @@ void EventTarget::setDefaultAddEventListenerOptions(
   } else {
     if (!options.hasPassive())
       options.setPassive(false);
+  }
+
+  if (!options.passive()) {
+    String messageText = String::format(
+        "Added non-passive event listener to a scroll-blocking '%s' event. "
+        "Consider marking event handler as 'passive' to make the page more "
+        "responsive.",
+        eventType.getString().utf8().data());
+
+    PerformanceMonitor::reportGenericViolation(
+        getExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
+        messageText, 0, nullptr);
   }
 }
 

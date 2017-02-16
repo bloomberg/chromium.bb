@@ -86,7 +86,7 @@ void PerformanceMonitor::didCallFunction(ExecutionContext* context,
                                          v8::Local<v8::Function> function) {
   PerformanceMonitor* performanceMonitor = PerformanceMonitor::monitor(context);
   if (performanceMonitor)
-    performanceMonitor->alwaysDidCallFunction(function);
+    performanceMonitor->alwaysDidCallFunction(context, function);
 }
 
 // static
@@ -128,8 +128,8 @@ void PerformanceMonitor::documentWriteFetchScript(Document* document) {
   if (!performanceMonitor)
     return;
   String text = "Parser was blocked due to document.write(<script>)";
-  performanceMonitor->reportGenericViolation(
-      kBlockedParser, text, 0, SourceLocation::capture(document).get());
+  performanceMonitor->innerReportGenericViolation(document, kBlockedParser,
+                                                  text, 0, nullptr);
 }
 
 // static
@@ -141,16 +141,18 @@ double PerformanceMonitor::threshold(ExecutionContext* context,
 }
 
 // static
-void PerformanceMonitor::reportGenericViolation(ExecutionContext* context,
-                                                Violation violation,
-                                                const String& text,
-                                                double time,
-                                                SourceLocation* location) {
+void PerformanceMonitor::reportGenericViolation(
+    ExecutionContext* context,
+    Violation violation,
+    const String& text,
+    double time,
+    std::unique_ptr<SourceLocation> location) {
   PerformanceMonitor* monitor =
       PerformanceMonitor::instrumentingMonitor(context);
   if (!monitor)
     return;
-  monitor->reportGenericViolation(violation, text, time, location);
+  monitor->innerReportGenericViolation(context, violation, text, time,
+                                       std::move(location));
 }
 
 // static
@@ -251,6 +253,7 @@ void PerformanceMonitor::alwaysWillCallFunction(ExecutionContext* context) {
 }
 
 void PerformanceMonitor::alwaysDidCallFunction(
+    ExecutionContext* context,
     v8::Local<v8::Function> function) {
   alwaysDidExecuteScript();
   if (!m_enabled)
@@ -269,8 +272,8 @@ void PerformanceMonitor::alwaysDidCallFunction(
   String name = m_handlerName ? m_handlerName : m_handlerAtomicName;
   String text = String::format("'%s' handler took %ldms", name.utf8().data(),
                                lround(time * 1000));
-  reportGenericViolation(m_handlerType, text, time,
-                         SourceLocation::fromFunction(function).get());
+  innerReportGenericViolation(context, m_handlerType, text, time,
+                              SourceLocation::fromFunction(function));
 }
 
 void PerformanceMonitor::willUpdateLayout() {
@@ -347,16 +350,23 @@ void PerformanceMonitor::didProcessTask(scheduler::TaskQueue*,
   }
 }
 
-void PerformanceMonitor::reportGenericViolation(Violation violation,
-                                                const String& text,
-                                                double time,
-                                                SourceLocation* location) {
+void PerformanceMonitor::innerReportGenericViolation(
+    ExecutionContext* context,
+    Violation violation,
+    const String& text,
+    double time,
+    std::unique_ptr<SourceLocation> location) {
   ClientThresholds* clientThresholds = m_subscriptions.get(violation);
   if (!clientThresholds)
     return;
+  if (!location)
+    location = SourceLocation::capture(context);
   for (const auto& it : *clientThresholds) {
-    if (it.value < time)
-      it.key->reportGenericViolation(violation, text, time, location);
+    if (it.value < time) {
+      if (!location)
+        location = SourceLocation::capture(context);
+      it.key->reportGenericViolation(violation, text, time, location.get());
+    }
   }
 }
 

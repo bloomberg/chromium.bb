@@ -3176,8 +3176,11 @@ void Document::write(const SegmentedString& text,
     open(enteredDocument, ASSERT_NO_EXCEPTION);
 
   DCHECK(m_parser);
+  PerformanceMonitor::reportGenericViolation(
+      this, PerformanceMonitor::kDiscouragedAPIUse,
+      "Avoid using document.write().", 0, nullptr);
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      this, "document.write", true, true);
+      this, "document.write", true);
   m_parser->insert(text);
 }
 

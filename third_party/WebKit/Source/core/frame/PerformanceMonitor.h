@@ -37,6 +37,7 @@ class CORE_EXPORT PerformanceMonitor final
     kLongLayout,
     kBlockedEvent,
     kBlockedParser,
+    kDiscouragedAPIUse,
     kHandler,
     kRecurringHandler,
     kAfterLast
@@ -82,7 +83,7 @@ class CORE_EXPORT PerformanceMonitor final
                                      Violation,
                                      const String& text,
                                      double time,
-                                     SourceLocation*);
+                                     std::unique_ptr<SourceLocation>);
   static double threshold(ExecutionContext*, Violation);
 
   // Direct API for core.
@@ -107,15 +108,16 @@ class CORE_EXPORT PerformanceMonitor final
   void alwaysWillExecuteScript(ExecutionContext*);
   void alwaysDidExecuteScript();
   void alwaysWillCallFunction(ExecutionContext*);
-  void alwaysDidCallFunction(v8::Local<v8::Function>);
+  void alwaysDidCallFunction(ExecutionContext*, v8::Local<v8::Function>);
   void willUpdateLayout();
   void didUpdateLayout();
   void willRecalculateStyle();
   void didRecalculateStyle();
-  void reportGenericViolation(Violation,
-                              const String& text,
-                              double time,
-                              SourceLocation*);
+  void innerReportGenericViolation(ExecutionContext*,
+                                   Violation,
+                                   const String& text,
+                                   double time,
+                                   std::unique_ptr<SourceLocation>);
 
   // scheduler::TaskTimeObserver implementation
   void willProcessTask(scheduler::TaskQueue*, double startTime) override;
