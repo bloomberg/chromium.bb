@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 57 tests; 49 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Inserting a custom element into the owner document must not enqueue and invoke adoptedCallback 
 PASS Inserting a custom element into the document of the template elements must enqueue and invoke adoptedCallback 
 PASS Moving a custom element from the owner document into the document of the template elements must enqueue and invoke adoptedCallback 

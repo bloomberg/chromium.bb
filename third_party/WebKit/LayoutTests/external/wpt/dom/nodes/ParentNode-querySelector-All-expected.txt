@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 1863 tests; 1809 PASS, 54 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Test Suite: HTML 
 PASS Document supports querySelector 
 PASS Document supports querySelectorAll 

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 100 tests; 77 PASS, 23 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Window interface: attribute onvrdisplayconnect assert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
 FAIL Window interface: attribute onvrdisplaydisconnect assert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing
 FAIL Window interface: attribute onvrdisplayactivate assert_own_property: The global object must have a property "onvrdisplayactivate" expected property "onvrdisplayactivate" missing

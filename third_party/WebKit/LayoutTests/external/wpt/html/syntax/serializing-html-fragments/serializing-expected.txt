@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 242 tests; 94 PASS, 148 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS innerHTML 0  
 PASS innerHTML 1 <a></a> 
 PASS innerHTML 2 <a b="c"></a> 

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 84 tests; 67 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL <video> member must not be supported: onwebkitfullscreenchange assert_false: expected false got true
 FAIL Document member must not be supported: onwebkitfullscreenchange assert_false: expected false got true
 PASS <video> member must not be supported: onmozfullscreenchange 

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 168 tests; 82 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL HTML (standards) IMG usemap="no-hash-name" assert_equals: expected Element node <img src="/images/threecolors.png" usemap="no-hash-name">... but got Element node <area shape="rect" coords="0,0,99,50" href="#area-no-hash...
 PASS HTML (standards) OBJECT usemap="no-hash-name" 
 PASS HTML (standards) IMG usemap="no-hash-id" 

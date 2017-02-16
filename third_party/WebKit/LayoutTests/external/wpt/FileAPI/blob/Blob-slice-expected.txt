@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 127 tests; 124 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS no-argument Blob slice 
 PASS Slices 
 PASS blob1. 

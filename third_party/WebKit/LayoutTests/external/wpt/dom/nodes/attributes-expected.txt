@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 56 tests; 46 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown. (setAttribute) 
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown, even if the attribute is already present. (setAttribute) 
 PASS setAttribute should lowercase its name argument (upper case attribute) 

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 50 tests; 34 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS non-animatable property 'animation' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object 
 PASS non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object 

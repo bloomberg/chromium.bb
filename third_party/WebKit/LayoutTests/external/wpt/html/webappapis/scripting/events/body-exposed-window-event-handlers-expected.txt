@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 80 tests; 72 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Return null when getting the load event handler of a windowless body 
 PASS Ignore setting of load window event handlers on windowless body 
 PASS Return null when getting the resize event handler of a windowless body 

@@ -351,6 +351,7 @@ CONSOLE ERROR: line 8: The given range isn't in document.
 CONSOLE ERROR: line 8: The given range isn't in document.
 CONSOLE ERROR: line 8: The given range isn't in document.
 This is a testharness.js-based test.
+Found 2581 tests; 754 PASS, 1827 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Set up range 30 [paras[0], 0, paras[0].firstChild, 7] 
 PASS Set up range 31 [testDiv, 2, paras[4], 1] 
 PASS Set up range 32 [testDiv, 1, paras[2].firstChild, 5] 

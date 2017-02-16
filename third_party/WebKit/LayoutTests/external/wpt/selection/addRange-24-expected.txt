@@ -181,6 +181,7 @@ CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
 CONSOLE ERROR: line 7: The given range isn't in document.
 This is a testharness.js-based test.
+Found 2784 tests; 1464 PASS, 1320 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Range 24 [detachedPara1, 0, detachedPara1, 0] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: first addRange() must not throw exceptions or modify the range it's given 
 FAIL Range 24 [detachedPara1, 0, detachedPara1, 0] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: first addRange() must result in rangeCount being 1 assert_equals: rangeCount must be 1 expected 1 but got 0
 FAIL Range 24 [detachedPara1, 0, detachedPara1, 0] followed by Range 0 [paras[0].firstChild, 0, paras[0].firstChild, 0]: first addRange() must result in the selection's last range having the specified endpoints assert_not_equals: Cannot proceed with tests if rangeCount is 0 got disallowed value 0

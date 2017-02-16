@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 210 tests; 201 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList. 
 PASS area.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList. 
 PASS link.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList. 

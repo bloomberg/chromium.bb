@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 58 tests; 50 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS DocumentFragment should have null namespace, prefix null 
 PASS DocumentFragment should have null namespace, prefix "" 
 PASS DocumentFragment should have null namespace, prefix "foo" 

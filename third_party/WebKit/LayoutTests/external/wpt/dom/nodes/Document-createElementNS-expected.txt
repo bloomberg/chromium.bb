@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 581 tests; 575 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElementNS test in HTML document: null,null,null 
 PASS createElementNS test in XML document: null,null,null 
 PASS createElementNS test in XHTML document: null,null,null 

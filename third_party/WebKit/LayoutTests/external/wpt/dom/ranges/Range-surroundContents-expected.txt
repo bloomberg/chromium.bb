@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 1672 tests; 1412 PASS, 260 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL 0,0: resulting DOM for range [paras[0].firstChild, 0, paras[0].firstChild, 0], node paras[0] assert_true: First differing node: expected Element node <p id="b" style="display:none">Ijklmnop
 </p>, got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 " [Actual and expected mismatch for range's tree root.  ] expected true got false

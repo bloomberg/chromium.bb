@@ -48,6 +48,7 @@ CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
 This is a testharness.js-based test.
+Found 462 tests; 307 PASS, 155 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS change state from hidden to text 
 PASS change state from hidden to search 
 PASS change state from hidden to tel 

@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 336 tests; 240 PASS, 96 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
 FAIL animationevent should be an alias for AnimationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('animationevent') is invalid.

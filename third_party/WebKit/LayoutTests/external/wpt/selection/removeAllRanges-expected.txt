@@ -8,6 +8,7 @@ CONSOLE ERROR: line 944: The given range isn't in document.
 CONSOLE ERROR: line 944: The given range isn't in document.
 CONSOLE ERROR: line 944: The given range isn't in document.
 This is a testharness.js-based test.
+Found 118 tests; 88 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Range 0 [] forwards 
 PASS Range 0 [] backwards 
 PASS Range 1 [paras[0].firstChild, 0, paras[0].firstChild, 0] forwards 

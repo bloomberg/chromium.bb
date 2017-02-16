@@ -175,6 +175,7 @@ CONSOLE ERROR: line 944: The given range isn't in document.
 CONSOLE ERROR: line 944: The given range isn't in document.
 CONSOLE ERROR: line 944: The given range isn't in document.
 This is a testharness.js-based test.
+Found 3168 tests; 308 PASS, 2860 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL extend() forwards with range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1] and point 0 [paras[0].firstChild, -1] assert_equals: Sanity check: rangeCount must be correct expected 1 but got 0
 FAIL extend() backwards with range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1] and point 0 [paras[0].firstChild, -1] Failed to execute 'extend' on 'Selection': This Selection object doesn't have any Ranges.
 FAIL extend() forwards with range 20 [foreignDoc.documentElement, 0, foreignDoc.documentElement, 1] and point 1 [paras[0].firstChild, 0] assert_equals: Sanity check: rangeCount must be correct expected 1 but got 0

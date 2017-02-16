@@ -8,6 +8,7 @@ CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setL
 CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 CONSOLE ERROR: line 83: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 This is a testharness.js-based test.
+Found 116 tests; 59 PASS, 57 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 

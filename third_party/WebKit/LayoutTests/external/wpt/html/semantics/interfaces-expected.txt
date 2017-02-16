@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 295 tests; 286 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces for a 
 PASS Interfaces for A 
 PASS Interfaces for abbr 
