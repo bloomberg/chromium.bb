@@ -1381,7 +1381,6 @@ crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/servi
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
 crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
-crbug.com/692400 fast/css/first-letter-rtc-crash.html [ NeedsRebaseline ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
