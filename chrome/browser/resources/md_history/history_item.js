@@ -111,6 +111,11 @@ cr.define('md_history', function() {
         observer: 'ironListTabIndexChanged_',
       },
 
+      selectionNotAllowed_: {
+        type: Boolean,
+        value: !loadTimeData.getBoolean('allowDeletingHistory'),
+      },
+
       hasTimeGap: Boolean,
 
       index: Number,
@@ -189,7 +194,7 @@ cr.define('md_history', function() {
         }
       }
 
-      if (this.selectionNotAllowed_())
+      if (this.selectionNotAllowed_)
         return;
 
       this.$.checkbox.focus();
@@ -300,10 +305,6 @@ cr.define('md_history', function() {
      */
     showIcon_: function() {
       this.$.icon.style.backgroundImage = cr.icon.getFavicon(this.item.url);
-    },
-
-    selectionNotAllowed_: function() {
-      return !loadTimeData.getBoolean('allowDeletingHistory');
     },
 
     /**

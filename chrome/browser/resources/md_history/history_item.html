@@ -50,6 +50,7 @@
       }
 
       #item-container {
+        -webkit-padding-start: 10px;
         align-items: center;
         display: flex;
         min-height: var(--item-height);
@@ -73,8 +74,6 @@
       }
 
       #checkbox {
-        -webkit-margin-end: 6px;
-        -webkit-margin-start: 10px;
         height: 40px;
         width: 40px;
       }
@@ -120,6 +119,7 @@
       }
 
       #time-accessed {
+        -webkit-margin-start: 6px;
         color: var(--history-item-time-color);
         min-width: 96px;
       }
@@ -211,7 +211,7 @@
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
         <button is="paper-icon-button-light" id="checkbox"
-            disabled="[[selectionNotAllowed_()]]"
+            hidden="[[selectionNotAllowed_]]"
             role="checkbox"
             aria-checked$="[[getAriaChecked_(selected)]]"
             aria-label$="[[getEntrySummary_(item)]]">

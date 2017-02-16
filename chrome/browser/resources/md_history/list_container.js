@@ -6,6 +6,11 @@ Polymer({
   is: 'history-list-container',
 
   properties: {
+    canDeleteHistory_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('allowDeletingHistory'),
+    },
+
     /** @type {!QueryState} */
     queryState: Object,
 
@@ -210,9 +215,4 @@ Polymer({
   getSelectedList_: function() {
     return this.$['infinite-list'];
   },
-
-  /** @private */
-  canDeleteHistory_: function() {
-    return loadTimeData.getBoolean('allowDeletingHistory');
-  }
 });

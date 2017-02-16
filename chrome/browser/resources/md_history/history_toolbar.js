@@ -178,14 +178,6 @@ Polymer({
     this.fire('delete-selected');
   },
 
-  /**
-   * If the user is a supervised user the delete button is not shown.
-   * @private
-   */
-  deletingAllowed_: function() {
-    return loadTimeData.getBoolean('allowDeletingHistory');
-  },
-
   /** @private */
   numberOfItemsSelected_: function(count) {
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
