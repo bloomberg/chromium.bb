@@ -32,7 +32,7 @@ void PlatformEventDispatcher::removeController(
     PlatformEventController* controller) {
   ASSERT(m_controllers.contains(controller));
 
-  m_controllers.remove(controller);
+  m_controllers.erase(controller);
   if (!m_isDispatching && m_controllers.isEmpty()) {
     stopListening();
     m_isListening = false;

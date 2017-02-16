@@ -41,7 +41,7 @@ void AnimationWorkletProxyClientImpl::registerCompositorProxy(
 void AnimationWorkletProxyClientImpl::unregisterCompositorProxy(
     CompositorProxy* proxy) {
   DCHECK(!isMainThread());
-  m_proxies.remove(proxy);
+  m_proxies.erase(proxy);
 }
 
 }  // namespace blink

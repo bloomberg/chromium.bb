@@ -1448,7 +1448,7 @@ void FrameView::addPart(LayoutPart* object) {
 }
 
 void FrameView::removePart(LayoutPart* object) {
-  m_parts.remove(object);
+  m_parts.erase(object);
 }
 
 void FrameView::updateWidgetGeometries() {
@@ -1561,7 +1561,7 @@ void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object) {
 void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
   ASSERT(m_backgroundAttachmentFixedObjects.contains(object));
 
-  m_backgroundAttachmentFixedObjects.remove(object);
+  m_backgroundAttachmentFixedObjects.erase(object);
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(
         this);
@@ -1592,7 +1592,7 @@ void FrameView::addViewportConstrainedObject(LayoutObject* object) {
 void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
   if (m_viewportConstrainedObjects &&
       m_viewportConstrainedObjects->contains(object)) {
-    m_viewportConstrainedObjects->remove(object);
+    m_viewportConstrainedObjects->erase(object);
 
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
@@ -2422,7 +2422,7 @@ bool FrameView::updateWidgets() {
 
     // Prevent plugins from causing infinite updates of themselves.
     // FIXME: Do we really need to prevent this?
-    m_partUpdateSet.remove(&object);
+    m_partUpdateSet.erase(&object);
   }
 
   return m_partUpdateSet.isEmpty();
@@ -3706,7 +3706,7 @@ void FrameView::addScrollableArea(ScrollableArea* scrollableArea) {
 void FrameView::removeScrollableArea(ScrollableArea* scrollableArea) {
   if (!m_scrollableAreas)
     return;
-  m_scrollableAreas->remove(scrollableArea);
+  m_scrollableAreas->erase(scrollableArea);
 
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->scrollableAreasDidChange();
@@ -3722,7 +3722,7 @@ void FrameView::addAnimatingScrollableArea(ScrollableArea* scrollableArea) {
 void FrameView::removeAnimatingScrollableArea(ScrollableArea* scrollableArea) {
   if (!m_animatingScrollableAreas)
     return;
-  m_animatingScrollableAreas->remove(scrollableArea);
+  m_animatingScrollableAreas->erase(scrollableArea);
 }
 
 void FrameView::setParent(Widget* parentView) {
@@ -3746,7 +3746,7 @@ void FrameView::removeChild(Widget* child) {
     removeScrollableArea(toFrameView(child));
 
   child->setParent(0);
-  m_children.remove(child);
+  m_children.erase(child);
 }
 
 bool FrameView::visualViewportSuppliesScrollbars() {

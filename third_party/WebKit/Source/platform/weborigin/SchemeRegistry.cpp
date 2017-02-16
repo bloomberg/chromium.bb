@@ -184,7 +184,7 @@ void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
     getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.insert(
         scheme);
   } else {
-    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.remove(
+    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.erase(
         scheme);
   }
 }
@@ -298,7 +298,7 @@ void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(
 void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.remove(scheme);
+  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.erase(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
@@ -316,7 +316,7 @@ void SchemeRegistry::registerURLSchemeAsAllowedForReferrer(
 }
 
 void SchemeRegistry::removeURLSchemeAsAllowedForReferrer(const String& scheme) {
-  getMutableURLSchemesRegistry().allowedInReferrerSchemes.remove(scheme);
+  getMutableURLSchemesRegistry().allowedInReferrerSchemes.erase(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(

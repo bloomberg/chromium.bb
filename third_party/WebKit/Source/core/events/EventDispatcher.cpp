@@ -123,7 +123,7 @@ void EventDispatcher::dispatchSimulatedClick(
                                            underlyingEvent, creationScope))
       .dispatch();
 
-  nodesDispatchingSimulatedClicks.remove(&node);
+  nodesDispatchingSimulatedClicks.erase(&node);
 }
 
 DispatchEventResult EventDispatcher::dispatch() {

@@ -306,7 +306,7 @@ void DOMWrapperWorld::registerDOMObjectHolderInternal(
 void DOMWrapperWorld::unregisterDOMObjectHolder(
     DOMObjectHolderBase* holderBase) {
   ASSERT(m_domObjectHolders.contains(holderBase));
-  m_domObjectHolders.remove(holderBase);
+  m_domObjectHolders.erase(holderBase);
 }
 
 void DOMWrapperWorld::weakCallbackForDOMObjectHolder(

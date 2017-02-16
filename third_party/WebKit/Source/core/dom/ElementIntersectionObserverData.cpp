@@ -28,7 +28,7 @@ void ElementIntersectionObserverData::addObserver(
 
 void ElementIntersectionObserverData::removeObserver(
     IntersectionObserver& observer) {
-  m_intersectionObservers.remove(&observer);
+  m_intersectionObservers.erase(&observer);
 }
 
 void ElementIntersectionObserverData::addObservation(

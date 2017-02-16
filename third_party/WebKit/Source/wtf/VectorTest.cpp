@@ -300,7 +300,7 @@ class WrappedInt {
   ~WrappedInt() {
     EXPECT_EQ(m_originalThisPtr, this);
     EXPECT_TRUE(constructedWrappedInts.contains(this));
-    constructedWrappedInts.remove(this);
+    constructedWrappedInts.erase(this);
   }
 
   int get() const { return m_i; }

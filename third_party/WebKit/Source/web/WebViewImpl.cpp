@@ -1749,7 +1749,7 @@ WebViewImpl* WebViewImpl::fromPage(Page* page) {
 
 void WebViewImpl::close() {
   DCHECK(allInstances().contains(this));
-  allInstances().remove(this);
+  allInstances().erase(this);
 
   if (m_page) {
     // Initiate shutdown for the entire frameset.  This will cause a lot of

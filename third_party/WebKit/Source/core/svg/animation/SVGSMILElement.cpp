@@ -1184,7 +1184,7 @@ void SVGSMILElement::notifyDependentsIntervalChanged() {
   for (SVGSMILElement* element : m_syncBaseDependents)
     element->createInstanceTimesFromSyncbase(this);
 
-  loopBreaker.remove(this);
+  loopBreaker.erase(this);
 }
 
 void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase) {
@@ -1222,7 +1222,7 @@ void SVGSMILElement::addSyncBaseDependent(SVGSMILElement* animation) {
 }
 
 void SVGSMILElement::removeSyncBaseDependent(SVGSMILElement* animation) {
-  m_syncBaseDependents.remove(animation);
+  m_syncBaseDependents.erase(animation);
 }
 
 void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition) {

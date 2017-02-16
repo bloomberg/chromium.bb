@@ -5698,7 +5698,7 @@ void LayoutBox::addSnapArea(const LayoutBox& snapArea) {
 
 void LayoutBox::removeSnapArea(const LayoutBox& snapArea) {
   if (m_rareData && m_rareData->m_snapAreas) {
-    m_rareData->m_snapAreas->remove(&snapArea);
+    m_rareData->m_snapAreas->erase(&snapArea);
   }
 }
 

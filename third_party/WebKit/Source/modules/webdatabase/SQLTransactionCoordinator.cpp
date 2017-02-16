@@ -104,7 +104,7 @@ void SQLTransactionCoordinator::releaseLock(
 
   if (transaction->isReadOnly()) {
     ASSERT(info.activeReadTransactions.contains(transaction));
-    info.activeReadTransactions.remove(transaction);
+    info.activeReadTransactions.erase(transaction);
   } else {
     ASSERT(info.activeWriteTransaction == transaction);
     info.activeWriteTransaction = nullptr;

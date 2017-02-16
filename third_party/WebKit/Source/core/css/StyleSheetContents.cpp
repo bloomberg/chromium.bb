@@ -579,8 +579,8 @@ void StyleSheetContents::registerClient(CSSStyleSheet* sheet) {
 }
 
 void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet) {
-  m_loadingClients.remove(sheet);
-  m_completedClients.remove(sheet);
+  m_loadingClients.erase(sheet);
+  m_completedClients.erase(sheet);
 
   if (!sheet->ownerDocument() || !m_loadingClients.isEmpty() ||
       !m_completedClients.isEmpty())
@@ -591,7 +591,7 @@ void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet) {
 
 void StyleSheetContents::clientLoadCompleted(CSSStyleSheet* sheet) {
   ASSERT(m_loadingClients.contains(sheet) || !sheet->ownerDocument());
-  m_loadingClients.remove(sheet);
+  m_loadingClients.erase(sheet);
   // In m_ownerNode->sheetLoaded, the CSSStyleSheet might be detached.
   // (i.e. clearOwnerNode was invoked.)
   // In this case, we don't need to add the stylesheet to completed clients.
@@ -602,7 +602,7 @@ void StyleSheetContents::clientLoadCompleted(CSSStyleSheet* sheet) {
 
 void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet) {
   ASSERT(m_completedClients.contains(sheet));
-  m_completedClients.remove(sheet);
+  m_completedClients.erase(sheet);
   m_loadingClients.insert(sheet);
 }
 

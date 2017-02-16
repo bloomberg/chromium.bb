@@ -163,7 +163,7 @@ void MutationObserver::observationStarted(
 void MutationObserver::observationEnded(
     MutationObserverRegistration* registration) {
   DCHECK(m_registrations.contains(registration));
-  m_registrations.remove(registration);
+  m_registrations.erase(registration);
 }
 
 static MutationObserverSet& activeMutationObservers() {
@@ -280,7 +280,7 @@ void MutationObserver::resumeSuspendedObservers() {
   copyToVector(suspendedMutationObservers(), suspended);
   for (const auto& observer : suspended) {
     if (!observer->shouldBeSuspended()) {
-      suspendedMutationObservers().remove(observer);
+      suspendedMutationObservers().erase(observer);
       activateObserver(observer);
     }
   }

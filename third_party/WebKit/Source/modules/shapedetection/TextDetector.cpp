@@ -48,7 +48,7 @@ void TextDetector::onDetectText(
     Vector<shape_detection::mojom::blink::TextDetectionResultPtr>
         textDetectionResults) {
   DCHECK(m_textServiceRequests.contains(resolver));
-  m_textServiceRequests.remove(resolver);
+  m_textServiceRequests.erase(resolver);
 
   HeapVector<Member<DetectedText>> detectedText;
   for (const auto& text : textDetectionResults) {

@@ -417,7 +417,7 @@ void GraphicsLayer::unregisterContentsLayer(WebLayer* layer) {
   DCHECK(s_registeredLayerSet);
   if (!s_registeredLayerSet->contains(layer->id()))
     CRASH();
-  s_registeredLayerSet->remove(layer->id());
+  s_registeredLayerSet->erase(layer->id());
 }
 
 void GraphicsLayer::setContentsTo(WebLayer* layer) {

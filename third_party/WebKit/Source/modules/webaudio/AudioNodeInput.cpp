@@ -60,7 +60,7 @@ void AudioNodeInput::disconnect(AudioNodeOutput& output) {
 
   // First try to disconnect from "active" connections.
   if (m_outputs.contains(&output)) {
-    m_outputs.remove(&output);
+    m_outputs.erase(&output);
     changedOutputs();
     output.removeInput(*this);
     // Note: it's important to return immediately after removeInput() calls
@@ -70,7 +70,7 @@ void AudioNodeInput::disconnect(AudioNodeOutput& output) {
 
   // Otherwise, try to disconnect from disabled connections.
   if (m_disabledOutputs.contains(&output)) {
-    m_disabledOutputs.remove(&output);
+    m_disabledOutputs.erase(&output);
     output.removeInput(*this);
     // Note: it's important to return immediately after all removeInput() calls
     // since the node may be deleted.
@@ -85,7 +85,7 @@ void AudioNodeInput::disable(AudioNodeOutput& output) {
   DCHECK(m_outputs.contains(&output));
 
   m_disabledOutputs.insert(&output);
-  m_outputs.remove(&output);
+  m_outputs.erase(&output);
   changedOutputs();
 
   // Propagate disabled state to outputs.
@@ -99,7 +99,7 @@ void AudioNodeInput::enable(AudioNodeOutput& output) {
   m_outputs.insert(&output);
   if (m_disabledOutputs.size() > 0) {
     DCHECK(m_disabledOutputs.contains(&output));
-    m_disabledOutputs.remove(&output);
+    m_disabledOutputs.erase(&output);
   }
   changedOutputs();
 

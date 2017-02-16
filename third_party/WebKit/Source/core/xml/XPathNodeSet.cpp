@@ -148,7 +148,7 @@ static void sortBlock(unsigned from,
       DCHECK_NE(previousGroupEnd, groupEnd);
       previousGroupEnd = groupEnd;
 #if DCHECK_IS_ON()
-      parentNodes.remove(n);
+      parentNodes.erase(n);
 #endif
     }
   }

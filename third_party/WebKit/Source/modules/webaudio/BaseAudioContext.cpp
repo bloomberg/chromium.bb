@@ -315,7 +315,7 @@ void BaseAudioContext::handleDecodeAudioData(
 
   // We've resolved the promise.  Remove it now.
   DCHECK(m_decodeAudioResolvers.contains(resolver));
-  m_decodeAudioResolvers.remove(resolver);
+  m_decodeAudioResolvers.erase(resolver);
 }
 
 AudioBufferSourceNode* BaseAudioContext::createBufferSource(

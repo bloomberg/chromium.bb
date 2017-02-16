@@ -73,7 +73,7 @@ void WorkerInspectorProxy::workerThreadCreated(Document* document,
 void WorkerInspectorProxy::workerThreadTerminated() {
   if (m_workerThread) {
     DCHECK(inspectorProxies().contains(this));
-    inspectorProxies().remove(this);
+    inspectorProxies().erase(this);
     InspectorInstrumentation::workerTerminated(m_document, this);
   }
 

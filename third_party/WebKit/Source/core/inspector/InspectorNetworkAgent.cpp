@@ -922,7 +922,7 @@ void InspectorNetworkAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr) {
   if (!m_replayXHRs.contains(xhr))
     return;
   m_replayXHRsToBeDeleted.insert(xhr);
-  m_replayXHRs.remove(xhr);
+  m_replayXHRs.erase(xhr);
   m_removeFinishedReplayXHRTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 

@@ -50,7 +50,7 @@ void MemoryCoordinator::registerClient(MemoryCoordinatorClient* client) {
 
 void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client) {
   DCHECK(isMainThread());
-  m_clients.remove(client);
+  m_clients.erase(client);
 }
 
 void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level) {

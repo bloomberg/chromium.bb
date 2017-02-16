@@ -58,7 +58,7 @@ void IdTargetObserverRegistry::removeObserver(const AtomicString& id,
   IdToObserverSetMap::iterator iter = m_registry.find(id.impl());
 
   ObserverSet* set = iter->value.get();
-  set->remove(observer);
+  set->erase(observer);
   if (set->isEmpty() && set != m_notifyingObserversInSet)
     m_registry.remove(iter);
 }

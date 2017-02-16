@@ -341,7 +341,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap) {
   bool childrenRequested = m_childrenRequested.contains(id);
   if (childrenRequested) {
     // Unbind subtree known to client recursively.
-    m_childrenRequested.remove(id);
+    m_childrenRequested.erase(id);
     Node* child = innerFirstChild(node);
     while (child) {
       unbind(child, nodesMap);

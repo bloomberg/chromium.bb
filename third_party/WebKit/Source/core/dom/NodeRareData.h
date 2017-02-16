@@ -56,7 +56,7 @@ class NodeMutationObserverData final
 
   void removeTransientRegistration(MutationObserverRegistration* registration) {
     DCHECK(m_transientRegistry.contains(registration));
-    m_transientRegistry.remove(registration);
+    m_transientRegistry.erase(registration);
   }
 
   void addRegistration(MutationObserverRegistration* registration) {

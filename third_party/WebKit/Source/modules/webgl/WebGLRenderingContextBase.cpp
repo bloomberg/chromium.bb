@@ -229,7 +229,7 @@ void WebGLRenderingContextBase::activateContext(
 
 void WebGLRenderingContextBase::deactivateContext(
     WebGLRenderingContextBase* context) {
-  activeContexts().remove(context);
+  activeContexts().erase(context);
 }
 
 void WebGLRenderingContextBase::addToEvictedList(

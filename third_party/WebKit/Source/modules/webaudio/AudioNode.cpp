@@ -710,7 +710,7 @@ bool AudioNode::disconnectFromOutputIfConnected(
   if (!output.isConnectedToInput(input))
     return false;
   output.disconnectInput(input);
-  m_connectedNodes[outputIndex]->remove(&destination);
+  m_connectedNodes[outputIndex]->erase(&destination);
   return true;
 }
 
@@ -720,7 +720,7 @@ bool AudioNode::disconnectFromOutputIfConnected(unsigned outputIndex,
   if (!output.isConnectedToAudioParam(param.handler()))
     return false;
   output.disconnectAudioParam(param.handler());
-  m_connectedParams[outputIndex]->remove(&param);
+  m_connectedParams[outputIndex]->erase(&param);
   return true;
 }
 

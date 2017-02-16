@@ -532,7 +532,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     if (clientHasRelativeLengths)
       currentElement.m_elementsWithRelativeLengths.insert(clientElement);
     else
-      currentElement.m_elementsWithRelativeLengths.remove(clientElement);
+      currentElement.m_elementsWithRelativeLengths.erase(clientElement);
 
     // If the relative length state hasn't changed, we can stop propagating the
     // notification.
@@ -629,7 +629,7 @@ void SVGElement::removeInstanceMapping(SVGElement* instance) {
   HeapHashSet<WeakMember<SVGElement>>& instances =
       svgRareData()->elementInstances();
 
-  instances.remove(instance);
+  instances.erase(instance);
 }
 
 static HeapHashSet<WeakMember<SVGElement>>& emptyInstances() {
@@ -1278,7 +1278,7 @@ void SVGElement::removeAllIncomingReferences() {
   SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
   for (SVGElement* sourceElement : incomingReferences) {
     ASSERT(sourceElement->hasSVGRareData());
-    sourceElement->ensureSVGRareData()->outgoingReferences().remove(this);
+    sourceElement->ensureSVGRareData()->outgoingReferences().erase(this);
   }
   incomingReferences.clear();
 }
@@ -1290,7 +1290,7 @@ void SVGElement::removeAllOutgoingReferences() {
   SVGElementSet& outgoingReferences = svgRareData()->outgoingReferences();
   for (SVGElement* targetElement : outgoingReferences) {
     ASSERT(targetElement->hasSVGRareData());
-    targetElement->ensureSVGRareData()->incomingReferences().remove(this);
+    targetElement->ensureSVGRareData()->incomingReferences().erase(this);
   }
   outgoingReferences.clear();
 }

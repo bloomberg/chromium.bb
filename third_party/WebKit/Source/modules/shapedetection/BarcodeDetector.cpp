@@ -51,7 +51,7 @@ void BarcodeDetector::onDetectBarcodes(
     Vector<shape_detection::mojom::blink::BarcodeDetectionResultPtr>
         barcodeDetectionResults) {
   DCHECK(m_barcodeServiceRequests.contains(resolver));
-  m_barcodeServiceRequests.remove(resolver);
+  m_barcodeServiceRequests.erase(resolver);
 
   HeapVector<Member<DetectedBarcode>> detectedBarcodes;
   for (const auto& barcode : barcodeDetectionResults) {

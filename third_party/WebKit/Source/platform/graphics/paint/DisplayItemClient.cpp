@@ -39,7 +39,7 @@ DisplayItemClient::~DisplayItemClient() {
           << ". See crbug.com/609218.";
     }
   }
-  liveDisplayItemClients->remove(this);
+  liveDisplayItemClients->erase(this);
   // In case this object is a subsequence owner.
   endShouldKeepAliveAllClients(this);
 }

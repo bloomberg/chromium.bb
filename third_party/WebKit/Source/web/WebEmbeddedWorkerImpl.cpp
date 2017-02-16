@@ -112,7 +112,7 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
     m_workerThread->terminateAndWait();
 
   DCHECK(runningWorkerInstances().contains(this));
-  runningWorkerInstances().remove(this);
+  runningWorkerInstances().erase(this);
   DCHECK(m_webView);
 
   // Detach the client before closing the view to avoid getting called back.

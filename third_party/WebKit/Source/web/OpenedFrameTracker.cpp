@@ -22,7 +22,7 @@ void OpenedFrameTracker::add(WebFrame* frame) {
 }
 
 void OpenedFrameTracker::remove(WebFrame* frame) {
-  m_openedFrames.remove(frame);
+  m_openedFrames.erase(frame);
 }
 
 void OpenedFrameTracker::transferTo(WebFrame* opener) {

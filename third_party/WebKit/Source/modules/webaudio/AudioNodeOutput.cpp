@@ -168,7 +168,7 @@ void AudioNodeOutput::addInput(AudioNodeInput& input) {
 void AudioNodeOutput::removeInput(AudioNodeInput& input) {
   ASSERT(deferredTaskHandler().isGraphOwner());
   input.handler().breakConnection();
-  m_inputs.remove(&input);
+  m_inputs.erase(&input);
 }
 
 void AudioNodeOutput::disconnectAllInputs() {
@@ -198,7 +198,7 @@ void AudioNodeOutput::addParam(AudioParamHandler& param) {
 
 void AudioNodeOutput::removeParam(AudioParamHandler& param) {
   ASSERT(deferredTaskHandler().isGraphOwner());
-  m_params.remove(&param);
+  m_params.erase(&param);
 }
 
 void AudioNodeOutput::disconnectAllParams() {

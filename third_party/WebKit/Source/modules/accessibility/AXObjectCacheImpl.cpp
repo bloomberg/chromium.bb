@@ -558,7 +558,7 @@ void AXObjectCacheImpl::removeAXID(AXObject* object) {
   ASSERT(!HashTraits<AXID>::isDeletedValue(objID));
   ASSERT(m_idsInUse.contains(objID));
   object->setAXObjectID(0);
-  m_idsInUse.remove(objID);
+  m_idsInUse.erase(objID);
 
   if (m_ariaOwnerToChildrenMapping.contains(objID)) {
     Vector<AXID> childAXIDs = m_ariaOwnerToChildrenMapping.get(objID);
@@ -724,7 +724,7 @@ void AXObjectCacheImpl::updateAriaOwns(
       idsChanged = true;
       HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
       if (owners) {
-        owners->remove(owner->axObjectID());
+        owners->erase(owner->axObjectID());
         if (owners->isEmpty())
           m_idToAriaOwnersMapping.erase(id);
       }

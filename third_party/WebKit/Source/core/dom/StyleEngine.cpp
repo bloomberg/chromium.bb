@@ -337,7 +337,7 @@ void StyleEngine::updateActiveStyleSheets() {
         updateActiveStyleSheetsInShadow(treeScope, treeScopesRemoved);
     }
     for (TreeScope* treeScope : treeScopesRemoved)
-      m_activeTreeScopes.remove(treeScope);
+      m_activeTreeScopes.erase(treeScope);
   }
 
   InspectorInstrumentation::activeStyleSheetsUpdated(m_document);
@@ -389,8 +389,8 @@ const ActiveStyleSheetVector StyleEngine::activeStyleSheetsForInspector() {
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
   m_styleSheetCollectionMap.erase(shadowRoot);
-  m_activeTreeScopes.remove(shadowRoot);
-  m_dirtyTreeScopes.remove(shadowRoot);
+  m_activeTreeScopes.erase(shadowRoot);
+  m_dirtyTreeScopes.erase(shadowRoot);
   resetAuthorStyle(*shadowRoot);
 }
 

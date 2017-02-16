@@ -98,7 +98,7 @@ QualifiedName::QualifiedName(const AtomicString& p,
 QualifiedName::~QualifiedName() {}
 
 QualifiedName::QualifiedNameImpl::~QualifiedNameImpl() {
-  qualifiedNameCache().remove(this);
+  qualifiedNameCache().erase(this);
 }
 
 String QualifiedName::toString() const {

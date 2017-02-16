@@ -92,7 +92,7 @@ void AudioListener::addPanner(PannerHandler& panner) {
 void AudioListener::removePanner(PannerHandler& panner) {
   DCHECK(isMainThread());
   DCHECK(m_panners.contains(&panner));
-  m_panners.remove(&panner);
+  m_panners.erase(&panner);
 }
 
 bool AudioListener::hasSampleAccurateValues() const {

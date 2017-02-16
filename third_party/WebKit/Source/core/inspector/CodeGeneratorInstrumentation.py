@@ -128,7 +128,7 @@ void InstrumentingAgents::add${class_name}(${class_name}* agent)
 
 void InstrumentingAgents::remove${class_name}(${class_name}* agent)
 {
-    ${member_name}.remove(agent);
+    ${member_name}.erase(agent);
     ${has_member_name} = !${member_name}.isEmpty();
 }
 """)

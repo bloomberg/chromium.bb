@@ -781,7 +781,7 @@ void HTMLCanvasElement::addListener(CanvasDrawListener* listener) {
 }
 
 void HTMLCanvasElement::removeListener(CanvasDrawListener* listener) {
-  m_listeners.remove(listener);
+  m_listeners.erase(listener);
 }
 
 SecurityOrigin* HTMLCanvasElement::getSecurityOrigin() const {

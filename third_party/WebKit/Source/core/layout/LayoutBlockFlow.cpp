@@ -1414,7 +1414,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding() {
       FloatingObjectSetIterator end = floatingObjectSet.end();
       for (FloatingObjectSetIterator it = floatingObjectSet.begin();
            it != end && !oldIntrudingFloatSet.isEmpty(); ++it)
-        oldIntrudingFloatSet.remove((*it)->layoutObject());
+        oldIntrudingFloatSet.erase((*it)->layoutObject());
       if (!oldIntrudingFloatSet.isEmpty())
         markAllDescendantsWithFloatsForLayout();
     }

@@ -41,7 +41,7 @@ static void addWorkerIsolate(v8::Isolate* isolate) {
 
 static void removeWorkerIsolate(v8::Isolate* isolate) {
   MutexLocker lock(isolatesMutex());
-  isolates().remove(isolate);
+  isolates().erase(isolate);
 }
 
 WorkerBackingThread::WorkerBackingThread(const char* name,

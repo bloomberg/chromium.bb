@@ -94,7 +94,7 @@ WorkerThread::~WorkerThread() {
   DCHECK(isMainThread());
   MutexLocker lock(threadSetMutex());
   DCHECK(workerThreads().contains(this));
-  workerThreads().remove(this);
+  workerThreads().erase(this);
 
   DCHECK_NE(ExitCode::NotTerminated, m_exitCode);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(

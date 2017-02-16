@@ -119,7 +119,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
-  set.remove(ptr1);
+  set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
   set.clear();
@@ -197,7 +197,7 @@ TEST(HashSetTest, HashSetRefPtr) {
   ptr.clear();
   EXPECT_FALSE(isDeleted);
 
-  set.remove(rawPtr);
+  set.erase(rawPtr);
   EXPECT_TRUE(isDeleted);
   EXPECT_TRUE(set.isEmpty());
   EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
@@ -388,7 +388,7 @@ TEST(HashSetTest, MoveOnlyValue) {
     EXPECT_EQ(7, addResult.storedValue->id());
   }
 
-  set.remove(MoveOnly(11));
+  set.erase(MoveOnly(11));
   iter = set.find(MoveOnly(11));
   EXPECT_TRUE(iter == set.end());
 

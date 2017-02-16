@@ -796,7 +796,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
   HeapVector<Member<CSSStyleSheet>> addedSheets;
   for (CSSStyleSheet* cssStyleSheet : allSheetsVector) {
     if (removedSheets.contains(cssStyleSheet)) {
-      removedSheets.remove(cssStyleSheet);
+      removedSheets.erase(cssStyleSheet);
     } else {
       addedSheets.push_back(cssStyleSheet);
     }
@@ -807,7 +807,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
         m_cssStyleSheetToInspectorStyleSheet.get(cssStyleSheet);
     ASSERT(inspectorStyleSheet);
 
-    documentCSSStyleSheets->remove(cssStyleSheet);
+    documentCSSStyleSheets->erase(cssStyleSheet);
     if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
       String id = unbindStyleSheet(inspectorStyleSheet);
       if (frontend())
@@ -829,7 +829,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
 }
 
 void InspectorCSSAgent::documentDetached(Document* document) {
-  m_invalidatedDocuments.remove(document);
+  m_invalidatedDocuments.erase(document);
   setActiveStyleSheets(document, HeapVector<Member<CSSStyleSheet>>());
 }
 

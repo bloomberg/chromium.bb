@@ -178,7 +178,7 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver,
   for (auto& deviceInfo : deviceInfos)
     devices.push_back(getOrCreateDevice(std::move(deviceInfo)));
   resolver->resolve(devices);
-  m_deviceManagerRequests.remove(resolver);
+  m_deviceManagerRequests.erase(resolver);
 }
 
 void USB::onGetPermission(ScriptPromiseResolver* resolver,

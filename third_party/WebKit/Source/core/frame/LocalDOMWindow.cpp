@@ -644,7 +644,7 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer) {
 }
 
 void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer) {
-  m_postMessageTimers.remove(timer);
+  m_postMessageTimers.erase(timer);
 }
 
 void LocalDOMWindow::dispatchMessageEventWithOriginCheck(

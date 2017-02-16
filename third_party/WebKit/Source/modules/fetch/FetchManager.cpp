@@ -930,7 +930,7 @@ void FetchManager::contextDestroyed(ExecutionContext*) {
 }
 
 void FetchManager::onLoaderFinished(Loader* loader) {
-  m_loaders.remove(loader);
+  m_loaders.erase(loader);
   loader->dispose();
 }
 

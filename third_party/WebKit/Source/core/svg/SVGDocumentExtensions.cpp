@@ -41,7 +41,7 @@ void SVGDocumentExtensions::addTimeContainer(SVGSVGElement* element) {
 }
 
 void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element) {
-  m_timeContainers.remove(element);
+  m_timeContainers.erase(element);
 }
 
 void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(
@@ -128,7 +128,7 @@ void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(
 void SVGDocumentExtensions::removeSVGRootWithRelativeLengthDescendents(
     SVGSVGElement* svgRoot) {
   ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-  m_relativeLengthSVGRoots.remove(svgRoot);
+  m_relativeLengthSVGRoots.erase(svgRoot);
 }
 
 bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(

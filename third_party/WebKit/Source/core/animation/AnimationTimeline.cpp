@@ -134,7 +134,7 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason) {
 
   for (Animation* animation : animations) {
     if (!animation->update(reason))
-      m_animationsNeedingUpdate.remove(animation);
+      m_animationsNeedingUpdate.erase(animation);
   }
 
   DCHECK_EQ(m_outdatedAnimationCount, 0U);

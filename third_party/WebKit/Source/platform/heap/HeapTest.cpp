@@ -3498,7 +3498,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
           } else if (collectionNumber == weakSetIndex && firstAlive) {
             ASSERT_TRUE(weakSet->contains(keepNumbersAlive[i]));
             if (deleteAfterwards)
-              weakSet->remove(keepNumbersAlive[i]);
+              weakSet->erase(keepNumbersAlive[i]);
             else
               count++;
           } else if (collectionNumber == weakOrderedSetIndex && firstAlive) {

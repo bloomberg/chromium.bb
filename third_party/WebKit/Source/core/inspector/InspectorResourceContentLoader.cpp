@@ -227,7 +227,7 @@ void InspectorResourceContentLoader::checkDone() {
 }
 
 void InspectorResourceContentLoader::resourceFinished(ResourceClient* client) {
-  m_pendingResourceClients.remove(client);
+  m_pendingResourceClients.erase(client);
   checkDone();
 }
 

@@ -406,7 +406,7 @@ void WebGL2RenderingContextBase::registerGetBufferSubDataAsyncCallback(
 
 void WebGL2RenderingContextBase::unregisterGetBufferSubDataAsyncCallback(
     WebGLGetBufferSubDataAsyncCallback* callback) {
-  m_getBufferSubDataAsyncCallbacks.remove(callback);
+  m_getBufferSubDataAsyncCallbacks.erase(callback);
 }
 
 void WebGL2RenderingContextBase::blitFramebuffer(GLint srcX0,

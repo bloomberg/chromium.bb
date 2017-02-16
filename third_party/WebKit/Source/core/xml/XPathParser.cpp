@@ -516,7 +516,7 @@ void Parser::deleteString(String* s) {
     return;
 
   DCHECK(m_strings.contains(s));
-  m_strings.remove(s);
+  m_strings.erase(s);
 }
 
 }  // namespace blink

@@ -194,7 +194,7 @@ void ServiceWorkerRegistrationNotifications::didLoadResources(
   notificationManager->showPersistent(
       WebSecurityOrigin(origin.get()), data, loader->getResources(),
       m_registration->webRegistration(), std::move(callbacks));
-  m_loaders.remove(loader);
+  m_loaders.erase(loader);
 }
 
 }  // namespace blink

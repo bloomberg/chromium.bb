@@ -179,7 +179,7 @@ void ThreadHeap::detach(ThreadState* thread) {
     MutexLocker locker(m_threadAttachMutex);
     thread->runTerminationGC();
     ASSERT(m_threads.contains(thread));
-    m_threads.remove(thread);
+    m_threads.erase(thread);
     isLastThread = m_threads.isEmpty();
   }
   if (thread->isMainThread())

@@ -117,7 +117,7 @@ void CompositorWorkerProxyClientImpl::registerCompositorProxy(
 
 void CompositorWorkerProxyClientImpl::unregisterCompositorProxy(
     CompositorProxy* proxy) {
-  m_proxies.remove(proxy);
+  m_proxies.erase(proxy);
 }
 
 }  // namespace blink

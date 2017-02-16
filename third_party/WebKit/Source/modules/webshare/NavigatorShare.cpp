@@ -43,7 +43,7 @@ NavigatorShare::ShareClientImpl::ShareClientImpl(
 
 void NavigatorShare::ShareClientImpl::callback(const String& error) {
   if (m_navigator)
-    m_navigator->m_clients.remove(this);
+    m_navigator->m_clients.erase(this);
 
   if (error.isNull()) {
     m_resolver->resolve();

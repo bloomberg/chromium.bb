@@ -157,7 +157,7 @@ inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer) {
     return;
   }
   RELEASE_ASSERT(m_iterationState & AllowingRemoval);
-  m_observers.remove(observer);
+  m_observers.erase(observer);
 }
 
 }  // namespace blink

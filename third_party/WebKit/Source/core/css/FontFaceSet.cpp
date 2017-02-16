@@ -237,7 +237,7 @@ void FontFaceSet::addToLoadingFonts(FontFace* fontFace) {
 }
 
 void FontFaceSet::removeFromLoadingFonts(FontFace* fontFace) {
-  m_loadingFonts.remove(fontFace);
+  m_loadingFonts.erase(fontFace);
   if (m_loadingFonts.isEmpty())
     handlePendingEventsAndPromisesSoon();
 }

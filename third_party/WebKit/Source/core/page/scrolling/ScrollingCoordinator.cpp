@@ -824,7 +824,7 @@ void ScrollingCoordinator::updateClipParentForGraphicsLayer(
 }
 
 void ScrollingCoordinator::willDestroyLayer(PaintLayer* layer) {
-  m_layersWithTouchRects.remove(layer);
+  m_layersWithTouchRects.erase(layer);
 }
 
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(

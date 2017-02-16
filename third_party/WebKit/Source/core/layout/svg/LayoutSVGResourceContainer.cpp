@@ -193,7 +193,7 @@ void LayoutSVGResourceContainer::addClient(LayoutObject* client) {
 void LayoutSVGResourceContainer::removeClient(LayoutObject* client) {
   ASSERT(client);
   removeClientFromCache(client, false);
-  m_clients.remove(client);
+  m_clients.erase(client);
 }
 
 void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(
@@ -275,7 +275,7 @@ static inline void removeFromCacheAndInvalidateDependencies(
 
       LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
           layoutObject, needsLayout);
-      invalidatingDependencies.remove(element);
+      invalidatingDependencies.erase(element);
     }
   }
 }

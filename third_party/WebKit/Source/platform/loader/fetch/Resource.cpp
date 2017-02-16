@@ -283,7 +283,7 @@ void Resource::ResourceCallback::schedule(Resource* resource) {
 }
 
 void Resource::ResourceCallback::cancel(Resource* resource) {
-  m_resourcesWithPendingClients.remove(resource);
+  m_resourcesWithPendingClients.erase(resource);
   if (m_taskHandle.isActive() && m_resourcesWithPendingClients.isEmpty())
     m_taskHandle.cancel();
 }

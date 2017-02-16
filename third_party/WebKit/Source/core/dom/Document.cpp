@@ -2342,7 +2342,7 @@ void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element) {
 }
 
 void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element) {
-  m_useElementsNeedingUpdate.remove(&element);
+  m_useElementsNeedingUpdate.erase(&element);
 }
 
 void Document::updateUseShadowTreesIfNeeded() {
@@ -4178,10 +4178,10 @@ void Document::registerNodeList(const LiveNodeListBase* list) {
 
 void Document::unregisterNodeList(const LiveNodeListBase* list) {
   DCHECK(m_nodeLists[list->invalidationType()].contains(list));
-  m_nodeLists[list->invalidationType()].remove(list);
+  m_nodeLists[list->invalidationType()].erase(list);
   if (list->isRootedAtTreeScope()) {
     DCHECK(m_listsInvalidatedAtDocument.contains(list));
-    m_listsInvalidatedAtDocument.remove(list);
+    m_listsInvalidatedAtDocument.erase(list);
   }
 }
 
@@ -4193,7 +4193,7 @@ void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list) {
 
 void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list) {
   DCHECK(m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
-  m_nodeLists[InvalidateOnIdNameAttrChange].remove(list);
+  m_nodeLists[InvalidateOnIdNameAttrChange].erase(list);
 }
 
 void Document::attachNodeIterator(NodeIterator* ni) {
@@ -4203,7 +4203,7 @@ void Document::attachNodeIterator(NodeIterator* ni) {
 void Document::detachNodeIterator(NodeIterator* ni) {
   // The node iterator can be detached without having been attached if its root
   // node didn't have a document when the iterator was created, but has it now.
-  m_nodeIterators.remove(ni);
+  m_nodeIterators.erase(ni);
 }
 
 void Document::moveNodeIteratorsToNewDocument(Node& node,
@@ -5682,7 +5682,7 @@ void Document::attachRange(Range* range) {
 void Document::detachRange(Range* range) {
   // We don't ASSERT m_ranges.contains(range) to allow us to call this
   // unconditionally to fix: https://bugs.webkit.org/show_bug.cgi?id=26044
-  m_ranges.remove(range);
+  m_ranges.erase(range);
 }
 
 void Document::initDNSPrefetch() {

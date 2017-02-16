@@ -122,7 +122,7 @@ class HashSet {
   template <typename HashTranslator, typename T>
   AddResult addWithTranslator(T&&);
 
-  void remove(ValuePeekInType);
+  void erase(ValuePeekInType);
   void remove(iterator);
   void clear();
   template <typename Collection>
@@ -280,7 +280,7 @@ inline void HashSet<T, U, V, W>::remove(iterator it) {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void HashSet<T, U, V, W>::remove(ValuePeekInType value) {
+inline void HashSet<T, U, V, W>::erase(ValuePeekInType value) {
   remove(find(value));
 }
 

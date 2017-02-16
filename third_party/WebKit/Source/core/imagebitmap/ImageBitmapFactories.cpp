@@ -204,7 +204,7 @@ void ImageBitmapFactories::addLoader(ImageBitmapLoader* loader) {
 
 void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader) {
   ASSERT(m_pendingLoaders.contains(loader));
-  m_pendingLoaders.remove(loader);
+  m_pendingLoaders.erase(loader);
 }
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(

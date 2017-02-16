@@ -738,7 +738,7 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
   if (!m_requests.contains(resolver))
     return;
 
-  m_requests.remove(resolver);
+  m_requests.erase(resolver);
   if (error.is_null())
     resolver->resolve();
   else
@@ -803,7 +803,7 @@ void NFC::OnWatchRegistered(MessageCallback* callback,
                             ScriptPromiseResolver* resolver,
                             uint32_t id,
                             device::nfc::mojom::blink::NFCErrorPtr error) {
-  m_requests.remove(resolver);
+  m_requests.erase(resolver);
 
   // Invalid id was returned.
   // https://w3c.github.io/web-nfc/#dom-nfc-watch

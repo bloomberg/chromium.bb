@@ -524,8 +524,8 @@ void Page::willBeDestroyed() {
   mainFrame->detach(FrameDetachType::Remove);
 
   ASSERT(allPages().contains(this));
-  allPages().remove(this);
-  ordinaryPages().remove(this);
+  allPages().erase(this);
+  ordinaryPages().erase(this);
 
   if (m_scrollingCoordinator)
     m_scrollingCoordinator->willBeDestroyed();

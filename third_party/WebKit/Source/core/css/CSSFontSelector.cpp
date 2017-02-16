@@ -65,7 +65,7 @@ void CSSFontSelector::registerForInvalidationCallbacks(
 
 void CSSFontSelector::unregisterForInvalidationCallbacks(
     CSSFontSelectorClient* client) {
-  m_clients.remove(client);
+  m_clients.erase(client);
 }
 
 void CSSFontSelector::dispatchInvalidationCallbacks() {

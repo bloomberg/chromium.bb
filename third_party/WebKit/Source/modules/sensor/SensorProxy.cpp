@@ -46,7 +46,7 @@ void SensorProxy::addObserver(Observer* observer) {
 }
 
 void SensorProxy::removeObserver(Observer* observer) {
-  m_observers.remove(observer);
+  m_observers.erase(observer);
 }
 
 void SensorProxy::initialize() {

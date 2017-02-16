@@ -86,7 +86,7 @@ void CompositorMutatorImpl::registerCompositorAnimator(
 void CompositorMutatorImpl::unregisterCompositorAnimator(
     CompositorAnimator* animator) {
   DCHECK(m_animators.contains(animator));
-  m_animators.remove(animator);
+  m_animators.erase(animator);
 }
 
 void CompositorMutatorImpl::setNeedsMutate() {

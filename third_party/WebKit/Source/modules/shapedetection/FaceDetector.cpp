@@ -58,7 +58,7 @@ void FaceDetector::onDetectFaces(
     ScriptPromiseResolver* resolver,
     shape_detection::mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
   DCHECK(m_faceServiceRequests.contains(resolver));
-  m_faceServiceRequests.remove(resolver);
+  m_faceServiceRequests.erase(resolver);
 
   HeapVector<Member<DetectedFace>> detectedFaces;
   for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {

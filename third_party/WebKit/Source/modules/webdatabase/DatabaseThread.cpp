@@ -144,7 +144,7 @@ void DatabaseThread::recordDatabaseClosed(Database* database) {
     ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
   }
 #endif
-  m_openDatabaseSet.remove(database);
+  m_openDatabaseSet.erase(database);
 }
 
 bool DatabaseThread::isDatabaseOpen(Database* database) {

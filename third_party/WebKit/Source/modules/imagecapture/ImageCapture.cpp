@@ -341,7 +341,7 @@ void ImageCapture::onCapabilities(
     caps->setSharpness(sharpness);
     resolver->resolve(caps);
   }
-  m_serviceRequests.remove(resolver);
+  m_serviceRequests.erase(resolver);
 }
 
 void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result) {
@@ -352,7 +352,7 @@ void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result) {
     resolver->resolve();
   else
     resolver->reject(DOMException::create(UnknownError, "setOptions failed"));
-  m_serviceRequests.remove(resolver);
+  m_serviceRequests.erase(resolver);
 }
 
 void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
@@ -366,7 +366,7 @@ void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
   else
     resolver->resolve(
         Blob::create(blob->data.data(), blob->data.size(), blob->mime_type));
-  m_serviceRequests.remove(resolver);
+  m_serviceRequests.erase(resolver);
 }
 
 void ImageCapture::onServiceConnectionError() {

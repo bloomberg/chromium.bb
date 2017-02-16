@@ -246,7 +246,7 @@ void Geolocation::startRequest(GeoNotifier* notifier) {
 
 void Geolocation::fatalErrorOccurred(GeoNotifier* notifier) {
   // This request has failed fatally. Remove it from our lists.
-  m_oneShots.remove(notifier);
+  m_oneShots.erase(notifier);
   m_watchers.remove(notifier);
 
   if (!hasListeners())
@@ -261,7 +261,7 @@ void Geolocation::requestUsesCachedPosition(GeoNotifier* notifier) {
   // If this is a one-shot request, stop it. Otherwise, if the watch still
   // exists, start the service to get updates.
   if (m_oneShots.contains(notifier)) {
-    m_oneShots.remove(notifier);
+    m_oneShots.erase(notifier);
   } else if (m_watchers.contains(notifier)) {
     if (notifier->options().timeout())
       startUpdating(notifier);
@@ -274,7 +274,7 @@ void Geolocation::requestUsesCachedPosition(GeoNotifier* notifier) {
 
 void Geolocation::requestTimedOut(GeoNotifier* notifier) {
   // If this is a one-shot request, stop it.
-  m_oneShots.remove(notifier);
+  m_oneShots.erase(notifier);
 
   if (!hasListeners())
     stopUpdating();
@@ -295,7 +295,7 @@ void Geolocation::clearWatch(int watchID) {
     return;
 
   if (GeoNotifier* notifier = m_watchers.find(watchID))
-    m_pendingForPermissionNotifiers.remove(notifier);
+    m_pendingForPermissionNotifiers.erase(notifier);
   m_watchers.remove(watchID);
 
   if (!hasListeners())

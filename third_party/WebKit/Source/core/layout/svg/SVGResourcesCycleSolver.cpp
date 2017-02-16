@@ -48,7 +48,7 @@ struct ActiveFrame {
       : m_activeSet(activeSet), m_resource(resource) {
     m_activeSet.insert(m_resource);
   }
-  ~ActiveFrame() { m_activeSet.remove(m_resource); }
+  ~ActiveFrame() { m_activeSet.erase(m_resource); }
 
   ResourceSet& m_activeSet;
   LayoutSVGResourceContainer* m_resource;

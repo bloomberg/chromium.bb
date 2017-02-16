@@ -109,7 +109,7 @@ void SVGTreeScopeResources::removeElementFromPendingResources(
       DCHECK(elements);
       DCHECK(!elements->isEmpty());
 
-      elements->remove(element);
+      elements->erase(element);
       if (elements->isEmpty())
         toBeRemoved.push_back(entry.key);
     }
