@@ -1,6 +1,6 @@
 asanka@chromium.org
-rdsmith@chromium.org
-svaldez@chromium.org
+dtrainor@chromium.org
+qinmin@chromium.org
 
 per-file download_dir_policy_handler*=atwilson@chromium.org
 per-file download_request_limiter*=dominickn@chromium.org
