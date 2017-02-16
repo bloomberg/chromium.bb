@@ -74,7 +74,7 @@ void InstantiatePersistentHistograms() {
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
 
-  if (storage == "MappedFile") {
+  if (storage.empty() || storage == "MappedFile") {
     // If for some reason the existing "active" file could not be moved above
     // then it is essential it be scheduled for deletion when possible and the
     // contents ignored. Because this shouldn't happen but can on an OS like
@@ -99,7 +99,7 @@ void InstantiatePersistentHistograms() {
         result = MAPPED_FILE_FAILED;
       }
     }
-  } else if (storage.empty() || storage == "LocalMemory") {
+  } else if (storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown.
     base::GlobalHistogramAllocator::CreateWithLocalMemory(
