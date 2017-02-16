@@ -862,17 +862,19 @@ void VrShellGl::DrawElements(
         copy_rect.height =
             static_cast<float>(rect->copy_rect.height) / ui_tex_css_height_;
         jint texture_handle = ui_texture_id_;
-        vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+        vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
             texture_handle, transform, copy_rect, rect->computed_opacity);
         break;
       }
       case Fill::OPAQUE_GRADIENT: {
+        vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
         vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
             transform, rect->edge_color, rect->center_color,
             rect->computed_opacity);
         break;
       }
       case Fill::GRID_GRADIENT: {
+        vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
         vr_shell_renderer_->GetGradientGridRenderer()->Draw(
             transform, rect->edge_color, rect->center_color,
             rect->gridline_count, rect->computed_opacity);
@@ -881,7 +883,7 @@ void VrShellGl::DrawElements(
       case Fill::CONTENT: {
         Rectf copy_rect = {0, 0, 1, 1};
         jint texture_handle = content_texture_id_;
-        vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+        vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
             texture_handle, transform, copy_rect, rect->computed_opacity);
         break;
       }
@@ -889,6 +891,8 @@ void VrShellGl::DrawElements(
         break;
     }
   }
+
+  vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
 }
 
 std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(

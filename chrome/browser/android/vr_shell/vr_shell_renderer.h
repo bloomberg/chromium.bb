@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_RENDERER_H_
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/macros.h"
@@ -48,6 +49,13 @@ struct Line3d {
   Vertex3d end;
 };
 
+struct TexturedQuad {
+  int texture_data_handle;
+  gvr::Mat4f view_proj_matrix;
+  Rectf copy_rect;
+  float opacity;
+};
+
 class BaseRenderer {
  public:
   virtual ~BaseRenderer();
@@ -74,16 +82,20 @@ class TexturedQuadRenderer : public BaseRenderer {
   ~TexturedQuadRenderer() override;
 
   // Draw the content rect in the texture quad.
-  void Draw(int texture_data_handle,
-            const gvr::Mat4f& view_proj_matrix,
-            const Rectf& copy_rect,
-            float opacity);
+  void AddQuad(int texture_data_handle,
+               const gvr::Mat4f& view_proj_matrix,
+               const Rectf& copy_rect,
+               float opacity);
+
+  void Flush();
 
  private:
   GLuint model_view_proj_matrix_handle_;
   GLuint copy_rect_uniform_handle_;
   GLuint tex_uniform_handle_;
   GLuint opacity_handle_;
+
+  std::queue<TexturedQuad> quad_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
 };

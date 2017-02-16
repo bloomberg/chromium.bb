@@ -295,26 +295,86 @@ TexturedQuadRenderer::TexturedQuadRenderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "opacity");
 }
 
-void TexturedQuadRenderer::Draw(int texture_data_handle,
-                                const gvr::Mat4f& view_proj_matrix,
-                                const Rectf& copy_rect,
-                                float opacity) {
-  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
+void TexturedQuadRenderer::AddQuad(int texture_data_handle,
+                                   const gvr::Mat4f& view_proj_matrix,
+                                   const Rectf& copy_rect,
+                                   float opacity) {
+  TexturedQuad quad;
+  quad.texture_data_handle = texture_data_handle;
+  quad.view_proj_matrix = view_proj_matrix;
+  quad.copy_rect = copy_rect;
+  quad.opacity = opacity;
+  quad_queue_.push(quad);
+}
+
+void TexturedQuadRenderer::Flush() {
+  if (quad_queue_.empty())
+    return;
+
+  int last_texture = 0;
+  float last_opacity = -1.0f;
+
+  // Set up GL state that doesn't change between draw calls.
+  glUseProgram(program_handle_);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+
+  // Set up position attribute.
+  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
+                        kTextureQuadDataStride,
+                        VOID_OFFSET(kPositionDataOffset));
+  glEnableVertexAttribArray(position_handle_);
+
+  // Set up texture coordinate attribute.
+  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
+                        false, kTextureQuadDataStride,
+                        VOID_OFFSET(kTextureCoordinateDataOffset));
+  glEnableVertexAttribArray(tex_coord_handle_);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_data_handle);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
   glUniform1i(tex_uniform_handle_, 0);
-  glUniform4fv(copy_rect_uniform_handle_, 1,
-               reinterpret_cast<const float*>(&copy_rect));
-  glUniform1f(opacity_handle_, opacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  // TODO(bajones): This should eventually be changed to use instancing so that
+  // the entire queue can be processed in one draw call. For now this still
+  // significantly reduces the amount of state changes made per draw.
+  while (!quad_queue_.empty()) {
+    const TexturedQuad& quad = quad_queue_.front();
+
+    // Only change texture ID or opacity when they differ between quads.
+    if (last_texture != quad.texture_data_handle) {
+      last_texture = quad.texture_data_handle;
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, last_texture);
+      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S,
+                      GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T,
+                      GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER,
+                      GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER,
+                      GL_NEAREST);
+    }
+
+    if (last_opacity != quad.opacity) {
+      last_opacity = quad.opacity;
+      glUniform1f(opacity_handle_, last_opacity);
+    }
+
+    // Pass in model view project matrix.
+    glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                       MatrixToGLArray(quad.view_proj_matrix).data());
+
+    // Pass in the copy rect.
+    glUniform4fv(copy_rect_uniform_handle_, 1,
+                 reinterpret_cast<const float*>(&quad.copy_rect));
+
+    glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+
+    quad_queue_.pop();
+  }
 
   glDisableVertexAttribArray(position_handle_);
   glDisableVertexAttribArray(tex_coord_handle_);
