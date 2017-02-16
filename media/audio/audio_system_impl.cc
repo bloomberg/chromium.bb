@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 
 // Using base::Unretained for |audio_manager_| is safe since it is deleted after
@@ -21,11 +22,27 @@ AudioParameters GetInputParametersOnDeviceThread(AudioManager* audio_manager,
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
 
   // TODO(olka): remove this when AudioManager::GetInputStreamParameters()
-  // works this way on all the platforms.
+  // returns invalid parameters if the device is not found.
   if (!audio_manager->HasAudioInputDevices())
     return AudioParameters();
 
   return audio_manager->GetInputStreamParameters(device_id);
+}
+
+AudioParameters GetOutputParametersOnDeviceThread(
+    AudioManager* audio_manager,
+    const std::string& device_id) {
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
+
+  // TODO(olka): remove this when
+  // AudioManager::Get[Default]OutputStreamParameters() returns invalid
+  // parameters if the device is not found.
+  if (!audio_manager->HasAudioOutputDevices())
+    return AudioParameters();
+
+  return media::AudioDeviceDescription::IsDefaultDevice(device_id)
+             ? audio_manager->GetDefaultOutputStreamParameters()
+             : audio_manager->GetOutputStreamParameters(device_id);
 }
 
 }  // namespace
@@ -58,6 +75,22 @@ void AudioSystemImpl::GetInputStreamParameters(
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
       base::Bind(&GetInputParametersOnDeviceThread,
+                 base::Unretained(audio_manager_), device_id),
+      std::move(on_params_cb));
+}
+
+void AudioSystemImpl::GetOutputStreamParameters(
+    const std::string& device_id,
+    OnAudioParamsCallback on_params_cb) const {
+  if (GetTaskRunner()->BelongsToCurrentThread()) {
+    GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(on_params_cb, GetOutputParametersOnDeviceThread(
+                                                audio_manager_, device_id)));
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      GetTaskRunner(), FROM_HERE,
+      base::Bind(&GetOutputParametersOnDeviceThread,
                  base::Unretained(audio_manager_), device_id),
       std::move(on_params_cb));
 }

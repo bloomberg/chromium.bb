@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"
@@ -66,6 +67,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     audio_manager_.reset(new media::FakeAudioManager(
         audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
         &log_factory_));
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_manager_.get());
     // Make sure everything is done initializing:
@@ -79,7 +81,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     return media_stream_manager_.get();
   }
 
-  media::AudioManager* GetAudioManager() { return audio_manager_.get(); }
+  media::AudioSystem* GetAudioSystem() { return audio_system_.get(); }
 
   void SyncWithAllThreads() {
     // New tasks might be posted while we are syncing, but in
@@ -140,6 +142,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
   std::unique_ptr<AudioManagerThread> audio_thread_;
   media::FakeAudioLogFactory log_factory_;
   media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputAuthorizationHandlerTest);
 };
@@ -151,7 +154,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -172,7 +175,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -194,7 +197,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -225,7 +228,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -255,7 +258,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), RPH->GetID(), kSalt);
   EXPECT_EQ(RPH->bad_msg_count(), 0);
 
   EXPECT_CALL(listener,
@@ -290,7 +293,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), RPH->GetID(), kSalt);
 
   EXPECT_EQ(RPH->bad_msg_count(), 0);
   EXPECT_CALL(listener, Run(_, _, _, _)).Times(0);
@@ -314,7 +317,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   EXPECT_CALL(listener,
               Run(media::OUTPUT_DEVICE_STATUS_OK, false, _, kDefaultDeviceId))

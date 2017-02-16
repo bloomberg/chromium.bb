@@ -60,6 +60,7 @@ class CancelableSyncSocket;
 namespace media {
 class AudioManager;
 class AudioParameters;
+class AudioSystem;
 }
 
 namespace content {
@@ -74,6 +75,7 @@ class CONTENT_EXPORT AudioRendererHost
   // Called from UI thread from the owner of this object.
   AudioRendererHost(int render_process_id,
                     media::AudioManager* audio_manager,
+                    media::AudioSystem* audio_system,
                     AudioMirroringManager* mirroring_manager,
                     MediaStreamManager* media_stream_manager,
                     const std::string& salt);
