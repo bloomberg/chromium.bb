@@ -67,11 +67,13 @@ namespace chromeos {
 
 EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl(
     EnrollmentStatusConsumer* status_consumer,
+    ActiveDirectoryJoinDelegate* ad_join_delegate,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain)
     : EnterpriseEnrollmentHelper(status_consumer),
       enrollment_config_(enrollment_config),
       enrolling_user_domain_(enrolling_user_domain),
+      ad_join_delegate_(ad_join_delegate),
       weak_ptr_factory_(this) {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
@@ -163,22 +165,22 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
       connector->GetDeviceCloudPolicyInitializer();
   CHECK(dcp_initializer);
   dcp_initializer->StartEnrollment(
-      connector->device_management_service(), enrollment_config_, token,
+      connector->device_management_service(), ad_join_delegate_,
+      enrollment_config_, token,
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
-  // Don't update device attributes for Active Directory management.
-  if (!enrollment_config_.management_realm.empty()) {
-    OnDeviceAttributeUpdatePermission(false);
-    return;
-  }
-
   // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
   LOG(WARNING) << "Get device attribute update permission";
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  // Don't update device attributes for Active Directory management.
+  if (connector->IsActiveDirectoryManaged()) {
+    OnDeviceAttributeUpdatePermission(false);
+    return;
+  }
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       connector->GetDeviceCloudPolicyManager();
   policy::CloudPolicyClient* client = policy_manager->core()->client();

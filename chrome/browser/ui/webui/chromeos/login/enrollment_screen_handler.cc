@@ -579,6 +579,7 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
     authpolicy::ErrorType code) {
   switch (code) {
     case authpolicy::ERROR_NONE:
+      ShowEnrollmentSpinnerScreen();
       controller_->OnAdJoined(gaia::ExtractDomainName(user_name));
       return;
     case authpolicy::ERROR_UNKNOWN:

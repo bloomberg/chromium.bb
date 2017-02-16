@@ -52,7 +52,7 @@ class EnrollmentScreenActor {
   // Shows the signin screen.
   virtual void ShowSigninScreen() = 0;
 
-  // Shows the AD domain joining screen.
+  // Shows the Active Directory domain joining screen.
   virtual void ShowAdJoin() = 0;
 
   // Shows the device attribute prompt screen.

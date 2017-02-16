@@ -21,6 +21,8 @@ class EnrollmentStatus;
 
 namespace chromeos {
 
+class ActiveDirectoryJoinDelegate;
+
 // This class is capable to enroll the device into enterprise domain, using
 // either a profile containing authentication data or OAuth token.
 // It can also clear an authentication data from the profile and revoke tokens
@@ -68,6 +70,7 @@ class EnterpriseEnrollmentHelper {
   // Factory method. Caller takes ownership of the returned object.
   static std::unique_ptr<EnterpriseEnrollmentHelper> Create(
       EnrollmentStatusConsumer* status_consumer,
+      ActiveDirectoryJoinDelegate* ad_join_delegate,
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);
 

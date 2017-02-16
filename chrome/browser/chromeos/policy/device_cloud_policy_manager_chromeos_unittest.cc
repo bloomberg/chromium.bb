@@ -270,6 +270,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   SchemaRegistry schema_registry_;
   std::unique_ptr<TestingDeviceCloudPolicyManagerChromeOS> manager_;
   std::unique_ptr<DeviceCloudPolicyInitializer> initializer_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSTest);
 };
@@ -504,7 +505,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
                                        : EnrollmentConfig::MODE_MANUAL;
     std::string token = with_cert ? "" : "auth token";
     initializer_->StartEnrollment(
-        &device_management_service_, enrollment_config, token,
+        &device_management_service_, nullptr, enrollment_config, token,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();

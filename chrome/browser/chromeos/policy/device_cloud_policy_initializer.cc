@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
@@ -35,6 +36,10 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace chromeos {
+class ActiveDirectoryJoinDelegate;
+}
 
 namespace policy {
 
@@ -93,6 +98,7 @@ void DeviceCloudPolicyInitializer::Shutdown() {
 
 void DeviceCloudPolicyInitializer::StartEnrollment(
     DeviceManagementService* device_management_service,
+    chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
     const EnrollmentCallback& enrollment_callback) {
@@ -100,14 +106,17 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   DCHECK(!enrollment_handler_);
 
   manager_->core()->Disconnect();
-  // TODO(rsorokin): make proper SetDeviceRequisition
-  if (!enrollment_config.management_realm.empty())
+  // TODO(rsorokin): Remove that once DM server does not require requisition.
+  // See crbug.com/668455
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableAd)) {
     manager_->SetDeviceRequisition("chrome_ad");
+  }
 
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
       attestation_flow_.get(), CreateClient(device_management_service),
-      background_task_runner_, enrollment_config, auth_token,
+      background_task_runner_, ad_join_delegate, enrollment_config, auth_token,
       install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));

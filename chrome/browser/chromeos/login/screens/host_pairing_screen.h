@@ -77,17 +77,17 @@ class HostPairingScreen
   void OnAuthCleared();
   void OnAnyEnrollmentError();
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
-  HostPairingScreenActor* actor_;
+  HostPairingScreenActor* actor_ = nullptr;
 
   // Controller performing pairing. Owned by the wizard controller.
-  pairing_chromeos::HostPairingController* remora_controller_;
+  pairing_chromeos::HostPairingController* remora_controller_ = nullptr;
 
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
 
   // Current stage of pairing process.
-  Stage current_stage_;
+  Stage current_stage_ = pairing_chromeos::HostPairingController::STAGE_NONE;
 
   base::WeakPtrFactory<HostPairingScreen> weak_ptr_factory_;
 

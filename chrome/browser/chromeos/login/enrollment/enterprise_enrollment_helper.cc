@@ -25,6 +25,7 @@ void EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
 // static
 std::unique_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     EnrollmentStatusConsumer* status_consumer,
+    ActiveDirectoryJoinDelegate* ad_join_delegate,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain) {
   // Create a mock instance.
@@ -39,7 +40,8 @@ std::unique_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
   }
 
   return base::WrapUnique(new EnterpriseEnrollmentHelperImpl(
-      status_consumer, enrollment_config, enrolling_user_domain));
+      status_consumer, ad_join_delegate, enrollment_config,
+      enrolling_user_domain));
 }
 
 EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper(

@@ -27,6 +27,7 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 
+class ActiveDirectoryJoinDelegate;
 class InstallAttributes;
 
 namespace attestation {
@@ -35,7 +36,8 @@ class AttestationFlow;
 namespace system {
 class StatisticsProvider;
 }
-}
+
+}  // namespace chromeos
 
 namespace cryptohome {
 class AsyncMethodCaller;
@@ -80,6 +82,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // operation.
   virtual void StartEnrollment(
       DeviceManagementService* device_management_service,
+      chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
       const EnrollmentCallback& enrollment_callback);

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -40,7 +41,8 @@ class ScreenManager;
 class EnrollmentScreen
     : public BaseScreen,
       public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
-      public EnrollmentScreenActor::Controller {
+      public EnrollmentScreenActor::Controller,
+      public ActiveDirectoryJoinDelegate {
  public:
   EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                    EnrollmentScreenActor* actor);
@@ -76,6 +78,9 @@ class EnrollmentScreen
   void OnDeviceEnrolled(const std::string& additional_token) override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
+
+  // ActiveDirectoryJoinDelegate implementation:
+  void JoinDomain(OnDomainJoinedCallback on_joined_callback) override;
 
   // Used for testing.
   EnrollmentScreenActor* GetActor() {
@@ -168,13 +173,13 @@ class EnrollmentScreen
   Auth last_auth_ = AUTH_OAUTH;
   bool enrollment_failed_once_ = false;
   std::string enrolling_user_domain_;
-  std::string auth_code_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
   net::BackoffEntry::Policy retry_policy_;
   std::unique_ptr<net::BackoffEntry> retry_backoff_;
   base::CancelableClosure retry_task_;
   int num_retries_ = 0;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+  OnDomainJoinedCallback on_joined_callback_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);

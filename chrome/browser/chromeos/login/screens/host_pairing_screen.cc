@@ -26,7 +26,6 @@ HostPairingScreen::HostPairingScreen(
       delegate_(delegate),
       actor_(actor),
       remora_controller_(remora_controller),
-      current_stage_(HostPairingController::STAGE_NONE),
       weak_ptr_factory_(this) {
   actor_->SetDelegate(this);
   remora_controller_->AddObserver(this);
@@ -146,7 +145,7 @@ void HostPairingScreen::EnrollHostRequested(const std::string& auth_token) {
           ->browser_policy_connector_chromeos()
           ->GetPrescribedEnrollmentConfig();
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, enrollment_config, std::string());
+      this, nullptr, enrollment_config, std::string());
   enrollment_helper_->EnrollUsingToken(auth_token);
   remora_controller_->OnEnrollmentStatusChanged(
       HostPairingController::ENROLLMENT_STATUS_ENROLLING);
