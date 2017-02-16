@@ -72,6 +72,9 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
 
     private final SuggestionsUiDelegate mUiDelegate;
+    private final UiConfig mUiConfig;
+    private final ThumbnailProvider mThumbnailProvider;
+
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -79,12 +82,11 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
 
+    /** Total horizontal space occupied by the thumbnail, sum of its size and margin. */
+    private final int mThumbnailFootprintPx;
     private final boolean mUseFaviconService;
-    private final UiConfig mUiConfig;
-
     private final ColorStateList mIconForegroundColorList;
     private final int mIconBackgroundColor;
-    private final ThumbnailProvider mThumbnailProvider;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -104,6 +106,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig, contextMenuManager);
 
         mUiDelegate = uiDelegate;
+        mUiConfig = uiConfig;
+
         mThumbnailView = (TintedImageView) itemView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
@@ -111,22 +115,23 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mPublisherBar = itemView.findViewById(R.id.publisher_bar);
         mOfflineBadge = (ImageView) itemView.findViewById(R.id.offline_icon);
 
-        new ImpressionTracker(itemView, this);
-
-        mUiConfig = uiConfig;
-        new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
-            @Override
-            public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
-                updateLayout();
-            }
-        });
-
+        mThumbnailFootprintPx =
+                itemView.getResources().getDimensionPixelSize(R.dimen.snippets_thumbnail_size)
+                + itemView.getResources().getDimensionPixelSize(R.dimen.snippets_thumbnail_margin);
         mUseFaviconService = CardsVariationParameters.isFaviconServiceEnabled();
 
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(parent.getContext());
         mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(parent.getContext());
         mThumbnailProvider = new ThumbnailProviderImpl(
                 Math.min(mThumbnailView.getMaxWidth(), mThumbnailView.getMaxHeight()));
+
+        new ImpressionTracker(itemView, this);
+        new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
+            @Override
+            public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
+                updateLayout();
+            }
+        });
     }
 
     @Override
@@ -219,16 +224,15 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
-        mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
-        mHeadlineTextView.setMinLines(getHeaderMinLines(showDescription, showThumbnail));
 
         // If we aren't showing the article snippet, reduce the top margin for publisher text.
         ViewGroup.MarginLayoutParams params =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
 
-        params.topMargin = mPublisherBar.getResources().getDimensionPixelSize(showThumbnail
+        params.topMargin = mPublisherBar.getResources().getDimensionPixelSize(showDescription
                         ? R.dimen.snippets_publisher_margin_top_with_article_snippet
                         : R.dimen.snippets_publisher_margin_top_without_article_snippet);
+        ApiCompatibilityUtils.setMarginEnd(params, showThumbnail ? mThumbnailFootprintPx : 0);
         mPublisherBar.setLayoutParams(params);
     }
 
@@ -249,21 +253,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
 
         return true;
-    }
-
-    private int getHeaderMaxLines(int horizontalStyle, int verticalStyle, int layout) {
-        // When the screen is too small (narrow or flat) we don't show the description so we have
-        // more space for the header.
-        if (verticalStyle == VerticalDisplayStyle.FLAT) return 3;
-        if (horizontalStyle == HorizontalDisplayStyle.NARROW) return 4;
-        return 2;
-    }
-
-    private int getHeaderMinLines(boolean showDescription, boolean showThumbnail) {
-        // When we have a thumbnail, we try to ensure we have enough content to push the
-        // attribution line below it. So when the description is hidden, we have to force the
-        // header to reserve that space.
-        return showThumbnail && !showDescription ? 3 : 1;
     }
 
     private static String getAttributionString(SnippetArticle article) {
