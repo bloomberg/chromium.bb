@@ -1,0 +1,110 @@
+# ChromeVox on Desktop Linux
+
+## Starting ChromeVox
+
+On Chrome OS, you can enable spoken feedback (ChromeVox) by pressing Ctrl+Alt+Z.
+
+If you have a Chromebook, this gives you speech support built-in. If you're
+building Chrome from source and running it on desktop Linux, speech and braille
+won't be included by default. Here's how to enable it.
+
+## Compiling the Chrome OS version of Chrome
+
+First follow the public instructions for
+[Chrome checkout and build](https://www.chromium.org/developers/how-tos/get-the-code).
+
+Create a GN configuration with "chromeos" as the target OS, for example:
+
+```> gn args out/ChromeOSRelease```
+
+...in editor, add this line:
+
+```
+target_os = "chromeos"
+is_component_build = true
+is_debug = false
+```
+
+Note: Only ```target_os = "chromeos"``` is required, the others are recommended
+for a good experience but you can configure Chrome however you like otherwise.
+Note that Native Client is required, so do not put enable_nacl = false in
+your file anywhere!
+
+Now build Chrome as usual, e.g.:
+
+```ninja -C out/cros chrome```
+
+And run it as usual to see a mostly-complete Chrome OS desktop inside
+of a window:
+
+```out/cros/chrome```
+
+By default you'll be logged in as the default user. If you want to
+simulate the login manager too, run it like this:
+
+```out/cros/chrome --login-manager```
+
+You can run any of the above under it’s own X session (avoiding any
+window manager key combo conflicts) by doing something like
+
+```startx out/cros/chrome```
+
+## Speech
+
+If you want speech, you just need to copy the speech synthesis data
+files to /usr/share like it would be on a Chrome OS device:
+
+```
+git clone https://chromium.googlesource.com/chromiumos/platform/assets
+sudo cp assets /usr/share/chromeos-assets
+```
+
+Next, move to that directory and unzip the NaCl executables. You only need
+to do the one for your host architecture:
+
+```
+cd /usr/share/chromeos-assets/speech_synthesis/patts
+unzip tts_service_x86-64.nexe.zip
+```
+
+Finally, fix the permissions:
+
+```
+sudo chmod oug+r -R /usr/share/chromeos-assets
+```
+
+**Be sure to check permissions of /usr/share/chromeos-assets, some
+  users report they need to chmod or chown too, it really depends
+  on your system.**
+
+After you do that, just run "chrome" as above
+(e.g. out/cros/chrome) and press Ctrl+Alt+Z, and you should hear it
+speak! If not, check the logs.
+
+## Braille
+
+ChromeVox uses extension APIs to deliver braille to Brltty through
+libbrlapi and uses Liblouis to perform translation and
+backtranslation.
+
+Once built, Chrome and ChromeVox will use your machine’s running
+Brltty daemon to display braille if ChromeVox is running. Simply
+ensure you have a display connected before running Chrome and that
+Brltty is running.
+
+Testing against the latest releases of Brltty (e.g. 5.4 at time of
+writing) is encouraged.
+
+For more general information, see [ChromeVox](chromevox.md)
+
+# Using ChromeVox
+
+ChromeVox keyboard shortcuts use Search. On Linux that's usually your
+Windows key. If some shortcuts don't work, you may need to remove
+Gnome keyboard shortcut bindings, or use "startx", as suggested above,
+or remap it.
+
+* Search+Space: Click
+* Search+Left/Right: navigate linearly
+* Search+Period: Open ChromeVox menus
+* Search+H: jump to next heading on page
