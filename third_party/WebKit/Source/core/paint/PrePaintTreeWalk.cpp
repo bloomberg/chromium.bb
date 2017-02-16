@@ -215,25 +215,18 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parentContext) {
   PrePaintTreeWalkContext context(parentContext);
 
-  // This must happen before updateContextForBoxPosition, because the
-  // latter reads some of the state computed uere.
-  updateAuxiliaryObjectProperties(object, context);
-
-  // Ensure the current context takes into account the box's position. This can
-  // force a subtree update due to paint offset changes and must precede any
-  // early out from the treewalk.
-  m_propertyTreeBuilder.updateContextForBoxPosition(object,
-                                                    context.treeBuilderContext);
-
   // Early out from the treewalk if possible.
   if (!object.needsPaintPropertyUpdate() &&
       !object.descendantNeedsPaintPropertyUpdate() &&
       !context.treeBuilderContext.forceSubtreeUpdate &&
       !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
       !object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
+           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
     return;
-  }
+
+  // This must happen before updatePropertiesForSelf, because the latter reads
+  // some of the state computed here.
+  updateAuxiliaryObjectProperties(object, context);
 
   m_propertyTreeBuilder.updatePropertiesForSelf(object,
                                                 context.treeBuilderContext);

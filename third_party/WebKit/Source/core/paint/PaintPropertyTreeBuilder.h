@@ -100,12 +100,6 @@ class PaintPropertyTreeBuilder {
   // date.
   void updateProperties(FrameView&, PaintPropertyTreeBuilderContext&);
 
-  // Update the context to account for positioning. Paint offset and
-  // paint offset translation (if needed) are updated. If paint offset changes
-  // we will force subtree update.
-  void updateContextForBoxPosition(const LayoutObject&,
-                                   PaintPropertyTreeBuilderContext&);
-
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also
   // handles updating the object's paintOffset.
@@ -121,6 +115,9 @@ class PaintPropertyTreeBuilder {
                                               PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updatePaintOffsetTranslation(
       const LayoutBoxModelObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateForObjectLocation(
+      const LayoutObject&,
       PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateTransform(const LayoutObject&,
                                             PaintPropertyTreeBuilderContext&);

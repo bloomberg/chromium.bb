@@ -919,7 +919,7 @@ void PaintPropertyTreeBuilder::updatePaintOffset(
   }
 }
 
-void PaintPropertyTreeBuilder::updateContextForBoxPosition(
+void PaintPropertyTreeBuilder::updateForObjectLocation(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   if (object.isBoxModelObject()) {
@@ -944,6 +944,10 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
+  // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
+  // can change without needsPaintPropertyUpdate.
+  updateForObjectLocation(object, context);
+
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope checkNeedsUpdateScope(object, context);
 #endif
