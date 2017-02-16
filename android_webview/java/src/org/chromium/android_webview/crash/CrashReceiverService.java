@@ -22,7 +22,6 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Service that is responsible for receiving crash dumps from an application, for upload.
@@ -76,7 +75,7 @@ public class CrashReceiverService extends Service {
             boolean copySucceeded = copyMinidumps(context, uid, fileDescriptors);
             if (copySucceeded && scheduleUploads) {
                 // Only schedule a new job if there actually are any files to upload.
-                scheduleNewJobIfNoJobsActive();
+                scheduleNewJob();
             }
         } finally {
             synchronized (mCopyingLock) {
@@ -105,23 +104,8 @@ public class CrashReceiverService extends Service {
         }
     }
 
-    /**
-     * @return the currently pending job with ID MINIDUMP_UPLOADING_JOB_ID, or null if no such job
-     * exists.
-     */
-    private static JobInfo getCurrentPendingJob(JobScheduler jobScheduler) {
-        List<JobInfo> pendingJobs = jobScheduler.getAllPendingJobs();
-        for (JobInfo job : pendingJobs) {
-            if (job.getId() == MINIDUMP_UPLOADING_JOB_ID) return job;
-        }
-        return null;
-    }
-
-    private void scheduleNewJobIfNoJobsActive() {
+    private void scheduleNewJob() {
         JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        if (getCurrentPendingJob(jobScheduler) != null) {
-            return;
-        }
         JobInfo newJob = new JobInfo
                 .Builder(MINIDUMP_UPLOADING_JOB_ID /* jobId */,
                     new ComponentName(this, MinidumpUploadJobService.class))

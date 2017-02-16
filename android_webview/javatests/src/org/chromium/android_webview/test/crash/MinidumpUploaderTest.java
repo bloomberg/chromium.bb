@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -146,12 +148,28 @@ public class MinidumpUploaderTest extends CrashTestCase {
      */
     private static void uploadAllMinidumpsOnUiThread(final MinidumpUploader minidumpUploader,
             final MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback) {
+        uploadAllMinidumpsOnUiThread(
+                minidumpUploader, uploadsFinishedCallback, false /* blockUntilJobPosted */);
+    }
+
+    private static void uploadAllMinidumpsOnUiThread(final MinidumpUploader minidumpUploader,
+            final MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback,
+            boolean blockUntilJobPosted) {
+        final CountDownLatch jobPostedLatch = new CountDownLatch(1);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 minidumpUploader.uploadAllMinidumps(uploadsFinishedCallback);
+                jobPostedLatch.countDown();
             }
         });
+        if (blockUntilJobPosted) {
+            try {
+                jobPostedLatch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static void uploadMinidumpsSync(
@@ -276,36 +294,40 @@ public class MinidumpUploaderTest extends CrashTestCase {
         assertTrue(expectedSecondFile.exists());
     }
 
-    private static class StallingOutputStream extends OutputStream {
-        @Override
-        public void write(int b) throws IOException {
-            try {
-                TimeUnit.MINUTES.sleep(100);
-            } catch (InterruptedException e) {
-                throw new InterruptedIOException(e.toString());
+    private static class StallingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
+        private final CountDownLatch mStopStallingLatch;
+        private final boolean mSucceed;
+
+        private class StallingOutputStream extends OutputStream {
+            @Override
+            public void write(int b) throws IOException {
+                try {
+                    mStopStallingLatch.await();
+                } catch (InterruptedException e) {
+                    throw new InterruptedIOException(e.toString());
+                }
+                if (!mSucceed) {
+                    throw new IOException();
+                }
             }
         }
-    }
 
-    private static class StallingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
+        public StallingHttpUrlConnectionFactory(CountDownLatch stopStallingLatch, boolean succeed) {
+            mStopStallingLatch = stopStallingLatch;
+            mSucceed = succeed;
+        }
+
         public HttpURLConnection createHttpURLConnection(String url) {
-            return new HttpURLConnection(null) {
-                @Override
-                public OutputStream getOutputStream() throws IOException {
-                    return new StallingOutputStream();
-                }
-
-                @Override
-                public void connect() {}
-
-                @Override
-                public void disconnect() {}
-
-                @Override
-                public boolean usingProxy() {
-                    return false;
-                }
-            };
+            try {
+                return new MinidumpUploadCallableTest.TestHttpURLConnection(new URL(url)) {
+                    @Override
+                    public OutputStream getOutputStream() {
+                        return new StallingOutputStream();
+                    }
+                };
+            } catch (MalformedURLException e) {
+                return null;
+            }
         }
     }
 
@@ -316,21 +338,35 @@ public class MinidumpUploaderTest extends CrashTestCase {
     }
 
     /**
-     * Test that ensure we can interrupt the MinidumpUploader when uploading minidumps.
+     * Test that ensures we can interrupt the MinidumpUploader when uploading minidumps.
      */
     @MediumTest
-    public void testCancelMinidumpUploads() throws IOException {
+    public void testCancelMinidumpUploadsFailedUpload() throws IOException {
+        testCancellation(false /* successfulUpload */);
+    }
+
+    /**
+     * Test that ensures interrupting our upload-job will not interrupt the first upload.
+     */
+    @MediumTest
+    public void testCancelingWontCancelFirstUpload() throws IOException {
+        testCancellation(true /* successfulUpload */);
+    }
+
+    private void testCancellation(final boolean successfulUpload) throws IOException {
         final CrashReportingPermissionManager permManager =
                 new MockCrashReportingPermissionManager() {
                     { mIsEnabledForTests = true; }
                 };
-        MinidumpUploader minidumpUploader = new MinidumpUploaderImpl(
+        final CountDownLatch stopStallingLatch = new CountDownLatch(1);
+        MinidumpUploaderImpl minidumpUploader = new MinidumpUploaderImpl(
                 getInstrumentation().getTargetContext(), false /* cleanOutMinidumps */) {
             @Override
             public MinidumpUploadCallable createMinidumpUploadCallable(
                     File minidumpFile, File logfile) {
-                return new MinidumpUploadCallable(
-                        minidumpFile, logfile, new StallingHttpUrlConnectionFactory(), permManager);
+                return new MinidumpUploadCallable(minidumpFile, logfile,
+                        new StallingHttpUrlConnectionFactory(stopStallingLatch, successfulUpload),
+                        permManager);
             }
             @Override
             public PlatformServiceBridge createPlatformServiceBridge() {
@@ -340,22 +376,45 @@ public class MinidumpUploaderTest extends CrashTestCase {
         };
 
         File firstFile = createMinidumpFileInCrashDir("123_abc.dmp0");
-        File nonExpectedFirstUploadFile = new File(mCrashDir, firstFile.getName() + ".up");
-        File nonExpectedFirstRetryFile = new File(mCrashDir, firstFile.getName() + ".try1");
+        File expectedFirstUploadFile =
+                new File(mCrashDir, firstFile.getName().replace(".dmp", ".up"));
+        File expectedFirstRetryFile = new File(mCrashDir, firstFile.getName() + ".try1");
 
         // This is run on the UI thread to avoid failing any assertOnUiThread assertions.
-        uploadAllMinidumpsOnUiThread(
-                minidumpUploader, new MinidumpUploader.UploadsFinishedCallback() {
+        uploadAllMinidumpsOnUiThread(minidumpUploader,
+                new MinidumpUploader.UploadsFinishedCallback() {
                     @Override
                     public void uploadsFinished(boolean reschedule) {
-                        fail("This method shouldn't be called when we interrupt uploads.");
+                        if (successfulUpload) {
+                            assertFalse(reschedule);
+                        } else {
+                            fail("This method shouldn't be called when a canceled upload fails.");
+                        }
                     }
-                });
+                },
+                // Block until job posted - otherwise the worker thread might not have been created
+                // before we try to join it.
+                true /* blockUntilJobPosted */);
         minidumpUploader.cancelUploads();
+        stopStallingLatch.countDown();
+        // Wait until our job finished.
+        try {
+            minidumpUploader.joinWorkerThreadForTesting();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
-        assertTrue(firstFile.exists());
-        assertFalse(nonExpectedFirstUploadFile.exists());
-        assertFalse(nonExpectedFirstRetryFile.exists());
+        if (successfulUpload) {
+            // When the upload succeeds we expect the file to be renamed.
+            assertFalse(firstFile.exists());
+            assertTrue(expectedFirstUploadFile.exists());
+            assertFalse(expectedFirstRetryFile.exists());
+        } else {
+            // When the upload fails we won't change the minidump at all.
+            assertTrue(firstFile.exists());
+            assertFalse(expectedFirstUploadFile.exists());
+            assertFalse(expectedFirstRetryFile.exists());
+        }
     }
 
     /**

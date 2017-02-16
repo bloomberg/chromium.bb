@@ -161,6 +161,10 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
                 int uploadResult = uploadCallable.call();
 
                 // Job was canceled -> early out: any clean-up will be performed in cancelUploads().
+                // Note that we check whether we are canceled AFTER trying to upload a minidump -
+                // this is to allow the uploading of at least one minidump per job (to deal with
+                // cases where we reschedule jobs over and over again and would never upload any
+                // minidumps because old jobs are canceled when scheduling new jobs).
                 if (getCancelUpload()) return;
 
                 if (uploadResult == MinidumpUploadCallable.UPLOAD_FAILURE) {
@@ -202,12 +206,25 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
                 ThreadUtils.assertOnUiThread();
 
                 mPermittedByUser = enabled;
-                // Our job might have been cancelled by now - make sure we honour this.
-                if (!getCancelUpload()) {
-                    mWorkerThread.start();
-                }
+                // Note that our job might have been cancelled by this time - however, we do start
+                // our worker thread anyway to try to make some progress towards uploading
+                // minidumps.
+                // This is to ensure that in the case where an app is crashing over and over again
+                // - and we are rescheduling jobs over and over again - we are still uploading at
+                // least one minidump per job, as long as that job starts before it is canceled by
+                // the next job.
+                // For cases where the job is cancelled because the network connection is lost, or
+                // because we switch over to a metered connection, we won't try to upload any
+                // minidumps anyway since we check the network connection just before the upload of
+                // each minidump.
+                mWorkerThread.start();
             }
         });
+    }
+
+    @VisibleForTesting
+    public void joinWorkerThreadForTesting() throws InterruptedException {
+        mWorkerThread.join();
     }
 
     /**
