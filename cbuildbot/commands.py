@@ -1898,6 +1898,45 @@ def _UploadPathToGS(local_path, upload_urls, debug, timeout, acl=None):
 
 
 @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+def ExportToGCloud(build_root, creds_file, filename, namespace=None,
+                   parent_key=None, project_id=None):
+  """Export the given file to gCloud Datastore using export_to_gcloud
+
+  Args:
+    build_root: The root of the chromium os checkout.
+    creds_file: Filename of gcloud credential file
+    filename: Name of file to export.
+    namespace: Optional, namespace to store entities. Defaults to
+               datastore credentials
+    parent_key: Optional, Key of parent entity to insert into, expects tuple.
+    project_id: Optional, project_id of datastore to write to. Defaults to
+                datastore credentials
+
+  Returns:
+    If command was successfully run or not
+  """
+  export_cmd = os.path.join(build_root, 'chromite', 'bin', 'export_to_gcloud')
+
+  cmd = [export_cmd, creds_file, filename]
+
+  if namespace:
+    cmd.extend(['--namespace', namespace])
+
+  if parent_key:
+    cmd.extend(['--parent_key', repr(parent_key)])
+
+  if project_id:
+    cmd.extend(['--project_id', project_id])
+
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError as e:
+    logging.warn('Unable to export to datastore: %s', e)
+    return False
+  return True
+
+
+@failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
 def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
                        update_list=False, timeout=2 * 60 * 60, acl=None):
   """Uploads |filename| in |archive_dir| to Google Storage.

@@ -14,12 +14,13 @@ import os
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import topology
+from chromite.cbuildbot import topology_unittest
 from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.lib import metadata_lib
 from chromite.lib import results_lib
-from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
@@ -217,7 +218,6 @@ class AbstractReportStageTestCase(
 
     self.PatchObject(report_stages.ReportStage, '_GetBuildDuration',
                      return_value=1000)
-    self.PatchObject(generic_stages.ArchivingStageMixin, 'RunExportMetadata')
     self.PatchObject(toolchain, 'GetToolchainsForBoard')
     self.PatchObject(toolchain, 'GetArchForTarget', return_value='x86')
 
@@ -226,6 +226,10 @@ class AbstractReportStageTestCase(
     # SetupMockCidb
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+
+    # Setup topology for unittests
+    keyvals = {topology.DATASTORE_WRITER_CREDS_KEY:'./foo/bar.cert'}
+    topology_unittest.FakeFetchTopologyFromCIDB(keyvals=keyvals)
 
     self._Prepare()
 
@@ -386,10 +390,6 @@ class ReportStageTest(AbstractReportStageTestCase):
     tags_content_dict = json.loads(tags_content)
     self.assertEqual(tags_content_dict['build_number'],
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
-    self.assertEqual(
-        osutils.WriteFile.call_args_list[1][0][0],
-        (generic_stages.ArchivingStageMixin.RunExportMetadata.
-         call_args_list[0][0][0]))
 
   def testGetChildConfigsMetadataList(self):
     """Test that GetChildConfigListMetadata generates child config metadata."""

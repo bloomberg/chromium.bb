@@ -25,8 +25,8 @@ except ImportError:
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import topology
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import topology
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -1014,25 +1014,6 @@ class ArchivingStageMixin(object):
         # Treat gsutil flake as a warning if it's the only problem.
         self._HandleExceptionAsWarning(sys.exc_info())
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def RunExportMetadata(self, filename):
-    """Export JSON file of the builder run's metadata to Cloud Datastore.
-
-    Args:
-      filename: Name of file to export.
-    """
-    creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
-    if creds_file is None:
-      logging.warn('No known path to datastore credentials file.')
-      return
-
-    export_cmd = os.path.join(self._build_root, 'chromite', 'bin',
-                              'export_to_gcloud')
-    try:
-      cros_build_lib.RunCommand([export_cmd, creds_file, filename])
-    except cros_build_lib.RunCommandError as e:
-      logging.warn('Unable to export to datastore: %s', e)
-
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def UploadMetadata(self, upload_queue=None, filename=constants.METADATA_JSON,
@@ -1053,6 +1034,9 @@ class ArchivingStageMixin(object):
       filename: Name of file to dump metadata to.
                 Defaults to constants.METADATA_JSON
       export: If true, constants.METADATA_TAGS will be exported to gcloud.
+
+    Returns:
+      If upload was successful or not
     """
     metadata_json = os.path.join(self.archive_path, filename)
 
@@ -1076,11 +1060,18 @@ class ArchivingStageMixin(object):
       if export:
         d = self._run.attrs.metadata.GetDict()
         if constants.METADATA_TAGS in d:
-          with tempfile.NamedTemporaryFile() as f:
-            logging.info('Export tags to gcloud via %s.', f.name)
-            logging.debug('Exporting: %s' % d[constants.METADATA_TAGS])
-            osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
-                              atomic=True, makedirs=True)
-            self.RunExportMetadata(f.name)
+          c_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
+          if c_file:
+            with tempfile.NamedTemporaryFile() as f:
+              logging.info('Export tags to gcloud via %s.', f.name)
+              logging.debug('Exporting: %s' % d[constants.METADATA_TAGS])
+              osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
+                                atomic=True, makedirs=True)
+              commands.ExportToGCloud(self._build_root, c_file, f.name)
+          else:
+            logging.warn('No datastore credential file found, Skipping Export')
+            return False
     else:
       logging.info('Skipping database update, no database or build_id.')
+      return False
+    return True

@@ -742,6 +742,22 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
          '--breakpad_root', '/breakpad',
          '--product_name', 'CoolProduct'])
 
+  def testExportToGCloudParentKey(self):
+    """Test ExportToGCloud with parent_key"""
+    build_root = '/buildroot'
+    creds_file = 'dummy.cert'
+    json_file = 'dummy.json'
+    parent_key = ('MyParent', 42)
+    parent_key_str = repr(parent_key)
+    commands.ExportToGCloud(build_root, creds_file, json_file,
+                            parent_key=parent_key)
+    self.assertCommandContains(
+        ['/buildroot/chromite/bin/export_to_gcloud',
+         creds_file,
+         json_file,
+         '--parent_key',
+         parent_key_str])
+
   def testPushImages(self):
     """Test PushImages Command."""
     m = self.PatchObject(pushimage, 'PushImage')
