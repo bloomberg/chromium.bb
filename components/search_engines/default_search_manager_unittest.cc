@@ -118,7 +118,7 @@ TEST_F(DefaultSearchManagerTest, ReadAndWritePref) {
   data.last_modified = base::Time();
 
   manager.SetUserSelectedDefaultSearchEngine(data);
-  TemplateURLData* read_data = manager.GetDefaultSearchEngine(NULL);
+  const TemplateURLData* read_data = manager.GetDefaultSearchEngine(nullptr);
   ExpectSimilar(&data, read_data);
 }
 

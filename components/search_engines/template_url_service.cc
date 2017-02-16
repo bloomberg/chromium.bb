@@ -692,6 +692,23 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
     // ApplyDefaultSearchChange will notify observers once it is done.
     ApplyDefaultSearchChange(new_dse, source);
   } else {
+    // Set fallback engine as user selected, because repair is considered a user
+    // action and we are expected to sync new fallback engine to other devices.
+    const TemplateURLData* fallback_engine_data =
+        default_search_manager_.GetFallbackSearchEngine();
+    if (fallback_engine_data) {
+      TemplateURL* fallback_engine =
+          FindPrepopulatedTemplateURL(fallback_engine_data->prepopulate_id);
+      // The fallback engine is created from built-in/override data that should
+      // always have a prepopulate ID, so this engine should always exist after
+      // a repair."
+      DCHECK(fallback_engine);
+      // Write the fallback engine's GUID to prefs, which will cause
+      // OnSyncedDefaultSearchProviderGUIDChanged() to set it as the new
+      // user-selected engine.
+      prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID,
+                        fallback_engine->sync_guid());
+    }
     NotifyObservers();
   }
 }
@@ -1391,7 +1408,7 @@ void TemplateURLService::Init(const Initializer* initializers,
   }
 
   DefaultSearchManager::Source source = DefaultSearchManager::FROM_USER;
-  TemplateURLData* dse =
+  const TemplateURLData* dse =
       default_search_manager_.GetDefaultSearchEngine(&source);
   ApplyDefaultSearchChange(dse, source);
 
@@ -1937,6 +1954,11 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
         source == DefaultSearchManager::FROM_POLICY ? data : nullptr);
   }
 
+  // |default_search_provider_source_| must be set before calling
+  // UpdateNoNotify(), since that function needs to know the source of the
+  // update in question.
+  default_search_provider_source_ = source;
+
   if (!data) {
     default_search_provider_ = nullptr;
   } else if (source == DefaultSearchManager::FROM_EXTENSION) {
@@ -1987,10 +2009,7 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID,
                         default_search_provider_->sync_guid());
     }
-
   }
-
-  default_search_provider_source_ = source;
 
   bool changed = default_search_provider_ != previous_default_search_engine;
   if (changed)

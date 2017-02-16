@@ -160,8 +160,18 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
-}  // namespace
+// Special case for search_terms_replacement_key comparison, because of
+// its special initialization in TemplateUrl constructor.
+bool SearchTermsReplacementKeysMatch(const std::string& key1,
+                                     const std::string& key2) {
+  const auto IsInstantExtended = [](const std::string& key) {
+    return (key == google_util::kInstantExtendedAPIParam) ||
+           (key == google_util::kGoogleInstantExtendedEnabledKeyFull);
+  };
+  return (key1 == key2) || (IsInstantExtended(key1) && IsInstantExtended(key2));
+}
 
+}  // namespace
 
 // TemplateURLRef::SearchTermsArgs --------------------------------------------
 
@@ -605,7 +615,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:instantExtendedEnabledParameter") {
     replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
                                         start));
-  } else if (parameter == "google:instantExtendedEnabledKey") {
+  } else if (parameter == google_util::kGoogleInstantExtendedEnabledKey) {
     url->insert(start, google_util::kInstantExtendedAPIParam);
   } else if (parameter == "google:iOSSearchLanguage") {
     replacements->push_back(Replacement(GOOGLE_IOS_SEARCH_LANGUAGE, start));
@@ -1159,9 +1169,8 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
   SetPrepopulateId(data_.prepopulate_id);
 
   if (data_.search_terms_replacement_key ==
-      "{google:instantExtendedEnabledKey}") {
+      google_util::kGoogleInstantExtendedEnabledKeyFull)
     data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
-  }
 }
 
 TemplateURL::~TemplateURL() {
@@ -1206,23 +1215,23 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
     return !t_url && !data;
 
   return (t_url->short_name() == data->short_name()) &&
-      t_url->HasSameKeywordAs(*data, search_terms_data) &&
-      (t_url->url() == data->url()) &&
-      (t_url->suggestions_url() == data->suggestions_url) &&
-      (t_url->instant_url() == data->instant_url) &&
-      (t_url->image_url() == data->image_url) &&
-      (t_url->new_tab_url() == data->new_tab_url) &&
-      (t_url->search_url_post_params() == data->search_url_post_params) &&
-      (t_url->suggestions_url_post_params() ==
+         t_url->HasSameKeywordAs(*data, search_terms_data) &&
+         (t_url->url() == data->url()) &&
+         (t_url->suggestions_url() == data->suggestions_url) &&
+         (t_url->instant_url() == data->instant_url) &&
+         (t_url->image_url() == data->image_url) &&
+         (t_url->new_tab_url() == data->new_tab_url) &&
+         (t_url->search_url_post_params() == data->search_url_post_params) &&
+         (t_url->suggestions_url_post_params() ==
           data->suggestions_url_post_params) &&
-      (t_url->instant_url_post_params() == data->instant_url_post_params) &&
-      (t_url->image_url_post_params() == data->image_url_post_params) &&
-      (t_url->favicon_url() == data->favicon_url) &&
-      (t_url->safe_for_autoreplace() == data->safe_for_autoreplace) &&
-      (t_url->input_encodings() == data->input_encodings) &&
-      (t_url->alternate_urls() == data->alternate_urls) &&
-      (t_url->search_terms_replacement_key() ==
-          data->search_terms_replacement_key);
+         (t_url->instant_url_post_params() == data->instant_url_post_params) &&
+         (t_url->image_url_post_params() == data->image_url_post_params) &&
+         (t_url->favicon_url() == data->favicon_url) &&
+         (t_url->safe_for_autoreplace() == data->safe_for_autoreplace) &&
+         (t_url->input_encodings() == data->input_encodings) &&
+         (t_url->alternate_urls() == data->alternate_urls) &&
+         SearchTermsReplacementKeysMatch(t_url->search_terms_replacement_key(),
+                                         data->search_terms_replacement_key);
 }
 
 base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {

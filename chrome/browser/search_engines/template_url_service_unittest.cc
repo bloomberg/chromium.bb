@@ -28,10 +28,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/search_engines/keyword_web_data_service.h"
+#include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -186,6 +189,9 @@ class TemplateURLServiceTest : public testing::Test {
       bool safe_for_autoreplace,
       int prepopulate_id);
 
+  // Set custom search engine as default fallback through overrides pref.
+  void SetOverriddenEngines();
+
   // Helper methods to make calling TemplateURLServiceTestUtil methods less
   // visually noisy in the test code.
   void VerifyObserverCount(int expected_changed_count);
@@ -290,6 +296,29 @@ std::unique_ptr<TemplateURL> TemplateURLServiceTest::CreatePreloadedTemplateURL(
   data.last_visited = Time::FromTimeT(100);
   data.prepopulate_id = prepopulate_id;
   return base::MakeUnique<TemplateURL>(data);
+}
+
+void TemplateURLServiceTest::SetOverriddenEngines() {
+  // Set custom search engine as default fallback through overrides.
+  auto entry = base::MakeUnique<base::DictionaryValue>();
+  entry->SetString("name", "override_name");
+  entry->SetString("keyword", "override_keyword");
+  entry->SetString("search_url", "http://override.com/s?q={searchTerms}");
+  entry->SetString("favicon_url", "http://override.com/favicon.ico");
+  entry->SetString("encoding", "UTF-8");
+  entry->SetInteger("id", 1001);
+  entry->SetString("suggest_url",
+                   "http://override.com/suggest?q={searchTerms}");
+  entry->SetString("instant_url",
+                   "http://override.com/instant?q={searchTerms}");
+
+  auto overrides_list = base::MakeUnique<base::ListValue>();
+  overrides_list->Append(std::move(entry));
+
+  auto prefs = test_util()->profile()->GetTestingPrefService();
+  prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
+                     new base::FundamentalValue(1));
+  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides_list.release());
 }
 
 void TemplateURLServiceTest::VerifyObserverCount(int expected_changed_count) {
@@ -891,6 +920,154 @@ TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
   EXPECT_TRUE(model()->is_default_search_managed());
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default.get(), actual_managed_default);
+}
+
+// Checks that RepairPrepopulatedEngines correctly updates sync guid for default
+// search. Repair is considered a user action and new DSE must be synced to
+// other devices as well. Otherwise previous user selected engine will arrive on
+// next sync attempt.
+TEST_F(TemplateURLServiceTest, RepairPrepopulatedEnginesUpdatesSyncGuid) {
+  test_util()->VerifyLoad();
+
+  // The synced DSE GUID should be empty until the user selects something or
+  // there is sync activity.
+  EXPECT_TRUE(test_util()
+                  ->profile()
+                  ->GetTestingPrefService()
+                  ->GetString(prefs::kSyncedDefaultSearchProviderGUID)
+                  .empty());
+
+  TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(initial_dse);
+
+  // Add user provided default search engine.
+  TemplateURL* user_dse = AddKeywordWithDate(
+      "user_dse", "user_dse.com", "http://www.user_dse.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(), true, "UTF-8", Time(),
+      Time(), Time());
+  model()->SetUserSelectedDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+  // Check that user dse is different from initial.
+  EXPECT_NE(initial_dse, user_dse);
+
+  // Check that user DSE guid is stored in kSyncedDefaultSearchProviderGUID.
+  EXPECT_EQ(user_dse->sync_guid(),
+            test_util()->profile()->GetTestingPrefService()->GetString(
+                prefs::kSyncedDefaultSearchProviderGUID));
+
+  model()->RepairPrepopulatedSearchEngines();
+
+  // Check that initial search engine is returned as default after repair.
+  ASSERT_EQ(initial_dse, model()->GetDefaultSearchProvider());
+  // Check that initial_dse guid is stored in kSyncedDefaultSearchProviderGUID.
+  const std::string dse_guid =
+      test_util()->profile()->GetTestingPrefService()->GetString(
+          prefs::kSyncedDefaultSearchProviderGUID);
+  EXPECT_EQ(initial_dse->sync_guid(), dse_guid);
+  EXPECT_EQ(initial_dse->keyword(),
+            model()->GetTemplateURLForGUID(dse_guid)->keyword());
+}
+
+// Checks that RepairPrepopulatedEngines correctly updates sync guid for default
+// search when search engines are overridden using pref.
+TEST_F(TemplateURLServiceTest,
+       RepairPrepopulatedEnginesWithOverridesUpdatesSyncGuid) {
+  SetOverriddenEngines();
+  test_util()->VerifyLoad();
+
+  // The synced DSE GUID should be empty until the user selects something or
+  // there is sync activity.
+  EXPECT_TRUE(test_util()
+                  ->profile()
+                  ->GetTestingPrefService()
+                  ->GetString(prefs::kSyncedDefaultSearchProviderGUID)
+                  .empty());
+
+  TemplateURL* overridden_engine =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("override_keyword"));
+  ASSERT_TRUE(overridden_engine);
+
+  EXPECT_EQ(overridden_engine, model()->GetDefaultSearchProvider());
+
+  // Add user provided default search engine.
+  TemplateURL* user_dse = AddKeywordWithDate(
+      "user_dse", "user_dse.com", "http://www.user_dse.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(), true, "UTF-8", Time(),
+      Time(), Time());
+  model()->SetUserSelectedDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  // Check that user DSE guid is stored in kSyncedDefaultSearchProviderGUID.
+  EXPECT_EQ(user_dse->sync_guid(),
+            test_util()->profile()->GetTestingPrefService()->GetString(
+                prefs::kSyncedDefaultSearchProviderGUID));
+
+  model()->RepairPrepopulatedSearchEngines();
+
+  // Check that overridden engine is returned as default after repair.
+  ASSERT_EQ(overridden_engine, model()->GetDefaultSearchProvider());
+  // Check that overridden_engine guid is stored in
+  // kSyncedDefaultSearchProviderGUID.
+  const std::string dse_guid =
+      test_util()->profile()->GetTestingPrefService()->GetString(
+          prefs::kSyncedDefaultSearchProviderGUID);
+  EXPECT_EQ(overridden_engine->sync_guid(), dse_guid);
+  EXPECT_EQ(overridden_engine->keyword(),
+            model()->GetTemplateURLForGUID(dse_guid)->keyword());
+}
+
+// Checks that RepairPrepopulatedEngines correctly updates sync guid for default
+// search when search engines is overridden by extension.
+TEST_F(TemplateURLServiceTest,
+       RepairPrepopulatedEnginesWithExtensionUpdatesSyncGuid) {
+  test_util()->VerifyLoad();
+
+  // The synced DSE GUID should be empty until the user selects something or
+  // there is sync activity.
+  EXPECT_TRUE(test_util()
+                  ->profile()
+                  ->GetTestingPrefService()
+                  ->GetString(prefs::kSyncedDefaultSearchProviderGUID)
+                  .empty());
+
+  // Get initial DSE to check its guid later.
+  TemplateURL* initial_dse = model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(initial_dse);
+
+  // Add user provided default search engine.
+  TemplateURL* user_dse = model()->Add(
+      base::MakeUnique<TemplateURL>(*GenerateDummyTemplateURLData("user_dse")));
+  model()->SetUserSelectedDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  // Check that user DSE guid is stored in kSyncedDefaultSearchProviderGUID.
+  EXPECT_EQ(user_dse->sync_guid(),
+            test_util()->profile()->GetTestingPrefService()->GetString(
+                prefs::kSyncedDefaultSearchProviderGUID));
+
+  // Add extension controlled default search engine.
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+      new TemplateURL::AssociatedExtensionInfo("extension"));
+  extension_info->wants_to_be_default_engine = true;
+  TemplateURL* extension_dse = model()->AddExtensionControlledTURL(
+      base::MakeUnique<TemplateURL>(
+          *GenerateDummyTemplateURLData("extension_dse"),
+          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION),
+      std::move(extension_info));
+  EXPECT_EQ(extension_dse, model()->GetDefaultSearchProvider());
+  // Check that user DSE guid is still stored in
+  // kSyncedDefaultSearchProviderGUID.
+  EXPECT_EQ(user_dse->sync_guid(),
+            test_util()->profile()->GetTestingPrefService()->GetString(
+                prefs::kSyncedDefaultSearchProviderGUID));
+
+  model()->RepairPrepopulatedSearchEngines();
+  // Check that extension engine is still default but sync guid is updated to
+  // initial dse guid.
+  EXPECT_EQ(extension_dse, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(initial_dse->sync_guid(),
+            test_util()->profile()->GetTestingPrefService()->GetString(
+                prefs::kSyncedDefaultSearchProviderGUID));
 }
 
 TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {

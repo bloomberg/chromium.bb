@@ -134,6 +134,7 @@ source_set("unit_tests") {
     "//components/sync:test_support_model",
     "//components/sync_preferences:test_support",
     "//components/webdata/common",
+    "//net:net",
     "//sql",
     "//testing/gmock",
     "//testing/gtest",

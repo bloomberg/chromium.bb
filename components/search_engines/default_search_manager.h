@@ -63,9 +63,15 @@ class DefaultSearchManager {
   static const char kDisabledByPolicy[];
 
   enum Source {
+    // Default search engine chosen either from prepopulated engines set for
+    // current country or overriden from kSearchProviderOverrides preference.
     FROM_FALLBACK = 0,
+    // User selected engine.
     FROM_USER,
+    // Search engine set by extension overriding default search.
     FROM_EXTENSION,
+    // Search engine controlled externally through enterprise configuration
+    // management (e.g. windows group policy).
     FROM_POLICY,
   };
 
@@ -84,17 +90,20 @@ class DefaultSearchManager {
                                 PrefValueMap* pref_value_map);
 
   // Testing code can call this with |disabled| set to true to cause
-  // GetDefaultSearchEngine() to return NULL instead of
+  // GetDefaultSearchEngine() to return nullptr instead of
   // |fallback_default_search_| in cases where the DSE source is FROM_FALLBACK.
   static void SetFallbackSearchEnginesDisabledForTesting(bool disabled);
 
   // Gets a pointer to the current Default Search Engine. If NULL, indicates
   // that Default Search is explicitly disabled. |source|, if not NULL, will be
   // filled in with the source of the result.
-  TemplateURLData* GetDefaultSearchEngine(Source* source) const;
+  const TemplateURLData* GetDefaultSearchEngine(Source* source) const;
 
   // Gets the source of the current Default Search Engine value.
   Source GetDefaultSearchEngineSource() const;
+
+  // Returns a pointer to the fallback engine.
+  const TemplateURLData* GetFallbackSearchEngine() const;
 
   // Write default search provider data to |pref_service_|.
   void SetUserSelectedDefaultSearchEngine(const TemplateURLData& data);

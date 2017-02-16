@@ -123,7 +123,7 @@ void DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(
   g_fallback_search_engines_disabled = disabled;
 }
 
-TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
+const TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
     Source* source) const {
   if (default_search_controlled_by_policy_) {
     if (source)
@@ -143,8 +143,7 @@ TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
 
   if (source)
     *source = FROM_FALLBACK;
-  return g_fallback_search_engines_disabled ?
-      NULL : fallback_default_search_.get();
+  return GetFallbackSearchEngine();
 }
 
 DefaultSearchManager::Source
@@ -152,6 +151,11 @@ DefaultSearchManager::GetDefaultSearchEngineSource() const {
   Source source;
   GetDefaultSearchEngine(&source);
   return source;
+}
+
+const TemplateURLData* DefaultSearchManager::GetFallbackSearchEngine() const {
+  return g_fallback_search_engines_disabled ? nullptr
+                                            : fallback_default_search_.get();
 }
 
 void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
@@ -204,7 +208,7 @@ void DefaultSearchManager::OnDefaultSearchPrefChanged() {
 void DefaultSearchManager::OnOverridesPrefChanged() {
   LoadPrepopulatedDefaultSearch();
 
-  TemplateURLData* effective_data = GetDefaultSearchEngine(NULL);
+  const TemplateURLData* effective_data = GetDefaultSearchEngine(nullptr);
   if (effective_data && effective_data->prepopulate_id) {
     // A user-selected, policy-selected or fallback pre-populated engine is
     // active and may have changed with this event.
@@ -280,7 +284,7 @@ void DefaultSearchManager::LoadPrepopulatedDefaultSearch() {
 void DefaultSearchManager::NotifyObserver() {
   if (!change_observer_.is_null()) {
     Source source = FROM_FALLBACK;
-    TemplateURLData* data = GetDefaultSearchEngine(&source);
+    const TemplateURLData* data = GetDefaultSearchEngine(&source);
     change_observer_.Run(data, source);
   }
 }
