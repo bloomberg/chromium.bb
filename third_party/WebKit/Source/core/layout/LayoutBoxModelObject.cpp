@@ -41,6 +41,7 @@
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -111,7 +112,8 @@ bool LayoutBoxModelObject::usesCompositedScrolling() const {
          layer()->getScrollableArea()->usesCompositedScrolling();
 }
 
-BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation() const {
+BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation(
+    uint32_t* reasons) const {
   bool hasCustomScrollbars = false;
   // TODO(flackr): Detect opaque custom scrollbars which would cover up a
   // border-box background.
@@ -132,8 +134,11 @@ BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation() const {
   // TODO(flackr): Remove this when box shadows are still painted correctly when
   // painting into the composited scrolling contents layer.
   // https://crbug.com/646464
-  if (style()->boxShadow())
+  if (style()->boxShadow()) {
+    if (reasons)
+      *reasons |= MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
     return BackgroundPaintInGraphicsLayer;
+  }
 
   // Assume optimistically that the background can be painted in the scrolling
   // contents until we find otherwise.
