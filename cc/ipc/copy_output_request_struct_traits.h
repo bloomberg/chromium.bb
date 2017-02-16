@@ -5,7 +5,7 @@
 #ifndef CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
 #define CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
 
-#include "cc/ipc/copy_output_request.mojom-shared.h"
+#include "cc/ipc/copy_output_request.mojom.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/copy_output_request.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
@@ -35,6 +35,9 @@ struct StructTraits<cc::mojom::CopyOutputRequestDataView,
       const std::unique_ptr<cc::CopyOutputRequest>& request) {
     return request->texture_mailbox_;
   }
+
+  static cc::mojom::CopyOutputResultSenderPtr result_sender(
+      const std::unique_ptr<cc::CopyOutputRequest>& request);
 
   static bool Read(cc::mojom::CopyOutputRequestDataView data,
                    std::unique_ptr<cc::CopyOutputRequest>* out_p);
