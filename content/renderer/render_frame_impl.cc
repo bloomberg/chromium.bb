@@ -107,6 +107,7 @@
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/installedapp/related_apps_fetcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -4564,6 +4565,13 @@ blink::WebPushClient* RenderFrameImpl::pushClient() {
   if (!push_messaging_dispatcher_)
     push_messaging_dispatcher_ = new PushMessagingDispatcher(this);
   return push_messaging_dispatcher_;
+}
+
+blink::WebRelatedAppsFetcher* RenderFrameImpl::relatedAppsFetcher() {
+  if (!related_apps_fetcher_)
+    related_apps_fetcher_.reset(new RelatedAppsFetcher(manifest_manager_));
+
+  return related_apps_fetcher_.get();
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

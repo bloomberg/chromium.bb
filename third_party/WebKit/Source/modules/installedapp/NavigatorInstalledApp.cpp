@@ -16,7 +16,6 @@
 #include "core/frame/Navigator.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/installedapp/RelatedApplication.h"
-#include "public/platform/modules/installedapp/WebInstalledAppClient.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"
 #include "wtf/PtrUtil.h"
 
@@ -79,9 +78,8 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     return promise;
   }
 
-  appController->getInstalledApps(
-      WebSecurityOrigin(
-          scriptState->getExecutionContext()->getSecurityOrigin()),
+  appController->getInstalledRelatedApps(
+      scriptState->getExecutionContext()->getSecurityOrigin(),
       WTF::wrapUnique(
           new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
   return promise;

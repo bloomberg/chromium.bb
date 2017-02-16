@@ -1227,7 +1227,7 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
                                      new AudioOutputDeviceClientImpl(frame));
   }
   if (RuntimeEnabledFeatures::installedAppEnabled())
-    InstalledAppController::provideTo(frame, client->installedAppClient());
+    InstalledAppController::provideTo(frame, client->relatedAppsFetcher());
 }
 
 }  // namespace blink

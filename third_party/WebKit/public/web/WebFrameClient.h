@@ -79,7 +79,6 @@ class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
-class WebInstalledAppClient;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -91,6 +90,7 @@ class WebPlugin;
 class WebPresentationClient;
 class WebPushClient;
 class WebRTCPeerConnectionHandler;
+class WebRelatedAppsFetcher;
 class WebScreenOrientationClient;
 class WebString;
 class WebURL;
@@ -449,7 +449,7 @@ class BLINK_EXPORT WebFrameClient {
   // InstalledApp API ----------------------------------------------------
 
   // Used to access the embedder for the InstalledApp API.
-  virtual WebInstalledAppClient* installedAppClient() { return nullptr; }
+  virtual WebRelatedAppsFetcher* relatedAppsFetcher() { return nullptr; }
 
   // Editing -------------------------------------------------------------
 

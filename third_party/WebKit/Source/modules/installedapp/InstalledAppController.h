@@ -9,11 +9,17 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include "public/platform/modules/installedapp/WebInstalledAppClient.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/installedapp/WebRelatedApplication.h"
+#include "public/platform/modules/installedapp/WebRelatedAppsFetcher.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+
+#include <memory>
 
 namespace blink {
 
-class WebSecurityOrigin;
+class SecurityOrigin;
 
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollectedFinalized<InstalledAppController>,
@@ -25,22 +31,33 @@ class MODULES_EXPORT InstalledAppController final
  public:
   virtual ~InstalledAppController();
 
-  void getInstalledApps(const WebSecurityOrigin&,
-                        std::unique_ptr<AppInstalledCallbacks>);
+  // Gets a list of related apps from a particular origin's manifest that belong
+  // to the current underlying platform, and are installed.
+  void getInstalledRelatedApps(WTF::RefPtr<SecurityOrigin>,
+                               std::unique_ptr<AppInstalledCallbacks>);
 
-  static void provideTo(LocalFrame&, WebInstalledAppClient*);
+  static void provideTo(LocalFrame&, WebRelatedAppsFetcher*);
   static InstalledAppController* from(LocalFrame&);
   static const char* supplementName();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  InstalledAppController(LocalFrame&, WebInstalledAppClient*);
+  class GetRelatedAppsCallbacks;
+
+  InstalledAppController(LocalFrame&, WebRelatedAppsFetcher*);
 
   // Inherited from ContextLifecycleObserver.
   void contextDestroyed(ExecutionContext*) override;
 
-  WebInstalledAppClient* m_client;
+  // For a given security origin, takes a set of related applications and
+  // filters them by those which belong to the current underlying platform, and
+  // are actually installed. Passes the filtered list to the callback.
+  void filterByInstalledApps(WTF::RefPtr<SecurityOrigin>,
+                             const WebVector<WebRelatedApplication>&,
+                             std::unique_ptr<AppInstalledCallbacks>);
+
+  WebRelatedAppsFetcher* m_relatedAppsFetcher;
 };
 
 }  // namespace blink

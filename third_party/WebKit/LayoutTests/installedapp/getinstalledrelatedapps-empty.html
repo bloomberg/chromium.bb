@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/installedapp-test-helper.js"></script>
+<script>
+
+promise_test(() => {
+  // With no manifest, expect an empty list in response.
+  return navigator.getInstalledRelatedApps().then(result => {
+    assert_array_relatedapplication_equals(result, []);
+  });
+}, 'getInstalledRelatedApps with no apps');
+
+</script>

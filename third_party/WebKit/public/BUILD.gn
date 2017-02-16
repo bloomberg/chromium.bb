@@ -338,7 +338,7 @@ source_set("blink_headers") {
     "platform/modules/indexeddb/WebIDBObservation.h",
     "platform/modules/indexeddb/WebIDBTypes.h",
     "platform/modules/indexeddb/WebIDBValue.h",
-    "platform/modules/installedapp/WebInstalledAppClient.h",
+    "platform/modules/installedapp/WebRelatedAppsFetcher.h",
     "platform/modules/notifications/WebNotificationAction.h",
     "platform/modules/notifications/WebNotificationData.h",
     "platform/modules/notifications/WebNotificationDelegate.h",

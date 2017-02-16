@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<link rel="manifest" href="resources/manifest.json">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/installedapp-test-helper.js"></script>
+<script>
+
+promise_test(() => {
+  // The manifest for this file has two related apps, but for now we can only
+  // expect to see an empty list in response (since we do not check whether any
+  // of the apps are installed).
+  return navigator.getInstalledRelatedApps().then(result => {
+    assert_array_relatedapplication_equals(result, []);
+  });
+}, 'getInstalledRelatedApps with related apps, none installed');
+
+// TODO(mgiuca): Add another test for when the browser returns a non-empty list
+// of installed apps.
+
+</script>

@@ -94,6 +94,7 @@ struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
+class WebRelatedAppsFetcher;
 }  // namespace blink
 
 namespace gfx {
@@ -144,6 +145,7 @@ class NavigationState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
+class RelatedAppsFetcher;
 class RenderAccessibilityImpl;
 class RendererMediaPlayerManager;
 class RendererPpapiHost;
@@ -636,6 +638,7 @@ class CONTENT_EXPORT RenderFrameImpl
                            blink::WebStorageQuotaCallbacks callbacks) override;
   blink::WebPushClient* pushClient() override;
   blink::WebPresentationClient* presentationClient() override;
+  blink::WebRelatedAppsFetcher* relatedAppsFetcher() override;
   void willStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* userMediaClient() override;
@@ -1305,6 +1308,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RenderAccessibilityImpl* render_accessibility_;
+
+  std::unique_ptr<RelatedAppsFetcher> related_apps_fetcher_;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

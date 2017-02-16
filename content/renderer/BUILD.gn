@@ -182,6 +182,8 @@ target(link_target_type, "renderer") {
     "input/render_widget_input_handler_delegate.h",
     "input/scoped_web_input_event_with_latency_info.cc",
     "input/scoped_web_input_event_with_latency_info.h",
+    "installedapp/related_apps_fetcher.cc",
+    "installedapp/related_apps_fetcher.h",
     "internal_document_state_data.cc",
     "internal_document_state_data.h",
     "java/gin_java_bridge_dispatcher.cc",
