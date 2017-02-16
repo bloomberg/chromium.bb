@@ -681,11 +681,11 @@ class NET_EXPORT NetworkQualityEstimator
   nqe::internal::NetworkQuality typical_network_quality_
       [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
 
-  // Time when the transaction for the last main frame request was started.
+  // Latest time when the headers for a main frame request were received.
   base::TimeTicks last_main_frame_request_;
 
-  // Estimated network quality when the transaction for the last main frame
-  // request was started.
+  // Estimated network quality when the response headers for the last mainframe
+  // request were received.
   nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
   EffectiveConnectionType effective_connection_type_at_last_main_frame_;
 
