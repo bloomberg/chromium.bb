@@ -97,7 +97,7 @@ const base::Feature kDisplayPersistenceToggleInPermissionPrompts{
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experimental fullscreen prototype that allows pages to map browser and
 // system-reserved keyboard shortcuts.

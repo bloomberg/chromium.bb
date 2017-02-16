@@ -341,6 +341,9 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
 
 // Test that no report is sent when the feature is not enabled.
 TEST(ChromeExpectCTReporterTest, FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kExpectCTReporting);
+
   base::MessageLoop message_loop;
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kSendHistogramName, 0);
@@ -374,9 +377,6 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
-
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
@@ -394,9 +394,6 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
 
 // Test that if a report fails to send, the UMA metric is recorded.
 TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
-
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
@@ -428,9 +425,6 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
