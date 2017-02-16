@@ -35,9 +35,6 @@
 <dom-module id="settings-privacy-page">
   <template>
     <style include="settings-shared">
-      button[is='paper-icon-button-light'].icon-help {
-        background-image: url(../images/help_outline.svg);
-      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -200,9 +197,8 @@
         <settings-subpage
             associated-control="[[$$('#site-settings-subpage-trigger')]]"
             id="site-settings"
-            page-title="[[siteSettingsPageTitle_()]]">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
+            page-title="[[siteSettingsPageTitle_()]]"
+            learn-more-url="$i18n{exceptionsLearnMoreURL}">
           <settings-site-settings-page></settings-site-settings-page>
         </settings-subpage>
       </template>

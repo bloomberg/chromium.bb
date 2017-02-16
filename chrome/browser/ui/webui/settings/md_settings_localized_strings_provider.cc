@@ -1087,6 +1087,8 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
           base::ASCIIToUTF16(
               password_manager::kPasswordManagerAccountDashboardURL)));
+  html_source->AddString("passwordManagerLearnMoreURL",
+                         chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString(
       "manageAddressesUrl",
       autofill::payments::GetManageAddressesUrl(0).spec());
@@ -1444,6 +1446,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
                              base::ASCIIToUTF16(chrome::kPrivacyLearnMoreURL)));
+  html_source->AddString(
+      "exceptionsLearnMoreURL",
+      base::ASCIIToUTF16(chrome::kContentSettingsExceptionsLearnMoreURL));
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {

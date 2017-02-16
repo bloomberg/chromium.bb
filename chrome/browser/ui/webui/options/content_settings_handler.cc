@@ -102,9 +102,6 @@ struct ContentSettingWithExceptions {
 typedef bool (*AppFilter)(const extensions::Extension& app,
                           content::BrowserContext* profile);
 
-const char kExceptionsLearnMoreUrl[] =
-    "https://support.google.com/chrome/?p=settings_manage_exceptions";
-
 const char kAppName[] = "appName";
 const char kAppId[] = "appId";
 const char kZoom[] = "zoom";
@@ -556,7 +553,7 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL);
 
   localized_strings->SetString("exceptionsLearnMoreUrl",
-                               kExceptionsLearnMoreUrl);
+                               chrome::kContentSettingsExceptionsLearnMoreURL);
 }
 
 void ContentSettingsHandler::InitializeHandler() {

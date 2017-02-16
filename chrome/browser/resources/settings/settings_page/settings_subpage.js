@@ -20,6 +20,8 @@ Polymer({
   properties: {
     pageTitle: String,
 
+    learnMoreUrl: String,
+
     /** Setting a |searchLabel| will enable search. */
     searchLabel: String,
 
