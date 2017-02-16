@@ -187,22 +187,11 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   }
 #endif
 
-  const bool is_tab_or_window_command =
-      command_id == IDC_CLOSE_TAB ||
-      command_id == IDC_CLOSE_WINDOW ||
-      command_id == IDC_NEW_INCOGNITO_WINDOW ||
-      command_id == IDC_NEW_TAB ||
-      command_id == IDC_NEW_WINDOW ||
-      command_id == IDC_RESTORE_TAB ||
-      command_id == IDC_SELECT_NEXT_TAB ||
-      command_id == IDC_SELECT_PREVIOUS_TAB;
   if (window()->IsFullscreen()) {
     // In fullscreen, all commands except for IDC_FULLSCREEN and IDC_EXIT should
-    // be delivered to the web page. See https://goo.gl/4tJ32G.
-    if (command_id == IDC_FULLSCREEN)
-      return true;
-    if (is_tab_or_window_command)
-      return false;
+    // be delivered to the web page. See, intent to implement,
+    // https://goo.gl/4tJ32G.
+    return command_id == IDC_EXIT || command_id == IDC_FULLSCREEN;
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -214,7 +203,15 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     return false;
 #endif
 
-  return is_tab_or_window_command || command_id == IDC_EXIT;
+  return command_id == IDC_CLOSE_TAB ||
+         command_id == IDC_CLOSE_WINDOW ||
+         command_id == IDC_NEW_INCOGNITO_WINDOW ||
+         command_id == IDC_NEW_TAB ||
+         command_id == IDC_NEW_WINDOW ||
+         command_id == IDC_RESTORE_TAB ||
+         command_id == IDC_SELECT_NEXT_TAB ||
+         command_id == IDC_SELECT_PREVIOUS_TAB ||
+         command_id == IDC_EXIT;
 }
 
 void BrowserCommandController::SetBlockCommandExecution(bool block) {
@@ -1078,17 +1075,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_FULLSCREEN_TOOLBAR,
                                         fullscreen_enabled);
-
-  command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW,
-                                        !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, !is_fullscreen);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
-                                        !is_fullscreen);
 
   UpdateCommandsForBookmarkBar();
 }

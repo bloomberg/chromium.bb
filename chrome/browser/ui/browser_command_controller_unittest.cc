@@ -359,18 +359,34 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_VIEW_PASSWORDS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 
   // In fullscreen, only the exit fullscreen commands are reserved. All other
-  // shortcuts are unreserved. See https://goo.gl/4tJ32G.
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CLOSE_TAB));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CLOSE_WINDOW));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_NEW_TAB));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_NEW_WINDOW));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SELECT_NEXT_TAB));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SELECT_PREVIOUS_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EXIT));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+  // shortcuts should be delivered to the web page. See https://goo.gl/4tJ32G.
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_CLOSE_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_CLOSE_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_INCOGNITO_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_SELECT_NEXT_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_SELECT_PREVIOUS_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_EXIT,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
 
   // Exit fullscreen.
   chrome::ToggleFullscreenMode(browser());
@@ -395,15 +411,32 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_VIEW_PASSWORDS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_CLOSE_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_CLOSE_WINDOW));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_NEW_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_NEW_WINDOW));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SELECT_NEXT_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SELECT_PREVIOUS_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EXIT));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_CLOSE_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_CLOSE_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_INCOGNITO_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_NEW_WINDOW,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_SELECT_NEXT_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_SELECT_PREVIOUS_TAB,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
+      IDC_EXIT,
+      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
 
   // Guest Profiles disallow some options.
   TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
