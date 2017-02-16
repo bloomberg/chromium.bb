@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -72,9 +73,9 @@ namespace {
 const char kRootPath[] = "/";
 
 // Retrieves total and remaining available size on |mount_path|.
-void GetSizeStatsOnBlockingPool(const base::FilePath& mount_path,
-                                uint64_t* total_size,
-                                uint64_t* remaining_size) {
+void GetSizeStatsAsync(const base::FilePath& mount_path,
+                       uint64_t* total_size,
+                       uint64_t* remaining_size) {
   int64_t size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
   if (size >= 0)
     *total_size = size;
@@ -85,7 +86,7 @@ void GetSizeStatsOnBlockingPool(const base::FilePath& mount_path,
 
 // Retrieves the maximum file name length of the file system of |path|.
 // Returns 0 if it could not be queried.
-size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
+size_t GetFileNameMaxLengthAsync(const std::string& path) {
   struct statvfs stat = {};
   if (HANDLE_EINTR(statvfs(path.c_str(), &stat)) != 0) {
     // The filesystem seems not supporting statvfs(). Assume it to be a commonly
@@ -446,9 +447,11 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
   } else {
     uint64_t* total_size = new uint64_t(0);
     uint64_t* remaining_size = new uint64_t(0);
-    BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE, base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path(),
-                              total_size, remaining_size),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::USER_VISIBLE),
+        base::Bind(&GetSizeStatsAsync, volume->mount_path(), total_size,
+                   remaining_size),
         base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats,
                    this, base::Owned(total_size), base::Owned(remaining_size)));
   }
@@ -520,9 +523,10 @@ bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
     return true;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&GetFileNameMaxLengthOnBlockingPool,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_BLOCKING),
+      base::Bind(&GetFileNameMaxLengthAsync,
                  file_system_url.path().AsUTF8Unsafe()),
       base::Bind(&FileManagerPrivateInternalValidatePathNameLengthFunction::
                      OnFilePathLimitRetrieved,
@@ -987,8 +991,9 @@ bool FileManagerPrivateInternalGetDirectorySizeFunction::RunAsync() {
     return false;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_VISIBLE),
       base::Bind(&base::ComputeDirectorySize, root_path),
       base::Bind(&FileManagerPrivateInternalGetDirectorySizeFunction::
                      OnDirectorySizeRetrieved,
