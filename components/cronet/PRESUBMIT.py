@@ -8,9 +8,6 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
-import re
-
-
 def _PyLintChecks(input_api, output_api):
   pylint_checks = input_api.canned_checks.GetPylint(input_api, output_api,
           extra_paths_list=_GetPathsToPrepend(input_api), pylintrc='pylintrc')
@@ -111,21 +108,9 @@ def PostUploadHook(cl, change, output_api):
   This hook adds an extra try bot to the CL description in order to run Cronet
   tests in addition to CQ try bots.
   """
-  rietveld_obj = cl.RpcServer()
-  issue = cl.issue
-  description = rietveld_obj.get_description(issue)
-  if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
-    return []
-
-  masters = _GetTryMasters(None, change)
-  results = []
-  new_description = description
-  new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(
-      '%s:%s' % (master, ','.join(bots))
-      for master, bots in masters.iteritems())
-  results.append(output_api.PresubmitNotifyResult(
-      'Automatically added Cronet trybot to run tests on CQ.'))
-
-  rietveld_obj.update_description(issue, new_description)
-
-  return results
+  return output_api.EnsureCQIncludeTrybotsAreAdded(
+    cl,
+    [
+      'master.tryserver.chromium.android:android_cronet_tester',
+    ],
+    'Automatically added Cronet trybot to run tests on CQ.')

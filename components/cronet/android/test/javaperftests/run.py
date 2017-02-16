@@ -219,6 +219,9 @@ class QuicServer(object):
     self._quic_server_doc_root = quic_server_doc_root
 
   def StartupQuicServer(self, device):
+    # Chromium's presubmit checks aren't smart enough to understand
+    # the redirect done in build/android/pylib/pexpect.py.
+    # pylint: disable=no-member
     self._process = pexpect.spawn(QUIC_SERVER,
                                   ['--quic_in_memory_cache_dir=%s' %
                                       self._quic_server_doc_root,

@@ -16,23 +16,9 @@ def PostUploadHook(cl, change, output_api):
   This hook adds extra try bots list to the CL description in order to run
   tests on the Windows 10 try bot in addition to CQ try bots.
   """
-  rietveld_obj = cl.RpcServer()
-  issue = cl.issue
-  description = rietveld_obj.get_description(issue)
-  if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
-    return []
-
-  bots = [
-    'master.tryserver.chromium.win:win10_chromium_x64_rel_ng',
-  ]
-
-  results = []
-  new_description = description
-  new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(bots)
-  results.append(output_api.PresubmitNotifyResult(
-      'Automatically added Win10 bot to run on CQ.'))
-
-  if new_description != description:
-    rietveld_obj.update_description(issue, new_description)
-
-  return results
+  return output_api.EnsureCQIncludeTrybotsAreAdded(
+    cl,
+    [
+      'master.tryserver.chromium.win:win10_chromium_x64_rel_ng',
+    ],
+    'Automatically added Win10 bot to run on CQ.')
