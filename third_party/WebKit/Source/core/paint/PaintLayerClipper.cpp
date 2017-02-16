@@ -445,7 +445,6 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
     bool isForeground) const {
   DCHECK(m_geometryMapper);
   const auto* properties = m_layer.layoutObject()->paintProperties();
-  // TODO(chrishtr): fix the underlying bug that causes this situation.
   DCHECK(properties && properties->localBorderBoxProperties());
 
   PropertyTreeState propertyTreeState = *properties->localBorderBoxProperties();

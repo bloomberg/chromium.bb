@@ -426,6 +426,44 @@ TEST_P(FrameThrottlingTest, ChangeStyleInThrottledFrame) {
   EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
 }
 
+TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
+  // Create a hidden frame which is throttled.
+  SimRequest mainResource("http://example.com/", "text/html");
+  SimRequest frameResource("http://sub.example.com/iframe.html", "text/html");
+  loadURL("http://example.com/");
+  mainResource.complete(
+      "<iframe style='position: absolute; top: 10000px' id=frame "
+      "src=http://sub.example.com/iframe.html></iframe>");
+  frameResource.complete("");
+
+  auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+
+  compositeFrame();
+
+  EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(
+      frameElement->contentDocument()->frame()->isCrossOriginSubframe());
+  EXPECT_FALSE(frameElement->contentDocument()
+                   ->view()
+                   ->layoutView()
+                   ->needsPaintPropertyUpdate());
+
+  NonThrowableExceptionState exceptionState;
+
+  // Security policy requires setting domain on both frames.
+  document().setDomain(String("example.com"), exceptionState);
+  frameElement->contentDocument()->setDomain(String("example.com"),
+                                             exceptionState);
+
+  EXPECT_FALSE(
+      frameElement->contentDocument()->frame()->isCrossOriginSubframe());
+  EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(frameElement->contentDocument()
+                  ->view()
+                  ->layoutView()
+                  ->needsPaintPropertyUpdate());
+}
+
 TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
   webView().settings()->setJavaScriptEnabled(true);
   webView().settings()->setAcceleratedCompositingEnabled(true);

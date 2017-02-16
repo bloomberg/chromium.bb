@@ -4763,8 +4763,16 @@ void FrameView::updateRenderThrottlingStatusForTesting() {
   m_visibilityObserver->deliverObservationsForTesting();
 }
 
+void FrameView::crossOriginStatusChanged() {
+  // Cross-domain status is not stored as a dirty bit within FrameView,
+  // so force-invalidate throttling status when it changes regardless of
+  // previous or new value.
+  updateRenderThrottlingStatus(m_hiddenForThrottling, m_subtreeThrottled, true);
+}
+
 void FrameView::updateRenderThrottlingStatus(bool hidden,
-                                             bool subtreeThrottled) {
+                                             bool subtreeThrottled,
+                                             bool forceThrottlingInvalidation) {
   TRACE_EVENT0("blink", "FrameView::updateRenderThrottlingStatus");
   DCHECK(!isInPerformLayout());
   DCHECK(!m_frame->document() || !m_frame->document()->inStyleRecalc());
@@ -4785,7 +4793,7 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
   // paint one of the children with an out-of-date layout before
   // |updateRenderThrottlingStatus| has made it throttled or 2) fail to
   // unthrottle a child whose parent is unthrottled by a later notification.
-  if (wasThrottled != isThrottled) {
+  if (wasThrottled != isThrottled || forceThrottlingInvalidation) {
     for (const Member<Widget>& child : *children()) {
       if (child->isFrameView()) {
         FrameView* childView = toFrameView(child);
@@ -4796,7 +4804,7 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
   }
 
   ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
-  if (becameUnthrottled) {
+  if (becameUnthrottled || forceThrottlingInvalidation) {
     // ScrollingCoordinator needs to update according to the new throttling
     // status.
     if (scrollingCoordinator)

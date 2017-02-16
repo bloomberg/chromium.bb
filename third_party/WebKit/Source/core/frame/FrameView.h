@@ -831,6 +831,8 @@ class CORE_EXPORT FrameView final
   // Returns the GeometryMapper associated with the root local frame.
   GeometryMapper& geometryMapper();
 
+  void crossOriginStatusChanged();
+
   // The visual viewport can supply scrollbars which affect the existence of
   // our scrollbars (see: computeScrollbarExistence).
   void visualViewportScrollbarsChanged();
@@ -1026,7 +1028,9 @@ class CORE_EXPORT FrameView final
 
   void updateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState targetState);
-  void updateRenderThrottlingStatus(bool hidden, bool subtreeThrottled);
+  void updateRenderThrottlingStatus(bool hidden,
+                                    bool subtreeThrottled,
+                                    bool forceThrottlingInvalidation = false);
   void notifyResizeObservers();
 
   // PaintInvalidationCapableScrollableArea

@@ -4652,7 +4652,11 @@ void Document::setDomain(const String& rawDomain,
     return;
   }
 
+  bool wasCrossDomain = m_frame->isCrossOriginSubframe();
   getSecurityOrigin()->setDomainFromDOM(newDomain);
+  if (view() && (wasCrossDomain != m_frame->isCrossOriginSubframe()))
+    view()->crossOriginStatusChanged();
+
   if (m_frame)
     m_frame->script().updateSecurityOrigin(getSecurityOrigin());
 }
