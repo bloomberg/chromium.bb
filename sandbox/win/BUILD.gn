@@ -221,9 +221,6 @@ executable("cfi_unittest_exe") {
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
   ]
-
-  # cfi_unittest.cc tests require this exe is built with CFG enabled.
-  configs += [ "//build/config/win:win_msvc_cfg" ]
 }
 
 loadable_module("sbox_integration_test_hook_dll") {

@@ -220,9 +220,9 @@ bool FindSignature(BYTE* start, DWORD* offset_found) {
 //    The whole purpose of this unittest is to ensure that a failed CFG check in
 //    a Microsoft binary results in an exception.  If CFG is not properly
 //    enabled for a process, no exception will be thrown.
-//    This test EXE is built with
-//    configs += [ "//build/config/win:win_msvc_cfg" ]
-//    which should result in CFG enabled on the process.
+//    All Chromium projects should be linked with "common_linker_setup" config
+//    (build\config\win\BUILD.gn), which should result in CFG enabled on the
+//    process.
 //
 //  - The patches (x86 or x64) were carefully constructed to be valid and not
 //    mess up the executing instructions.  Need to ensure that the CFG check

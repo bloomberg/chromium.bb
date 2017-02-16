@@ -53,9 +53,6 @@ shared_library("chrome_elf") {
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
 
-  # Turn on CFG for this project.
-  configs += [ "//build/config/win:win_msvc_cfg" ]
-
   # Delay loads in this list will prevent user32.dll
   # from loading too early.
   ldflags = [
