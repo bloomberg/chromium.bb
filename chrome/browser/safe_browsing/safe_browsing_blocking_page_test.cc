@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -326,6 +327,11 @@ class SafeBrowsingBlockingPageBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    feature_list_.reset(new base::test::ScopedFeatureList);
+    feature_list_->InitAndEnableFeature(kFillDOMInThreatDetails);
+  }
+
   void TearDown() override {
     InProcessBrowserTest::TearDown();
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
@@ -602,6 +608,15 @@ class SafeBrowsingBlockingPageBrowserTest
     EXPECT_EQ(expected_tag_name, actual_resource.tag_name());
   }
 
+  void VerifyElement(const ClientSafeBrowsingReportRequest& report,
+                     const HTMLElement& actual_element,
+                     const std::string& expected_url,
+                     const std::string& expected_tag_name) {
+    ASSERT_EQ(1, actual_element.attribute_size());
+    EXPECT_EQ(expected_url, actual_element.attribute(0).value());
+    EXPECT_EQ(expected_tag_name, actual_element.tag());
+  }
+
   void ExpectSecurityIndicatorDowngrade(content::WebContents* tab,
                                         net::CertStatus cert_status) {
     SecurityStateTabHelper* helper =
@@ -644,6 +659,7 @@ class SafeBrowsingBlockingPageBrowserTest
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   net::EmbeddedTestServer https_server_;
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
 };
@@ -787,6 +803,12 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
         net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
         url.spec(),  // kCrossSiteMaliciousPage
         0, "IFRAME");
+
+    ASSERT_EQ(1, report.dom_size());
+    VerifyElement(
+        report, report.dom(0),
+        net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
+        "IFRAME");
   }
 }
 
