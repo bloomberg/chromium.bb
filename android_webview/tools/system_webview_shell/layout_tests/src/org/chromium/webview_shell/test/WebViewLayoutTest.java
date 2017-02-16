@@ -22,8 +22,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -39,12 +41,24 @@ public class WebViewLayoutTest
     private static final String BASE_WEBVIEW_TEST_PATH =
             "android_webview/tools/system_webview_shell/test/data/";
     private static final String BASE_BLINK_TEST_PATH = "third_party/WebKit/LayoutTests/";
-    private static final String BASE_BLINK_STABLE_TEST_PATH =
-            BASE_BLINK_TEST_PATH + "virtual/stable/";
     private static final String PATH_WEBVIEW_PREFIX = EXTERNAL_PREFIX + BASE_WEBVIEW_TEST_PATH;
     private static final String PATH_BLINK_PREFIX = EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH;
-    private static final String PATH_BLINK_STABLE_PREFIX =
-            EXTERNAL_PREFIX + BASE_BLINK_STABLE_TEST_PATH;
+    private static final String GLOBAL_LISTING_FILE =
+            "webexposed/global-interface-listing-expected.txt";
+
+    // Due to the specifics of the rebaselining algorithm in blink the files containing
+    // stable interfaces can dissapear and reappear later. To select the file to compare
+    // against a fallback approach is used. The order in the List below is important due
+    // to how blink performs baseline optimizations. For more details see
+    // third_party/WebKit/Tools/Scripts/webkitpy/common/checkout/baseline_optimizer.py.
+    private static final List<String> BLINK_STABLE_FALLBACKS = Arrays.asList(
+            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "virtual/stable/" + GLOBAL_LISTING_FILE,
+            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/linux/virtual/stable/"
+                    + GLOBAL_LISTING_FILE,
+            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/win/virtual/stable/"
+                    + GLOBAL_LISTING_FILE,
+            EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/mac/virtual/stable/"
+                    + GLOBAL_LISTING_FILE);
 
     private static final long TIMEOUT_SECONDS = 20;
 
@@ -157,14 +171,12 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
-    @DisabledTest(message = "crbug.com/683153")
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
                 + "webexposed/global-interface-listing.html", mTestActivity);
-        String blinkStableExpected = readFile(PATH_BLINK_STABLE_PREFIX
-                + "webexposed/global-interface-listing-expected.txt");
+        String blinkStableExpected = readFileWithFallbacks(BLINK_STABLE_FALLBACKS);
         String webviewExcluded = readFile(PATH_WEBVIEW_PREFIX
                 + "webexposed/not-webview-exposed.txt");
         mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -340,6 +352,21 @@ public class WebViewLayoutTest
         } finally {
             inputStream.close();
         }
+    }
+
+    /**
+     * Reads the first available file in the 'fallback' list and returns the result.
+     * Throws FileNotFoundException if non of the files exist.
+     */
+    private static String readFileWithFallbacks(List<String> fallbackFileNames) throws IOException {
+        for (String fileName : fallbackFileNames) {
+            File file = new File(fileName);
+            if (file.exists()) {
+                return readFile(fileName);
+            }
+        }
+
+        throw new FileNotFoundException("None of the fallback files could be read");
     }
 
     /**
