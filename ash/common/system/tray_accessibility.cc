@@ -322,7 +322,8 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
     tri_view()->SetContainerVisible(TriView::Container::END, true);
 
     help_view_ = CreateHelpButton(login_);
-    settings_view_ = CreateSettingsButton(login_);
+    settings_view_ = CreateSettingsButton(
+        login_, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS);
     tri_view()->AddView(TriView::Container::END, help_view_);
     tri_view()->AddView(TriView::Container::END, settings_view_);
   }

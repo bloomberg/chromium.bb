@@ -121,10 +121,10 @@
     IPv6 address
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
-    Settings...
+    Network settings
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
-    Proxy...
+    Proxy settings
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY" desc="The label used for tell users that this technology is disabled by the administrator">
     This network setting is disabled by the administrator.

@@ -412,11 +412,13 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
 }
 
-views::CustomButton* TrayDetailsView::CreateSettingsButton(LoginStatus status) {
+views::CustomButton* TrayDetailsView::CreateSettingsButton(
+    LoginStatus status,
+    int setting_accessible_name_id) {
   DCHECK(UseMd());
-  SystemMenuButton* button = new SystemMenuButton(
-      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-      IDS_ASH_STATUS_TRAY_SETTINGS);
+  SystemMenuButton* button =
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
+                           kSystemMenuSettingsIcon, setting_accessible_name_id);
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetEnabled(false);
   return button;

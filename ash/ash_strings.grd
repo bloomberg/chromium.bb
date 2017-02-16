@@ -260,6 +260,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES" desc="The sub-header label for unpaired devices in Bluetooth device list.">
         Unpaired devices
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS" desc="The label used in the tray pop up to open Bluetooth setting page.">
+        Bluetooth settings
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
@@ -324,9 +327,8 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LEARN_MORE" desc="The label used in the accessibility menu of the system tray
-     to open a webpage (article on help center) containing explanation about accessibility feature.">
-        Learn more...
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label used in the accessibility menu of system tray to open accessibility setting page.">
+        Accessibility settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
@@ -370,6 +372,10 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
         Stylus tools
       </message>
+      <message name="IDS_ASH_PALETTE_SETTINGS" desc="The label on the setting button used to open palette setting page.">
+        Stylus settings
+      </message>
+      
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">
         DISMISS

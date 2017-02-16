@@ -95,7 +95,7 @@ class TitleView : public views::View, public views::ButtonListener {
                                kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
       settings_button_ = new SystemMenuButton(
           this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-          IDS_ASH_STATUS_TRAY_SETTINGS);
+          IDS_ASH_PALETTE_SETTINGS);
     } else {
       gfx::ImageSkia help_icon =
           gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);

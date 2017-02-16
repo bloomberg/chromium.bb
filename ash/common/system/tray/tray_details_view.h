@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
+#include "grit/ash_strings.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -87,7 +88,8 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Helper functions which create and return the settings and help buttons,
   // respectively, used in the material design top-most header row. The caller
   // assumes ownership of the returned buttons.
-  views::CustomButton* CreateSettingsButton(LoginStatus status);
+  views::CustomButton* CreateSettingsButton(LoginStatus status,
+                                            int setting_accessible_name_id);
   views::CustomButton* CreateHelpButton(LoginStatus status);
 
   TriView* tri_view() { return tri_view_; }

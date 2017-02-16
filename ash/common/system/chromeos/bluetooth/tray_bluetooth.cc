@@ -471,7 +471,8 @@ class BluetoothDetailedView : public TrayDetailsView {
         TrayPopupUtils::CreateToggleButton(this, IDS_ASH_STATUS_TRAY_BLUETOOTH);
     tri_view()->AddView(TriView::Container::END, toggle_);
 
-    settings_ = CreateSettingsButton(login_);
+    settings_ =
+        CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS);
     tri_view()->AddView(TriView::Container::END, settings_);
   }
 

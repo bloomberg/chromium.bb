@@ -170,7 +170,8 @@ class IMEDetailedView : public ImeListView {
       }
 
       tri_view()->SetContainerVisible(TriView::Container::END, true);
-      settings_button_ = CreateSettingsButton(login_);
+      settings_button_ =
+          CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_IME_SETTINGS);
       tri_view()->AddView(TriView::Container::END, settings_button_);
     }
   }
