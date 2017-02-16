@@ -192,7 +192,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *wl_keyboard,
 	char *map_str;
 
 	if (!data)
-		goto error;
+		goto error_no_seat;
 
 	if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
 		map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
@@ -235,6 +235,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *wl_keyboard,
 
 error:
 	wl_keyboard_release(seat->parent.keyboard);
+error_no_seat:
 	close(fd);
 }
 
