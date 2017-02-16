@@ -194,7 +194,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
       // WebBluetoothService so that it can send us events without us
       // prompting.
       mojom::blink::WebBluetoothServiceClientAssociatedPtrInfo ptrInfo;
-      m_clientBinding.Bind(&ptrInfo, m_service.associated_group());
+      m_clientBinding.Bind(&ptrInfo);
       m_service->SetClient(std::move(ptrInfo));
     }
   }
