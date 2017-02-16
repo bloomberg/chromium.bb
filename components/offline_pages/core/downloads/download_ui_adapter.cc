@@ -203,8 +203,10 @@ void DownloadUIAdapter::LoadCache() {
 void DownloadUIAdapter::ClearCache() {
   // Once loaded, this class starts to observe the model. Only remove observer
   // if it was added.
-  if (state_ == State::LOADED)
+  if (state_ == State::LOADED) {
     model_->RemoveObserver(this);
+    request_coordinator_->RemoveObserver(this);
+  }
   items_.clear();
   state_ = State::NOT_LOADED;
 }

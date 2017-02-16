@@ -439,4 +439,20 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
   EXPECT_EQ(DownloadUIItem::DownloadState::COMPLETE, item->download_state);
 }
 
+TEST_F(DownloadUIAdapterTest, RemoveObserversWhenClearingCache) {
+  PumpLoop();
+  EXPECT_TRUE(items_loaded);
+
+  // Remove this from the adapter's observer list.  This should cause the cache
+  // to be cleared.
+  adapter->RemoveObserver(this);
+  items_loaded = false;
+
+  PumpLoop();
+
+  adapter->AddObserver(this);
+  PumpLoop();
+  EXPECT_TRUE(items_loaded);
+}
+
 }  // namespace offline_pages
