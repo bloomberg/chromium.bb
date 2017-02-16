@@ -38,6 +38,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -149,6 +150,7 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/ssl_insecure_content.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -1352,6 +1354,42 @@ void Browser::RequestAppBannerFromDevTools(content::WebContents* web_contents) {
   banners::AppBannerManagerDesktop* manager =
       banners::AppBannerManagerDesktop::FromWebContents(web_contents);
   manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
+}
+
+void Browser::PassiveInsecureContentFound(const GURL& resource_url) {
+  // Note: this implementation is a mirror of
+  // ContentSettingsObserver::passiveInsecureContentFound
+  ReportInsecureContent(SslInsecureContentType::DISPLAY);
+  FilteredReportInsecureContentDisplayed(resource_url);
+}
+
+bool Browser::ShouldAllowRunningInsecureContent(
+    content::WebContents* web_contents,
+    bool allowed_per_prefs,
+    const url::Origin& origin,
+    const GURL& resource_url) {
+  // Note: this implementation is a mirror of
+  // ContentSettingsObserver::allowRunningInsecureContent.
+  FilteredReportInsecureContentRan(resource_url);
+
+  MixedContentSettingsTabHelper* mixed_content_settings =
+      MixedContentSettingsTabHelper::FromWebContents(web_contents);
+  DCHECK(mixed_content_settings);
+  if (allowed_per_prefs ||
+      mixed_content_settings->is_running_insecure_content_allowed()) {
+    return true;
+  }
+
+  // Note: this is a browser-side-translation of the call to DidBlockContentType
+  // from inside ContentSettingsObserver::allowRunningInsecureContent.
+  if (!origin.host().empty()) {
+    TabSpecificContentSettings* tab_settings =
+        TabSpecificContentSettings::FromWebContents(web_contents);
+    DCHECK(tab_settings);
+    tab_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+                                             base::UTF8ToUTF16(origin.host()));
+  }
+  return false;
 }
 
 bool Browser::IsMouseLocked() const {

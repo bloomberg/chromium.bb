@@ -143,8 +143,8 @@ static void measureStricterVersionOfIsMixedContent(Frame* frame,
                                                    const KURL& url) {
   // We're currently only checking for mixed content in `https://*` contexts.
   // What about other "secure" contexts the SchemeRegistry knows about? We'll
-  // use this method to measure the occurance of non-webby mixed content to make
-  // sure we're not breaking the world without realizing it.
+  // use this method to measure the occurrence of non-webby mixed content to
+  // make sure we're not breaking the world without realizing it.
   SecurityOrigin* origin = frame->securityContext()->getSecurityOrigin();
   if (MixedContentChecker::isMixedContent(origin, url)) {
     if (origin->protocol() != "https") {
@@ -294,6 +294,13 @@ bool MixedContentChecker::shouldBlockFetch(
     ResourceRequest::RedirectStatus redirectStatus,
     const KURL& url,
     MixedContentChecker::ReportingStatus reportingStatus) {
+  // Frame-level loads are checked by the browser if PlzNavigate is enabled. No
+  // need to check them again here.
+  if (frame->settings()->getBrowserSideNavigationEnabled() &&
+      frameType != WebURLRequest::FrameTypeNone) {
+    return false;
+  }
+
   Frame* effectiveFrame = effectiveFrameForFrameType(frame, frameType);
   Frame* mixedFrame =
       inWhichFrameIsContentMixed(effectiveFrame, frameType, url);
@@ -560,6 +567,28 @@ void MixedContentChecker::handleCertificateError(
     // computes the type of mixed content, given that the content is mixed).
     DCHECK_NE(contextType, WebMixedContentContextType::NotMixedContent);
     client->didDisplayContentWithCertificateErrors(response.url());
+  }
+}
+
+// static
+void MixedContentChecker::mixedContentFound(
+    LocalFrame* frame,
+    const KURL& mainResourceUrl,
+    const KURL& mixedContentUrl,
+    WebURLRequest::RequestContext requestContext,
+    bool wasAllowed,
+    bool hadRedirect) {
+  // Logs to the frame console.
+  logToConsoleAboutFetch(frame, mainResourceUrl, mixedContentUrl,
+                         requestContext, wasAllowed);
+  // Reports to the CSP policy.
+  ContentSecurityPolicy* policy =
+      frame->securityContext()->contentSecurityPolicy();
+  if (policy) {
+    policy->reportMixedContent(
+        mixedContentUrl, hadRedirect
+                             ? ResourceRequest::RedirectStatus::FollowedRedirect
+                             : ResourceRequest::RedirectStatus::NoRedirect);
   }
 }
 

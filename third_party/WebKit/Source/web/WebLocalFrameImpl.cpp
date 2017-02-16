@@ -2070,6 +2070,26 @@ void WebLocalFrameImpl::setHasReceivedUserGesture() {
     frame()->setDocumentHasReceivedUserGesture();
 }
 
+void WebLocalFrameImpl::blinkFeatureUsageReport(const std::set<int>& features) {
+  DCHECK(!features.empty());
+  // Assimilate all features used/performed by the browser into UseCounter.
+  for (int feature : features) {
+    UseCounter::count(frame(), static_cast<UseCounter::Feature>(feature));
+  }
+}
+
+void WebLocalFrameImpl::mixedContentFound(
+    const WebURL& mainResourceUrl,
+    const WebURL& mixedContentUrl,
+    WebURLRequest::RequestContext requestContext,
+    bool wasAllowed,
+    bool hadRedirect) {
+  DCHECK(frame());
+  MixedContentChecker::mixedContentFound(frame(), mainResourceUrl,
+                                         mixedContentUrl, requestContext,
+                                         wasAllowed, hadRedirect);
+}
+
 void WebLocalFrameImpl::sendOrientationChangeEvent() {
   if (!frame())
     return;

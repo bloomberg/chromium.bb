@@ -507,6 +507,14 @@ class CONTENT_EXPORT WebContentsImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
+  void DidDisplayInsecureContent() override;
+  void DidRunInsecureContent(const GURL& security_origin,
+                             const GURL& target_url) override;
+  void PassiveInsecureContentFound(const GURL& resource_url) override;
+  bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
+                                         bool allowed_per_prefs,
+                                         const url::Origin& origin,
+                                         const GURL& resource_url) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/mixed_content_navigation_throttle.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -34,7 +35,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
-#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -876,11 +876,20 @@ void NavigationHandleImpl::RunCompleteCallback(
 
 void NavigationHandleImpl::RegisterNavigationThrottles() {
   // Register the navigation throttles. The vector returned by
-  // GetNavigationThrottles is not assigned to throttles_ directly because it
-  // would overwrite any throttles previously added with
+  // CreateThrottlesForNavigation is not assigned to throttles_ directly because
+  // it would overwrite any throttles previously added with
   // RegisterThrottleForTesting.
+  // TODO(carlosk, arthursonzogni): should simplify this to either use
+  // |throttles_| directly (except for the case described above) or
+  // |throttles_to_register| for registering all throttles.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_to_register =
       GetDelegate()->CreateThrottlesForNavigation(this);
+
+  std::unique_ptr<NavigationThrottle> mixed_content_throttle =
+      MixedContentNavigationThrottle::CreateThrottleForNavigation(this);
+  if (mixed_content_throttle)
+    throttles_to_register.push_back(std::move(mixed_content_throttle));
+
   std::unique_ptr<NavigationThrottle> devtools_throttle =
       RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
   if (devtools_throttle)

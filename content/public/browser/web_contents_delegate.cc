@@ -278,4 +278,12 @@ void WebContentsDelegate::RequestAppBannerFromDevTools(
     content::WebContents* web_contents) {
 }
 
+bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
+    WebContents* web_contents,
+    bool allowed_per_prefs,
+    const url::Origin& origin,
+    const GURL& resource_url) {
+  return allowed_per_prefs;
+}
+
 }  // namespace content

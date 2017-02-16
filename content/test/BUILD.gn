@@ -1089,6 +1089,7 @@ test("content_unittests") {
     "../browser/frame_host/ancestor_throttle_unittest.cc",
     "../browser/frame_host/frame_tree_node_blame_context_unittest.cc",
     "../browser/frame_host/frame_tree_unittest.cc",
+    "../browser/frame_host/mixed_content_navigation_throttle_unittest.cc",
     "../browser/frame_host/navigation_controller_impl_unittest.cc",
     "../browser/frame_host/navigation_entry_impl_unittest.cc",
     "../browser/frame_host/navigation_handle_impl_unittest.cc",

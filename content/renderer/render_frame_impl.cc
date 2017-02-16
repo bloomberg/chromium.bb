@@ -1568,6 +1568,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSuppressFurtherDialogs)
     IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
+    IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
+                        OnBlinkFeatureUsageReport)
+    IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -5695,6 +5698,22 @@ void RenderFrameImpl::OnClearFocusedElement() {
   // calling this on the WebView?
   if (auto* webview = render_view_->GetWebView())
     webview->clearFocusedElement();
+}
+
+void RenderFrameImpl::OnBlinkFeatureUsageReport(const std::set<int>& features) {
+  frame_->blinkFeatureUsageReport(features);
+}
+
+void RenderFrameImpl::OnMixedContentFound(
+    const GURL& main_resource_url,
+    const GURL& mixed_content_url,
+    RequestContextType request_context_type,
+    bool was_allowed,
+    bool had_redirect) {
+  auto request_context =
+      static_cast<blink::WebURLRequest::RequestContext>(request_context_type);
+  frame_->mixedContentFound(main_resource_url, mixed_content_url,
+                            request_context, was_allowed, had_redirect);
 }
 
 #if defined(OS_ANDROID)

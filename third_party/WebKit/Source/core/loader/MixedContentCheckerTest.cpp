@@ -20,6 +20,11 @@
 
 namespace blink {
 
+// Tests that MixedContentChecker::isMixedContent correctly detects or ignores
+// many cases where there is or there is not mixed content, respectively.
+// Note: Renderer side version of
+// MixedContentNavigationThrottleTest.IsMixedContent. Must be kept in sync
+// manually!
 TEST(MixedContentCheckerTest, IsMixedContent) {
   struct TestCase {
     const char* origin;

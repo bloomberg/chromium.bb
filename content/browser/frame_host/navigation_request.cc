@@ -35,6 +35,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
@@ -80,27 +81,6 @@ void UpdateLoadFlagsWithCacheFlags(
         *load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
   }
-}
-
-// This is based on SecurityOrigin::isPotentiallyTrustworthy.
-// TODO(clamy): This should be function in url::Origin.
-bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
-  if (origin.unique())
-    return false;
-
-  if (origin.scheme() == url::kHttpsScheme ||
-      origin.scheme() == url::kAboutScheme ||
-      origin.scheme() == url::kDataScheme ||
-      origin.scheme() == url::kWssScheme ||
-      origin.scheme() == url::kFileScheme) {
-    return true;
-  }
-
-  if (net::IsLocalhost(origin.host()))
-    return true;
-
-  // TODO(clamy): Check for whitelisted origins.
-  return false;
 }
 
 // TODO(clamy): This should be function in FrameTreeNode.

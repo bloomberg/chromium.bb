@@ -40,6 +40,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
@@ -947,6 +948,22 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SetHasReceivedUserGesture)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
                     std::vector<content::FileChooserFileInfo>)
+
+// Updates the renderer with a list of unique blink::UseCounter::Feature values
+// representing Blink features used, performed or encountered by the browser
+// during the current page load happening on the frame.
+IPC_MESSAGE_ROUTED1(FrameMsg_BlinkFeatureUsageReport,
+                    std::set<int>) /* features */
+
+// Informs the renderer that mixed content was found by the browser. The
+// included data is used for instance to report to the CSP policy and to log to
+// the frame console.
+IPC_MESSAGE_ROUTED5(FrameMsg_MixedContentFound,
+                    GURL,                        /* main_resource_url */
+                    GURL,                        /* mixed_content_url */
+                    content::RequestContextType, /* request_context_type */
+                    bool,                        /* was_allowed */
+                    bool)                        /* had_redirect */
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

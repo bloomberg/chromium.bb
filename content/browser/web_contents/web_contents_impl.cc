@@ -3519,6 +3519,10 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 void WebContentsImpl::OnDidDisplayInsecureContent(RenderFrameHostImpl* source) {
   // Any frame can trigger display of insecure content, so we don't check
   // |source| here.
+  DidDisplayInsecureContent();
+}
+
+void WebContentsImpl::DidDisplayInsecureContent() {
   controller_.ssl_manager()->DidDisplayMixedContent();
 }
 
@@ -3528,6 +3532,11 @@ void WebContentsImpl::OnDidRunInsecureContent(RenderFrameHostImpl* source,
   // TODO(nick, estark): Should we call FilterURL using |source|'s process on
   // these parameters? |target_url| seems unused, except for a log message. And
   // |security_origin| might be replaceable with the origin of the main frame.
+  DidRunInsecureContent(security_origin, target_url);
+}
+
+void WebContentsImpl::DidRunInsecureContent(const GURL& security_origin,
+                                            const GURL& target_url) {
   LOG(WARNING) << security_origin << " ran insecure content from "
                << target_url.possibly_invalid_spec();
   RecordAction(base::UserMetricsAction("SSL.RanInsecureContent"));
@@ -3535,6 +3544,19 @@ void WebContentsImpl::OnDidRunInsecureContent(RenderFrameHostImpl* source,
                      base::CompareCase::INSENSITIVE_ASCII))
     RecordAction(base::UserMetricsAction("SSL.RanInsecureContentGoogle"));
   controller_.ssl_manager()->DidRunMixedContent(security_origin);
+}
+
+void WebContentsImpl::PassiveInsecureContentFound(const GURL& resource_url) {
+  GetDelegate()->PassiveInsecureContentFound(resource_url);
+}
+
+bool WebContentsImpl::ShouldAllowRunningInsecureContent(
+    WebContents* web_contents,
+    bool allowed_per_prefs,
+    const url::Origin& origin,
+    const GURL& resource_url) {
+  return GetDelegate()->ShouldAllowRunningInsecureContent(
+      web_contents, allowed_per_prefs, origin, resource_url);
 }
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(

@@ -167,6 +167,10 @@ class Shell : public WebContentsDelegate,
       WebContents* source,
       const WebContentsUnresponsiveState& unresponsive_state) override;
   void ActivateContents(WebContents* contents) override;
+  bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
+                                         bool allowed_per_prefs,
+                                         const url::Origin& origin,
+                                         const GURL& resource_url) override;
 
   static gfx::Size GetShellDefaultSize();
 

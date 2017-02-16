@@ -37,6 +37,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
@@ -910,6 +911,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnFileChooserResponse(
       const std::vector<content::FileChooserFileInfo>& files);
   void OnClearFocusedElement();
+  void OnBlinkFeatureUsageReport(const std::set<int>& features);
+  void OnMixedContentFound(const GURL& main_resource_url,
+                           const GURL& mixed_content_url,
+                           RequestContextType request_context_type,
+                           bool was_allowed,
+                           bool had_redirect);
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnGetNearestFindResult(int request_id, float x, float y);

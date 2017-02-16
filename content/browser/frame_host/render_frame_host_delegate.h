@@ -41,6 +41,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 class FrameTreeNode;
 class InterstitialPage;
@@ -270,6 +274,21 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_rect,
                                  bool user_gesture) {}
+
+  // Notifies that mixed content was displayed or ran.
+  virtual void DidDisplayInsecureContent() {}
+  virtual void DidRunInsecureContent(const GURL& security_origin,
+                                     const GURL& target_url) {}
+
+  // Reports that passive mixed content was found at the specified url.
+  virtual void PassiveInsecureContentFound(const GURL& resource_url) {}
+
+  // Checks if running of active mixed content is allowed for the specified
+  // WebContents/tab.
+  virtual bool ShouldAllowRunningInsecureContent(WebContents* web_contents,
+                                                 bool allowed_per_prefs,
+                                                 const url::Origin& origin,
+                                                 const GURL& resource_url);
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

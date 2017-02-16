@@ -12,6 +12,19 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
+namespace {
+
+// This function partially reflects the result from SecurityOrigin::isUnique,
+// not its actual implementation. It takes into account how
+// SecurityOrigin::create might return unique origins for URLs whose schemes are
+// included in SchemeRegistry::shouldTreatURLSchemeAsNoAccess.
+bool IsOriginUnique(const url::Origin& origin) {
+  return origin.unique() ||
+         base::ContainsValue(url::GetNoAccessSchemes(), origin.scheme());
+}
+
+}  // namespace
+
 namespace content {
 
 bool IsOriginSecure(const GURL& url) {
@@ -30,9 +43,8 @@ bool IsOriginSecure(const GURL& url) {
   if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
     return true;
 
-  if (base::ContainsValue(GetSecureOrigins(), url.GetOrigin())) {
+  if (base::ContainsValue(GetSecureOrigins(), url.GetOrigin()))
     return true;
-  }
 
   return false;
 }
@@ -44,6 +56,35 @@ bool OriginCanAccessServiceWorkers(const GURL& url) {
   if (base::ContainsValue(GetServiceWorkerSchemes(), url.scheme())) {
     return true;
   }
+
+  return false;
+}
+
+bool IsOriginWhiteListedTrustworthy(const url::Origin& origin) {
+  if (IsOriginUnique(origin))
+    return false;
+
+  return base::ContainsValue(GetSecureOrigins(),
+                             origin.GetURL().HostNoBrackets());
+}
+
+bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
+  // Note: Considering this mirrors SecurityOrigin::isPotentiallyTrustworthy, it
+  // assumes m_isUniqueOriginPotentiallyTrustworthy is set to false. This
+  // implementation follows Blink's default behavior but in the renderer it can
+  // be changed per instance by calls to
+  // SecurityOrigin::setUniqueOriginIsPotentiallyTrustworthy.
+  if (IsOriginUnique(origin))
+    return false;
+
+  if (base::ContainsValue(url::GetSecureSchemes(), origin.scheme()) ||
+      base::ContainsValue(url::GetLocalSchemes(), origin.scheme()) ||
+      net::IsLocalhost(origin.GetURL().HostNoBrackets())) {
+    return true;
+  }
+
+  if (IsOriginWhiteListedTrustworthy(origin))
+    return true;
 
   return false;
 }

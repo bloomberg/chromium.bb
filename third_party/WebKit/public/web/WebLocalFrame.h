@@ -5,12 +5,14 @@
 #ifndef WebLocalFrame_h
 #define WebLocalFrame_h
 
+#include <set>
 #include "WebCompositionUnderline.h"
 #include "WebFrame.h"
 #include "WebFrameLoadType.h"
 #include "WebHistoryItem.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLError.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/platform/site_engagement.mojom-shared.h"
 
 namespace base {
@@ -176,6 +178,21 @@ class WebLocalFrame : public WebFrame {
   // Mark this frame's document as having received a user gesture, based on
   // one of its descendants having processed a user gesture.
   virtual void setHasReceivedUserGesture() = 0;
+
+  // Reports a list of unique blink::UseCounter::Feature values representing
+  // Blink features used, performed or encountered by the browser during the
+  // current page load happening on the frame.
+  virtual void blinkFeatureUsageReport(const std::set<int>& features) = 0;
+
+  // Informs the renderer that mixed content was found externally regarding this
+  // frame. Currently only the the browser process can do so. The included data
+  // is used for instance to report to the CSP policy and to log to the frame
+  // console.
+  virtual void mixedContentFound(const WebURL& mainResourceUrl,
+                                 const WebURL& mixedContentUrl,
+                                 WebURLRequest::RequestContext,
+                                 bool wasAllowed,
+                                 bool hadRedirect) = 0;
 
   // Orientation Changes ----------------------------------------------------
 

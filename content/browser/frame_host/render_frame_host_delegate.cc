@@ -93,4 +93,12 @@ RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(const GURL& url) {
   return nullptr;
 }
 
+bool RenderFrameHostDelegate::ShouldAllowRunningInsecureContent(
+    WebContents* web_contents,
+    bool allowed_per_prefs,
+    const url::Origin& origin,
+    const GURL& resource_url) {
+  return false;
+}
+
 }  // namespace content

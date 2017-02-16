@@ -406,6 +406,8 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& resource_url) {
+  // Note: this implementation is a mirror of
+  // Browser::ShouldAllowRunningInsecureContent.
   FilteredReportInsecureContentRan(GURL(resource_url));
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
@@ -429,6 +431,8 @@ bool ContentSettingsObserver::allowAutoplay(bool default_value) {
 
 void ContentSettingsObserver::passiveInsecureContentFound(
     const blink::WebURL& resource_url) {
+  // Note: this implementation is a mirror of
+  // Browser::PassiveInsecureContentFound.
   ReportInsecureContent(SslInsecureContentType::DISPLAY);
   FilteredReportInsecureContentDisplayed(GURL(resource_url));
 }

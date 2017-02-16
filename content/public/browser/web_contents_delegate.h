@@ -66,6 +66,10 @@ namespace net {
 class X509Certificate;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace blink {
 class WebGestureEvent;
 }
@@ -554,6 +558,16 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Requests the app banner. This method is called from the DevTools.
   virtual void RequestAppBannerFromDevTools(content::WebContents* web_contents);
+
+  // Reports that passive mixed content was found at the specified url.
+  virtual void PassiveInsecureContentFound(const GURL& resource_url) {}
+
+  // Checks if running of active mixed content is allowed for the specified
+  // WebContents/tab.
+  virtual bool ShouldAllowRunningInsecureContent(WebContents* web_contents,
+                                                 bool allowed_per_prefs,
+                                                 const url::Origin& origin,
+                                                 const GURL& resource_url);
 
  protected:
   virtual ~WebContentsDelegate();

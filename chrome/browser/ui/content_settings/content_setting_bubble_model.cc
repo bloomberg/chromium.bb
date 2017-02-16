@@ -16,6 +16,8 @@
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -1060,6 +1062,14 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   if (!web_contents())
     return;
 
+  MixedContentSettingsTabHelper* mixed_content_settings =
+      MixedContentSettingsTabHelper::FromWebContents(web_contents());
+  if (mixed_content_settings) {
+    // Update browser side settings to allow active mixed content.
+    mixed_content_settings->AllowRunningOfInsecureContent();
+  }
+
+  // Update renderer side settings to allow active mixed content.
   web_contents()->ForEachFrame(base::Bind(&::SetAllowRunningInsecureContent));
 
   content_settings::RecordMixedScriptAction(

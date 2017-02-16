@@ -180,6 +180,11 @@ class BlinkTestController : public base::NonThreadSafe,
   // GpuDataManagerObserver implementation.
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
 
+  const base::DictionaryValue& accumulated_layout_test_runtime_flags_changes()
+      const {
+    return accumulated_layout_test_runtime_flags_changes_;
+  }
+
  private:
   enum TestPhase {
     BETWEEN_TESTS,

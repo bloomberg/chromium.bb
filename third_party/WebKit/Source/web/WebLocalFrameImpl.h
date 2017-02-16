@@ -264,6 +264,12 @@ class WEB_EXPORT WebLocalFrameImpl final
   bool isNavigationScheduledWithin(double interval) const override;
   void setCommittedFirstRealLoad() override;
   void setHasReceivedUserGesture() override;
+  void blinkFeatureUsageReport(const std::set<int>& features) override;
+  void mixedContentFound(const WebURL& mainResourceUrl,
+                         const WebURL& mixedContentUrl,
+                         WebURLRequest::RequestContext,
+                         bool wasAllowed,
+                         bool hadRedirect) override;
   void sendOrientationChangeEvent() override;
   WebSandboxFlags effectiveSandboxFlags() const override;
   void forceSandboxFlags(WebSandboxFlags) override;

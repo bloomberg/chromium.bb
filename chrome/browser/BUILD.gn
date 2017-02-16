@@ -272,6 +272,8 @@ split_static_library("browser") {
     "content_settings/host_content_settings_map_factory.h",
     "content_settings/local_shared_objects_container.cc",
     "content_settings/local_shared_objects_container.h",
+    "content_settings/mixed_content_settings_tab_helper.cc",
+    "content_settings/mixed_content_settings_tab_helper.h",
     "content_settings/tab_specific_content_settings.cc",
     "content_settings/tab_specific_content_settings.h",
     "content_settings/web_site_settings_uma_util.cc",

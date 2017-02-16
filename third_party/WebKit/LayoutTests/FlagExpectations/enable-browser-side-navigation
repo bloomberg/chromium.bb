@@ -35,15 +35,6 @@ crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
-# https://crbug.com/576270: Move mixed-content checks that happen during
-# navigation to the browser
-crbug.com/576270 http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
-crbug.com/576270 http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
-crbug.com/576270 http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
-crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
-crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
-crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
-
 # https://crbug.com/638900: Failing due to flipped order of callbacks to
 # WebFrameClient::didStartProvisionalLoad() and
 # WebFrameClient::didFinishDocumentLoad().
