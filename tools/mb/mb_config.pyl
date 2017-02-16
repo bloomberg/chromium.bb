@@ -342,6 +342,13 @@
       'Battor Agent Linux': 'official_goma_minimal_symbols_clang',
     },
 
+    'chromium.swarm': {
+      'Android Swarm': 'android_without_codecs_release_bot_minimal_symbols',
+      'Linux Swarm': 'release_bot',
+      'Mac Swarm': 'release_bot_mac_strip',
+      'Windows Swarm': 'release_bot_x86',
+    },
+
     'client.nacl.sdk': {
       'linux-sdk-asan-multi': 'release_bot',
       'linux-sdk-multi': 'release_bot',
