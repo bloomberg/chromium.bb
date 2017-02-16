@@ -25,8 +25,9 @@ class KioskAppLaunchError {
     NOT_KIOSK_ENABLED,        // Not a kiosk enabled app.
     UNABLE_TO_RETRIEVE_HASH,  // Unable to retrieve username hash.
     POLICY_LOAD_FAILED,       // Failed to load policy for kiosk account.
-    UNABLE_TO_DOWNLOAD,       // Unalbe to download app's crx file.
+    UNABLE_TO_DOWNLOAD,       // Unable to download app's crx file.
     UNABLE_TO_LAUNCH,         // Unable to launch app.
+    ARC_AUTH_FAILED,          // Failed to authorise ARC session
   };
 
   // Returns a message for given |error|.

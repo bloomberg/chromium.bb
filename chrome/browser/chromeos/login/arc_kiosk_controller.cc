@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -66,6 +67,7 @@ void ArcKioskController::CloseSplashScreen() {
 void ArcKioskController::OnAuthFailure(const AuthFailure& error) {
   LOG(ERROR) << "ARC Kiosk launch failed. Will now shut down, error="
              << error.GetErrorString();
+  KioskAppLaunchError::Save(KioskAppLaunchError::ARC_AUTH_FAILED);
   chrome::AttemptUserExit();
   CleanUp();
 }
@@ -88,6 +90,7 @@ void ArcKioskController::WhiteListCheckFailed(const std::string& email) {
 
 void ArcKioskController::PolicyLoadFailed() {
   LOG(ERROR) << "Policy load failed. Will now shut down";
+  KioskAppLaunchError::Save(KioskAppLaunchError::POLICY_LOAD_FAILED);
   CleanUp();
   chrome::AttemptUserExit();
 }
@@ -125,6 +128,7 @@ void ArcKioskController::OnAppWindowLaunched() {
 }
 
 void ArcKioskController::OnCancelArcKioskLaunch() {
+  KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();
 }

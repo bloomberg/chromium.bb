@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
@@ -994,7 +995,8 @@ void ExistingUserController::ConfigureAutoLogin() {
       user_manager::UserManager::Get()->FindUser(
           arc_kiosk_auto_login_account_id_);
   if (!arc_kiosk_user ||
-      arc_kiosk_user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP) {
+      arc_kiosk_user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP ||
+      KioskAppLaunchError::Get() != KioskAppLaunchError::NONE) {
     arc_kiosk_auto_login_account_id_ = EmptyAccountId();
   }
 
