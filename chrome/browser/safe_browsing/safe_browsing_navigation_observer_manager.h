@@ -70,6 +70,11 @@ struct NavigationEventList {
                                        const GURL& target_main_frame_url,
                                        int target_tab_id);
 
+  // Find the most recent retargeting NavigationEvent that satisfies
+  // |target_url|, and |target_tab_id|.
+  NavigationEvent* FindRetargetingNavigationEvent(const GURL& target_url,
+                                                  int target_tab_id);
+
   void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);
 
   // Remove stale NavigationEvents and return the number of items removed.
@@ -128,10 +133,9 @@ class SafeBrowsingNavigationObserverManager
 
   SafeBrowsingNavigationObserverManager();
 
-  // Add |nav_event| to |navigation_map_| based on |nav_event_key|. Object
-  // pointed to by |nav_event| will be no longer accessible after this function.
-  void RecordNavigationEvent(const GURL& nav_event_key,
-                             std::unique_ptr<NavigationEvent> nav_event);
+  // Add |nav_event| to |navigation_event_list_|. Object pointed to by
+  // |nav_event| will be no longer accessible after this function.
+  void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);
   void RecordUserGestureForWebContents(content::WebContents* web_contents,
                                        const base::Time& timestamp);
   void OnUserGestureConsumed(content::WebContents* web_contents,

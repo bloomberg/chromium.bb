@@ -208,7 +208,6 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
   nav_event->last_updated = base::Time::Now();
 
   manager_->RecordNavigationEvent(
-      nav_event->GetDestinationUrl(),
       std::move(navigation_handle_map_[navigation_handle]));
   navigation_handle_map_.erase(navigation_handle);
 }

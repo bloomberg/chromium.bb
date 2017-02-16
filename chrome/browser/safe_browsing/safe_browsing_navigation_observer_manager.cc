@@ -132,8 +132,8 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
         // need to adjust our search url to the original request.
         if (!nav_event->server_redirect_urls.empty()) {
           NavigationEvent* retargeting_nav_event =
-              FindNavigationEvent(nav_event->original_request_url, GURL(),
-                                  nav_event->target_tab_id);
+              FindRetargetingNavigationEvent(nav_event->original_request_url,
+                                             nav_event->target_tab_id);
           if (!retargeting_nav_event)
             return nullptr;
           // Adjust retargeting navigation event's attributes.
@@ -146,6 +146,28 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
       } else {
         return nav_event;
       }
+    }
+  }
+  return nullptr;
+}
+
+NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
+    const GURL& target_url,
+    int target_tab_id) {
+  if (target_url.is_empty())
+    return nullptr;
+
+  // Since navigation events are recorded in chronological order, we traverse
+  // the vector in reverse order to get the latest match.
+  for (auto rit = navigation_events_.rbegin(); rit != navigation_events_.rend();
+       ++rit) {
+    auto* nav_event = rit->get();
+    // In addition to url and tab_id checking, we need to compare the
+    // source_tab_id and target_tab_id to make sure it is a retargeting event.
+    if (nav_event->original_request_url == target_url &&
+        nav_event->target_tab_id == target_tab_id &&
+        nav_event->source_tab_id != nav_event->target_tab_id) {
+      return nav_event;
     }
   }
   return nullptr;
@@ -214,7 +236,6 @@ SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager()
 }
 
 void SafeBrowsingNavigationObserverManager::RecordNavigationEvent(
-    const GURL& nav_event_key,
     std::unique_ptr<NavigationEvent> nav_event) {
   navigation_event_list_.RecordNavigationEvent(std::move(nav_event));
 }
