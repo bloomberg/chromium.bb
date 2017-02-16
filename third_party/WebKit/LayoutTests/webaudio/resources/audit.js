@@ -321,18 +321,23 @@ window.Audit = (function () {
     }
 
     /**
-     * Check if |actual| promise is resolved correctly.
+     * Check if |actual| promise is resolved correctly. Note that the returned
+     * result from promise object will be passed to the following then()
+     * function.
      *
      * @example
-     *   should('My promise', promise).beResolve().then(nextStuff);
+     *   should('My promise', promise).beResolve().then((result) => {
+     *     console.log(result);
+     *   });
      *
      * @result
      *   "PASS   My promise resolved correctly."
      *   "FAIL X My promise rejected *INCORRECTLY* with _ERROR_."
      */
     beResolved () {
-      return this._actual.then(function () {
+      return this._actual.then(function (result) {
           this._assert(true, '${actual} resolved correctly.', null);
+          return result;
         }.bind(this), function (error) {
           this._assert(false, null,
               '${actual} rejected incorrectly with ' + error + '.');
@@ -1099,6 +1104,51 @@ window.Audit = (function () {
 
   }
 
+  /**
+   * Load file from a given URL and pass ArrayBuffer to the following promise.
+   * @param  {String} fileUrl file URL.
+   * @return {Promise}
+   *
+   * @example
+   *   Audit.loadFileFromUrl('resources/my-sound.ogg').then((response) => {
+   *       audioContext.decodeAudioData(response).then((audioBuffer) => {
+   *           // Do something with AudioBuffer.
+   *       });
+   *   });
+   */
+  function loadFileFromUrl (fileUrl) {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.open('GET', fileUrl);
+      xhr.responseType = 'arraybuffer';
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          resolve(xhr.response);
+        } else {
+          let errorMessage = 'loadFile: Request failed when loading ' +
+              fileUrl + '. (' + xhr.statusText + ')';
+          if (reject) {
+            reject(errorMessage);
+          } else {
+            new Error(errorMessage);
+          }
+        }
+      };
+
+      xhr.onerror = (event) => {
+        let errorMessage =
+            'loadFile: Network failure when loading ' + fileUrl + '.';
+        if (reject) {
+          reject(errorMessage);
+        } else {
+          new Error(errorMessage);
+        }
+      };
+
+      xhr.send();
+    });
+  }
 
   /**
    * @class Audit
@@ -1129,7 +1179,13 @@ window.Audit = (function () {
       }
 
       return new TaskRunner();
-    }
+    },
+
+    /**
+     * Load file from a given URL and pass ArrayBuffer to the following promise.
+     * See |loadFileFromUrl| method for the detail.
+     */
+    loadFileFromUrl: loadFileFromUrl
 
   };
 

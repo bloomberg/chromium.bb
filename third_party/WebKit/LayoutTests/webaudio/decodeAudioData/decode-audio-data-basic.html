@@ -1,216 +1,171 @@
 <!doctype html>
 <html>
 <head>
-  <script src="../../resources/js-test.js"></script>
-  <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/audit.js"></script>
   <title>Test decodeAudioData promises</title>
 </head>
-
 <body>
   <script>
-    description("Basic tests for decodeAudioData promise.");
-    window.jsTestIsAsync = true;
+    // Use offline context for decoding because we want a fixed known sample
+    // rate, independent of the hardware because the test file is encoded at
+    // 44.1 kHz.  If we don't, decodeAudioData() will resample the data messing
+    // up the assumptions in this test.  The length is unimportant.
+    let context = new OfflineAudioContext(1, 1, 44100);
 
-    // Use offline context for decoding because we want a fixed know sample rate, independent of the
-    // hardware because the test file is encoded at 44.1 kHz.  If we don't decodeAudioData will
-    // resample the data messing up the assumptions in this test.  The length is unimportant.
-    var context = new OfflineAudioContext(1, 1, 44100);
+    // Test file URLs.
+    let validAudioFileUrl = '../resources/media/24bit-44khz.wav';
+    let invalidAudioFileUrl = '../resources/media/invalid-audio-file.txt';
 
-    // Test files for decodeAudioData
-    var validAudioFile = "../resources/media/24bit-44khz.wav";
-    var invalidAudioFile = "../resources/media/invalid-audio-file.txt";
+    // Global storage for array buffers from XHR.
+    let validArrayBuffer;
+    let invalidArrayBuffer;
 
-    // Decoded data from validAudioFile
-    var referenceDecodedAudioBuffer;
-    // Encoded audio data for testing decodeAudioData after the context has been closed.
-    var encodedAudioData;
-    // Decoded data from decodeAudioData after the context has been closed.
-    var decodedAudioBufferAfterClose;
+    // Decoded data from validAudioFile.
+    let referenceDecodedAudioBuffer;
 
-    // Utility to load an encoded audio file from |url| and decode it.  |success| and |failure| are
-    // functions to handle the then and else cases of the promise returned by decodeAudioData.
-    function runDecode(url, success, failure, done) {
-      var request = new XMLHttpRequest();
-      request.open("GET", url, true);
-      request.responseType = "arraybuffer";
+    let audit = Audit.createTaskRunner();
 
-      request.onload = function () {
-        context.decodeAudioData(request.response)
-          .then(success, failure)
-          .then(done);
+    // Preload ArrayBuffer and the reference AudioBuffer from URLs.
+    audit.define('preload-arraybuffer', (task, should) => {
+      Promise
+          .all([
+            Audit.loadFileFromUrl(validAudioFileUrl),
+            Audit.loadFileFromUrl(invalidAudioFileUrl)
+          ])
+          .then((arrayBuffers) => {
+            validArrayBuffer = arrayBuffers[0];
+            invalidArrayBuffer = arrayBuffers[1];
+            context.decodeAudioData(validArrayBuffer).then((audioBuffer) => {
+              referenceDecodedAudioBuffer = audioBuffer;
+              task.done();
+            })
+          });
+    });
+
+    // Decode a valid encoded file and verify that the promise succeeds
+    // correctly.
+    audit.define('decode-valid-file', (task, should) => {
+      // Note that the order of completion for each promise is undefined and
+      // we do not care about it in this test.
+      Promise
+          .all([
+            should(context.decodeAudioData(validArrayBuffer),
+                   'Decoding a valid audio file')
+                .beResolved(),
+            should(context.decodeAudioData(invalidArrayBuffer),
+                   'Decoding an invalid audio file')
+                .beRejected('EncodingError'),
+            should(context.decodeAudioData(null), 'Decoding null AudioBuffer')
+                .beRejected()
+          ])
+          .then(() => task.done());
+    });
+
+    // Decode a valid file and verify that the promise is fulfilled and the
+    // successCallback is invoked and both have identical decoded audio buffers.
+    audit.define("promise-and-success-callback", (task, should) => {
+      let bufferByCallback;
+      let bufferByPromise;
+
+      // Use one callback for success and error. |callbackArg| is a parameter
+      // for callback functions; it is a decoded audio buffer for success case
+      // and an error object for failure case.
+      let successOrErrorCallback = (callbackArg) => {
+        should(callbackArg instanceof AudioBuffer,
+               'Decoding valid file by callback function')
+            .message('successCallback invoked correctly',
+                     'errorCallback incorrectly invoked with ' + callbackArg);
+        bufferByCallback = callbackArg;
       };
 
-      request.send();
-    }
+      // Step 1: Decode a file with callback functions.
+      let step1 = context.decodeAudioData(validArrayBuffer,
+                                          successOrErrorCallback,
+                                          successOrErrorCallback);
 
-    // Compare that two audio buffers are the same
-    function audioBuffersCompareEqual(actualBuffer, expectedBuffer) {
-      var success;
+      // Step 2: Then decode a file with promise pattern.
+      let step2 = should(step1, 'Decoding a file via promise')
+                      .beResolved()
+                      .then((audioBuffer) => {
+                        bufferByPromise = audioBuffer;
+                      });
 
-      success = Should("Decoded buffer length (frames)", actualBuffer.length).beEqualTo(expectedBuffer.length);
-
-      success = Should("Decoded buffer duration (sec)",
-        actualBuffer.duration).beEqualTo(expectedBuffer.duration) && success;
-
-      success = Should("Decoded buffer rate (Hz)",
-        actualBuffer.sampleRate).beEqualTo(expectedBuffer.sampleRate) && success;
-
-      success = Should("Number of channels in decoded buffer",
-        actualBuffer.numberOfChannels).beEqualTo(expectedBuffer.numberOfChannels) && success;
-
-      for (var c = 0; c < expectedBuffer.numberOfChannels; ++c) {
-        var actualData = actualBuffer.getChannelData(c);
-        var expectedData = expectedBuffer.getChannelData(c);
-        success = Should("Decoded buffer channel " + c, actualData).beEqualToArray(expectedData) &&
-          success;
-      }
-
-      return success;
-    }
-    // Tests
-    var audit = Audit.createTaskRunner();
-
-    // Test that a null audioBuffer causes the promise to be rejected with an InvalidStateError.
-    audit.defineTask("null-audiobuffer", function (done) {
-      Should("decodeAudioData(null)", context.decodeAudioData(null)).beRejected()
-        .then(done);
+      // Step 3: compare two buffers from Step 1 and Step 2.
+      step2.then(() => {
+        should(bufferByCallback === bufferByPromise,
+               'Two buffers decoded by callback function and promise')
+            .message('are identical', 'are different');
+        task.done();
+      });
     });
 
-    // Decode a valid encoded file and verify that the promise succeeds correctly.
-    audit.defineTask('decode-valid-file', function (done) {
-      var url = validAudioFile;
-      var prefix = "Decode valid file with promise: ";
-      runDecode(url,
-        function (buffer) {
-          // Save the buffer for later testing.
-          referenceDecodedAudioBuffer = buffer;
-          testPassed(prefix + "Correctly succeeded in decoding " + url);
-        },
-        function (e) {
-          testFailed(prefix + "Incorrectly failed to decode " + url + ": " + e.toString());
-        },
-        done);
-    });
-
-    // Decode a invalid encoded file and verify that the promise is rejected correctly.
-    audit.defineTask("decode-invalid-file", function (done) {
-      var url = invalidAudioFile;
-      var prefix = "Decode invalid file with promise: ";
-      runDecode(url,
-        function (buffer) {
-          testFailed(prefix + "Incorrectly succeeded in decoding " + url);
-        },
-        function (e) {
-          testPassed(prefix + "Correctly failed to decode " + url + ": " + e.toString());
-        },
-        done);
-    });
-
-    // Decode a valid file and verify that the promise is fulfilled and the successCallback is
-    // invoked and both have identical decode audio buffers.
-    audit.defineTask("promise-and-success-callback", function (done) {
-      var request = new XMLHttpRequest();
-      request.open("GET", validAudioFile, true);
-      request.responseType = "arraybuffer";
-
-      request.onload = function () {
-        var prefix = "Decoding valid file with promise and callback: ";
-        // The buffer returned by the success callback
-        var callbackBuffer;
-        // The buffer returned by the promise
-        var promiseBuffer;
-
-        context.decodeAudioData(request.response, function (buffer) {
-            testPassed(prefix + "successCallback invoked correctly");
-            callbackBuffer = buffer;
-          }, function (e) {
-            testFailed(prefix + "errorCallback incorrectly invoked with " + e);
-          })
-          .then(function (buffer) {
-            testPassed(prefix + "Promise correctly fulfilled");
-            promiseBuffer = buffer;
-          }, function (e) {
-            testFailed(prefix + "Promise incorrectly rejected with " + e);
-          })
-          .then(function () {
-            if (promiseBuffer === callbackBuffer)
-              testPassed(prefix + "Promise and successCallback returned the same buffer");
-            else
-              testFailed(prefix +
-                "Promise and successCallback returned different buffers: " +
-                promiseBuffer + " " + callbackBuffer);
-          })
-          .then(done);
+    // Decode an invalid file and verify that the promise is rejected and the
+    // errorCallback is invoked.
+    audit.define("promise-and-error-callback", (task, should) => {
+      let successOrErrorCallback = (callbackArg) => {
+        should(callbackArg instanceof Error,
+               'Decoding invalid file with promise and callback:')
+            .message('errorCallback invoked correctly with ' + callbackArg,
+                     'successCallback should not have invoked');
       };
 
-      request.send();
+      let decodeAudioDataPromise = context.decodeAudioData(
+          invalidArrayBuffer, successOrErrorCallback, successOrErrorCallback);
+
+      should(decodeAudioDataPromise, 'decodeAudioData promise')
+          .beRejected('EncodingError')
+          .then(() => task.done());
     });
 
-    // Decode an invalid file and verify that the promise is rejected and the errorCallback is
-    // invoked.
-    audit.defineTask("promise-and-error-callback", function(done) {
-      var request = new XMLHttpRequest();
-      request.open("GET", invalidAudioFile, true);
-      request.responseType = "arraybuffer";
+    // decodeAudioData() should be functional even after the associated context
+    // is closed.
+    // TODO(crbug.com/692650)
+    audit.define('close-context-with-pending-decode', (task, should) => {
+      // Use one handler for resolve and reject. |promiseArg| is a parameter for
+      // handlers; it is a decoded audio buffer for success case and an error
+      // object for failure case.
+      let resolveOrReject = (promiseArg) => {
+        let didDecode = promiseArg instanceof AudioBuffer;
 
-      request.onload = function() {
-        var prefix = "Decoding invalid file with promise and callback:";
+        if (didDecode) {
+          // Compare two decoded AudioBuffers.
+          let actual = promiseArg;
+          let expected = referenceDecodedAudioBuffer;
+          should(actual.length, 'Decoded buffer length (frames)')
+              .beEqualTo(expected.length);
+          should(actual.duration, 'Decoded buffer duration (sec)')
+              .beEqualTo(expected.duration);
+          should(actual.sampleRate, 'Decoded buffer sample rate (Hz)')
+              .beEqualTo(expected.sampleRate);
+          should(actual.numberOfChannels,
+                 'Number of channels in decoded buffer')
+              .beEqualTo(expected.numberOfChannels);
+          for (let c = 0; c < expected.numberOfChannels; ++c) {
+            let actualChannelData = actual.getChannelData(c);
+            let expectedChannelData = expected.getChannelData(c);
+            should(actualChannelData, 'Decoded buffer channel #' + c)
+                .beEqualToArray(expectedChannelData,
+                                'the expected channel #' + c);
+          }
+          should(task.state, 'The buffer')
+              .message('correctly decoded after the context has been closed',
+                       'decoding succeeded but the data is incorrect');
+        }
 
-        Should(prefix, context.decodeAudioData(request.response, function () {
-            testFailed(prefix + " successCallback invoked but should not have been");
-          }, function (e) {
-            testPassed(prefix + " errorCallback invoked correctly with: " + e);
-          })).beRejected().then(done, done);
+        should(didDecode, 'Decoding ArrayBuffer after context has been closed')
+            .message('completed successfully', 'failed : ' + promiseArg);
       };
 
-      request.send();
-    });
-
-    // Just load up a file so we can run decodeAudioData on it
-    audit.defineTask("load-data", function (done) {
-      var request = new XMLHttpRequest();
-      request.open("GET", validAudioFile, true);
-      request.responseType = "arraybuffer";
-
-      request.onload = function () {
-        encodedAudioData = request.response;
-        done();
-      };
-
-      request.send();
-    });
-
-    // If the context is closing before decodeAudioData has finished decoding, we should reject the
-    // promise from decodeAudioData.
-    audit.defineTask("close-context-with-pending-decode", function (done) {
-      var onlineContext = new AudioContext();
+      let onlineContext = new AudioContext();
       onlineContext.close()
-        .then(function () {
-          return context.decodeAudioData(encodedAudioData);
-        })
-        .then(function (buffer) {
-            // Compare this buffer with the reference decoded buffer (that we obtained earlier).  Pass
-            // if they're identical.
-            if (audioBuffersCompareEqual(buffer, referenceDecodedAudioBuffer))
-              testPassed("Correctly decoded data after the context has been closed");
-            else
-              testFailed("decodeAudioData succeeded, but data is incorrect");
-          },
-          function (e) {
-            testFailed("Failed to decode valid file after context has been closed: " + e);
-          })
-        .then(done, done);
+          .then(() => { return context.decodeAudioData(validArrayBuffer); })
+          .then(resolveOrReject, resolveOrReject)
+          .then(() => { task.done(); });
     });
 
-    audit.defineTask("finish", function (done) {
-      finishJSTest();
-      done();
-    });
-
-    audit.runTasks();
-
-    successfullyParsed = true;
-  </script>
+    audit.run();
+</script>
 </body>
 </html>
