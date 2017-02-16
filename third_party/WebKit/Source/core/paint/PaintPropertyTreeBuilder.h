@@ -15,6 +15,7 @@
 namespace blink {
 
 class FrameView;
+class LayoutBoxModelObject;
 class LayoutObject;
 
 // The context for PaintPropertyTreeBuilder.
@@ -99,9 +100,9 @@ class PaintPropertyTreeBuilder {
   // date.
   void updateProperties(FrameView&, PaintPropertyTreeBuilderContext&);
 
-  // Update the context to account for positioning. No paint properties are
-  // updated but this can affect the current paint offset which will force a
-  // subtree update.
+  // Update the context to account for positioning. Paint offset and
+  // paint offset translation (if needed) are updated. If paint offset changes
+  // we will force subtree update.
   void updateContextForBoxPosition(const LayoutObject&,
                                    PaintPropertyTreeBuilderContext&);
 
@@ -116,8 +117,10 @@ class PaintPropertyTreeBuilder {
                                    PaintPropertyTreeBuilderContext&);
 
  private:
+  ALWAYS_INLINE static void updatePaintOffset(const LayoutBoxModelObject&,
+                                              PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updatePaintOffsetTranslation(
-      const LayoutObject&,
+      const LayoutBoxModelObject&,
       PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateTransform(const LayoutObject&,
                                             PaintPropertyTreeBuilderContext&);

@@ -216,7 +216,7 @@ void PaintPropertyTreeBuilder::updateProperties(
 }
 
 void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
-    const LayoutObject& object,
+    const LayoutBoxModelObject& object,
     PaintPropertyTreeBuilderContext& context) {
   bool usesPaintOffsetTranslation = false;
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
@@ -224,12 +224,17 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
     // Root layer scrolling always creates a translation node for LayoutView to
     // ensure fixed and absolute contexts use the correct transform space.
     usesPaintOffsetTranslation = true;
-  } else if (object.isBoxModelObject() &&
-             context.current.paintOffset != LayoutPoint()) {
-    PaintLayer* layer = toLayoutBoxModelObject(object).layer();
-    if (layer &&
-        layer->paintsWithTransform(GlobalPaintFlattenCompositingLayers))
-      usesPaintOffsetTranslation = true;
+  } else if (object.hasLayer() &&
+             context.current.paintOffset != LayoutPoint() &&
+             object.layer()->paintsWithTransform(
+                 GlobalPaintFlattenCompositingLayers)) {
+    usesPaintOffsetTranslation = true;
+  }
+
+  if (!usesPaintOffsetTranslation) {
+    if (auto* properties = object.getMutableForPainting().paintProperties())
+      context.forceSubtreeUpdate |= properties->clearPaintOffsetTranslation();
+    return;
   }
 
   // We should use the same subpixel paint offset values for snapping
@@ -243,32 +248,22 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
   LayoutPoint fractionalPaintOffset =
       LayoutPoint(context.current.paintOffset - roundedPaintOffset);
 
-  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
-    if (usesPaintOffsetTranslation) {
-      auto& properties = object.getMutableForPainting().ensurePaintProperties();
-      context.forceSubtreeUpdate |= properties.updatePaintOffsetTranslation(
-          context.current.transform,
-          TransformationMatrix().translate(roundedPaintOffset.x(),
-                                           roundedPaintOffset.y()),
-          FloatPoint3D(), context.current.shouldFlattenInheritedTransform,
-          context.current.renderingContextId);
-    } else {
-      if (auto* properties = object.getMutableForPainting().paintProperties())
-        context.forceSubtreeUpdate |= properties->clearPaintOffsetTranslation();
-    }
-  }
+  auto& properties = object.getMutableForPainting().ensurePaintProperties();
+  context.forceSubtreeUpdate |= properties.updatePaintOffsetTranslation(
+      context.current.transform,
+      TransformationMatrix().translate(roundedPaintOffset.x(),
+                                       roundedPaintOffset.y()),
+      FloatPoint3D(), context.current.shouldFlattenInheritedTransform,
+      context.current.renderingContextId);
 
-  const auto* properties = object.paintProperties();
-  if (properties && properties->paintOffsetTranslation()) {
-    context.current.transform = properties->paintOffsetTranslation();
-    context.current.paintOffset = fractionalPaintOffset;
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
-        object.isLayoutView()) {
-      context.absolutePosition.transform = properties->paintOffsetTranslation();
-      context.fixedPosition.transform = properties->paintOffsetTranslation();
-      context.absolutePosition.paintOffset = LayoutPoint();
-      context.fixedPosition.paintOffset = LayoutPoint();
-    }
+  context.current.transform = properties.paintOffsetTranslation();
+  context.current.paintOffset = fractionalPaintOffset;
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+      object.isLayoutView()) {
+    context.absolutePosition.transform = properties.paintOffsetTranslation();
+    context.fixedPosition.transform = properties.paintOffsetTranslation();
+    context.absolutePosition.paintOffset = LayoutPoint();
+    context.fixedPosition.paintOffset = LayoutPoint();
   }
 }
 
@@ -863,31 +858,25 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(
   }
 }
 
-void PaintPropertyTreeBuilder::updateContextForBoxPosition(
-    const LayoutObject& object,
+void PaintPropertyTreeBuilder::updatePaintOffset(
+    const LayoutBoxModelObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (!object.isBoxModelObject())
-    return;
-
-  const LayoutBoxModelObject& boxModelObject = toLayoutBoxModelObject(object);
-
-  if (boxModelObject.isFloating())
+  if (object.isFloating())
     context.current.paintOffset = context.paintOffsetForFloat;
 
   // Multicolumn spanners are painted starting at the multicolumn container (but
   // still inherit properties in layout-tree order) so reset the paint offset.
-  if (boxModelObject.isColumnSpanAll())
-    context.current.paintOffset = boxModelObject.container()->paintOffset();
+  if (object.isColumnSpanAll())
+    context.current.paintOffset = object.container()->paintOffset();
 
   switch (object.styleRef().position()) {
     case EPosition::kStatic:
       break;
     case EPosition::kRelative:
-      context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
+      context.current.paintOffset += object.offsetForInFlowPosition();
       break;
     case EPosition::kAbsolute: {
-      DCHECK(context.containerForAbsolutePosition ==
-             boxModelObject.container());
+      DCHECK(context.containerForAbsolutePosition == object.container());
       context.current = context.absolutePosition;
 
       // Absolutely positioned content in an inline should be positioned
@@ -903,7 +892,7 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       break;
     }
     case EPosition::kSticky:
-      context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
+      context.current.paintOffset += object.offsetForInFlowPosition();
       break;
     case EPosition::kFixed:
       context.current = context.fixedPosition;
@@ -912,28 +901,44 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       ASSERT_NOT_REACHED();
   }
 
-  if (boxModelObject.isBox()) {
+  if (object.isBox()) {
     // TODO(pdr): Several calls in this function walk back up the tree to
     // calculate containers (e.g., physicalLocation, offsetForInFlowPosition*).
     // The containing block and other containers can be stored on
     // PaintPropertyTreeBuilderContext instead of recomputing them.
-    context.current.paintOffset.moveBy(
-        toLayoutBox(boxModelObject).physicalLocation());
+    context.current.paintOffset.moveBy(toLayoutBox(object).physicalLocation());
     // This is a weird quirk that table cells paint as children of table rows,
     // but their location have the row's location baked-in.
     // Similar adjustment is done in LayoutTableCell::offsetFromContainer().
-    if (boxModelObject.isTableCell()) {
-      LayoutObject* parentRow = boxModelObject.parent();
+    if (object.isTableCell()) {
+      LayoutObject* parentRow = object.parent();
       DCHECK(parentRow && parentRow->isTableRow());
       context.current.paintOffset.moveBy(
           -toLayoutBox(parentRow)->physicalLocation());
     }
   }
+}
+
+void PaintPropertyTreeBuilder::updateContextForBoxPosition(
+    const LayoutObject& object,
+    PaintPropertyTreeBuilderContext& context) {
+  if (object.isBoxModelObject()) {
+    updatePaintOffset(toLayoutBoxModelObject(object), context);
+    updatePaintOffsetTranslation(toLayoutBoxModelObject(object), context);
+  }
+
+  if (object.paintOffset() == context.current.paintOffset)
+    return;
 
   // Many paint properties depend on paint offset so we force an update of
   // the entire subtree on paint offset changes.
-  if (object.paintOffset() != context.current.paintOffset)
-    context.forceSubtreeUpdate = true;
+  context.forceSubtreeUpdate = true;
+
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    object.getMutableForPainting().setShouldDoFullPaintInvalidation(
+        PaintInvalidationLocationChange);
+  }
+  object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
@@ -944,7 +949,6 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
 #endif
 
   if (object.isBoxModelObject() || object.isSVG()) {
-    updatePaintOffsetTranslation(object, context);
     updateTransform(object, context);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       updateEffect(object, context);
@@ -952,15 +956,6 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     updateLocalBorderBoxContext(object, context);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       updateScrollbarPaintOffset(object, context);
-  }
-
-  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-        object.paintOffset() != context.current.paintOffset) {
-      object.getMutableForPainting().setShouldDoFullPaintInvalidation(
-          PaintInvalidationLocationChange);
-    }
-    object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
   }
 }
 
