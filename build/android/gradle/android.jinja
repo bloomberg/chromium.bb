@@ -40,6 +40,8 @@ android {
     compileSdkVersion {{ compile_sdk_version }}
     buildToolsVersion "{{ build_tools_version }}"
     publishNonDefault true
+    // Multiple targets use the package name "dummy.package"
+    enforceUniquePackageName false
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
