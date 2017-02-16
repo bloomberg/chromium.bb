@@ -167,8 +167,6 @@ class MockDemuxerStream : public DemuxerStream {
   void set_liveness(Liveness liveness);
 
   VideoRotation video_rotation() override;
-  MOCK_CONST_METHOD0(enabled, bool());
-  MOCK_METHOD2(set_enabled, void(bool, base::TimeDelta));
 
  private:
   Type type_;

@@ -103,14 +103,6 @@ VideoRotation FakeDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
-bool FakeDemuxerStream::enabled() const {
-  return true;
-}
-
-void FakeDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
-  NOTIMPLEMENTED();
-}
-
 void FakeDemuxerStream::HoldNextRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   read_to_hold_ = next_read_num_;

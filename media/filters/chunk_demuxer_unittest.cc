@@ -4650,12 +4650,11 @@ void OnStreamStatusChanged(base::WaitableEvent* event,
                            DemuxerStream* stream,
                            bool enabled,
                            base::TimeDelta) {
-  EXPECT_EQ(enabled, stream->enabled());
   event->Signal();
 }
 
 void CheckStreamStatusNotifications(MediaResource* media_resource,
-                                    DemuxerStream* stream) {
+                                    ChunkDemuxerStream* stream) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
 
@@ -4675,10 +4674,12 @@ void CheckStreamStatusNotifications(MediaResource* media_resource,
 
 TEST_F(ChunkDemuxerTest, StreamStatusNotifications) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  DemuxerStream* audio_stream = GetStream(DemuxerStream::AUDIO);
+  ChunkDemuxerStream* audio_stream =
+      static_cast<ChunkDemuxerStream*>(GetStream(DemuxerStream::AUDIO));
   EXPECT_NE(nullptr, audio_stream);
   CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
-  DemuxerStream* video_stream = GetStream(DemuxerStream::VIDEO);
+  ChunkDemuxerStream* video_stream =
+      static_cast<ChunkDemuxerStream*>(GetStream(DemuxerStream::VIDEO));
   EXPECT_NE(nullptr, video_stream);
   CheckStreamStatusNotifications(demuxer_.get(), video_stream);
 }

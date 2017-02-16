@@ -94,19 +94,6 @@ class MEDIA_EXPORT DemuxerStream {
 
   virtual VideoRotation video_rotation() = 0;
 
-  // TODO(servolk): Remove enabled / set_enabled methods from DemuxerStream
-  // interface, since those are only called from demuxers.
-
-  // Indicates whether a DemuxerStream is currently enabled (i.e. should be
-  // decoded and rendered) or not.
-  virtual bool enabled() const = 0;
-
-  // Disables and re-enables the stream. Reading from a disabled stream will
-  // return an end-of-stream (EOS) buffer. When a stream is re-enabled, it needs
-  // to know the current playback position |timestamp| in order to resume
-  // reading data from a key frame preceeding the |timestamp|.
-  virtual void set_enabled(bool enabled, base::TimeDelta timestamp) = 0;
-
  protected:
   // Only allow concrete implementations to get deleted.
   virtual ~DemuxerStream();

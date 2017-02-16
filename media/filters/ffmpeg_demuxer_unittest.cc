@@ -534,8 +534,10 @@ TEST_F(FFmpegDemuxerTest, Seeking_PreferredStreamSelection) {
   InitializeDemuxerWithTimelineOffset(
       base::Time::FromJsTime(kTimelineOffsetMs));
 
-  DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
-  DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
+  FFmpegDemuxerStream* video =
+      static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::VIDEO));
+  FFmpegDemuxerStream* audio =
+      static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::AUDIO));
 
   const base::TimeDelta video_start_time =
       base::TimeDelta::FromMicroseconds(400000);
@@ -1493,7 +1495,8 @@ TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledVideoStream) {
   CreateDemuxer("bear-320x240-video-only.webm");
   InitializeDemuxer();
   EXPECT_EQ(nullptr, GetStream(DemuxerStream::AUDIO));
-  DemuxerStream* vstream = GetStream(DemuxerStream::VIDEO);
+  FFmpegDemuxerStream* vstream =
+      static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::VIDEO));
   EXPECT_NE(nullptr, vstream);
   EXPECT_EQ(vstream, preferred_seeking_stream(base::TimeDelta()));
 
@@ -1508,7 +1511,8 @@ TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledVideoStream) {
 TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledAudioStream) {
   CreateDemuxer("bear-320x240-audio-only.webm");
   InitializeDemuxer();
-  DemuxerStream* astream = GetStream(DemuxerStream::AUDIO);
+  FFmpegDemuxerStream* astream =
+      static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::AUDIO));
   EXPECT_NE(nullptr, astream);
   EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
   EXPECT_EQ(astream, preferred_seeking_stream(base::TimeDelta()));

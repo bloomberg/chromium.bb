@@ -59,7 +59,7 @@ class FFmpegGlue;
 
 typedef std::unique_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
-class FFmpegDemuxerStream : public DemuxerStream {
+class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
  public:
   // Attempts to create FFmpegDemuxerStream form the given AVStream. Will return
   // null if the AVStream cannot be translated into a valid decoder config.
@@ -114,8 +114,9 @@ class FFmpegDemuxerStream : public DemuxerStream {
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   VideoRotation video_rotation() override;
-  bool enabled() const override;
-  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+
+  bool enabled() const;
+  void set_enabled(bool enabled, base::TimeDelta timestamp);
 
   void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 
@@ -363,7 +364,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   const MediaTracksUpdatedCB media_tracks_updated_cb_;
 
-  std::map<MediaTrack::Id, DemuxerStream*> track_id_to_demux_stream_map_;
+  std::map<MediaTrack::Id, FFmpegDemuxerStream*> track_id_to_demux_stream_map_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtr<FFmpegDemuxer> weak_this_;

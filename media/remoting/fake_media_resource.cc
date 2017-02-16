@@ -72,10 +72,6 @@ VideoRotation FakeDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
-bool FakeDemuxerStream::enabled() const {
-  return true;
-}
-
 void FakeDemuxerStream::CreateFakeFrame(size_t size,
                                         bool key_frame,
                                         int pts_ms) {

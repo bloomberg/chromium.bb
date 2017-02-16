@@ -31,8 +31,6 @@ class FakeDemuxerStream : public DemuxerStream {
   void EnableBitstreamConverter() override {}
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
-  bool enabled() const override;
-  void set_enabled(bool enabled, base::TimeDelta timestamp) override {}
 
   void CreateFakeFrame(size_t size, bool key_frame, int pts_ms);
 

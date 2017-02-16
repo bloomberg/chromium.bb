@@ -114,8 +114,9 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_decoder_config() override;
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
-  bool enabled() const override;
-  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+
+  bool enabled() const;
+  void set_enabled(bool enabled, base::TimeDelta timestamp);
 
   void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 
@@ -453,7 +454,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   int detected_video_track_count_;
   int detected_text_track_count_;
 
-  std::map<MediaTrack::Id, DemuxerStream*> track_id_to_demux_stream_map_;
+  std::map<MediaTrack::Id, ChunkDemuxerStream*> track_id_to_demux_stream_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxer);
 };

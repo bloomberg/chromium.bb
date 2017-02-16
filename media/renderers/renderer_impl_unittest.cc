@@ -97,7 +97,6 @@ class RendererImplTest : public ::testing::Test {
       DemuxerStream::Type type) {
     std::unique_ptr<StrictMock<MockDemuxerStream>> stream(
         new StrictMock<MockDemuxerStream>(type));
-    EXPECT_CALL(*stream, enabled()).WillRepeatedly(Return(true));
     EXPECT_CALL(*demuxer_, SetStreamStatusChangeCB(_))
         .Times(testing::AnyNumber());
     return stream;

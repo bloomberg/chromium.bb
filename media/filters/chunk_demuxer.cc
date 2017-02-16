@@ -695,9 +695,9 @@ void ChunkDemuxer::OnEnabledAudioTracksChanged(
     const std::vector<MediaTrack::Id>& track_ids,
     base::TimeDelta currTime) {
   base::AutoLock auto_lock(lock_);
-  std::set<DemuxerStream*> enabled_streams;
+  std::set<ChunkDemuxerStream*> enabled_streams;
   for (const auto& id : track_ids) {
-    DemuxerStream* stream = track_id_to_demux_stream_map_[id];
+    ChunkDemuxerStream* stream = track_id_to_demux_stream_map_[id];
     DCHECK(stream);
     DCHECK_EQ(DemuxerStream::AUDIO, stream->type());
     enabled_streams.insert(stream);
@@ -723,7 +723,7 @@ void ChunkDemuxer::OnSelectedVideoTrackChanged(
   DCHECK_LE(track_ids.size(), 1u);
 
   base::AutoLock auto_lock(lock_);
-  DemuxerStream* selected_stream = nullptr;
+  ChunkDemuxerStream* selected_stream = nullptr;
   if (!track_ids.empty()) {
     selected_stream = track_id_to_demux_stream_map_[track_ids[0]];
     DCHECK(selected_stream);

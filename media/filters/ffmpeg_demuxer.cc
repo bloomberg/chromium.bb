@@ -1630,9 +1630,9 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     base::TimeDelta currTime) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  std::set<DemuxerStream*> enabled_streams;
+  std::set<FFmpegDemuxerStream*> enabled_streams;
   for (const auto& id : track_ids) {
-    DemuxerStream* stream = track_id_to_demux_stream_map_[id];
+    FFmpegDemuxerStream* stream = track_id_to_demux_stream_map_[id];
     DCHECK(stream);
     DCHECK_EQ(DemuxerStream::AUDIO, stream->type());
     enabled_streams.insert(stream);
@@ -1660,7 +1660,7 @@ void FFmpegDemuxer::OnSelectedVideoTrackChanged(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_LE(track_ids.size(), 1u);
 
-  DemuxerStream* selected_stream = nullptr;
+  FFmpegDemuxerStream* selected_stream = nullptr;
   if (!track_ids.empty()) {
     selected_stream = track_id_to_demux_stream_map_[track_ids[0]];
     DCHECK(selected_stream);

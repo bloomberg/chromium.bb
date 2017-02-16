@@ -44,8 +44,6 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
-  bool enabled() const override;
-  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
 
  private:
   void OnStreamReady(Type type,
