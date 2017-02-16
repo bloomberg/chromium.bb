@@ -386,7 +386,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             refreshSignIn();
 
-            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(this);
+            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete.
             if (!mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()) {

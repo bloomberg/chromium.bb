@@ -44,8 +44,7 @@ public class SignInPromo extends OptionalLeaf
     private final SigninObserver mObserver;
 
     public SignInPromo(SuggestionsUiDelegate uiDelegate) {
-        mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
-                             .getNewTabPageSigninPromoDismissed();
+        mDismissed = ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed();
 
         SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
         if (mDismissed) {
@@ -125,8 +124,7 @@ public class SignInPromo extends OptionalLeaf
         mDismissed = true;
         setVisible(false);
 
-        ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
-                .setNewTabPageSigninPromoDismissed(true);
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
         mObserver.unregister();
         itemRemovedCallback.onResult(ContextUtils.getApplicationContext().getString(getHeader()));
     }

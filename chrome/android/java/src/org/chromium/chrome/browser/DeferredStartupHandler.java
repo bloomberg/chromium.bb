@@ -263,7 +263,7 @@ public class DeferredStartupHandler {
                     crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
                     MinidumpUploadService.storeBreakpadUploadStatsInUma(
-                            ChromePreferenceManager.getInstance(mAppContext));
+                            ChromePreferenceManager.getInstance());
 
                     // Initialize the WebappRegistry if it's not already initialized. Must be in
                     // async task due to shared preferences disk access on N.
@@ -330,7 +330,7 @@ public class DeferredStartupHandler {
         ResolveInfo info = mAppContext.getPackageManager().resolveActivity(intent, 0);
         boolean isDefault = (info != null && info.match != 0
                 && mAppContext.getPackageName().equals(info.activityInfo.packageName));
-        ChromePreferenceManager.getInstance(mAppContext).setCachedChromeDefaultBrowser(isDefault);
+        ChromePreferenceManager.getInstance().setCachedChromeDefaultBrowser(isDefault);
     }
 
     /**

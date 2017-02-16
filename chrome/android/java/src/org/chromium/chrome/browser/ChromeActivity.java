@@ -307,7 +307,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually override
         // SysUtils.isLowEndDevice() with a switch so that they continue to see the normal UI. This
         // is only the case for grandfathered-in svelte users. We no longer do so for newer users.
-        if (!ChromePreferenceManager.getInstance(this).getAllowLowEndDeviceUi()) {
+        if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
             CommandLine.getInstance().appendSwitch(
                     BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
         }

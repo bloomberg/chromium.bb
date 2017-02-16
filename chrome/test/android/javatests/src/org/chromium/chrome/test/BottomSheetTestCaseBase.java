@@ -26,8 +26,7 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
         // TODO(dgn,mdjones): Chrome restarts when the ChromeHome feature flag value changes. That
         // crashes the test so we need to manually set the preference to match the flag before
         // Chrome initialises via super.setUp()
-        ChromePreferenceManager prefManager =
-                ChromePreferenceManager.getInstance(getInstrumentation().getTargetContext());
+        ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
         mOldChromeHomeFlagValue = prefManager.isChromeHomeEnabled();
         prefManager.setChromeHomeEnabled(true);
 
@@ -52,8 +51,7 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        ChromePreferenceManager.getInstance(getInstrumentation().getTargetContext())
-                .setChromeHomeEnabled(mOldChromeHomeFlagValue);
+        ChromePreferenceManager.getInstance().setChromeHomeEnabled(mOldChromeHomeFlagValue);
     }
 
     protected BottomSheetContent getBottomSheetContent() {

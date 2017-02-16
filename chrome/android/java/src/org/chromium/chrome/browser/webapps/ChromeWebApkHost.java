@@ -131,8 +131,7 @@ public class ChromeWebApkHost {
         // Will go away once the feature is enabled for everyone by default.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return ChromePreferenceManager.getInstance(
-                    ContextUtils.getApplicationContext()).getCachedWebApkRuntimeEnabled();
+            return ChromePreferenceManager.getInstance().getCachedWebApkRuntimeEnabled();
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -143,8 +142,7 @@ public class ChromeWebApkHost {
      * state to see if we should enable WebAPKs.
      */
     public static void cacheEnabledStateForNextLaunch() {
-        ChromePreferenceManager preferenceManager =
-                ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext());
+        ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
 
         boolean wasEnabled = isEnabledInPrefs();
         boolean isEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_A2HS);

@@ -135,8 +135,7 @@ public class SigninHelper {
 
         Account syncAccount = mChromeSigninController.getSignedInUser();
         if (syncAccount == null) {
-            ChromePreferenceManager chromePreferenceManager =
-                    ChromePreferenceManager.getInstance(mContext);
+            ChromePreferenceManager chromePreferenceManager = ChromePreferenceManager.getInstance();
             if (chromePreferenceManager.getShowSigninPromo()) return;
 
             // Never shows a signin promo if user has manually disconnected.

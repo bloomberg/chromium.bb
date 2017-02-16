@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -32,8 +31,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                Context context = getActivity().getApplicationContext();
-                mPolicy = new ContextualSearchPolicy(context, null, null);
+                mPolicy = new ContextualSearchPolicy(null, null);
             }
         });
     }

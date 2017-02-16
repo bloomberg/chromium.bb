@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -29,10 +27,9 @@ public class CtrSuppression extends ContextualSearchHeuristic {
     /**
      * Constructs an object that tracks impressions and clicks per user to produce CTR and
      * impression metrics.
-     * @param context An Android Context.
      */
-    CtrSuppression(Context context) {
-        mPreferenceManager = ChromePreferenceManager.getInstance(context);
+    CtrSuppression() {
+        mPreferenceManager = ChromePreferenceManager.getInstance();
 
         // This needs to be done last in this constructor because the native code may call
         // into this object.

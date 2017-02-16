@@ -4,15 +4,13 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.content.Context;
-
 /**
  * A mock ContextualSearchPolicy class that excludes any business logic.
  * TODO(mdjones): Allow the return values of these function to be set.
  */
 public class MockContextualSearchPolicy extends ContextualSearchPolicy {
-    public MockContextualSearchPolicy(Context context) {
-        super(context, null, null);
+    public MockContextualSearchPolicy() {
+        super(null, null);
     }
 
     @Override

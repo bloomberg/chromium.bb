@@ -213,7 +213,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         mNetworkCommunicator = this;
 
-        mPolicy = new ContextualSearchPolicy(mActivity, mSelectionController, mNetworkCommunicator);
+        mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
 
         mTranslateController = new ContextualSearchTranslateController(activity, mPolicy, this);
     }

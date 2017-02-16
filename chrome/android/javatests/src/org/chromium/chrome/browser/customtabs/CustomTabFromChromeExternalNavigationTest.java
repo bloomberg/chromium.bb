@@ -44,8 +44,8 @@ public class CustomTabFromChromeExternalNavigationTest extends CustomTabActivity
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         super.setUp();
 
-        ChromePreferenceManager.getInstance(getInstrumentation().getTargetContext())
-                .setCachedHerbFlavor(ChromeSwitches.HERB_FLAVOR_ELDERBERRY);
+        ChromePreferenceManager.getInstance().setCachedHerbFlavor(
+                ChromeSwitches.HERB_FLAVOR_ELDERBERRY);
     }
 
     @Override

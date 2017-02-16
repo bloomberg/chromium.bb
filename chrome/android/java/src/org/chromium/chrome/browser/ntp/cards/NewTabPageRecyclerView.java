@@ -620,7 +620,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         if (computeVerticalScrollOffset() != 0) return;
 
         // We only show the animation a certain number of times to a user.
-        ChromePreferenceManager manager = ChromePreferenceManager.getInstance(getContext());
+        ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
         int animCount = manager.getNewTabPageFirstCardAnimationRunCount();
         if (animCount > CardsVariationParameters.getFirstCardAnimationMaxRuns()) return;
         manager.setNewTabPageFirstCardAnimationRunCount(animCount + 1);
@@ -645,7 +645,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         // for future runs.
         if (!mFirstCardAnimationRun && !mCardImpressionAfterAnimationTracked) return;
 
-        ChromePreferenceManager.getInstance(getContext()).setCardsImpressionAfterAnimation(true);
+        ChromePreferenceManager.getInstance().setCardsImpressionAfterAnimation(true);
         mCardImpressionAfterAnimationTracked = true;
     }
 

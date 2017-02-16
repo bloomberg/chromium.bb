@@ -21,7 +21,7 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
             ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen) {
         super();
-        mCtrSuppression = new CtrSuppression(selectionController.getActivity());
+        mCtrSuppression = new CtrSuppression();
         mHeuristics.add(mCtrSuppression);
         RecentScrollTapSuppression scrollTapExperiment =
                 new RecentScrollTapSuppression(selectionController);

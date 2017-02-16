@@ -50,12 +50,11 @@ class ContextualSearchPolicy {
     private Integer mTapLimitForUndecided;
 
     /**
-     * @param context The Android Context.
+     * ContextualSearchPolicy constructor.
      */
-    public ContextualSearchPolicy(Context context,
-                                  ContextualSearchSelectionController selectionController,
-                                  ContextualSearchNetworkCommunicator networkCommunicator) {
-        mPreferenceManager = ChromePreferenceManager.getInstance(context);
+    public ContextualSearchPolicy(ContextualSearchSelectionController selectionController,
+            ContextualSearchNetworkCommunicator networkCommunicator) {
+        mPreferenceManager = ChromePreferenceManager.getInstance();
 
         mSelectionController = selectionController;
         mNetworkCommunicator = networkCommunicator;

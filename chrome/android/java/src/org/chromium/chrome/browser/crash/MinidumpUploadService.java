@@ -330,13 +330,13 @@ public class MinidumpUploadService extends IntentService {
      * @param fileName is the name of a minidump file that contains the type of crash.
      */
     private void incrementCrashSuccessUploadCount(String fileName) {
-        ChromePreferenceManager.getInstance(this)
-            .incrementCrashSuccessUploadCount(getCrashType(fileName));
+        ChromePreferenceManager.getInstance().incrementCrashSuccessUploadCount(
+                getCrashType(fileName));
     }
 
     private void incrementCrashFailureUploadCount(String fileName) {
-        ChromePreferenceManager.getInstance(this)
-            .incrementCrashFailureUploadCount(getCrashType(fileName));
+        ChromePreferenceManager.getInstance().incrementCrashFailureUploadCount(
+                getCrashType(fileName));
     }
 
     /**

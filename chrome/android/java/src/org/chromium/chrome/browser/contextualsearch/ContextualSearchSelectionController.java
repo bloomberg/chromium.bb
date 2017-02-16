@@ -364,7 +364,7 @@ public class ContextualSearchSelectionController {
             mWasTapGestureDetected = true;
             long tapTimeNanoseconds = System.nanoTime();
             // TODO(donnd): add a policy method to get adjusted tap count.
-            ChromePreferenceManager prefs = ChromePreferenceManager.getInstance(mActivity);
+            ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
             int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
                     - prefs.getContextualSearchTapQuickAnswerCount();
             // Explicitly destroy the old heuristics so native code can dispose data.

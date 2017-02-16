@@ -198,8 +198,7 @@ public class NewTabPageAdapterTest {
         ChromeFeatureList.setTestEnabledFeatures(Collections.<String>emptySet());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
-        assertFalse(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
-                            .getNewTabPageSigninPromoDismissed());
+        assertFalse(ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed());
         SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
@@ -220,8 +219,7 @@ public class NewTabPageAdapterTest {
         CardsVariationParameters.setTestVariationParams(null);
         ChromeFeatureList.setTestEnabledFeatures(null);
         SigninManager.setInstanceForTesting(null);
-        ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
-                .setNewTabPageSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
     }
 
     /**
@@ -791,8 +789,7 @@ public class NewTabPageAdapterTest {
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
-        ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
-                .setNewTabPageSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
         reloadNtp();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -803,8 +800,7 @@ public class NewTabPageAdapterTest {
 
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
-        assertTrue(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
-                           .getNewTabPageSigninPromoDismissed());
+        assertTrue(ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed());
 
         reloadNtp();
         assertFalse(isSignInPromoVisible());

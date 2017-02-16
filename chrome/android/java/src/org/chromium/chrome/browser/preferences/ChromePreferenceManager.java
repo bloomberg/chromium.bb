@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
@@ -59,22 +58,19 @@ public class ChromePreferenceManager {
     private static ChromePreferenceManager sPrefs;
 
     private final SharedPreferences mSharedPreferences;
-    private final Context mContext;
 
-    private ChromePreferenceManager(Context context) {
-        mContext = context.getApplicationContext();
+    private ChromePreferenceManager() {
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
     }
 
     /**
      * Get the static instance of ChromePreferenceManager if exists else create it.
-     * @param context
      * @return the ChromePreferenceManager singleton
      */
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    public static synchronized ChromePreferenceManager getInstance(Context context) {
+    public static synchronized ChromePreferenceManager getInstance() {
         if (sPrefs == null) {
-            sPrefs = new ChromePreferenceManager(context);
+            sPrefs = new ChromePreferenceManager();
         }
         return sPrefs;
     }
