@@ -53,6 +53,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
   api_schema.GetList("types", &type_definitions);
   const base::ListValue* event_definitions = nullptr;
   api_schema.GetList("events", &event_definitions);
+  const base::DictionaryValue* property_definitions = nullptr;
+  api_schema.GetDictionary("properties", &property_definitions);
 
   // Find the hooks for the API. If none exist, an empty set will be created so
   // we can use JS custom bindings.
@@ -69,8 +71,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
 
   return base::MakeUnique<APIBinding>(
       api_name, function_definitions, type_definitions, event_definitions,
-      send_request_, std::move(hooks), &type_reference_map_, &request_handler_,
-      &event_handler_);
+      property_definitions, send_request_, std::move(hooks),
+      &type_reference_map_, &request_handler_, &event_handler_);
 }
 
 void APIBindingsSystem::InitializeType(const std::string& type_name) {

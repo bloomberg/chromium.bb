@@ -72,6 +72,64 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   callback->Run(&args);
 }
 
+// Decorates |object_template| with the properties specified by |properties|.
+void DecorateTemplateWithProperties(
+    v8::Isolate* isolate,
+    v8::Local<v8::ObjectTemplate> object_template,
+    const base::DictionaryValue& properties) {
+  static const char kValueKey[] = "value";
+  for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
+       iter.Advance()) {
+    const base::DictionaryValue* dict = nullptr;
+    CHECK(iter.value().GetAsDictionary(&dict));
+    bool optional = false;
+    if (dict->GetBoolean("optional", &optional)) {
+      // TODO(devlin): What does optional even mean here? It's only used, it
+      // seems, for lastError and inIncognitoContext, which are both handled
+      // with custom bindings. Investigate, and remove.
+      continue;
+    }
+    std::string ref;
+    if (dict->GetString("$ref", &ref)) {
+      // TODO(devlin): Handle refs. These are tricky(er), because they represent
+      // a type that's defined in (currently) JS.
+      continue;
+    }
+    std::string type;
+    CHECK(dict->GetString("type", &type));
+    if (type != "object" && !dict->HasKey(kValueKey)) {
+      // TODO(devlin): What does a fundamental property not having a value mean?
+      // It doesn't seem useful, and looks like it's only used by runtime.id,
+      // which is set by custom bindings. Investigate, and remove.
+      continue;
+    }
+    if (type == "integer") {
+      int val = 0;
+      CHECK(dict->GetInteger(kValueKey, &val));
+      object_template->Set(isolate, iter.key().c_str(),
+                           v8::Integer::New(isolate, val));
+    } else if (type == "boolean") {
+      bool val = false;
+      CHECK(dict->GetBoolean(kValueKey, &val));
+      object_template->Set(isolate, iter.key().c_str(),
+                           v8::Boolean::New(isolate, val));
+    } else if (type == "string") {
+      std::string val;
+      CHECK(dict->GetString(kValueKey, &val)) << iter.key();
+      object_template->Set(isolate, iter.key().c_str(),
+                           gin::StringToSymbol(isolate, val));
+    } else if (type == "object") {
+      v8::Local<v8::ObjectTemplate> property_template =
+          v8::ObjectTemplate::New(isolate);
+      const base::DictionaryValue* property_dict = nullptr;
+      CHECK(dict->GetDictionary("properties", &property_dict));
+      DecorateTemplateWithProperties(isolate, property_template,
+                                     *property_dict);
+      object_template->Set(isolate, iter.key().c_str(), property_template);
+    }
+  }
+}
+
 }  // namespace
 
 APIBinding::Request::Request() {}
@@ -115,18 +173,27 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* function_definitions,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
+                       const base::DictionaryValue* property_definitions,
                        const SendRequestMethod& callback,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
                        APIEventHandler* event_handler)
     : api_name_(api_name),
+      property_definitions_(property_definitions),
       method_callback_(callback),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
       weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
+
+  // TODO(devlin): It might make sense to instantiate the object_template_
+  // directly here, which would avoid the need to hold on to
+  // |property_definitions_| and |enums_|. However, there are *some* cases where
+  // we don't immediately stamp out an API from the template following
+  // construction.
+
   if (function_definitions) {
     for (const auto& func : *function_definitions) {
       const base::DictionaryValue* func_dict = nullptr;
@@ -257,6 +324,11 @@ void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
                        gin::StringToSymbol(isolate, enum_entry.first));
     }
     object_template->Set(isolate, entry.first.c_str(), enum_object);
+  }
+
+  if (property_definitions_) {
+    DecorateTemplateWithProperties(isolate, object_template,
+                                   *property_definitions_);
   }
 
   object_template_.Set(isolate, object_template);

@@ -163,6 +163,11 @@ class APIBindingUnittest : public APIBindingTest {
     ASSERT_TRUE(binding_types_);
   }
 
+  void SetProperties(const char* properties) {
+    binding_properties_ = DictionaryValueFromString(properties);
+    ASSERT_TRUE(binding_properties_);
+  }
+
   void SetHooks(std::unique_ptr<APIBindingHooks> hooks) {
     binding_hooks_ = std::move(hooks);
     ASSERT_TRUE(binding_hooks_);
@@ -178,7 +183,7 @@ class APIBindingUnittest : public APIBindingTest {
         base::Bind(&OnEventListenersChanged));
     binding_ = base::MakeUnique<APIBinding>(
         "test", binding_functions_.get(), binding_types_.get(),
-        binding_events_.get(),
+        binding_events_.get(), binding_properties_.get(),
         base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
         std::move(binding_hooks_), &type_refs_, request_handler_.get(),
         event_handler_.get());
@@ -238,6 +243,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<base::ListValue> binding_functions_;
   std::unique_ptr<base::ListValue> binding_events_;
   std::unique_ptr<base::ListValue> binding_types_;
+  std::unique_ptr<base::DictionaryValue> binding_properties_;
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
@@ -532,6 +538,30 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
       binding_object->Has(context, gin::StringToV8(isolate(), "onBaz"));
   EXPECT_TRUE(has_on_baz.IsJust());
   EXPECT_FALSE(has_on_baz.FromJust());
+}
+
+TEST_F(APIBindingUnittest, TestProperties) {
+  SetProperties(
+      "{"
+      "  'prop1': { 'value': 17, 'type': 'integer' },"
+      "  'prop2': {"
+      "    'type': 'object',"
+      "    'properties': {"
+      "      'subprop1': { 'value': 'some value', 'type': 'string' },"
+      "      'subprop2': { 'value': true, 'type': 'boolean' }"
+      "    }"
+      "  }"
+      "}");
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
+  EXPECT_EQ("17",
+            GetStringPropertyFromObject(binding_object, context, "prop1"));
+  EXPECT_EQ(R"({"subprop1":"some value","subprop2":true})",
+            GetStringPropertyFromObject(binding_object, context, "prop2"));
 }
 
 TEST_F(APIBindingUnittest, TestDisposedContext) {

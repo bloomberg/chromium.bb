@@ -74,6 +74,7 @@ class APIBinding {
              const base::ListValue* function_definitions,
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
+             const base::DictionaryValue* property_definitions,
              const SendRequestMethod& callback,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
@@ -122,6 +123,9 @@ class APIBinding {
   using EnumEntry = std::pair<std::string, std::string>;
   // A map of <name, values> for the enums on this API.
   std::map<std::string, std::vector<EnumEntry>> enums_;
+
+  // The associated properties of the API, if any.
+  const base::DictionaryValue* property_definitions_;
 
   // The callback to use when an API is invoked with valid arguments.
   SendRequestMethod method_callback_;

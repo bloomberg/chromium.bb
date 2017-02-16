@@ -102,6 +102,9 @@ var tests = [
     // (extensionTypes.InjectDetails), so this exercises that flow as well.
     chrome.tabs.create({url: url}, function(tab) {
       chrome.test.assertTrue(!!tab, 'tab');
+      // Snag this opportunity to test bindings properties.
+      chrome.test.assertTrue(!!chrome.tabs.TAB_ID_NONE);
+      chrome.test.assertTrue(tab.id != chrome.tabs.TAB_ID_NONE);
       chrome.test.assertEq(new URL(url).host, new URL(tab.url).host);
       var code = 'document.title = "new title";';
       chrome.tabs.executeScript(tab.id, {code: code}, function(results) {

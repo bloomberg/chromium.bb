@@ -170,8 +170,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 };
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
-  scoped_refptr<Extension> extension =
-      CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
+  scoped_refptr<Extension> extension = CreateExtension(
+      "foo", ItemType::EXTENSION, {"idle", "power", "webRequest"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -260,6 +260,15 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
       power_api.As<v8::Object>(), context, "requestKeepAwake");
   ASSERT_FALSE(request_keep_awake.IsEmpty());
   EXPECT_TRUE(request_keep_awake->IsFunction());
+
+  // Test properties exposed on the API object itself.
+  v8::Local<v8::Value> web_request =
+      V8ValueFromScriptSource(context, "chrome.webRequest");
+  ASSERT_FALSE(web_request.IsEmpty());
+  ASSERT_TRUE(web_request->IsObject());
+  EXPECT_EQ("20", GetStringPropertyFromObject(
+                      web_request.As<v8::Object>(), context,
+                      "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"));
 }
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
