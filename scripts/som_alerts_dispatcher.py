@@ -96,25 +96,21 @@ def AddLogsLink(logdog_client, name,
     annotation_stream: Logdog annotation for the stream.
     logs_links: List to add to if the stream is valid.
   """
-  if annotation_stream and annotation_stream.name:
+  if annotation_stream and annotation_stream['name']:
     url = logdog_client.ConstructViewerURL(waterfall,
                                            logdog_prefix,
-                                           annotation_stream.name)
+                                           annotation_stream['name'])
     logs_links.append(som.Link(name, url))
 
 
-def GenerateAlertStage(build, stage, exceptions,
-                       buildbot, logdog_prefix, annotation_steps,
-                       logdog_client):
+def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
   """Generate alert details for a single build stage.
 
   Args:
     build: Dictionary of build details from CIDB.
     stage: Dictionary fo stage details from CIDB.
     exceptions: Dictionary of build failures from CIDB.
-    buildbot: Buildbot build JSON file from MILO.
-    logdog_prefix: Logdog prefix for the build.
-    annotation_steps: Full set of Logdog annotations for the build.
+    buildinfo: BuildInfo build JSON file from MILO.
     logdog_client: logdog.LogdogClient object.
 
   Returns:
@@ -133,16 +129,17 @@ def GenerateAlertStage(build, stage, exceptions,
   notes = []
 
   # Generate links to the logs of the stage and use them for classification.
-  if logdog_prefix and annotation_steps and stage['name'] in annotation_steps:
-    annotation = annotation_steps[stage['name']]
+  if buildinfo and stage['name'] in buildinfo['steps']:
+    prefix = buildinfo['annotationStream']['prefix']
+    annotation = buildinfo['steps'][stage['name']]
     AddLogsLink(logdog_client, 'stdout', build['waterfall'],
-                logdog_prefix, annotation.stdout_stream, logs_links)
+                prefix, annotation.get('stdoutStream', None), logs_links)
     AddLogsLink(logdog_client, 'stderr', build['waterfall'],
-                logdog_prefix, annotation.stderr_stream, logs_links)
+                prefix, annotation.get('stderrStream', None), logs_links)
 
     # Use the logs in an attempt to classify the failure.
-    if annotation.stdout_stream and annotation.stdout_stream.name:
-      path = '%s/+/%s' % (logdog_prefix, annotation.stdout_stream.name)
+    if annotation['stdoutStream'] and annotation['stdoutStream']['name']:
+      path = '%s/+/%s' % (prefix, annotation['stdoutStream']['name'])
       try:
         logs = logdog_client.GetLines(build['waterfall'], path)
         classification = classifier.ClassifyFailure(stage['name'], logs)
@@ -156,16 +153,19 @@ def GenerateAlertStage(build, stage, exceptions,
 
   # Copy the links from the buildbot build JSON.
   stage_links = []
-  if buildbot:
+  if buildinfo:
     if stage['status'] == constants.BUILDER_STATUS_FORGIVEN:
       # TODO: Include these links but hide them by default in frontend.
       pass
-    elif stage['name'] in buildbot['steps']:
-      step = buildbot['steps'][stage['name']]
-      stage_links = [som.Link(url, step['urls'][url]) for url in step['urls']]
+    elif stage['name'] in buildinfo['steps']:
+      step = buildinfo['steps'][stage['name']]
+      stage_links = [som.Link(l['label'], l['url'])
+                     for l in step.get('otherLinks', [])]
     else:
+      steps = [s for s in buildinfo['steps'].keys()
+               if s is not None and not isinstance(s, tuple)]
       logging.warn('Could not find stage %s in: %s',
-                   stage['name'], ', '.join(buildbot['steps'].keys()))
+                   stage['name'], ', '.join(steps))
   else:
     notes.append('Warning: stage details unavailable')
 
@@ -233,35 +233,20 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
                                  ToEpoch(build['finish_time'] or now),
                                  build['build_number'], build['build_number'])]
 
-  # Access the buildbot build JSON for per-stage links of failed stages.
+  # Access the BuildInfo for per-stage links of failed stages.
   try:
-    buildbot = milo_client.GetBuildbotBuildJSON(build['waterfall'],
-                                                build['builder_name'],
-                                                build['build_number'])
+    buildinfo = milo_client.BuildInfoGetBuildbot(build['waterfall'],
+                                                 build['builder_name'],
+                                                 build['build_number'])
   except prpc.PRPCResponseException as e:
-    logging.warning('Unable to retrieve buildbot build JSON: %s', e)
-    buildbot = None
-
-  # Logdog prefix and annotations to determine log stream name of stages.
-  try:
-    annotations, prefix = logdog_client.GetAnnotations(build['waterfall'],
-                                                       build['builder_name'],
-                                                       build['build_number'])
-  except (prpc.PRPCResponseException, logdog.LogdogResponseException) as e:
-    logging.warning('Unable to retrieve log annotations: %s', e)
-    annotations = None
-    prefix = None
-
-  if annotations:
-    annotation_steps = {s.step.name: s.step for s in annotations.substep}
-  else:
-    annotation_steps = None
+    logging.warning('Unable to retrieve BuildInfo: %s', e)
+    buildinfo = None
 
   # Highlight the problematic stages.
   stages = []
   for stage in slave_stages:
     alert_stage = GenerateAlertStage(build, stage, exceptions,
-                                     buildbot, prefix, annotation_steps,
+                                     buildinfo,
                                      logdog_client)
     if alert_stage:
       stages.append(alert_stage)
