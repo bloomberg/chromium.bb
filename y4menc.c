@@ -20,9 +20,9 @@ int y4m_write_file_header(char *buf, size_t len, int width, int height,
     case 8:
       color = fmt == AOM_IMG_FMT_444A
                   ? "C444alpha\n"
-                  : fmt == AOM_IMG_FMT_I444 ? "C444\n" : fmt == AOM_IMG_FMT_I422
-                                                             ? "C422\n"
-                                                             : "C420jpeg\n";
+                  : fmt == AOM_IMG_FMT_I444
+                        ? "C444\n"
+                        : fmt == AOM_IMG_FMT_I422 ? "C422\n" : "C420jpeg\n";
       break;
     case 9:
       color = fmt == AOM_IMG_FMT_I44416

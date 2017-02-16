@@ -1232,8 +1232,9 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (left_mi)
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    aom_write(w, n > 0, av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
-                                                       [palette_y_mode_ctx]);
+    aom_write(
+        w, n > 0,
+        av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_y_mode_ctx]);
     if (n > 0) {
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
@@ -2987,12 +2988,11 @@ static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
 #endif
 #if CONFIG_ENTROPY
 // Calculate the token counts between subsequent subframe updates.
-static void get_coef_counts_diff(AV1_COMP *cpi, int index,
-                                 av1_coeff_count coef_counts[TX_SIZES]
-                                                            [PLANE_TYPES],
-                                 unsigned int eob_counts[TX_SIZES][PLANE_TYPES]
-                                                        [REF_TYPES][COEF_BANDS]
-                                                        [COEFF_CONTEXTS]) {
+static void get_coef_counts_diff(
+    AV1_COMP *cpi, int index,
+    av1_coeff_count coef_counts[TX_SIZES][PLANE_TYPES],
+    unsigned int eob_counts[TX_SIZES][PLANE_TYPES][REF_TYPES][COEF_BANDS]
+                           [COEFF_CONTEXTS]) {
   int i, j, k, l, m, tx_size, val;
   const int max_idx = cpi->common.coef_probs_update_idx;
   const TX_MODE tx_mode = cpi->common.tx_mode;
@@ -3011,8 +3011,8 @@ static void get_coef_counts_diff(AV1_COMP *cpi, int index,
                   cpi->common.counts.eob_branch[tx_size][i][j][k][l] -
                   subframe_stats->eob_counts_buf[max_idx][tx_size][i][j][k][l];
             } else {
-              val = subframe_stats->eob_counts_buf[index + 1][tx_size][i][j][k]
-                                                  [l] -
+              val = subframe_stats
+                        ->eob_counts_buf[index + 1][tx_size][i][j][k][l] -
                     subframe_stats->eob_counts_buf[index][tx_size][i][j][k][l];
             }
             assert(val >= 0);
@@ -3021,13 +3021,13 @@ static void get_coef_counts_diff(AV1_COMP *cpi, int index,
             for (m = 0; m < ENTROPY_TOKENS; ++m) {
               if (index == max_idx) {
                 val = cpi->td.rd_counts.coef_counts[tx_size][i][j][k][l][m] -
-                      subframe_stats->coef_counts_buf[max_idx][tx_size][i][j][k]
-                                                     [l][m];
+                      subframe_stats
+                          ->coef_counts_buf[max_idx][tx_size][i][j][k][l][m];
               } else {
-                val = subframe_stats->coef_counts_buf[index + 1][tx_size][i][j]
-                                                     [k][l][m] -
-                      subframe_stats->coef_counts_buf[index][tx_size][i][j][k]
-                                                     [l][m];
+                val = subframe_stats
+                          ->coef_counts_buf[index + 1][tx_size][i][j][k][l][m] -
+                      subframe_stats
+                          ->coef_counts_buf[index][tx_size][i][j][k][l][m];
               }
               assert(val >= 0);
               coef_counts[tx_size][i][j][k][l][m] = val;

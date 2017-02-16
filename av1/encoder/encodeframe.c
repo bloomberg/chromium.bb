@@ -2083,8 +2083,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
                               [ref0 != BWDREF_FRAME]++;
           } else {
             const int bit1 = !(ref0 == LAST2_FRAME || ref0 == LAST_FRAME);
-            counts->single_ref[av1_get_pred_context_single_ref_p3(xd)][2]
-                              [bit1]++;
+            counts
+                ->single_ref[av1_get_pred_context_single_ref_p3(xd)][2][bit1]++;
             if (!bit1) {
               counts->single_ref[av1_get_pred_context_single_ref_p4(xd)][3]
                                 [ref0 != LAST_FRAME]++;
@@ -2491,8 +2491,8 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
             !xd->mi[0]->mbmi.skip) {
           int eset = get_ext_tx_set(supertx_size, bsize, 1);
           if (eset > 0) {
-            ++td->counts->inter_ext_tx[eset][supertx_size]
-                                      [xd->mi[0]->mbmi.tx_type];
+            ++td->counts
+                  ->inter_ext_tx[eset][supertx_size][xd->mi[0]->mbmi.tx_type];
           }
         }
 #else
@@ -3992,11 +3992,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
         pc_tree->partitioning = PARTITION_SPLIT;
 
-        sum_rdc.rate +=
-            av1_cost_bit(cm->fc->supertx_prob
-                             [partition_supertx_context_lookup[PARTITION_SPLIT]]
-                             [supertx_size],
-                         0);
+        sum_rdc.rate += av1_cost_bit(
+            cm->fc->supertx_prob[partition_supertx_context_lookup
+                                     [PARTITION_SPLIT]][supertx_size],
+            0);
         sum_rdc.rdcost =
             RDCOST(x->rdmult, x->rddiv, sum_rdc.rate, sum_rdc.dist);
 
@@ -4010,9 +4009,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                         &tmp_rdc.rate, &tmp_rdc.dist, &best_tx, pc_tree);
 
           tmp_rdc.rate += av1_cost_bit(
-              cm->fc->supertx_prob
-                  [partition_supertx_context_lookup[PARTITION_SPLIT]]
-                  [supertx_size],
+              cm->fc->supertx_prob[partition_supertx_context_lookup
+                                       [PARTITION_SPLIT]][supertx_size],
               1);
           tmp_rdc.rdcost =
               RDCOST(x->rdmult, x->rddiv, tmp_rdc.rate, tmp_rdc.dist);
@@ -4076,11 +4074,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
         pc_tree->partitioning = PARTITION_SPLIT;
 
-        sum_rdc.rate +=
-            av1_cost_bit(cm->fc->supertx_prob
-                             [partition_supertx_context_lookup[PARTITION_SPLIT]]
-                             [supertx_size],
-                         0);
+        sum_rdc.rate += av1_cost_bit(
+            cm->fc->supertx_prob[partition_supertx_context_lookup
+                                     [PARTITION_SPLIT]][supertx_size],
+            0);
         sum_rdc.rdcost =
             RDCOST(x->rdmult, x->rddiv, sum_rdc.rate, sum_rdc.dist);
 
@@ -4094,9 +4091,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                         &tmp_rdc.rate, &tmp_rdc.dist, &best_tx, pc_tree);
 
           tmp_rdc.rate += av1_cost_bit(
-              cm->fc->supertx_prob
-                  [partition_supertx_context_lookup[PARTITION_SPLIT]]
-                  [supertx_size],
+              cm->fc->supertx_prob[partition_supertx_context_lookup
+                                       [PARTITION_SPLIT]][supertx_size],
               1);
           tmp_rdc.rdcost =
               RDCOST(x->rdmult, x->rddiv, tmp_rdc.rate, tmp_rdc.dist);
@@ -5806,8 +5802,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       int eset = get_ext_tx_set(tx_size, bsize, is_inter);
       if (eset > 0) {
         if (is_inter) {
-          ++td->counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]]
-                                    [mbmi->tx_type];
+          ++td->counts
+                ->inter_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->tx_type];
         } else {
           ++td->counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
                                     [mbmi->tx_type];
@@ -5820,9 +5816,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       if (is_inter) {
         ++td->counts->inter_ext_tx[tx_size][mbmi->tx_type];
       } else {
-        ++td->counts->intra_ext_tx[tx_size]
-                                  [intra_mode_to_tx_type_context[mbmi->mode]]
-                                  [mbmi->tx_type];
+        ++td->counts
+              ->intra_ext_tx[tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
+                            [mbmi->tx_type];
       }
     }
 #endif  // CONFIG_EXT_TX

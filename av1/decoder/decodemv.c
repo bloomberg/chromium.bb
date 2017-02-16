@@ -650,8 +650,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
           read_uniform(r, FILTER_INTRA_MODES);
     }
     if (counts) {
-      ++counts->filter_intra[0]
-                            [filter_intra_mode_info->use_filter_intra_mode[0]];
+      ++counts
+            ->filter_intra[0][filter_intra_mode_info->use_filter_intra_mode[0]];
     }
   }
   if (mbmi->uv_mode == DC_PRED
@@ -666,8 +666,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
           read_uniform(r, FILTER_INTRA_MODES);
     }
     if (counts) {
-      ++counts->filter_intra[1]
-                            [filter_intra_mode_info->use_filter_intra_mode[1]];
+      ++counts
+            ->filter_intra[1][filter_intra_mode_info->use_filter_intra_mode[1]];
     }
   }
 }
@@ -1970,8 +1970,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
     }
     if (xd->counts)
-      xd->counts->compound_interinter[bsize]
-                                     [mbmi->interinter_compound_data.type]++;
+      xd->counts
+          ->compound_interinter[bsize][mbmi->interinter_compound_data.type]++;
   }
 #endif  // CONFIG_EXT_INTER
 

@@ -4674,9 +4674,9 @@ static void build_token_cdfs(const aom_prob *pdf_model,
      3=ONE_TOKEN_NEOB, 4=TWO_TOKEN_PLUS_EOB, 5=TWO_TOKEN_PLUS_NEOB
      */
   // Block zero probability
-  phead[0] =
-      blockz_model == NULL ? 0 : ((*blockz_model) << (CDF_PROB_BITS - 8)) +
-                                     (1 << (CDF_PROB_BITS - 9));
+  phead[0] = blockz_model == NULL ? 0
+                                  : ((*blockz_model) << (CDF_PROB_BITS - 8)) +
+                                        (1 << (CDF_PROB_BITS - 9));
   phead[0] = AOMMIN(CDF_PROB_TOP - 6, AOMMAX(1, phead[0]));
   cdf_head[0] = phead[0];
 
@@ -4814,8 +4814,8 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
   const av1_coeff_count_model *const counts =
       (const av1_coeff_count_model *)cm->counts.coef[tx_size];
   const unsigned int(*eob_counts)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS] =
-      (const unsigned int(*)[REF_TYPES][COEF_BANDS]
-                            [COEFF_CONTEXTS])cm->counts.eob_branch[tx_size];
+      (const unsigned int(*)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS])
+          cm->counts.eob_branch[tx_size];
 #if CONFIG_NEW_TOKENSET
   const av1_blockz_probs_model *const pre_blockz_probs =
       pre_fc->blockzero_probs[tx_size];

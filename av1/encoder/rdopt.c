@@ -4844,8 +4844,8 @@ static int cost_mv_ref(const AV1_COMP *const cpi, PREDICTION_MODE mode,
 
 #if CONFIG_EXT_INTER
   if (is_compound) {
-    return cpi->inter_compound_mode_cost[mode_context]
-                                        [INTER_COMPOUND_OFFSET(mode)];
+    return cpi
+        ->inter_compound_mode_cost[mode_context][INTER_COMPOUND_OFFSET(mode)];
   } else {
     if (mode == NEWMV || mode == NEWFROMNEARMV) {
 #else
@@ -4885,8 +4885,8 @@ static int cost_mv_ref(const AV1_COMP *const cpi, PREDICTION_MODE mode,
   assert(is_inter_mode(mode));
 #if CONFIG_EXT_INTER
   if (is_inter_compound_mode(mode)) {
-    return cpi->inter_compound_mode_cost[mode_context]
-                                        [INTER_COMPOUND_OFFSET(mode)];
+    return cpi
+        ->inter_compound_mode_cost[mode_context][INTER_COMPOUND_OFFSET(mode)];
   } else {
 #endif  // CONFIG_EXT_INTER
     return cpi->inter_mode_cost[mode_context][INTER_OFFSET(mode)];
@@ -4929,17 +4929,15 @@ static int GLOBAL_MOTION_RATE(const AV1_COMP *const cpi, int ref) {
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
-static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                MACROBLOCKD *xd, int i, PREDICTION_MODE mode,
-                                int_mv this_mv[2],
-                                int_mv frame_mv[MB_MODE_COUNT]
-                                               [TOTAL_REFS_PER_FRAME],
-                                int_mv seg_mvs[TOTAL_REFS_PER_FRAME],
+static int set_and_cost_bmi_mvs(
+    const AV1_COMP *const cpi, MACROBLOCK *x, MACROBLOCKD *xd, int i,
+    PREDICTION_MODE mode, int_mv this_mv[2],
+    int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME],
+    int_mv seg_mvs[TOTAL_REFS_PER_FRAME],
 #if CONFIG_EXT_INTER
-                                int_mv compound_seg_newmvs[2],
+    int_mv compound_seg_newmvs[2],
 #endif  // CONFIG_EXT_INTER
-                                int_mv *best_ref_mv[2], const int *mvjcost,
-                                int *mvcost[2]) {
+    int_mv *best_ref_mv[2], const int *mvjcost, int *mvcost[2]) {
   MODE_INFO *const mic = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mic->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -6739,13 +6737,12 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   ctx->hybrid_pred_diff = (int)comp_pred_diff[REFERENCE_MODE_SELECT];
 }
 
-static void setup_buffer_inter(const AV1_COMP *const cpi, MACROBLOCK *x,
-                               MV_REFERENCE_FRAME ref_frame,
-                               BLOCK_SIZE block_size, int mi_row, int mi_col,
-                               int_mv frame_nearest_mv[TOTAL_REFS_PER_FRAME],
-                               int_mv frame_near_mv[TOTAL_REFS_PER_FRAME],
-                               struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME]
-                                                    [MAX_MB_PLANE]) {
+static void setup_buffer_inter(
+    const AV1_COMP *const cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
+    BLOCK_SIZE block_size, int mi_row, int mi_col,
+    int_mv frame_nearest_mv[TOTAL_REFS_PER_FRAME],
+    int_mv frame_near_mv[TOTAL_REFS_PER_FRAME],
+    struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME][MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -10282,8 +10279,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           clamp_mv2(&cur_mv.as_mv, xd);
 
           if (!mv_check_bounds(x, &cur_mv.as_mv)) {
-            int dummy_single_skippable[MB_MODE_COUNT]
-                                      [TOTAL_REFS_PER_FRAME] = { { 0 } };
+            int dummy_single_skippable[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME] = {
+              { 0 }
+            };
 #if CONFIG_EXT_INTER
             int_mv dummy_single_newmvs[2][TOTAL_REFS_PER_FRAME] = { { { 0 } },
                                                                     { { 0 } } };

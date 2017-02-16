@@ -611,33 +611,33 @@ static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter) {
   return (tx_size == TX_16X16 ? 2 : 1);
 }
 
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA]
-                                            [EXT_TX_SIZES] = {
+static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
+    {
 #if CONFIG_CB4X4
-                                              { 1, 1, 1, 1, 1 },  // unused
-                                              { 0, 1, 1, 0, 0 },
-                                              { 0, 0, 0, 1, 0 },
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 },
+      { 0, 0, 0, 1, 0 },
 #else
-                                              { 1, 1, 1, 1 },  // unused
-                                              { 1, 1, 0, 0 },
-                                              { 0, 0, 1, 0 },
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 },
+      { 0, 0, 1, 0 },
 #endif  // CONFIG_CB4X4
-                                            };
+    };
 
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER]
-                                            [EXT_TX_SIZES] = {
+static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
+    {
 #if CONFIG_CB4X4
-                                              { 1, 1, 1, 1, 1 },  // unused
-                                              { 0, 1, 1, 0, 0 },
-                                              { 0, 0, 0, 1, 0 },
-                                              { 0, 0, 0, 0, 1 },
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 },
+      { 0, 0, 0, 1, 0 },
+      { 0, 0, 0, 0, 1 },
 #else
-                                              { 1, 1, 1, 1 },  // unused
-                                              { 1, 1, 0, 0 },
-                                              { 0, 0, 1, 0 },
-                                              { 0, 0, 0, 1 },
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 },
+      { 0, 0, 1, 0 },
+      { 0, 0, 0, 1 },
 #endif  // CONFIG_CB4X4
-                                            };
+    };
 
 // Transform types used in each intra set
 static const int ext_tx_used_intra[EXT_TX_SETS_INTRA][TX_TYPES] = {

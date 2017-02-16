@@ -412,11 +412,10 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
   int i, j;
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
-  const aom_prob(*const probs)[PALETTE_COLOR_INDEX_CONTEXTS]
-                              [PALETTE_COLORS - 1] =
-                                  plane == 0
-                                      ? av1_default_palette_y_color_index_prob
-                                      : av1_default_palette_uv_color_index_prob;
+  const aom_prob(
+      *const probs)[PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] =
+      plane == 0 ? av1_default_palette_y_color_index_prob
+                 : av1_default_palette_uv_color_index_prob;
   int plane_block_width, rows, cols;
   av1_get_block_dimensions(bsize, plane, xd, &plane_block_width, NULL, &rows,
                            &cols);

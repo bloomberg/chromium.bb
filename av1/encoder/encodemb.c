@@ -1153,11 +1153,11 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   assert(OD_COEFF_SHIFT >= 3);
   // DC quantizer for PVQ
   if (use_activity_masking)
-    pvq_dc_quant = OD_MAXI(
-        1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
-                   daala_enc->state.pvq_qm_q4[plane]
-                                             [od_qm_get_index(tx_size, 0)] >>
-               4);
+    pvq_dc_quant =
+        OD_MAXI(1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
+                           daala_enc->state
+                               .pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
+                       4);
   else
     pvq_dc_quant = OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3));
 
