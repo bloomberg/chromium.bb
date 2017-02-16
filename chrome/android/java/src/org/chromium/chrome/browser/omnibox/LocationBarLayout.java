@@ -2214,14 +2214,10 @@ public class LocationBarLayout extends FrameLayout
         boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == VISIBLE;
         if (currentlyVisible == visible) return;
 
-        ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
-
         if (visible) {
             mOmniboxResultsContainer.setVisibility(VISIBLE);
-            if (activity != null) activity.addViewObscuringAllTabs(mFadingView);
         } else {
             mOmniboxResultsContainer.setVisibility(INVISIBLE);
-            if (activity != null) activity.removeViewObscuringAllTabs(mFadingView);
         }
     }
 
@@ -2243,8 +2239,15 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void onFadingViewHidden() {
-        updateOmniboxResultsContainerVisibility(false);
+    public void onFadingViewVisibilityChanged(boolean visible) {
+        ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
+
+        if (visible) {
+            if (activity != null) activity.addViewObscuringAllTabs(mFadingView);
+        } else {
+            if (activity != null) activity.removeViewObscuringAllTabs(mFadingView);
+            updateOmniboxResultsContainerVisibility(false);
+        }
     }
 
     /**

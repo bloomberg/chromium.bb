@@ -753,5 +753,5 @@ public class BottomSheet
     }
 
     @Override
-    public void onFadingViewHidden() {}
+    public void onFadingViewVisibilityChanged(boolean visible) {}
 }

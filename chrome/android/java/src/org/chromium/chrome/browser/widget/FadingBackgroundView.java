@@ -30,16 +30,18 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
         void onFadingViewClick();
 
         /**
-         * An event that triggers when the fading view is completely hidden as it may have animated.
+         * An event that triggers when the visibility of the overlay has changed. Visibility is true
+         * if the overlay's opacity is > 0f.
+         * @param visible True if the overlay has become visible.
          */
-        void onFadingViewHidden();
+        void onFadingViewVisibilityChanged(boolean visible);
     }
 
     /** The duration for the fading animation. */
     private static final int FADE_DURATION_MS = 250;
 
     /** List of observers for this view. */
-    private final ObserverList<FadingViewObserver> mObservers;
+    private final ObserverList<FadingViewObserver> mObservers = new ObserverList<>();
 
     /** The animator for fading the view out. */
     private ObjectAnimator mOverlayFadeInAnimator;
@@ -52,7 +54,6 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
 
     public FadingBackgroundView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mObservers = new ObserverList<>();
         setAlpha(0.0f);
         setVisibility(View.GONE);
         setOnClickListener(this);
@@ -80,11 +81,11 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
     public void setAlpha(float alpha) {
         super.setAlpha(alpha);
 
-        if (alpha <= 0f) {
-            setVisibility(View.GONE);
-            for (FadingViewObserver o : mObservers) o.onFadingViewHidden();
-        } else {
-            setVisibility(View.VISIBLE);
+        int newVisibility = alpha <= 0f ? View.GONE : View.VISIBLE;
+
+        setVisibility(newVisibility);
+        for (FadingViewObserver o : mObservers) {
+            o.onFadingViewVisibilityChanged(newVisibility == View.VISIBLE);
         }
     }
 
