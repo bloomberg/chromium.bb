@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
-#include "net/quic/platform/api/quic_url_utils.h"
+#include "net/quic/platform/api/quic_hostname_utils.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -720,7 +720,8 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
     // Get quic_server_id.
     const std::string& quic_server_id_str = it.key();
     QuicServerId quic_server_id;
-    QuicUrlUtils::StringToQuicServerId(quic_server_id_str, &quic_server_id);
+    QuicHostnameUtils::StringToQuicServerId(quic_server_id_str,
+                                            &quic_server_id);
     if (quic_server_id.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for quic server: "
                << quic_server_id_str;

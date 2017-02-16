@@ -79,7 +79,6 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   return new QuicPacket(buffer, length, /* owns_buffer */ true,
                         header.public_header.connection_id_length,
                         header.public_header.version_flag,
-                        header.public_header.multipath_flag,
                         header.public_header.nonce != nullptr,
                         header.public_header.packet_number_length);
 }
@@ -650,7 +649,6 @@ QuicReceivedPacket* ConstructReceivedPacket(
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
-    bool multipath_flag,
     bool reset_flag,
     QuicPathId path_id,
     QuicPacketNumber packet_number,
@@ -663,7 +661,6 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
-  header.public_header.multipath_flag = multipath_flag;
   header.public_header.reset_flag = reset_flag;
   header.public_header.packet_number_length = packet_number_length;
   header.path_id = path_id;
@@ -682,7 +679,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the frame type to 0x1F, which is an invalid frame type.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      framer.version(), connection_id_length, version_flag, multipath_flag,
+      framer.version(), connection_id_length, version_flag,
       false /* no diversification nonce */, packet_number_length)] = 0x1F;
 
   char* buffer = new char[kMaxPacketSize];
@@ -725,7 +722,6 @@ void CompareCharArraysWithHexError(const string& description,
 
 size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_version,
-                                   bool include_path_id,
                                    bool include_diversification_nonce,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,
@@ -734,15 +730,14 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
   const size_t stream_length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          version, PACKET_8BYTE_CONNECTION_ID, include_version, include_path_id,
+          version, PACKET_8BYTE_CONNECTION_ID, include_version,
           include_diversification_nonce, packet_number_length, 0u);
   const size_t ack_length =
       NullEncrypter(Perspective::IS_CLIENT)
           .GetCiphertextSize(QuicFramer::GetMinAckFrameSize(
               version, PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(version, connection_id_length, include_version,
-                          include_path_id, include_diversification_nonce,
-                          packet_number_length);
+                          include_diversification_nonce, packet_number_length);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
   }
@@ -750,7 +745,7 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
   return NullEncrypter(Perspective::IS_CLIENT)
              .GetCiphertextSize(*payload_length) +
          QuicPacketCreator::StreamFramePacketOverhead(
-             version, connection_id_length, include_version, include_path_id,
+             version, connection_id_length, include_version,
              include_diversification_nonce, packet_number_length, 0u);
 }
 

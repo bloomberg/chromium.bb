@@ -170,7 +170,7 @@ QUIC_FLAG(
 
 // If true, Makes GFE respect the connection options for initial flow control
 // window larger than 32 KB.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_large_ifw_options, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_large_ifw_options, true)
 
 // If true, fix Cubic\'s use of kBetaLastMax for n-connection emulation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_beta_last_max, false)
@@ -190,3 +190,10 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_38, false)
 // When true, ensures the session's flow control window is always at least 1.5x
 // larger than the largest stream flow control window.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_flow_control_invariant, false)
+
+// If greater than zero, mean RTT variation is multiplied by the specified
+// factor and added to the congestion window limit.
+QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
+
+// Congestion window gain for QUIC BBR during PROBE_BW phase.
+QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)

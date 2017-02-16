@@ -22,11 +22,11 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_hostname_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
-#include "net/quic/platform/api/quic_url_utils.h"
 
 using base::StringPiece;
 using std::string;
@@ -428,7 +428,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 
   // Server name indication. We only send SNI if it's a valid domain name, as
   // per the spec.
-  if (QuicUrlUtils::IsValidSNI(server_id.host())) {
+  if (QuicHostnameUtils::IsValidSNI(server_id.host())) {
     out->SetStringPiece(kSNI, server_id.host());
   }
   out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));

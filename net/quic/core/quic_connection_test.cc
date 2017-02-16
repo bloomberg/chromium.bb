@@ -3527,9 +3527,8 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   size_t length = GetPacketLengthForOneStream(
-      connection_.version(), kIncludeVersion, !kIncludePathId,
-      !kIncludeDiversificationNonce, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_1BYTE_PACKET_NUMBER, &payload_length);
+      connection_.version(), kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -3552,7 +3551,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // stream frames with non-zero offets will fit within the packet length.
   size_t length =
       2 + GetPacketLengthForOneStream(
-              connection_.version(), kIncludeVersion, !kIncludePathId,
+              connection_.version(), kIncludeVersion,
               !kIncludeDiversificationNonce, PACKET_8BYTE_CONNECTION_ID,
               PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
@@ -4899,21 +4898,6 @@ TEST_P(QuicConnectionTest, ClosePath) {
   connection_.SendPathClose(kTestPathId);
   EXPECT_TRUE(QuicFramerPeer::IsPathClosed(
       QuicConnectionPeer::GetFramer(&connection_), kTestPathId));
-}
-
-TEST_P(QuicConnectionTest, BadMultipathFlag) {
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_BAD_MULTIPATH_FLAG, _,
-                                           ConnectionCloseSource::FROM_SELF));
-
-  // Receieve a packet with multipath flag on when multipath is not enabled.
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
-  peer_creator_.SetCurrentPath(/*path_id=*/1u, 1u, 10u);
-  QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
-  EXPECT_QUIC_BUG(
-      ProcessFramePacket(QuicFrame(&stream_frame)),
-      "Received a packet with multipath flag but multipath is not enabled.");
-  EXPECT_FALSE(connection_.connected());
 }
 
 TEST_P(QuicConnectionTest, OnPathDegrading) {

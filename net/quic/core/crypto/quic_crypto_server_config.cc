@@ -35,10 +35,10 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/api/quic_hostname_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_text_utils.h"
-#include "net/quic/platform/api/quic_url_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
@@ -844,7 +844,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     std::unique_ptr<char[]> sni_tmp(new char[info.sni.length() + 1]);
     memcpy(sni_tmp.get(), info.sni.data(), info.sni.length());
     sni_tmp[info.sni.length()] = 0;
-    params->sni = QuicUrlUtils::NormalizeHostname(sni_tmp.get());
+    params->sni = QuicHostnameUtils::NormalizeHostname(sni_tmp.get());
   }
 
   string hkdf_suffix;
@@ -1198,7 +1198,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
 
   if (client_hello.GetStringPiece(kSNI, &info->sni) &&
-      !QuicUrlUtils::IsValidSNI(info->sni)) {
+      !QuicHostnameUtils::IsValidSNI(info->sni)) {
     helper.ValidationComplete(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
                               "Invalid SNI name", nullptr);
     return;

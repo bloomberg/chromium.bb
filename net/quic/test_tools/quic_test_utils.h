@@ -135,7 +135,6 @@ QuicReceivedPacket* ConstructReceivedPacket(
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
-    bool multipath_flag,
     bool reset_flag,
     QuicPathId path_id,
     QuicPacketNumber packet_number,
@@ -156,7 +155,6 @@ void CompareCharArraysWithHexError(const std::string& description,
 // of bytes of stream data that will fit in such a packet.
 size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_version,
-                                   bool include_path_id,
                                    bool include_diversification_nonce,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,

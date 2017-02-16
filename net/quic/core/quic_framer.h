@@ -238,7 +238,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       const QuicEncryptedPacket& encrypted,
       QuicConnectionIdLength connection_id_length,
       bool includes_version,
-      bool includes_path_id,
       bool includes_diversification_nonce,
       QuicPacketNumberLength packet_number_length);
 
