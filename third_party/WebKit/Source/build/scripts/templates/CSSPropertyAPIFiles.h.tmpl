@@ -15,15 +15,9 @@ class CSSParserContext;
 
 class {{api_classname}} : public CSSPropertyAPI {
  public:
-  {% if "parseSingleValue" in api_methods %}
-  static const CSSValue* parseSingleValue(CSSParserTokenRange&,
-                                          const CSSParserContext*);
-  {% endif %}
-  {% if "parseShorthand" in api_methods %}
-  static HeapVector<CSSProperty>* parseShorthand(bool,
-                             CSSParserTokenRange&,
-                             const CSSParserContext*);
-  {% endif %}
+  {% for api_method in all_api_methods if api_method in methods_for_class %}
+  static {{all_api_methods[api_method].return_type}} {{api_method}}{{all_api_methods[api_method].parameters}};
+  {% endfor %}
 };
 
 }  // namespace blink

@@ -16,17 +16,19 @@ static_assert(
 static CSSPropertyDescriptor cssPropertyDescriptors[] = {
     // An invalid CSSPropertyDescriptor.
     {
-      {% for valid_api_method in valid_api_methods %}
+      {% for api_method in ordered_api_method_names %}
         nullptr,
       {% endfor %}
     },
     // CSSPropertyDescriptors for all valid properties.
     {% for api_class in api_classes %}
     {
-      {% for api_method in api_methods if api_method in api_class.api_methods %}
-      {{api_class.classname}}::{{api_method}},
+      {% for api_method_name in ordered_api_method_names %}
+      {% if api_method_name in api_class.methods_for_class %}
+      {{api_class.classname}}::{{api_method_name}},
       {% else %}
       nullptr,
+      {% endif %}
       {% endfor %}
     },
     {% endfor %}
