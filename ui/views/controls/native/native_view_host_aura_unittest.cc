@@ -105,6 +105,12 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
                                     host()));
   }
 
+  // test::NativeViewHostTestBase:
+  void TearDown() override {
+    child_.reset();
+    test::NativeViewHostTestBase::TearDown();
+  }
+
  private:
   std::unique_ptr<Widget> child_;
 

@@ -198,28 +198,8 @@ WindowTreeClient::~WindowTreeClient() {
   for (WindowTreeClientObserver& observer : observers_)
     observer.OnWillDestroyClient(this);
 
-  std::vector<Window*> non_owned;
-  WindowTracker tracker;
-  while (!windows_.empty()) {
-    IdToWindowMap::iterator it = windows_.begin();
-    if (WasCreatedByThisClient(it->second)) {
-      const Id window_id = it->second->server_id();
-      delete it->second->GetWindow();
-      DCHECK_EQ(0u, windows_.count(window_id));
-    } else {
-      tracker.Add(it->second->GetWindow());
-      windows_.erase(it);
-    }
-  }
-
-  // Delete the non-owned windows last. In the typical case these are roots. The
-  // exception is the window manager and embed roots, which may know about
-  // other random windows that it doesn't own.
-  while (!tracker.windows().empty())
-    delete tracker.windows().front();
-
-  for (WindowTreeClientObserver& observer : observers_)
-    observer.OnDidDestroyClient(this);
+  // Clients should properly delete all of their windows before shutdown.
+  CHECK(windows_.empty());
 
   capture_synchronizer_.reset();
 

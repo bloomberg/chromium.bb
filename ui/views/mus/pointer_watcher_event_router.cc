@@ -163,7 +163,7 @@ void PointerWatcherEventRouter::OnCaptureChanged(aura::Window* lost_capture,
     observer.OnPointerEventObserved(event, location_in_screen, nullptr);
 }
 
-void PointerWatcherEventRouter::OnDidDestroyClient(
+void PointerWatcherEventRouter::OnWillDestroyClient(
     aura::WindowTreeClient* client) {
   // We expect that all observers have been removed by this time.
   DCHECK_EQ(event_types_, EventTypes::NONE);

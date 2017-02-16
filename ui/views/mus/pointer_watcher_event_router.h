@@ -71,7 +71,7 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
   EventTypes DetermineEventTypes();
 
   // aura::WindowTreeClientObserver:
-  void OnDidDestroyClient(aura::WindowTreeClient* client) override;
+  void OnWillDestroyClient(aura::WindowTreeClient* client) override;
 
   // aura::client::CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
