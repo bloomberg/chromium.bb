@@ -292,6 +292,10 @@ class GFX_EXPORT Canvas {
                 const PointF& p2,
                 const cc::PaintFlags& flags);
 
+  // Draws a line that's a single DIP. At fractional scale factors, this is
+  // floored to the nearest integral number of pixels.
+  void DrawSharpLine(PointF p1, PointF p2, SkColor color);
+
   // Draws a circle with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
@@ -422,7 +426,7 @@ class GFX_EXPORT Canvas {
 
   // Draws a |rect| in the specified region with the specified |color| with a
   // with of one logical pixel which might be more device pixels.
-  void DrawSolidFocusRect(const RectF& rect, SkColor color, float thickness);
+  void DrawSolidFocusRect(RectF rect, SkColor color, float thickness);
 
   // Tiles the image in the specified region.
   // Parameters are specified relative to current canvas scale not in pixels.

@@ -67,8 +67,8 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   SkColor border_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor);
-  canvas->DrawLine(gfx::Point(0, height() - 1),
-                   gfx::Point(width(), height() - 1), border_color);
+  canvas->DrawSharpLine(gfx::PointF(0, height() - 1),
+                        gfx::PointF(width(), height() - 1), border_color);
 
   const Columns& columns = table_->visible_columns();
   const int sorted_column_id = table_->sort_descriptors().empty() ? -1 :
@@ -77,9 +77,10 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
     if (columns[i].width >= 2) {
       const int separator_x = GetMirroredXInView(
           columns[i].x + columns[i].width - 1);
-      canvas->DrawLine(gfx::Point(separator_x, kSeparatorPadding),
-                       gfx::Point(separator_x, height() - kSeparatorPadding),
-                       separator_color);
+      canvas->DrawSharpLine(
+          gfx::PointF(separator_x, kSeparatorPadding),
+          gfx::PointF(separator_x, height() - kSeparatorPadding),
+          separator_color);
     }
 
     const int x = columns[i].x + kHorizontalPadding;
