@@ -1466,6 +1466,10 @@ class CORE_EXPORT UseCounter {
     V8HTMLVideoElement_Poster_AttributeSetter = 1816,
     NotificationPermissionRequestedIframe = 1817,
     FileReaderSyncInServiceWorker = 1818,
+    PresentationReceiverInsecureOrigin = 1819,
+    PresentationReceiverSecureOrigin = 1820,
+    PresentationRequestInsecureOrigin = 1821,
+    PresentationRequestSecureOrigin = 1822,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

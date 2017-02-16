@@ -20,7 +20,6 @@ Presentation::Presentation(LocalFrame* frame) : ContextClient(frame) {}
 // static
 Presentation* Presentation::create(LocalFrame* frame) {
   ASSERT(frame);
-
   Presentation* presentation = new Presentation(frame);
   PresentationController* controller = PresentationController::from(*frame);
   ASSERT(controller);

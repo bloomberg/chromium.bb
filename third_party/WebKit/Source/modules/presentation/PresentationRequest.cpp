@@ -226,6 +226,20 @@ DEFINE_TRACE(PresentationRequest) {
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
                                          const Vector<KURL>& urls)
-    : ContextLifecycleObserver(executionContext), m_urls(urls) {}
+    : ContextLifecycleObserver(executionContext), m_urls(urls) {
+  recordOriginTypeAccess(executionContext);
+}
+
+void PresentationRequest::recordOriginTypeAccess(
+    ExecutionContext* executionContext) const {
+  DCHECK(executionContext);
+  if (executionContext->isSecureContext()) {
+    UseCounter::count(executionContext,
+                      UseCounter::PresentationRequestSecureOrigin);
+  } else {
+    UseCounter::count(executionContext,
+                      UseCounter::PresentationRequestInsecureOrigin);
+  }
+}
 
 }  // namespace blink

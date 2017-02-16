@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class Document;
 class PresentationConnection;
 class PresentationConnectionList;
 class WebPresentationClient;
@@ -51,6 +52,8 @@ class MODULES_EXPORT PresentationReceiver final
 
  private:
   friend class PresentationReceiverTest;
+
+  void recordOriginTypeAccess(Document*) const;
 
   Member<ConnectionListProperty> m_connectionListProperty;
   Member<PresentationConnectionList> m_connectionList;
