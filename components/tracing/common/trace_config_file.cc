@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/browser/trace_config_file.h"
+#include "components/tracing/common/trace_config_file.h"
 
 #include <stddef.h>
 
@@ -41,7 +41,7 @@ const char kTraceConfigParam[] = "trace_config";
 const char kStartupDurationParam[] = "startup_duration";
 const char kResultFileParam[] = "result_file";
 
-} // namespace
+}  // namespace
 
 TraceConfigFile* TraceConfigFile::GetInstance() {
   return base::Singleton<TraceConfigFile,
@@ -93,8 +93,7 @@ TraceConfigFile::TraceConfigFile()
     DLOG(WARNING) << "Cannot parse the trace config file correctly.";
 }
 
-TraceConfigFile::~TraceConfigFile() {
-}
+TraceConfigFile::~TraceConfigFile() {}
 
 bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
   std::unique_ptr<base::Value> value(base::JSONReader::Read(content));
@@ -111,10 +110,10 @@ bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
   trace_config_ = base::trace_event::TraceConfig(*trace_config_dict);
 
   if (!dict->GetInteger(kStartupDurationParam, &startup_duration_))
-      startup_duration_ = 0;
+    startup_duration_ = 0;
 
   if (startup_duration_ < 0)
-      startup_duration_ = 0;
+    startup_duration_ = 0;
 
   base::FilePath::StringType result_file_str;
   if (dict->GetString(kResultFileParam, &result_file_str))

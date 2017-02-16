@@ -50,8 +50,10 @@ component("tracing") {
 
 component("startup_tracing") {
   sources = [
-    "browser/trace_config_file.cc",
-    "browser/trace_config_file.h",
+    "common/trace_config_file.cc",
+    "common/trace_config_file.h",
+    "common/trace_startup.cc",
+    "common/trace_startup.h",
     "common/trace_to_console.cc",
     "common/trace_to_console.h",
     "common/tracing_switches.cc",
@@ -113,7 +115,7 @@ source_set("unit_tests") {
   ]
 
   if (!is_android) {
-    sources += [ "browser/trace_config_file_unittest.cc" ]
+    sources += [ "common/trace_config_file_unittest.cc" ]
     deps += [ ":startup_tracing" ]
   }
 }

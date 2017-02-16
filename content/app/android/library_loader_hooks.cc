@@ -17,9 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
-#include "components/tracing/browser/trace_config_file.h"
-#include "components/tracing/common/trace_to_console.h"
-#include "components/tracing/common/tracing_switches.h"
+#include "components/tracing/common/trace_startup.h"
 #include "content/app/android/app_jni_registrar.h"
 #include "content/browser/android/browser_jni_registrar.h"
 #include "content/common/android/common_jni_registrar.h"
@@ -119,29 +117,8 @@ bool EnsureJniRegistered(JNIEnv* env) {
 }
 
 bool LibraryLoaded(JNIEnv* env, jclass clazz) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
   // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
-  if (command_line->HasSwitch(switches::kTraceStartup)) {
-    base::trace_event::TraceConfig trace_config(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup), "");
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-  } else if (command_line->HasSwitch(switches::kTraceToConsole)) {
-      base::trace_event::TraceConfig trace_config =
-          tracing::GetConfigForTraceToConsole();
-      LOG(ERROR) << "Start " << switches::kTraceToConsole
-                 << " with CategoryFilter '"
-                 << trace_config.ToCategoryFilterString() << "'.";
-      base::trace_event::TraceLog::GetInstance()->SetEnabled(
-          trace_config,
-          base::trace_event::TraceLog::RECORDING_MODE);
-  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
-    // This checks kTraceConfigFile switch.
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
-        base::trace_event::TraceLog::RECORDING_MODE);
-  }
+  tracing::EnableStartupTracingIfNeeded(true /* can_access_file_system */);
 
   // Android's main browser loop is custom so we set the browser
   // name here as early as possible.

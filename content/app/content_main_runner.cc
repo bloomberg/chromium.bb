@@ -42,9 +42,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/browser/trace_config_file.h"
-#include "components/tracing/common/trace_to_console.h"
-#include "components/tracing/common/tracing_switches.h"
+#include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
@@ -661,31 +659,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored. For Android, startup tracing is enabled in an even earlier place
     // content/app/android/library_loader_hooks.cc.
-    if (command_line.HasSwitch(switches::kTraceStartup)) {
-      base::trace_event::TraceConfig trace_config(
-          command_line.GetSwitchValueASCII(switches::kTraceStartup),
-          base::trace_event::RECORD_UNTIL_FULL);
-      base::trace_event::TraceLog::GetInstance()->SetEnabled(
-          trace_config,
-          base::trace_event::TraceLog::RECORDING_MODE);
-    } else if (command_line.HasSwitch(switches::kTraceToConsole)) {
-      base::trace_event::TraceConfig trace_config =
-          tracing::GetConfigForTraceToConsole();
-      LOG(ERROR) << "Start " << switches::kTraceToConsole
-                 << " with CategoryFilter '"
-                 << trace_config.ToCategoryFilterString() << "'.";
-      base::trace_event::TraceLog::GetInstance()->SetEnabled(
-          trace_config,
-          base::trace_event::TraceLog::RECORDING_MODE);
-    } else if (process_type != switches::kZygoteProcess &&
-               process_type != switches::kRendererProcess) {
-      if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
-        // This checks kTraceConfigFile switch.
-        base::trace_event::TraceLog::GetInstance()->SetEnabled(
-            tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
-            base::trace_event::TraceLog::RECORDING_MODE);
-      }
-    }
+    // Zygote process does not have file thread and renderer process on Win10
+    // cannot access the file system.
+    // TODO(ssid): Check if other processes can enable startup tracing here.
+    bool can_access_file_system = (process_type != switches::kZygoteProcess &&
+                                   process_type != switches::kRendererProcess);
+    tracing::EnableStartupTracingIfNeeded(can_access_file_system);
 #endif  // !OS_ANDROID
 
 #if defined(OS_WIN)

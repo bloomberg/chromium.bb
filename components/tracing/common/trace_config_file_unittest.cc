@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/tracing/common/trace_config_file.h"
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "components/tracing/browser/trace_config_file.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,12 +50,11 @@ std::string GetTraceConfigFileContent(std::string trace_config,
   return content;
 }
 
-} // namespace
+}  // namespace
 
 TEST(TraceConfigFileTest, TraceStartupEnabled) {
   base::ShadowingAtExitManager sem;
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kTraceStartup);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kTraceStartup);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kTraceConfigFile);
 
@@ -100,16 +100,16 @@ TEST(TraceConfigFileTest, TraceConfigFileEnabledWithInvalidPath) {
 
 TEST(TraceConfigFileTest, ValidContent) {
   base::ShadowingAtExitManager sem;
-  std::string content = GetTraceConfigFileContent(
-      kTraceConfig, "10", "trace_result_file.log");
+  std::string content =
+      GetTraceConfigFileContent(kTraceConfig, "10", "trace_result_file.log");
 
   base::FilePath trace_config_file;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -131,8 +131,8 @@ TEST(TraceConfigFileTest, ValidContentWithOnlyTraceConfig) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -155,20 +155,20 @@ TEST(TraceConfigFileTest, ContentWithAbsoluteResultFilePath) {
   ASSERT_TRUE(result_file_path.IsAbsolute());
 
   std::string result_file_path_str = result_file_path.AsUTF8Unsafe();
-  auto it = std::find(
-      result_file_path_str.begin(), result_file_path_str.end(), '\\');
+  auto it =
+      std::find(result_file_path_str.begin(), result_file_path_str.end(), '\\');
   while (it != result_file_path_str.end()) {
     auto it2 = result_file_path_str.insert(it, '\\');
-    it = std::find(it2+2, result_file_path_str.end(), '\\');
+    it = std::find(it2 + 2, result_file_path_str.end(), '\\');
   }
-  std::string content = GetTraceConfigFileContent(
-      kTraceConfig, "10", result_file_path_str);
+  std::string content =
+      GetTraceConfigFileContent(kTraceConfig, "10", result_file_path_str);
 
   base::FilePath trace_config_file;
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -185,8 +185,8 @@ TEST(TraceConfigFileTest, ContentWithNegtiveDuration) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -201,16 +201,16 @@ TEST(TraceConfigFileTest, ContentWithNegtiveDuration) {
 
 TEST(TraceConfigFileTest, ContentWithoutTraceConfig) {
   base::ShadowingAtExitManager sem;
-  std::string content = GetTraceConfigFileContent(
-      "", "10", "trace_result_file.log");
+  std::string content =
+      GetTraceConfigFileContent("", "10", "trace_result_file.log");
 
   base::FilePath trace_config_file;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -226,8 +226,8 @@ TEST(TraceConfigFileTest, InvalidContent) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
-  ASSERT_NE(-1, base::WriteFile(
-      trace_config_file, content.c_str(), (int)content.length()));
+  ASSERT_NE(-1, base::WriteFile(trace_config_file, content.c_str(),
+                                (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 
@@ -247,4 +247,4 @@ TEST(TraceConfigFileTest, EmptyContent) {
   EXPECT_FALSE(TraceConfigFile::GetInstance()->IsEnabled());
 }
 
-} // namespace tracing
+}  // namespace tracing
