@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "components/autofill/core/browser/autofill_manager.h"
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
@@ -14,6 +15,10 @@
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
+
+namespace ios {
+class ChromeBrowserState;
+}
 
 @class PaymentRequestCoordinator;
 
@@ -58,6 +63,14 @@
 // owned by this class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
+// An instance of autofill::AutofillManager used for credit card unmasking. This
+// reference is not owned by this class.
+@property(nonatomic, assign) autofill::AutofillManager* autofillManager;
+
+// An ios::ChromeBrowserState instance. This reference is not owned by this
+// class.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
 // The favicon of the page invoking the PaymentRequest API. Should be set before
 // calling |start|.
 @property(nonatomic, retain) UIImage* pageFavicon;
@@ -75,6 +88,10 @@
 
 // Updates the payment details of the PaymentRequest and updates the UI.
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails;
+
+// Called when a credit card has been successfully unmasked.
+- (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
+                                      CVC:(const base::string16&)cvc;
 
 @end
 

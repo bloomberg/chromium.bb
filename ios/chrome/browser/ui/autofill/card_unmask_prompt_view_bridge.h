@@ -11,7 +11,7 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
-@class CardUnmaskPromptViewIOS;
+@class CardUnmaskPromptViewController;
 
 namespace autofill {
 
@@ -35,13 +35,14 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
   // Closes the view.
   void PerformClose();
 
-  // Deletes self. This should only be called by CardUnmaskPromptViewIOS after
-  // it finishes dismissing its own UI elements.
+  // Deletes self. This should only be called by CardUnmaskPromptViewController
+  // after it finishes dismissing its own UI elements.
   void DeleteSelf();
 
- private:
-  base::scoped_nsobject<CardUnmaskPromptViewIOS> view_;
+ protected:
+  base::scoped_nsobject<CardUnmaskPromptViewController> view_controller_;
 
+ private:
   // The controller |this| queries for logic and state.
   CardUnmaskPromptController* controller_;  // weak
 
@@ -52,7 +53,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
 
 }  // namespace autofill
 
-@interface CardUnmaskPromptViewIOS : CollectionViewController
+@interface CardUnmaskPromptViewController : CollectionViewController
 
 // Designated initializer. |bridge| must not be null.
 - (instancetype)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge

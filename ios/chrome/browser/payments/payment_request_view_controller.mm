@@ -181,16 +181,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)onCancel {
-  [_cancelButton setEnabled:NO];
-  [_payButton setEnabled:NO];
-
   [_delegate paymentRequestViewControllerDidCancel:self];
 }
 
 - (void)onConfirm {
-  [_cancelButton setEnabled:NO];
-  [_payButton setEnabled:NO];
-
   [_delegate paymentRequestViewControllerDidConfirm:self];
 }
 

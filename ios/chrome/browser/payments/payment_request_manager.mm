@@ -12,7 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/values.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/js_payment_request_manager.h"
@@ -128,12 +130,15 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 @synthesize enabled = _enabled;
 @synthesize webState = _webState;
+@synthesize browserState = _browserState;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
     _baseViewController.reset(viewController);
+
+    _browserState = browserState;
 
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
@@ -307,9 +312,13 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   NSString* pageTitle = base::SysUTF16ToNSString([self webState]->GetTitle());
   NSString* pageHost =
       base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
+  autofill::AutofillManager* autofillManager =
+      autofill::AutofillDriverIOS::FromWebState(_webState)->autofill_manager();
   _paymentRequestCoordinator.reset([[PaymentRequestCoordinator alloc]
       initWithBaseViewController:_baseViewController]);
   [_paymentRequestCoordinator setPaymentRequest:_paymentRequest.get()];
+  [_paymentRequestCoordinator setAutofillManager:autofillManager];
+  [_paymentRequestCoordinator setBrowserState:_browserState];
   [_paymentRequestCoordinator setPageFavicon:pageFavicon];
   [_paymentRequestCoordinator setPageTitle:pageTitle];
   [_paymentRequestCoordinator setPageHost:pageHost];

@@ -63,11 +63,16 @@ CardUnmaskPromptViewBridge::~CardUnmaskPromptViewBridge() {
 }
 
 void CardUnmaskPromptViewBridge::Show() {
-  view_.reset([[CardUnmaskPromptViewIOS alloc] initWithBridge:this]);
+  view_controller_.reset(
+      [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
   // Present the view controller.
+  // TODO(crbug.com/692525): Find an alternative to presenting the view
+  // controller on the root view controller.
   UIViewController* rootController =
       [UIApplication sharedApplication].keyWindow.rootViewController;
-  [rootController presentViewController:view_ animated:YES completion:nil];
+  [rootController presentViewController:view_controller_
+                               animated:YES
+                             completion:nil];
 }
 
 void CardUnmaskPromptViewBridge::ControllerGone() {
@@ -76,23 +81,24 @@ void CardUnmaskPromptViewBridge::ControllerGone() {
 }
 
 void CardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
-  [view_ showSpinner];
+  [view_controller_ showSpinner];
 }
 
 void CardUnmaskPromptViewBridge::GotVerificationResult(
     const base::string16& error_message,
     bool allow_retry) {
   if (error_message.empty()) {
-    [view_ showSuccess];
+    [view_controller_ showSuccess];
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
                               weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
     if (allow_retry) {
-      [view_ showCVCInputFormWithError:SysUTF16ToNSString(error_message)];
+      [view_controller_
+          showCVCInputFormWithError:SysUTF16ToNSString(error_message)];
     } else {
-      [view_ showError:SysUTF16ToNSString(error_message)];
+      [view_controller_ showError:SysUTF16ToNSString(error_message)];
     }
   }
 }
@@ -102,10 +108,10 @@ CardUnmaskPromptController* CardUnmaskPromptViewBridge::GetController() {
 }
 
 void CardUnmaskPromptViewBridge::PerformClose() {
-  [view_ dismissViewControllerAnimated:YES
-                            completion:^{
-                              this->DeleteSelf();
-                            }];
+  [view_controller_ dismissViewControllerAnimated:YES
+                                       completion:^{
+                                         this->DeleteSelf();
+                                       }];
 }
 
 void CardUnmaskPromptViewBridge::DeleteSelf() {
@@ -114,7 +120,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 }  // autofill
 
-@interface CardUnmaskPromptViewIOS ()<UITextFieldDelegate> {
+@interface CardUnmaskPromptViewController ()<UITextFieldDelegate> {
   UIBarButtonItem* _cancelButton;
   UIBarButtonItem* _verifyButton;
   CVCItem* _CVCItem;
@@ -132,7 +138,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 @end
 
-@implementation CardUnmaskPromptViewIOS
+@implementation CardUnmaskPromptViewController
 
 - (instancetype)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge {
   DCHECK(bridge);

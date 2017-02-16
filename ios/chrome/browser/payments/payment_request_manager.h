@@ -28,6 +28,9 @@ class WebState;
 // The current web state being observed for PaymentRequest invocations.
 @property(nonatomic, assign) web::WebState* webState;
 
+// The ios::ChromeBrowserState instance passed to the initializer.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
 // Designated initializer.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:

@@ -103,10 +103,10 @@ TEST(PaymentRequestCoordinatorTest, StartAndStop) {
   EXPECT_EQ(nil, [coordinator baseViewController].presentedViewController);
 }
 
-// Tests that calling the view controller delegate method which notifies the
-// coordinator about confirmation of the PaymentRequest invokes the
-// corresponding coordinator delegate method with the expected information.
-TEST(PaymentRequestCoordinatorTest, DidConfirm) {
+// Tests that calling the card unmasking delegate method which notifies the
+// coordinator about successful unmasking of a credit card invokes the
+// appropriate coordinator delegate method with the expected information.
+TEST(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
@@ -136,12 +136,17 @@ TEST(PaymentRequestCoordinatorTest, DidConfirm) {
                    paymentResponse.details.expiry_month);
          EXPECT_EQ(base::ASCIIToUTF16("2999"),
                    paymentResponse.details.expiry_year);
+         EXPECT_EQ(base::ASCIIToUTF16("123"),
+                   paymentResponse.details.card_security_code);
          EXPECT_EQ(coordinator, callerCoordinator);
        }];
   [coordinator setDelegate:delegate_mock];
 
-  // Call the controller delegate method.
-  [coordinator paymentRequestViewControllerDidConfirm:nil];
+  // Call the card unmasking delegate method.
+  std::unique_ptr<autofill::CreditCard> card =
+      payment_request_test_util::CreateTestCreditCard();
+  [coordinator fullCardRequestDidSucceedWithCard:*card
+                                             CVC:base::ASCIIToUTF16("123")];
 }
 
 // Tests that calling the ShippingAddressSelectionCoordinator delegate method

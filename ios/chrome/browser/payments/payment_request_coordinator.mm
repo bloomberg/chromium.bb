@@ -10,16 +10,110 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
+#include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+
+// The unmask prompt UI for Payment Request.
+class PRCardUnmaskPromptViewBridge
+    : public autofill::CardUnmaskPromptViewBridge {
+ public:
+  explicit PRCardUnmaskPromptViewBridge(
+      autofill::CardUnmaskPromptController* controller,
+      UIViewController* base_view_controller)
+      : autofill::CardUnmaskPromptViewBridge(controller),
+        base_view_controller_(base_view_controller){};
+
+  // autofill::CardUnmaskPromptView:
+  void Show() override {
+    view_controller_.reset(
+        [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
+    [base_view_controller_ presentViewController:view_controller_
+                                        animated:YES
+                                      completion:nil];
+  };
+
+ private:
+  UIViewController* base_view_controller_;  // Weak.
+  DISALLOW_COPY_AND_ASSIGN(PRCardUnmaskPromptViewBridge);
+};
+
+// Receives the full credit card details. Also displays the unmask prompt UI.
+class FullCardRequester
+    : public autofill::payments::FullCardRequest::ResultDelegate,
+      public autofill::payments::FullCardRequest::UIDelegate,
+      public base::SupportsWeakPtr<FullCardRequester> {
+ public:
+  explicit FullCardRequester(PaymentRequestCoordinator* owner,
+                             UIViewController* base_view_controller,
+                             ios::ChromeBrowserState* browser_state)
+      : owner_(owner),
+        base_view_controller_(base_view_controller),
+        unmask_controller_(browser_state->GetPrefs(),
+                           browser_state->IsOffTheRecord()) {}
+
+  void GetFullCard(autofill::CreditCard* card,
+                   autofill::AutofillManager* autofill_manager) {
+    DCHECK(card);
+    DCHECK(autofill_manager);
+    autofill_manager->GetOrCreateFullCardRequest()->GetFullCard(
+        *card, autofill::AutofillClient::UNMASK_FOR_PAYMENT_REQUEST,
+        AsWeakPtr(), AsWeakPtr());
+  }
+
+  // payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
+                                  const base::string16& cvc) override {
+    [owner_ fullCardRequestDidSucceedWithCard:card CVC:cvc];
+  }
+
+  // payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestFailed() override {
+    // No action is required here. PRCardUnmaskPromptViewBridge manages its own
+    // life cycle. When the prompt is explicitly dismissed via tapping the close
+    // button (either in presence or absence of an error), the unmask prompt
+    // dialog pops itself and the user is back to the Payment Request UI.
+  }
+
+  // payments::FullCardRequest::UIDelegate:
+  void ShowUnmaskPrompt(
+      const autofill::CreditCard& card,
+      autofill::AutofillClient::UnmaskCardReason reason,
+      base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override {
+    unmask_controller_.ShowPrompt(
+        // PRCardUnmaskPromptViewBridge manages its own lifetime.
+        new PRCardUnmaskPromptViewBridge(&unmask_controller_,
+                                         base_view_controller_),
+        card, reason, delegate);
+  }
+
+  // payments::FullCardRequest::UIDelegate:
+  void OnUnmaskVerificationResult(
+      autofill::AutofillClient::PaymentsRpcResult result) override {
+    unmask_controller_.OnVerificationResult(result);
+  }
+
+ private:
+  PaymentRequestCoordinator* owner_;        // Weak. Owns this instance.
+  UIViewController* base_view_controller_;  // Weak.
+  autofill::CardUnmaskPromptControllerImpl unmask_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
+};
 
 @interface PaymentRequestCoordinator () {
   base::WeakNSProtocol<id<PaymentRequestCoordinatorDelegate>> _delegate;
@@ -34,6 +128,10 @@
   base::scoped_nsobject<PaymentMethodSelectionCoordinator>
       _methodSelectionCoordinator;
 
+  // Receiver of the full credit card details. Also displays the unmask prompt
+  // UI.
+  std::unique_ptr<FullCardRequester> _fullCardRequester;
+
   base::mac::ObjCPropertyReleaser _propertyReleaser_PaymentRequestCoordinator;
 }
 
@@ -45,6 +143,8 @@
 }
 
 @synthesize paymentRequest = _paymentRequest;
+@synthesize autofillManager = _autofillManager;
+@synthesize browserState = _browserState;
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
@@ -98,29 +198,28 @@
 
 - (void)sendPaymentResponse {
   DCHECK(_paymentRequest->selected_credit_card());
-  autofill::CreditCard* selectedCreditCard =
-      _paymentRequest->selected_credit_card();
+  autofill::CreditCard* card = _paymentRequest->selected_credit_card();
+  _fullCardRequester = base::MakeUnique<FullCardRequester>(
+      self, _navigationController, _browserState);
+  _fullCardRequester->GetFullCard(card, _autofillManager);
+}
 
-  // TODO(crbug.com/602666): Unmask if this is a server card and/or ask the user
-  //   for CVC here.
-  // TODO(crbug.com/602666): Record the use of this card with the
-  //   PersonalDataManager.
+- (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
+                                      CVC:(const base::string16&)cvc {
   web::PaymentResponse paymentResponse;
   paymentResponse.details.cardholder_name =
-      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
+      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
   paymentResponse.details.card_number =
-      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_NUMBER);
+      card.GetRawInfo(autofill::CREDIT_CARD_NUMBER);
   paymentResponse.details.expiry_month =
-      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
+      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
   paymentResponse.details.expiry_year =
-      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  paymentResponse.details.card_security_code =
-      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_VERIFICATION_CODE);
-  if (!selectedCreditCard->billing_address_id().empty()) {
+      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  paymentResponse.details.card_security_code = cvc;
+  if (!card.billing_address_id().empty()) {
     autofill::AutofillProfile* address =
         autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            selectedCreditCard->billing_address_id(),
-            _paymentRequest->billing_profiles());
+            card.billing_address_id(), _paymentRequest->billing_profiles());
     if (address) {
       paymentResponse.details.billing_address =
           payment_request_util::PaymentAddressFromAutofillProfile(address);
