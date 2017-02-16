@@ -22,7 +22,6 @@ from utilities import write_file
 _COPYRIGHT = """// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 """
 
 _INIT_PARTIAL_INTERFACE = """%s
@@ -30,8 +29,7 @@ _INIT_PARTIAL_INTERFACE = """%s
 
 namespace blink {
 
-void initPartialInterfacesInModules()
-{
+void initPartialInterfacesInModules() {
 %s
 }
 
@@ -93,7 +91,7 @@ def main():
 
     includes = ['#include "bindings/modules/v8/%s.h"' % interface_name
                 for interface_name in interface_names]
-    initialize_calls = ['    %s::initialize();' % interface_name
+    initialize_calls = ['  %s::initialize();' % interface_name
                         for interface_name in interface_names]
 
     content = _INIT_PARTIAL_INTERFACE % (
