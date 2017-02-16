@@ -305,16 +305,16 @@ void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
       y + underline_position_ + underline_thickness_);
   if (underline_thickness_ == kUnderlineMetricsNotSet) {
     const SkScalar text_size = flags_.getTextSize();
-    r.fTop = text_size * kUnderlineOffset + y;
-    r.fBottom = r.fTop + text_size * kLineThickness;
+    r.fTop = SkScalarMulAdd(text_size, kUnderlineOffset, y);
+    r.fBottom = r.fTop + SkScalarMul(text_size, kLineThickness);
   }
   canvas_skia_->drawRect(r, flags_);
 }
 
 void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
   const SkScalar text_size = flags_.getTextSize();
-  const SkScalar height = text_size * kLineThickness;
-  const SkScalar offset = text_size * kStrikeThroughOffset + y;
+  const SkScalar height = SkScalarMul(text_size, kLineThickness);
+  const SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
   SkScalar x_scalar = SkIntToScalar(x);
   const SkRect r =
       SkRect::MakeLTRB(x_scalar, offset, x_scalar + width, offset + height);
@@ -336,8 +336,9 @@ void SkiaTextRenderer::DiagonalStrike::AddPiece(int length, SkColor color) {
 
 void SkiaTextRenderer::DiagonalStrike::Draw() {
   const SkScalar text_size = flags_.getTextSize();
-  const SkScalar offset = text_size * kDiagonalStrikeMarginOffset;
-  const int thickness = SkScalarCeilToInt(text_size * kLineThickness * 2);
+  const SkScalar offset = SkScalarMul(text_size, kDiagonalStrikeMarginOffset);
+  const int thickness =
+      SkScalarCeilToInt(SkScalarMul(text_size, kLineThickness) * 2);
   const int height = SkScalarCeilToInt(text_size - offset);
   const Point end = start_ + Vector2d(total_length_, -height);
   const int clip_height = height + 2 * thickness;

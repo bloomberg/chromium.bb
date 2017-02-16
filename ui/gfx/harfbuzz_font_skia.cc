@@ -132,8 +132,8 @@ hb_position_t GetGlyphKerning(FontData* font_data,
 
   SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
   SkScalar size = font_data->paint_.getTextSize();
-  return SkiaScalarToHarfBuzzUnits(SkIntToScalar(kerning_adjustments[0]) *
-                                   size / upm);
+  return SkiaScalarToHarfBuzzUnits(
+      SkScalarMulDiv(SkIntToScalar(kerning_adjustments[0]), size, upm));
 }
 
 hb_position_t GetGlyphHorizontalKerning(hb_font_t* font,

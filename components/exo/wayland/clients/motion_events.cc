@@ -720,7 +720,7 @@ int MotionEvents::Run() {
       SkIRect rect = SkIRect::MakeXYWH(-SkScalarHalf(half_width),
                                        -SkScalarHalf(half_height), half_width,
                                        half_height);
-      SkScalar rotation = schedule.time * kRotationSpeed / 1000;
+      SkScalar rotation = SkScalarMulDiv(schedule.time, kRotationSpeed, 1000);
       canvas->save();
       canvas->translate(half_width, half_height);
       for (size_t i = 0; i < num_rects_; ++i) {
