@@ -41,7 +41,6 @@
 #include "core/html/parser/HTMLParserScriptRunner.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
@@ -52,7 +51,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/heap/Handle.h"
-#include "platform/heap/Persistent.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/Platform.h"
@@ -61,6 +59,7 @@
 #include "public/platform/WebThread.h"
 #include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
@@ -132,19 +131,21 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       m_tokenizer(syncPolicy == ForceSynchronousParsing
                       ? HTMLTokenizer::create(m_options)
                       : nullptr),
+      m_loadingTaskRunner(
+          TaskRunnerHelper::get(TaskType::Networking, &document)),
       m_parserScheduler(
           syncPolicy == AllowAsynchronousParsing
-              ? HTMLParserScheduler::create(
-                    this,
-                    TaskRunnerHelper::get(TaskType::Networking, &document))
+              ? HTMLParserScheduler::create(this, m_loadingTaskRunner.get())
               : nullptr),
       m_xssAuditorDelegate(&document),
+      m_weakFactory(this),
       m_preloader(HTMLResourcePreloader::create(document)),
       m_tokenizedChunkQueue(TokenizedChunkQueue::create()),
       m_evaluator(DocumentWriteEvaluator::create(document)),
       m_pendingCSPMetaToken(nullptr),
       m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing),
       m_endWasDelayed(false),
+      m_haveBackgroundParser(false),
       m_tasksWereSuspended(false),
       m_pumpSessionNestingLevel(0),
       m_pumpSpeculationsSessionNestingLevel(0),
@@ -159,12 +160,18 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
 
 HTMLDocumentParser::~HTMLDocumentParser() {}
 
+void HTMLDocumentParser::dispose() {
+  // In Oilpan, HTMLDocumentParser can die together with Document, and detach()
+  // is not called in this case.
+  if (m_haveBackgroundParser)
+    stopBackgroundParser();
+}
+
 DEFINE_TRACE(HTMLDocumentParser) {
   visitor->trace(m_treeBuilder);
   visitor->trace(m_parserScheduler);
   visitor->trace(m_xssAuditorDelegate);
   visitor->trace(m_scriptRunner);
-  visitor->trace(m_backgroundParser);
   visitor->trace(m_preloader);
   ScriptableDocumentParser::trace(visitor);
   HTMLParserScriptRunnerHost::trace(visitor);
@@ -183,7 +190,8 @@ void HTMLDocumentParser::detach() {
         m_tokenizedChunkQueue->peakPendingTokenCount());
   }
 
-  m_backgroundParser.clear();
+  if (m_haveBackgroundParser)
+    stopBackgroundParser();
   DocumentParser::detach();
   if (m_scriptRunner)
     m_scriptRunner->detach();
@@ -210,7 +218,8 @@ void HTMLDocumentParser::stopParsing() {
     m_parserScheduler->detach();
     m_parserScheduler.clear();
   }
-  m_backgroundParser.clear();
+  if (m_haveBackgroundParser)
+    stopBackgroundParser();
 }
 
 // This kicks off "Once the user agent stops parsing" as described by:
@@ -218,11 +227,11 @@ void HTMLDocumentParser::stopParsing() {
 void HTMLDocumentParser::prepareToStopParsing() {
   // FIXME: It may not be correct to disable this for the background parser.
   // That means hasInsertionPoint() may not be correct in some cases.
-  ASSERT(!hasInsertionPoint() || m_backgroundParser);
+  ASSERT(!hasInsertionPoint() || m_haveBackgroundParser);
 
   // NOTE: This pump should only ever emit buffered character tokens.
   if (m_tokenizer) {
-    ASSERT(!m_backgroundParser);
+    ASSERT(!m_haveBackgroundParser);
     pumpTokenizerIfPossible();
   }
 
@@ -262,7 +271,7 @@ bool HTMLDocumentParser::isScheduledForResume() const {
 // Used by HTMLParserScheduler
 void HTMLDocumentParser::resumeParsingAfterYield() {
   ASSERT(shouldUseThreading());
-  ASSERT(m_backgroundParser);
+  ASSERT(m_haveBackgroundParser);
 
   checkIfBodyStylesheetAdded();
   if (isStopped() || isPaused())
@@ -389,8 +398,6 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
 
 void HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser(
     const DocumentEncodingData& data) {
-  if (!isParsing())
-    return;
   document()->setEncodingData(data);
 }
 
@@ -444,6 +451,8 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
     std::unique_ptr<TokenizedChunk> lastChunkBeforeScript,
     std::unique_ptr<HTMLToken> token,
     std::unique_ptr<HTMLTokenizer> tokenizer) {
+  m_weakFactory.revokeAll();
+
   size_t discardedTokenCount = 0;
   for (const auto& speculation : m_speculations) {
     discardedTokenCount += speculation->tokens->size();
@@ -458,6 +467,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
 
   std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint =
       WTF::wrapUnique(new BackgroundHTMLParser::Checkpoint);
+  checkpoint->parser = m_weakFactory.createWeakPtr();
   checkpoint->token = std::move(token);
   checkpoint->tokenizer = std::move(tokenizer);
   checkpoint->treeBuilderState =
@@ -470,7 +480,10 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
   m_input.current().clear();
 
   ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-  m_backgroundParser->resumeFrom(std::move(checkpoint));
+  m_loadingTaskRunner->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser,
+                WTF::passed(std::move(checkpoint))));
 }
 
 size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
@@ -495,7 +508,10 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
   std::unique_ptr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
   size_t elementTokenCount = 0;
 
-  m_backgroundParser->startedChunkWithCheckpoint(chunk->inputCheckpoint);
+  m_loadingTaskRunner->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&BackgroundHTMLParser::startedChunkWithCheckpoint,
+                m_backgroundParser, chunk->inputCheckpoint));
 
   for (const auto& xssInfo : chunk->xssInfos) {
     m_textPosition = xssInfo->m_textPosition;
@@ -522,8 +538,9 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
       // locationChangePending on the EOF path) we peek to see if this chunk has
       // an EOF and process it anyway.
       if (tokens->back().type() == HTMLToken::EndOfFile) {
-        // There should never be any chunks after the EOF.
-        ASSERT(m_speculations.isEmpty());
+        ASSERT(
+            m_speculations
+                .isEmpty());  // There should never be any chunks after the EOF.
         prepareToStopParsing();
       }
       break;
@@ -637,7 +654,7 @@ void HTMLDocumentParser::forcePlaintextForTextDocument() {
   if (shouldUseThreading()) {
     // This method is called before any data is appended, so we have to start
     // the background parser ourselves.
-    if (!m_backgroundParser)
+    if (!m_haveBackgroundParser)
       startBackgroundParser();
 
     // This task should be synchronous, because otherwise synchronous
@@ -777,7 +794,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
 
   if (!m_tokenizer) {
     ASSERT(!inPumpSession());
-    ASSERT(m_backgroundParser || wasCreatedByScript());
+    ASSERT(m_haveBackgroundParser || wasCreatedByScript());
     m_token = WTF::wrapUnique(new HTMLToken);
     m_tokenizer = HTMLTokenizer::create(m_options);
   }
@@ -802,10 +819,12 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
 void HTMLDocumentParser::startBackgroundParser() {
   ASSERT(!isStopped());
   ASSERT(shouldUseThreading());
-  ASSERT(!m_backgroundParser);
+  ASSERT(!m_haveBackgroundParser);
   ASSERT(document());
+  m_haveBackgroundParser = true;
 
-  // TODO(csharrison): Remove WebFrameScheduler::setDocumentParsingInBackground.
+  // TODO(alexclarke): Remove WebFrameScheduler::setDocumentParsingInBackground
+  // when background parser goes away.
   if (document()->frame() && document()->frame()->frameScheduler())
     document()->frame()->frameScheduler()->setDocumentParsingInBackground(true);
 
@@ -817,10 +836,12 @@ void HTMLDocumentParser::startBackgroundParser() {
   std::unique_ptr<BackgroundHTMLParser::Configuration> config =
       WTF::wrapUnique(new BackgroundHTMLParser::Configuration);
   config->options = m_options;
+  config->parser = m_weakFactory.createWeakPtr();
   config->xssAuditor = WTF::wrapUnique(new XSSAuditor);
   config->xssAuditor->init(document(), &m_xssAuditorDelegate);
 
   config->decoder = takeDecoder();
+  config->tokenizedChunkQueue = m_tokenizedChunkQueue.get();
   if (document()->settings()) {
     if (document()
             ->settings()
@@ -838,8 +859,32 @@ void HTMLDocumentParser::startBackgroundParser() {
 
   ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
 
+  // The background parser is created on the main thread, but may otherwise
+  // only be used from the parser thread.
   m_backgroundParser =
-      BackgroundHTMLParser::create(this, *document(), std::move(config));
+      BackgroundHTMLParser::create(std::move(config), m_loadingTaskRunner);
+  // TODO(csharrison): This is a hack to initialize MediaValuesCached on the
+  // correct thread. We should get rid of it.
+  m_backgroundParser->init(
+      document()->url(), CachedDocumentParameters::create(document()),
+      MediaValuesCached::MediaValuesCachedData(*document()));
+}
+
+void HTMLDocumentParser::stopBackgroundParser() {
+  ASSERT(shouldUseThreading());
+  ASSERT(m_haveBackgroundParser);
+
+  if (m_haveBackgroundParser && document()->frame() &&
+      document()->frame()->frameScheduler())
+    document()->frame()->frameScheduler()->setDocumentParsingInBackground(
+        false);
+
+  m_haveBackgroundParser = false;
+
+  // Make this sync, as lsan triggers on some unittests if the task runner is
+  // used.
+  m_backgroundParser->stop();
+  m_weakFactory.revokeAll();
 }
 
 void HTMLDocumentParser::append(const String& inputSource) {
@@ -896,7 +941,8 @@ void HTMLDocumentParser::end() {
   ASSERT(!isDetached());
   ASSERT(!isScheduledForResume());
 
-  m_backgroundParser.clear();
+  if (m_haveBackgroundParser)
+    stopBackgroundParser();
 
   // Informs the the rest of WebCore that parsing is really finished (and
   // deletes this).
@@ -909,7 +955,7 @@ void HTMLDocumentParser::attemptToRunDeferredScriptsAndEnd() {
   ASSERT(isStopping());
   // FIXME: It may not be correct to disable this for the background parser.
   // That means hasInsertionPoint() may not be correct in some cases.
-  ASSERT(!hasInsertionPoint() || m_backgroundParser);
+  ASSERT(!hasInsertionPoint() || m_haveBackgroundParser);
   if (m_scriptRunner && !m_scriptRunner->executeScriptsWaitingForParsing())
     return;
   end();
@@ -950,10 +996,12 @@ void HTMLDocumentParser::finish() {
   // Empty documents never got an append() call, and thus have never started a
   // background parser. In those cases, we ignore shouldUseThreading() and fall
   // through to the non-threading case.
-  if (m_backgroundParser) {
+  if (m_haveBackgroundParser) {
     if (!m_input.haveSeenEndOfFile())
       m_input.closeWithoutMarkingEndOfFile();
-    m_backgroundParser->finish();
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::finish, m_backgroundParser));
     return;
   }
 
@@ -986,14 +1034,14 @@ bool HTMLDocumentParser::isParsingAtLineNumber() const {
 }
 
 OrdinalNumber HTMLDocumentParser::lineNumber() const {
-  if (m_backgroundParser)
+  if (m_haveBackgroundParser)
     return m_textPosition.m_line;
 
   return m_input.current().currentLine();
 }
 
 TextPosition HTMLDocumentParser::textPosition() const {
-  if (m_backgroundParser)
+  if (m_haveBackgroundParser)
     return m_textPosition;
 
   const SegmentedString& currentString = m_input.current();
@@ -1030,7 +1078,7 @@ void HTMLDocumentParser::resumeParsingAfterPause() {
   if (isPaused())
     return;
 
-  if (m_backgroundParser) {
+  if (m_haveBackgroundParser) {
     if (m_lastChunkBeforePause) {
       validateSpeculations(std::move(m_lastChunkBeforePause));
       DCHECK(!m_lastChunkBeforePause);
@@ -1143,7 +1191,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
 
   if (shouldUseThreading()) {
     double bytesReceivedTime = monotonicallyIncreasingTimeMS();
-    if (!m_backgroundParser)
+    if (!m_haveBackgroundParser)
       startBackgroundParser();
 
     std::unique_ptr<Vector<char>> buffer =
@@ -1152,8 +1200,11 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                  "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-    m_backgroundParser->appendRawBytesFromMainThread(std::move(buffer),
-                                                     bytesReceivedTime);
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::appendRawBytesFromMainThread,
+                  m_backgroundParser, WTF::passed(std::move(buffer)),
+                  bytesReceivedTime));
     return;
   }
 
@@ -1168,14 +1219,17 @@ void HTMLDocumentParser::flush() {
   if (shouldUseThreading()) {
     // In some cases, flush() is called without any invocation of appendBytes.
     // Fallback to synchronous parsing in that case.
-    if (!m_backgroundParser) {
+    if (!m_haveBackgroundParser) {
       m_shouldUseThreading = false;
       m_token = WTF::wrapUnique(new HTMLToken);
       m_tokenizer = HTMLTokenizer::create(m_options);
       DecodedDataDocumentParser::flush();
       return;
     }
-    m_backgroundParser->flush();
+
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::flush, m_backgroundParser));
   } else {
     DecodedDataDocumentParser::flush();
   }
@@ -1186,8 +1240,12 @@ void HTMLDocumentParser::setDecoder(
   ASSERT(decoder);
   DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
-  if (m_backgroundParser)
-    m_backgroundParser->setDecoder(takeDecoder());
+  if (m_haveBackgroundParser) {
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::setDecoder, m_backgroundParser,
+                  WTF::passed(takeDecoder())));
+  }
 }
 
 void HTMLDocumentParser::documentElementAvailable() {

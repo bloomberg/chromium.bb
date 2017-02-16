@@ -26,7 +26,6 @@
 #ifndef HTMLDocumentParser_h
 #define HTMLDocumentParser_h
 
-#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -49,6 +48,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/TextPosition.h"
+#include <memory>
 
 namespace blink {
 
@@ -71,6 +71,7 @@ class DocumentWriteEvaluator;
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                                        private HTMLParserScriptRunnerHost {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
+  USING_PRE_FINALIZER(HTMLDocumentParser, dispose);
 
  public:
   static HTMLDocumentParser* create(
@@ -80,6 +81,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   }
   ~HTMLDocumentParser() override;
   DECLARE_VIRTUAL_TRACE();
+
+  // TODO(alexclarke): Remove when background parser goes away.
+  void dispose();
 
   // Exposed for HTMLParserScheduler
   void resumeParsingAfterYield();
@@ -135,10 +139,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void flush() final;
   void setDecoder(std::unique_ptr<TextResourceDecoder>) final;
 
-  TokenizedChunkQueue* tokenizedChunkQueue() {
-    return m_tokenizedChunkQueue.get();
-  }
-
  protected:
   void insert(const SegmentedString&) final;
   void append(const String&) override;
@@ -189,6 +189,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void appendCurrentInputStreamToPreloadScannerAndScan() final;
 
   void startBackgroundParser();
+  void stopBackgroundParser();
   void validateSpeculations(std::unique_ptr<TokenizedChunk> lastChunk);
   void discardSpeculationsAndResumeFrom(
       std::unique_ptr<TokenizedChunk> lastChunk,
@@ -246,6 +247,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // A scanner used only for input provided to the insert() method.
   std::unique_ptr<HTMLPreloadScanner> m_insertionPreloadScanner;
 
+  RefPtr<WebTaskRunner> m_loadingTaskRunner;
   Member<HTMLParserScheduler> m_parserScheduler;
   HTMLSourceTracker m_sourceTracker;
   TextPosition m_textPosition;
@@ -257,7 +259,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // and passed between threads together.
   std::unique_ptr<TokenizedChunk> m_lastChunkBeforePause;
   Deque<std::unique_ptr<TokenizedChunk>> m_speculations;
-  Member<BackgroundHTMLParser> m_backgroundParser;
+  WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
+  WeakPtr<BackgroundHTMLParser> m_backgroundParser;
   Member<HTMLResourcePreloader> m_preloader;
   PreloadRequestStream m_queuedPreloads;
   Vector<String> m_queuedDocumentWriteScripts;
@@ -276,6 +279,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   bool m_shouldUseThreading;
   bool m_endWasDelayed;
+  bool m_haveBackgroundParser;
   bool m_tasksWereSuspended;
   unsigned m_pumpSessionNestingLevel;
   unsigned m_pumpSpeculationsSessionNestingLevel;

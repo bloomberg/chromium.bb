@@ -26,11 +26,8 @@
 #include "core/html/parser/BackgroundHTMLParser.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
@@ -41,6 +38,7 @@
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
+#include <memory>
 
 namespace blink {
 
@@ -88,20 +86,20 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(
 
 #endif
 
-BackgroundHTMLParser* BackgroundHTMLParser::create(
-    HTMLDocumentParser* parser,
-    Document& document,
-    std::unique_ptr<Configuration> config) {
-  return new BackgroundHTMLParser(
-      parser, std::move(config),
-      TaskRunnerHelper::get(TaskType::Networking, &document),
-      WTF::makeUnique<TokenPreloadScanner>(
-          document.url(), CachedDocumentParameters::create(&document),
-          MediaValuesCached::MediaValuesCachedData(document)));
+WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::create(
+    std::unique_ptr<Configuration> config,
+    RefPtr<WebTaskRunner> loadingTaskRunner) {
+  auto* backgroundParser =
+      new BackgroundHTMLParser(std::move(config), std::move(loadingTaskRunner));
+  return backgroundParser->m_weakFactory.createWeakPtr();
 }
 
-DEFINE_TRACE(BackgroundHTMLParser) {
-  visitor->trace(m_parser);
+void BackgroundHTMLParser::init(
+    const KURL& documentURL,
+    std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters,
+    const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData) {
+  m_preloadScanner.reset(new TokenPreloadScanner(
+      documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData));
 }
 
 BackgroundHTMLParser::Configuration::Configuration()
@@ -110,22 +108,21 @@ BackgroundHTMLParser::Configuration::Configuration()
       shouldCoalesceChunks(false) {}
 
 BackgroundHTMLParser::BackgroundHTMLParser(
-    HTMLDocumentParser* parser,
     std::unique_ptr<Configuration> config,
-    RefPtr<WebTaskRunner> loadingTaskRunner,
-    std::unique_ptr<TokenPreloadScanner> scanner)
-    : m_token(WTF::wrapUnique(new HTMLToken)),
+    RefPtr<WebTaskRunner> loadingTaskRunner)
+    : m_weakFactory(this),
+      m_token(WTF::wrapUnique(new HTMLToken)),
       m_tokenizer(HTMLTokenizer::create(config->options)),
       m_treeBuilderSimulator(config->options),
       m_options(config->options),
       m_outstandingTokenLimit(config->outstandingTokenLimit),
-      m_parser(parser),
+      m_parser(config->parser),
       m_pendingTokens(WTF::wrapUnique(new CompactHTMLTokenStream)),
       m_pendingTokenLimit(config->pendingTokenLimit),
       m_xssAuditor(std::move(config->xssAuditor)),
-      m_preloadScanner(std::move(scanner)),
       m_decoder(std::move(config->decoder)),
       m_loadingTaskRunner(std::move(loadingTaskRunner)),
+      m_tokenizedChunkQueue(std::move(config->tokenizedChunkQueue)),
       m_pendingCSPMetaTokenIndex(
           HTMLDocumentParser::TokenizedChunk::noPendingToken),
       m_startingScript(false),
@@ -146,10 +143,7 @@ void BackgroundHTMLParser::appendRawBytesFromMainThread(
   DEFINE_STATIC_LOCAL(CustomCountHistogram, queueDelay,
                       ("Parser.AppendBytesDelay", 1, 5000, 50));
   queueDelay.count(monotonicallyIncreasingTimeMS() - bytesReceivedTime);
-  m_loadingTaskRunner->postTask(
-      BLINK_FROM_HERE,
-      WTF::bind(&BackgroundHTMLParser::updateDocument, wrapPersistent(this),
-                m_decoder->decode(buffer->data(), buffer->size())));
+  updateDocument(m_decoder->decode(buffer->data(), buffer->size()));
 }
 
 void BackgroundHTMLParser::appendDecodedBytes(const String& input) {
@@ -166,9 +160,7 @@ void BackgroundHTMLParser::setDecoder(
 
 void BackgroundHTMLParser::flush() {
   ASSERT(m_decoder);
-  m_loadingTaskRunner->postTask(
-      BLINK_FROM_HERE, WTF::bind(&BackgroundHTMLParser::updateDocument,
-                                 wrapPersistent(this), m_decoder->flush()));
+  updateDocument(m_decoder->flush());
 }
 
 void BackgroundHTMLParser::updateDocument(const String& decodedData) {
@@ -178,7 +170,9 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData) {
     m_lastSeenEncodingData = encodingData;
 
     m_xssAuditor->setEncoding(encodingData.encoding());
-    m_parser->didReceiveEncodingDataFromBackgroundParser(encodingData);
+    runOnMainThread(
+        &HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser,
+        m_parser, encodingData);
   }
 
   if (decodedData.isEmpty())
@@ -188,21 +182,14 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData) {
 }
 
 void BackgroundHTMLParser::resumeFrom(std::unique_ptr<Checkpoint> checkpoint) {
-  m_loadingTaskRunner->postTask(
-      BLINK_FROM_HERE,
-      WTF::bind(&BackgroundHTMLParser::onResumeFrom, wrapPersistent(this),
-                WTF::passed(std::move(checkpoint))));
-}
-
-void BackgroundHTMLParser::onResumeFrom(
-    std::unique_ptr<Checkpoint> checkpoint) {
+  m_parser = checkpoint->parser;
   m_token = std::move(checkpoint->token);
   m_tokenizer = std::move(checkpoint->tokenizer);
   m_treeBuilderSimulator.setState(checkpoint->treeBuilderState);
   m_input.rewindTo(checkpoint->inputCheckpoint, checkpoint->unparsedInput);
   m_preloadScanner->rewindTo(checkpoint->preloadScannerCheckpoint);
   m_startingScript = false;
-  m_parser->tokenizedChunkQueue()->clear();
+  m_tokenizedChunkQueue->clear();
   m_lastBytesReceivedTime = monotonicallyIncreasingTimeMS();
   pumpTokenizer();
 }
@@ -212,20 +199,16 @@ void BackgroundHTMLParser::startedChunkWithCheckpoint(
   // Note, we should not have to worry about the index being invalid as messages
   // from the main thread will be processed in FIFO order.
   m_input.invalidateCheckpointsBefore(inputCheckpoint);
-  m_loadingTaskRunner->postTask(
-      BLINK_FROM_HERE,
-      WTF::bind(&BackgroundHTMLParser::pumpTokenizer, wrapPersistent(this)));
-}
-
-void BackgroundHTMLParser::onFinish() {
-  markEndOfFile();
   pumpTokenizer();
 }
 
 void BackgroundHTMLParser::finish() {
-  m_loadingTaskRunner->postTask(
-      BLINK_FROM_HERE,
-      WTF::bind(&BackgroundHTMLParser::onFinish, wrapPersistent(this)));
+  markEndOfFile();
+  pumpTokenizer();
+}
+
+void BackgroundHTMLParser::stop() {
+  delete this;
 }
 
 void BackgroundHTMLParser::forcePlaintextForTextDocument() {
@@ -319,7 +302,8 @@ void BackgroundHTMLParser::pumpTokenizer() {
     }
 
     if (!m_shouldCoalesceChunks && shouldNotifyMainThread) {
-      m_parser->notifyPendingTokenizedChunks();
+      runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks,
+                      m_parser);
       shouldNotifyMainThread = false;
     }
   }
@@ -328,7 +312,8 @@ void BackgroundHTMLParser::pumpTokenizer() {
   // anything expensive (extensions, scripts) take up time on the main thread. A
   // busy main thread can cause preload delays.
   if (shouldNotifyMainThread) {
-    m_parser->notifyPendingTokenizedChunks();
+    runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks,
+                    m_parser);
   }
 }
 
@@ -373,7 +358,7 @@ bool BackgroundHTMLParser::queueChunkForMainThread() {
   m_pendingCSPMetaTokenIndex =
       HTMLDocumentParser::TokenizedChunk::noPendingToken;
 
-  bool isEmpty = m_parser->tokenizedChunkQueue()->enqueue(std::move(chunk));
+  bool isEmpty = m_tokenizedChunkQueue->enqueue(std::move(chunk));
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, chunkEnqueueTime,
                       ("Parser.ChunkEnqueueTime", 1, 10000, 50));
@@ -381,6 +366,23 @@ bool BackgroundHTMLParser::queueChunkForMainThread() {
 
   m_pendingTokens = WTF::wrapUnique(new CompactHTMLTokenStream);
   return isEmpty;
+}
+
+// If the background parser is already running on the main thread, then it is
+// not necessary to post a task to the main thread to run asynchronously. The
+// main parser deals with chunking up its own work.
+// TODO(csharrison): This is a pretty big hack because we don't actually need a
+// CrossThreadClosure in these cases. This is just experimental.
+template <typename FunctionType, typename... Ps>
+void BackgroundHTMLParser::runOnMainThread(FunctionType function,
+                                           Ps&&... parameters) {
+  if (isMainThread()) {
+    (*WTF::bind(function, std::forward<Ps>(parameters)...))();
+  } else {
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(function, std::forward<Ps>(parameters)...));
+  }
 }
 
 }  // namespace blink
