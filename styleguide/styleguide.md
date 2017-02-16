@@ -3,7 +3,7 @@
 ## Main style guides
 
   * [Chromium C++ style guide](c++/c++.md)
-  * [Google Objective-C style guide](https://google.github.io/styleguide/objcguide.xml)
+  * [Chromium Objective-C style guide](objective-c/objective-c.md)
   * [Java style guide for Android](java/java.md)
   * [GN style guide](../tools/gn/docs/style_guide.md) for build files
 
