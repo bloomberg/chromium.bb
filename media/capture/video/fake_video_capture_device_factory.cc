@@ -18,9 +18,8 @@ namespace {
 static const size_t kDepthDeviceIndex = 1;
 static const char kDepthDeviceId[] = "/dev/video1";
 
-// Factory has one device by default; I420. If there are more, the second device
-// is of Y16 format while the rest are I420.
-media::VideoPixelFormat GetPixelFormat(const std::string& device_id) {
+media::VideoPixelFormat GetPixelFormatFromDeviceId(
+    const std::string& device_id) {
   return (device_id == kDepthDeviceId) ? media::PIXEL_FORMAT_Y16
                                        : media::PIXEL_FORMAT_I420;
 }
@@ -39,23 +38,21 @@ static const int kFakeCaptureMaxDeviceCount = 10;
 
 FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
     : number_of_devices_(1),
-      fake_vcd_ownership_(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS),
+      delivery_mode_(FakeVideoCaptureDeviceMaker::DeliveryMode::
+                         USE_DEVICE_INTERNAL_BUFFERS),
       frame_rate_(kFakeCaptureDefaultFrameRate) {}
 
 std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!command_line_parsed_) {
-    ParseCommandLine();
-    command_line_parsed_ = true;
-  }
+  ParseCommandLine();
 
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_descriptor.device_id.compare(possible_id) == 0) {
-      return std::unique_ptr<VideoCaptureDevice>(new FakeVideoCaptureDevice(
-          fake_vcd_ownership_, frame_rate_, GetPixelFormat(possible_id)));
+      return FakeVideoCaptureDeviceMaker::MakeInstance(
+          GetPixelFormatFromDeviceId(possible_id), delivery_mode_, frame_rate_);
     }
   }
   return std::unique_ptr<VideoCaptureDevice>();
@@ -66,10 +63,7 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_descriptors->empty());
 
-  if (!command_line_parsed_) {
-    ParseCommandLine();
-    command_line_parsed_ = true;
-  }
+  ParseCommandLine();
 
   for (int n = 0; n < number_of_devices_; ++n) {
     device_descriptors->emplace_back(base::StringPrintf("fake_device_%d", n),
@@ -103,13 +97,17 @@ void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
     const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const gfx::Size supported_sizes[] = {
-      gfx::Size(96, 96), gfx::Size(320, 240), gfx::Size(640, 480),
-      gfx::Size(1280, 720), gfx::Size(1920, 1080)};
-  supported_formats->clear();
-  for (const auto& size : supported_sizes) {
-    supported_formats->push_back(VideoCaptureFormat(
-        size, frame_rate_, GetPixelFormat(device_descriptor.device_id)));
+
+  ParseCommandLine();
+
+  const VideoPixelFormat pixel_format =
+      GetPixelFormatFromDeviceId(device_descriptor.device_id);
+  const VideoPixelStorage pixel_storage = PIXEL_STORAGE_CPU;
+  std::vector<gfx::Size> supported_sizes;
+  FakeVideoCaptureDeviceMaker::GetSupportedSizes(&supported_sizes);
+  for (const auto& supported_size : supported_sizes) {
+    supported_formats->emplace_back(supported_size, frame_rate_, pixel_format,
+                                    pixel_storage);
   }
 }
 
@@ -117,6 +115,10 @@ void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
 // ownership, device count, and the fake video devices FPS.
 // Examples: "ownership=client, device-count=2, fps=60" "fps=30"
 void FakeVideoCaptureDeviceFactory::ParseCommandLine() {
+  if (command_line_parsed_)
+    return;
+  command_line_parsed_ = true;
+
   const std::string option =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeDeviceForMediaStream);
@@ -136,8 +138,8 @@ void FakeVideoCaptureDeviceFactory::ParseCommandLine() {
 
     if (base::EqualsCaseInsensitiveASCII(param.front(), "ownership") &&
         base::EqualsCaseInsensitiveASCII(param.back(), "client")) {
-      fake_vcd_ownership_ =
-          FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS;
+      delivery_mode_ = FakeVideoCaptureDeviceMaker::DeliveryMode::
+          USE_CLIENT_PROVIDED_BUFFERS;
     } else if (base::EqualsCaseInsensitiveASCII(param.front(), "fps")) {
       double fps = 0;
       if (base::StringToDouble(param.back(), &fps)) {
