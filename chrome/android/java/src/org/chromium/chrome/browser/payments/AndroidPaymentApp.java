@@ -19,6 +19,7 @@ import android.util.JsonWriter;
 
 import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -74,6 +75,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
             respondToGetInstrumentsQuery(null);
         }
     };
+
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
      * app.
@@ -87,6 +89,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     public AndroidPaymentApp(WebContents webContents, String packageName, String activity,
             String label, Drawable icon) {
         super(packageName, label, null, icon);
+        ThreadUtils.assertOnUiThread();
         mHandler = new Handler();
         mWebContents = webContents;
         mPayIntent = new Intent();
@@ -126,12 +129,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
                 : "Have not responded to previous request for instruments yet";
         mInstrumentsCallback = callback;
         if (mIsReadyToPayIntent.getPackage() == null) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    respondToGetInstrumentsQuery(AndroidPaymentApp.this);
-                }
-            });
+            respondToGetInstrumentsQuery(AndroidPaymentApp.this);
             return;
         }
         Bundle extras = new Bundle();
@@ -166,14 +164,20 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         }
     }
 
-    private void respondToGetInstrumentsQuery(PaymentInstrument instrument) {
-        List<PaymentInstrument> instruments = null;
-        if (instrument != null) {
-            instruments = new ArrayList<>();
-            instruments.add(instrument);
-        }
-        mInstrumentsCallback.onInstrumentsReady(this, instruments);
-        mInstrumentsCallback = null;
+    private void respondToGetInstrumentsQuery(final PaymentInstrument instrument) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                ThreadUtils.assertOnUiThread();
+                List<PaymentInstrument> instruments = null;
+                if (instrument != null) {
+                    instruments = new ArrayList<>();
+                    instruments.add(instrument);
+                }
+                mInstrumentsCallback.onInstrumentsReady(AndroidPaymentApp.this, instruments);
+                mInstrumentsCallback = null;
+            }
+        });
     }
 
     private void sendIsReadyToPayIntentToPaymentApp() {
@@ -318,6 +322,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
 
     @Override
     public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
+        ThreadUtils.assertOnUiThread();
         window.removeIntentCallback(this);
         if (data == null || data.getExtras() == null || resultCode != Activity.RESULT_OK) {
             mInstrumentDetailsCallback.onInstrumentDetailsError();
