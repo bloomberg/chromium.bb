@@ -57,11 +57,11 @@ EventFilter::~EventFilter() {
 EventFilter::MatcherID EventFilter::AddEventMatcher(
     const std::string& event_name,
     std::unique_ptr<EventMatcher> matcher) {
-  MatcherID id = next_id_++;
   URLMatcherConditionSet::Vector condition_sets;
-  if (!CreateConditionSets(id, matcher.get(), &condition_sets))
+  if (!CreateConditionSets(matcher.get(), &condition_sets))
     return -1;
 
+  MatcherID id = next_id_++;
   for (URLMatcherConditionSet::Vector::iterator it = condition_sets.begin();
        it != condition_sets.end(); it++) {
     condition_set_id_to_event_matcher_id_.insert(
@@ -85,7 +85,6 @@ const std::string& EventFilter::GetEventName(MatcherID id) {
 }
 
 bool EventFilter::CreateConditionSets(
-    MatcherID id,
     EventMatcher* matcher,
     URLMatcherConditionSet::Vector* condition_sets) {
   if (matcher->GetURLFilterCount() == 0) {

@@ -94,10 +94,8 @@ class EventFilter {
   // Maps from event name to the map of matchers that are registered for it.
   using EventMatcherMultiMap = std::map<std::string, EventMatcherMap>;
 
-  // Adds the list of URL filters in |matcher| to the URL matcher, having
-  // matches for those URLs map to |id|.
+  // Adds the list of URL filters in |matcher| to the URL matcher.
   bool CreateConditionSets(
-      MatcherID id,
       EventMatcher* matcher,
       url_matcher::URLMatcherConditionSet::Vector* condition_sets);
 
