@@ -28,6 +28,7 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler {
 
  private:
   void HandleGetFingerprintsList(const base::ListValue* args);
+  void HandleGetNumFingerprints(const base::ListValue* args);
   void HandleStartEnroll(const base::ListValue* args);
   void HandleCancelCurrentEnroll(const base::ListValue* args);
   void HandleGetEnrollmentLabel(const base::ListValue* args);

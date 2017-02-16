@@ -51,6 +51,10 @@ void FingerprintHandler::RegisterMessages() {
       base::Bind(&FingerprintHandler::HandleGetFingerprintsList,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getNumFingerprints",
+      base::Bind(&FingerprintHandler::HandleGetNumFingerprints,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "startEnroll",
       base::Bind(&FingerprintHandler::HandleStartEnroll,
                  base::Unretained(this)));
@@ -99,6 +103,18 @@ void FingerprintHandler::HandleGetFingerprintsList(
   std::unique_ptr<base::DictionaryValue> fingerprint_info =
       GetFingerprintsInfo(fingerprints_list_);
   ResolveJavascriptCallback(base::StringValue(callback_id), *fingerprint_info);
+}
+
+void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  ResolveJavascriptCallback(base::StringValue(callback_id),
+                            base::FundamentalValue(
+                                int{fingerprints_list_.size()}));
 }
 
 void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {

@@ -25,7 +25,7 @@ Polymer({
     }
   },
 
-  /** @private {?settings.FingerprintBrowserProxy}*/
+  /** @private {?settings.FingerprintBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
@@ -41,7 +41,7 @@ Polymer({
   },
 
   /**
-   * @param {settings.FingerprintInfo} fingerprintsInfo
+   * @param {!settings.FingerprintInfo} fingerprintInfo
    * @private
    * */
   onFingerprintsChanged_: function(fingerprintInfo) {
@@ -52,6 +52,7 @@ Polymer({
 
   /**
    * Deletes a fingerprint from |fingerprints_|.
+   * @param {!{model: !{index: !number}}} e
    * @private
    */
   onFingerprintDeleteTapped_: function(e) {
@@ -62,7 +63,10 @@ Polymer({
         }.bind(this));
   },
 
-  /** @private */
+  /**
+   * @param {!{model: !{index: !number, item: !string}}} e
+   * @private
+   */
   onFingerprintLabelChanged_: function(e) {
     this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item);
   },

@@ -33,7 +33,7 @@ settings.FingerprintScan;
  * settings. The structure of this data must be kept in sync with
  * C++ FingerprintHandler.
  * @typedef {{
- *   fingerprintsList: Array<number>,
+ *   fingerprintsList: !Array<string>,
  *   isMaxed: boolean,
  * }}
  */
@@ -45,9 +45,14 @@ cr.define('settings', function() {
 
   FingerprintBrowserProxy.prototype = {
     /**
-     * @return {!Promise<!Array<!settings.FingerprintInfo>>}
+     * @return {!Promise<!settings.FingerprintInfo>}
      */
     getFingerprintsList: function () {},
+
+    /**
+     * @return {!Promise<number>}
+     */
+    getNumFingerprints: function () {},
 
     startEnroll: function () {},
 
@@ -94,6 +99,11 @@ cr.define('settings', function() {
     /** @override */
     getFingerprintsList: function () {
       return cr.sendWithPromise('getFingerprintsList');
+    },
+
+    /** @override */
+    getNumFingerprints: function () {
+      return cr.sendWithPromise('getNumFingerprints');
     },
 
     /** @override */

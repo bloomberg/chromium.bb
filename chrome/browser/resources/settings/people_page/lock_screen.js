@@ -73,7 +73,16 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    numFingerprints_: {
+      type: Number,
+      value: 0,
+    },
   },
+
+  /** @private {?settings.FingerprintBrowserProxy} */
+  browserProxy_: null,
 
   /** selectedUnlockType is defined in LockStateBehavior. */
   observers: ['selectedUnlockTypeChanged_(selectedUnlockType)'],
@@ -85,6 +94,7 @@ Polymer({
     // password prompt page.
     this.currentRouteChanged(settings.Route.LOCK_SCREEN,
         settings.Route.LOCK_SCREEN);
+    this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -94,6 +104,15 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute == settings.Route.LOCK_SCREEN &&
+        this.fingerprintUnlockEnabled_ &&
+        this.browserProxy_) {
+      this.browserProxy_.getNumFingerprints().then(
+          function(numFingerprints) {
+            this.numFingerprints_ = numFingerprints;
+          }.bind(this));
+    }
+
     if (newRoute == settings.Route.LOCK_SCREEN && !this.setModes_) {
       this.$.passwordPrompt.open();
     } else if (newRoute != settings.Route.FINGERPRINT &&
@@ -156,6 +175,14 @@ Polymer({
     if (this.hasPin)
       return this.i18n('lockScreenChangePinButton');
     return this.i18n('lockScreenSetupPinButton');
+  },
+
+  /** @private */
+  getDescriptionText_: function() {
+    return this.numFingerprints_ > 0 ?
+        this.i18n('lockScreenNumberFingerprints',
+            this.numFingerprints_.toString()) :
+        this.i18n('lockScreenEditFingerprintsDescription');
   },
 
   /**

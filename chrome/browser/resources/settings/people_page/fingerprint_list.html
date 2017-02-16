@@ -11,27 +11,49 @@
 
 <dom-module id="settings-fingerprint-list">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .add-link {
+        background-color: transparent;
+        color: var(--google-blue-500);
+        padding: 0;
+      }
 
-    <div>$i18n{lockScreenRegisteredFingerprints}</div>
-    <iron-list id="fingerprintsList" items="[[fingerprints_]]">
-      <template>
-        <div class="list-item">
-          <paper-input value="{{item}}" on-change="onFingerprintLabelChanged_">
-          </paper-input>
-          <button is="paper-icon-button-light"
-              on-tap="onFingerprintDeleteTapped_">
-            <iron-icon icon="cr:delete"></iron-icon>
-          </button>
-        </div>
-      </template>
-    </iron-list>
-    <div class="settings-box first radio-indent">
-      <paper-button class="action-button" on-tap="openAddFingerprintDialog_">
-        $i18n{lockScreenAddFingerprint}
-      </paper-button>
+      .add-link[disabled] {
+        color: var(--google-grey-500);
+      }
+
+      .body {
+        @apply(--settings-list-frame-padding);
+      }
+
+      paper-input {
+        --paper-input-container-color: transparent;
+      }
+    </style>
+
+    <h2 class="settings-box">$i18n{lockScreenRegisteredFingerprints}</h2>
+    <div class="body layout vertical">
+      <iron-list id="fingerprintsList" items="[[fingerprints_]]">
+        <template>
+          <div class="list-item">
+            <paper-input value="{{item}}"
+                on-change="onFingerprintLabelChanged_">
+            </paper-input>
+            <button is="paper-icon-button-light"
+                on-tap="onFingerprintDeleteTapped_">
+              <iron-icon icon="cr:delete"></iron-icon>
+            </button>
+          </div>
+        </template>
+      </iron-list>
+      <div class="continuation">
+        <paper-button class="add-link action-button"
+            on-tap="openAddFingerprintDialog_">
+          $i18n{lockScreenAddFingerprint}
+        </paper-button>
+      </div>
     </div>
-    <i>$i18n{lockScreenFingerprintWarning}</i>
+    <i class="settings-box continuation">$i18n{lockScreenFingerprintWarning}</i>
 
     <settings-setup-fingerprint-dialog id="setupFingerprint"
         on-add-fingerprint="updateFingerprintsList_">

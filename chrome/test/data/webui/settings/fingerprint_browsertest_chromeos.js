@@ -10,6 +10,7 @@
 var TestFingerprintBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
     'getFingerprintsList',
+    'getNumFingerprints',
     'startEnroll',
     'cancelCurrentEnroll',
     'getEnrollmentLabel',
@@ -52,6 +53,12 @@ TestFingerprintBrowserProxy.prototype = {
   },
 
   /** @override */
+  getNumFingerprints: function() {
+    this.methodCalled('getNumFingerprints');
+    return Promise.resolve(fingerprintsList_.length);
+  },
+
+  /** @override */
   startEnroll: function () {
     this.methodCalled('startEnroll');
   },
@@ -87,7 +94,6 @@ suite('settings-fingerprint-list', function() {
 
   /** @type {?SettingsSetupFingerprintDialogElement} */
   var dialog = null;
-
   /** @type {?settings.TestFingerprintBrowserProxy} */
   var browserProxy = null;
 
@@ -147,10 +153,10 @@ suite('settings-fingerprint-list', function() {
       // and the fingerprint list should have one fingerprint registered.
       assertFalse(dialog.$$('.action-button').disabled);
       MockInteractions.tap(dialog.$$('.action-button'));
-
-      return browserProxy.whenCalled('getFingerprintsList');
-    }).then(function() {
-      assertEquals(1, fingerprintList.fingerprints_.length);
+      return browserProxy.whenCalled('getFingerprintsList').then(
+          function() {
+            assertEquals(1, fingerprintList.fingerprints_.length);
+          });
     });
   });
 
