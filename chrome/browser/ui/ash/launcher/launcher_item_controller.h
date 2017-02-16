@@ -11,7 +11,6 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "ui/events/event.h"
 
 class AppWindowLauncherItemController;
@@ -48,11 +47,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   void set_image_set_by_controller(bool image_set_by_controller) {
     image_set_by_controller_ = image_set_by_controller;
   }
-
-  // Shows and activates the most-recently-active window associated with the
-  // item, or launches the item if it is not currently open.
-  // Returns the action performed by activating the item.
-  virtual PerformedAction Activate(ash::LaunchSource source) = 0;
 
   // Returns nullptr if class is not AppWindowLauncherItemController.
   virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();

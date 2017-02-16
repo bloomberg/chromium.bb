@@ -94,6 +94,14 @@ ChromeLauncherControllerImpl* GetChromeLauncherControllerImpl() {
       ChromeLauncherController::instance());
 }
 
+// Calls ShelfItemDelegate::SelectItem with an event type and default arguments.
+ash::ShelfAction SelectItem(ash::ShelfItemDelegate* delegate,
+                            ui::EventType event_type) {
+  return delegate->ItemSelected(event_type, ui::EF_NONE,
+                                display::kInvalidDisplayId,
+                                ash::LAUNCH_FROM_UNKNOWN);
+}
+
 class TestEvent : public ui::Event {
  public:
   explicit TestEvent(ui::EventType type)
@@ -703,21 +711,20 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Since it is already active, clicking it should minimize.
-  TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->ItemSelected(click_event);
+  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
   EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Clicking the item again should activate the window again.
-  item1_controller->ItemSelected(click_event);
+  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
-  item1_controller->ItemSelected(click_event);
+  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
@@ -732,13 +739,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
   // The first click does nothing.
-  item1_controller->ItemSelected(click_event);
+  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
   // The second neither.
-  item1_controller->ItemSelected(click_event);
+  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
@@ -770,16 +777,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanel) {
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
   // Click the item and confirm that the panel is activated.
-  TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Click the item again and confirm that the panel is minimized.
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Click the item again and confirm that the panel is activated.
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_FALSE(panel->GetBaseWindow()->IsMinimized());
@@ -811,16 +817,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
   // Click the item and confirm that the panel is activated.
-  TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Click the item again and confirm that the panel is minimized.
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Click the item again and confirm that the panel is activated.
-  item1_delegate->ItemSelected(click_event);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -1525,9 +1530,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   EXPECT_EQ(ash::STATUS_ATTENTION, item.status);
 
   // Click the item and confirm that the panel is activated.
-  TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  EXPECT_EQ(ash::ShelfItemDelegate::kExistingWindowActivated,
-            shelf_item_delegate->ItemSelected(click_event));
+  EXPECT_EQ(ash::SHELF_ACTION_WINDOW_ACTIVATED,
+            SelectItem(shelf_item_delegate, ui::ET_MOUSE_PRESSED));
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
@@ -1742,9 +1746,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   // Now request to either activate an existing app or create a new one.
   LauncherItemController* item_controller =
       controller_->GetLauncherItemController(shortcut_id);
-  item_controller->ItemSelected(ui::KeyEvent(ui::ET_KEY_RELEASED,
-                                        ui::VKEY_RETURN,
-                                        ui::EF_NONE));
+  SelectItem(item_controller, ui::ET_KEY_RELEASED);
 
   // Check that we have set focus on the existing application and nothing new
   // was created.
@@ -2128,7 +2130,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_FALSE(controller_->IsOpen(id));
 
   // Activate. This creates new browser
-  item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
+  SelectItem(item_controller, ui::ET_UNKNOWN);
   // New Window is created.
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
@@ -2139,9 +2141,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   window_state->Minimize();
   EXPECT_TRUE(window_state->IsMinimized());
 
-  // Activate again. This doesn't create new browser.
-  // It activates window.
-  item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
+  // Activate again. This doesn't create new browser, it activates the window.
+  SelectItem(item_controller, ui::ET_UNKNOWN);
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
   EXPECT_TRUE(controller_->IsOpen(id));

@@ -14,15 +14,17 @@
 #include "ui/display/screen.h"
 
 namespace ash {
+namespace wm {
 
 namespace {
 
 std::string GetAdjustedBounds(const gfx::Rect& visible,
                               gfx::Rect to_be_adjusted) {
-  wm::AdjustBoundsToEnsureMinimumWindowVisibility(visible, &to_be_adjusted);
+  AdjustBoundsToEnsureMinimumWindowVisibility(visible, &to_be_adjusted);
   return to_be_adjusted.ToString();
 }
-}
+
+}  // namespace
 
 typedef test::AshTestBase WindowUtilTest;
 
@@ -31,17 +33,17 @@ TEST_F(WindowUtilTest, CenterWindow) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->bounds_changed_by_user());
 
-  wm::CenterWindow(WmWindow::Get(window.get()));
+  CenterWindow(WmWindow::Get(window.get()));
   // Centring window is considered as a user's action.
   EXPECT_TRUE(window_state->bounds_changed_by_user());
   EXPECT_EQ("200,126 100x100", window->bounds().ToString());
   EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
                             display_manager()->GetSecondaryDisplay());
-  wm::CenterWindow(WmWindow::Get(window.get()));
+  CenterWindow(WmWindow::Get(window.get()));
   EXPECT_EQ("250,126 100x100", window->bounds().ToString());
   EXPECT_EQ("750,126 100x100", window->GetBoundsInScreen().ToString());
 }
@@ -60,7 +62,7 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
   EXPECT_EQ("75,75 100x100",
             GetAdjustedBounds(visible_bounds, gfx::Rect(100, 100, 150, 150)));
 
-  // For windows that have smaller dimensions than wm::kMinimumOnScreenArea,
+  // For windows that have smaller dimensions than kMinimumOnScreenArea,
   // we should adjust bounds accordingly, leaving no white space.
   EXPECT_EQ("50,80 20x20",
             GetAdjustedBounds(visible_bounds, gfx::Rect(50, 80, 20, 20)));
@@ -109,4 +111,39 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
             GetAdjustedBounds(visible_bounds_left, gfx::Rect(0, 0, 150, 150)));
 }
 
+TEST_F(WindowUtilTest, MoveWindowToDisplay) {
+  UpdateDisplay("500x400, 600x400");
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));
+  display::Screen* screen = display::Screen::GetScreen();
+  const int64_t original_display_id =
+      screen->GetDisplayNearestWindow(window.get()).id();
+  EXPECT_EQ(screen->GetPrimaryDisplay().id(), original_display_id);
+  const int original_container_id = window->parent()->id();
+  const aura::Window* original_root = window->GetRootWindow();
+
+  EXPECT_FALSE(MoveWindowToDisplay(window.get(), display::kInvalidDisplayId));
+  EXPECT_EQ(original_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+  EXPECT_FALSE(MoveWindowToDisplay(window.get(), original_display_id));
+  EXPECT_EQ(original_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+
+  ASSERT_EQ(2, screen->GetNumDisplays());
+  const int64_t secondary_display_id = screen->GetAllDisplays()[1].id();
+  EXPECT_NE(original_display_id, secondary_display_id);
+  EXPECT_TRUE(MoveWindowToDisplay(window.get(), secondary_display_id));
+  EXPECT_EQ(secondary_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+  EXPECT_EQ(original_container_id, window->parent()->id());
+  EXPECT_NE(original_root, window->GetRootWindow());
+
+  EXPECT_TRUE(MoveWindowToDisplay(window.get(), original_display_id));
+  EXPECT_EQ(original_display_id,
+            screen->GetDisplayNearestWindow(window.get()).id());
+  EXPECT_EQ(original_container_id, window->parent()->id());
+  EXPECT_EQ(original_root, window->GetRootWindow());
+}
+
+}  // namespace wm
 }  // namespace ash

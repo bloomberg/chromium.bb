@@ -142,7 +142,8 @@ bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
   return false;
 }
 
-ash::LaunchSource AppListControllerDelegateAsh::AppListSourceToLaunchSource(
+ash::ShelfLaunchSource
+AppListControllerDelegateAsh::AppListSourceToLaunchSource(
     AppListSource source) {
   switch (source) {
     case LAUNCH_FROM_APP_LIST:

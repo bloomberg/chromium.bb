@@ -54,17 +54,20 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
  private:
   // ShelfItemDelegate:
-  ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override {
+  ShelfAction ItemSelected(ui::EventType event_type,
+                           int event_flags,
+                           int64_t display_id,
+                           ShelfLaunchSource source) override {
     if (window_id_to_title_.empty()) {
       delegate_->LaunchItem();
-      return kNewWindowCreated;
+      return SHELF_ACTION_NEW_WINDOW_CREATED;
     }
     if (window_id_to_title_.size() == 1) {
-      // TODO(mash): Activate the window and return kExistingWindowActivated.
+      // TODO(mash): Activate the window and return
+      // SHELF_ACTION_WINDOW_ACTIVATED.
       NOTIMPLEMENTED();
     }
-    return kNoAction;
+    return SHELF_ACTION_NONE;
   }
 
   ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {

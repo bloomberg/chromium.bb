@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -289,16 +290,11 @@ void WmShelf::LaunchShelfItem(int item_index) {
 
 // static
 void WmShelf::ActivateShelfItem(int item_index) {
-  // We pass in a keyboard event which will then trigger a switch to the
-  // next item if the current one is already active.
-  ui::KeyEvent event(ui::ET_KEY_RELEASED,
-                     ui::VKEY_UNKNOWN,  // The actual key gets ignored.
-                     ui::EF_NONE);
-
   ShelfModel* shelf_model = WmShell::Get()->shelf_model();
   const ShelfItem& item = shelf_model->items()[item_index];
   ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
-  item_delegate->ItemSelected(event);
+  item_delegate->ItemSelected(ui::ET_KEY_RELEASED, ui::EF_NONE,
+                              display::kInvalidDisplayId, LAUNCH_FROM_UNKNOWN);
 }
 
 bool WmShelf::ProcessGestureEvent(const ui::GestureEvent& event) {

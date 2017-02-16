@@ -43,10 +43,10 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   bool IsListOfActiveBrowserEmpty();
 
   // LauncherItemController overrides:
-  ShelfItemDelegate::PerformedAction Activate(
-      ash::LaunchSource source) override;
-  ash::ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override;
+  ash::ShelfAction ItemSelected(ui::EventType event_type,
+                                int event_flags,
+                                int64_t display_id,
+                                ash::ShelfLaunchSource source) override;
   ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
@@ -63,9 +63,9 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   bool IsIncognito(content::WebContents* web_contents) const;
 
   // Activate a browser - or advance to the next one on the list.
-  // Returns the action performed. Should be one of kNoAction,
-  // kExistingWindowActivated, or kNewWindowCreated.
-  PerformedAction ActivateOrAdvanceToNextBrowser();
+  // Returns the action performed. Should be one of SHELF_ACTION_NONE,
+  // SHELF_ACTION_WINDOW_ACTIVATED, or SHELF_ACTION_NEW_WINDOW_CREATED.
+  ash::ShelfAction ActivateOrAdvanceToNextBrowser();
 
   // Returns true when the given |browser| is listed in the browser application
   // list.

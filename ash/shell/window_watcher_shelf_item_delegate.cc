@@ -21,14 +21,17 @@ WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
 
 WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {}
 
-ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
-    const ui::Event& event) {
+ShelfAction WindowWatcherShelfItemDelegate::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ShelfLaunchSource source) {
   aura::Window* window = watcher_->GetWindowByID(id_);
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
-    wm::MoveWindowToEventRoot(window, event);
+    wm::MoveWindowToDisplay(window, display_id);
   window->Show();
   wm::ActivateWindow(window);
-  return kExistingWindowActivated;
+  return SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
 ShelfAppMenuItemList WindowWatcherShelfItemDelegate::GetAppMenuItems(

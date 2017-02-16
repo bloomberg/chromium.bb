@@ -75,12 +75,11 @@ class ShelfButtonPressedMetricTrackerTest : public AshTestBase {
 
   // Calls ButtonPressed on the test target with the given |performed_action|
   // and dummy values for the |event| and |sender| parameters.
-  void ButtonPressed(ShelfItemDelegate::PerformedAction performed_action);
+  void ButtonPressed(ShelfAction performed_action);
 
   // Calls ButtonPressed on the test target with the given |sender| and
   // |performed_action| and a dummy value for the |event| parameter.
-  void ButtonPressed(const views::Button* sender,
-                     ShelfItemDelegate::PerformedAction performed_action);
+  void ButtonPressed(const views::Button* sender, ShelfAction performed_action);
 
  protected:
   // The test target. Not owned.
@@ -131,12 +130,11 @@ void ShelfButtonPressedMetricTrackerTest::TearDown() {
 void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
     const ui::Event& event) {
   const DummyButton kDummyButton;
-  metric_tracker_->ButtonPressed(event, &kDummyButton,
-                                 ShelfItemDelegate::kNoAction);
+  metric_tracker_->ButtonPressed(event, &kDummyButton, SHELF_ACTION_NONE);
 }
 
 void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
-    ShelfItemDelegate::PerformedAction performed_action) {
+    ShelfAction performed_action) {
   const DummyEvent kDummyEvent;
   const DummyButton kDummyButton;
   metric_tracker_->ButtonPressed(kDummyEvent, &kDummyButton, performed_action);
@@ -144,7 +142,7 @@ void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
 
 void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
     const views::Button* sender,
-    ShelfItemDelegate::PerformedAction performed_action) {
+    ShelfAction performed_action) {
   const DummyEvent kDummyEvent;
   metric_tracker_->ButtonPressed(kDummyEvent, sender, performed_action);
 }
@@ -182,7 +180,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
   base::UserActionTester user_action_tester;
-  ButtonPressed(ShelfItemDelegate::kNewWindowCreated);
+  ButtonPressed(SHELF_ACTION_NEW_WINDOW_CREATED);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
 }
 
@@ -191,7 +189,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_MinimizeTaskIsRecordedWhenWindowIsMinimized) {
   base::UserActionTester user_action_tester;
-  ButtonPressed(ShelfItemDelegate::kExistingWindowMinimized);
+  ButtonPressed(SHELF_ACTION_WINDOW_MINIMIZED);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_MinimizeTask"));
 }
 
@@ -200,7 +198,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_SwitchTaskIsRecordedWhenExistingWindowIsActivated) {
   base::UserActionTester user_action_tester;
-  ButtonPressed(ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(SHELF_ACTION_WINDOW_ACTIVATED);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_SwitchTask"));
 }
 
@@ -212,11 +210,11 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 
   base::HistogramTester histogram_tester;
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowMinimized);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 0);
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
 }
@@ -229,9 +227,9 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 
   base::HistogramTester histogram_tester;
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowMinimized);
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
@@ -245,9 +243,9 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 
   base::HistogramTester histogram_tester;
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowMinimized);
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kAppListMenuShown);
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_APP_LIST_SHOWN);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 0);
@@ -262,10 +260,9 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 
   base::HistogramTester histogram_tester;
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowMinimized);
-  ButtonPressed(&kSecondDummyButton,
-                ShelfItemDelegate::kExistingWindowMinimized);
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
+  ButtonPressed(&kSecondDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 0);
@@ -280,10 +277,10 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 
   base::HistogramTester histogram_tester;
 
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowMinimized);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
   tick_clock_->Advance(
       base::TimeDelta::FromMilliseconds(kTimeDeltaInMilliseconds));
-  ButtonPressed(&kDummyButton, ShelfItemDelegate::kExistingWindowActivated);
+  ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);

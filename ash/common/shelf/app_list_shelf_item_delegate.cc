@@ -32,10 +32,12 @@ AppListShelfItemDelegate::AppListShelfItemDelegate() {}
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 
-ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
-    const ui::Event& event) {
+ShelfAction AppListShelfItemDelegate::ItemSelected(ui::EventType event_type,
+                                                   int event_flags,
+                                                   int64_t display_id,
+                                                   ShelfLaunchSource source) {
   WmShell::Get()->ToggleAppList();
-  return ShelfItemDelegate::kAppListMenuShown;
+  return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 ShelfAppMenuItemList AppListShelfItemDelegate::GetAppMenuItems(

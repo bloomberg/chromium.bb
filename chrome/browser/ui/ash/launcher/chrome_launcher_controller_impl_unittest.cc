@@ -261,13 +261,11 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ~TestV2AppLauncherItemController() override {}
 
   // Override for LauncherItemController:
-  ash::ShelfItemDelegate::PerformedAction Activate(
-      ash::LaunchSource source) override {
-    return kExistingWindowActivated;
-  }
-  ash::ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override {
-    return kExistingWindowActivated;
+  ash::ShelfAction ItemSelected(ui::EventType event_type,
+                                int event_flags,
+                                int64_t display_id,
+                                ash::ShelfLaunchSource source) override {
+    return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }
   ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
     ash::ShelfAppMenuItemList items;

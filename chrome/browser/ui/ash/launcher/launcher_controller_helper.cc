@@ -84,7 +84,7 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
       id, extensions::ExtensionRegistry::EVERYTHING);
 }
 
-std::string GetSourceFromAppListSource(ash::LaunchSource source) {
+std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
   switch (source) {
     case ash::LAUNCH_FROM_APP_LIST:
       return std::string(extension_urls::kLaunchSourceAppList);
@@ -170,7 +170,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
 }
 
 void LauncherControllerHelper::LaunchApp(ash::AppLauncherId id,
-                                         ash::LaunchSource source,
+                                         ash::ShelfLaunchSource source,
                                          int event_flags) {
   const std::string& app_id = id.app_id();
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();

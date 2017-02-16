@@ -32,9 +32,12 @@ base::TimeDelta ArcAppDeferredLauncherItemController::GetActiveTime() const {
   return base::Time::Now() - start_time_;
 }
 
-ash::ShelfItemDelegate::PerformedAction
-ArcAppDeferredLauncherItemController::ItemSelected(const ui::Event& event) {
-  return ash::ShelfItemDelegate::kNoAction;
+ash::ShelfAction ArcAppDeferredLauncherItemController::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ash::ShelfLaunchSource source) {
+  return ash::SHELF_ACTION_NONE;
 }
 
 ash::ShelfAppMenuItemList ArcAppDeferredLauncherItemController::GetAppMenuItems(
@@ -45,9 +48,4 @@ ash::ShelfAppMenuItemList ArcAppDeferredLauncherItemController::GetAppMenuItems(
 void ArcAppDeferredLauncherItemController::Close() {
   if (host_)
     host_->Close(app_id());
-}
-
-ash::ShelfItemDelegate::PerformedAction
-ArcAppDeferredLauncherItemController::Activate(ash::LaunchSource source) {
-  return ash::ShelfItemDelegate::kNoAction;
 }

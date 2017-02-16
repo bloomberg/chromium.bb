@@ -21,8 +21,11 @@ ArcPlaystoreShortcutLauncherItemController::
 ArcPlaystoreShortcutLauncherItemController::
     ~ArcPlaystoreShortcutLauncherItemController() {}
 
-ash::ShelfItemDelegate::PerformedAction
-ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
+ash::ShelfAction ArcPlaystoreShortcutLauncherItemController::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ash::ShelfLaunchSource source) {
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   DCHECK(arc_session_manager->IsAllowed());
@@ -44,5 +47,5 @@ ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
                                                  arc::kPlayStoreAppId, true));
   }
 
-  return kNoAction;
+  return ash::SHELF_ACTION_NONE;
 }

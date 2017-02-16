@@ -435,8 +435,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
                               views::InkDrop* ink_drop) {
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
-    shelf_button_pressed_metric_tracker_.ButtonPressed(
-        event, sender, ShelfItemDelegate::kNoAction);
+    shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
+                                                       SHELF_ACTION_NONE);
     return;
   }
 
@@ -483,17 +483,19 @@ void ShelfView::ButtonPressed(views::Button* sender,
       break;
   }
 
-  ShelfItemDelegate::PerformedAction performed_action =
+  const int64_t display_id = window->GetDisplayNearestWindow().id();
+  ShelfAction performed_action =
       model_->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
-          ->ItemSelected(event);
+          ->ItemSelected(event.type(), event.flags(), display_id,
+                         LAUNCH_FROM_UNKNOWN);
 
   shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
                                                      performed_action);
 
   // For the app list menu no TRIGGERED ink drop effect is needed and it
   // handles its own ACTIVATED/DEACTIVATED states.
-  if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
-      (performed_action != ShelfItemDelegate::kAppListMenuShown &&
+  if (performed_action == SHELF_ACTION_NEW_WINDOW_CREATED ||
+      (performed_action != SHELF_ACTION_APP_LIST_SHOWN &&
        !ShowListMenuForView(model_->items()[last_pressed_index_], sender, event,
                             ink_drop))) {
     ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);

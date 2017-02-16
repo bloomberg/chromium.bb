@@ -21,8 +21,10 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   ~TestShelfItemDelegate() override;
 
   // ShelfItemDelegate:
-  ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override;
+  ShelfAction ItemSelected(ui::EventType event_type,
+                           int event_flags,
+                           int64_t display_id,
+                           ShelfLaunchSource source) override;
   ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 

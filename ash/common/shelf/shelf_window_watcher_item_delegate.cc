@@ -10,7 +10,8 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ui/events/event.h"
+#include "ash/wm/window_util.h"
+#include "ui/events/event_constants.h"
 
 namespace ash {
 
@@ -33,26 +34,29 @@ ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(ShelfID id,
 
 ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() {}
 
-ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
-    const ui::Event& event) {
+ShelfAction ShelfWindowWatcherItemDelegate::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ShelfLaunchSource source) {
   // Move panels attached on another display to the current display.
   if (GetShelfItemType(id_) == TYPE_APP_PANEL &&
       window_->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED) &&
-      window_->MoveToEventRoot(event)) {
+      wm::MoveWindowToDisplay(window_->aura_window(), display_id)) {
     window_->Activate();
-    return kExistingWindowActivated;
+    return SHELF_ACTION_WINDOW_ACTIVATED;
   }
 
   if (window_->IsActive()) {
-    if (event.type() & ui::ET_KEY_RELEASED) {
+    if (event_type == ui::ET_KEY_RELEASED) {
       window_->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-      return kNoAction;
+      return SHELF_ACTION_NONE;
     }
     window_->Minimize();
-    return kExistingWindowMinimized;
+    return SHELF_ACTION_WINDOW_MINIMIZED;
   }
   window_->Activate();
-  return kExistingWindowActivated;
+  return SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
 ShelfAppMenuItemList ShelfWindowWatcherItemDelegate::GetAppMenuItems(

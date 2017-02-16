@@ -141,15 +141,14 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   ShelfItemSelectionTracker()
       : TestShelfItemDelegate(NULL),
         selected_(false),
-        item_selected_action_(kNoAction) {}
+        item_selected_action_(SHELF_ACTION_NONE) {}
 
   ~ShelfItemSelectionTracker() override {}
 
   // Resets to the initial state.
   void Reset() { selected_ = false; }
 
-  void set_item_selected_action(
-      ShelfItemDelegate::PerformedAction item_selected_action) {
+  void set_item_selected_action(ShelfAction item_selected_action) {
     item_selected_action_ = item_selected_action;
   }
 
@@ -157,8 +156,10 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   bool WasSelected() { return selected_; }
 
   // TestShelfItemDelegate:
-  ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override {
+  ShelfAction ItemSelected(ui::EventType event_type,
+                           int event_flags,
+                           int64_t display_id,
+                           ShelfLaunchSource source) override {
     selected_ = true;
     return item_selected_action_;
   }
@@ -167,7 +168,7 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   bool selected_;
 
   // The action returned from ItemSelected(const ui::Event&).
-  ShelfItemDelegate::PerformedAction item_selected_action_;
+  ShelfAction item_selected_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
@@ -1821,8 +1822,7 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
 
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
-  selection_tracker->set_item_selected_action(
-      ShelfItemDelegate::kNewWindowCreated);
+  selection_tracker->set_item_selected_action(SHELF_ACTION_NEW_WINDOW_CREATED);
   model_->SetShelfItemDelegate(
       browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
@@ -1841,12 +1841,10 @@ TEST_F(ShelfViewTest,
   model_->SetShelfItemDelegate(
       browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
-  selection_tracker->set_item_selected_action(
-      ShelfItemDelegate::kExistingWindowMinimized);
+  selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_MINIMIZED);
   SimulateClick(browser_index_);
 
-  selection_tracker->set_item_selected_action(
-      ShelfItemDelegate::kExistingWindowActivated);
+  selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_ACTIVATED);
   SimulateClick(browser_index_);
 
   histogram_tester.ExpectTotalCount(

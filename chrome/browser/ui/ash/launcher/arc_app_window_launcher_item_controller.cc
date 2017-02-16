@@ -35,18 +35,22 @@ bool ArcAppWindowLauncherItemController::HasAnyTasks() const {
   return !task_ids_.empty();
 }
 
-ash::ShelfItemDelegate::PerformedAction
-ArcAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
+ash::ShelfAction ArcAppWindowLauncherItemController::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ash::ShelfLaunchSource source) {
   if (window_count()) {
-    return AppWindowLauncherItemController::ItemSelected(event);
-  } else {
-    if (task_ids_.empty()) {
-      NOTREACHED();
-      return kNoAction;
-    }
-    arc::SetTaskActive(*task_ids_.begin());
-    return kNewWindowCreated;
+    return AppWindowLauncherItemController::ItemSelected(
+        event_type, event_flags, display_id, source);
   }
+
+  if (task_ids_.empty()) {
+    NOTREACHED();
+    return ash::SHELF_ACTION_NONE;
+  }
+  arc::SetTaskActive(*task_ids_.begin());
+  return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
 }
 
 ash::ShelfAppMenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(

@@ -94,8 +94,16 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {}
 
-ash::ShelfItemDelegate::PerformedAction
-AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
+ash::ShelfAction AppShortcutLauncherItemController::ItemSelected(
+    ui::EventType event_type,
+    int event_flags,
+    int64_t display_id,
+    ash::ShelfLaunchSource source) {
+  // In case of a keyboard event, we were called by a hotkey. In that case we
+  // activate the next item in line if an item of our list is already active.
+  if (event_type == ui::ET_KEY_RELEASED && AdvanceToNextApp())
+    return ash::SHELF_ACTION_WINDOW_ACTIVATED;
+
   content::WebContents* content = GetLRUApplication();
   if (!content) {
     // Ideally we come here only once. After that ShellLauncherItemController
@@ -104,24 +112,15 @@ AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
     // they open a window. Since there is currently no other way to detect if an
     // app was started we suppress any further clicks within a special time out.
     if (IsV2App() && !AllowNextLaunchAttempt())
-      return kNoAction;
+      return ash::SHELF_ACTION_NONE;
 
     // Launching some items replaces this item controller instance, which
     // destroys the app and launch id strings; making copies avoid crashes.
     launcher_controller()->LaunchApp(ash::AppLauncherId(app_id(), launch_id()),
                                      source, ui::EF_NONE);
-    return kNewWindowCreated;
+    return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
   }
   return ActivateContent(content);
-}
-
-ash::ShelfItemDelegate::PerformedAction
-AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
-  // In case of a keyboard event, we were called by a hotkey. In that case we
-  // activate the next item in line if an item of our list is already active.
-  if (event.type() == ui::ET_KEY_RELEASED && AdvanceToNextApp())
-    return kExistingWindowActivated;
-  return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
 ash::ShelfAppMenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
@@ -273,8 +272,7 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
                                                                   app_id()));
 }
 
-ash::ShelfItemDelegate::PerformedAction
-AppShortcutLauncherItemController::ActivateContent(
+ash::ShelfAction AppShortcutLauncherItemController::ActivateContent(
     content::WebContents* content) {
   Browser* browser = chrome::FindBrowserWithWebContents(content);
   TabStripModel* tab_strip = browser->tab_strip_model();

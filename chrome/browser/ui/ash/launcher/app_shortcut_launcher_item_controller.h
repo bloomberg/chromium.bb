@@ -41,10 +41,10 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   std::vector<content::WebContents*> GetRunningApplications();
 
   // LauncherItemController overrides:
-  ash::ShelfItemDelegate::PerformedAction Activate(
-      ash::LaunchSource source) override;
-  ash::ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override;
+  ash::ShelfAction ItemSelected(ui::EventType event_type,
+                                int event_flags,
+                                int64_t display_id,
+                                ash::ShelfLaunchSource source) override;
   ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
@@ -77,8 +77,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
 
   // Activate the browser with the given |content| and show the associated tab.
   // Returns the action performed by activating the content.
-  ash::ShelfItemDelegate::PerformedAction ActivateContent(
-      content::WebContents* content);
+  ash::ShelfAction ActivateContent(content::WebContents* content);
 
   // Advance to the next item if an owned item is already active. The function
   // will return true if it has successfully advanced.

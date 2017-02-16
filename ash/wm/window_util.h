@@ -5,6 +5,8 @@
 #ifndef ASH_WM_WINDOW_UTIL_H_
 #define ASH_WM_WINDOW_UTIL_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ui_base_types.h"
@@ -41,7 +43,11 @@ ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
 // Pins the window on top of other windows.
 ASH_EXPORT void PinWindow(aura::Window* window, bool trusted);
 
-// Moves |window| to the root window where the |event| occured if it is not
+// Moves |window| to the root window for the given |display_id|, if it is not
+// already in the same root window. Returns true if |window| was moved.
+ASH_EXPORT bool MoveWindowToDisplay(aura::Window* window, int64_t display_id);
+
+// Moves |window| to the root window where the |event| occurred, if it is not
 // already in the same root window. Returns true if |window| was moved.
 ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
                                       const ui::Event& event);

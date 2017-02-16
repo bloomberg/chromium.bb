@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/ash/app_launcher_id.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 
 class ArcAppListPrefs;
@@ -43,7 +43,7 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
   virtual bool IsValidIDForCurrentUser(const std::string& id) const;
 
   void LaunchApp(ash::AppLauncherId id,
-                 ash::LaunchSource source,
+                 ash::ShelfLaunchSource source,
                  int event_flags);
 
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;

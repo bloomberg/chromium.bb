@@ -138,7 +138,7 @@ bool ChromeLauncherControllerMus::IsPlatformApp(ash::ShelfID id) {
 }
 
 void ChromeLauncherControllerMus::ActivateApp(const std::string& app_id,
-                                              ash::LaunchSource source,
+                                              ash::ShelfLaunchSource source,
                                               int event_flags) {
   NOTIMPLEMENTED();
 }
@@ -165,12 +165,11 @@ void ChromeLauncherControllerMus::SetRefocusURLPatternForTest(ash::ShelfID id,
   NOTIMPLEMENTED();
 }
 
-ash::ShelfItemDelegate::PerformedAction
-ChromeLauncherControllerMus::ActivateWindowOrMinimizeIfActive(
+ash::ShelfAction ChromeLauncherControllerMus::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
   NOTIMPLEMENTED();
-  return ash::ShelfItemDelegate::kNoAction;
+  return ash::SHELF_ACTION_NONE;
 }
 
 void ChromeLauncherControllerMus::ActiveUserChanged(

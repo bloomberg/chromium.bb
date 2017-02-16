@@ -55,6 +55,36 @@ enum ShelfBackgroundType {
   SHELF_BACKGROUND_MAXIMIZED,
 };
 
+// Source of the launch or activation request, for tracking.
+enum ShelfLaunchSource {
+  // The item was launched from an unknown source (ie. not the app list).
+  LAUNCH_FROM_UNKNOWN,
+
+  // The item was launched from a generic app list view.
+  LAUNCH_FROM_APP_LIST,
+
+  // The item was launched from an app list search view.
+  LAUNCH_FROM_APP_LIST_SEARCH,
+};
+
+// The actions that may be performed when a shelf item is selected.
+enum ShelfAction {
+  // No action was taken.
+  SHELF_ACTION_NONE,
+
+  // A new window was created.
+  SHELF_ACTION_NEW_WINDOW_CREATED,
+
+  // An existing inactive window was activated.
+  SHELF_ACTION_WINDOW_ACTIVATED,
+
+  // The currently active window was minimized.
+  SHELF_ACTION_WINDOW_MINIMIZED,
+
+  // The app list launcher menu was shown.
+  SHELF_ACTION_APP_LIST_SHOWN,
+};
+
 typedef int ShelfID;
 const int kInvalidShelfID = 0;
 

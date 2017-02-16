@@ -10,6 +10,8 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -28,6 +30,23 @@
 
 namespace ash {
 namespace wm {
+
+namespace {
+
+// Moves |window| to the given |root| window's corresponding container, if it is
+// not already in the same root window. Returns true if |window| was moved.
+bool MoveWindowToRoot(aura::Window* window, aura::Window* root) {
+  if (!root || root == window->GetRootWindow())
+    return false;
+  aura::Window* container = RootWindowController::ForWindow(root)->GetContainer(
+      window->parent()->id());
+  if (!container)
+    return false;
+  container->AddChild(window);
+  return true;
+}
+
+}  // namespace
 
 // TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
@@ -64,19 +83,19 @@ void PinWindow(aura::Window* window, bool trusted) {
   wm::GetWindowState(window)->OnWMEvent(&event);
 }
 
+bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
+  DCHECK(window);
+  WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(display_id);
+  return root && MoveWindowToRoot(window, root->aura_window());
+}
+
 bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
+  DCHECK(window);
   views::View* target = static_cast<views::View*>(event.target());
   if (!target)
     return false;
-  aura::Window* target_root =
-      target->GetWidget()->GetNativeView()->GetRootWindow();
-  if (!target_root || target_root == window->GetRootWindow())
-    return false;
-  aura::Window* window_container = RootWindowController::ForWindow(target_root)
-                                       ->GetContainer(window->parent()->id());
-  // Move the window to the target launcher.
-  window_container->AddChild(window);
-  return true;
+  aura::Window* root = target->GetWidget()->GetNativeView()->GetRootWindow();
+  return root && MoveWindowToRoot(window, root);
 }
 
 void SnapWindowToPixelBoundary(aura::Window* window) {

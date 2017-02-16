@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
@@ -446,22 +445,21 @@ bool ChromeLauncherControllerImpl::IsPlatformApp(ash::ShelfID id) {
 }
 
 void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
-                                               ash::LaunchSource source,
+                                               ash::ShelfLaunchSource source,
                                                int event_flags) {
   // If there is an existing non-shortcut controller for this app, open it.
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id) {
-    LauncherItemController* controller = GetLauncherItemController(id);
-    controller->Activate(source);
+    model_->GetShelfItemDelegate(id)->ItemSelectedBySource(source);
     return;
   }
 
   // Create a temporary application launcher item and use it to see if there are
   // running instances.
-  std::unique_ptr<AppShortcutLauncherItemController> app_controller(
+  std::unique_ptr<AppShortcutLauncherItemController> controller(
       AppShortcutLauncherItemController::Create(app_id, std::string(), this));
-  if (!app_controller->GetRunningApplications().empty())
-    app_controller->Activate(source);
+  if (!controller->GetRunningApplications().empty())
+    controller->ItemSelectedBySource(source);
   else
     LaunchApp(ash::AppLauncherId(app_id), source, event_flags);
 }
@@ -551,8 +549,7 @@ void ChromeLauncherControllerImpl::SetRefocusURLPatternForTest(
   }
 }
 
-ash::ShelfItemDelegate::PerformedAction
-ChromeLauncherControllerImpl::ActivateWindowOrMinimizeIfActive(
+ash::ShelfAction ChromeLauncherControllerImpl::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
   // In separated desktop mode we might have to teleport a window back to the
@@ -569,18 +566,18 @@ ChromeLauncherControllerImpl::ActivateWindowOrMinimizeIfActive(
           ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
       manager->ShowWindowForUser(native_window, current_account_id);
       window->Activate();
-      return ash::ShelfItemDelegate::kExistingWindowActivated;
+      return ash::SHELF_ACTION_WINDOW_ACTIVATED;
     }
   }
 
   if (window->IsActive() && allow_minimize) {
     window->Minimize();
-    return ash::ShelfItemDelegate::kNoAction;
+    return ash::SHELF_ACTION_NONE;
   }
 
   window->Show();
   window->Activate();
-  return ash::ShelfItemDelegate::kExistingWindowActivated;
+  return ash::SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
 void ChromeLauncherControllerImpl::ActiveUserChanged(
