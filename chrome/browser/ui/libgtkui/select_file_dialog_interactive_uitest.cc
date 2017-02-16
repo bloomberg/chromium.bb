@@ -67,14 +67,18 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 
 }  // namespace libgtkui
 
+// Leaks in GtkFileChooserDialog. http://crbug.com/537468
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ModalTest DISABLED_ModalTest
+#else
+#define MAYBE_ModalTest ModalTest
+#endif
 // Test that the file-picker is modal.
-IN_PROC_BROWSER_TEST_F(BrowserSelectFileDialogTest, ModalTest) {
+IN_PROC_BROWSER_TEST_F(BrowserSelectFileDialogTest, MAYBE_ModalTest) {
   // Bring the native window to the foreground. Returns true on success.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(browser()->window()->IsActive());
 
-  // Leaks in GtkFileChooserDialog. http://crbug.com/537468
-  ANNOTATE_SCOPED_MEMORY_LEAK;
   libgtkui::FilePicker file_picker(browser()->window());
 
   gfx::NativeWindow window = browser()->window()->GetNativeWindow();
