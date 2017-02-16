@@ -11,6 +11,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/test_timeouts.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -114,9 +115,11 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 
     NSURL* url = net::NSURLWithGURL(server.MakeUrl("http://whatever/"));
     [web_view loadRequest:[NSURLRequest requestWithURL:url]];
-    base::test::ios::WaitUntilCondition(^bool {
-      return [navigation_delegate didFinishNavigation];
-    });
+    base::test::ios::WaitUntilCondition(
+        ^bool {
+          return [navigation_delegate didFinishNavigation];
+        },
+        false, TestTimeouts::action_max_timeout());
 
     web_view.navigationDelegate = old_navigation_delegate;
   }
