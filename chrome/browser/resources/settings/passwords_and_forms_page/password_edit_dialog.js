@@ -46,6 +46,17 @@ Polymer({
   },
 
   /**
+   * Gets the title text for the show/hide icon.
+   * @param {string} password
+   * @param {string} hide The i18n text to use for 'Hide'
+   * @param {string} show The i18n text to use for 'Show'
+   * @private
+   */
+  showPasswordTitle_: function(password, hide, show) {
+    return password ? hide : show;
+  },
+
+  /**
    * Gets the text of the password. Will use the value of |password| unless it
    * cannot be shown, in which case it will be spaces.
    * @param {!chrome.passwordsPrivate.PasswordUiEntry} item
