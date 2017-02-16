@@ -55,6 +55,11 @@ class EventWithCallback {
   }
   size_t coalesced_count() const { return original_events_.size(); }
   OriginalEventList& original_events() { return original_events_; }
+  // |first_original_event()| is used as ID for tracing.
+  blink::WebInputEvent* first_original_event() {
+    return original_events_.empty() ? nullptr
+                                    : original_events_.front().event_.get();
+  }
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;

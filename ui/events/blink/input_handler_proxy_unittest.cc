@@ -9,9 +9,13 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/trace_event_analyzer.h"
+#include "base/trace_event/trace_buffer.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -137,6 +141,15 @@ WebScopedInputEvent CreateGestureScrollOrPinch(WebInputEvent::Type type,
     gesture.y = y;
   }
   return WebInputEventTraits::Clone(gesture);
+}
+
+void OnTraceDataCollected(base::Closure quit_closure,
+                          base::trace_event::TraceResultBuffer* buffer,
+                          const scoped_refptr<base::RefCountedString>& json,
+                          bool has_more_events) {
+  buffer->AddFragment(json->data());
+  if (!has_more_events)
+    quit_closure.Run();
 }
 
 class MockInputHandler : public cc::InputHandler {
@@ -496,6 +509,32 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
           base::MakeUnique<CompositorThreadEventQueue>();
   }
 
+  void StartTracing() {
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        base::trace_event::TraceConfig("*"),
+        base::trace_event::TraceLog::RECORDING_MODE);
+  }
+
+  void StopTracing() {
+    base::trace_event::TraceLog::GetInstance()->SetDisabled();
+  }
+
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer() {
+    base::trace_event::TraceResultBuffer buffer;
+    base::trace_event::TraceResultBuffer::SimpleOutput trace_output;
+    buffer.SetOutputCallback(trace_output.GetCallback());
+    base::RunLoop run_loop;
+    buffer.Start();
+    base::trace_event::TraceLog::GetInstance()->Flush(
+        base::Bind(&OnTraceDataCollected, run_loop.QuitClosure(),
+                   base::Unretained(&buffer)));
+    run_loop.Run();
+    buffer.Finish();
+
+    return base::WrapUnique(
+        trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
+  }
+
   void HandleGestureEvent(WebInputEvent::Type type,
                           float deltay_or_scale = 0,
                           int x = 0,
@@ -532,6 +571,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   std::vector<InputHandlerProxy::EventDisposition> event_disposition_recorder_;
 
+  base::MessageLoop loop_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
 };
 
@@ -3418,6 +3458,77 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
       0.5f,
       ToWebGestureEvent(event_queue()[5]->event()).data.pinchUpdate.scale);
   EXPECT_EQ(WebInputEvent::GesturePinchEnd, event_queue()[6]->event().type());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
+  // Handle scroll on compositor.
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillRepeatedly(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
+      .Times(::testing::AtLeast(1));
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_))
+      .Times(::testing::AtLeast(1));
+
+  StartTracing();
+  // Simulate scroll.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -40);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -10);
+  HandleGestureEvent(WebInputEvent::GestureScrollEnd);
+
+  // Simulate scroll and pinch.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 10.0f, 1, 10);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -10);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 2.0f, 1, 10);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -30);
+  HandleGestureEvent(WebInputEvent::GestureScrollEnd);
+
+  // Dispatch all events.
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  StopTracing();
+
+  // Retrieve tracing data.
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      CreateTraceAnalyzer();
+  trace_analyzer::TraceEventVector begin_events;
+  trace_analyzer::Query begin_query = trace_analyzer::Query::EventPhaseIs(
+      TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN);
+  analyzer->FindEvents(begin_query, &begin_events);
+
+  trace_analyzer::TraceEventVector end_events;
+  trace_analyzer::Query end_query =
+      trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_NESTABLE_ASYNC_END);
+  analyzer->FindEvents(end_query, &end_events);
+
+  EXPECT_EQ(5ul, begin_events.size());
+  EXPECT_EQ(5ul, end_events.size());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            end_events[0]->GetKnownArgAsInt("type"));
+  EXPECT_EQ(3, end_events[0]->GetKnownArgAsInt("coalesced_count"));
+  EXPECT_EQ(WebInputEvent::GestureScrollEnd,
+            end_events[1]->GetKnownArgAsInt("type"));
+
+  EXPECT_EQ(WebInputEvent::GestureScrollBegin,
+            end_events[2]->GetKnownArgAsInt("type"));
+  // Original scroll and pinch updates will be stored in the coalesced
+  // PinchUpdate of the <ScrollUpdate, PinchUpdate> pair.
+  // The ScrollUpdate of the pair doesn't carry original events and won't be
+  // traced.
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            end_events[3]->GetKnownArgAsInt("type"));
+  EXPECT_EQ(4, end_events[3]->GetKnownArgAsInt("coalesced_count"));
+  EXPECT_EQ(WebInputEvent::GestureScrollEnd,
+            end_events[4]->GetKnownArgAsInt("type"));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 

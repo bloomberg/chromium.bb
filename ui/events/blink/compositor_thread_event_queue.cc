@@ -5,6 +5,7 @@
 #include "ui/events/blink/compositor_thread_event_queue.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -20,6 +21,13 @@ void CompositorThreadEventQueue::Queue(
   if (queue_.empty() || !IsContinuousGestureEvent(new_event->event().type()) ||
       !IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
                                  ToWebGestureEvent(queue_.back()->event()))) {
+    if (new_event->first_original_event()) {
+      // Trace could be nested as there might be multiple events in queue.
+      // e.g. |ScrollUpdate|, |ScrollEnd|, and another scroll sequence.
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("input",
+                                        "CompositorThreadEventQueue::Queue",
+                                        new_event->first_original_event());
+    }
     queue_.emplace_back(std::move(new_event));
     return;
   }
@@ -87,6 +95,13 @@ std::unique_ptr<EventWithCallback> CompositorThreadEventQueue::Pop() {
   if (!queue_.empty()) {
     result = std::move(queue_.front());
     queue_.pop_front();
+  }
+
+  if (result->first_original_event()) {
+    TRACE_EVENT_NESTABLE_ASYNC_END2(
+        "input", "CompositorThreadEventQueue::Queue",
+        result->first_original_event(), "type", result->event().type(),
+        "coalesced_count", result->coalesced_count());
   }
   return result;
 }
