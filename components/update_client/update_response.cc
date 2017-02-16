@@ -258,28 +258,39 @@ bool ParseUrlsTag(xmlNode* urls,
 bool ParseUpdateCheckTag(xmlNode* updatecheck,
                          UpdateResponse::Result* result,
                          std::string* error) {
-  if (GetAttribute(updatecheck, "status") == "noupdate") {
+  // Read the |status| attribute.
+  result->status = GetAttribute(updatecheck, "status");
+  if (result->status.empty()) {
+    *error = "Missing status on updatecheck node";
+    return false;
+  }
+
+  if (result->status == "noupdate")
     return true;
+
+  if (result->status == "ok") {
+    std::vector<xmlNode*> urls = GetChildren(updatecheck, "urls");
+    if (urls.empty()) {
+      *error = "Missing urls on updatecheck.";
+      return false;
+    }
+
+    if (!ParseUrlsTag(urls[0], result, error)) {
+      return false;
+    }
+
+    std::vector<xmlNode*> manifests = GetChildren(updatecheck, "manifest");
+    if (manifests.empty()) {
+      *error = "Missing manifest on updatecheck.";
+      return false;
+    }
+
+    return ParseManifestTag(manifests[0], result, error);
   }
 
-  // Get the <urls> tag.
-  std::vector<xmlNode*> urls = GetChildren(updatecheck, "urls");
-  if (urls.empty()) {
-    *error = "Missing urls on updatecheck.";
-    return false;
-  }
-
-  if (!ParseUrlsTag(urls[0], result, error)) {
-    return false;
-  }
-
-  std::vector<xmlNode*> manifests = GetChildren(updatecheck, "manifest");
-  if (manifests.empty()) {
-    *error = "Missing manifest on updatecheck.";
-    return false;
-  }
-
-  return ParseManifestTag(manifests[0], result, error);
+  // Return the |updatecheck| element status as a parsing error.
+  *error = result->status;
+  return false;
 }
 
 // Parses a single <app> tag.
@@ -320,7 +331,7 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
   results_.list.clear();
   errors_.clear();
 
-  if (response_xml.length() < 1) {
+  if (response_xml.empty()) {
     ParseError("Empty xml");
     return false;
   }

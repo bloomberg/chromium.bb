@@ -204,7 +204,7 @@ const char* kTwoAppsOneError =
     "<?xml version='1.0' encoding='UTF-8'?>"
     "<response protocol='3.0'>"
     " <app appid='aaaaaaaa' status='error-unknownApplication'>"
-    "  <updatecheck status='error-unknownapplication'/>"
+    "  <updatecheck status='error-internal'/>"
     " </app>"
     " <app appid='bbbbbbbb'>"
     "   <updatecheck status='ok'>"
@@ -277,6 +277,7 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_EQ(1u, parser.results().list.size());
   const UpdateResponse::Result* firstResult = &parser.results().list[0];
+  EXPECT_STREQ("ok", firstResult->status.c_str());
   EXPECT_EQ(1u, firstResult->crx_urls.size());
   EXPECT_EQ(GURL("http://example.com/"), firstResult->crx_urls[0]);
   EXPECT_EQ(GURL("http://diff.example.com/"), firstResult->crx_diffurls[0]);
@@ -324,6 +325,7 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_FALSE(parser.results().list.empty());
   firstResult = &parser.results().list[0];
+  EXPECT_STREQ("noupdate", firstResult->status.c_str());
   EXPECT_EQ(firstResult->extension_id, "12345");
   EXPECT_EQ(firstResult->manifest.version, "");
 
@@ -333,6 +335,8 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_EQ(1u, parser.results().list.size());
   firstResult = &parser.results().list[0];
   EXPECT_EQ(firstResult->extension_id, "bbbbbbbb");
+  EXPECT_STREQ("ok", firstResult->status.c_str());
+  EXPECT_EQ("1.2.3.4", firstResult->manifest.version);
 
   // Parse xml with two apps setting the cohort info.
   EXPECT_TRUE(parser.Parse(kTwoAppsSetCohort));

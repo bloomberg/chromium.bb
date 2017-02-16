@@ -95,6 +95,9 @@ class UpdateResponse {
 
     std::string extension_id;
 
+    // The updatecheck response status.
+    std::string status;
+
     // The list of fallback urls, for full and diff updates respectively.
     // These urls are base urls; they don't include the filename.
     std::vector<GURL> crx_urls;
@@ -130,8 +133,9 @@ class UpdateResponse {
 
   // Parses an update response xml string into Result data. Returns a bool
   // indicating success or failure. On success, the results are available by
-  // calling results(). The details for any failures are available by calling
-  // errors().
+  // calling results(). In case of success, only results corresponding to
+  // the update check status |ok| or |noupdate| are included.
+  // The details for any failures are available by calling errors().
   bool Parse(const std::string& manifest_xml);
 
   const Results& results() const { return results_; }

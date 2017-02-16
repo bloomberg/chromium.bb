@@ -114,73 +114,22 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
     const UpdateResponse::Results& results) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Update check succeeded.";
-  std::vector<UpdateResponse::Result>::const_iterator it;
-  for (it = results.list.begin(); it != results.list.end(); ++it) {
-    CrxUpdateItem* crx = FindUpdateItemById(it->extension_id);
-    if (!crx)
-      continue;
 
-    if (crx->state != CrxUpdateItem::State::kChecking) {
-      NOTREACHED();
-      continue;  // Not updating this CRX now.
-    }
-
-    if (it->manifest.version.empty()) {
-      // No version means no update available.
-      ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
-      VLOG(1) << "No update available for CRX: " << crx->id;
+  for (const auto& result : results.list) {
+    CrxUpdateItem* crx = FindUpdateItemById(result.extension_id);
+    if (!crx) {
+      VLOG(1) << "Component not found " << result.extension_id;
       continue;
     }
 
-    if (!IsVersionNewer(crx->component.version, it->manifest.version)) {
-      // The CRX is up to date.
-      ChangeItemState(crx, CrxUpdateItem::State::kUpToDate);
-      VLOG(1) << "Component already up to date: " << crx->id;
-      continue;
-    }
+    DCHECK_EQ(CrxUpdateItem::State::kChecking, crx->state);
 
-    if (!it->manifest.browser_min_version.empty()) {
-      if (IsVersionNewer(browser_version_, it->manifest.browser_min_version)) {
-        // The CRX is not compatible with this Chrome version.
-        VLOG(1) << "Ignoring incompatible CRX: " << crx->id;
-        ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
-        continue;
-      }
-    }
-
-    if (it->manifest.packages.size() != 1) {
-      // Assume one and only one package per CRX.
-      VLOG(1) << "Ignoring multiple packages for CRX: " << crx->id;
-      ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
-      continue;
-    }
-
-    // Parse the members of the result and queue an upgrade for this CRX.
-    crx->next_version = base::Version(it->manifest.version);
-
-    VLOG(1) << "Update found for CRX: " << crx->id;
-
-    const auto& package(it->manifest.packages[0]);
-    crx->next_fp = package.fingerprint;
-
-    // Resolve the urls by combining the base urls with the package names.
-    for (size_t i = 0; i != it->crx_urls.size(); ++i) {
-      const GURL url(it->crx_urls[i].Resolve(package.name));
-      if (url.is_valid())
-        crx->crx_urls.push_back(url);
-    }
-    for (size_t i = 0; i != it->crx_diffurls.size(); ++i) {
-      const GURL url(it->crx_diffurls[i].Resolve(package.namediff));
-      if (url.is_valid())
-        crx->crx_diffurls.push_back(url);
-    }
-
-    crx->hash_sha256 = package.hash_sha256;
-    crx->hashdiff_sha256 = package.hashdiff_sha256;
-
-    ChangeItemState(crx, CrxUpdateItem::State::kCanUpdate);
-
-    update_context_->queue.push(crx->id);
+    if (result.status == "ok")
+      HandleUpdateCheckOK(result, crx);
+    else if (result.status == "noupdate")
+      HandleUpdateCheckNoupdate(result, crx);
+    else
+      HandleUpdateCheckError(result, crx);
   }
 
   // All components that are not included in the update response are
@@ -189,13 +138,93 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
                       CrxUpdateItem::State::kUpToDate);
 
   if (update_context_->queue.empty()) {
-    VLOG(1) << "Update check completed but no update is needed.";
+    VLOG(1) << "Update check completed but no action is needed.";
     UpdateComplete(Error::NONE);
     return;
   }
 
   // Starts the execution flow of updating the CRXs in this context.
   UpdateCrx();
+}
+
+void ActionUpdateCheck::HandleUpdateCheckOK(
+    const UpdateResponse::Result& result,
+    CrxUpdateItem* crx) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const auto& manifest = result.manifest;
+
+  if (manifest.version.empty()) {
+    // It can't update without a manifest version.
+    VLOG(1) << "No manifest version available for CRX: " << crx->id;
+    ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
+    return;
+  }
+
+  if (!IsVersionNewer(crx->component.version, manifest.version)) {
+    // The CRX is up to date.
+    VLOG(1) << "Component already up to date: " << crx->id;
+    ChangeItemState(crx, CrxUpdateItem::State::kUpToDate);
+    return;
+  }
+
+  if (!manifest.browser_min_version.empty()) {
+    if (IsVersionNewer(browser_version_, manifest.browser_min_version)) {
+      // The CRX is not compatible with this Chrome version.
+      VLOG(1) << "Ignoring incompatible CRX: " << crx->id;
+      ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
+      return;
+    }
+  }
+
+  if (manifest.packages.size() != 1) {
+    // Assume one and only one package per CRX.
+    VLOG(1) << "Ignoring multiple packages for CRX: " << crx->id;
+    ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
+    return;
+  }
+
+  // Parse the members of the result and queue an upgrade for this CRX.
+  VLOG(1) << "Update found for CRX: " << crx->id;
+
+  crx->next_version = base::Version(manifest.version);
+  const auto& package = manifest.packages.front();
+  crx->next_fp = package.fingerprint;
+
+  // Resolve the urls by combining the base urls with the package names.
+  for (const auto& crx_url : result.crx_urls) {
+    const GURL url = crx_url.Resolve(package.name);
+    if (url.is_valid())
+      crx->crx_urls.push_back(url);
+  }
+  for (const auto& crx_diffurl : result.crx_diffurls) {
+    const GURL url = crx_diffurl.Resolve(package.namediff);
+    if (url.is_valid())
+      crx->crx_diffurls.push_back(url);
+  }
+
+  crx->hash_sha256 = package.hash_sha256;
+  crx->hashdiff_sha256 = package.hashdiff_sha256;
+
+  ChangeItemState(crx, CrxUpdateItem::State::kCanUpdate);
+
+  update_context_->queue.push(crx->id);
+}
+
+void ActionUpdateCheck::HandleUpdateCheckNoupdate(
+    const UpdateResponse::Result& result,
+    CrxUpdateItem* crx) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "No update for CRX: " << crx->id;
+  ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
+}
+
+void ActionUpdateCheck::HandleUpdateCheckError(
+    const UpdateResponse::Result& result,
+    CrxUpdateItem* crx) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "Update error for CRX: " << crx->id << ", " << result.status;
+  ChangeItemState(crx, CrxUpdateItem::State::kNoUpdate);
 }
 
 void ActionUpdateCheck::OnUpdateCheckFailed(int error) {

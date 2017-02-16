@@ -375,6 +375,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
       UpdateResponse::Result result;
       result.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result.status = "ok";
       result.crx_urls.push_back(GURL("http://localhost/download/"));
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
@@ -576,6 +577,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
       UpdateResponse::Result result1;
       result1.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result1.status = "ok";
       result1.crx_urls.push_back(GURL("http://localhost/download/"));
       result1.manifest.version = "1.0";
       result1.manifest.browser_min_version = "11.0.1.0";
@@ -588,6 +590,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
       UpdateResponse::Result result2;
       result2.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+      result2.status = "ok";
       result2.crx_urls.push_back(GURL("http://localhost/download/"));
       result2.manifest.version = "1.0";
       result2.manifest.browser_min_version = "11.0.1.0";
@@ -825,6 +828,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
       UpdateResponse::Result result1;
       result1.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result1.status = "ok";
       result1.crx_urls.push_back(GURL("http://localhost/download/"));
       result1.manifest.version = "1.0";
       result1.manifest.browser_min_version = "11.0.1.0";
@@ -837,6 +841,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
       UpdateResponse::Result result2;
       result2.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+      result2.status = "ok";
       result2.crx_urls.push_back(GURL("http://localhost/download/"));
       result2.manifest.version = "1.0";
       result2.manifest.browser_min_version = "11.0.1.0";
@@ -1068,6 +1073,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         package.fingerprint = "1";
         UpdateResponse::Result result;
         result.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+        result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
         result.manifest.version = "1.0";
         result.manifest.browser_min_version = "11.0.1.0";
@@ -1109,6 +1115,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         package.fingerprint = "22";
         UpdateResponse::Result result;
         result.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+        result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
         result.crx_diffurls.push_back(GURL("http://localhost/download/"));
         result.manifest.version = "2.0";
@@ -1356,6 +1363,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
           "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
       UpdateResponse::Result result;
       result.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result.status = "ok";
       result.crx_urls.push_back(GURL("http://localhost/download/"));
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
@@ -1547,6 +1555,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         package.fingerprint = "1";
         UpdateResponse::Result result;
         result.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+        result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
         result.manifest.version = "1.0";
         result.manifest.browser_min_version = "11.0.1.0";
@@ -1588,6 +1597,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         package.fingerprint = "22";
         UpdateResponse::Result result;
         result.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+        result.status = "ok";
         result.crx_urls.push_back(GURL("http://localhost/download/"));
         result.crx_diffurls.push_back(GURL("http://localhost/download/"));
         result.manifest.version = "2.0";
@@ -1932,6 +1942,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
           "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
       UpdateResponse::Result result;
       result.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result.status = "ok";
       result.crx_urls.push_back(GURL("http://localhost/download/"));
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
@@ -2548,6 +2559,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
       UpdateResponse::Result result1;
       result1.extension_id = "jebgalgnebhfojomionfpkfelancnnkf";
+      result1.status = "ok";
       result1.crx_urls.push_back(GURL("http://localhost/download/"));
       result1.manifest.version = "1.0";
       result1.manifest.browser_min_version = "11.0.1.0";
@@ -2560,6 +2572,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
       UpdateResponse::Result result2;
       result2.extension_id = "ihfokbkgjpifnbbojhneepfflplebdkc";
+      result2.status = "ok";
       result2.crx_urls.push_back(GURL("http://localhost/download/"));
       result2.manifest.version = "1.0";
       result2.manifest.browser_min_version = "11.0.1.0";

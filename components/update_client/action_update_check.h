@@ -39,9 +39,15 @@ class ActionUpdateCheck : public Action, private ActionImpl {
   void UpdateCheckComplete(int error,
                            const UpdateResponse::Results& results,
                            int retry_after_sec);
-
   void OnUpdateCheckSucceeded(const UpdateResponse::Results& results);
   void OnUpdateCheckFailed(int error);
+
+  void HandleUpdateCheckOK(const UpdateResponse::Result& result,
+                           CrxUpdateItem* crx);
+  void HandleUpdateCheckNoupdate(const UpdateResponse::Result& result,
+                                 CrxUpdateItem* crx);
+  void HandleUpdateCheckError(const UpdateResponse::Result& result,
+                              CrxUpdateItem* crx);
 
   std::unique_ptr<UpdateChecker> update_checker_;
   const base::Version browser_version_;
