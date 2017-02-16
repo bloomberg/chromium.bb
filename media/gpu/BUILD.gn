@@ -211,7 +211,7 @@ component("gpu") {
     }
   }
 
-  if (is_chromeos || is_win) {
+  if (is_chromeos || is_mac || is_win) {
     sources += [
       "accelerated_video_decoder.h",
       "h264_decoder.cc",

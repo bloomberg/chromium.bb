@@ -46,6 +46,8 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/h264_parser.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/h264_decoder.h"
+#include "media/gpu/h264_dpb.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
@@ -605,10 +607,17 @@ class H264Validator : public StreamValidator {
   void ProcessStreamBuffer(const uint8_t* stream, size_t size) override;
 
  private:
+  bool IsNewPicture(const H264SliceHeader& slice_hdr);
+  bool UpdateCurrentPicture(const H264SliceHeader& slice_hdr);
+
   // Set to true when encoder provides us with the corresponding NALU type.
   bool seen_sps_;
   bool seen_pps_;
   bool seen_idr_;
+
+  scoped_refptr<H264Picture> curr_pic_;
+  int curr_sps_id_ = -1;
+  int curr_pps_id_ = -1;
 
   H264Parser h264_parser_;
 };
@@ -637,9 +646,14 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
       // fallthrough
       case H264NALU::kNonIDRSlice: {
         ASSERT_TRUE(seen_idr_);
-        seen_sps_ = seen_pps_ = false;
-        if (!frame_cb_.Run(keyframe))
-          return;
+        H264SliceHeader slice_hdr;
+        ASSERT_EQ(H264Parser::kOk,
+                  h264_parser_.ParseSliceHeader(nalu, &slice_hdr));
+        if (IsNewPicture(slice_hdr)) {
+          if (!frame_cb_.Run(keyframe))
+            return;
+          ASSERT_TRUE(UpdateCurrentPicture(slice_hdr));
+        }
         break;
       }
 
@@ -662,6 +676,36 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
         break;
     }
   }
+}
+
+bool H264Validator::IsNewPicture(const H264SliceHeader& slice_hdr) {
+  if (!curr_pic_)
+    return true;
+  return H264Decoder::IsNewPrimaryCodedPicture(
+      curr_pic_, curr_pps_id_, h264_parser_.GetSPS(curr_sps_id_), slice_hdr);
+}
+
+bool H264Validator::UpdateCurrentPicture(const H264SliceHeader& slice_hdr) {
+  curr_pps_id_ = slice_hdr.pic_parameter_set_id;
+  const H264PPS* pps = h264_parser_.GetPPS(curr_pps_id_);
+  if (!pps) {
+    LOG(ERROR) << "Cannot parse pps.";
+    return false;
+  }
+
+  curr_sps_id_ = pps->seq_parameter_set_id;
+  const H264SPS* sps = h264_parser_.GetSPS(curr_sps_id_);
+  if (!sps) {
+    LOG(ERROR) << "Cannot parse sps.";
+    return false;
+  }
+
+  curr_pic_ = H264Decoder::CreateH264PictureFromSliceHeader(sps, slice_hdr);
+  if (!curr_pic_) {
+    LOG(FATAL) << "Cannot initialize current frame.";
+    return false;
+  }
+  return true;
 }
 
 class VP8Validator : public StreamValidator {
@@ -2233,6 +2277,13 @@ INSTANTIATE_TEST_CASE_P(MultipleEncoders,
                                                           false,
                                                           false,
                                                           false)));
+
+INSTANTIATE_TEST_CASE_P(
+    VerifyTimestamp,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        std::make_tuple(1, false, 0, false, false, false, false, false, true)));
+
 #if defined(OS_WIN)
 INSTANTIATE_TEST_CASE_P(
     ForceBitrate,
