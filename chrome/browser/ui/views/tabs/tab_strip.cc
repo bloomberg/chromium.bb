@@ -74,7 +74,6 @@
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/win/hwnd_util.h"
-#include "ui/views/widget/monitor_win.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 

@@ -364,8 +364,6 @@ component("views") {
     "views_touch_selection_controller_factory_mac.cc",
     "widget/drop_helper.cc",
     "widget/drop_helper.h",
-    "widget/monitor_win.cc",
-    "widget/monitor_win.h",
     "widget/native_widget.h",
     "widget/native_widget_delegate.h",
     "widget/native_widget_mac.h",

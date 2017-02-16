@@ -19,7 +19,6 @@ include_rules = [
   "+ui/views/ime/input_method_delegate.h",
   "+ui/views/views_delegate.h",
   "+ui/views/views_export.h",
-  "+ui/views/widget/monitor_win.h",
   "+ui/views/widget/widget_hwnd_utils.h",
   "+ui/views/win",
 ]
