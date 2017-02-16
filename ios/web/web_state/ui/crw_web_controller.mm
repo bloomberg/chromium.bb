@@ -1047,6 +1047,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(!_webView);
   // TODO(crbug.com/662860): Don't set the delegate to nil.
   [_containerView setDelegate:nil];
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
+    [self.nativeController setDelegate:nil];
+  }
   _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
   [[_webViewProxy scrollViewProxy] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];

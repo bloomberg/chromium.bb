@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -76,10 +77,10 @@
   base::scoped_nsobject<WKWebView> webView_;
 
   // The delegate of the native content.
-  id<CRWNativeContentDelegate> delegate_;  // weak
+  base::WeakNSProtocol<id<CRWNativeContentDelegate>> delegate_;  // weak
 
   // The loader to navigate from the page.
-  id<UrlLoader> loader_;  // weak
+  base::WeakNSProtocol<id<UrlLoader>> loader_;  // weak
 }
 
 // Returns the URL of the static page to display.
@@ -141,7 +142,7 @@
 
 - (void)setLoader:(id<UrlLoader>)loader
          referrer:(const web::Referrer&)referrer {
-  loader_ = loader;
+  loader_.reset(loader);
   referrer_ = referrer;
 }
 
@@ -189,7 +190,7 @@
 }
 
 - (void)setDelegate:(id<CRWNativeContentDelegate>)delegate {
-  delegate_ = delegate;
+  delegate_.reset(delegate);
 }
 
 - (void)setScrollEnabled:(BOOL)enabled {
