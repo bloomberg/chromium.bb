@@ -1135,7 +1135,8 @@ class TestGitCl(TestCase):
     return calls
 
   @classmethod
-  def _gerrit_base_calls(cls, issue=None, fetched_description=None):
+  def _gerrit_base_calls(cls, issue=None, fetched_description=None,
+                         fetched_status=None):
     calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.git-cl-similarity'],),
@@ -1169,9 +1170,16 @@ class TestGitCl(TestCase):
            'revisions': { 'sha1_of_current_revision': {
              'commit': {'message': fetched_description},
            }},
-           'status': 'NEW',
+           'status': fetched_status or 'NEW',
          }),
       ]
+      if fetched_status == 'ABANDONED':
+        calls += [
+          (('DieWithError', 'Change https://chromium-review.googlesource.com/'
+                            '123456 has been abandoned, new uploads are not '
+                            'allowed'), SystemExitMock()),
+        ]
+        return calls
 
     calls += cls._git_sanity_checks('fake_ancestor_sha', 'master',
                                   get_remote_branch=False)
@@ -1369,7 +1377,8 @@ class TestGitCl(TestCase):
       post_amend_description=None,
       issue=None,
       cc=None,
-      git_mirror=None):
+      git_mirror=None,
+      fetched_status=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1399,14 +1408,16 @@ class TestGitCl(TestCase):
 
     self.calls = self._gerrit_base_calls(
         issue=issue,
-        fetched_description=description)
-    self.calls += self._gerrit_upload_calls(
-        description, reviewers, squash,
-        squash_mode=squash_mode,
-        expected_upstream_ref=expected_upstream_ref,
-        ref_suffix=ref_suffix, title=title, notify=notify,
-        post_amend_description=post_amend_description,
-        issue=issue, cc=cc, git_mirror=git_mirror)
+        fetched_description=description,
+        fetched_status=fetched_status)
+    if fetched_status != 'ABANDONED':
+      self.calls += self._gerrit_upload_calls(
+          description, reviewers, squash,
+          squash_mode=squash_mode,
+          expected_upstream_ref=expected_upstream_ref,
+          ref_suffix=ref_suffix, title=title, notify=notify,
+          post_amend_description=post_amend_description,
+          issue=issue, cc=cc, git_mirror=git_mirror)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1505,6 +1516,20 @@ class TestGitCl(TestCase):
         squash=True,
         expected_upstream_ref='origin/master',
         issue=123456)
+
+  def test_gerrit_upload_squash_reupload_to_abandoned(self):
+    self.mock(git_cl, 'DieWithError',
+              lambda msg, change=None: self._mocked_call('DieWithError', msg))
+    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    with self.assertRaises(SystemExitMock):
+      self._run_gerrit_upload_test(
+          ['--squash'],
+          description,
+          [],
+          squash=True,
+          expected_upstream_ref='origin/master',
+          issue=123456,
+          fetched_status='ABANDONED')
 
   def test_upload_branch_deps(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
