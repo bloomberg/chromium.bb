@@ -27,6 +27,7 @@
 #define ClipRect_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/FloatClipRect.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -40,6 +41,9 @@ class ClipRect {
   ClipRect() : m_hasRadius(false) {}
 
   ClipRect(const LayoutRect& rect) : m_rect(rect), m_hasRadius(false) {}
+
+  ClipRect(const FloatClipRect& rect)
+      : m_rect(LayoutRect(rect.rect())), m_hasRadius(rect.hasRadius()) {}
 
   const LayoutRect& rect() const { return m_rect; }
 

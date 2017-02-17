@@ -365,7 +365,7 @@ TEST_F(GeometryMapperTest, RoundedClip) {
   FloatRect output(10, 10, 50, 50);
 
   FloatClipRect expectedClip(clip->clipRect().rect());
-  expectedClip.setHasRadius(true);
+  expectedClip.setHasRadius();
 
   bool hasRadius = true;
   CHECK_MAPPINGS(input,   // Input
@@ -400,7 +400,7 @@ TEST_F(GeometryMapperTest, TwoClips) {
   FloatRect output1(10, 10, 30, 40);
 
   FloatClipRect clipRect(clip1->clipRect().rect());
-  clipRect.setHasRadius(true);
+  clipRect.setHasRadius();
 
   bool hasRadius = true;
   CHECK_MAPPINGS(input,    // Input
@@ -453,7 +453,7 @@ TEST_F(GeometryMapperTest, TwoClipsTransformAbove) {
   FloatRect output1(10, 10, 30, 40);
 
   FloatClipRect expectedClip(clip2->clipRect().rect());
-  expectedClip.setHasRadius(true);
+  expectedClip.setHasRadius();
 
   bool hasRadius = true;
   CHECK_MAPPINGS(input,    // Input

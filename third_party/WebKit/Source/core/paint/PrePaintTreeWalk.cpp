@@ -105,7 +105,7 @@ static bool isAncestorOfOrEqualTo(const ClipPaintPropertyNode* a,
   return b == a;
 }
 
-ClipRect PrePaintTreeWalk::clipRectForContext(
+FloatClipRect PrePaintTreeWalk::clipRectForContext(
     const PaintPropertyTreeBuilderContext::ContainingBlockContext& context,
     const EffectPaintPropertyNode* effect,
     const PropertyTreeState& ancestorState,
@@ -115,20 +115,16 @@ ClipRect PrePaintTreeWalk::clipRectForContext(
   // actually an ancestor clip. This ensures no accuracy issues due to
   // transforms applied to infinite rects.
   if (isAncestorOfOrEqualTo(context.clip, ancestorState.clip()))
-    return ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+    return FloatClipRect();
 
   hasClip = true;
 
   PropertyTreeState localState(context.transform, context.clip, effect);
 
-  // TODO(chrishtr): remove need for this.
-  LayoutRect localRect(LayoutRect::infiniteIntRect());
+  FloatClipRect rect(
+      m_geometryMapper.sourceToDestinationClipRect(localState, ancestorState));
 
-  LayoutRect rect(m_geometryMapper
-                      .sourceToDestinationVisualRect(FloatRect(localRect),
-                                                     localState, ancestorState)
-                      .rect());
-  rect.moveBy(-ancestorPaintOffset);
+  rect.moveBy(-FloatPoint(ancestorPaintOffset));
   return rect;
 }
 

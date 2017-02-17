@@ -40,7 +40,7 @@ class PrePaintTreeWalk {
   // Returns the clip applied to children for the given
   // contaiing block context + effect, in the space of ancestorState adjusted
   // by ancestorPaintOffset. Sets hasClip to true if a clip was applied.
-  ClipRect clipRectForContext(
+  FloatClipRect clipRectForContext(
       const PaintPropertyTreeBuilderContext::ContainingBlockContext&,
       const EffectPaintPropertyNode*,
       const PropertyTreeState& ancestorState,

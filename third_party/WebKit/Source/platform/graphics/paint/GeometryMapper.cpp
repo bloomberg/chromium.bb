@@ -149,12 +149,14 @@ FloatClipRect GeometryMapper::slowLocalToAncestorVisualRectWithEffects(
         success);
     hasRadius |= result.hasRadius();
     if (!success) {
-      result.setHasRadius(hasRadius);
+      if (hasRadius)
+        result.setHasRadius();
       return result;
     }
 
     result = effect->mapRect(result.rect());
-    result.setHasRadius(hasRadius);
+    if (hasRadius)
+      result.setHasRadius();
     lastTransformAndClipState = transformAndClipState;
   }
 
@@ -164,7 +166,8 @@ FloatClipRect GeometryMapper::slowLocalToAncestorVisualRectWithEffects(
   result = sourceToDestinationVisualRectInternal(
       result.rect(), lastTransformAndClipState, finalTransformAndClipState,
       success);
-  result.setHasRadius(hasRadius || result.hasRadius());
+  if (hasRadius || result.hasRadius())
+    result.setHasRadius();
   return result;
 }
 
@@ -348,7 +351,7 @@ FloatClipRect GeometryMapper::localToAncestorClipRectInternal(
     FloatRect mappedRect = transformMatrix.mapRect((*it)->clipRect().rect());
     clip.intersect(mappedRect);
     if ((*it)->clipRect().isRounded())
-      clip.setHasRadius(true);
+      clip.setHasRadius();
     clipCache.set(*it, clip);
   }
 
