@@ -637,11 +637,12 @@ const int kNumFilters = 16;
 
 TEST(ConvolveTest, FiltersWontSaturateWhenAddedPairwise) {
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
+    const InterpFilter filter = (InterpFilter)filter_bank;
     const InterpKernel *filters =
-        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter);
 #if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
-        av1_get_interp_filter_params(filter_bank);
+        av1_get_interp_filter_params(filter);
     if (filter_params.taps != SUBPEL_TAPS) continue;
 #endif
     for (int i = 0; i < kNumFilters; i++) {
@@ -680,11 +681,12 @@ TEST_P(ConvolveTest, MatchesReferenceSubpixelFilter) {
 #endif
 
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
+    const InterpFilter filter = (InterpFilter)filter_bank;
     const InterpKernel *filters =
-        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter);
 #if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
-        av1_get_interp_filter_params(filter_bank);
+        av1_get_interp_filter_params(filter);
     if (filter_params.taps != SUBPEL_TAPS) continue;
 #endif
 
@@ -762,11 +764,12 @@ TEST_P(ConvolveTest, MatchesReferenceAveragingSubpixelFilter) {
   }
 
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
+    const InterpFilter filter = (InterpFilter)filter_bank;
     const InterpKernel *filters =
-        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter);
 #if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
-        av1_get_interp_filter_params(filter_bank);
+        av1_get_interp_filter_params(filter);
     if (filter_params.taps != SUBPEL_TAPS) continue;
 #endif
 
@@ -864,11 +867,12 @@ TEST_P(ConvolveTest, FilterExtremes) {
       if (axis) seed_val += 8;
 
       for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
+        const InterpFilter filter = (InterpFilter)filter_bank;
         const InterpKernel *filters =
-            (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+            (const InterpKernel *)av1_get_interp_filter_kernel(filter);
 #if CONFIG_DUAL_FILTER
         const InterpFilterParams filter_params =
-            av1_get_interp_filter_params(filter_bank);
+            av1_get_interp_filter_params(filter);
         if (filter_params.taps != SUBPEL_TAPS) continue;
 #endif
         for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {

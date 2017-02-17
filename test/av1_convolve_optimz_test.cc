@@ -106,7 +106,7 @@ class AV1ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
   uint8_t *dst_ref_;
   int width_;
   int height_;
-  int filter_;
+  InterpFilter filter_;
   int subpel_;
   ConvolveParams conv_params_;
 };
@@ -218,7 +218,7 @@ const BlockDimension kBlockDim[] = {
 };
 
 // 10/12-tap filters
-const InterpFilter kFilter[] = { 6, 4, 2 };
+const InterpFilter kFilter[] = { FILTER_REGULAR_UV, BILINEAR, MULTITAP_SHARP };
 
 const int kSubpelQ4[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
@@ -283,7 +283,7 @@ class AV1HbdConvolveOptimzTest : public TestWithHbdConvParams {
   uint16_t *dst_ref_;
   int width_;
   int height_;
-  int filter_;
+  InterpFilter filter_;
   int subpel_;
   int avg_;
   int bit_depth_;
