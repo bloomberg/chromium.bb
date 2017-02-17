@@ -5,6 +5,8 @@
 
 from os import path as os_path
 import platform
+import subprocess
+import sys
 
 
 def GetBinaryPath():
@@ -13,3 +15,16 @@ def GetBinaryPath():
     'Linux': ('linux', 'node-linux-x64', 'bin', 'node'),
     'Windows': ('win', 'node.exe'),
   }[platform.system()])
+
+
+def RunNode(cmd_parts, stdout=None):
+  cmd = " ".join([GetBinaryPath()] + cmd_parts)
+  process = subprocess.Popen(
+      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+  stdout, stderr = process.communicate()
+
+  if stderr:
+    print >> sys.stderr, '%s failed: %s' % (cmd, stderr)
+    raise
+
+  return stdout

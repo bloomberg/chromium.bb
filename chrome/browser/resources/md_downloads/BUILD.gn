@@ -1,11 +1,21 @@
 import("../vulcanize.gni")
 
+vulcanized_unbuilt = "vulcanized.unbuilt.html"
+
 vulcanize("vulcanize") {
   deps = []
   host = "downloads"
   html_in_file = "downloads.html"
-  html_out_file = "vulcanized.html"
+  html_out_file = vulcanized_unbuilt
   input = rebase_path(".", root_build_dir)
   insert_in_head = "<base href=chrome://downloads>"
   js_out_file = "crisper.js"
+}
+
+polymer_css_build("build") {
+  input_files = [ vulcanized_unbuilt ]
+  output_files = [ "vulcanized.html" ]
+  deps = [
+    ":vulcanize",
+  ]
 }

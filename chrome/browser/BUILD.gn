@@ -4182,9 +4182,8 @@ grit("resources") {
 
   if (use_vulcanize) {
     deps += [
-      "//chrome/browser/resources/md_downloads:vulcanize",
-      "//chrome/browser/resources/md_history:vulcanize_app",
-      "//chrome/browser/resources/md_history:vulcanize_lazy_load",
+      "//chrome/browser/resources/md_downloads:build",
+      "//chrome/browser/resources/md_history:build",
     ]
   }
 

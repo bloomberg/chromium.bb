@@ -8,7 +8,6 @@ import itertools
 import os
 import platform
 import re
-import subprocess
 import sys
 import tempfile
 
@@ -72,19 +71,6 @@ _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
 
 
 _PAK_UNPACK_FOLDER = 'flattened'
-
-
-def _run_node(cmd_parts, stdout=None):
-  cmd = " ".join([node.GetBinaryPath()] + cmd_parts)
-  process = subprocess.Popen(
-      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-  stdout, stderr = process.communicate()
-
-  if stderr:
-    print >> sys.stderr, '%s failed: %s' % (cmd, stderr)
-    raise
-
-  return stdout
 
 
 def _undo_mapping(mappings, url):
@@ -154,7 +140,7 @@ def _vulcanize(in_folder, args):
     exclude_args.append('--exclude')
     exclude_args.append(f)
 
-  output = _run_node(
+  output = node.RunNode(
       [node_modules.PathToVulcanize()] +
       _VULCANIZE_BASE_ARGS + _VULCANIZE_REDIRECT_ARGS + exclude_args +
       ['--out-request-list', _request_list_path(out_path, args.html_out_file),
@@ -179,24 +165,17 @@ def _vulcanize(in_folder, args):
     tmp.write(output)
 
   try:
-    _run_node([node_modules.PathToCrisper(),
-             '--source', tmp.name,
-             '--script-in-head', 'false',
-             '--html', html_out_path,
-             '--js', js_out_path])
+    node.RunNode([node_modules.PathToCrisper(),
+                 '--source', tmp.name,
+                 '--script-in-head', 'false',
+                 '--html', html_out_path,
+                 '--js', js_out_path])
 
-    _run_node([node_modules.PathToUglifyJs(), js_out_path,
-              '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
-              '--output', js_out_path])
+    node.RunNode([node_modules.PathToUglifyJs(), js_out_path,
+                  '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
+                  '--output', js_out_path])
   finally:
     os.remove(tmp.name)
-
-
-def _css_build(out_folder, files):
-  out_path = os.path.join(_CWD, out_folder)
-  paths = [os.path.join(out_path, f) for f in files]
-
-  _run_node([node_modules.PathToPolymerCssBuild()] + paths)
 
 
 def main(argv):
@@ -230,7 +209,6 @@ def main(argv):
     vulcanize_input_folder = output_folder
 
   _vulcanize(vulcanize_input_folder, args)
-  _css_build(args.out_folder, files=[args.html_out_file])
 
   _update_dep_file(vulcanize_input_folder, args)
 

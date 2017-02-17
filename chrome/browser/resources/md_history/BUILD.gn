@@ -1,9 +1,12 @@
 import("../vulcanize.gni")
 
+app_unbuilt = "app.vulcanized.unbuilt.html"
+lazy_load_unbuilt = "lazy_load.vulcanized.unbuilt.html"
+
 vulcanize("vulcanize_app") {
   host = "history"
   html_in_file = "app.html"
-  html_out_file = "app.vulcanized.html"
+  html_out_file = app_unbuilt
 
   input = rebase_path(".", root_build_dir)
   js_out_file = "app.crisper.js"
@@ -19,7 +22,7 @@ vulcanize("vulcanize_app") {
 vulcanize("vulcanize_lazy_load") {
   host = "history"
   html_in_file = "lazy_load.html"
-  html_out_file = "lazy_load.vulcanized.html"
+  html_out_file = lazy_load_unbuilt
 
   input = rebase_path(".", root_build_dir)
   js_out_file = "lazy_load.crisper.js"
@@ -30,4 +33,19 @@ vulcanize("vulcanize_lazy_load") {
   ]
 
   deps = []
+}
+
+polymer_css_build("build") {
+  input_files = [
+    app_unbuilt,
+    lazy_load_unbuilt,
+  ]
+  output_files = [
+    "app.vulcanized.html",
+    "lazy_load.vulcanized.html",
+  ]
+  deps = [
+    ":vulcanize_app",
+    ":vulcanize_lazy_load",
+  ]
 }
