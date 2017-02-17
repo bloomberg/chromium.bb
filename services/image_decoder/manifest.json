@@ -6,7 +6,9 @@
       "provides": {
         "decode": [ "image_decoder::mojom::ImageDecoder" ]
       },
-      "requires": {}
+      "requires": {
+        "service_manager": [ "service_manager:all_users" ]
+      }
     }
   }
 }
