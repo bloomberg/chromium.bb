@@ -305,14 +305,15 @@ class GitWrapper(SCMWrapper):
       # actually in a broken state here. The index will have both 'a' and 'A',
       # but only one of them will exist on the disk. To progress, we delete
       # everything that status thinks is modified.
-      for line in self._Capture(['status', '--porcelain']).splitlines():
+      output = self._Capture(['status', '--porcelain'], strip=False)
+      for line in output.splitlines():
         # --porcelain (v1) looks like:
         # XY filename
         try:
           filename = line[3:]
           self.Print('_____ Deleting residual after reset: %r.' % filename)
           gclient_utils.rm_file_or_tree(
-            os.path.join(self.checkout_path, line[3:]))
+            os.path.join(self.checkout_path, filename))
         except OSError:
           pass
 
@@ -1120,8 +1121,12 @@ class GitWrapper(SCMWrapper):
   def _Capture(self, args, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stderr', subprocess2.PIPE)
+    strip = kwargs.pop('strip', True)
     env = scm.GIT.ApplyEnvVars(kwargs)
-    return subprocess2.check_output(['git'] + args, env=env, **kwargs).strip()
+    ret = subprocess2.check_output(['git'] + args, env=env, **kwargs)
+    if strip:
+      ret = ret.strip()
+    return ret
 
   def _Checkout(self, options, ref, force=False, quiet=None):
     """Performs a 'git-checkout' operation.
