@@ -105,10 +105,6 @@ suite('settings-fingerprint-list', function() {
     return {model: {index: index, item: opt_label || ''}};
   }
 
-  suiteSetup(function() {
-    return PolymerTest.importHtml('chrome://md-settings/i18n_setup.html');
-  });
-
   setup(function() {
     browserProxy = new TestFingerprintBrowserProxy();
     settings.FingerprintBrowserProxyImpl.instance_ = browserProxy;
