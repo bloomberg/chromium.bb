@@ -1847,8 +1847,13 @@ crbug.com/685778 virtual/mojo-loading/http/tests/dom/promise-rejection-events.ht
 crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
 
 # 2017-02-14: These directories were just imported but expectations and baselines haven't been set yet.
-crbug.com/692105 external/wpt/referrer-policy [ Skip ]
 crbug.com/692105 external/wpt/mixed-content [ Skip ]
+
+# These policies are not implemented yet.
+crbug.com/627968 external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/ [ Skip ]
+crbug.com/627968 external/wpt/referrer-policy/same-origin/ [ Skip ]
+crbug.com/627968 external/wpt/referrer-policy/strict-origin/ [ Skip ]
+crbug.com/627968 external/wpt/referrer-policy/strict-origin-when-cross-origin/ [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
@@ -1909,6 +1914,8 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue/white-space_pre-wrap_wrapped.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues_wrapped.html [ Failure ]
+crbug.com/626703 external/wpt/referrer-policy/generic/subresource-test/image-decoding.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/generic/unsupported-csp-referrer-directive.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.dedicatedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.serviceworker.https.html [ Timeout ]
