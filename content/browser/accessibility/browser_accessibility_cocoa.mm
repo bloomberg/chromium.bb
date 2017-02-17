@@ -2217,6 +2217,54 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     return CreateTextMarker(position->CreatePreviousWordStartPosition());
   }
 
+  if ([attribute isEqualToString:@"AXTextMarkerRangeForLine"]) {
+    AXPlatformPositionInstance position =
+        CreatePositionFromTextMarker(parameter);
+    if (position->IsNullPosition())
+      return nil;
+
+    AXPlatformPositionInstance startPosition =
+        position->CreatePreviousLineStartPosition();
+    AXPlatformPositionInstance endPosition =
+        position->CreateNextLineEndPosition();
+    AXPlatformRange range(std::move(startPosition), std::move(endPosition));
+    return CreateTextMarkerRange(std::move(range));
+  }
+
+  if ([attribute isEqualToString:@"AXLeftLineTextMarkerRangeForTextMarker"]) {
+    AXPlatformPositionInstance endPosition =
+        CreatePositionFromTextMarker(parameter);
+    if (endPosition->IsNullPosition())
+      return nil;
+
+    AXPlatformPositionInstance startLinePosition =
+        endPosition->CreatePreviousLineStartPosition();
+    AXPlatformPositionInstance endLinePosition =
+        endPosition->CreatePreviousLineEndPosition();
+    AXPlatformPositionInstance startPosition =
+        *startLinePosition <= *endLinePosition ? std::move(endLinePosition)
+                                               : std::move(startLinePosition);
+    AXPlatformRange range(std::move(startPosition), std::move(endPosition));
+    return CreateTextMarkerRange(std::move(range));
+  }
+
+  if ([attribute isEqualToString:@"AXRightLineTextMarkerRangeForTextMarker"]) {
+    AXPlatformPositionInstance startPosition =
+        CreatePositionFromTextMarker(parameter);
+    if (startPosition->IsNullPosition())
+      return nil;
+
+    AXPlatformPositionInstance startLinePosition =
+        startPosition->CreateNextLineStartPosition();
+    AXPlatformPositionInstance endLinePosition =
+        startPosition->CreateNextLineEndPosition();
+    AXPlatformPositionInstance endPosition =
+        *startLinePosition <= *endLinePosition ? std::move(startLinePosition)
+                                               : std::move(endLinePosition);
+    AXPlatformRange range(std::move(startPosition), std::move(endPosition));
+    return CreateTextMarkerRange(std::move(range));
+  }
+
   if ([attribute isEqualToString:@"AXNextLineEndTextMarkerForTextMarker"]) {
     AXPlatformPositionInstance position =
         CreatePositionFromTextMarker(parameter);
