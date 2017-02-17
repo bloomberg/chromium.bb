@@ -37,7 +37,9 @@ _ARMEABI_SUBDIR = 'armeabi'
 _RES_SUBDIR = 'extracted-res'
 
 _DEFAULT_TARGETS = [
-    # TODO(agrieve): Requires alternate android.jar to compile.
+    # TODO(agrieve): .build_config seem not quite right for this target
+    # because it has resources as deps of android_apk() rather than using an
+    #  android_library() intermediate target.
     # '//android_webview:system_webview_apk',
     '//android_webview/test:android_webview_apk',
     '//android_webview/test:android_webview_test_apk',
@@ -458,6 +460,10 @@ def _GenerateGradleFile(entry, generator, build_vars, jinja_processor):
       build_vars['android_sdk_build_tools_version'])
   variables['compile_sdk_version'] = build_vars['android_sdk_version']
   variables['main'] = generator.Generate(entry)
+  bootclasspath = gradle.get('bootclasspath')
+  if bootclasspath:
+    # Must use absolute path here.
+    variables['bootclasspath'] = _RebasePath(bootclasspath)
   if entry.android_test_entry:
     variables['android_test'] = generator.Generate(
         entry.android_test_entry)
