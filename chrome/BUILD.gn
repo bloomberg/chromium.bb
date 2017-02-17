@@ -1338,19 +1338,25 @@ group("resources") {
 }
 
 group("extra_resources") {
+  # Deps should be same as those in chrome_extra_paks() within chrome_paks.gni.
   public_deps = [
-    "//chrome/browser/resources:component_extension_resources",
     "//chrome/browser/resources:invalidations_resources",
     "//chrome/browser/resources:net_internals_resources",
-    "//chrome/browser/resources:options_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",
     "//chrome/browser/resources:quota_internals_resources",
-    "//chrome/browser/resources:settings_resources",
     "//chrome/browser/resources:task_scheduler_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
     "//chrome/browser/resources:webapks_ui_resources",
   ]
+
+  if (!is_android && !is_ios) {
+    public_deps += [
+      "//chrome/browser/resources:component_extension_resources",
+      "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources:settings_resources",
+    ]
+  }
 
   if (is_chromeos) {
     public_deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
@@ -1426,14 +1432,16 @@ chrome_paks("packed_resources") {
 
 repack("browser_tests_pak") {
   sources = [
-    "$root_gen_dir/chrome/options_test_resources.pak",
     "$root_gen_dir/chrome/webui_test_resources.pak",
   ]
   output = "$root_out_dir/browser_tests.pak"
   deps = [
-    "//chrome/browser/resources:options_test_resources",
     "//chrome/test/data:webui_test_resources",
   ]
+  if (!is_android && !is_ios) {
+    sources += [ "$root_gen_dir/chrome/options_test_resources.pak" ]
+    deps += [ "//chrome/browser/resources:options_test_resources" ]
+  }
 }
 
 group("strings") {

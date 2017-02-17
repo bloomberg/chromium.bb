@@ -1381,7 +1381,6 @@ split_static_library("browser") {
     "//chrome/browser/devtools",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
-    "//chrome/browser/resources:component_extension_resources",
     "//chrome/browser/ssl:proto",
     "//chrome/browser/ui",
     "//chrome/common/net",
@@ -1604,6 +1603,7 @@ split_static_library("browser") {
   } else {
     deps += [
       "//chrome/app/vector_icons",
+      "//chrome/browser/resources:component_extension_resources",
       "//net:net",
       "//ui/vector_icons",
     ]
