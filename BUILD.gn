@@ -931,6 +931,7 @@ if (!is_ios) {
     testonly = true
     data_deps = [
       "//content/shell:content_shell",
+      "//third_party/mesa:osmesa",
       "//tools/imagediff",
     ]
 
