@@ -61,6 +61,8 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   content_view->SetLayoutManager(layout);
 
+  content_view->AddChildView(CreateHeaderView().release());
+
   // Create an input label/textfield for each field definition.
   std::vector<EditorField> fields = GetFieldDefinitions();
   for (const auto& field : fields) {

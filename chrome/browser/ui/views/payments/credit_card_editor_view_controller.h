@@ -24,6 +24,7 @@ class CreditCardEditorViewController : public EditorViewController {
   ~CreditCardEditorViewController() override;
 
   // EditorViewController:
+  std::unique_ptr<views::View> CreateHeaderView() override;
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(

@@ -16,6 +16,7 @@ class AutofillProfile;
 
 namespace views {
 class Border;
+class ImageView;
 class VectorIconButtonDelegate;
 class View;
 }
@@ -48,6 +49,11 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,
     const base::string16& title,
     views::VectorIconButtonDelegate* delegate);
+
+// Returns a card image view for the given |card_type|. Includes a rounded rect
+// border. Callers need to set the size of the resulting ImageView.
+std::unique_ptr<views::ImageView> CreateCardIconView(
+    const std::string& card_type);
 
 // Represents formatting options for each of the different contexts in which an
 // Address label may be displayed.

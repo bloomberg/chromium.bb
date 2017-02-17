@@ -12,10 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/browser/ui/views/payments/preselected_combobox_model.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -23,8 +25,14 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/payment_request.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/view.h"
 
 namespace payments {
 
@@ -72,6 +80,59 @@ CreditCardEditorViewController::CreditCardEditorViewController(
     : EditorViewController(request, dialog) {}
 
 CreditCardEditorViewController::~CreditCardEditorViewController() {}
+
+// Creates the "Cards accepted" view with a row of icons at the top of the
+// credit card editor.
+// +----------------------------------------------+
+// | Cards Accepted                               |
+// |                                              |
+// | | VISA | | MC | | AMEX |                     |
+// +----------------------------------------------+
+std::unique_ptr<views::View>
+CreditCardEditorViewController::CreateHeaderView() {
+  std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
+
+  // 9dp is required between the first and second row.
+  constexpr int kRowVerticalInset = 9;
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, payments::kPaymentRequestRowHorizontalInsets,
+      payments::kPaymentRequestRowVerticalInsets, kRowVerticalInset);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  view->SetLayoutManager(layout);
+
+  // "Cards accepted" label is "disabled" grey.
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL));
+  label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor));
+  label->SetEnabled(false);
+  view->AddChildView(label.release());
+
+  // 8dp padding is required between icons.
+  constexpr int kPaddingBetweenCardIcons = 8;
+  std::unique_ptr<views::View> icons_row = base::MakeUnique<views::View>();
+  views::BoxLayout* icons_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, kPaddingBetweenCardIcons);
+  icons_row->SetLayoutManager(icons_layout);
+
+  constexpr gfx::Size kCardIconSize = gfx::Size(30, 18);
+  for (const std::string& supported_network :
+       request()->supported_card_networks()) {
+    const std::string autofill_card_type =
+        autofill::data_util::GetCardTypeForBasicCardPaymentType(
+            supported_network);
+    std::unique_ptr<views::ImageView> card_icon_view =
+        CreateCardIconView(autofill_card_type);
+    card_icon_view->SetImageSize(kCardIconSize);
+
+    icons_row->AddChildView(card_icon_view.release());
+  }
+  view->AddChildView(icons_row.release());
+
+  return view;
+}
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   return std::vector<EditorField>{

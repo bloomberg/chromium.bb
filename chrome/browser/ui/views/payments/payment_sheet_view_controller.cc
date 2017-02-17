@@ -29,12 +29,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -325,18 +323,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
             autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
             g_browser_process->GetApplicationLocale())));
 
-    card_icon_view = base::MakeUnique<views::ImageView>();
-    card_icon_view->set_interactive(false);
-    card_icon_view->SetImage(
-      ResourceBundle::GetSharedInstance()
-          .GetImageNamed(autofill::data_util::GetPaymentRequestData(
-              selected_card->type()).icon_resource_id)
-          .AsImageSkia());
-    card_icon_view->SetBorder(
-        views::CreateRoundedRectBorder(1, 3, SK_ColorLTGRAY));
-
-    constexpr gfx::Size kCardIconSize = gfx::Size(32, 20);
-    card_icon_view->SetImageSize(kCardIconSize);
+    card_icon_view = CreateCardIconView(selected_card->type());
+    card_icon_view->SetImageSize(gfx::Size(32, 20));
   }
 
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(

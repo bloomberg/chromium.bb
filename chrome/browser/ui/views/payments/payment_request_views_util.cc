@@ -10,10 +10,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -23,6 +26,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/vector_icon_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -112,6 +116,24 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   layout->AddView(title_label);
 
   return container;
+}
+
+std::unique_ptr<views::ImageView> CreateCardIconView(
+    const std::string& card_type) {
+  std::unique_ptr<views::ImageView> card_icon_view =
+      base::MakeUnique<views::ImageView>();
+  card_icon_view->set_interactive(false);
+  card_icon_view->SetImage(
+      ResourceBundle::GetSharedInstance()
+          .GetImageNamed(autofill::data_util::GetPaymentRequestData(card_type)
+                             .icon_resource_id)
+          .AsImageSkia());
+  card_icon_view->SetTooltipText(
+      autofill::CreditCard::TypeForDisplay(card_type));
+  card_icon_view->SetBorder(views::CreateRoundedRectBorder(
+      1, 3, card_icon_view->GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  return card_icon_view;
 }
 
 std::unique_ptr<views::View> GetShippingAddressLabel(

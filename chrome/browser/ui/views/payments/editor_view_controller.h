@@ -18,6 +18,7 @@
 #include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view.h"
 
 namespace ui {
 class ComboboxModel;
@@ -82,6 +83,7 @@ class EditorViewController : public PaymentRequestSheetController,
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
 
+  virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   // Validates the data entered and attempts to save; returns true on success.
