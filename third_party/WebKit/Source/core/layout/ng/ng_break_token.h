@@ -10,6 +10,27 @@
 
 namespace blink {
 
+class NGLayoutInputNode;
+
+// A break token is a continuation token for layout. A single layout input node
+// can have multiple fragments asssociated with it.
+//
+// Each fragment has a break token which can be used to determine if a layout
+// input node has finished producing fragments (aka. is "exhausted" of
+// fragments), and optionally used to produce the next fragment in the chain.
+//
+// See CSS Fragmentation (https://drafts.csswg.org/css-break/) for a detailed
+// description of different types of breaks which can occur in CSS.
+//
+// Each layout algorithm which can fragment, e.g. block-flow can optionally
+// accept a break token. For example:
+//
+// NGLayoutInputNode* node = ...;
+// NGPhysicalFragment* fragment = node->Layout(space);
+// DCHECK(!fragment->BreakToken()->IsFinished());
+// NGPhysicalFragment* fragment2 = node->Layout(space, fragment->BreakToken());
+//
+// The break token should encapsulate enough information to "resume" the layout.
 class CORE_EXPORT NGBreakToken
     : public GarbageCollectedFinalized<NGBreakToken> {
  public:
@@ -18,13 +39,24 @@ class CORE_EXPORT NGBreakToken
   enum NGBreakTokenType { kBlockBreakToken, kTextBreakToken };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  // Whether the layout node cannot produce any more fragments.
+  bool IsFinished() const { return is_finished_; }
+
+  // Returns the node associated with this break token. A break token cannot be
+  // used with any other node.
+  NGLayoutInputNode* InputNode() const { return node_; }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(node_); }
 
  protected:
-  NGBreakToken(NGBreakTokenType type) : type_(type) {}
+  NGBreakToken(NGBreakTokenType type, bool is_finished, NGLayoutInputNode* node)
+      : type_(type), is_finished_(is_finished), node_(node) {}
 
  private:
   unsigned type_ : 1;
+  unsigned is_finished_ : 1;
+
+  Member<NGLayoutInputNode> node_;
 };
 
 }  // namespace blink
