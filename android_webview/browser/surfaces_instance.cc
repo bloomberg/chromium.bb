@@ -169,7 +169,9 @@ void SurfacesInstance::DidReceiveCompositorFrameAck() {}
 
 void SurfacesInstance::OnBeginFrame(const cc::BeginFrameArgs& args) {}
 
-void SurfacesInstance::WillDrawSurface() {}
+void SurfacesInstance::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {}
 
 void SurfacesInstance::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {

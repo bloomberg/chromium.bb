@@ -60,7 +60,8 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface() override;
+  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
 
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;

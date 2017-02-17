@@ -410,7 +410,9 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
   }
 }
 
-void OffscreenCanvasFrameDispatcherImpl::WillDrawSurface() {
+void OffscreenCanvasFrameDispatcherImpl::WillDrawSurface(
+    const cc::LocalSurfaceId& localSurfaceId,
+    ::gfx::mojom::blink::RectPtr damageRect) {
   // TODO(fsamuel, staraz): Implement this.
 }
 

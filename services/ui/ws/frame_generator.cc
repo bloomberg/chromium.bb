@@ -106,7 +106,8 @@ void FrameGenerator::ReclaimResources(
   DCHECK(resources.empty());
 }
 
-void FrameGenerator::WillDrawSurface() {
+void FrameGenerator::WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                                     const gfx::Rect& damage_rect) {
   // TODO(fsamuel, staraz): Implement this.
 }
 

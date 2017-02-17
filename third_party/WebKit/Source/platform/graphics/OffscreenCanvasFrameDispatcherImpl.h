@@ -43,7 +43,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void DidReceiveCompositorFrameAck() final;
   void OnBeginFrame(const cc::BeginFrameArgs&) final;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) final;
-  void WillDrawSurface() final;
+  void WillDrawSurface(const cc::LocalSurfaceId&,
+                       ::gfx::mojom::blink::RectPtr damageRect) final;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {

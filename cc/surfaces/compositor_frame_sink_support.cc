@@ -216,7 +216,7 @@ void CompositorFrameSinkSupport::WillDrawSurface(
     const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   if (client_)
-    client_->WillDrawSurface();
+    client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {

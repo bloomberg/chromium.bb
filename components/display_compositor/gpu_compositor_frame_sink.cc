@@ -76,9 +76,11 @@ void GpuCompositorFrameSink::ReclaimResources(
     client_->ReclaimResources(resources);
 }
 
-void GpuCompositorFrameSink::WillDrawSurface() {
+void GpuCompositorFrameSink::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {
   if (client_)
-    client_->WillDrawSurface();
+    client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
 void GpuCompositorFrameSink::OnClientConnectionLost() {

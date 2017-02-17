@@ -165,7 +165,8 @@ class CompositorFrameSinkSupportTest : public testing::Test,
   void ReclaimResources(const ReturnedResourceArray& resources) override {
     last_returned_resources_ = resources;
   }
-  void WillDrawSurface() override {}
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override {}
 
  private:
   SurfaceManager surface_manager_;

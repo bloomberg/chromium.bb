@@ -471,6 +471,8 @@ void SynchronousCompositorFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void SynchronousCompositorFrameSink::WillDrawSurface() {}
+void SynchronousCompositorFrameSink::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {}
 
 }  // namespace content

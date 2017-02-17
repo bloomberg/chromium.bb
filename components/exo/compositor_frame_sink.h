@@ -38,7 +38,8 @@ class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface() override;
+  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
 
  private:
   cc::CompositorFrameSinkSupport support_;

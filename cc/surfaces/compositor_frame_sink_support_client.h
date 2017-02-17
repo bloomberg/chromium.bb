@@ -7,7 +7,13 @@
 
 #include "cc/resources/returned_resource.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace cc {
+
+class LocalSurfaceId;
 
 struct BeginFrameArgs;
 
@@ -29,7 +35,8 @@ class CompositorFrameSinkSupportClient {
   virtual void ReclaimResources(const ReturnedResourceArray& resources) = 0;
 
   // Called when surface is being scheduled for a draw.
-  virtual void WillDrawSurface() = 0;
+  virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                               const gfx::Rect& damage_rect) = 0;
 
  protected:
   virtual ~CompositorFrameSinkSupportClient() {}

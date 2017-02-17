@@ -116,7 +116,9 @@ void WindowCompositorFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void WindowCompositorFrameSink::WillDrawSurface() {
+void WindowCompositorFrameSink::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {
   // TODO(fsamuel, staraz): Implement this.
 }
 

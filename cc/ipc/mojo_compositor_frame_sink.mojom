@@ -11,6 +11,7 @@ import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_sequence.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // A MojoCompositorFrameSink is an interface for receiving CompositorFrame
 // structs. A CompositorFrame contains the complete output meant for display.
@@ -67,7 +68,7 @@ interface MojoCompositorFrameSinkClient {
   ReclaimResources(ReturnedResourceArray resources);
 
   // Called when surface is being scheduled for a draw.
-  WillDrawSurface();
+  WillDrawSurface(LocalSurfaceId local_surface_id, gfx.mojom.Rect damage_rect);
 };
 
 // MojoCompositorFrameSinkPrivate is used by the display compositor host to set
