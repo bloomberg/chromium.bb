@@ -291,16 +291,6 @@ TEST_F(FFmpegDemuxerTest, Initialize_OpenFails) {
   event.RunAndWaitForStatus(DEMUXER_ERROR_COULD_NOT_OPEN);
 }
 
-// TODO(acolwell): Uncomment this test when we discover a file that passes
-// avformat_open_input(), but has avformat_find_stream_info() fail.
-//
-//TEST_F(FFmpegDemuxerTest, Initialize_ParseFails) {
-//  ("find_stream_info_fail.webm");
-//  demuxer_->Initialize(
-//      &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_PARSE));
-//  base::RunLoop().RunUntilIdle();
-//}
-
 TEST_F(FFmpegDemuxerTest, Initialize_NoStreams) {
   // Open a file with no streams whatsoever.
   CreateDemuxer("no_streams.webm");
@@ -631,6 +621,13 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
     demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
     event.RunAndWaitForStatus(PIPELINE_OK);
   }
+}
+
+TEST_F(FFmpegDemuxerTest, Read_InvalidNegativeTimestamp) {
+  CreateDemuxer("negative_ts.flac");
+  InitializeDemuxer();
+  EXPECT_CALL(host_, OnDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE));
+  ReadUntilEndOfStream(GetStream(DemuxerStream::AUDIO));
 }
 
 // TODO(dalecurtis): Test is disabled since FFmpeg does not currently guarantee

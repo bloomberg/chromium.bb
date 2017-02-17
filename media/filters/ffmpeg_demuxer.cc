@@ -498,6 +498,13 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   buffer->set_timestamp(stream_timestamp - start_time);
 
+  // Only allow negative timestamps past if we know they'll be fixed up by the
+  // code paths below; otherwise they should be treated as a parse error.
+  if (!fixup_negative_timestamps_ && buffer->timestamp() < base::TimeDelta()) {
+    demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
+    return;
+  }
+
   // If enabled, and no codec delay is present, mark audio packets with
   // negative timestamps for post-decode discard.
   if (fixup_negative_timestamps_ && is_audio &&
@@ -552,7 +559,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
 
     // The demuxer should always output positive timestamps.
-    DCHECK(buffer->timestamp() >= base::TimeDelta());
+    DCHECK_GE(buffer->timestamp(), base::TimeDelta());
 
     if (last_packet_timestamp_ < buffer->timestamp()) {
       buffered_ranges_.Add(last_packet_timestamp_, buffer->timestamp());
