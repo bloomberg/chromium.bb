@@ -204,7 +204,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void textFieldDataListChanged(HTMLInputElement&) override;
   void ajaxSucceeded(LocalFrame*) override;
 
-  void resetInputMethod() override;
   void showVirtualKeyboardOnElementFocus() override;
 
   void registerViewportLayers() const override;

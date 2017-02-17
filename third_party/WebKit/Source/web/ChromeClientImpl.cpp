@@ -1067,11 +1067,6 @@ void ChromeClientImpl::didAssociateFormControlsAfterLoad(LocalFrame* frame) {
     webframe->autofillClient()->didAssociateFormControlsDynamically();
 }
 
-void ChromeClientImpl::resetInputMethod() {
-  if (m_webView->client())
-    m_webView->client()->resetInputMethod();
-}
-
 void ChromeClientImpl::showVirtualKeyboardOnElementFocus() {
   if (m_webView->client())
     m_webView->client()->showVirtualKeyboardOnElementFocus();

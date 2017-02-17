@@ -1055,6 +1055,14 @@ void RenderWidget::ShowVirtualKeyboard() {
   UpdateTextInputStateInternal(true, false);
 }
 
+void RenderWidget::ClearTextInputState() {
+  text_input_info_ = blink::WebTextInputInfo();
+  text_input_type_ = ui::TextInputType::TEXT_INPUT_TYPE_NONE;
+  text_input_mode_ = ui::TextInputMode::TEXT_INPUT_MODE_DEFAULT;
+  can_compose_inline_ = false;
+  text_input_flags_ = 0;
+}
+
 void RenderWidget::UpdateTextInputState() {
   UpdateTextInputStateInternal(false, false);
 }
@@ -2128,13 +2136,6 @@ blink::WebScreenInfo RenderWidget::screenInfo() {
   }
   web_screen_info.orientationAngle = screen_info_.orientation_angle;
   return web_screen_info;
-}
-
-void RenderWidget::resetInputMethod() {
-  ImeEventGuard guard(this);
-  Send(new InputHostMsg_ImeCancelComposition(routing_id()));
-
-  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 #if defined(OS_ANDROID)

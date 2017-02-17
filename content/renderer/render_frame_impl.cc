@@ -5112,6 +5112,9 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
   }
   Send(new FrameHostMsg_FocusedNodeChanged(routing_id_, is_editable,
                                            node_bounds));
+  // Ensures that further text input state can be sent even when previously
+  // focused input and the newly focused input share the exact same state.
+  GetRenderWidget()->ClearTextInputState();
 
   for (auto& observer : observers_)
     observer.FocusedNodeChanged(node);

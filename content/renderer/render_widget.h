@@ -268,6 +268,7 @@ class CONTENT_EXPORT RenderWidget
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void ShowVirtualKeyboard() override;
   void UpdateTextInputState() override;
+  void ClearTextInputState() override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
@@ -292,7 +293,6 @@ class CONTENT_EXPORT RenderWidget
                       blink::WebTextDirection hint) override;
   void setWindowRect(const blink::WebRect&) override;
   blink::WebScreenInfo screenInfo() override;
-  void resetInputMethod() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void didOverscroll(const blink::WebFloatSize& overscrollDelta,

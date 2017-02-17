@@ -1897,10 +1897,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             boolean focusedNodeIsPassword = (textInputType == TextInputType.PASSWORD);
 
             mImeAdapter.attach(nativeImeAdapterAndroid);
-            mImeAdapter.updateKeyboardVisibility(
-                    textInputType, textInputFlags, textInputMode, showImeIfNeeded);
-            mImeAdapter.updateState(text, selectionStart, selectionEnd, compositionStart,
-                    compositionEnd, replyToRequest);
+            mImeAdapter.updateState(textInputType, textInputFlags, textInputMode, showImeIfNeeded,
+                    text, selectionStart, selectionEnd, compositionStart, compositionEnd,
+                    replyToRequest);
 
             boolean editableToggled = (focusedNodeEditable != isFocusedNodeEditable());
             mSelectionPopupController.updateSelectionState(focusedNodeEditable,

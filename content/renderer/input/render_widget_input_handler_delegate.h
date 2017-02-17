@@ -72,6 +72,9 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   // Send an update of text input state to the browser process.
   virtual void UpdateTextInputState() = 0;
 
+  // Clear the text input state.
+  virtual void ClearTextInputState() = 0;
+
   // Notifies that a gesture event is about to be handled.
   // Returns true if no further handling is needed. In that case, the event
   // won't be sent to WebKit.

@@ -116,6 +116,7 @@ public class ImeAdapter {
     private String mLastText;
     private int mLastCompositionStart;
     private int mLastCompositionEnd;
+    private boolean mRestartInputOnNextStateUpdate;
 
     /**
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
@@ -255,46 +256,13 @@ public class ImeAdapter {
     }
 
     /**
-     * Shows or hides the keyboard based on passed parameters.
+     * Updates internal representation of the text being edited and its selection and composition
+     * properties.
+     *
      * @param textInputType Text input type for the currently focused field in renderer.
      * @param textInputFlags Text input flags.
      * @param textInputMode Text input mode.
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
-     */
-    public void updateKeyboardVisibility(
-            int textInputType, int textInputFlags, int textInputMode, boolean showIfNeeded) {
-        if (DEBUG_LOGS) {
-            Log.w(TAG, "updateKeyboardVisibility: type [%d->%d], flags [%d], show [%b], ",
-                    mTextInputType, textInputType, textInputFlags, showIfNeeded);
-        }
-        boolean needsRestart = false;
-        mTextInputFlags = textInputFlags;
-        if (mTextInputMode != textInputMode) {
-            mTextInputMode = textInputMode;
-            needsRestart = true;
-        }
-
-        if (mTextInputType != textInputType) {
-            mTextInputType = textInputType;
-            // No need to restart if we are going to hide anyways.
-            if (textInputType != TextInputType.NONE) needsRestart = true;
-        }
-
-        if (needsRestart) restartInput();
-
-        // There is no API for us to get notified of user's dismissal of keyboard.
-        // Therefore, we should try to show keyboard even when text input type hasn't changed.
-        if (textInputType != TextInputType.NONE) {
-            if (showIfNeeded) showSoftKeyboard();
-        } else {
-            hideKeyboard();
-        }
-    }
-
-    /**
-     * Updates internal representation of the text being edited and its selection and composition
-     * properties.
-     *
      * @param text The String contents of the field being edited.
      * @param selectionStart The character offset of the selection start, or the caret position if
      *                       there is no selection.
@@ -306,8 +274,26 @@ public class ImeAdapter {
      *                       selection.
      * @param replyToRequest True when the update was requested by IME.
      */
-    public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
-            int compositionEnd, boolean replyToRequest) {
+    public void updateState(int textInputType, int textInputFlags, int textInputMode,
+            boolean showIfNeeded, String text, int selectionStart, int selectionEnd,
+            int compositionStart, int compositionEnd, boolean replyToRequest) {
+        Log.w(TAG, "updateState: type [%d->%d], flags [%d], show [%b], ", mTextInputType,
+                textInputType, textInputFlags, showIfNeeded);
+        boolean needsRestart = false;
+        if (mRestartInputOnNextStateUpdate) {
+            needsRestart = true;
+            mRestartInputOnNextStateUpdate = false;
+        }
+
+        mTextInputFlags = textInputFlags;
+        if (mTextInputMode != textInputMode) {
+            mTextInputMode = textInputMode;
+            needsRestart = true;
+        }
+        if (mTextInputType != textInputType) {
+            mTextInputType = textInputType;
+            needsRestart = true;
+        }
         if (mCursorAnchorInfoController != null && (!TextUtils.equals(mLastText, text)
                 || mLastSelectionStart != selectionStart || mLastSelectionEnd != selectionEnd
                 || mLastCompositionStart != compositionStart
@@ -319,6 +305,15 @@ public class ImeAdapter {
         mLastSelectionEnd = selectionEnd;
         mLastCompositionStart = compositionStart;
         mLastCompositionEnd = compositionEnd;
+
+        if (textInputType == TextInputType.NONE) {
+            hideKeyboard();
+        } else {
+            if (needsRestart) restartInput();
+            // There is no API for us to get notified of user's dismissal of keyboard.
+            // Therefore, we should try to show keyboard even when text input type hasn't changed.
+            if (showIfNeeded) showSoftKeyboard();
+        }
 
         if (mInputConnection == null) return;
         boolean singleLine = mTextInputType != TextInputType.TEXT_AREA
@@ -491,6 +486,7 @@ public class ImeAdapter {
         mTextInputType = TextInputType.NONE;
         mTextInputFlags = 0;
         mTextInputMode = WebTextInputMode.kDefault;
+        mRestartInputOnNextStateUpdate = false;
         // This will trigger unblocking if necessary.
         hideKeyboard();
     }
@@ -672,7 +668,7 @@ public class ImeAdapter {
         }
 
         if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
-            restartInput();
+            mRestartInputOnNextStateUpdate = true;
         }
     }
 
