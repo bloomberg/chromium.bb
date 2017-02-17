@@ -1813,6 +1813,21 @@
             ]
         }
     ],
+    "PhysicalWebEnabled": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PhysicalWebEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "PointerEvent": [
         {
             "platforms": [
