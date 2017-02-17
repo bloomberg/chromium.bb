@@ -219,20 +219,22 @@ void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-bool HistoryFunction::ValidateUrl(const std::string& url_string, GURL* url) {
+bool HistoryFunction::ValidateUrl(const std::string& url_string,
+                                  GURL* url,
+                                  std::string* error) {
   GURL temp_url(url_string);
   if (!temp_url.is_valid()) {
-    error_ = kInvalidUrlError;
+    *error = kInvalidUrlError;
     return false;
   }
   url->Swap(&temp_url);
   return true;
 }
 
-bool HistoryFunction::VerifyDeleteAllowed() {
+bool HistoryFunction::VerifyDeleteAllowed(std::string* error) {
   PrefService* prefs = GetProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
-    error_ = kDeleteProhibitedError;
+    *error = kDeleteProhibitedError;
     return false;
   }
   return true;
@@ -248,38 +250,22 @@ base::Time HistoryFunction::GetTime(double ms_from_epoch) {
       base::Time::UnixEpoch() : base::Time::FromDoubleT(seconds_from_epoch);
 }
 
-HistoryFunctionWithCallback::HistoryFunctionWithCallback() {
+Profile* HistoryFunction::GetProfile() const {
+  return Profile::FromBrowserContext(browser_context());
 }
 
-HistoryFunctionWithCallback::~HistoryFunctionWithCallback() {
-}
+HistoryFunctionWithCallback::HistoryFunctionWithCallback() {}
 
-bool HistoryFunctionWithCallback::RunAsync() {
-  AddRef();  // Balanced in SendAysncRepose() and below.
-  bool retval = RunAsyncImpl();
-  if (false == retval)
-    Release();
-  return retval;
-}
+HistoryFunctionWithCallback::~HistoryFunctionWithCallback() {}
 
-void HistoryFunctionWithCallback::SendAsyncResponse() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&HistoryFunctionWithCallback::SendResponseToCallback, this));
-}
-
-void HistoryFunctionWithCallback::SendResponseToCallback() {
-  SendResponse(true);
-  Release();  // Balanced in RunAsync().
-}
-
-bool HistoryGetVisitsFunction::RunAsyncImpl() {
+ExtensionFunction::ResponseAction HistoryGetVisitsFunction::Run() {
   std::unique_ptr<GetVisits::Params> params(GetVisits::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url;
-  if (!ValidateUrl(params->details.url, &url))
-    return false;
+  std::string error;
+  if (!ValidateUrl(params->details.url, &url, &error))
+    return RespondNow(Error(error));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -288,7 +274,8 @@ bool HistoryGetVisitsFunction::RunAsyncImpl() {
                base::Bind(&HistoryGetVisitsFunction::QueryComplete,
                           base::Unretained(this)),
                &task_tracker_);
-  return true;
+  AddRef();               // Balanced in QueryComplete().
+  return RespondLater();  // QueryComplete() will be called asynchronously.
 }
 
 void HistoryGetVisitsFunction::QueryComplete(
@@ -301,11 +288,11 @@ void HistoryGetVisitsFunction::QueryComplete(
       visit_item_vec.push_back(GetVisitItem(visit));
   }
 
-  results_ = GetVisits::Results::Create(visit_item_vec);
-  SendAsyncResponse();
+  Respond(ArgumentList(GetVisits::Results::Create(visit_item_vec)));
+  Release();  // Balanced in Run().
 }
 
-bool HistorySearchFunction::RunAsyncImpl() {
+ExtensionFunction::ResponseAction HistorySearchFunction::Run() {
   std::unique_ptr<Search::Params> params(Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -330,7 +317,8 @@ bool HistorySearchFunction::RunAsyncImpl() {
                               base::Unretained(this)),
                    &task_tracker_);
 
-  return true;
+  AddRef();               // Balanced in SearchComplete().
+  return RespondLater();  // SearchComplete() will be called asynchronously.
 }
 
 void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
@@ -339,36 +327,37 @@ void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
     for (const history::URLResult* item : *results)
       history_item_vec.push_back(GetHistoryItem(*item));
   }
-  results_ = Search::Results::Create(history_item_vec);
-  SendAsyncResponse();
+  Respond(ArgumentList(Search::Results::Create(history_item_vec)));
+  Release();  // Balanced in Run().
 }
 
-bool HistoryAddUrlFunction::RunAsync() {
+ExtensionFunction::ResponseAction HistoryAddUrlFunction::Run() {
   std::unique_ptr<AddUrl::Params> params(AddUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url;
-  if (!ValidateUrl(params->details.url, &url))
-    return false;
+  std::string error;
+  if (!ValidateUrl(params->details.url, &url, &error))
+    return RespondNow(Error(error));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->AddPage(url, base::Time::Now(), history::SOURCE_EXTENSION);
 
-  SendResponse(true);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HistoryDeleteUrlFunction::RunAsync() {
+ExtensionFunction::ResponseAction HistoryDeleteUrlFunction::Run() {
   std::unique_ptr<DeleteUrl::Params> params(DeleteUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (!VerifyDeleteAllowed())
-    return false;
+  std::string error;
+  if (!VerifyDeleteAllowed(&error))
+    return RespondNow(Error(error));
 
   GURL url;
-  if (!ValidateUrl(params->details.url, &url))
-    return false;
+  if (!ValidateUrl(params->details.url, &url, &error))
+    return RespondNow(Error(error));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -384,17 +373,17 @@ bool HistoryDeleteUrlFunction::RunAsync() {
     activity_log->RemoveURL(url);
   }
 
-  SendResponse(true);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HistoryDeleteRangeFunction::RunAsyncImpl() {
+ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
   std::unique_ptr<DeleteRange::Params> params(
       DeleteRange::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (!VerifyDeleteAllowed())
-    return false;
+  std::string error;
+  if (!VerifyDeleteAllowed(&error))
+    return RespondNow(Error(error));
 
   base::Time start_time = GetTime(params->range.start_time);
   base::Time end_time = GetTime(params->range.end_time);
@@ -418,16 +407,19 @@ bool HistoryDeleteRangeFunction::RunAsyncImpl() {
     activity_log->RemoveURLs(restrict_urls);
   }
 
-  return true;
+  AddRef();               // Balanced in DeleteComplete().
+  return RespondLater();  // DeleteComplete() will be called asynchronously.
 }
 
 void HistoryDeleteRangeFunction::DeleteComplete() {
-  SendAsyncResponse();
+  Respond(NoArguments());
+  Release();  // Balanced in Run().
 }
 
-bool HistoryDeleteAllFunction::RunAsyncImpl() {
-  if (!VerifyDeleteAllowed())
-    return false;
+ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
+  std::string error;
+  if (!VerifyDeleteAllowed(&error))
+    return RespondNow(Error(error));
 
   std::set<GURL> restrict_urls;
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
@@ -448,11 +440,13 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
     activity_log->RemoveURLs(restrict_urls);
   }
 
-  return true;
+  AddRef();               // Balanced in DeleteComplete().
+  return RespondLater();  // DeleteComplete() will be called asynchronously.
 }
 
 void HistoryDeleteAllFunction::DeleteComplete() {
-  SendAsyncResponse();
+  Respond(NoArguments());
+  Release();  // Balanced in Run().
 }
 
 }  // namespace extensions
