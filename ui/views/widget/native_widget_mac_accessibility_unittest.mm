@@ -418,6 +418,31 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   // Make sure the cursor is at the end of the replacement.
   EXPECT_EQ(gfx::Range(front.length() + replacement.length()),
             textfield->GetSelectedRange());
+
+  // Check it's not possible to change the selection range when read-only. Note
+  // that this behavior is inconsistent with Cocoa - selections can be set via
+  // a11y in selectable NSTextfields (unless they are password fields).
+  // https://crbug.com/692362
+  textfield->SetReadOnly(true);
+  EXPECT_FALSE([ax_node accessibilityIsAttributeSettable:
+                            NSAccessibilitySelectedTextRangeAttribute]);
+  textfield->SetReadOnly(false);
+  EXPECT_TRUE([ax_node accessibilityIsAttributeSettable:
+                           NSAccessibilitySelectedTextRangeAttribute]);
+
+  // Change the selection to a valid range within the text.
+  [ax_node accessibilitySetValue:[NSValue valueWithRange:NSMakeRange(2, 5)]
+                    forAttribute:NSAccessibilitySelectedTextRangeAttribute];
+  EXPECT_EQ(gfx::Range(2, 7), textfield->GetSelectedRange());
+  // If the length is longer than the value length, default to the max possible.
+  [ax_node accessibilitySetValue:[NSValue valueWithRange:NSMakeRange(0, 1000)]
+                    forAttribute:NSAccessibilitySelectedTextRangeAttribute];
+  EXPECT_EQ(gfx::Range(0, textfield->text().length()),
+            textfield->GetSelectedRange());
+  // Check just moving the cursor works, too.
+  [ax_node accessibilitySetValue:[NSValue valueWithRange:NSMakeRange(5, 0)]
+                    forAttribute:NSAccessibilitySelectedTextRangeAttribute];
+  EXPECT_EQ(gfx::Range(5, 5), textfield->GetSelectedRange());
 }
 
 // Test performing a 'click' on Views with clickable roles work.
