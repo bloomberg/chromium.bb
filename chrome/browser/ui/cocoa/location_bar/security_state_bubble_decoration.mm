@@ -80,6 +80,8 @@ SecurityStateBubbleDecoration::SecurityStateBubbleDecoration(
   base::scoped_nsobject<NSMutableParagraphStyle> style(
       [[NSMutableParagraphStyle alloc] init]);
   [style setLineBreakMode:NSLineBreakByClipping];
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    [style setAlignment:NSRightTextAlignment];
   [attributes_ setObject:style forKey:NSParagraphStyleAttributeName];
   animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
 }
