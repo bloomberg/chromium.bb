@@ -58,7 +58,6 @@ TARGET_VERSION_MAP = {
 # Enable the Go compiler for these targets.
 TARGET_GO_ENABLED = (
     'x86_64-cros-linux-gnu',
-    'i686-pc-linux-gnu',
     'armv7a-cros-linux-gnueabi',
 )
 CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
