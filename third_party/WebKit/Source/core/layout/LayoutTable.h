@@ -252,9 +252,19 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     m_effectiveColumnPositions[index] = position;
   }
 
-  LayoutTableSection* header() const { return m_head; }
-  LayoutTableSection* footer() const { return m_foot; }
-  LayoutTableSection* firstBody() const { return m_firstBody; }
+  LayoutTableSection* header() const {
+    // TODO(mstensho): We should ideally DCHECK(!needsSectionRecalc()) here, but
+    // we currently cannot, due to crbug.com/693212
+    return m_head;
+  }
+  LayoutTableSection* footer() const {
+    DCHECK(!needsSectionRecalc());
+    return m_foot;
+  }
+  LayoutTableSection* firstBody() const {
+    DCHECK(!needsSectionRecalc());
+    return m_firstBody;
+  }
 
   void setRowOffsetFromRepeatingHeader(LayoutUnit offset) {
     m_rowOffsetFromRepeatingHeader = offset;
@@ -367,6 +377,12 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void setNeedsSectionRecalc() {
     if (documentBeingDestroyed())
       return;
+    // For all we know, sections may have been deleted at this point. Don't
+    // keep pointers dangling around.
+    m_head = nullptr;
+    m_foot = nullptr;
+    m_firstBody = nullptr;
+
     m_needsSectionRecalc = true;
     setNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::TableChanged);
@@ -387,7 +403,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
   void invalidateCollapsedBorders();
 
-  bool hasSections() const { return m_head || m_foot || m_firstBody; }
+  bool hasSections() const { return header() || footer() || firstBody(); }
 
   void recalcSectionsIfNeeded() const {
     if (m_needsSectionRecalc)
