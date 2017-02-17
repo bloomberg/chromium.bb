@@ -1,0 +1,38 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("tabs") {
+  sources = [
+    "web_state_list.h",
+    "web_state_list.mm",
+    "web_state_list_fast_enumeration_helper.h",
+    "web_state_list_fast_enumeration_helper.mm",
+    "web_state_list_observer.h",
+    "web_state_list_observer_bridge.h",
+    "web_state_list_observer_bridge.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/web",
+  ]
+  libs = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "web_state_list_fast_enumeration_helper_unittest.mm",
+    "web_state_list_unittest.mm",
+  ]
+  deps = [
+    ":tabs",
+    "//base",
+    "//ios/web:test_support",
+    "//net",
+    "//testing/gtest",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

@@ -1,5 +1,9 @@
 include_rules = [
-  # Shared code between ios/chrome and ios/clean/chrome must not depend on them.
+  "+ios/web/public",
+  "+net",
+
+  # Code in ios/shared is used by both ios/chrome and ios/clean/chrome, so
+  # forbid circular dependencies.
   "-ios/clean/chrome",
   "-ios/chrome",
 ]
