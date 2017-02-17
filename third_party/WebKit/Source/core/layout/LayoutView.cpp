@@ -21,6 +21,7 @@
 
 #include "core/layout/LayoutView.h"
 
+#include <inttypes.h>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
@@ -38,6 +39,7 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/ViewPaintInvalidator.h"
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Histogram.h"
@@ -48,7 +50,6 @@
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
-#include <inttypes.h>
 
 namespace blink {
 
@@ -226,6 +227,8 @@ void LayoutView::layout() {
   if (!document().paginated())
     setPageLogicalHeight(LayoutUnit());
 
+  // TODO(wangxianzhu): Move this into ViewPaintInvalidator when
+  // rootLayerScrolling is permanently enabled.
   IncludeScrollbarsInRect includeScrollbars =
       RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars
                                                           : ExcludeScrollbars;
@@ -246,8 +249,6 @@ void LayoutView::layout() {
   }
 
   SubtreeLayoutScope layoutScope(*this);
-
-  LayoutRect oldLayoutOverflowRect = layoutOverflowRect();
 
   // Use calcWidth/Height to get the new width/height, since this will take the
   // full page zoom factor into account.
@@ -282,17 +283,6 @@ void LayoutView::layout() {
   LayoutState rootLayoutState(*this);
 
   layoutContent();
-
-  if (layoutOverflowRect() != oldLayoutOverflowRect) {
-    // The document element paints the viewport background, so we need to
-    // invalidate it when layout overflow changes.
-    // FIXME: Improve viewport background styling/invalidation/painting.
-    // crbug.com/475115
-    if (Element* documentElement = document().documentElement()) {
-      if (LayoutObject* rootObject = documentElement->layoutObject())
-        rootObject->setShouldDoFullPaintInvalidation();
-    }
-  }
 
 #if DCHECK_IS_ON()
   checkLayoutState();
@@ -423,6 +413,16 @@ void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects,
   // explicitly).
   rects.push_back(
       LayoutRect(LayoutPoint::zero(), LayoutSize(frameView()->contentsSize())));
+}
+
+PaintInvalidationReason LayoutView::invalidatePaintIfNeeded(
+    const PaintInvalidationState& paintInvalidationState) {
+  return LayoutBlockFlow::invalidatePaintIfNeeded(paintInvalidationState);
+}
+
+PaintInvalidationReason LayoutView::invalidatePaintIfNeeded(
+    const PaintInvalidatorContext& context) const {
+  return ViewPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
 void LayoutView::paint(const PaintInfo& paintInfo,

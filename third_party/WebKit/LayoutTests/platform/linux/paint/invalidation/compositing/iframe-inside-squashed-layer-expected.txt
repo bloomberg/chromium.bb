@@ -30,16 +30,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 500, 300, 36],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 500, 285, 150],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 508, 284, 20],
           "reason": "forced by layout"
@@ -74,10 +64,6 @@
     {
       "object": "LayoutView #document",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",

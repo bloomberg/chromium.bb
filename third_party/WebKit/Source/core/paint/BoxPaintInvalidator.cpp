@@ -123,7 +123,8 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
       previousContentBoxRect() != m_box.contentBoxRect())
     return PaintInvalidationContentBoxChange;
 
-  LayoutSize oldBorderBoxSize = previousBorderBoxSize();
+  LayoutSize oldBorderBoxSize =
+      previousBorderBoxSize(m_box, m_context.oldVisualRect.size());
   LayoutSize newBorderBoxSize = m_box.size();
   bool borderBoxChanged = oldBorderBoxSize != newBorderBoxSize;
   if (!borderBoxChanged && m_context.oldVisualRect == m_context.newVisualRect)
@@ -279,7 +280,9 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
           reason, m_context.oldVisualRect, m_context.newVisualRect);
     } else {
       invalidated = incrementallyInvalidatePaint(
-          reason, LayoutRect(m_context.oldLocation, previousBorderBoxSize()),
+          reason, LayoutRect(m_context.oldLocation,
+                             previousBorderBoxSize(
+                                 m_box, m_context.oldVisualRect.size())),
           LayoutRect(m_context.newLocation, m_box.size()));
     }
     if (invalidated) {
@@ -312,13 +315,19 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
 
 bool BoxPaintInvalidator::needsToSavePreviousBoxGeometries() {
   LayoutSize paintInvalidationSize = m_context.newVisualRect.size();
-  // Don't save old box Geometries if the paint rect is empty because we'll
-  // full invalidate once the paint rect becomes non-empty.
-  if (paintInvalidationSize.isEmpty())
-    return false;
 
-  if (m_box.paintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return false;
+  // The shortcuts doesn't apply to HTML element. ViewPaintInvalidator needs to
+  // know its previous border box size even if it has visibility:hidden (causing
+  // empty paintInvalidationSize) or has no painted output.
+  if (!m_box.node() || !m_box.node()->isHTMLElement()) {
+    // Don't save old box geometries if the paint rect is empty because we'll
+    // fully invalidate once the paint rect becomes non-empty.
+    if (paintInvalidationSize.isEmpty())
+      return false;
+
+    if (m_box.paintedOutputOfObjectHasNoEffectRegardlessOfSize())
+      return false;
+  }
 
   const ComputedStyle& style = m_box.styleRef();
 
@@ -360,15 +369,14 @@ void BoxPaintInvalidator::savePreviousBoxGeometriesIfNeeded() {
   m_box.getMutableForPainting().setHasPreviousBoxGeometries(true);
 }
 
-LayoutSize BoxPaintInvalidator::previousBorderBoxSize() {
-  DCHECK(m_box.hasPreviousBoxGeometries() ==
-         previousBoxGeometriesMap().contains(&m_box));
-  if (m_box.hasPreviousBoxGeometries())
-    return previousBoxGeometriesMap().get(&m_box).borderBoxSize;
-
-  // We didn't save the old border box size because it was the same as the size
-  // of oldVisualRect.
-  return m_context.oldVisualRect.size();
+LayoutSize BoxPaintInvalidator::previousBorderBoxSize(
+    const LayoutBox& box,
+    const LayoutSize& defaultSize) {
+  DCHECK(box.hasPreviousBoxGeometries() ==
+         previousBoxGeometriesMap().contains(&box));
+  if (box.hasPreviousBoxGeometries())
+    return previousBoxGeometriesMap().get(&box).borderBoxSize;
+  return defaultSize;
 }
 
 LayoutRect BoxPaintInvalidator::previousContentBoxRect() {

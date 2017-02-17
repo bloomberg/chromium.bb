@@ -27,6 +27,9 @@ class BoxPaintInvalidator {
 
   PaintInvalidationReason invalidatePaintIfNeeded();
 
+  static LayoutSize previousBorderBoxSize(const LayoutBox&,
+                                          const LayoutSize& defaultSize);
+
  private:
   bool backgroundGeometryDependsOnLayoutOverflowRect();
   bool backgroundPaintsOntoScrollingContentsLayer();
@@ -43,7 +46,6 @@ class BoxPaintInvalidator {
 
   bool needsToSavePreviousBoxGeometries();
   void savePreviousBoxGeometriesIfNeeded();
-  LayoutSize previousBorderBoxSize();
   LayoutRect previousContentBoxRect();
   LayoutRect previousLayoutOverflowRect();
 

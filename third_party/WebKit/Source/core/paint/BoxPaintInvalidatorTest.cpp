@@ -33,6 +33,7 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
  private:
   void SetUp() override {
     RenderingTest::SetUp();
+    document().setCompatibilityMode(Document::NoQuirksMode);
     enableCompositing();
     setBodyInnerHTML(
         "<style>"
@@ -234,9 +235,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   document().view()->updateAllLifecyclePhases();
   const auto& rasterInvalidations =
       getRasterInvalidationTracking()->trackedRasterInvalidations;
-  // TODO(wangxianzhu): Temporary for crbug.com/680745.
-  // ASSERT_EQ(1u, rasterInvalidations.size());
-  ASSERT_EQ(2u, rasterInvalidations.size());
+  ASSERT_EQ(1u, rasterInvalidations.size());
   EXPECT_EQ(IntRect(0, 2000, 800, 1000), rasterInvalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
             rasterInvalidations[0].client);
@@ -272,9 +271,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
 
   const auto& rasterInvalidations =
       getRasterInvalidationTracking()->trackedRasterInvalidations;
-  // TODO(wangxianzhu): Temporary for crbug.com/680745.
-  // ASSERT_EQ(1u, rasterInvalidations.size());
-  ASSERT_EQ(2u, rasterInvalidations.size());
+  ASSERT_EQ(1u, rasterInvalidations.size());
   EXPECT_EQ(IntRect(0, 0, 800, 3000), rasterInvalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&layoutView()),
             rasterInvalidations[0].client);
@@ -320,10 +317,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
   content->setAttribute(HTMLNames::styleAttr, "height: 500px");
   document().view()->updateAllLifecyclePhases();
   // No invalidation because the changed part of layout overflow is clipped.
-  // TODO(wangxianzhu): Temporary for crbug.com/680745.
-  // EXPECT_FALSE(getRasterInvalidationTracking());
-  EXPECT_EQ(1u,
-            getRasterInvalidationTracking()->trackedRasterInvalidations.size());
+  EXPECT_FALSE(getRasterInvalidationTracking());
   document().view()->setTracksPaintInvalidations(false);
 
   // Resize the iframe.
@@ -382,9 +376,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
   document().view()->updateAllLifecyclePhases();
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  // TODO(wangxianzhu): Temporary for crbug.com/680745.
-  // ASSERT_EQ(1u, rasterInvalidations->size());
-  ASSERT_EQ(2u, rasterInvalidations->size());
+  ASSERT_EQ(1u, rasterInvalidations->size());
   EXPECT_EQ(IntRect(0, 0, 100, 100), (*rasterInvalidations)[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(frameLayoutView),
             (*rasterInvalidations)[0].client);
@@ -411,7 +403,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
     // background-attachment: local. crbug.com/568847.
     EXPECT_EQ(PaintInvalidationFull, (*rasterInvalidations)[1].reason);
   } else {
-    EXPECT_EQ(PaintInvalidationBorderBoxChange,
+    EXPECT_EQ(PaintInvalidationViewBackground,
               (*rasterInvalidations)[1].reason);
   }
   document().view()->setTracksPaintInvalidations(false);

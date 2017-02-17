@@ -58,6 +58,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "background on scrolling contents layer";
     case PaintInvalidationCaret:
       return "caret";
+    case PaintInvalidationViewBackground:
+      return "view background";
     case PaintInvalidationForTesting:
       return "for testing";
     case PaintInvalidationDelayedFull:
