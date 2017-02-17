@@ -761,6 +761,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-stun-origin", IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME,
      IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},
+    {"WebRtcUseEchoCanceller3", IDS_FLAGS_WEBRTC_ECHO_CANCELLER_3_NAME,
+     IDS_FLAGS_WEBRTC_ECHO_CANCELLER_3_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebRtcUseEchoCanceller3)},
 #endif  // ENABLE_WEBRTC
 #if defined(OS_ANDROID)
     {"enable-osk-overscroll", IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME,

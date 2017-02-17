@@ -249,6 +249,12 @@ const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
 const base::Feature kWebRtcHWH264Encoding{
     "WebRtcHWH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the WebRTC Echo Canceller version 3 (AEC3). Feature for
+// http://crbug.com/688388. This value is sent to WebRTC's echo canceller to
+// toggle which echo canceller should be used.
+const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -676,6 +677,11 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // Prepare for logging echo information. If there are data remaining in
     // |echo_information_| we simply discard it.
     echo_information_.reset(new EchoInformation());
+
+    apm_config.echo_canceller3.enabled =
+        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3);
+  } else {
+    apm_config.echo_canceller3.enabled = false;
   }
 
   if (goog_ns) {
