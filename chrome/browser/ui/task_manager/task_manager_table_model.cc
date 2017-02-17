@@ -191,7 +191,9 @@ class TaskManagerValuesStringifier {
   }
 
   base::string16 GetNaClPortText(int nacl_port) {
-    if (nacl_port == nacl::kGdbDebugStubPortUnused || nacl_port == -2)
+    // Only called if NaCl debug stub ports are enabled.
+
+    if (nacl_port == nacl::kGdbDebugStubPortUnused)
       return n_a_string_;
 
     if (nacl_port == nacl::kGdbDebugStubPortUnknown)
@@ -694,7 +696,7 @@ void TaskManagerTableModel::KillTask(int row_index) {
 }
 
 void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
-  bool new_visibility = visibility;
+  bool needs_refresh = visibility;
   RefreshType type = REFRESH_TYPE_NONE;
   switch (column_id) {
     case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
@@ -732,7 +734,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
               IDS_TASK_MANAGER_SHARED_MEM_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN)) {
-        new_visibility = true;
+        needs_refresh = true;
       }
       break;
 
@@ -743,7 +745,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
               IDS_TASK_MANAGER_GDI_HANDLES_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_USER_HANDLES_COLUMN)) {
-        new_visibility = true;
+        needs_refresh = true;
       }
       break;
 
@@ -761,7 +763,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
               IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN)) {
-        new_visibility = true;
+        needs_refresh = true;
       }
       break;
 
@@ -779,6 +781,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
 
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
       type = REFRESH_TYPE_NACL;
+      needs_refresh = needs_refresh && is_nacl_debugging_flag_enabled_;
       break;
 
     case IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN:
@@ -804,7 +807,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       return;
   }
 
-  if (new_visibility)
+  if (needs_refresh)
     AddRefreshType(type);
   else
     RemoveRefreshType(type);

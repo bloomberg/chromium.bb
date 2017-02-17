@@ -31,6 +31,9 @@ const int kBackgroundRefreshTypesMask =
 #if defined(OS_LINUX)
     REFRESH_TYPE_FD_COUNT |
 #endif  // defined(OS_LINUX)
+#if !defined(DISABLE_NACL)
+    REFRESH_TYPE_NACL |
+#endif  // !defined(DISABLE_NACL)
     REFRESH_TYPE_PRIORITY;
 
 #if defined(OS_WIN)
@@ -63,6 +66,13 @@ void GetWindowsHandles(base::ProcessHandle handle,
 }
 #endif  // defined(OS_WIN)
 
+#if !defined(DISABLE_NACL)
+int GetNaClDebugStubPortOnIoThread(int process_id) {
+  return nacl::NaClBrowser::GetInstance()->GetProcessGdbDebugStubPort(
+      process_id);
+}
+#endif  // !defined(DISABLE_NACL)
+
 }  // namespace
 
 TaskGroup::TaskGroup(
@@ -89,7 +99,7 @@ TaskGroup::TaskGroup(
       user_peak_handles_(-1),
 #endif  // defined(OS_WIN)
 #if !defined(DISABLE_NACL)
-      nacl_debug_stub_port_(-1),
+      nacl_debug_stub_port_(nacl::kGdbDebugStubPortUnknown),
 #endif  // !defined(DISABLE_NACL)
       idle_wakeups_per_second_(-1),
 #if defined(OS_LINUX)
@@ -144,6 +154,7 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                         base::TimeDelta update_interval,
                         int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!empty());
 
   expected_on_bg_done_flags_ = refresh_flags & kBackgroundRefreshTypesMask;
   // If a refresh type was recently disabled, we need to account for that too.
@@ -176,11 +187,11 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   }
 #endif  // defined(OS_WIN)
 
-  // 4- Refresh the NACL debug stub port (if enabled).
+// 4- Refresh the NACL debug stub port (if enabled). This calls out to
+//    NaClBrowser on the browser's IO thread, completing asynchronously.
 #if !defined(DISABLE_NACL)
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NACL,
-                                                    refresh_flags) &&
-      !tasks_.empty()) {
+                                                    refresh_flags)) {
     RefreshNaClDebugStubPort(tasks_[0]->GetChildProcessUniqueID());
   }
 #endif  // !defined(DISABLE_NACL)
@@ -255,13 +266,22 @@ void TaskGroup::RefreshWindowsHandles() {
 #endif  // defined(OS_WIN)
 }
 
-void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
 #if !defined(DISABLE_NACL)
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
-  nacl_debug_stub_port_ =
-      nacl_browser->GetProcessGdbDebugStubPort(child_process_unique_id);
-#endif  // !defined(DISABLE_NACL)
+void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetNaClDebugStubPortOnIoThread, child_process_unique_id),
+      base::Bind(&TaskGroup::OnRefreshNaClDebugStubPortDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
+
+void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  nacl_debug_stub_port_ = nacl_debug_stub_port;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_NACL);
+}
+#endif  // !defined(DISABLE_NACL)
 
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

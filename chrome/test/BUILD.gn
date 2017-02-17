@@ -3655,6 +3655,7 @@ test("unit_tests") {
       "../browser/task_manager/providers/browser_process_task_unittest.cc",
       "../browser/task_manager/providers/child_process_task_unittest.cc",
       "../browser/task_manager/sampling/shared_sampler_win_unittest.cc",
+      "../browser/task_manager/sampling/task_group_unittest.cc",
       "../browser/task_manager/sampling/task_manager_impl_unittest.cc",
       "../browser/task_manager/task_manager_observer_unittest.cc",
       "../browser/task_manager/test_task_manager.cc",
