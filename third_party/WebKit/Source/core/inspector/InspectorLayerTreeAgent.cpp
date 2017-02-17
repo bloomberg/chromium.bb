@@ -248,7 +248,7 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(
     PaintLayer* root,
     LayerIdToNodeIdMap& layerIdToNodeIdMap) {
   if (root->hasCompositedLayerMapping()) {
-    if (Node* node = root->layoutObject()->generatingNode()) {
+    if (Node* node = root->layoutObject().generatingNode()) {
       GraphicsLayer* graphicsLayer =
           root->compositedLayerMapping()->childForSuperlayers();
       layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(),
@@ -258,10 +258,10 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(
   for (PaintLayer* child = root->firstChild(); child;
        child = child->nextSibling())
     buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
-  if (!root->layoutObject()->isLayoutIFrame())
+  if (!root->layoutObject().isLayoutIFrame())
     return;
   FrameView* childFrameView =
-      toFrameView(toLayoutPart(root->layoutObject())->widget());
+      toFrameView(toLayoutPart(root->layoutObject()).widget());
   LayoutViewItem childLayoutViewItem = childFrameView->layoutViewItem();
   if (!childLayoutViewItem.isNull()) {
     if (PaintLayerCompositor* childCompositor =

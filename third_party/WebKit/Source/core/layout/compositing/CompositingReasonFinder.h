@@ -25,7 +25,7 @@ class CORE_EXPORT CompositingReasonFinder {
  public:
   explicit CompositingReasonFinder(LayoutView&);
 
-  CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
+  CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject&) const;
   CompositingReasons directReasons(const PaintLayer*) const;
 
   void updateTriggers();

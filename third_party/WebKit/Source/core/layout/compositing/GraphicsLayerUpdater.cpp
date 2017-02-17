@@ -57,7 +57,7 @@ class GraphicsLayerUpdater::UpdateContext {
     if (layer.stackingNode()->isStacked())
       return m_compositingStackingContext;
 
-    if (layer.layoutObject()->isFloatingWithNonContainingBlockParent())
+    if (layer.layoutObject().isFloatingWithNonContainingBlockParent())
       return layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
 
     return m_compositingAncestor;

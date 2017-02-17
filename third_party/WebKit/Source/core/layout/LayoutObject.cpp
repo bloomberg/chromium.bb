@@ -985,10 +985,10 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const {
 
 IntRect LayoutObject::absoluteElementBoundingBoxRect() const {
   Vector<LayoutRect> rects;
-  const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
+  const LayoutBoxModelObject& container = enclosingLayer()->layoutObject();
   addElementVisualOverflowRects(
-      rects, LayoutPoint(localToAncestorPoint(FloatPoint(), container)));
-  return container->localToAbsoluteQuad(FloatQuad(FloatRect(unionRect(rects))))
+      rects, LayoutPoint(localToAncestorPoint(FloatPoint(), &container)));
+  return container.localToAbsoluteQuad(FloatQuad(FloatRect(unionRect(rects))))
       .enclosingBoundingBox();
 }
 
@@ -1055,7 +1055,7 @@ const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const {
     if (PaintLayer* compositingLayer =
             paintingLayer
                 ->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-      container = compositingLayer->layoutObject();
+      container = &compositingLayer->layoutObject();
   }
   return container;
 }
@@ -1185,7 +1185,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
 
   if (styleRef().hasOutline()) {
     PaintLayer& layer = paintInvalidationState.paintingLayer();
-    if (layer.layoutObject() != this)
+    if (&layer.layoutObject() != this)
       layer.setNeedsPaintPhaseDescendantOutlines();
   }
 
@@ -2362,12 +2362,12 @@ void LayoutObject::computeLayerHitTestRects(
     LayoutObject* container = this->container();
     currentLayer = container->enclosingLayer();
     if (container && currentLayer->layoutObject() != container) {
-      layerOffset.move(
-          container->offsetFromAncestorContainer(currentLayer->layoutObject()));
+      layerOffset.move(container->offsetFromAncestorContainer(
+          &currentLayer->layoutObject()));
       // If the layer itself is scrolled, we have to undo the subtraction of its
       // scroll offset since we want the offset relative to the scrolling
       // content, not the element itself.
-      if (currentLayer->layoutObject()->hasOverflowClip())
+      if (currentLayer->layoutObject().hasOverflowClip())
         layerOffset.move(currentLayer->layoutBox()->scrolledContentOffset());
     }
   }

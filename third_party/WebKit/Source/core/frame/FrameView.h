@@ -230,8 +230,8 @@ class CORE_EXPORT FrameView final
 
   // Fixed-position objects.
   typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
-  void addViewportConstrainedObject(LayoutObject*);
-  void removeViewportConstrainedObject(LayoutObject*);
+  void addViewportConstrainedObject(LayoutObject&);
+  void removeViewportConstrainedObject(LayoutObject&);
   const ViewportConstrainedObjectSet* viewportConstrainedObjects() const {
     return m_viewportConstrainedObjects.get();
   }

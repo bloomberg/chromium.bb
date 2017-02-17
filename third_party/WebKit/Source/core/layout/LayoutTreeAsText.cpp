@@ -562,16 +562,16 @@ static void write(TextStream& ts,
   IntRect adjustedClipRect = pixelSnappedIntRect(clipRect);
 
   bool reportFrameScrollInfo =
-      layer.layoutObject()->isLayoutView() &&
+      layer.layoutObject().isLayoutView() &&
       !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
 
   if (reportFrameScrollInfo) {
-    LayoutView* layoutView = toLayoutView(layer.layoutObject());
+    LayoutView& layoutView = toLayoutView(layer.layoutObject());
 
     adjustedLayoutBoundsWithScrollbars.setWidth(
-        layoutView->viewWidth(IncludeScrollbars));
+        layoutView.viewWidth(IncludeScrollbars));
     adjustedLayoutBoundsWithScrollbars.setHeight(
-        layoutView->viewHeight(IncludeScrollbars));
+        layoutView.viewHeight(IncludeScrollbars));
   }
 
   if (markedLayer)
@@ -579,7 +579,7 @@ static void write(TextStream& ts,
 
   writeIndent(ts, indent);
 
-  if (layer.layoutObject()->style()->visibility() == EVisibility::kHidden)
+  if (layer.layoutObject().style()->visibility() == EVisibility::kHidden)
     ts << "hidden ";
 
   ts << "layer ";
@@ -598,10 +598,10 @@ static void write(TextStream& ts,
   if (layer.isTransparent())
     ts << " transparent";
 
-  if (layer.layoutObject()->hasOverflowClip() || reportFrameScrollInfo) {
+  if (layer.layoutObject().hasOverflowClip() || reportFrameScrollInfo) {
     ScrollableArea* scrollableArea;
     if (reportFrameScrollInfo)
-      scrollableArea = toLayoutView(layer.layoutObject())->frameView();
+      scrollableArea = toLayoutView(layer.layoutObject()).frameView();
     else
       scrollableArea = layer.getScrollableArea();
 
@@ -627,10 +627,11 @@ static void write(TextStream& ts,
   else if (paintPhase == LayerPaintPhaseForeground)
     ts << " layerType: foreground only";
 
-  if (layer.layoutObject()->style()->hasBlendMode())
+  if (layer.layoutObject().style()->hasBlendMode()) {
     ts << " blendMode: "
        << compositeOperatorName(CompositeSourceOver,
-                                layer.layoutObject()->style()->blendMode());
+                                layer.layoutObject().style()->blendMode());
+  }
 
   if (behavior & LayoutAsTextShowCompositedLayers) {
     if (layer.hasCompositedLayerMapping()) {
@@ -648,7 +649,7 @@ static void write(TextStream& ts,
   ts << "\n";
 
   if (paintPhase != LayerPaintPhaseBackground)
-    write(ts, *layer.layoutObject(), indent + 1, behavior);
+    write(ts, layer.layoutObject(), indent + 1, behavior);
 }
 
 static Vector<PaintLayerStackingNode*> normalFlowListFor(
@@ -684,8 +685,8 @@ void LayoutTreeAsText::writeLayers(TextStream& ts,
                          : layer->intersectsDamageRect(
                                layerBounds, damageRect.rect(), offsetFromRoot);
 
-  if (layer->layoutObject()->isLayoutPart() &&
-      toLayoutPart(layer->layoutObject())->isThrottledFrameView())
+  if (layer->layoutObject().isLayoutPart() &&
+      toLayoutPart(layer->layoutObject()).isThrottledFrameView())
     shouldPaint = false;
 
   Vector<PaintLayerStackingNode*>* negList =

@@ -21,7 +21,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
                                          const ComputedStyle& style) {
   const StyleReflection* reflectStyle = style.boxReflect();
 
-  LayoutRect frameLayoutRect = toLayoutBox(layer.layoutObject())->frameRect();
+  LayoutRect frameLayoutRect = toLayoutBox(layer.layoutObject()).frameRect();
   FloatRect frameRect(frameLayoutRect);
   BoxReflection::ReflectionDirection direction =
       BoxReflection::VerticalReflection;
@@ -61,10 +61,10 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
     PaintRecordBuilder builder(maskBoundingFloatRect);
     {
       GraphicsContext& context = builder.context();
-      DrawingRecorder drawingRecorder(context, *layer.layoutObject(),
+      DrawingRecorder drawingRecorder(context, layer.layoutObject(),
                                       DisplayItem::kReflectionMask,
                                       maskBoundingFloatRect);
-      NinePieceImagePainter(*layer.layoutObject())
+      NinePieceImagePainter(layer.layoutObject())
           .paint(builder.context(), maskRect, style, maskNinePiece,
                  SkBlendMode::kSrcOver);
     }

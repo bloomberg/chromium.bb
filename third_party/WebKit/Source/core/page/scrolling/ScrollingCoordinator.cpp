@@ -284,10 +284,10 @@ static WebLayerPositionConstraint computePositionConstraint(
     const PaintLayer* layer) {
   DCHECK(layer->hasCompositedLayerMapping());
   do {
-    if (layer->layoutObject()->style()->position() == EPosition::kFixed) {
-      const LayoutObject* fixedPositionObject = layer->layoutObject();
-      bool fixedToRight = !fixedPositionObject->style()->right().isAuto();
-      bool fixedToBottom = !fixedPositionObject->style()->bottom().isAuto();
+    if (layer->layoutObject().style()->position() == EPosition::kFixed) {
+      const LayoutObject& fixedPositionObject = layer->layoutObject();
+      bool fixedToRight = !fixedPositionObject.style()->right().isAuto();
+      bool fixedToBottom = !fixedPositionObject.style()->bottom().isAuto();
       return WebLayerPositionConstraint::fixedPosition(fixedToRight,
                                                        fixedToBottom);
     }
@@ -573,8 +573,8 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     HashSet<const PaintLayer*>& layersWithRects,
     LayerFrameMap& layerChildFrameMap) {
   // If this layer is throttled, ignore it.
-  if (curLayer->layoutObject()->frameView() &&
-      curLayer->layoutObject()->frameView()->shouldThrottleRendering())
+  if (curLayer->layoutObject().frameView() &&
+      curLayer->layoutObject().frameView()->shouldThrottleRendering())
     return;
   // Project any rects for the current layer
   LayerHitTestRects::const_iterator layerIter = layerRects.find(curLayer);
@@ -588,7 +588,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
 
     // Find the appropriate GraphicsLayer for the composited Layer.
     GraphicsLayer* graphicsLayer =
-        compositedLayer->graphicsLayerBacking(curLayer->layoutObject());
+        compositedLayer->graphicsLayerBacking(&curLayer->layoutObject());
 
     GraphicsLayerHitTestRects::iterator glIter =
         graphicsRects.find(graphicsLayer);
@@ -604,16 +604,16 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
       LayoutRect rect = layerIter->value[i];
       if (compositedLayer != curLayer) {
         FloatQuad compositorQuad = geometryMap.mapToAncestor(
-            FloatRect(rect), compositedLayer->layoutObject());
+            FloatRect(rect), &compositedLayer->layoutObject());
         rect = LayoutRect(compositorQuad.boundingBox());
         // If the enclosing composited layer itself is scrolled, we have to undo
         // the subtraction of its scroll offset since we want the offset
         // relative to the scrolling content, not the element itself.
-        if (compositedLayer->layoutObject()->hasOverflowClip())
+        if (compositedLayer->layoutObject().hasOverflowClip())
           rect.move(compositedLayer->layoutBox()->scrolledContentOffset());
       }
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-          *compositedLayer->layoutObject(), rect);
+          compositedLayer->layoutObject(), rect);
       rect.move(-graphicsLayer->offsetFromLayoutObject());
 
       glRects->push_back(rect);
@@ -677,7 +677,7 @@ static void projectRectsToGraphicsLayerSpace(
         layer = layer->parent();
       } else {
         LayoutItem parentDocLayoutItem =
-            layer->layoutObject()->frame()->ownerLayoutItem();
+            layer->layoutObject().frame()->ownerLayoutItem();
         if (!parentDocLayoutItem.isNull()) {
           layer = parentDocLayoutItem.enclosingLayer();
           touchHandlerInChildFrame = true;
@@ -742,12 +742,12 @@ void ScrollingCoordinator::setTouchEventTargetRects(
   // lifetime of a GraphicsLayer.
   GraphicsLayerHitTestRects graphicsLayerRects;
   for (const PaintLayer* layer : m_layersWithTouchRects) {
-    if (layer->layoutObject()->frameView() &&
-        layer->layoutObject()->frameView()->shouldThrottleRendering()) {
+    if (layer->layoutObject().frameView() &&
+        layer->layoutObject().frameView()->shouldThrottleRendering()) {
       continue;
     }
     GraphicsLayer* mainGraphicsLayer =
-        layer->graphicsLayerBacking(layer->layoutObject());
+        layer->graphicsLayerBacking(&layer->layoutObject());
     if (mainGraphicsLayer)
       graphicsLayerRects.insert(mainGraphicsLayer, Vector<LayoutRect>());
     GraphicsLayer* scrollingContentsLayer = layer->graphicsLayerBacking();

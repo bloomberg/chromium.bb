@@ -164,13 +164,13 @@ void FramePainter::paintContents(GraphicsContext& context,
 #if DCHECK_IS_ON()
   layoutView->assertSubtreeIsLaidOut();
   LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(
-      *rootLayer->layoutObject());
+      rootLayer->layoutObject());
 #endif
 
   PaintLayerPainter layerPainter(*rootLayer);
 
   float deviceScaleFactor =
-      blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
+      blink::deviceScaleFactor(rootLayer->layoutObject().frame());
   context.setDeviceScaleFactor(deviceScaleFactor);
 
   layerPainter.paint(context, LayoutRect(rect), localPaintFlags);

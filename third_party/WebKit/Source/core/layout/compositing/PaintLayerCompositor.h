@@ -148,9 +148,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   void setIsInWindow(bool);
 
-  static PaintLayerCompositor* frameContentsCompositor(LayoutPart*);
+  static PaintLayerCompositor* frameContentsCompositor(LayoutPart&);
   // Return true if the layers changed.
-  static bool attachFrameContentLayersToIframeLayer(LayoutPart*);
+  static bool attachFrameContentLayersToIframeLayer(LayoutPart&);
 
   // Update the geometry of the layers used for clipping and scrolling in
   // frames.

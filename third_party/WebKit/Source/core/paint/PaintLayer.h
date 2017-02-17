@@ -215,18 +215,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   WTF_MAKE_NONCOPYABLE(PaintLayer);
 
  public:
-  PaintLayer(LayoutBoxModelObject*);
+  PaintLayer(LayoutBoxModelObject&);
   ~PaintLayer() override;
 
   // DisplayItemClient methods
   String debugName() const final;
   LayoutRect visualRect() const final;
 
-  LayoutBoxModelObject* layoutObject() const { return m_layoutObject; }
+  LayoutBoxModelObject& layoutObject() const { return m_layoutObject; }
   LayoutBox* layoutBox() const {
-    return m_layoutObject && m_layoutObject->isBox()
-               ? toLayoutBox(m_layoutObject)
-               : 0;
+    return m_layoutObject.isBox() ? &toLayoutBox(m_layoutObject) : 0;
   }
   PaintLayer* parent() const { return m_parent; }
   PaintLayer* previousSibling() const { return m_previous; }
@@ -251,8 +249,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
   bool isTransparent() const {
-    return layoutObject()->isTransparent() ||
-           layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask();
+    return layoutObject().isTransparent() ||
+           layoutObject().style()->hasBlendMode() || layoutObject().hasMask();
   }
 
   const PaintLayer* root() const {
@@ -365,8 +363,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool canUseConvertToLayerCoords() const {
     // These LayoutObjects have an impact on their layers without the
     // layoutObjects knowing about it.
-    return !layoutObject()->hasTransformRelatedProperty() &&
-           !layoutObject()->isSVGRoot();
+    return !layoutObject().hasTransformRelatedProperty() &&
+           !layoutObject().isSVGRoot();
   }
 
   void convertToLayerCoords(const PaintLayer* ancestorLayer,
@@ -442,7 +440,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void setSubpixelAccumulation(const LayoutSize&);
 
   bool hasTransformRelatedProperty() const {
-    return layoutObject()->hasTransformRelatedProperty();
+    return layoutObject().hasTransformRelatedProperty();
   }
   // Note that this transform has the transform-origin baked in.
   TransformationMatrix* transform() const {
@@ -460,7 +458,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Note that this transform does not have the perspective-origin baked in.
   TransformationMatrix perspectiveTransform() const;
   FloatPoint perspectiveOrigin() const;
-  bool preserves3D() const { return layoutObject()->style()->preserves3D(); }
+  bool preserves3D() const { return layoutObject().style()->preserves3D(); }
   bool has3DTransform() const {
     return m_rareData && m_rareData->transform &&
            !m_rareData->transform->isAffine();
@@ -469,14 +467,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // FIXME: reflections should force transform-style to be flat in the style:
   // https://bugs.webkit.org/show_bug.cgi?id=106959
   bool shouldPreserve3D() const {
-    return !layoutObject()->hasReflection() &&
-           layoutObject()->style()->preserves3D();
+    return !layoutObject().hasReflection() &&
+           layoutObject().style()->preserves3D();
   }
 
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
   bool hasFilterInducingProperty() const {
-    return layoutObject()->hasFilterInducingProperty();
+    return layoutObject().hasFilterInducingProperty();
   }
 
   void* operator new(size_t);
@@ -692,7 +690,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
     IntRect clippedAbsoluteBoundingBox;
     IntRect unclippedAbsoluteBoundingBox;
-    const LayoutObject* clippingContainer;
+    const LayoutBoxModelObject* clippingContainer;
   };
 
   void setNeedsCompositingInputsUpdate();
@@ -741,7 +739,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                ? m_ancestorDependentCompositingInputs->filterAncestor
                : nullptr;
   }
-  const LayoutObject* clippingContainer() const {
+  const LayoutBoxModelObject* clippingContainer() const {
     DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_ancestorDependentCompositingInputs->clippingContainer;
   }
@@ -871,8 +869,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutRect* layerBoundingBox = 0);
 
   LayoutPoint layoutBoxLocation() const {
-    return layoutObject()->isBox() ? toLayoutBox(layoutObject())->location()
-                                   : LayoutPoint();
+    return layoutObject().isBox() ? toLayoutBox(layoutObject()).location()
+                                  : LayoutPoint();
   }
 
   enum TransparencyClipBoxBehavior {
@@ -1210,7 +1208,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned m_selfPaintingStatusChanged : 1;
 
-  LayoutBoxModelObject* m_layoutObject;
+  LayoutBoxModelObject& m_layoutObject;
 
   PaintLayer* m_parent;
   PaintLayer* m_previous;

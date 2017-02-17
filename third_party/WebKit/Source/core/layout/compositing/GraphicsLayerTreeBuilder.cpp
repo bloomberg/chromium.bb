@@ -40,7 +40,7 @@ GraphicsLayerTreeBuilder::GraphicsLayerTreeBuilder() {}
 GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder() {}
 
 static bool shouldAppendLayer(const PaintLayer& layer) {
-  Node* node = layer.layoutObject()->node();
+  Node* node = layer.layoutObject().node();
   if (node && isHTMLVideoElement(*node)) {
     HTMLVideoElement* element = toHTMLVideoElement(node);
     if (element->isFullscreen() && element->usesOverlayFullscreenVideo())
@@ -94,7 +94,7 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer,
 
   if (hasCompositedLayerMapping) {
     bool parented = false;
-    if (layer.layoutObject()->isLayoutPart())
+    if (layer.layoutObject().isLayoutPart())
       parented = PaintLayerCompositor::attachFrameContentLayersToIframeLayer(
           toLayoutPart(layer.layoutObject()));
 

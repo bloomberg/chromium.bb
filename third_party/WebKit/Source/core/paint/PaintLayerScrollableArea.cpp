@@ -411,7 +411,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
       box().containerForPaintInvalidation();
 
   FloatQuad quadForFakeMouseMoveEvent = FloatQuad(FloatRect(
-      layer()->layoutObject()->previousVisualRectIncludingCompositedScrolling(
+      layer()->layoutObject().previousVisualRectIncludingCompositedScrolling(
           paintInvalidationContainer)));
 
   quadForFakeMouseMoveEvent =
@@ -1513,8 +1513,7 @@ void PaintLayerScrollableArea::updateResizerStyle() {
 void PaintLayerScrollableArea::invalidateAllStickyConstraints() {
   if (PaintLayerScrollableAreaRareData* d = rareData()) {
     for (PaintLayer* stickyLayer : d->m_stickyConstraintsMap.keys()) {
-      if (stickyLayer->layoutObject()->style()->position() ==
-          EPosition::kSticky)
+      if (stickyLayer->layoutObject().style()->position() == EPosition::kSticky)
         stickyLayer->setNeedsCompositingInputsUpdate();
     }
     d->m_stickyConstraintsMap.clear();
@@ -1527,7 +1526,7 @@ void PaintLayerScrollableArea::invalidateStickyConstraintsFor(
   if (PaintLayerScrollableAreaRareData* d = rareData()) {
     d->m_stickyConstraintsMap.remove(layer);
     if (needsCompositingUpdate &&
-        layer->layoutObject()->style()->position() == EPosition::kSticky)
+        layer->layoutObject().style()->position() == EPosition::kSticky)
       layer->setNeedsCompositingInputsUpdate();
   }
 }
@@ -1758,11 +1757,11 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
   // transforms are also integer.
   bool backgroundSupportsLCDText =
       RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
-      layer->layoutObject()->style()->isStackingContext() &&
+      layer->layoutObject().style()->isStackingContext() &&
       layer->backgroundPaintLocation(&mainThreadScrollingReasons) &
           BackgroundPaintInScrollingContents &&
       layer->backgroundIsKnownToBeOpaqueInRect(
-          toLayoutBox(layer->layoutObject())->paddingBoxRect()) &&
+          toLayoutBox(layer->layoutObject()).paddingBoxRect()) &&
       !layer->compositesWithTransform() && !layer->compositesWithOpacity();
 
   if (mode == PaintLayerScrollableArea::ConsiderLCDText &&
@@ -1777,7 +1776,7 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
           MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->backgroundIsKnownToBeOpaqueInRect(
-            toLayoutBox(layer->layoutObject())->paddingBoxRect())) {
+            toLayoutBox(layer->layoutObject()).paddingBoxRect())) {
       mainThreadScrollingReasons |=
           MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }
@@ -1786,14 +1785,14 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
   }
 
   // TODO(schenney) Tests fail if we do not also exclude
-  // layer->layoutObject()->style()->hasBorderDecoration() (missing background
+  // layer->layoutObject().style()->hasBorderDecoration() (missing background
   // behind dashed borders). Resolve this case, or not, and update this check
   // with the results.
-  if (layer->layoutObject()->style()->hasBorderRadius()) {
+  if (layer->layoutObject().style()->hasBorderRadius()) {
     mainThreadScrollingReasons |= MainThreadScrollingReason::kHasBorderRadius;
     needsCompositedScrolling = false;
   }
-  if (layer->layoutObject()->hasClip() || layer->hasDescendantWithClipPath() ||
+  if (layer->layoutObject().hasClip() || layer->hasDescendantWithClipPath() ||
       layer->hasAncestorWithClipPath()) {
     mainThreadScrollingReasons |=
         MainThreadScrollingReason::kHasClipRelatedProperty;
@@ -1896,12 +1895,12 @@ void PaintLayerScrollableArea::resetRebuildScrollbarLayerFlags() {
 
 CompositorAnimationHost* PaintLayerScrollableArea::compositorAnimationHost()
     const {
-  return m_layer.layoutObject()->frameView()->compositorAnimationHost();
+  return m_layer.layoutObject().frameView()->compositorAnimationHost();
 }
 
 CompositorAnimationTimeline*
 PaintLayerScrollableArea::compositorAnimationTimeline() const {
-  return m_layer.layoutObject()->frameView()->compositorAnimationTimeline();
+  return m_layer.layoutObject().frameView()->compositorAnimationTimeline();
 }
 
 PaintLayerScrollableArea*

@@ -106,7 +106,7 @@ class LayoutGeometryMapTest
         rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
     if (!compositingLayer)
       return nullptr;
-    return compositingLayer->layoutObject();
+    return &compositingLayer->layoutObject();
   }
 
   static const LayoutBoxModelObject* getFrameLayoutContainer(
@@ -120,7 +120,7 @@ class LayoutGeometryMapTest
         rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
     if (!compositingLayer)
       return nullptr;
-    return compositingLayer->layoutObject();
+    return &compositingLayer->layoutObject();
   }
 
   static const FloatRect rectFromQuad(const FloatQuad& quad) {

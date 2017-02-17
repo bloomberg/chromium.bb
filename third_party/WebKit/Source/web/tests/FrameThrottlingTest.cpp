@@ -82,7 +82,7 @@ class FrameThrottlingTest : public SimTest,
     PaintLayer* layer =
         webView().mainFrameImpl()->frame()->contentLayoutObject()->layer();
     GraphicsLayer* ownGraphicsLayer =
-        layer->graphicsLayerBacking(layer->layoutObject());
+        layer->graphicsLayerBacking(&layer->layoutObject());
     if (ownGraphicsLayer) {
       result +=
           ownGraphicsLayer->platformLayer()->touchEventHandlerRegion().size();

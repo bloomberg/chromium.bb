@@ -337,18 +337,18 @@ void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
 }
 
 static void forceRecomputeVisualRectsIncludingNonCompositingDescendants(
-    LayoutObject* layoutObject) {
+    LayoutObject& layoutObject) {
   // We clear the previous visual rect as it's wrong (paint invalidation
   // container changed, ...). Forcing a full invalidation will make us recompute
   // it. Also we are not changing the previous position from our paint
   // invalidation container, which is fine as we want a full paint invalidation
   // anyway.
-  layoutObject->clearPreviousVisualRects();
+  layoutObject.clearPreviousVisualRects();
 
-  for (LayoutObject* child = layoutObject->slowFirstChild(); child;
+  for (LayoutObject* child = layoutObject.slowFirstChild(); child;
        child = child->nextSibling()) {
     if (!child->isPaintInvalidationContainer())
-      forceRecomputeVisualRectsIncludingNonCompositingDescendants(child);
+      forceRecomputeVisualRectsIncludingNonCompositingDescendants(*child);
   }
 }
 
@@ -534,7 +534,7 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
       layer->ensureCompositedLayerMapping();
       compositedLayerMappingChanged = true;
 
-      restartAnimationOnCompositor(*layer->layoutObject());
+      restartAnimationOnCompositor(layer->layoutObject());
 
       // At this time, the ScrollingCoordinator only supports the top-level
       // frame.
@@ -561,7 +561,7 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
       break;
   }
 
-  if (compositedLayerMappingChanged && layer->layoutObject()->isLayoutPart()) {
+  if (compositedLayerMappingChanged && layer->layoutObject().isLayoutPart()) {
     PaintLayerCompositor* innerCompositor =
         frameContentsCompositor(toLayoutPart(layer->layoutObject()));
     if (innerCompositor && innerCompositor->staleInCompositingMode())
@@ -590,8 +590,8 @@ void PaintLayerCompositor::paintInvalidationOnCompositingChange(
     PaintLayer* layer) {
   // If the layoutObject is not attached yet, no need to issue paint
   // invalidations.
-  if (layer->layoutObject() != &m_layoutView &&
-      !layer->layoutObject()->parent())
+  if (&layer->layoutObject() != &m_layoutView &&
+      !layer->layoutObject().parent())
     return;
 
   // For querying Layer::compositingState()
@@ -603,7 +603,7 @@ void PaintLayerCompositor::paintInvalidationOnCompositingChange(
   // state. crbug.com/457415
   DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
 
-  ObjectPaintInvalidator(*layer->layoutObject())
+  ObjectPaintInvalidator(layer->layoutObject())
       .invalidatePaintIncludingNonCompositingDescendants();
 }
 
@@ -734,12 +734,11 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
 }
 
 PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(
-    LayoutPart* layoutObject) {
-  if (!layoutObject->node()->isFrameOwnerElement())
+    LayoutPart& layoutObject) {
+  if (!layoutObject.node()->isFrameOwnerElement())
     return nullptr;
 
-  HTMLFrameOwnerElement* element =
-      toHTMLFrameOwnerElement(layoutObject->node());
+  HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(layoutObject.node());
   if (Document* contentDocument = element->contentDocument()) {
     if (LayoutViewItem view = contentDocument->layoutViewItem())
       return view.compositor();
@@ -748,14 +747,14 @@ PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(
 }
 
 bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(
-    LayoutPart* layoutObject) {
+    LayoutPart& layoutObject) {
   PaintLayerCompositor* innerCompositor = frameContentsCompositor(layoutObject);
   if (!innerCompositor || !innerCompositor->staleInCompositingMode() ||
       innerCompositor->getRootLayerAttachment() !=
           RootLayerAttachedViaEnclosingFrame)
     return false;
 
-  PaintLayer* layer = layoutObject->layer();
+  PaintLayer* layer = layoutObject.layer();
   if (!layer->hasCompositedLayerMapping())
     return false;
 
@@ -856,7 +855,7 @@ void PaintLayerCompositor::updatePotentialCompositingReasonsFromStyle(
 }
 
 bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
-  FrameView* frameView = layer->layoutObject()->frameView();
+  FrameView* frameView = layer->layoutObject().frameView();
   // Elements within an invisible frame must not be composited because they are
   // not drawn.
   if (frameView && !frameView->isVisible())
@@ -864,11 +863,11 @@ bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
 
   const bool hasCompositorAnimation =
       m_compositingReasonFinder.requiresCompositingForAnimation(
-          *layer->layoutObject()->style());
+          *layer->layoutObject().style());
   return m_hasAcceleratedCompositing &&
          (hasCompositorAnimation || !layer->subtreeIsInvisible()) &&
          layer->isSelfPaintingLayer() &&
-         !layer->layoutObject()->isLayoutFlowThread();
+         !layer->layoutObject().isLayoutFlowThread();
 }
 
 // Return true if the given layer is a stacking context and has compositing
@@ -878,7 +877,7 @@ bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
 bool PaintLayerCompositor::clipsCompositingDescendants(
     const PaintLayer* layer) const {
   return layer->hasCompositingDescendant() &&
-         layer->layoutObject()->hasClipRelatedProperty();
+         layer->layoutObject().hasClipRelatedProperty();
 }
 
 // If an element has composited negative z-index children, those children paint

@@ -98,10 +98,10 @@ class CORE_EXPORT PaintLayerStackingNode {
   explicit PaintLayerStackingNode(PaintLayer*);
   ~PaintLayerStackingNode();
 
-  int zIndex() const { return layoutObject()->style()->zIndex(); }
+  int zIndex() const { return layoutObject().style()->zIndex(); }
 
   bool isStackingContext() const {
-    return layoutObject()->style()->isStackingContext();
+    return layoutObject().style()->isStackingContext();
   }
 
   // Whether the node is stacked. See documentation for the class about
@@ -176,7 +176,7 @@ class CORE_EXPORT PaintLayerStackingNode {
 
   PaintLayerCompositor* compositor() const;
   // We can't return a LayoutBox as LayoutInline can be a stacking context.
-  LayoutBoxModelObject* layoutObject() const;
+  LayoutBoxModelObject& layoutObject() const;
 
   PaintLayer* m_layer;
 

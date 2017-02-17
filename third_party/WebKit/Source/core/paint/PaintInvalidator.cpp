@@ -210,7 +210,7 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
   if (object.isLayoutBlockFlow() && toLayoutBlockFlow(object).containsFloats())
     context.paintingLayer->setNeedsPaintPhaseFloat();
 
-  if (object == context.paintingLayer->layoutObject())
+  if (&object == &context.paintingLayer->layoutObject())
     return;
 
   if (object.styleRef().hasOutline())

@@ -217,7 +217,7 @@ class DraggedNodeImageBuilder {
         draggedLayoutObject->absoluteBoundingBoxRectIncludingDescendants();
     FloatRect boundingBox =
         layer->layoutObject()
-            ->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms)
+            .absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms)
             .boundingBox();
     DragImageBuilder dragImageBuilder(*m_localFrame, boundingBox);
     {

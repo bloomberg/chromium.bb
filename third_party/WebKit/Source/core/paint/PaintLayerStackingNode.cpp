@@ -66,7 +66,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
       m_stackingParent(0)
 #endif
 {
-  m_isStacked = layoutObject()->styleRef().isStacked();
+  m_isStacked = layoutObject().styleRef().isStacked();
 
   // Non-stacking contexts should have empty z-order lists. As this is already
   // the case, there is no need to dirty / recompute these lists.
@@ -75,7 +75,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
 
 PaintLayerStackingNode::~PaintLayerStackingNode() {
 #if DCHECK_IS_ON()
-  if (!layoutObject()->documentBeingDestroyed()) {
+  if (!layoutObject().documentBeingDestroyed()) {
     DCHECK(!isInStackingParentZOrderLists());
 
     updateStackingParentForZOrderLists(0);
@@ -90,8 +90,8 @@ static inline bool compareZIndex(PaintLayerStackingNode* first,
 }
 
 PaintLayerCompositor* PaintLayerStackingNode::compositor() const {
-  DCHECK(layoutObject()->view());
-  return layoutObject()->view()->compositor();
+  DCHECK(layoutObject().view());
+  return layoutObject().view()->compositor();
 }
 
 void PaintLayerStackingNode::dirtyZOrderLists() {
@@ -110,7 +110,7 @@ void PaintLayerStackingNode::dirtyZOrderLists() {
     m_negZOrderList->clear();
   m_zOrderListsDirty = true;
 
-  if (!layoutObject()->documentBeingDestroyed())
+  if (!layoutObject().documentBeingDestroyed())
     compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
@@ -143,7 +143,7 @@ void PaintLayerStackingNode::rebuildZOrderLists() {
   // layer elements are children of the view, sorted in top layer stacking
   // order.
   if (layer()->isRootLayer()) {
-    LayoutBlockFlow* rootBlock = layoutObject()->view();
+    LayoutBlockFlow* rootBlock = layoutObject().view();
     // If the viewport is paginated, everything (including "top-layer" elements)
     // gets redirected to the flow thread. So that's where we have to look, in
     // that case.
@@ -235,7 +235,7 @@ void PaintLayerStackingNode::styleDidChange(const ComputedStyle* oldStyle) {
   int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
 
   bool isStackingContext = this->isStackingContext();
-  bool shouldBeStacked = layoutObject()->styleRef().isStacked();
+  bool shouldBeStacked = layoutObject().styleRef().isStacked();
   if (isStackingContext == wasStackingContext &&
       m_isStacked == shouldBeStacked && oldZIndex == zIndex())
     return;
@@ -249,7 +249,7 @@ void PaintLayerStackingNode::styleDidChange(const ComputedStyle* oldStyle) {
 
   if (m_isStacked != shouldBeStacked) {
     m_isStacked = shouldBeStacked;
-    if (!layoutObject()->documentBeingDestroyed() && !layer()->isRootLayer())
+    if (!layoutObject().documentBeingDestroyed() && !layer()->isRootLayer())
       compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
   }
 }
@@ -265,7 +265,7 @@ PaintLayerStackingNode* PaintLayerStackingNode::ancestorStackingContextNode()
   return 0;
 }
 
-LayoutBoxModelObject* PaintLayerStackingNode::layoutObject() const {
+LayoutBoxModelObject& PaintLayerStackingNode::layoutObject() const {
   return m_layer->layoutObject();
 }
 

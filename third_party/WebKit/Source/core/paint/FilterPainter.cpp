@@ -51,18 +51,16 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   // done it above, and doing it later will defeat the outsets.
   paintingInfo.clipToDirtyRect = false;
 
-  DCHECK(m_layoutObject);
-
   if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
     m_clipRecorder = WTF::wrapUnique(new LayerClipRecorder(
-        context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect,
+        context, layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect,
         paintingInfo.rootLayer, LayoutPoint(), paintFlags));
   }
 
   if (!context.getPaintController().displayItemConstructionIsDisabled()) {
     CompositorFilterOperations compositorFilterOperations =
         layer.createCompositorFilterOperationsForFilter(
-            m_layoutObject->styleRef());
+            m_layoutObject.styleRef());
     // FIXME: It's possible to have empty CompositorFilterOperations here even
     // though the SkImageFilter produced above is non-null, since the
     // layer's FilterEffectBuilder can have a stale representation of
@@ -80,8 +78,8 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     }
     FloatPoint origin(offsetFromRoot);
     context.getPaintController().createAndAppend<BeginFilterDisplayItem>(
-        *m_layoutObject, std::move(imageFilter), FloatRect(visualBounds),
-        origin, std::move(compositorFilterOperations));
+        m_layoutObject, std::move(imageFilter), FloatRect(visualBounds), origin,
+        std::move(compositorFilterOperations));
   }
 
   m_filterInProgress = true;
@@ -91,7 +89,7 @@ FilterPainter::~FilterPainter() {
   if (!m_filterInProgress)
     return;
 
-  m_context.getPaintController().endItem<EndFilterDisplayItem>(*m_layoutObject);
+  m_context.getPaintController().endItem<EndFilterDisplayItem>(m_layoutObject);
 }
 
 }  // namespace blink

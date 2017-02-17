@@ -776,7 +776,7 @@ std::unique_ptr<TracedValue> InspectorLayerInvalidationTrackingEvent::data(
     const PaintLayer* layer,
     const char* reason) {
   const LayoutObject& paintInvalidationContainer =
-      layer->layoutObject()->containerForPaintInvalidation();
+      layer->layoutObject().containerForPaintInvalidation();
 
   std::unique_ptr<TracedValue> value = TracedValue::create();
   value->setString("frame", toHexString(paintInvalidationContainer.frame()));

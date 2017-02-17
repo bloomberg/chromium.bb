@@ -66,15 +66,15 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const {
 
 CompositingReasons
 CompositingReasonFinder::potentialCompositingReasonsFromStyle(
-    LayoutObject* layoutObject) const {
+    LayoutObject& layoutObject) const {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return CompositingReasonNone;
 
   CompositingReasons reasons = CompositingReasonNone;
 
-  const ComputedStyle& style = layoutObject->styleRef();
+  const ComputedStyle& style = layoutObject.styleRef();
 
-  if (requiresCompositingForTransform(*layoutObject))
+  if (requiresCompositingForTransform(layoutObject))
     reasons |= CompositingReason3DTransform;
 
   if (style.backfaceVisibility() == BackfaceVisibilityHidden)
@@ -101,9 +101,9 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
 
   // If the implementation of createsGroup changes, we need to be aware of that
   // in this part of code.
-  DCHECK((layoutObject->isTransparent() || layoutObject->hasMask() ||
-          layoutObject->hasFilterInducingProperty() || style.hasBlendMode()) ==
-         layoutObject->createsGroup());
+  DCHECK((layoutObject.isTransparent() || layoutObject.hasMask() ||
+          layoutObject.hasFilterInducingProperty() || style.hasBlendMode()) ==
+         layoutObject.createsGroup());
 
   if (style.hasMask())
     reasons |= CompositingReasonMaskWithCompositedDescendants;
@@ -115,16 +115,16 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
     reasons |= CompositingReasonBackdropFilter;
 
   // See Layer::updateTransform for an explanation of why we check both.
-  if (layoutObject->hasTransformRelatedProperty() && style.hasTransform())
+  if (layoutObject.hasTransformRelatedProperty() && style.hasTransform())
     reasons |= CompositingReasonTransformWithCompositedDescendants;
 
-  if (layoutObject->isTransparent())
+  if (layoutObject.isTransparent())
     reasons |= CompositingReasonOpacityWithCompositedDescendants;
 
   if (style.hasBlendMode())
     reasons |= CompositingReasonBlendingWithCompositedDescendants;
 
-  if (layoutObject->hasReflection())
+  if (layoutObject.hasReflection())
     reasons |= CompositingReasonReflectionWithCompositedDescendants;
 
   DCHECK(!(reasons & ~CompositingReasonComboAllStyleDeterminedReasons));
@@ -143,7 +143,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
     const PaintLayer* layer) const {
   CompositingReasons directReasons = CompositingReasonNone;
-  LayoutObject* layoutObject = layer->layoutObject();
+  LayoutObject& layoutObject = layer->layoutObject();
 
   if (m_compositingTriggers & OverflowScrollTrigger && layer->clipParent())
     directReasons |= CompositingReasonOutOfFlowClipping;
@@ -164,7 +164,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
   if (requiresCompositingForScrollDependentPosition(layer))
     directReasons |= CompositingReasonScrollDependentPosition;
 
-  directReasons |= layoutObject->additionalCompositingReasons();
+  directReasons |= layoutObject.additionalCompositingReasons();
 
   DCHECK(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
   return directReasons;
@@ -215,8 +215,8 @@ bool CompositingReasonFinder::requiresCompositingForTransformAnimation(
 
 bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
     const PaintLayer* layer) const {
-  if (layer->layoutObject()->style()->position() != EPosition::kFixed &&
-      layer->layoutObject()->style()->position() != EPosition::kSticky)
+  if (layer->layoutObject().style()->position() != EPosition::kFixed &&
+      layer->layoutObject().style()->position() != EPosition::kSticky)
     return false;
 
   if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger) &&
@@ -231,7 +231,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   // container rather than the enclosing frame.
   if (layer->sticksToViewport())
     return m_layoutView.frameView()->isScrollable();
-  return layer->layoutObject()->style()->position() == EPosition::kSticky &&
+  return layer->layoutObject().style()->position() == EPosition::kSticky &&
          layer->ancestorOverflowLayer()->scrollsOverflow();
 }
 

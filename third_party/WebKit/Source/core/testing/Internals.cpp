@@ -1553,7 +1553,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
     // If the |graphicsLayer| sets the scrollingContent layer as its
     // scroll parent, consider it belongs to the scrolling layer and
     // mark the layer type as "scrolling".
-    if (!searchRoot->layoutObject()->hasTransformRelatedProperty() &&
+    if (!searchRoot->layoutObject().hasTransformRelatedProperty() &&
         searchRoot->scrollParent() &&
         searchRoot->parent() == searchRoot->scrollParent()) {
       *layerType = "scrolling";
@@ -1564,15 +1564,15 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
       // Only when the element's offsetParent == scroller's offsetParent we
       // can compute the element's relative position to the scrolling content
       // in this way.
-      if (searchRoot->layoutObject()->offsetParent() ==
-          searchRoot->parent()->layoutObject()->offsetParent()) {
-        LayoutBoxModelObject* current = searchRoot->layoutObject();
-        LayoutBoxModelObject* parent = searchRoot->parent()->layoutObject();
-        layerOffset->setWidth((parent->offsetLeft(parent->offsetParent()) -
-                               current->offsetLeft(parent->offsetParent()))
+      if (searchRoot->layoutObject().offsetParent() ==
+          searchRoot->parent()->layoutObject().offsetParent()) {
+        LayoutBoxModelObject& current = searchRoot->layoutObject();
+        LayoutBoxModelObject& parent = searchRoot->parent()->layoutObject();
+        layerOffset->setWidth((parent.offsetLeft(parent.offsetParent()) -
+                               current.offsetLeft(parent.offsetParent()))
                                   .toInt());
-        layerOffset->setHeight((parent->offsetTop(parent->offsetParent()) -
-                                current->offsetTop(parent->offsetParent()))
+        layerOffset->setHeight((parent.offsetTop(parent.offsetParent()) -
+                                current.offsetTop(parent.offsetParent()))
                                    .toInt());
         return searchRoot->parent();
       }
@@ -1580,7 +1580,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
 
     LayoutRect rect;
     PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-        *searchRoot->layoutObject(), rect);
+        searchRoot->layoutObject(), rect);
     rect.move(searchRoot->compositedLayerMapping()
                   ->contentOffsetInCompositingLayer());
 
@@ -1606,7 +1606,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
       *layerType = "squashing";
       LayoutRect rect;
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-          *searchRoot->layoutObject(), rect);
+          searchRoot->layoutObject(), rect);
       *layerOffset = IntSize(rect.x().toInt(), rect.y().toInt());
       return searchRoot;
     }
@@ -1708,7 +1708,7 @@ static void accumulateLayerRectList(PaintLayerCompositor* compositor,
     IntSize layerOffset;
     PaintLayer* paintLayer = findLayerForGraphicsLayer(
         compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
-    Node* node = paintLayer ? paintLayer->layoutObject()->node() : 0;
+    Node* node = paintLayer ? paintLayer->layoutObject().node() : 0;
     for (size_t i = 0; i < layerRects.size(); ++i) {
       if (!layerRects[i].isEmpty()) {
         rects->append(node, layerType, layerOffset.width(),

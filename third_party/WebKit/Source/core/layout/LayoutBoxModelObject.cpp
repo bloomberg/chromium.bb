@@ -209,7 +209,7 @@ void LayoutBoxModelObject::willBeDestroyed() {
     if (LocalFrame* frame = this->frame()) {
       if (FrameView* frameView = frame->view()) {
         if (style()->hasViewportConstrainedPosition())
-          frameView->removeViewportConstrainedObject(this);
+          frameView->removeViewportConstrainedObject(*this);
       }
     }
   }
@@ -405,7 +405,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
       } else {
         // This may get re-added to viewport constrained objects if the object
         // went from sticky to fixed.
-        frameView->removeViewportConstrainedObject(this);
+        frameView->removeViewportConstrainedObject(*this);
 
         // Remove sticky constraints for this layer.
         if (layer()) {
@@ -426,9 +426,9 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
 
     if (newStyleIsViewportConstained != oldStyleIsViewportConstrained) {
       if (newStyleIsViewportConstained && layer())
-        frameView->addViewportConstrainedObject(this);
+        frameView->addViewportConstrainedObject(*this);
       else
-        frameView->removeViewportConstrainedObject(this);
+        frameView->removeViewportConstrainedObject(*this);
     }
   }
 }
@@ -458,7 +458,7 @@ void LayoutBoxModelObject::invalidateStickyConstraints() {
 
 void LayoutBoxModelObject::createLayer() {
   ASSERT(!m_layer);
-  m_layer = WTF::makeUnique<PaintLayer>(this);
+  m_layer = WTF::makeUnique<PaintLayer>(*this);
   setHasLayer(true);
   m_layer->insertOnlyThisLayerAfterStyleChange();
 }
@@ -811,7 +811,7 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   LayoutBox* scrollAncestor =
       layer()->ancestorOverflowLayer()->isRootLayer()
           ? nullptr
-          : toLayoutBox(layer()->ancestorOverflowLayer()->layoutObject());
+          : &toLayoutBox(layer()->ancestorOverflowLayer()->layoutObject());
 
   LayoutUnit maxContainerWidth =
       containingBlock->isLayoutView()
@@ -970,7 +970,8 @@ FloatRect LayoutBoxModelObject::computeStickyConstrainingRect() const {
     return view()->frameView()->visibleContentRect();
 
   LayoutBox* enclosingClippingBox =
-      toLayoutBox(layer()->ancestorOverflowLayer()->layoutObject());
+      layer()->ancestorOverflowLayer()->layoutBox();
+  DCHECK(enclosingClippingBox);
   FloatRect constrainingRect;
   constrainingRect =
       FloatRect(enclosingClippingBox->overflowClipRect(LayoutPoint(DoublePoint(

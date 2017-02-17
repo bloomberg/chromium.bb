@@ -1574,14 +1574,14 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
   }
 }
 
-void FrameView::addViewportConstrainedObject(LayoutObject* object) {
+void FrameView::addViewportConstrainedObject(LayoutObject& object) {
   if (!m_viewportConstrainedObjects) {
     m_viewportConstrainedObjects =
         WTF::wrapUnique(new ViewportConstrainedObjectSet);
   }
 
-  if (!m_viewportConstrainedObjects->contains(object)) {
-    m_viewportConstrainedObjects->insert(object);
+  if (!m_viewportConstrainedObjects->contains(&object)) {
+    m_viewportConstrainedObjects->insert(&object);
 
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
@@ -1589,10 +1589,10 @@ void FrameView::addViewportConstrainedObject(LayoutObject* object) {
   }
 }
 
-void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
+void FrameView::removeViewportConstrainedObject(LayoutObject& object) {
   if (m_viewportConstrainedObjects &&
-      m_viewportConstrainedObjects->contains(object)) {
-    m_viewportConstrainedObjects->erase(object);
+      m_viewportConstrainedObjects->contains(&object)) {
+    m_viewportConstrainedObjects->erase(&object);
 
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())

@@ -136,22 +136,22 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
   // permit the video to share a backing with other layers.
   //
   // compositing/video/video-controls-layer-creation.html
-  if (layer->layoutObject()->isVideo() ||
-      squashingLayer.layoutObject()->isVideo())
+  if (layer->layoutObject().isVideo() ||
+      squashingLayer.layoutObject().isVideo())
     return SquashingDisallowedReasonSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.
   // FIXME: this is only necessary because there is frame code that assumes that
   // composited frames are not squashed.
-  if (layer->layoutObject()->isLayoutPart() ||
-      squashingLayer.layoutObject()->isLayoutPart())
+  if (layer->layoutObject().isLayoutPart() ||
+      squashingLayer.layoutObject().isLayoutPart())
     return SquashingDisallowedReasonSquashingLayoutPartIsDisallowed;
 
   if (squashingWouldExceedSparsityTolerance(layer, squashingState))
     return SquashingDisallowedReasonSquashingSparsityExceeded;
 
-  if (layer->layoutObject()->style()->hasBlendMode() ||
-      squashingLayer.layoutObject()->style()->hasBlendMode())
+  if (layer->layoutObject().style()->hasBlendMode() ||
+      squashingLayer.layoutObject().style()->hasBlendMode())
     return SquashingDisallowedReasonSquashingBlendingIsDisallowed;
 
   // FIXME: this is not efficient, since it walks up the tree. We should store
@@ -192,14 +192,14 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
   if (layer->nearestFixedPositionLayer() !=
       squashingLayer.nearestFixedPositionLayer())
     return SquashingDisallowedReasonNearestFixedPositionMismatch;
-  DCHECK(layer->layoutObject()->style()->position() != EPosition::kFixed);
+  DCHECK(layer->layoutObject().style()->position() != EPosition::kFixed);
 
-  if ((squashingLayer.layoutObject()->style()->subtreeWillChangeContents() &&
+  if ((squashingLayer.layoutObject().style()->subtreeWillChangeContents() &&
        squashingLayer.layoutObject()
-           ->style()
+           .style()
            ->isRunningAnimationOnCompositor()) ||
       squashingLayer.layoutObject()
-          ->style()
+          .style()
           ->shouldCompositeForCurrentAnimations())
     return SquashingDisallowedReasonSquashingLayerIsAnimating;
 
@@ -271,7 +271,7 @@ void CompositingLayerAssigner::updateSquashingAssignment(
 }
 
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(PaintLayer& layer) {
-  Page* page = layer.layoutObject()->frame()->page();
+  Page* page = layer.layoutObject().frame()->page();
   return (!page) ? nullptr : page->scrollingCoordinator();
 }
 
@@ -300,9 +300,10 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(
     m_layersChanged = true;
     if (ScrollingCoordinator* scrollingCoordinator =
             scrollingCoordinatorFromLayer(*layer)) {
-      if (layer->layoutObject()->style()->hasViewportConstrainedPosition())
+      if (layer->layoutObject().style()->hasViewportConstrainedPosition()) {
         scrollingCoordinator->frameViewFixedObjectsDidChange(
-            layer->layoutObject()->view()->frameView());
+            layer->layoutObject().view()->frameView());
+      }
     }
   }
 

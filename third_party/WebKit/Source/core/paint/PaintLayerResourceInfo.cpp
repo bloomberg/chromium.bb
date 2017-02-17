@@ -43,30 +43,30 @@ PaintLayerResourceInfo::~PaintLayerResourceInfo() {
 
 TreeScope* PaintLayerResourceInfo::treeScope() {
   DCHECK(m_layer);
-  Node* node = m_layer->layoutObject()->node();
+  Node* node = m_layer->layoutObject().node();
   return node ? &node->treeScope() : nullptr;
 }
 
 void PaintLayerResourceInfo::resourceContentChanged() {
   DCHECK(m_layer);
-  LayoutObject* layoutObject = m_layer->layoutObject();
-  layoutObject->setShouldDoFullPaintInvalidation();
+  LayoutObject& layoutObject = m_layer->layoutObject();
+  layoutObject.setShouldDoFullPaintInvalidation();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
-  layoutObject->setNeedsPaintPropertyUpdate();
-  const ComputedStyle& style = layoutObject->styleRef();
+  layoutObject.setNeedsPaintPropertyUpdate();
+  const ComputedStyle& style = layoutObject.styleRef();
   if (style.hasFilter() && style.filter().hasReferenceFilter())
     invalidateFilterChain();
 }
 
 void PaintLayerResourceInfo::resourceElementChanged() {
   DCHECK(m_layer);
-  LayoutObject* layoutObject = m_layer->layoutObject();
-  layoutObject->setShouldDoFullPaintInvalidation();
+  LayoutObject& layoutObject = m_layer->layoutObject();
+  layoutObject.setShouldDoFullPaintInvalidation();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
-  layoutObject->setNeedsPaintPropertyUpdate();
-  const ComputedStyle& style = layoutObject->styleRef();
+  layoutObject.setNeedsPaintPropertyUpdate();
+  const ComputedStyle& style = layoutObject.styleRef();
   if (style.hasFilter() && style.filter().hasReferenceFilter())
     invalidateFilterChain();
 }

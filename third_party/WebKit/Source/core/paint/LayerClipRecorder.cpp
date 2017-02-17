@@ -42,9 +42,9 @@ static bool inContainingBlockChain(PaintLayer* startLayer,
   if (startLayer == endLayer)
     return true;
 
-  LayoutView* view = startLayer->layoutObject()->view();
+  LayoutView* view = startLayer->layoutObject().view();
   for (const LayoutBlock* currentBlock =
-           startLayer->layoutObject()->containingBlock();
+           startLayer->layoutObject().containingBlock();
        currentBlock && currentBlock != view;
        currentBlock = currentBlock->containingBlock()) {
     if (currentBlock->layer() == endLayer)
@@ -81,8 +81,8 @@ void LayerClipRecorder::collectRoundedRectClips(
           paintFlags & PaintLayerPaintingAncestorClippingMaskPhase))
       break;
 
-    if (layer->layoutObject()->hasOverflowClip() &&
-        layer->layoutObject()->style()->hasBorderRadius() &&
+    if (layer->layoutObject().hasOverflowClip() &&
+        layer->layoutObject().style()->hasBorderRadius() &&
         inContainingBlockChain(&paintLayer, layer)) {
       LayoutPoint delta(fragmentOffset);
       layer->convertToLayerCoords(clipRoot, delta);
@@ -91,10 +91,10 @@ void LayerClipRecorder::collectRoundedRectClips(
       // use a pre-snapped border rect for clipping, since
       // getRoundedInnerBorderFor assumes it has not been snapped yet.
       LayoutSize size(layer->layoutBox()
-                          ? toLayoutBox(layer->layoutObject())->size()
+                          ? toLayoutBox(layer->layoutObject()).size()
                           : LayoutSize(layer->size()));
       roundedRectClips.push_back(
-          layer->layoutObject()->style()->getRoundedInnerBorderFor(
+          layer->layoutObject().style()->getRoundedInnerBorderFor(
               LayoutRect(delta, size)));
     }
 

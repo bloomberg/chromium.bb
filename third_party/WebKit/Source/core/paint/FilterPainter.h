@@ -33,7 +33,7 @@ class FilterPainter {
   bool m_filterInProgress;
   GraphicsContext& m_context;
   std::unique_ptr<LayerClipRecorder> m_clipRecorder;
-  LayoutObject* m_layoutObject;
+  LayoutObject& m_layoutObject;
 };
 
 }  // namespace blink
