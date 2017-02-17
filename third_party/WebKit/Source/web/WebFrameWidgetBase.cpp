@@ -182,7 +182,12 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
     DragAction dragAction,
     int modifiers) {
   DCHECK(m_currentDragData);
-  if (ignoreInputEvents()) {
+  // TODO(paulmeyer): It shouldn't be possible for |m_currentDragData| to be
+  // null here, but this is somehow happening (rarely). This suggests that in
+  // some cases drag-over is happening before drag-enter, which should be
+  // impossible. This needs to be investigated further. Once fixed, the extra
+  // check for |!m_currentDragData| should be removed. (crbug.com/671504)
+  if (ignoreInputEvents() || !m_currentDragData) {
     cancelDrag();
     return WebDragOperationNone;
   }
