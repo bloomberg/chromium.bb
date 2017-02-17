@@ -20,8 +20,11 @@ extern const char kRemoteSuggestionCategories[];
 extern const char kSnippetLastFetchAttempt[];
 // The pref name for the currently applied minimal interval between two
 // successive soft background fetches that react to user activity (such as
-// opening an NTP).
+// opening Chrome).
 extern const char kSnippetSoftFetchingIntervalOnUsageEvent[];
+// The pref name for the currently applied minimal interval between two
+// successive soft brackground fetches when the New Tab Page is opened.
+extern const char kSnippetSoftFetchingIntervalOnNtpOpened[];
 
 // The pref name for the currently-scheduled background fetching interval when
 // there is WiFi connectivity.

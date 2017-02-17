@@ -419,7 +419,7 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldFetchAgainOnNTPOpenedLaterAgain) {
+       ShouldFetchAgainOnBrowserForgroundLaterAgain) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
   {
     InSequence s;
@@ -438,11 +438,11 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   ChangeStatusOfUnderlyingProvider(
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
   // Make the first soft fetch successful.
-  scheduling_provider_->OnNTPOpened();
+  scheduling_provider_->OnBrowserForegrounded();
   signal_fetch_done.Run(Status::Success());
   // Open NTP again after 2hrs.
   test_clock_->Advance(base::TimeDelta::FromHours(2));
-  scheduling_provider_->OnNTPOpened();
+  scheduling_provider_->OnBrowserForegrounded();
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
@@ -584,6 +584,94 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   // Schedule() should get called for the second time after params have changed.
   ChangeStatusOfUnderlyingProvider(
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ReschedulesWhenOnNtpOpenedParamChanges) {
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _)).Times(2);
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
+  // null. Change the fallback interval for this class.
+  SetVariationParameter("soft_on_ntp_opened_interval_hours-active_ntp_user",
+                        "1.5");
+
+  // Schedule() should get called for the second time after params have changed.
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       FetchIntervalForNtpOpenedTrigger) {
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  {
+    InSequence s;
+    // Initial scheduling after being enabled.
+    EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+    // The first call to NTPOpened results in a fetch.
+    EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_))
+        .WillOnce(SaveArg<0>(&signal_fetch_done));
+    // Rescheduling after a succesful fetch.
+    EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+    // The third call to NTPOpened 35min later again results in a fetch.
+    EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  }
+
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  scheduling_provider_->OnNTPOpened();
+  signal_fetch_done.Run(Status::Success());
+
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 2h time
+  // interval by default for soft backgroudn fetches on ntp open events.
+
+  // Open NTP again after 20min. This time no fetch is executed.
+  test_clock_->Advance(base::TimeDelta::FromMinutes(20));
+  scheduling_provider_->OnNTPOpened();
+
+  // Open NTP again after 101min (121min since first opened). Since the default
+  // time interval has passed refetch again.
+  test_clock_->Advance(base::TimeDelta::FromMinutes(101));
+  scheduling_provider_->OnNTPOpened();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       OverrideFetchIntervalForNtpOpenedTrigger) {
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
+  // null. Change the on usage interval for this class from 2h to 30min.
+  SetVariationParameter("soft_on_ntp_opened_interval_hours-active_ntp_user",
+                        "0.5");
+
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  {
+    InSequence s;
+    // Initial scheduling after being enabled.
+    EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+    // The first call to NTPOpened results in a fetch.
+    EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_))
+        .WillOnce(SaveArg<0>(&signal_fetch_done));
+    // Rescheduling after a succesful fetch.
+    EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+    // The third call to NTPOpened 35min later again results in a fetch.
+    EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  }
+
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  scheduling_provider_->OnNTPOpened();
+  signal_fetch_done.Run(Status::Success());
+
+  // Open NTP again after 20min. No fetch request is issues since the 30 min
+  // time interval has not passed yet.
+  test_clock_->Advance(base::TimeDelta::FromMinutes(20));
+  scheduling_provider_->OnNTPOpened();
+
+  // Open NTP again after 15min (35min since first opened)
+  test_clock_->Advance(base::TimeDelta::FromMinutes(15));
+  scheduling_provider_->OnNTPOpened();
 }
 
 }  // namespace ntp_snippets

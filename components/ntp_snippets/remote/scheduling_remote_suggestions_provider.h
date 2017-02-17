@@ -114,6 +114,7 @@ class SchedulingRemoteSuggestionsProvider final
       base::TimeDelta interval_persistent_wifi;
       base::TimeDelta interval_persistent_fallback;
       base::TimeDelta interval_soft_on_usage_event;
+      base::TimeDelta interval_soft_on_ntp_opened;
   };
 
   enum class TriggerType;
@@ -137,7 +138,7 @@ class SchedulingRemoteSuggestionsProvider final
 
   // Checks whether it is time to perform a soft background fetch, according to
   // |schedule|.
-  bool ShouldRefetchInTheBackgroundNow();
+  bool ShouldRefetchInTheBackgroundNow(TriggerType trigger);
 
   // Returns whether background fetching (for the given |trigger|) is disabled.
   bool BackgroundFetchesDisabled(TriggerType trigger) const;

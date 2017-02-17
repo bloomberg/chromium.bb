@@ -17,6 +17,9 @@ const char kSnippetLastFetchAttempt[] =
 const char kSnippetSoftFetchingIntervalOnUsageEvent[] =
     "ntp_snippets.soft_fetching_interval_on_usage_event";
 
+const char kSnippetSoftFetchingIntervalOnNtpOpened[] =
+    "ntp_snippets.soft_fetching_interval_on_ntp_opened";
+
 const char kSnippetPersistentFetchingIntervalWifi[] =
     "ntp_snippets.fetching_interval_wifi";
 
