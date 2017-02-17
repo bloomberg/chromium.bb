@@ -33,6 +33,8 @@ class RendererWebMIDIAccessorImpl
  private:
   blink::WebMIDIAccessorClient* client_;
 
+  bool is_client_added_;
+
   MidiMessageFilter* midi_message_filter();
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMIDIAccessorImpl);

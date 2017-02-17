@@ -51,6 +51,11 @@ void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
 }
 
 void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
+  DCHECK(clients_.find(client) != clients_.end() ||
+         std::find(clients_waiting_session_queue_.begin(),
+                   clients_waiting_session_queue_.end(),
+                   client) != clients_waiting_session_queue_.end())
+      << "RemoveClient call was not ballanced with AddClient call";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   clients_.erase(client);
   ClientsQueue::iterator it = std::find(clients_waiting_session_queue_.begin(),
