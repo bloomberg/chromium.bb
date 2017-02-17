@@ -8,7 +8,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.PlatformServiceBridge;
