@@ -203,6 +203,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop,
       return a.offsetRotation() == b.offsetRotation();
     case CSSPropertyOpacity:
       return a.opacity() == b.opacity();
+    case CSSPropertyOrder:
+      return a.order() == b.order();
     case CSSPropertyOrphans:
       return a.orphans() == b.orphans();
     case CSSPropertyOutlineColor:

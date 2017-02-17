@@ -146,6 +146,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyFloodOpacity:
     case CSSPropertyFontSizeAdjust:
     case CSSPropertyOpacity:
+    case CSSPropertyOrder:
     case CSSPropertyOrphans:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyStopOpacity:

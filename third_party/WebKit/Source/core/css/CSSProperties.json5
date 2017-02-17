@@ -1361,6 +1361,7 @@
       name: "order",
       api_class: true,
       api_methods: ["parseSingleValue"],
+      interpolable: true,
       type_name: "int",
     },
     {

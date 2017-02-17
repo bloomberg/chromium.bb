@@ -32,6 +32,9 @@ bool NumberPropertyFunctions::getNumber(CSSPropertyID property,
     case CSSPropertyOpacity:
       result = style.opacity();
       return true;
+    case CSSPropertyOrder:
+      result = style.order();
+      return true;
     case CSSPropertyOrphans:
       result = style.orphans();
       return true;
@@ -117,6 +120,7 @@ double NumberPropertyFunctions::clampNumber(CSSPropertyID property,
     case CSSPropertyColumnRuleWidth:
       return clampTo<unsigned short>(round(value));
 
+    case CSSPropertyOrder:
     case CSSPropertyZIndex:
       return clampTo<int>(round(value));
 
@@ -148,6 +152,9 @@ bool NumberPropertyFunctions::setNumber(CSSPropertyID property,
       return true;
     case CSSPropertyOpacity:
       style.setOpacity(value);
+      return true;
+    case CSSPropertyOrder:
+      style.setOrder(value);
       return true;
     case CSSPropertyOrphans:
       style.setOrphans(value);

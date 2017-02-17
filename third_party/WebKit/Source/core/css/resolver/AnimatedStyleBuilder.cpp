@@ -549,6 +549,10 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
       style->setOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0,
                                        nextafterf(1, 0)));
       return;
+    case CSSPropertyOrder:
+      style->setOrder(
+          clampTo<int>(round(toAnimatableDouble(value)->toDouble())));
+      return;
     case CSSPropertyOrphans:
       style->setOrphans(
           clampTo<short>(round(toAnimatableDouble(value)->toDouble()), 1));
