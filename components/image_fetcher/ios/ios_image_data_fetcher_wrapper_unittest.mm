@@ -92,38 +92,11 @@ const char kTestUrl[] = "http://www.img.com";
 const char kWEBPHeaderResponse[] =
     "HTTP/1.1 200 OK\0Content-type: image/webp\0\0";
 
-// TODO(crbug.com/687921): Refactor this.
-class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
- public:
-  WebpDecoderDelegate() = default;
-  NSData* data() const { return decoded_image_; }
-
-  void OnFinishedDecoding(bool success) override {}
-  void SetImageFeatures(
-      size_t total_size,
-      webp_transcode::WebpDecoder::DecodedImageFormat format) override {
-    decoded_image_ = [[NSMutableData alloc] initWithCapacity:total_size];
-  }
-  void OnDataDecoded(NSData* data) override {
-    [decoded_image_ appendData:data];
-  }
-
- private:
-  ~WebpDecoderDelegate() override {}
-  NSMutableData* decoded_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebpDecoderDelegate);
-};
-
 // Returns a NSData object containing the decoded image.
 NSData* DecodedWebpImage() {
-  scoped_refptr<WebpDecoderDelegate> delegate(new WebpDecoderDelegate);
-  scoped_refptr<webp_transcode::WebpDecoder> decoder(
-      new webp_transcode::WebpDecoder(delegate.get()));
-  decoder->OnDataReceived([NSData
+  return webp_transcode::WebpDecoder::DecodeWebpImage([NSData
       dataWithBytes:reinterpret_cast<const char*>(kWEBPImage)
              length:sizeof(kWEBPImage)]);
-  return delegate->data();
 }
 
 }  // namespace

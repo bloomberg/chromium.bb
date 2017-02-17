@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/callback.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -18,73 +18,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
- public:
-  WebpDecoderDelegate() = default;
-
-  NSData* data() const { return decoded_image_; }
-
-  // WebpDecoder::Delegate methods
-  void OnFinishedDecoding(bool success) override {
-    if (!success)
-      decoded_image_ = nil;
-  }
-
-  void SetImageFeatures(
-      size_t total_size,
-      webp_transcode::WebpDecoder::DecodedImageFormat format) override {
-    decoded_image_ = [[NSMutableData alloc] initWithCapacity:total_size];
-  }
-
-  void OnDataDecoded(NSData* data) override {
-    DCHECK(decoded_image_);
-    [decoded_image_ appendData:data];
-  }
-
- private:
-  ~WebpDecoderDelegate() override {}
-  NSMutableData* decoded_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebpDecoderDelegate);
-};
-
-// Returns an NSData object containing the decoded image data of the given
-// webp_image. Returns nil in case of failure.
-base::scoped_nsobject<NSData> DecodeWebpImage(
-    const base::scoped_nsobject<NSData>& webp_image) {
-  scoped_refptr<WebpDecoderDelegate> delegate(new WebpDecoderDelegate);
-  scoped_refptr<webp_transcode::WebpDecoder> decoder(
-      new webp_transcode::WebpDecoder(delegate.get()));
-  decoder->OnDataReceived(webp_image);
-  DLOG_IF(ERROR, !delegate->data()) << "WebP image decoding failed.";
-  return base::scoped_nsobject<NSData>(delegate->data());
-}
-
-// Returns true if the given image_data is a WebP image.
-//
-// Every WebP file contains a 12 byte file header in the beginning of the file.
-// A WebP file header starts with the four ASCII characters "RIFF". The next
-// four bytes contain the image size and the last four header bytes contain the
-// four ASCII characters "WEBP".
-//
-// WebP file header:
-//                                  1 1
-// Byte Nr.     0 1 2 3 4 5 6 7 8 9 0 1
-// Byte value [ R I F F ? ? ? ? W E B P  ]
-//
-// For more information see:
-// https://developers.google.com/speed/webp/docs/riff_container#webp_file_header
-bool IsWebpImage(const std::string& image_data) {
-  if (image_data.length() < 12)
-    return false;
-  return image_data.compare(0, 4, "RIFF") == 0 &&
-         image_data.compare(8, 4, "WEBP") == 0;
-}
-
-}  // namespace
 
 namespace suggestions {
 
@@ -100,7 +33,7 @@ class IOSImageDecoderImpl : public image_fetcher::ImageDecoder {
  private:
   void CreateUIImageAndRunCallback(
       const image_fetcher::ImageDecodedCallback& callback,
-      const base::scoped_nsobject<NSData>& image_data);
+      NSData* image_data);
 
   // The task runner used to decode images if necessary.
   const scoped_refptr<base::TaskRunner> task_runner_;
@@ -124,16 +57,18 @@ void IOSImageDecoderImpl::DecodeImage(
     const std::string& image_data,
     const image_fetcher::ImageDecodedCallback& callback) {
   // Convert the |image_data| std::string to an NSData buffer.
-  base::scoped_nsobject<NSData> data([NSData
-      dataWithBytesNoCopy:const_cast<char*>(image_data.c_str())
-                   length:image_data.length()
-             freeWhenDone:NO]);
+  // The data is copied as it may have to outlive the caller in
+  // PostTaskAndReplyWithResult.
+  NSData* data =
+      [NSData dataWithBytes:image_data.data() length:image_data.size()];
 
   // The WebP image format is not supported by iOS natively. Therefore WebP
   // images need to be decoded explicitly,
-  if (IsWebpImage(image_data)) {
+  if (webp_transcode::WebpDecoder::IsWebpImage(image_data)) {
     base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE, base::Bind(&DecodeWebpImage, data),
+        task_runner_.get(), FROM_HERE, base::BindBlockArc(^NSData*() {
+          return webp_transcode::WebpDecoder::DecodeWebpImage(data);
+        }),
         base::Bind(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
                    weak_factory_.GetWeakPtr(), callback));
   } else {
@@ -143,7 +78,7 @@ void IOSImageDecoderImpl::DecodeImage(
 
 void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
     const image_fetcher::ImageDecodedCallback& callback,
-    const base::scoped_nsobject<NSData>& image_data) {
+    NSData* image_data) {
   // Decode the image data using UIImage.
   if (image_data) {
     // "Most likely" always returns 1x images.

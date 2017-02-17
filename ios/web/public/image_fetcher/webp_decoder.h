@@ -40,6 +40,27 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
 
   explicit WebpDecoder(WebpDecoder::Delegate* delegate);
 
+  // Returns an NSData object containing the decoded image data of the given
+  // webp_image. Returns nil in case of failure.
+  static NSData* DecodeWebpImage(NSData* webp_image);
+
+  // Returns true if the given image_data is a WebP image.
+  //
+  // Every WebP file contains a 12 byte file header in the beginning of the
+  // file.
+  // A WebP file header starts with the four ASCII characters "RIFF". The next
+  // four bytes contain the image size and the last four header bytes contain
+  // the four ASCII characters "WEBP".
+  //
+  // WebP file header:
+  //                                  1 1
+  // Byte Nr.     0 1 2 3 4 5 6 7 8 9 0 1
+  // Byte value [ R I F F ? ? ? ? W E B P  ]
+  //
+  // For more information see:
+  // https://developers.google.com/speed/webp/docs/riff_container#webp_file_header
+  static bool IsWebpImage(const std::string& image_data);
+
   // For tests.
   static size_t GetHeaderSize();
 

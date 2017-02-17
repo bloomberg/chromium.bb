@@ -17,6 +17,40 @@
 
 namespace {
 
+class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
+ public:
+  WebpDecoderDelegate() = default;
+
+  NSData* data() const { return decoded_image_; }
+
+  // WebpDecoder::Delegate methods
+  void OnFinishedDecoding(bool success) override {
+    if (!success)
+      decoded_image_ = nil;
+  }
+
+  void SetImageFeatures(
+      size_t total_size,
+      webp_transcode::WebpDecoder::DecodedImageFormat format) override {
+    decoded_image_ = [[NSMutableData alloc] initWithCapacity:total_size];
+  }
+
+  void OnDataDecoded(NSData* data) override {
+    DCHECK(decoded_image_);
+    [decoded_image_ appendData:data];
+  }
+
+ private:
+  ~WebpDecoderDelegate() override {}
+  NSMutableData* decoded_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebpDecoderDelegate);
+};
+
+// Content-type header for WebP images.
+const char kWEBPFirstMagicPattern[] = "RIFF";
+const char kWEBPSecondMagicPattern[] = "WEBP";
+
 const uint8_t kNumIfdEntries = 15;
 const unsigned int kExtraDataSize = 16;
 // 10b for signature/header + n * 12b entries + 4b for IFD terminator:
@@ -89,6 +123,26 @@ void WriteTiffHeader(uint8_t* dst,
 }  // namespace
 
 namespace webp_transcode {
+
+// static
+NSData* WebpDecoder::DecodeWebpImage(NSData* webp_image) {
+  scoped_refptr<WebpDecoderDelegate> delegate(new WebpDecoderDelegate);
+
+  scoped_refptr<webp_transcode::WebpDecoder> decoder(
+      new webp_transcode::WebpDecoder(delegate.get()));
+
+  decoder->OnDataReceived(webp_image);
+  DLOG_IF(ERROR, !delegate->data()) << "WebP image decoding failed.";
+  return delegate->data();
+}
+
+// static
+bool WebpDecoder::IsWebpImage(const std::string& image_data) {
+  if (image_data.length() < 12)
+    return false;
+  return image_data.compare(0, 4, kWEBPFirstMagicPattern) == 0 &&
+         image_data.compare(8, 4, kWEBPSecondMagicPattern) == 0;
+}
 
 // static
 size_t WebpDecoder::GetHeaderSize() {
