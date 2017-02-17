@@ -557,6 +557,8 @@ source_set("memory_buffer_sources") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "geometry/test/rect_test_util.cc",
+    "geometry/test/rect_test_util.h",
     "image/image_unittest_util.cc",
     "image/image_unittest_util.h",
     "image/image_unittest_util_ios.mm",

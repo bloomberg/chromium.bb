@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -32,7 +36,9 @@
 #include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/test/rect_test_util.h"
 
+using ::gfx::test::RectContains;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
@@ -178,8 +184,13 @@ class LoginTest : public LoginManagerTest {
 void TestSystemTrayIsVisible() {
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
+  ash::WmWindow* wm_primary_win = ash::WmWindow::Get(primary_win);
+  ash::WmShelf* wm_shelf = ash::WmShelf::ForWindow(wm_primary_win);
+  SCOPED_TRACE(testing::Message()
+               << "ShelfVisibilityState=" << wm_shelf->GetVisibilityState()
+               << " ShelfAutoHideBehavior=" << wm_shelf->auto_hide_behavior());
   EXPECT_TRUE(tray->visible());
-  EXPECT_TRUE(primary_win->bounds().Contains(tray->GetBoundsInScreen()));
+  EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
 }
 
 }  // namespace
