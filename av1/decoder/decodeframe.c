@@ -4713,6 +4713,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // EC_ADAPT, DAALA_EC
   }
 #if CONFIG_EC_MULTISYMBOL
+#if CONFIG_NEW_TOKENSET
+  av1_coef_head_cdfs(fc);
+#endif
+  /* Make tail distribution from head */
   av1_coef_pareto_cdfs(fc);
 #if CONFIG_REF_MV
   for (i = 0; i < NMV_CONTEXTS; ++i) av1_set_mv_cdfs(&fc->nmvc[i]);

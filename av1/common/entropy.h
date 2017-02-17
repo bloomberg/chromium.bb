@@ -215,6 +215,9 @@ extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
 extern const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS]
                                                 [ENTROPY_TOKENS - 3];
 struct frame_contexts;
+#if CONFIG_NEW_TOKENSET
+void av1_coef_head_cdfs(struct frame_contexts *fc);
+#endif
 void av1_coef_pareto_cdfs(struct frame_contexts *fc);
 #endif  // CONFIG_EC_MULTISYMBOL
 
