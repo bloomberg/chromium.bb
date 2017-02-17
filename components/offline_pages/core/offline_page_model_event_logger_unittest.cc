@@ -12,12 +12,12 @@ namespace {
 
 const char kNamespace[] = "last_n";
 const char kUrl[] = "http://www.wikipedia.org";
-const char kOfflineId[] = "foobar";
+const int64_t kOfflineId = 12345L;
 const int kTimeLength = 21;
 const char kPageSaved[] =
-    "http://www.wikipedia.org is saved at last_n with id foobar";
-const char kPageDeleted[] = "Page with ID foobar has been deleted";
-const char kPageExpired[] = "Page with ID foobar has been expired";
+    "http://www.wikipedia.org is saved at last_n with id 12345";
+const char kPageDeleted[] = "Page with ID 12345 has been deleted";
+const char kPageExpired[] = "Page with ID 12345 has been expired";
 const char kRecordStoreClearError[] = "Offline store clear failed";
 const char kRecordStoreCleared[] = "Offline store cleared";
 const char kRecordStoreReloadError[] =

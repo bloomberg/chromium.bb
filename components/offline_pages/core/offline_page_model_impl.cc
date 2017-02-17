@@ -728,9 +728,9 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
     result = SavePageResult::SUCCESS;
     ReportPageHistogramAfterSave(policy_controller_.get(), offline_pages_,
                                  offline_page, GetCurrentTime());
-    offline_event_logger_.RecordPageSaved(
-        offline_page.client_id.name_space, offline_page.url.spec(),
-        std::to_string(offline_page.offline_id));
+    offline_event_logger_.RecordPageSaved(offline_page.client_id.name_space,
+                                          offline_page.url.spec(),
+                                          offline_page.offline_id);
   } else if (status == ItemActionStatus::ALREADY_EXISTS) {
     // Remove the orphaned archive.  No callback necessary.
     archive_manager_->DeleteArchive(file_path, base::Bind([](bool) {}));
@@ -944,7 +944,7 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
   // fully asynchronous code.
   for (const auto& page : result->updated_items) {
     int64_t offline_id = page.offline_id;
-    offline_event_logger_.RecordPageDeleted(std::to_string(offline_id));
+    offline_event_logger_.RecordPageDeleted(offline_id);
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
       continue;

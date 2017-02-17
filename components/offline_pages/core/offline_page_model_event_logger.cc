@@ -8,16 +8,19 @@ namespace offline_pages {
 
 void OfflinePageModelEventLogger::RecordPageSaved(const std::string& name_space,
                                                   const std::string& url,
-                                                  const std::string& id) {
-  RecordActivity(url + " is saved at " + name_space + " with id " + id);
+                                                  int64_t offline_id) {
+  std::string id_str = std::to_string(offline_id);
+  RecordActivity(url + " is saved at " + name_space + " with id " + id_str);
 }
 
-void OfflinePageModelEventLogger::RecordPageDeleted(const std::string& id) {
-  RecordActivity("Page with ID " + id + " has been deleted");
+void OfflinePageModelEventLogger::RecordPageDeleted(int64_t offline_id) {
+  std::string id_str = std::to_string(offline_id);
+  RecordActivity("Page with ID " + id_str + " has been deleted");
 }
 
-void OfflinePageModelEventLogger::RecordPageExpired(const std::string& id) {
-  RecordActivity("Page with ID " + id + " has been expired");
+void OfflinePageModelEventLogger::RecordPageExpired(int64_t offline_id) {
+  std::string id_str = std::to_string(offline_id);
+  RecordActivity("Page with ID " + id_str + " has been expired");
 }
 
 void OfflinePageModelEventLogger::RecordStoreClearError() {
