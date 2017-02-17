@@ -309,10 +309,13 @@ const CGFloat kButtonFontSize = 17;
   [navigationBar setTranslucent:YES];
   [navigationBar setTranslatesAutoresizingMaskIntoConstraints:NO];
 
+  UIButton* systemButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  UIColor* systemColor = [systemButton titleColorForState:UIControlStateNormal];
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(cancelPressed:)];
+  [cancelButton setTintColor:systemColor];
 
   NSString* appName =
       [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
