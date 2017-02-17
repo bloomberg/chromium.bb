@@ -857,7 +857,9 @@ const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
 }
 
 bool AppMenu::GetShouldUseNormalForegroundColor(int command_id) const {
-  return IsRecentTabsCommand(command_id);
+  // Use the normal foreground color instead of the disabled color for the
+  // recent tab headers. Only the headers from that submenu have font lists.
+  return IsRecentTabsCommand(command_id) && GetLabelFontList(command_id);
 }
 
 base::string16 AppMenu::GetTooltipText(int command_id,
