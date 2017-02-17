@@ -1580,12 +1580,6 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
     return false;
   }
 
-  if (!audio_configs_[0].encryption_scheme().Matches(
-          config.encryption_scheme())) {
-    MEDIA_LOG(ERROR, media_log_) << "Audio encryption changes not allowed.";
-    return false;
-  }
-
   // Check to see if the new config matches an existing one.
   for (size_t i = 0; i < audio_configs_.size(); ++i) {
     if (config.Matches(audio_configs_[i])) {
@@ -1609,12 +1603,6 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 
   if (video_configs_[0].codec() != config.codec()) {
     MEDIA_LOG(ERROR, media_log_) << "Video codec changes not allowed.";
-    return false;
-  }
-
-  if (!video_configs_[0].encryption_scheme().Matches(
-          config.encryption_scheme())) {
-    MEDIA_LOG(ERROR, media_log_) << "Video encryption changes not allowed.";
     return false;
   }
 

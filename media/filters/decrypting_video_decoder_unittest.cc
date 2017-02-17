@@ -107,14 +107,14 @@ class DecryptingVideoDecoderTest : public testing::Test {
   }
 
   // Reinitialize the |decoder_| and expects it to succeed.
-  void Reinitialize() {
+  void Reinitialize(const VideoDecoderConfig& new_config) {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
     EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
         .WillOnce(RunCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    InitializeAndExpectResult(TestVideoConfig::LargeEncrypted(), true);
+    InitializeAndExpectResult(new_config, true);
   }
 
   // Decode |buffer| and expect DecodeDone to get called with |status|.
@@ -273,10 +273,17 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
   InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
 
-TEST_F(DecryptingVideoDecoderTest, Reinitialize_Normal) {
+TEST_F(DecryptingVideoDecoderTest, Reinitialize_EncryptedToEncrypted) {
   Initialize();
   EnterNormalDecodingState();
-  Reinitialize();
+  Reinitialize(TestVideoConfig::LargeEncrypted());
+}
+
+// Test reinitializing decode with a new clear config.
+TEST_F(DecryptingVideoDecoderTest, Reinitialize_EncryptedToClear) {
+  Initialize();
+  EnterNormalDecodingState();
+  Reinitialize(TestVideoConfig::Normal());
 }
 
 TEST_F(DecryptingVideoDecoderTest, Reinitialize_Failure) {

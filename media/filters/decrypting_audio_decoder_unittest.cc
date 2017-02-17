@@ -281,15 +281,6 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_Normal) {
   Initialize();
 }
 
-// Ensure that DecryptingAudioDecoder only accepts encrypted audio.
-TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
-  AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, kSampleRate,
-                            EmptyExtraData(), Unencrypted());
-
-  InitializeAndExpectResult(config, false);
-}
-
 // Ensure decoder handles invalid audio configs without crashing.
 TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
   AudioDecoderConfig config(kUnknownAudioCodec, kUnknownSampleFormat,
@@ -368,8 +359,8 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_EndOfStream) {
   EnterEndOfStreamState();
 }
 
-// Test reinitializing decode with a new config
-TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
+// Test reinitializing decode with a new encrypted config.
+TEST_F(DecryptingAudioDecoderTest, Reinitialize_EncryptedToEncrypted) {
   Initialize();
 
   EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
@@ -384,6 +375,29 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
   EXPECT_NE(new_config.bits_per_channel(), config_.bits_per_channel());
   EXPECT_NE(new_config.channel_layout(), config_.channel_layout());
   EXPECT_NE(new_config.samples_per_second(), config_.samples_per_second());
+  ASSERT_TRUE(new_config.is_encrypted());
+
+  ReinitializeConfigChange(new_config);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test reinitializing decode with a new clear config.
+TEST_F(DecryptingAudioDecoderTest, Reinitialize_EncryptedToClear) {
+  Initialize();
+
+  EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
+      .Times(AtMost(1))
+      .WillOnce(RunCallback<1>(true));
+
+  // The new config is different from the initial config in bits-per-channel,
+  // channel layout and samples_per_second.
+  AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarS16,
+                                CHANNEL_LAYOUT_5_1, 88200, EmptyExtraData(),
+                                Unencrypted());
+  EXPECT_NE(new_config.bits_per_channel(), config_.bits_per_channel());
+  EXPECT_NE(new_config.channel_layout(), config_.channel_layout());
+  EXPECT_NE(new_config.samples_per_second(), config_.samples_per_second());
+  ASSERT_FALSE(new_config.is_encrypted());
 
   ReinitializeConfigChange(new_config);
   base::RunLoop().RunUntilIdle();

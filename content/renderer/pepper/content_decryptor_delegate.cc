@@ -95,32 +95,31 @@ bool CopyStringToArray(const std::string& str, uint8_t(&array)[array_size]) {
   return true;
 }
 
-// Fills the |block_info| with information from |encrypted_buffer|.
+// Fills the |block_info| with information from |buffer|.
 //
 // Returns true if |block_info| is successfully filled. Returns false
 // otherwise.
-bool MakeEncryptedBlockInfo(
-    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
-    uint32_t request_id,
-    PP_EncryptedBlockInfo* block_info) {
+bool MakeEncryptedBlockInfo(const scoped_refptr<media::DecoderBuffer>& buffer,
+                            uint32_t request_id,
+                            PP_EncryptedBlockInfo* block_info) {
   // TODO(xhwang): Fix initialization of PP_EncryptedBlockInfo here and
   // anywhere else.
   memset(block_info, 0, sizeof(*block_info));
   block_info->tracking_info.request_id = request_id;
 
   // EOS buffers need a request ID and nothing more.
-  if (encrypted_buffer->end_of_stream())
+  if (buffer->end_of_stream())
     return true;
 
-  DCHECK(encrypted_buffer->data_size())
-      << "DecryptConfig is set on an empty buffer";
+  DCHECK(buffer->data_size()) << "DecryptConfig is set on an empty buffer";
 
-  block_info->tracking_info.timestamp =
-      encrypted_buffer->timestamp().InMicroseconds();
-  block_info->data_size = encrypted_buffer->data_size();
+  block_info->tracking_info.timestamp = buffer->timestamp().InMicroseconds();
+  block_info->data_size = buffer->data_size();
 
-  const media::DecryptConfig* decrypt_config =
-      encrypted_buffer->decrypt_config();
+  const media::DecryptConfig* decrypt_config = buffer->decrypt_config();
+  // There's no need to fill encryption related fields for unencrypted buffer.
+  if (!decrypt_config)
+    return true;
 
   if (!CopyStringToArray(decrypt_config->key_id(), block_info->key_id) ||
       !CopyStringToArray(decrypt_config->iv(), block_info->iv))
@@ -529,7 +528,6 @@ bool ContentDecryptorDelegate::Decrypt(
   DVLOG(2) << "Decrypt() - request_id " << request_id;
 
   PP_EncryptedBlockInfo block_info = {};
-  DCHECK(encrypted_buffer->decrypt_config());
   if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
     return false;
   }
@@ -1113,12 +1111,12 @@ void ContentDecryptorDelegate::CancelDecode(Decryptor::StreamType stream_type) {
 
 bool ContentDecryptorDelegate::MakeMediaBufferResource(
     Decryptor::StreamType stream_type,
-    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+    const scoped_refptr<media::DecoderBuffer>& buffer,
     scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("media", "ContentDecryptorDelegate::MakeMediaBufferResource");
 
   // End of stream buffers are represented as null resources.
-  if (encrypted_buffer->end_of_stream()) {
+  if (buffer->end_of_stream()) {
     *resource = NULL;
     return true;
   }
@@ -1128,7 +1126,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
       (stream_type == Decryptor::kAudio) ? audio_input_resource_
                                          : video_input_resource_;
 
-  const size_t data_size = static_cast<size_t>(encrypted_buffer->data_size());
+  const size_t data_size = static_cast<size_t>(buffer->data_size());
   if (!media_resource.get() || media_resource->size() < data_size) {
     // Either the buffer hasn't been created yet, or we have one that isn't big
     // enough to fit |size| bytes.
@@ -1159,7 +1157,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
     media_resource = NULL;
     return false;
   }
-  memcpy(mapper.data(), encrypted_buffer->data(), data_size);
+  memcpy(mapper.data(), buffer->data(), data_size);
 
   *resource = media_resource;
   return true;

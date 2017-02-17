@@ -120,7 +120,6 @@ const size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 const int kAppendTimeSec = 1;
 const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2736;
-const int k320EncWebMFileDurationMs = 2737;
 const int k640WebMFileDurationMs = 2749;
 const int kOpusEndTrimmingWebMFileDurationMs = 2741;
 const int kVP9WebMFileDurationMs = 2736;
@@ -1532,7 +1531,9 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-// Config changes from encrypted to clear are not currently supported.
+// TODO(xhwang): Config change from clear to encrypted is allowed by the
+// demuxer, but is not currently supported by the Renderer. See
+// http://crbug.com/597443
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(MediaSource_ConfigChange_ClearThenEncrypted_WebM)) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,
@@ -1544,28 +1545,25 @@ TEST_F(PipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
-  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                                   second_file->data(),
-                                   second_file->data_size()));
-
+  EXPECT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
-
-  base::RunLoop().Run();
-  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, pipeline_status_);
-
-  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k320WebMFileDurationMs,
-            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
-  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
   source.Shutdown();
 }
 
-// Config changes from clear to encrypted are not currently supported.
+// Config change from encrypted to clear is allowed by the demuxer, and is
+// supported by the Renderer.
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(MediaSource_ConfigChange_EncryptedThenClear_WebM)) {
   MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm", kWebM,
@@ -1574,25 +1572,25 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
 
-  ASSERT_FALSE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                                   second_file->data(),
-                                   second_file->data_size()));
-
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
   source.EndOfStream();
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k320EncWebMFileDurationMs,
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
-  Play();
-
-  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
+  Stop();
 }
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_ANDROID)

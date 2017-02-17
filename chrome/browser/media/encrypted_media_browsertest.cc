@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/media_browsertest.h"
@@ -42,6 +43,8 @@
 #endif
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
+
+namespace chrome {
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
@@ -101,9 +104,14 @@ const char kEmeSessionClosedAndError[] = "EME_SESSION_CLOSED_AND_ERROR";
 const char kDefaultEmePlayer[] = "eme_player.html";
 
 // The type of video src used to load media.
-enum SrcType {
-  SRC,
-  MSE
+enum class SrcType { SRC, MSE };
+
+// Must be in sync with CONFIG_CHANGE_TYPE in eme_player_js/global.js
+enum class ConfigChangeType {
+  CLEAR_TO_CLEAR = 0,
+  CLEAR_TO_ENCRYPTED = 1,
+  ENCRYPTED_TO_CLEAR = 2,
+  ENCRYPTED_TO_ENCRYPTED = 3,
 };
 
 // Whether the video should be played once or twice.
@@ -164,7 +172,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
     query_params.push_back(std::make_pair("keySystem", key_system));
-    if (src_type == MSE)
+    if (src_type == SrcType::MSE)
       query_params.push_back(std::make_pair("useMSE", "1"));
     if (force_invalid_response)
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
@@ -301,7 +309,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                          kWebMVorbisAudioOnly, key_system, SRC,
+                          kWebMVorbisAudioOnly, key_system, SrcType::SRC,
                           kNoSessionToLoad, false, PlayCount::ONCE,
                           expected_title);
   }
@@ -310,8 +318,9 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                         const std::string& session_to_load,
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
-                          kWebMVP8VideoOnly, key_system, SRC, session_to_load,
-                          false, PlayCount::ONCE, expected_title);
+                          kWebMVP8VideoOnly, key_system, SrcType::SRC,
+                          session_to_load, false, PlayCount::ONCE,
+                          expected_title);
   }
 
  protected:
@@ -381,14 +390,26 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
         kNoSessionToLoad, false, PlayCount::ONCE, kEnded);
   }
 
-  void TestConfigChange() {
+  void TestConfigChange(ConfigChangeType config_change_type) {
+    // TODO(xhwang): Even when config change or playback is not supported we
+    // still start Chrome only to return directly here. We probably should not
+    // run these test cases at all. See http://crbug.com/693288
+    if (CurrentSourceType() != SrcType::MSE) {
+      DVLOG(0) << "Config change only happens when using MSE.";
+      return;
+    }
+    if (!IsPlayBackPossible(CurrentKeySystem())) {
+      DVLOG(0) << "Skipping test - ConfigChange test requires video playback.";
+      return;
+    }
+
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("runEncrypted", "1"));
-    RunEncryptedMediaTestPage("mse_config_change.html",
-                              CurrentKeySystem(),
-                              query_params,
-                              kEnded);
+    query_params.push_back(std::make_pair(
+        "configChangeType",
+        base::IntToString(static_cast<int>(config_change_type))));
+    RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
+                              query_params, kEnded);
   }
 
   std::string ConvertContainerFormat(EncryptedContainer format) {
@@ -437,24 +458,26 @@ using ::testing::Values;
 #if !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                         EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(SRC)));
+                        Combine(Values(kClearKeyKeySystem),
+                                Values(SrcType::SRC)));
 #endif  // !defined(OS_ANDROID)
 
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
                         EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(MSE)));
+                        Combine(Values(kClearKeyKeySystem),
+                                Values(SrcType::MSE)));
 
 // External Clear Key is currently only used on platforms that use Pepper CDMs.
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
 INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SRC)));
+                                Values(SrcType::SRC)));
 
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(MSE)));
+                                Values(SrcType::MSE)));
 
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
@@ -463,14 +486,15 @@ const char kExternalClearKeyDecryptOnlyKeySystem[] =
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
-                                Values(MSE)));
+                                Values(SrcType::MSE)));
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
-                        Combine(Values(kWidevineKeySystem), Values(MSE)));
+                        Combine(Values(kWidevineKeySystem),
+                                Values(SrcType::MSE)));
 #endif  // !defined(OS_CHROMEOS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -529,12 +553,28 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
   RunInvalidResponseTest();
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
-  if (!IsPlayBackPossible(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - ConfigChange test requires video playback.";
-    return;
-  }
-  TestConfigChange();
+// Strictly speaking this is not an "encrypted" media test. Keep it here for
+// completeness.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
+  TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
+}
+
+// TODO(xhwang): Support switching from clear to encrypted and fix the test
+// expectation. Currently this test passes when we do decrypt-and-decode but
+// fails when we do decrypt-only due to how decoder reselection during config
+// change is handled. See http://crbug.com/597443
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_ConfigChangeVideo_ClearToEncrypted) {
+  TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_EncryptedToClear) {
+  TestConfigChange(ConfigChangeType::ENCRYPTED_TO_CLEAR);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       ConfigChangeVideo_EncryptedToEncrypted) {
+  TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
@@ -567,7 +607,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {
 #endif
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -576,7 +616,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -585,7 +625,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -595,7 +635,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_EncryptedVideo_MP4_ClearAudio_WEBM) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -610,7 +650,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_ClearVideo_WEBM_EncryptedAudio_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -625,7 +665,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_EncryptedVideo_WEBM_EncryptedAudio_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != MSE) {
+  if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
@@ -642,7 +682,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                        kWebMVorbisAudioOnly, "com.widevine", MSE,
+                        kWebMVorbisAudioOnly, "com.widevine", SrcType::MSE,
                         kNoSessionToLoad, false, PlayCount::ONCE,
                         kEmeNotSupportedError);
 }
@@ -705,3 +745,5 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, VerifyCdmHostTest) {
 }
 
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+
+}  // namespace chrome

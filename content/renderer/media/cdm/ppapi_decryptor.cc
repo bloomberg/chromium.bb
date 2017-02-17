@@ -248,6 +248,8 @@ void PpapiDecryptor::Decrypt(
     return;
   }
 
+  // TODO(xhwang): If the buffer is not encrypted, return it directly.
+
   DVLOG(3) << __func__ << " - stream_type: " << stream_type;
   if (!CdmDelegate() ||
       !CdmDelegate()->Decrypt(stream_type, encrypted, decrypt_cb)) {
@@ -279,7 +281,6 @@ void PpapiDecryptor::InitializeAudioDecoder(
   }
 
   DVLOG(2) << __func__;
-  DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
   audio_decoder_init_cb_ = init_cb;
@@ -303,7 +304,6 @@ void PpapiDecryptor::InitializeVideoDecoder(
   }
 
   DVLOG(2) << __func__;
-  DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
   video_decoder_init_cb_ = init_cb;

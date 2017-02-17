@@ -99,24 +99,30 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
   // TODO(xhwang): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
-
-  std::vector<media::SubsampleEntry> subsamples;
-  for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
-    subsamples.push_back(
-        media::SubsampleEntry(input_buffer.subsamples[i].clear_bytes,
-                              input_buffer.subsamples[i].cipher_bytes));
-  }
-
-  std::unique_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(
-      std::string(reinterpret_cast<const char*>(input_buffer.key_id),
-                  input_buffer.key_id_size),
-      std::string(reinterpret_cast<const char*>(input_buffer.iv),
-                  input_buffer.iv_size),
-      subsamples));
-
-  output_buffer->set_decrypt_config(std::move(decrypt_config));
   output_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_buffer.timestamp));
+
+  // TODO(xhwang): Unify how to check whether a buffer is encrypted.
+  // See http://crbug.com/675003
+  if (input_buffer.iv_size != 0) {
+    DCHECK_GT(input_buffer.key_id_size, 0u);
+    std::vector<media::SubsampleEntry> subsamples;
+    for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
+      subsamples.push_back(
+          media::SubsampleEntry(input_buffer.subsamples[i].clear_bytes,
+                                input_buffer.subsamples[i].cipher_bytes));
+    }
+
+    std::unique_ptr<media::DecryptConfig> decrypt_config(
+        new media::DecryptConfig(
+            std::string(reinterpret_cast<const char*>(input_buffer.key_id),
+                        input_buffer.key_id_size),
+            std::string(reinterpret_cast<const char*>(input_buffer.iv),
+                        input_buffer.iv_size),
+            subsamples));
+
+    output_buffer->set_decrypt_config(std::move(decrypt_config));
+  }
 
   return output_buffer;
 }
@@ -729,7 +735,10 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   scoped_refptr<media::DecoderBuffer> buffer =
       CopyDecoderBufferFrom(encrypted_buffer);
 
-  if (buffer->end_of_stream()) {
+  // TODO(xhwang): Unify how to check whether a buffer is encrypted.
+  // See http://crbug.com/675003
+  if (buffer->end_of_stream() || !buffer->decrypt_config() ||
+      !buffer->decrypt_config()->is_encrypted()) {
     *decrypted_buffer = buffer;
     return cdm::kSuccess;
   }

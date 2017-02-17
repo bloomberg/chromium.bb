@@ -145,6 +145,8 @@
 
     function start() {
       initApp();  
+      // TODO(jrummell): Support setMediaKeys() after play().
+      // See http://crbug.com/675011
       emeApp.createPlayer()
           .then(function(p) {
               player = p;

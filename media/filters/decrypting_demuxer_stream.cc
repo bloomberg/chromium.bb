@@ -17,13 +17,11 @@
 
 namespace media {
 
-static bool IsStreamValidAndEncrypted(DemuxerStream* stream) {
+static bool IsStreamValid(DemuxerStream* stream) {
   return ((stream->type() == DemuxerStream::AUDIO &&
-           stream->audio_decoder_config().IsValidConfig() &&
-           stream->audio_decoder_config().is_encrypted()) ||
+           stream->audio_decoder_config().IsValidConfig()) ||
           (stream->type() == DemuxerStream::VIDEO &&
-           stream->video_decoder_config().IsValidConfig() &&
-           stream->video_decoder_config().is_encrypted()));
+           stream->video_decoder_config().IsValidConfig()));
 }
 
 DecryptingDemuxerStream::DecryptingDemuxerStream(
@@ -213,16 +211,26 @@ void DecryptingDemuxerStream::DecryptBuffer(
     return;
   }
 
+  DCHECK_EQ(kOk, status);
+
   if (buffer->end_of_stream()) {
     DVLOG(2) << "DoDecryptBuffer() - EOS buffer.";
     state_ = kIdle;
-    base::ResetAndReturn(&read_cb_).Run(status, buffer);
+    base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
     return;
   }
 
-  DCHECK(buffer->decrypt_config());
+  // TODO(xhwang): Unify clear buffer handling in clear and encrypted stream.
+  // See http://crbug.com/675003
+  if (!buffer->decrypt_config()) {
+    DVLOG(2) << "DoDecryptBuffer() - clear buffer in clear stream.";
+    state_ = kIdle;
+    base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
+    return;
+  }
+
   if (!buffer->decrypt_config()->is_encrypted()) {
-    DVLOG(2) << "DoDecryptBuffer() - clear buffer.";
+    DVLOG(2) << "DoDecryptBuffer() - clear buffer in encrypted stream.";
     scoped_refptr<DecoderBuffer> decrypted = DecoderBuffer::CopyFrom(
         buffer->data(), buffer->data_size());
     decrypted->set_timestamp(buffer->timestamp());
@@ -348,9 +356,8 @@ Decryptor::StreamType DecryptingDemuxerStream::GetDecryptorStreamType() const {
 }
 
 void DecryptingDemuxerStream::InitializeDecoderConfig() {
-  // The decoder selector or upstream demuxer make sure the stream is valid and
-  // potentially encrypted.
-  DCHECK(IsStreamValidAndEncrypted(demuxer_stream_));
+  // The decoder selector or upstream demuxer make sure the stream is valid.
+  DCHECK(IsStreamValid(demuxer_stream_));
 
   switch (demuxer_stream_->type()) {
     case AUDIO: {

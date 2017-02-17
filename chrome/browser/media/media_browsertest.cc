@@ -17,14 +17,18 @@
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+namespace chrome {
+
+// TODO(sandersd): Change the tests to use a more unique message.
+// See http://crbug.com/592067
+
 // Normal failure title.
 const char MediaBrowserTest::kFailed[] = "FAILED";
 
-// Capitalized event name set by Utils.installTitleEventHandler().
+// Upper case event name set by Utils.installTitleEventHandler().
 const char MediaBrowserTest::kEnded[] = "ENDED";
 
-// Uncapitalized event name as set by Utils.failTest().
-// TODO(sandersd): Change the tests to use a more unique message.
+// Lower case event name as set by Utils.failTest().
 const char MediaBrowserTest::kError[] = "error";
 
 MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {}
@@ -85,3 +89,5 @@ void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
 void MediaBrowserTest::IgnorePluginCrash() {
   ignore_plugin_crash_ = true;
 }
+
+}  // namespace chrome

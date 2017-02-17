@@ -78,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_WebM) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
-  TestSimplePlayback("bear-320x240-video-only.webm", kWebMAudioOnly, kError);
+  TestSimplePlayback("bear-320x240-video-only.webm", kWebMAudioOnly,
+                     kErrorEvent);
 }
 
 // Flaky test crbug.com/246308

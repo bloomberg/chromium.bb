@@ -31,17 +31,43 @@
       // Append MEDIA_2 source at APPEND_TIME, so expected total duration is:
       var TOTAL_DURATION = APPEND_TIME + MEDIA_2_LENGTH;
 
+      var firstFile;
+      var secondFile;
+
       function initTestConfig() {
         testConfig = new TestConfig();
         testConfig.loadQueryParams();
       }
 
+      function setMediaFiles() {
+        switch (testConfig.configChangeType) {
+          case CONFIG_CHANGE_TYPE.CLEAR_TO_CLEAR:
+            console.log('Config change type: clear to clear.');
+            firstFile = CLEAR_MEDIA_1;
+            secondFile = CLEAR_MEDIA_2;
+            break;
+          case CONFIG_CHANGE_TYPE.CLEAR_TO_ENCRYPTED:
+            console.log('Config change type: clear to encrypted.');
+            firstFile = CLEAR_MEDIA_1;
+            secondFile = ENCRYPTED_MEDIA_2;
+            break;
+          case CONFIG_CHANGE_TYPE.ENCRYPTED_TO_CLEAR:
+            console.log('Config change type: encrypted to clear.');
+            firstFile = ENCRYPTED_MEDIA_1;
+            secondFile = CLEAR_MEDIA_2;
+            break;
+          case CONFIG_CHANGE_TYPE.ENCRYPTED_TO_ENCRYPTED:
+            console.log('Config change type: encrypted to encrypted.');
+            firstFile = ENCRYPTED_MEDIA_1;
+            secondFile = ENCRYPTED_MEDIA_2;
+            break;
+        }
+      }
+
       function appendNextSource(mediaSource) {
         console.log('Appending next media source at ' + APPEND_TIME + 'sec.');
         var xhr = new XMLHttpRequest();
-        var mediaFile =
-            (testConfig.runEncrypted == 1) ? ENCRYPTED_MEDIA_2 : CLEAR_MEDIA_2;
-        xhr.open("GET", mediaFile);
+        xhr.open("GET", secondFile);
         xhr.responseType = 'arraybuffer';
         xhr.addEventListener('load', function(e) {
           var onUpdateEnd = function(e) {
@@ -121,14 +147,14 @@
 
       function runTest() {
         initTestConfig();
-        testConfig.mediaFile =
-            (testConfig.runEncrypted == 1) ? ENCRYPTED_MEDIA_1 : CLEAR_MEDIA_1;
+        setMediaFiles();
+        testConfig.mediaFile = firstFile;
         testConfig.mediaType = mediaType;
         video.addEventListener('timeupdate', onTimeUpdate);
         video.addEventListener('ended', Utils.failTest);
         var mediaSource = MediaSourceUtils.loadMediaSourceFromTestConfig(
             testConfig, appendNextSource);
-        if (testConfig.runEncrypted == 1) {
+        if (testConfig.configChangeType != CONFIG_CHANGE_TYPE.CLEAR_TO_CLEAR) {
           var emePlayer = PlayerUtils.createPlayer(video, testConfig);
           emePlayer.registerEventListeners()
               .then(function(player) {

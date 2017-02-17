@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
@@ -29,6 +30,8 @@
 #define SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL
 #endif
 
+namespace content {
+
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 
@@ -51,20 +54,24 @@ const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 const char kDefaultEmePlayer[] = "eme_player.html";
 
 // The type of video src used to load media.
-enum SrcType {
-  SRC,
-  MSE
-};
+enum class SrcType { SRC, MSE };
 
-namespace content {
+// Must be in sync with CONFIG_CHANGE_TYPE in eme_player_js/global.js
+enum class ConfigChangeType {
+  CLEAR_TO_CLEAR = 0,
+  CLEAR_TO_ENCRYPTED = 1,
+  ENCRYPTED_TO_CLEAR = 2,
+  ENCRYPTED_TO_ENCRYPTED = 3,
+};
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
 // - SrcType: The type of video src used to load media, MSE or SRC.
 // It is okay to run this test as a non-parameterized test, in this case,
 // GetParam() should not be called.
-class EncryptedMediaTest : public content::MediaBrowserTest,
-    public testing::WithParamInterface<std::tr1::tuple<const char*, SrcType> > {
+class EncryptedMediaTest : public MediaBrowserTest,
+                           public testing::WithParamInterface<
+                               std::tr1::tuple<const char*, SrcType>> {
  public:
   // Can only be used in parameterized (*_P) tests.
   const std::string CurrentKeySystem() {
@@ -89,10 +96,20 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
                           CurrentSourceType(), kEnded);
   }
 
-  void TestConfigChange() {
+  void TestConfigChange(ConfigChangeType config_change_type) {
+    // TODO(xhwang): Even when config change is not supported we still start
+    // content shell only to return directly here. We probably should not run
+    // these test cases at all.
+    if (CurrentSourceType() != SrcType::MSE) {
+      DVLOG(0) << "Config change only happens when using MSE.";
+      return;
+    }
+
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("runEncrypted", "1"));
+    query_params.push_back(std::make_pair(
+        "configChangeType",
+        base::IntToString(static_cast<int>(config_change_type))));
     RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
   }
 
@@ -106,7 +123,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
     query_params.push_back(std::make_pair("keySystem", key_system));
-    if (src_type == MSE)
+    if (src_type == SrcType::MSE)
       query_params.push_back(std::make_pair("useMSE", "1"));
     RunMediaTestPage(html_page, query_params, expectation, true);
   }
@@ -144,22 +161,26 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 using ::testing::Combine;
 using ::testing::Values;
 
-INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(SRC)));
+INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
+                        EncryptedMediaTest,
+                        Combine(Values(kClearKeyKeySystem),
+                                Values(SrcType::SRC)));
 
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(MSE)));
+INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
+                        EncryptedMediaTest,
+                        Combine(Values(kClearKeyKeySystem),
+                                Values(SrcType::MSE)));
 
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
 INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SRC)));
+                                Values(SrcType::SRC)));
 
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(MSE)));
+                                Values(SrcType::MSE)));
 #endif
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
@@ -217,8 +238,26 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVP9Video);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
-  TestConfigChange();
+// Strictly speaking this is not an "encrypted" media test. Keep it here for
+// completeness.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
+  TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
+}
+
+// TODO(xhwang): Support switching from clear to encrypted and enable this test.
+// See http://crbug.com/597443
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_ConfigChangeVideo_ClearToEncrypted) {
+  TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_EncryptedToClear) {
+  TestConfigChange(ConfigChangeType::ENCRYPTED_TO_CLEAR);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       ConfigChangeVideo_EncryptedToEncrypted) {
+  TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
@@ -227,7 +266,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                        kWebMVorbisAudioOnly, "com.example.foo", MSE,
+                        kWebMVorbisAudioOnly, "com.example.foo", SrcType::MSE,
                         kEmeNotSupportedError);
 }
 

@@ -12,6 +12,7 @@ function TestConfig() {
   this.useMSE = false;
   this.runFPS = false;
   this.playTwice = false;
+  this.configChangeType = CONFIG_CHANGE_TYPE.CLEAR_TO_CLEAR;
 }
 
 TestConfig.prototype.loadQueryParams = function() {

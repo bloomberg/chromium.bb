@@ -20,6 +20,7 @@ class MediaBrowserTest : public ContentBrowserTest {
   // Common test results.
   static const char kEnded[];
   static const char kError[];
+  static const char kErrorEvent[];
   static const char kFailed[];
 
   // ContentBrowserTest implementation.

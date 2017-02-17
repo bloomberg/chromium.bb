@@ -72,7 +72,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         input_video_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
-        clear_buffer_(CreateFakeEncryptedStreamBuffer(true)),
+        clear_buffer_(new DecoderBuffer(kFakeBufferSize)),
+        clear_encrypted_stream_buffer_(CreateFakeEncryptedStreamBuffer(true)),
         encrypted_buffer_(CreateFakeEncryptedStreamBuffer(false)),
         decrypted_buffer_(new DecoderBuffer(kFakeBufferSize)) {}
 
@@ -158,10 +159,12 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void EnterClearReadingState() {
-    EXPECT_TRUE(clear_buffer_->decrypt_config());
+  void EnterClearReadingState(bool is_stream_encrytped) {
+    EXPECT_TRUE(clear_encrypted_stream_buffer_->decrypt_config());
     EXPECT_CALL(*input_audio_stream_, Read(_))
-        .WillOnce(ReturnBuffer(clear_buffer_));
+        .WillOnce(ReturnBuffer(is_stream_encrytped
+                                   ? clear_encrypted_stream_buffer_
+                                   : clear_buffer_));
 
     // For clearbuffer, decryptor->Decrypt() will not be called.
 
@@ -266,6 +269,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   // Constant buffers to be returned by the input demuxer streams and the
   // |decryptor_|.
   scoped_refptr<DecoderBuffer> clear_buffer_;
+  scoped_refptr<DecoderBuffer> clear_encrypted_stream_buffer_;
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
   scoped_refptr<DecoderBuffer> decrypted_buffer_;
 
@@ -313,9 +317,17 @@ TEST_F(DecryptingDemuxerStreamTest, Read_Normal) {
 }
 
 // Test normal read case where the buffer is clear.
-TEST_F(DecryptingDemuxerStreamTest, Read_Clear) {
+// TODO(xhwang): Unify clear buffer handling in clear and encrypted stream.
+// See http://crbug.com/675003
+
+TEST_F(DecryptingDemuxerStreamTest, Read_ClearBufferInEncryptedStream) {
   Initialize();
-  EnterClearReadingState();
+  EnterClearReadingState(true);
+}
+
+TEST_F(DecryptingDemuxerStreamTest, Read_ClearBufferInClearStream) {
+  Initialize();
+  EnterClearReadingState(false);
 }
 
 // Test the case where the decryptor returns error during read.

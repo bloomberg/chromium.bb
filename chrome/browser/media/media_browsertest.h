@@ -15,6 +15,8 @@ namespace content {
 class TitleWatcher;
 }
 
+namespace chrome {
+
 // Class used to automate running media related browser tests. The functions
 // assume that media files are located under media/ folder known to the test
 // http server.
@@ -56,5 +58,7 @@ class MediaBrowserTest : public InProcessBrowserTest,
  private:
   bool ignore_plugin_crash_;
 };
+
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
