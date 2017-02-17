@@ -822,9 +822,15 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     }
 #endif
   } else if (dry_run == DRY_RUN_NORMAL) {
-    av1_foreach_transformed_block(xd, bsize, set_entropy_context_b, &arg);
+    int plane;
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+      av1_foreach_transformed_block_in_plane(xd, bsize, plane,
+                                             set_entropy_context_b, &arg);
   } else if (dry_run == DRY_RUN_COSTCOEFFS) {
-    av1_foreach_transformed_block(xd, bsize, cost_coeffs_b, &arg);
+    int plane;
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+      av1_foreach_transformed_block_in_plane(xd, bsize, plane, cost_coeffs_b,
+                                             &arg);
   }
 #else
   if (!dry_run) {
@@ -870,10 +876,16 @@ void av1_tokenize_sb_supertx(const AV1_COMP *cpi, ThreadData *td,
       (*t)++;
     }
   } else if (dry_run == DRY_RUN_NORMAL) {
-    av1_foreach_transformed_block(xd, bsize, set_entropy_context_b, &arg);
+    int plane;
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+      av1_foreach_transformed_block_in_plane(xd, bsize, plane,
+                                             set_entropy_context_b, &arg);
     *t = t_backup;
   } else if (dry_run == DRY_RUN_COSTCOEFFS) {
-    av1_foreach_transformed_block(xd, bsize, cost_coeffs_b, &arg);
+    int plane;
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+      av1_foreach_transformed_block_in_plane(xd, bsize, plane, cost_coeffs_b,
+                                             &arg);
   }
   if (rate) *rate += arg.this_rate;
 }

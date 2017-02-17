@@ -908,11 +908,6 @@ void av1_foreach_8x8_transformed_block_in_plane(
     foreach_transformed_block_visitor mi_visit, void *arg);
 #endif
 
-void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
-                                   foreach_transformed_block_visitor visit,
-                                   void *arg);
-
 #if CONFIG_COEF_INTERLEAVE
 static INLINE int get_max_4x4_size(int num_4x4, int mb_to_edge,
                                    int subsampling) {

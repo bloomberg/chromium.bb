@@ -191,15 +191,6 @@ void av1_foreach_8x8_transformed_block_in_plane(
 }
 #endif
 
-void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
-                                   foreach_transformed_block_visitor visit,
-                                   void *arg) {
-  int plane;
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-    av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
-}
-
 #if !CONFIG_PVQ
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,
