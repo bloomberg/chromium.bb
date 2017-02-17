@@ -103,6 +103,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual(7, clactions.GetPreCQTime(change, action_history))
     self.assertEqual(3, clactions.GetCQWaitTime(change, action_history))
     self.assertEqual(6, clactions.GetCQRunTime(change, action_history))
+    self.assertEqual(3, clactions.GetCQAttemptsCount(change, action_history))
 
     clactions.RecordSubmissionMetrics(
         clactions.CLActionHistory(action_history), strategies)
