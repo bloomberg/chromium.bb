@@ -324,8 +324,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
                         gfx::PointF(1234.3f, 8765.6f));
   selection.end.set_visible(false);
   selection.end.set_type(gfx::SelectionBound::RIGHT);
-  selection.is_editable = true;
-  selection.is_empty_text_form_control = true;
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337, 7331);
@@ -955,20 +953,14 @@ TEST_F(StructTraitsTest, Selection) {
   end.SetEdge(gfx::PointF(1337.5f, 52124.f), gfx::PointF(1234.3f, 8765.6f));
   end.set_visible(false);
   end.set_type(gfx::SelectionBound::RIGHT);
-  const bool is_editable = true;
-  const bool is_empty_text_form_control = true;
   Selection<gfx::SelectionBound> input;
   input.start = start;
   input.end = end;
-  input.is_editable = is_editable;
-  input.is_empty_text_form_control = is_empty_text_form_control;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   Selection<gfx::SelectionBound> output;
   proxy->EchoSelection(input, &output);
   EXPECT_EQ(start, output.start);
   EXPECT_EQ(end, output.end);
-  EXPECT_EQ(is_editable, output.is_editable);
-  EXPECT_EQ(is_empty_text_form_control, output.is_empty_text_form_control);
 }
 
 TEST_F(StructTraitsTest, SurfaceId) {

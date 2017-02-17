@@ -10,7 +10,5 @@ import "ui/gfx/mojo/selection_bound.mojom";
 struct Selection {
   gfx.mojom.SelectionBound start;
   gfx.mojom.SelectionBound end;
-  bool is_editable;
-  bool is_empty_text_form_control;
 };
 

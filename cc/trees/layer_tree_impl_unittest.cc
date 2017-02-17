@@ -1934,9 +1934,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   EXPECT_EQ(gfx::PointF(input.end.edge_bottom), output.end.edge_bottom());
   EXPECT_EQ(gfx::PointF(input.end.edge_top), output.end.edge_top());
   EXPECT_TRUE(output.end.visible());
-  EXPECT_EQ(input.is_editable, output.is_editable);
-  EXPECT_EQ(input.is_empty_text_form_control,
-            output.is_empty_text_form_control);
 
   // Insertion bounds should produce identical left and right bounds.
   LayerSelection insertion_input;
@@ -1944,8 +1941,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   insertion_input.start.edge_top = gfx::Point(15, 10);
   insertion_input.start.edge_bottom = gfx::Point(15, 30);
   insertion_input.start.layer_id = root->id();
-  insertion_input.is_editable = true;
-  insertion_input.is_empty_text_form_control = true;
   insertion_input.end = insertion_input.start;
   host_impl().active_tree()->RegisterSelection(insertion_input);
   host_impl().active_tree()->GetViewportSelection(&output);
@@ -1954,9 +1949,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
             output.start.edge_bottom());
   EXPECT_EQ(gfx::PointF(insertion_input.start.edge_top),
             output.start.edge_top());
-  EXPECT_EQ(insertion_input.is_editable, output.is_editable);
-  EXPECT_EQ(insertion_input.is_empty_text_form_control,
-            output.is_empty_text_form_control);
   EXPECT_TRUE(output.start.visible());
   EXPECT_EQ(output.start, output.end);
 }

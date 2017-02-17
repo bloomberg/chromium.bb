@@ -2060,8 +2060,6 @@ void LayerTreeImpl::GetViewportSelection(
       selection_.start,
       selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
       device_scale_factor());
-  selection->is_editable = selection_.is_editable;
-  selection->is_empty_text_form_control = selection_.is_empty_text_form_control;
   if (selection->start.type() == gfx::SelectionBound::CENTER ||
       selection->start.type() == gfx::SelectionBound::EMPTY) {
     selection->end = selection->start;

@@ -44,14 +44,11 @@ namespace blink {
 // See |WebSelection|.
 struct CompositedSelection {
   STACK_ALLOCATED();
-  CompositedSelection()
-      : type(NoSelection), isEditable(false), isEmptyTextControl(false) {}
+  CompositedSelection() : type(NoSelection) {}
 
   SelectionType type;
   CompositedSelectionBound start;
   CompositedSelectionBound end;
-  bool isEditable;
-  bool isEmptyTextControl;
 };
 
 }  // namespace blink

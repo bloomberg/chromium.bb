@@ -160,8 +160,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(cc::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)
   IPC_STRUCT_TRAITS_MEMBER(end)
-  IPC_STRUCT_TRAITS_MEMBER(is_editable)
-  IPC_STRUCT_TRAITS_MEMBER(is_empty_text_form_control)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(cc::BeginFrameArgs::BeginFrameArgsType,

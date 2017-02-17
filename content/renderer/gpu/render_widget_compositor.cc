@@ -134,9 +134,6 @@ cc::LayerSelection ConvertWebSelection(const WebSelection& web_selection) {
   cc::LayerSelection cc_selection;
   cc_selection.start = ConvertWebSelectionBound(web_selection, true);
   cc_selection.end = ConvertWebSelectionBound(web_selection, false);
-  cc_selection.is_editable = web_selection.isEditable();
-  cc_selection.is_empty_text_form_control =
-      web_selection.isEmptyTextFormControl();
   return cc_selection;
 }
 

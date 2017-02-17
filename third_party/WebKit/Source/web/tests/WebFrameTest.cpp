@@ -5778,20 +5778,6 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
     EXPECT_GE(yBottomEpsilon, std::abs(yBottomDeviation));
     EXPECT_EQ(yBottomDeviation,
               endEdgeBottomInLayerY - selectEnd->edgeBottomInLayer.y);
-
-    if (expectedResult.Length() >= 12) {
-      EXPECT_EQ(expectedResult.Get(context, 10)
-                    .ToLocalChecked()
-                    .As<v8::Boolean>()
-                    ->Value(),
-                m_fakeSelectionLayerTreeView.selection()->isEditable());
-      EXPECT_EQ(
-          expectedResult.Get(context, 11)
-              .ToLocalChecked()
-              .As<v8::Boolean>()
-              ->Value(),
-          m_fakeSelectionLayerTreeView.selection()->isEmptyTextFormControl());
-    }
   }
 
   void runTestWithMultipleFiles(const char* testFile, ...) {

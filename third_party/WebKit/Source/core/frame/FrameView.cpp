@@ -2009,14 +2009,6 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame,
     return false;
 
   selection.type = visibleSelection.getSelectionType();
-  selection.isEditable = visibleSelection.isContentEditable();
-  if (selection.isEditable) {
-    if (TextControlElement* enclosingTextControlElement =
-            enclosingTextControl(visibleSelection.rootEditableElement())) {
-      selection.isEmptyTextControl =
-          enclosingTextControlElement->value().isEmpty();
-    }
-  }
   selection.start.isTextDirectionRTL |=
       primaryDirectionOf(*visibleSelection.start().anchorNode()) ==
       TextDirection::kRtl;

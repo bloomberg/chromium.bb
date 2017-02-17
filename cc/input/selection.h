@@ -11,20 +11,16 @@ namespace cc {
 
 template <typename BoundType>
 struct CC_EXPORT Selection {
-  Selection() : is_editable(false), is_empty_text_form_control(false) {}
+  Selection() {}
   ~Selection() {}
 
   BoundType start, end;
-  bool is_editable;
-  bool is_empty_text_form_control;
 };
 
 template <typename BoundType>
 inline bool operator==(const Selection<BoundType>& lhs,
                        const Selection<BoundType>& rhs) {
-  return lhs.start == rhs.start && lhs.end == rhs.end &&
-         lhs.is_editable == rhs.is_editable &&
-         lhs.is_empty_text_form_control == rhs.is_empty_text_form_control;
+  return lhs.start == rhs.start && lhs.end == rhs.end;
 }
 
 template <typename BoundType>
