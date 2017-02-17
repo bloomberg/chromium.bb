@@ -186,7 +186,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
       [[avatarButton cell] setHighlightsBy:NSNoCellMask];
     [avatarButton setBordered:YES];
 
-    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
       [avatarButton setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
     else
       [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
