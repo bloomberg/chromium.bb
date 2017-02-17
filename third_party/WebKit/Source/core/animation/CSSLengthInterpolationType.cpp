@@ -158,13 +158,12 @@ void CSSLengthInterpolationType::applyStandardPropertyValue(
     StyleBuilder::applyProperty(cssProperty(), state,
                                 *CSSValue::create(length, zoom));
     DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, after));
-    DCHECK_EQ(before.type(), after.type());
-    if (before.isSpecified()) {
-      const float kSlack = 0.1;
-      float delta =
-          floatValueForLength(after, 100) - floatValueForLength(before, 100);
-      DCHECK_LT(std::abs(delta), kSlack);
-    }
+    DCHECK(before.isSpecified());
+    DCHECK(after.isSpecified());
+    const float kSlack = 0.1;
+    float delta =
+        floatValueForLength(after, 100) - floatValueForLength(before, 100);
+    DCHECK_LT(std::abs(delta), kSlack);
 #endif
     return;
   }
