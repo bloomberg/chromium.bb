@@ -306,9 +306,6 @@ void WorkerThread::terminateInternal(TerminationMode mode) {
   DCHECK(m_requestedToStart);
 
   {
-    // Prevent the deadlock between GC and an attempt to terminate a thread.
-    SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
-
     // Protect against this method, initializeOnWorkerThread() or
     // termination via the global scope racing each other.
     MutexLocker lock(m_threadStateMutex);
