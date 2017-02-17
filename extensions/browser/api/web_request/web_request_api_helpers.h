@@ -16,7 +16,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/warning_set.h"
 #include "net/base/auth.h"
 #include "net/http/http_request_headers.h"
@@ -328,20 +327,6 @@ void ClearCacheOnNavigation();
 std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
     const std::string& name,
     const std::string& value);
-
-// Returns whether |type| is a ResourceType that is handled by the web request
-// API.
-bool IsRelevantResourceType(content::ResourceType type);
-
-// Returns a string representation of |type| or |other| if |type| is not handled
-// by the web request API.
-const char* ResourceTypeToString(content::ResourceType type);
-
-// Stores a |content::ResourceType| representation in |types| if |type_str| is
-// a resource type handled by the web request API. Returns true in case of
-// success.
-bool ParseResourceType(const std::string& type_str,
-                       std::vector<content::ResourceType>* types);
 
 }  // namespace extension_web_request_api_helpers
 

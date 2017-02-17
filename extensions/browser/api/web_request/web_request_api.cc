@@ -29,6 +29,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
@@ -39,6 +40,7 @@
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
+#include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/event_router.h"
@@ -509,8 +511,9 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
         std::string type_str;
+        types.push_back(WebRequestResourceType::OTHER);
         if (!types_value->GetString(i, &type_str) ||
-            !helpers::ParseResourceType(type_str, &types)) {
+            !ParseWebRequestResourceType(type_str, &types.back())) {
           return false;
         }
       }
@@ -1333,10 +1336,7 @@ void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     const net::URLRequest* request) const {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return false;
-
-  return info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
+  return info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {
@@ -1380,7 +1380,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     const GURL& url,
     int render_process_host_id,
     int routing_id,
-    content::ResourceType resource_type,
+    WebRequestResourceType resource_type,
     bool is_async_request,
     bool is_request_from_extension,
     int* extra_info_spec,
@@ -1452,7 +1452,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       continue;
     }
 
-    const std::vector<content::ResourceType>& types = listener->filter.types;
+    const std::vector<WebRequestResourceType>& types = listener->filter.types;
     if (!types.empty() &&
         std::find(types.begin(), types.end(), resource_type) == types.end()) {
       continue;
@@ -1486,7 +1486,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     // http://crbug.com/105656
     bool synchronous_xhr_from_extension =
         !is_async_request && is_request_from_extension &&
-        resource_type == content::RESOURCE_TYPE_XHR;
+        resource_type == WebRequestResourceType::XHR;
 
     // Only send webRequest events for URLs the extension has access to.
     if (blocking_listener && synchronous_xhr_from_extension)
@@ -1512,7 +1512,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   const GURL& url = request->url();
   int render_process_host_id = content::ChildProcessHost::kInvalidUniqueID;
   int routing_id = MSG_ROUTING_NONE;
-  content::ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
+  auto resource_type = GetWebRequestResourceType(request);
   // We are conservative here and assume requests are asynchronous in case
   // we don't have an info object. We don't want to risk a deadlock.
   bool is_async_request = false;
@@ -1522,8 +1522,6 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info) {
     is_async_request = info->IsAsync();
-    if (helpers::IsRelevantResourceType(info->GetResourceType()))
-      resource_type = info->GetResourceType();
     render_process_host_id = info->GetChildID();
     routing_id = info->GetRouteID();
   }

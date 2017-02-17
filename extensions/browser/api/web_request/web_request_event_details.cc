@@ -13,6 +13,7 @@
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "ipc/ipc_message.h"
 #include "net/base/auth.h"
 #include "net/base/upload_data_stream.h"
@@ -32,13 +33,12 @@ WebRequestEventDetails::WebRequestEventDetails(const net::URLRequest* request,
     : extra_info_spec_(extra_info_spec),
       render_process_id_(content::ChildProcessHost::kInvalidUniqueID),
       render_frame_id_(MSG_ROUTING_NONE) {
-  content::ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
+  auto resource_type = GetWebRequestResourceType(request);
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (info) {
     render_process_id_ = info->GetChildID();
     render_frame_id_ = info->GetRenderFrameID();
-    resource_type = info->GetResourceType();
   } else {
     // Fallback for requests that are not allocated by a ResourceDispatcherHost,
     // such as the TemplateURLFetcher.
@@ -50,7 +50,8 @@ WebRequestEventDetails::WebRequestEventDetails(const net::URLRequest* request,
   dict_.SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict_.SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
-  dict_.SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
+  dict_.SetString(keys::kTypeKey,
+                  WebRequestResourceTypeToString(resource_type));
   dict_.SetString(keys::kUrlKey, request->url().spec());
 }
 

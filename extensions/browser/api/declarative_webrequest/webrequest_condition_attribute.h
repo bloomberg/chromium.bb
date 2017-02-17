@@ -5,13 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_ATTRIBUTE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_ATTRIBUTE_H_
 
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/common/api/events.h"
 
@@ -20,6 +20,8 @@ class Value;
 }
 
 namespace extensions {
+
+enum class WebRequestResourceType : uint8_t;
 
 class HeaderMatcher;
 struct WebRequestData;
@@ -100,10 +102,11 @@ class WebRequestConditionAttributeResourceType
 
  private:
   explicit WebRequestConditionAttributeResourceType(
-      const std::vector<content::ResourceType>& types);
+      const std::vector<WebRequestResourceType>& types);
   ~WebRequestConditionAttributeResourceType() override;
 
-  const std::vector<content::ResourceType> types_;
+  // TODO(pkalinnikov): Make this a bitmask.
+  const std::vector<WebRequestResourceType> types_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
 };

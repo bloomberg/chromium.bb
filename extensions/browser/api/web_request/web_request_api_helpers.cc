@@ -43,7 +43,6 @@
 // top of this file.
 
 using base::Time;
-using content::ResourceType;
 using net::cookie_util::ParsedRequestCookie;
 using net::cookie_util::ParsedRequestCookies;
 
@@ -53,52 +52,7 @@ namespace extension_web_request_api_helpers {
 
 namespace {
 
-// Multiple ResourceTypes may map to the same string, but the converse is not
-// possible.
-static const char* kResourceTypeStrings[] = {
-  "main_frame",
-  "sub_frame",
-  "stylesheet",
-  "script",
-  "image",
-  "font",
-  "object",
-  "script",
-  "script",
-  "image",
-  "xmlhttprequest",
-  "ping",
-  "script",
-  "object",
-  "other",
-};
-
-const size_t kResourceTypeStringsLength = arraysize(kResourceTypeStrings);
-
-static ResourceType kResourceTypeValues[] = {
-  content::RESOURCE_TYPE_MAIN_FRAME,
-  content::RESOURCE_TYPE_SUB_FRAME,
-  content::RESOURCE_TYPE_STYLESHEET,
-  content::RESOURCE_TYPE_SCRIPT,
-  content::RESOURCE_TYPE_IMAGE,
-  content::RESOURCE_TYPE_FONT_RESOURCE,
-  content::RESOURCE_TYPE_OBJECT,
-  content::RESOURCE_TYPE_WORKER,
-  content::RESOURCE_TYPE_SHARED_WORKER,
-  content::RESOURCE_TYPE_FAVICON,
-  content::RESOURCE_TYPE_XHR,
-  content::RESOURCE_TYPE_PING,
-  content::RESOURCE_TYPE_SERVICE_WORKER,
-  content::RESOURCE_TYPE_PLUGIN_RESOURCE,
-  content::RESOURCE_TYPE_LAST_TYPE,  // represents "other"
-};
-
-const size_t kResourceTypeValuesLength = arraysize(kResourceTypeValues);
-
-static_assert(kResourceTypeStringsLength == kResourceTypeValuesLength,
-              "Sizes of string lists and ResourceType lists should be equal");
-
-typedef std::vector<linked_ptr<net::ParsedCookie> > ParsedResponseCookies;
+using ParsedResponseCookies = std::vector<linked_ptr<net::ParsedCookie>>;
 
 void ClearCacheOnNavigationOnUI() {
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
@@ -1246,37 +1200,6 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
                 StringToCharList(value));
   }
   return header;
-}
-
-bool IsRelevantResourceType(ResourceType type) {
-  ResourceType* iter =
-      std::find(kResourceTypeValues,
-                kResourceTypeValues + kResourceTypeValuesLength,
-                type);
-  return iter != (kResourceTypeValues + kResourceTypeValuesLength);
-}
-
-const char* ResourceTypeToString(ResourceType type) {
-  ResourceType* iter =
-      std::find(kResourceTypeValues,
-                kResourceTypeValues + kResourceTypeValuesLength,
-                type);
-  if (iter == (kResourceTypeValues + kResourceTypeValuesLength))
-    return "other";
-
-  return kResourceTypeStrings[iter - kResourceTypeValues];
-}
-
-bool ParseResourceType(const std::string& type_str,
-                       std::vector<ResourceType>* types) {
-  bool found = false;
-  for (size_t i = 0; i < kResourceTypeStringsLength; ++i) {
-    if (type_str == kResourceTypeStrings[i]) {
-      found = true;
-      types->push_back(kResourceTypeValues[i]);
-    }
-  }
-  return found;
 }
 
 }  // namespace extension_web_request_api_helpers

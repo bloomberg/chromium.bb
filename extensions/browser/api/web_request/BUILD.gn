@@ -19,6 +19,8 @@ source_set("web_request") {
     "web_request_event_router_delegate.h",
     "web_request_permissions.cc",
     "web_request_permissions.h",
+    "web_request_resource_type.cc",
+    "web_request_resource_type.h",
     "web_request_time_tracker.cc",
     "web_request_time_tracker.h",
   ]

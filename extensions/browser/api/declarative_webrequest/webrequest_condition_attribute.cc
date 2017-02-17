@@ -23,6 +23,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -36,7 +37,6 @@ using base::DictionaryValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
-using content::ResourceType;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extensions::declarative_webrequest_constants;
@@ -130,8 +130,8 @@ WebRequestConditionAttribute::Create(
 //
 
 WebRequestConditionAttributeResourceType::
-WebRequestConditionAttributeResourceType(
-    const std::vector<ResourceType>& types)
+    WebRequestConditionAttributeResourceType(
+        const std::vector<WebRequestResourceType>& types)
     : types_(types) {}
 
 WebRequestConditionAttributeResourceType::
@@ -154,12 +154,14 @@ WebRequestConditionAttributeResourceType::Create(
 
   size_t number_types = value_as_list->GetSize();
 
-  std::vector<ResourceType> passed_types;
+  std::vector<WebRequestResourceType> passed_types;
   passed_types.reserve(number_types);
   for (size_t i = 0; i < number_types; ++i) {
     std::string resource_type_string;
+    passed_types.push_back(WebRequestResourceType::OTHER);
     if (!value_as_list->GetString(i, &resource_type_string) ||
-        !helpers::ParseResourceType(resource_type_string, &passed_types)) {
+        !ParseWebRequestResourceType(resource_type_string,
+                                     &passed_types.back())) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                               keys::kResourceTypeKey);
       return scoped_refptr<const WebRequestConditionAttribute>(NULL);
@@ -180,12 +182,8 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
     const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request_data.request);
-  if (!info)
-    return false;
-  return std::find(types_.begin(), types_.end(), info->GetResourceType()) !=
-      types_.end();
+  const auto resource_type = GetWebRequestResourceType(request_data.request);
+  return std::find(types_.begin(), types_.end(), resource_type) != types_.end();
 }
 
 WebRequestConditionAttribute::Type
@@ -258,6 +256,7 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
     const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
+
   std::string content_type;
   request_data.original_response_headers->GetNormalizedHeader(
       net::HttpRequestHeaders::kContentType, &content_type);

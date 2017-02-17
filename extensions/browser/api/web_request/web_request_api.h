@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
@@ -54,6 +53,9 @@ class URLRequest;
 }
 
 namespace extensions {
+
+enum class WebRequestResourceType : uint8_t;
+
 class ExtensionNavigationUIData;
 class InfoMap;
 class WebRequestEventDetails;
@@ -123,7 +125,7 @@ class ExtensionWebRequestEventRouter
     bool InitFromValue(const base::DictionaryValue& value, std::string* error);
 
     extensions::URLPatternSet urls;
-    std::vector<content::ResourceType> types;
+    std::vector<WebRequestResourceType> types;
     int tab_id;
     int window_id;
   };
@@ -439,7 +441,7 @@ class ExtensionWebRequestEventRouter
                                 const GURL& url,
                                 int render_process_host_id,
                                 int routing_id,
-                                content::ResourceType resource_type,
+                                WebRequestResourceType resource_type,
                                 bool is_async_request,
                                 bool is_request_from_extension,
                                 int* extra_info_spec,

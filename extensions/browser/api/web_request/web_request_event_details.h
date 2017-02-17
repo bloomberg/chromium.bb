@@ -19,7 +19,7 @@ class AuthChallengeInfo;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class URLRequest;
-}
+}  // namespace net
 
 namespace extensions {
 
