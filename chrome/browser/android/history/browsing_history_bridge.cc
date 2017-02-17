@@ -94,8 +94,6 @@ void BrowsingHistoryBridge::OnQueryComplete(
       j_history_service_obj_.obj(),
       j_query_result_obj_.obj(),
       !(query_results_info->reached_beginning));
-
-  j_query_result_obj_.Release();
 }
 
 void BrowsingHistoryBridge::MarkItemForRemoval(
