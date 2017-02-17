@@ -17,7 +17,8 @@ shouldBeNull("sel.anchorNode");
 shouldThrow("sel.selectAllChildren(docType)");
 shouldBeNull("sel.anchorNode");
 
-shouldThrow("sel.extend(docType, 0)");
+// DOCTYPE in a different root should not throw.
+sel.extend(docType, 0);
 shouldBeNull("sel.anchorNode");
 
 sel.containsNode(docType);

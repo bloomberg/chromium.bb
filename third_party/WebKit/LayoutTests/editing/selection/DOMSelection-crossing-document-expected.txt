@@ -7,7 +7,6 @@ PASS foreignSel.anchorNode is null
 PASS mainSel.anchorNode is null
 PASS foreignSel.anchorNode is null
 PASS mainSel.anchorNode is null
-PASS mainSel.extend(foreignElement, 1) threw exception InvalidStateError: Failed to execute 'extend' on 'Selection': This Selection object doesn't have any Ranges..
 PASS foreignSel.anchorNode is null
 PASS mainSel.anchorNode is null
 PASS foreignSel.anchorNode is null

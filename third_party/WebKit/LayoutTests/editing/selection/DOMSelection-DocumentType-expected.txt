@@ -10,7 +10,6 @@ PASS sel.collapse(docType) threw exception InvalidNodeTypeError: Failed to execu
 PASS sel.anchorNode is null
 PASS sel.selectAllChildren(docType) threw exception InvalidNodeTypeError: Failed to execute 'selectAllChildren' on 'Selection': The node provided is of type 'c'..
 PASS sel.anchorNode is null
-PASS sel.extend(docType, 0) threw exception InvalidStateError: Failed to execute 'extend' on 'Selection': This Selection object doesn't have any Ranges..
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.containsNode(docType) is false

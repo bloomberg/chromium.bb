@@ -37,7 +37,7 @@ PASS Selection interface: getSelection() must inherit property "collapseToEnd" w
 PASS Selection interface: getSelection() must inherit property "extend" with the proper type (8) 
 FAIL Selection interface: calling extend(Node,unsigned long) on getSelection() with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function () {
             fn.apply(obj, args);
-        }" threw object "InvalidStateError: Failed to execute 'extend' on 'Selection': This Selection object doesn't have any Ranges." ("InvalidStateError") expected object "TypeError" ("TypeError")
+        }" did not throw
 PASS Selection interface: getSelection() must inherit property "selectAllChildren" with the proper type (9) 
 PASS Selection interface: calling selectAllChildren(Node) on getSelection() with too few arguments must throw TypeError 
 PASS Selection interface: getSelection() must inherit property "deleteFromDocument" with the proper type (10) 

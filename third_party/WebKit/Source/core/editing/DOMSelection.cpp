@@ -429,11 +429,15 @@ void DOMSelection::modify(const String& alterString,
   frame()->selection().modify(alter, direction, granularity);
 }
 
+// https://www.w3.org/TR/selection-api/#dom-selection-extend
 void DOMSelection::extend(Node* node,
                           int offset,
                           ExceptionState& exceptionState) {
   DCHECK(node);
-  // https://www.w3.org/TR/selection-api/#dom-selection-extend
+  // 1. If node's root is not the document associated with the context object,
+  // abort these steps.
+  if (!isValidForPosition(node))
+    return;
 
   // 2. If the context object is empty, throw an InvalidStateError exception and
   // abort these steps.
@@ -450,11 +454,6 @@ void DOMSelection::extend(Node* node,
   }
   Range::checkNodeWOffset(node, offset, exceptionState);
   if (exceptionState.hadException())
-    return;
-
-  // 1. If node's root is not the document associated with the context object,
-  // abort these steps.
-  if (!isValidForPosition(node))
     return;
 
   // 3. Let oldAnchor and oldFocus be the context object's anchor and focus, and
