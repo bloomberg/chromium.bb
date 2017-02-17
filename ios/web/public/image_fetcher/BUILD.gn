@@ -5,14 +5,11 @@
 source_set("image_fetcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "image_data_fetcher.h",
-    "image_data_fetcher.mm",
     "webp_decoder.h",
     "webp_decoder.mm",
   ]
   deps = [
     "//base",
-    "//net",
     "//third_party/libwebp:libwebp_dec",
   ]
 }
@@ -21,15 +18,12 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "image_data_fetcher_unittest.mm",
     "webp_decoder_unittest.mm",
   ]
   deps = [
     ":image_fetcher",
     ":webp_transcode_unit_tests_bundle_data",
     "//base",
-    "//net",
-    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

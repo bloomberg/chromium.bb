@@ -418,8 +418,6 @@ source_set("test_support") {
     "public/test/http_server_util.mm",
     "public/test/js_test_util.h",
     "public/test/js_test_util.mm",
-    "public/test/mock_image_data_fetcher.h",
-    "public/test/mock_image_data_fetcher.mm",
     "public/test/native_controller_test_util.h",
     "public/test/native_controller_test_util.mm",
     "public/test/navigation_test_util.h",
