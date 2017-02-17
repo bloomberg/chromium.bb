@@ -354,7 +354,9 @@ class TestImporter(object):
             return False
 
         # If the CQ passes, then the issue will be closed.
-        if not self.git_cl.is_closed():
+        status = self.git_cl.run(['status' '--field', 'status']).strip()
+        _log.info('CL status: "%s"', status)
+        if status not in ('lgtm', 'closed'):
             _log.error('CQ appears to have failed; aborting.')
             self.git_cl.run(['set-close'])
             return False

@@ -47,18 +47,6 @@ class GitCLTest(unittest.TestCase):
         git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), 'None')
 
-    def test_is_closed_true(self):
-        host = MockHost()
-        host.executive = MockExecutive(output='closed ')
-        git_cl = GitCL(host)
-        self.assertTrue(git_cl.is_closed())
-
-    def test_is_closed_false(self):
-        host = MockHost()
-        host.executive = MockExecutive(output='waiting')
-        git_cl = GitCL(host)
-        self.assertFalse(git_cl.is_closed())
-
     def test_all_jobs_finished_empty(self):
         self.assertTrue(GitCL.all_jobs_finished([]))
 

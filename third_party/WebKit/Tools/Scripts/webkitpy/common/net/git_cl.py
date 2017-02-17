@@ -69,10 +69,6 @@ class GitCL(object):
             self._host.filesystem.remove(results_path)
         return json.loads(contents)
 
-    def is_closed(self):
-        out = self.run(['status' '--field', 'status'])
-        return out.strip() == 'closed'
-
     @staticmethod
     def all_jobs_finished(try_results):
         return all(r.get('status') == 'COMPLETED' for r in try_results)
