@@ -56,10 +56,10 @@ class StylePropertySet;
 class StyleRuleFontFace;
 class WebTaskRunner;
 
-class FontFace : public GarbageCollectedFinalized<FontFace>,
-                 public ScriptWrappable,
-                 public ActiveScriptWrappable<FontFace>,
-                 public ContextLifecycleObserver {
+class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
+                             public ScriptWrappable,
+                             public ActiveScriptWrappable<FontFace>,
+                             public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
   WTF_MAKE_NONCOPYABLE(FontFace);
@@ -115,7 +115,7 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
 
   bool hadBlankText() const;
 
-  class LoadFontCallback : public GarbageCollectedMixin {
+  class CORE_EXPORT LoadFontCallback : public GarbageCollectedMixin {
    public:
     virtual ~LoadFontCallback() {}
     virtual void notifyLoaded(FontFace*) = 0;

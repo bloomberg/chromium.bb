@@ -493,38 +493,37 @@ PaintResult PaintLayerPainter::paintLayerContents(
     }
   }
 
+  Optional<ScopedPaintChunkProperties> contentScopedPaintChunkProperties;
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      !scopedPaintChunkProperties.has_value()) {
+    // If layoutObject() is a LayoutView and root layer scrolling is enabled,
+    // the LayoutView's paint properties will already have been applied at
+    // the top of this method, in scopedPaintChunkProperties.
+    DCHECK(!(RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+             m_paintLayer.layoutObject() &&
+             m_paintLayer.layoutObject()->isLayoutView()));
+    const auto* objectPaintProperties =
+        m_paintLayer.layoutObject()->paintProperties();
+    DCHECK(objectPaintProperties &&
+           objectPaintProperties->localBorderBoxProperties());
+    PaintChunkProperties properties(
+        context.getPaintController().currentPaintChunkProperties());
+    properties.propertyTreeState =
+        *objectPaintProperties->localBorderBoxProperties();
+    properties.backfaceHidden =
+        m_paintLayer.layoutObject()->hasHiddenBackface();
+    contentScopedPaintChunkProperties.emplace(context.getPaintController(),
+                                              m_paintLayer, properties);
+  }
+
   bool selectionOnly =
       localPaintingInfo.getGlobalPaintFlags() & GlobalPaintSelectionOnly;
-
   {  // Begin block for the lifetime of any filter.
     FilterPainter filterPainter(m_paintLayer, context, offsetFromRoot,
                                 layerFragments.isEmpty()
                                     ? ClipRect()
                                     : layerFragments[0].backgroundRect,
                                 localPaintingInfo, paintFlags);
-
-    Optional<ScopedPaintChunkProperties> contentScopedPaintChunkProperties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-        !scopedPaintChunkProperties.has_value()) {
-      // If layoutObject() is a LayoutView and root layer scrolling is enabled,
-      // the LayoutView's paint properties will already have been applied at
-      // the top of this method, in scopedPaintChunkProperties.
-      DCHECK(!(RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
-               m_paintLayer.layoutObject() &&
-               m_paintLayer.layoutObject()->isLayoutView()));
-      const auto* objectPaintProperties =
-          m_paintLayer.layoutObject()->paintProperties();
-      DCHECK(objectPaintProperties &&
-             objectPaintProperties->localBorderBoxProperties());
-      PaintChunkProperties properties(
-          context.getPaintController().currentPaintChunkProperties());
-      properties.propertyTreeState =
-          *objectPaintProperties->localBorderBoxProperties();
-      properties.backfaceHidden =
-          m_paintLayer.layoutObject()->hasHiddenBackface();
-      contentScopedPaintChunkProperties.emplace(context.getPaintController(),
-                                                m_paintLayer, properties);
-    }
 
     bool isPaintingRootLayer = (&m_paintLayer) == paintingInfo.rootLayer;
     bool shouldPaintBackground =
@@ -584,9 +583,11 @@ PaintResult PaintLayerPainter::paintLayerContents(
                      PaintLayerPaintingAncestorClippingMaskPhase)) &&
       shouldPaintContent && !selectionOnly;
 
-  if (shouldPaintMask)
+  if (shouldPaintMask) {
     paintMaskForFragments(layerFragments, context, localPaintingInfo,
                           paintFlags);
+  }
+
   if (shouldPaintClippingMask) {
     // Paint the border radius mask for the fragments.
     paintChildClippingMaskForFragments(layerFragments, context,
@@ -1156,6 +1157,18 @@ void PaintLayerPainter::paintMaskForFragments(
   Optional<DisplayItemCacheSkipper> cacheSkipper;
   if (layerFragments.size() > 1)
     cacheSkipper.emplace(context);
+
+  Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    const auto* objectPaintProperties =
+        m_paintLayer.layoutObject()->paintProperties();
+    DCHECK(objectPaintProperties && objectPaintProperties->mask());
+    PaintChunkProperties properties(
+        context.getPaintController().currentPaintChunkProperties());
+    properties.propertyTreeState.setEffect(objectPaintProperties->mask());
+    scopedPaintChunkProperties.emplace(context.getPaintController(),
+                                       m_paintLayer, properties);
+  }
 
   for (auto& fragment : layerFragments)
     paintFragmentWithPhase(PaintPhaseMask, fragment, context,

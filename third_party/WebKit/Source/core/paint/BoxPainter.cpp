@@ -816,14 +816,15 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo,
                                  const LayoutRect& paintRect) {
   // Figure out if we need to push a transparency layer to render our mask.
   bool pushTransparencyLayer = false;
-  bool compositedMask =
-      m_layoutBox.hasLayer() && m_layoutBox.layer()->hasCompositedMask();
   bool flattenCompositingLayers =
       paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+  bool maskBlendingAppliedByCompositor =
+      !flattenCompositingLayers && m_layoutBox.hasLayer() &&
+      m_layoutBox.layer()->maskBlendingAppliedByCompositor();
 
   bool allMaskImagesLoaded = true;
 
-  if (!compositedMask || flattenCompositingLayers) {
+  if (!maskBlendingAppliedByCompositor) {
     pushTransparencyLayer = true;
     StyleImage* maskBoxImage = m_layoutBox.style()->maskBoxImage().image();
     const FillLayer& maskLayers = m_layoutBox.style()->maskLayers();

@@ -410,6 +410,38 @@ void PaintPropertyTreeBuilder::updateTransform(
   }
 }
 
+static bool computeMaskParameters(IntRect& maskClip,
+                                  const LayoutObject& object,
+                                  const LayoutPoint& paintOffset) {
+  DCHECK(object.isBoxModelObject() || object.isSVGChild());
+  const ComputedStyle& style = object.styleRef();
+
+  if (object.isSVGChild()) {
+    // TODO(trchen): Implement SVG masks.
+    return false;
+  }
+  if (!style.hasMask())
+    return false;
+
+  LayoutRect maximumMaskRegion;
+  // For HTML/CSS objects, the extent of the mask is known as "mask
+  // painting area", which is determined by CSS mask-clip property.
+  // We don't implement mask-clip:margin-box or no-clip currently,
+  // so the maximum we can get is border-box.
+  if (object.isBox()) {
+    maximumMaskRegion = toLayoutBox(object).borderBoxRect();
+  } else {
+    // For inline elements, depends on the value of box-decoration-break
+    // there could be one box in multiple fragments or multiple boxes.
+    // Either way here we are only interested in the bounding box of them.
+    DCHECK(object.isLayoutInline());
+    maximumMaskRegion = toLayoutInline(object).linesBoundingBox();
+  }
+  maximumMaskRegion.moveBy(paintOffset);
+  maskClip = enclosingIntRect(maximumMaskRegion);
+  return true;
+}
+
 void PaintPropertyTreeBuilder::updateEffect(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -419,14 +451,19 @@ void PaintPropertyTreeBuilder::updateEffect(
       object.isBoxModelObject() && style.isStackingContext();
   if (!isCSSIsolatedGroup && !object.isSVGChild()) {
     if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
-      if (auto* properties = object.getMutableForPainting().paintProperties())
+      if (auto* properties = object.getMutableForPainting().paintProperties()) {
         context.forceSubtreeUpdate |= properties->clearEffect();
+        context.forceSubtreeUpdate |= properties->clearMask();
+        context.forceSubtreeUpdate |= properties->clearMaskClip();
+      }
     }
     return;
   }
 
   // TODO(trchen): Can't omit effect node if we have 3D children.
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
+    const ClipPaintPropertyNode* outputClip = context.inputClipOfCurrentEffect;
+
     bool effectNodeNeeded = false;
 
     // Can't omit effect node if we have paint children with exotic blending.
@@ -452,6 +489,85 @@ void PaintPropertyTreeBuilder::updateEffect(
     if (opacity != 1.0f)
       effectNodeNeeded = true;
 
+    // We may begin to composite our subtree prior to an animation starts,
+    // but a compositor element ID is only needed when an animation is current.
+    CompositorElementId compositorElementId =
+        style.hasCurrentOpacityAnimation()
+            ? createDomNodeBasedCompositorElementId(object)
+            : CompositorElementId();
+    CompositingReasons compositingReasons = CompositingReasonNone;
+    if (CompositingReasonFinder::requiresCompositingForOpacityAnimation(
+            style)) {
+      compositingReasons = CompositingReasonActiveAnimation;
+      effectNodeNeeded = true;
+    }
+    DCHECK(!style.hasCurrentOpacityAnimation() ||
+           compositingReasons != CompositingReasonNone);
+
+    IntRect maskClip;
+    bool hasMask =
+        computeMaskParameters(maskClip, object, context.current.paintOffset);
+    if (hasMask) {
+      effectNodeNeeded = true;
+
+      auto& properties = object.getMutableForPainting().ensurePaintProperties();
+      context.forceSubtreeUpdate |= properties.updateMaskClip(
+          context.current.clip, context.current.transform,
+          FloatRoundedRect(maskClip));
+      outputClip = properties.maskClip();
+
+      // TODO(crbug.com/683425): PaintArtifactCompositor does not handle
+      // grouping (i.e. descendant-dependent compositing reason) properly yet.
+      // This forces masked subtree always create a layer for now.
+      compositingReasons |= CompositingReasonIsolateCompositedDescendants;
+    } else {
+      if (auto* properties = object.getMutableForPainting().paintProperties())
+        context.forceSubtreeUpdate |= properties->clearMaskClip();
+    }
+
+    if (effectNodeNeeded) {
+      auto& properties = object.getMutableForPainting().ensurePaintProperties();
+      context.forceSubtreeUpdate |= properties.updateEffect(
+          context.currentEffect, context.current.transform, outputClip,
+          CompositorFilterOperations(), opacity, blendMode, compositingReasons,
+          compositorElementId);
+      if (hasMask) {
+        // TODO(crbug.com/683425): PaintArtifactCompositor does not handle
+        // grouping (i.e. descendant-dependent compositing reason) properly yet.
+        // Adding CompositingReasonSquashingDisallowed forces mask not getting
+        // squashed into a child effect. Have no compositing reason otherwise.
+        context.forceSubtreeUpdate |= properties.updateMask(
+            properties.effect(), context.current.transform, outputClip,
+            CompositorFilterOperations(), 1.f, SkBlendMode::kDstIn,
+            CompositingReasonSquashingDisallowed, CompositorElementId());
+      } else {
+        context.forceSubtreeUpdate |= properties.clearMask();
+      }
+    } else {
+      if (auto* properties = object.getMutableForPainting().paintProperties()) {
+        context.forceSubtreeUpdate |= properties->clearEffect();
+        context.forceSubtreeUpdate |= properties->clearMask();
+      }
+    }
+  }
+
+  const auto* properties = object.paintProperties();
+  if (properties && properties->effect()) {
+    context.currentEffect = properties->effect();
+    if (properties->maskClip()) {
+      context.inputClipOfCurrentEffect = context.current.clip =
+          context.absolutePosition.clip = context.fixedPosition.clip =
+              properties->maskClip();
+    }
+  }
+}
+
+void PaintPropertyTreeBuilder::updateFilter(
+    const LayoutObject& object,
+    PaintPropertyTreeBuilderContext& context) {
+  const ComputedStyle& style = object.styleRef();
+
+  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
     CompositorFilterOperations filter;
     if (object.isSVGChild()) {
       // TODO(trchen): SVG caches filters in SVGResources. Implement it.
@@ -460,7 +576,6 @@ void PaintPropertyTreeBuilder::updateEffect(
       filter = layer->createCompositorFilterOperationsForFilter(style);
     }
 
-    const ClipPaintPropertyNode* outputClip = context.inputClipOfCurrentEffect;
     // The CSS filter spec didn't specify how filters interact with overflow
     // clips. The implementation here mimics the old Blink/WebKit behavior for
     // backward compatibility.
@@ -479,51 +594,44 @@ void PaintPropertyTreeBuilder::updateEffect(
     // On the other hand, "B" should not be clipped because the overflow clip is
     // not in its containing block chain, but as the filter output will be
     // clipped, so a blurred "B" may still be invisible.
-    if (!filter.isEmpty()) {
-      effectNodeNeeded = true;
-      outputClip = context.current.clip;
+    const ClipPaintPropertyNode* outputClip = context.current.clip;
 
-      // TODO(trchen): A filter may contain spatial operations such that an
-      // output pixel may depend on an input pixel outside of the output clip.
-      // We should generate a special clip node to represent this expansion.
-    }
+    // TODO(trchen): A filter may contain spatial operations such that an
+    // output pixel may depend on an input pixel outside of the output clip.
+    // We should generate a special clip node to represent this expansion.
 
-    CompositingReasons compositingReasons = CompositingReasonNone;
-    if (CompositingReasonFinder::requiresCompositingForEffectAnimation(style)) {
-      compositingReasons = CompositingReasonActiveAnimation;
-      effectNodeNeeded = true;
-    }
-
+    // We may begin to composite our subtree prior to an animation starts,
+    // but a compositor element ID is only needed when an animation is current.
     CompositorElementId compositorElementId =
-        (style.hasCurrentOpacityAnimation() ||
-         style.hasCurrentFilterAnimation() ||
-         style.hasCurrentBackdropFilterAnimation())
+        style.hasCurrentFilterAnimation()
             ? createDomNodeBasedCompositorElementId(object)
             : CompositorElementId();
+    CompositingReasons compositingReasons =
+        CompositingReasonFinder::requiresCompositingForFilterAnimation(style)
+            ? CompositingReasonActiveAnimation
+            : CompositingReasonNone;
+    DCHECK(!style.hasCurrentFilterAnimation() ||
+           compositingReasons != CompositingReasonNone);
 
-    if (effectNodeNeeded) {
-      auto& properties = object.getMutableForPainting().ensurePaintProperties();
-      context.forceSubtreeUpdate |= properties.updateEffect(
-          context.currentEffect, context.current.transform, outputClip,
-          std::move(filter), opacity, blendMode, compositingReasons,
-          compositorElementId);
-    } else {
+    if (compositingReasons == CompositingReasonNone && filter.isEmpty()) {
       if (auto* properties = object.getMutableForPainting().paintProperties())
-        context.forceSubtreeUpdate |= properties->clearEffect();
+        context.forceSubtreeUpdate |= properties->clearFilter();
+    } else {
+      auto& properties = object.getMutableForPainting().ensurePaintProperties();
+      context.forceSubtreeUpdate |= properties.updateFilter(
+          context.currentEffect, context.current.transform, outputClip,
+          std::move(filter), 1.f, SkBlendMode::kSrcOver, compositingReasons,
+          compositorElementId);
     }
   }
 
   const auto* properties = object.paintProperties();
-  if (properties && properties->effect()) {
-    context.currentEffect = properties->effect();
-    if (!properties->effect()->filter().isEmpty()) {
-      // TODO(trchen): Change input clip to expansion hint once implemented.
-      const ClipPaintPropertyNode* inputClip =
-          properties->effect()->outputClip();
-      context.inputClipOfCurrentEffect = context.current.clip =
-          context.absolutePosition.clip = context.fixedPosition.clip =
-              inputClip;
-    }
+  if (properties && properties->filter()) {
+    context.currentEffect = properties->filter();
+    // TODO(trchen): Change input clip to expansion hint once implemented.
+    const ClipPaintPropertyNode* inputClip = properties->filter()->outputClip();
+    context.inputClipOfCurrentEffect = context.current.clip =
+        context.absolutePosition.clip = context.fixedPosition.clip = inputClip;
   }
 }
 
@@ -953,8 +1061,10 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
 
   if (object.isBoxModelObject() || object.isSVG()) {
     updateTransform(object, context);
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       updateEffect(object, context);
+      updateFilter(object, context);
+    }
     updateCssClip(object, context);
     updateLocalBorderBoxContext(object, context);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())

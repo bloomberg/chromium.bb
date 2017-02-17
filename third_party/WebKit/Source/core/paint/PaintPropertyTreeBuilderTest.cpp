@@ -2980,10 +2980,10 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
       "</div>");
   const ObjectPaintProperties* filterProperties =
       getLayoutObjectByElementId("filter")->paintProperties();
-  EXPECT_TRUE(filterProperties->effect()->parent()->isRoot());
+  EXPECT_TRUE(filterProperties->filter()->parent()->isRoot());
   EXPECT_EQ(frameScrollTranslation(),
-            filterProperties->effect()->localTransformSpace());
-  EXPECT_EQ(frameContentClip(), filterProperties->effect()->outputClip());
+            filterProperties->filter()->localTransformSpace());
+  EXPECT_EQ(frameContentClip(), filterProperties->filter()->outputClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
@@ -2997,11 +2997,11 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
       getLayoutObjectByElementId("clip")->paintProperties();
   const ObjectPaintProperties* filterProperties =
       getLayoutObjectByElementId("filter")->paintProperties();
-  EXPECT_TRUE(filterProperties->effect()->parent()->isRoot());
+  EXPECT_TRUE(filterProperties->filter()->parent()->isRoot());
   EXPECT_EQ(frameScrollTranslation(),
-            filterProperties->effect()->localTransformSpace());
+            filterProperties->filter()->localTransformSpace());
   EXPECT_EQ(clipProperties->overflowClip(),
-            filterProperties->effect()->outputClip());
+            filterProperties->filter()->outputClip());
 
   const PropertyTreeState& childPaintState =
       *getLayoutObjectByElementId("child")
@@ -3009,8 +3009,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
            ->localBorderBoxProperties();
 
   // This will change once we added clip expansion node.
-  EXPECT_EQ(filterProperties->effect()->outputClip(), childPaintState.clip());
-  EXPECT_EQ(filterProperties->effect(), childPaintState.effect());
+  EXPECT_EQ(filterProperties->filter()->outputClip(), childPaintState.clip());
+  EXPECT_EQ(filterProperties->filter(), childPaintState.effect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
@@ -3189,6 +3189,121 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
   EXPECT_EQ(LayoutPoint(FloatPoint(31.5, 20)), clipper->paintOffset());
   EXPECT_EQ(FloatRect(31.5, 20, 400, 300),
             clipProperties->overflowClip()->clipRect().rect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
+  setBodyInnerHTML(
+      "<div id='target' style='width:300px; height:200px; "
+      "-webkit-mask:linear-gradient(red,red)'>"
+      "  Lorem ipsum"
+      "</div>");
+
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  const ClipPaintPropertyNode* outputClip = properties->maskClip();
+
+  EXPECT_EQ(outputClip, properties->localBorderBoxProperties()->clip());
+  EXPECT_EQ(frameContentClip(), outputClip->parent());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 300, 200), outputClip->clipRect());
+
+  EXPECT_EQ(properties->effect(),
+            properties->localBorderBoxProperties()->effect());
+  EXPECT_TRUE(properties->effect()->parent()->isRoot());
+  EXPECT_EQ(SkBlendMode::kSrcOver, properties->effect()->blendMode());
+  EXPECT_EQ(outputClip, properties->effect()->outputClip());
+
+  EXPECT_EQ(properties->effect(), properties->mask()->parent());
+  EXPECT_EQ(SkBlendMode::kDstIn, properties->mask()->blendMode());
+  EXPECT_EQ(outputClip, properties->mask()->outputClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
+  // This test verifies an abs-pos element still escape the scroll of a
+  // static-pos ancestor, but gets clipped due to the presence of a mask.
+  setBodyInnerHTML(
+      "<div style='width:300px; height:200px; overflow:scroll;'>"
+      "  <div id='target' style='width:200px; height:300px; "
+      "-webkit-mask:linear-gradient(red,red); border:10px dashed black; "
+      "overflow:hidden;'>"
+      "    <div id='absolute' style='position:absolute; left:0; top:0;'>Lorem "
+      "ipsum</div>"
+      "  </div>"
+      "</div>");
+
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  const ClipPaintPropertyNode* overflowClip1 = properties->maskClip()->parent();
+  const ClipPaintPropertyNode* maskClip = properties->maskClip();
+  const ClipPaintPropertyNode* overflowClip2 = properties->overflowClip();
+  const TransformPaintPropertyNode* scrollTranslation =
+      properties->localBorderBoxProperties()->transform();
+
+  EXPECT_EQ(frameContentClip(), overflowClip1->parent());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 300, 200), overflowClip1->clipRect());
+  EXPECT_EQ(framePreTranslation(), overflowClip1->localTransformSpace());
+
+  EXPECT_EQ(maskClip, properties->localBorderBoxProperties()->clip());
+  EXPECT_EQ(overflowClip1, maskClip->parent());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 220, 320), maskClip->clipRect());
+  EXPECT_EQ(scrollTranslation, maskClip->localTransformSpace());
+
+  EXPECT_EQ(maskClip, overflowClip2->parent());
+  EXPECT_EQ(FloatRoundedRect(18, 18, 200, 300), overflowClip2->clipRect());
+  EXPECT_EQ(scrollTranslation, overflowClip2->localTransformSpace());
+
+  EXPECT_EQ(properties->effect(),
+            properties->localBorderBoxProperties()->effect());
+  EXPECT_TRUE(properties->effect()->parent()->isRoot());
+  EXPECT_EQ(SkBlendMode::kSrcOver, properties->effect()->blendMode());
+  EXPECT_EQ(maskClip, properties->effect()->outputClip());
+
+  EXPECT_EQ(properties->effect(), properties->mask()->parent());
+  EXPECT_EQ(SkBlendMode::kDstIn, properties->mask()->blendMode());
+  EXPECT_EQ(maskClip, properties->mask()->outputClip());
+
+  const ObjectPaintProperties* properties2 =
+      paintPropertiesForElement("absolute");
+  EXPECT_EQ(framePreTranslation(),
+            properties2->localBorderBoxProperties()->transform());
+  EXPECT_EQ(maskClip, properties2->localBorderBoxProperties()->clip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
+  loadAhem();
+  // This test verifies CSS mask applied on an inline element is clipped to
+  // the line box of the said element. In this test the masked element has
+  // only one box, and one of the child element overflows the box.
+  setBodyInnerHTML(
+      "<style>* { font-family:Ahem; font-size:16px; }</style>"
+      "Lorem"
+      "<span id='target' style='-webkit-mask:linear-gradient(red,red);'>"
+      "  ipsum"
+      "  <span id='overflowing' style='position:relative; font-size:32px;'>"
+      "    dolor"
+      "  </span>"
+      "  sit amet,"
+      "</span>");
+
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  const ClipPaintPropertyNode* outputClip = properties->maskClip();
+
+  EXPECT_EQ(outputClip, properties->localBorderBoxProperties()->clip());
+  EXPECT_EQ(frameContentClip(), outputClip->parent());
+  EXPECT_EQ(FloatRoundedRect(88, 21, 448, 16), outputClip->clipRect());
+
+  EXPECT_EQ(properties->effect(),
+            properties->localBorderBoxProperties()->effect());
+  EXPECT_TRUE(properties->effect()->parent()->isRoot());
+  EXPECT_EQ(SkBlendMode::kSrcOver, properties->effect()->blendMode());
+  EXPECT_EQ(outputClip, properties->effect()->outputClip());
+
+  EXPECT_EQ(properties->effect(), properties->mask()->parent());
+  EXPECT_EQ(SkBlendMode::kDstIn, properties->mask()->blendMode());
+  EXPECT_EQ(outputClip, properties->mask()->outputClip());
+
+  const ObjectPaintProperties* properties2 =
+      paintPropertiesForElement("overflowing");
+  EXPECT_EQ(outputClip, properties2->localBorderBoxProperties()->clip());
+  EXPECT_EQ(properties->effect(),
+            properties2->localBorderBoxProperties()->effect());
 }
 
 }  // namespace blink

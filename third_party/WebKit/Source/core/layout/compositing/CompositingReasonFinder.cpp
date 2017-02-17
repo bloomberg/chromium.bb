@@ -178,17 +178,32 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(
   return style.shouldCompositeForCurrentAnimations();
 }
 
+bool CompositingReasonFinder::requiresCompositingForOpacityAnimation(
+    const ComputedStyle& style) {
+  return style.subtreeWillChangeContents()
+             ? style.isRunningOpacityAnimationOnCompositor()
+             : style.hasCurrentOpacityAnimation();
+}
+
+bool CompositingReasonFinder::requiresCompositingForFilterAnimation(
+    const ComputedStyle& style) {
+  return style.subtreeWillChangeContents()
+             ? style.isRunningFilterAnimationOnCompositor()
+             : style.hasCurrentFilterAnimation();
+}
+
+bool CompositingReasonFinder::requiresCompositingForBackdropFilterAnimation(
+    const ComputedStyle& style) {
+  return style.subtreeWillChangeContents()
+             ? style.isRunningBackdropFilterAnimationOnCompositor()
+             : style.hasCurrentBackdropFilterAnimation();
+}
+
 bool CompositingReasonFinder::requiresCompositingForEffectAnimation(
     const ComputedStyle& style) {
-  if (style.subtreeWillChangeContents()) {
-    return style.isRunningOpacityAnimationOnCompositor() ||
-           style.isRunningFilterAnimationOnCompositor() ||
-           style.isRunningBackdropFilterAnimationOnCompositor();
-  }
-
-  return style.hasCurrentOpacityAnimation() ||
-         style.hasCurrentFilterAnimation() ||
-         style.hasCurrentBackdropFilterAnimation();
+  return requiresCompositingForOpacityAnimation(style) ||
+         requiresCompositingForFilterAnimation(style) ||
+         requiresCompositingForBackdropFilterAnimation(style);
 }
 
 bool CompositingReasonFinder::requiresCompositingForTransformAnimation(

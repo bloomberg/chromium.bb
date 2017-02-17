@@ -33,6 +33,10 @@ class CORE_EXPORT CompositingReasonFinder {
   bool hasOverflowScrollTrigger() const;
   bool requiresCompositingForScrollableFrame() const;
   static bool requiresCompositingForAnimation(const ComputedStyle&);
+  static bool requiresCompositingForOpacityAnimation(const ComputedStyle&);
+  static bool requiresCompositingForFilterAnimation(const ComputedStyle&);
+  static bool requiresCompositingForBackdropFilterAnimation(
+      const ComputedStyle&);
   static bool requiresCompositingForEffectAnimation(const ComputedStyle&);
   static bool requiresCompositingForTransformAnimation(const ComputedStyle&);
   static bool requiresCompositingForTransform(const LayoutObject&);

@@ -2667,7 +2667,10 @@ void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping,
     groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
 
-bool PaintLayer::hasCompositedMask() const {
+bool PaintLayer::maskBlendingAppliedByCompositor() const {
+  DCHECK(m_layoutObject->hasMask());
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return true;
   return m_rareData && m_rareData->compositedLayerMapping &&
          m_rareData->compositedLayerMapping->hasMaskLayer();
 }

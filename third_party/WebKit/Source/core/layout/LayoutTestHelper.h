@@ -112,6 +112,8 @@ class RenderingTest : public testing::Test {
     return node ? node->layoutObject() : nullptr;
   }
 
+  void loadAhem();
+
  private:
   Persistent<FrameLoaderClient> m_frameLoaderClient;
   std::unique_ptr<DummyPageHolder> m_pageHolder;

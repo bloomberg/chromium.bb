@@ -126,6 +126,8 @@ class PaintPropertyTreeBuilder {
       PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateEffect(const LayoutObject&,
                                          PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateFilter(const LayoutObject&,
+                                         PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateCssClip(const LayoutObject&,
                                           PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateLocalBorderBoxContext(

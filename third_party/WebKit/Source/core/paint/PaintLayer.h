@@ -528,7 +528,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   };
   void setGroupedMapping(CompositedLayerMapping*, SetGroupMappingOptions);
 
-  bool hasCompositedMask() const;
+  bool maskBlendingAppliedByCompositor() const;
   bool hasCompositedClippingMask() const;
   bool needsCompositedScrolling() const {
     return m_scrollableArea && m_scrollableArea->needsCompositedScrolling();

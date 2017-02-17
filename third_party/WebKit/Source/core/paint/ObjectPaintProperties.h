@@ -91,15 +91,43 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_scrollbarPaintOffset.get();
   }
 
+  // The hierarchy of the effect subtree created by a LayoutObject is as
+  // follows:
+  // [ effect ]
+  // |   Isolated group to apply various CSS effects, including opacity,
+  // |   mix-blend-mode, and for isolation if a mask needs to be applied or
+  // |   backdrop-dependent children are present.
+  // +-[ filter ]
+  // |     Isolated group for CSS filter.
+  // +-[ mask ]
+  //       Isolated group for painting the CSS mask. This node will have
+  //       SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
   const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
+  const EffectPaintPropertyNode* filter() const { return m_filter.get(); }
+  const EffectPaintPropertyNode* mask() const { return m_mask.get(); }
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
-  // [ css clip ]
-  // [ css clip fixed position]
-  // [ inner border radius clip ] Clip created by a rounded border with overflow
-  //                              clip. This clip is not inset by scrollbars.
-  // +--- [ overflow clip ]       Clip created by overflow clip and is inset by
-  //                              the scrollbars.
+  // [ mask clip ]
+  // |   Clip created by CSS mask. It serves two purposes:
+  // |   1. Cull painting of the masked subtree. Because anything outside of
+  // |      the mask is never visible, it is pointless to paint them.
+  // |   2. Raster clip of the masked subtree. Because the mask implemented
+  // |      as SkBlendMode::kDstIn, pixels outside of mask's bound will be
+  // |      intact when they shall be masked out. This clip ensures no pixels
+  // |      leak out.
+  // +-[ css clip ]
+  //   |   Clip created by CSS clip. CSS clip applies to all descendants, this
+  //   |   node only applies to containing block descendants. For descendants
+  //   |   not contained by this object, use [ css clip fixed position ].
+  //   +-[ inner border radius clip]
+  //     |   Clip created by a rounded border with overflow clip. This clip is
+  //     |   not inset by scrollbars.
+  //     +-[ overflow clip ]
+  //           Clip created by overflow clip and is inset by the scrollbar.
+  // [ css clip fixed position ]
+  //     Clip created by CSS clip. Only exists if the current clip includes
+  //     some clip that doesn't apply to our fixed position descendants.
+  const ClipPaintPropertyNode* maskClip() const { return m_maskClip.get(); }
   const ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
   const ClipPaintPropertyNode* cssClipFixedPosition() const {
     return m_cssClipFixedPosition.get();
@@ -171,6 +199,9 @@ class CORE_EXPORT ObjectPaintProperties {
   bool clearPaintOffsetTranslation() { return clear(m_paintOffsetTranslation); }
   bool clearTransform() { return clear(m_transform); }
   bool clearEffect() { return clear(m_effect); }
+  bool clearFilter() { return clear(m_filter); }
+  bool clearMask() { return clear(m_mask); }
+  bool clearMaskClip() { return clear(m_maskClip); }
   bool clearCssClip() { return clear(m_cssClip); }
   bool clearCssClipFixedPosition() { return clear(m_cssClipFixedPosition); }
   bool clearInnerBorderRadiusClip() { return clear(m_innerBorderRadiusClip); }
@@ -227,6 +258,18 @@ class CORE_EXPORT ObjectPaintProperties {
     return update(m_effect, std::forward<Args>(args)...);
   }
   template <typename... Args>
+  bool updateFilter(Args&&... args) {
+    return update(m_filter, std::forward<Args>(args)...);
+  }
+  template <typename... Args>
+  bool updateMask(Args&&... args) {
+    return update(m_mask, std::forward<Args>(args)...);
+  }
+  template <typename... Args>
+  bool updateMaskClip(Args&&... args) {
+    return update(m_maskClip, std::forward<Args>(args)...);
+  }
+  template <typename... Args>
   bool updateCssClip(Args&&... args) {
     return update(m_cssClip, std::forward<Args>(args)...);
   }
@@ -253,6 +296,12 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->m_transform = m_transform->clone();
     if (m_effect)
       cloned->m_effect = m_effect->clone();
+    if (m_filter)
+      cloned->m_filter = m_filter->clone();
+    if (m_mask)
+      cloned->m_mask = m_mask->clone();
+    if (m_maskClip)
+      cloned->m_maskClip = m_maskClip->clone();
     if (m_cssClip)
       cloned->m_cssClip = m_cssClip->clone();
     if (m_cssClipFixedPosition)
@@ -312,6 +361,9 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
   RefPtr<TransformPaintPropertyNode> m_transform;
   RefPtr<EffectPaintPropertyNode> m_effect;
+  RefPtr<EffectPaintPropertyNode> m_filter;
+  RefPtr<EffectPaintPropertyNode> m_mask;
+  RefPtr<ClipPaintPropertyNode> m_maskClip;
   RefPtr<ClipPaintPropertyNode> m_cssClip;
   RefPtr<ClipPaintPropertyNode> m_cssClipFixedPosition;
   RefPtr<ClipPaintPropertyNode> m_innerBorderRadiusClip;
