@@ -71,6 +71,9 @@ function ImageLoader() {
           if (typeof request.orientation === 'number') {
             request.orientation =
                 ImageOrientation.fromDriveOrientation(request.orientation);
+          } else if (request.orientation) {
+            request.orientation =
+                ImageOrientation.fromRotationAndScale(request.orientation);
           } else {
             request.orientation = new ImageOrientation(1, 0, 0, 1);
           }

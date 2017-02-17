@@ -169,13 +169,15 @@ function testLoadAsDataUrlFromExternal(callback) {
       }), callback);
 }
 
-function testLoadDetachedFromExifInCavnasModeThumbnailRotate(callback) {
+function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
   ImageLoaderClient.getInstance = function() {
     return {
       load: function(url, callback, opt_option) {
         // Assert that data url is passed.
         assertTrue(/^data:/i.test(url));
-        callback({status: 'success', data: url, width: 64, height: 32});
+        // ImageLoader returns rotated image.
+        callback({status: 'success', data: generateSampleImageDataUrl(32, 64),
+            width: 32, height: 64});
       }
     };
   };
@@ -201,6 +203,7 @@ function testLoadDetachedFromExifInCavnasModeThumbnailRotate(callback) {
       thumbnailLoader.loadDetachedImage(resolve);
     }).then(function() {
       var image = thumbnailLoader.getImage();
+      // No need to rotate by loadDetachedImage() as it's already done.
       assertEquals(32, image.width);
       assertEquals(64, image.height);
     }), callback);

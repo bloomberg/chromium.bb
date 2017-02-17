@@ -73,6 +73,8 @@ ImageOrientation.fromExifOrientation = function(orientation) {
  * @return {!ImageOrientation}
  */
 ImageOrientation.fromDriveOrientation = function(rotation90) {
+  // TODO(yamaguchi): Examine the spec of Drive Orientation and share logic
+  // with |fromClockwiseRotation|. This looks (counterclockwise / 90) actually.
   switch (~~(rotation90 % 4)) {
     case 0:
       return new ImageOrientation(1, 0, 0, 1);
@@ -87,6 +89,56 @@ ImageOrientation.fromDriveOrientation = function(rotation90) {
       return new ImageOrientation(1, 0, 0, 1);
   }
 };
+
+/**
+ * @param {number} rotation90 Clockwise degrees / 90.
+ * @return {!ImageOrientation}
+ */
+ImageOrientation.fromClockwiseRotation = function(rotation90) {
+  switch (~~(rotation90 % 4)) {
+    case 0:
+      return new ImageOrientation(1, 0, 0, 1);
+    case 1:
+    case -3:
+      return new ImageOrientation(0, 1, -1, 0);
+    case 2:
+    case -2:
+      return new ImageOrientation(-1, 0, 0, -1);
+    case 3:
+    case -1:
+      return new ImageOrientation(0, -1, 1, 0);
+    default:
+      console.error('Invalid orientation number.');
+      return new ImageOrientation(1, 0, 0, 1);
+  }
+};
+
+/**
+ * Builds a transformation matrix from the image transform parameters.
+ * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
+ *     rotate90: clockwise degrees / 90.
+ * @return {!ImageOrientation}
+ */
+ImageOrientation.fromRotationAndScale = function(transform) {
+  var scaleX = transform.scaleX;
+  var scaleY = transform.scaleY;
+  var rotate90 = transform.rotate90;
+
+  var orientation = ImageOrientation.fromClockwiseRotation(rotate90);
+
+  // Flip X and Y.
+  // In the Files app., CSS transformations are applied like
+  // "transform: rotate(90deg) scaleX(-1)".
+  // Since the image is scaled based on the X,Y axes pinned to the original,
+  // it is equivalent to scale first and then rotate.
+  // |a c| |s_x 0 | |x|   |a*s_x c*s_y| |x|
+  // |b d| | 0 s_y| |y| = |b*s_x d*s_y| |y|
+  return new ImageOrientation(
+    orientation.a * scaleX,
+    orientation.b * scaleX,
+    orientation.c * scaleY,
+    orientation.d * scaleY);
+}
 
 /**
  * Obtains the image size after cancelling its orientation.

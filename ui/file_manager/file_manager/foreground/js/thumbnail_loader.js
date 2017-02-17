@@ -460,16 +460,27 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
+  var loaderOptions = {
+      maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+      maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+      cache: true,
+      priority: this.priority_,
+      timestamp: modificationTime
+  };
+  if (this.metadata_ && this.metadata_.media &&
+      this.metadata_.media.imageTransform) {
+    loaderOptions.orientation = this.metadata_.media.imageTransform;
+  }
+  // Comsume the transform parameter to avoid duplicated transformation in
+  // getImage().
+  // TODO(yamaguchi): remove this line when we move the image transformation
+  // logic out of this class.
+  this.transform_ = undefined;
+
   this.taskId_ = ImageLoaderClient.loadToImage(
       this.thumbnailUrl_,
       this.image_,
-      {
-        maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
-        maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
-        cache: true,
-        priority: this.priority_,
-        timestamp: modificationTime
-      },
+      loaderOptions,
       function() {},
       function() {
         this.image_.onerror(new Event('load-error'));

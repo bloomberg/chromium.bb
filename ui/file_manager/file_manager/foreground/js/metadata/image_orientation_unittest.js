@@ -41,3 +41,52 @@ function testCancelImageOrientation() {
   var destinationImageData = destinationContext.getImageData(0, 0, 1, 2);
   assertArrayEquals([255, 0, 0, 100, 0, 0, 0, 100], destinationImageData.data);
 }
+
+function assertImageOrientationEquals(expected, actual, message) {
+  assertEquals(expected.a, actual.a, message);
+  assertEquals(expected.b, actual.b, message);
+  assertEquals(expected.c, actual.c, message);
+  assertEquals(expected.d, actual.d, message);
+}
+
+function testFromRotationAndScale() {
+  var rotate270 = {scaleX: 1, scaleY: 1, rotate90: -1};
+  var rotate90 = {scaleX: 1, scaleY: 1, rotate90: 1};
+  var flipX = {scaleX: -1, scaleY: 1, rotate90: 0 };
+  var flipY = {scaleX: 1, scaleY: -1, rotate90: 0 };
+  var flipBoth = {scaleX: -1, scaleY: -1, rotate90: 0};
+  var rotate180 = {scaleX: 1, scaleY: 1, rotate90: 2};
+  var flipXAndRotate90 = {scaleX: -1, scaleY: 1, rotate90: 1};
+  var flipYAndRotate90 = {scaleX: 1, scaleY: -1, rotate90: 1};
+  var rotate1080 = {scaleX: 1, scaleY: 1, rotate90: 12};
+  var flipBothAndRotate180 = {scaleX: -1, scaleY: -1, rotate90: 2};
+  /*
+   The image coordinate system is aligned to the screen. (Y+ pointing down)
+   O----> e_x                 ^
+   |           rotate 270 CW  | e'_x = (0, -1)' = (a, b)'
+   |             =====>       |
+   V e_y                      O----> e'_y = (1, 0)' = (c, d)'
+  */
+  assertImageOrientationEquals(new ImageOrientation(0, -1, 1, 0),
+      ImageOrientation.fromRotationAndScale(rotate270), 'rotate270');
+  assertImageOrientationEquals(new ImageOrientation(0, 1, -1, 0),
+      ImageOrientation.fromRotationAndScale(rotate90), 'rotate90');
+  assertImageOrientationEquals(new ImageOrientation(-1, 0, 0, 1),
+      ImageOrientation.fromRotationAndScale(flipX), 'flipX');
+  assertImageOrientationEquals(new ImageOrientation(1, 0, 0, -1),
+      ImageOrientation.fromRotationAndScale(flipY), 'flipY');
+  assertImageOrientationEquals(new ImageOrientation(-1, 0, 0, -1),
+      ImageOrientation.fromRotationAndScale(flipBoth), 'flipBoth');
+  assertImageOrientationEquals(new ImageOrientation(-1, 0, 0, -1),
+      ImageOrientation.fromRotationAndScale(rotate180), 'rotate180');
+  assertImageOrientationEquals(new ImageOrientation(0, -1, -1, 0),
+      ImageOrientation.fromRotationAndScale(flipXAndRotate90),
+      'flipXAndRotate90');
+  assertImageOrientationEquals(new ImageOrientation(0, 1, 1, 0),
+      ImageOrientation.fromRotationAndScale(flipYAndRotate90),
+      'flipYAndRotate90');
+  assertTrue(ImageOrientation.fromRotationAndScale(flipBothAndRotate180)
+      .isIdentity(), 'flipBothAndRotate180');
+  assertTrue(ImageOrientation.fromRotationAndScale(rotate1080).isIdentity(),
+      'rotate1080');
+}
