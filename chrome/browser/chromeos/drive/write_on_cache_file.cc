@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_system_core_util.h"
@@ -38,8 +39,9 @@ void WriteOnCacheFileAfterOpenFile(
     const base::Closure& close_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_BLOCKING),
       base::Bind(file_io_task_callback, error, local_cache_path),
       base::Bind(&RunCloseCallbackAndReplyTask, close_callback, reply, error));
 }
