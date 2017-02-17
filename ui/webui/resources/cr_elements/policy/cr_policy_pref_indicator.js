@@ -22,8 +22,9 @@ Polymer({
     /**
      * Which indicator type to show (or NONE).
      * @type {CrPolicyIndicatorType}
+     * @private
      */
-    indicatorType: {
+    indicatorType_: {
       type: String,
       value: CrPolicyIndicatorType.NONE,
       computed: 'getIndicatorType(pref.controlledBy, pref.enforcement)',
@@ -32,20 +33,19 @@ Polymer({
 
   /**
    * @param {CrPolicyIndicatorType} type
-   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getTooltip_: function(type, pref) {
-    var matches = pref && pref.value == pref.recommendedValue;
+  getTooltip_: function(type) {
+    var matches = !!this.pref && this.pref.value == this.pref.recommendedValue;
     return this.getPolicyIndicatorTooltip(
-        type, pref.controlledByName || '', matches);
+        type, this.pref.controlledByName || '', matches);
   },
 
   /**
    * @return {boolean} Whether the policy indicator is on. Useful for testing.
    */
   isActive: function() {
-    return this.isIndicatorVisible(this.indicatorType);
+    return this.isIndicatorVisible(this.indicatorType_);
   },
 });

@@ -18,8 +18,8 @@ var CrPolicyPrefBehavior = {
   },
 
   /**
-   * @param {chrome.settingsPrivate.ControlledBy} controlledBy
-   * @param {chrome.settingsPrivate.Enforcement} enforcement
+   * @param {!chrome.settingsPrivate.ControlledBy|undefined} controlledBy
+   * @param {!chrome.settingsPrivate.Enforcement|undefined} enforcement
    * @return {CrPolicyIndicatorType} The indicator type based on |controlledBy|
    *     and |enforcement|.
    */

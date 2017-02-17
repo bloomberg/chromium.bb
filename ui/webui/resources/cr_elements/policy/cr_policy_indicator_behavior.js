@@ -71,7 +71,7 @@ var CrPolicyIndicatorBehavior = {
   },
 
   /**
-   * @param {CrPolicyIndicatorType} type
+   * @param {!CrPolicyIndicatorType} type
    * @param {string} name The name associated with the indicator. See
    *     chrome.settingsPrivate.PrefObject.controlledByName
    * @param {boolean=} opt_matches For RECOMMENDED only, whether the indicator
