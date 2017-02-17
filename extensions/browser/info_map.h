@@ -30,10 +30,8 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
  public:
   InfoMap();
 
-  const ExtensionSet& extensions() const { return extensions_; }
-  const ExtensionSet& disabled_extensions() const {
-    return disabled_extensions_;
-  }
+  const ExtensionSet& extensions() const;
+  const ExtensionSet& disabled_extensions() const;
 
   // Information about which extensions are assigned to which render processes.
   const ProcessMap& process_map() const { return process_map_; }

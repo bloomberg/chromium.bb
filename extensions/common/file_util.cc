@@ -38,7 +38,6 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "grit/extensions_strings.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
@@ -514,77 +513,40 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const base::FilePath& extension_path,
     const std::string& extension_id,
     const std::string& default_locale) {
+  return LoadMessageBundleSubstitutionMapFromPaths(
+      {extension_path}, extension_id, default_locale);
+}
+
+MessageBundle::SubstitutionMap* LoadNonLocalizedMessageBundleSubstitutionMap(
+    const std::string& extension_id) {
   MessageBundle::SubstitutionMap* return_value =
       new MessageBundle::SubstitutionMap();
-  if (!default_locale.empty()) {
-    // Touch disk only if extension is localized.
-    std::string error;
-    std::unique_ptr<MessageBundle> bundle(
-        LoadMessageBundle(extension_path, default_locale, &error));
 
-    if (bundle.get())
-      *return_value = *bundle->dictionary();
-  }
-
-  // Add @@extension_id reserved message here, so it's available to
-  // non-localized extensions too.
+  // Add @@extension_id reserved message here.
   return_value->insert(
       std::make_pair(MessageBundle::kExtensionIdKey, extension_id));
 
   return return_value;
 }
 
-MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapWithImports(
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapFromPaths(
+    const std::vector<base::FilePath>& paths,
     const std::string& extension_id,
-    const ExtensionSet& extension_set) {
-  const Extension* extension = extension_set.GetByID(extension_id);
+    const std::string& default_locale) {
   MessageBundle::SubstitutionMap* return_value =
-      new MessageBundle::SubstitutionMap();
-
-  // Add @@extension_id reserved message here, so it's available to
-  // non-localized extensions too.
-  return_value->insert(
-      std::make_pair(MessageBundle::kExtensionIdKey, extension_id));
-
-  base::FilePath extension_path;
-  std::string default_locale;
-  if (!extension) {
-    NOTREACHED() << "Missing extension " << extension_id;
-    return return_value;
-  }
+      LoadNonLocalizedMessageBundleSubstitutionMap(extension_id);
 
   // Touch disk only if extension is localized.
-  default_locale = LocaleInfo::GetDefaultLocale(extension);
-  if (default_locale.empty()) {
+  if (default_locale.empty())
     return return_value;
-  }
 
   std::string error;
-  std::unique_ptr<MessageBundle> bundle(
-      LoadMessageBundle(extension->path(), default_locale, &error));
+  for (const base::FilePath& path : paths) {
+    std::unique_ptr<MessageBundle> bundle(
+        LoadMessageBundle(path, default_locale, &error));
 
-  if (bundle.get()) {
-    for (auto iter : *bundle->dictionary()) {
-      return_value->insert(std::make_pair(iter.first, iter.second));
-    }
-  }
-
-  auto imports = extensions::SharedModuleInfo::GetImports(extension);
-  // Iterate through the imports in reverse.  This will allow later imported
-  // modules to override earlier imported modules, as the list order is
-  // maintained from the definition in manifest.json of the imports.
-  for (auto it = imports.rbegin(); it != imports.rend(); ++it) {
-    const extensions::Extension* imported_extension =
-        extension_set.GetByID(it->extension_id);
-    if (!imported_extension) {
-      NOTREACHED() << "Missing shared module " << it->extension_id;
-      continue;
-    }
-    std::unique_ptr<MessageBundle> imported_bundle(
-        LoadMessageBundle(imported_extension->path(), default_locale, &error));
-
-    if (imported_bundle.get()) {
-      for (auto iter : *imported_bundle->dictionary()) {
+    if (bundle) {
+      for (const auto& iter : *bundle->dictionary()) {
         // |insert| only adds new entries, and does not replace entries in
         // the main extension or previously processed imports.
         return_value->insert(std::make_pair(iter.first, iter.second));

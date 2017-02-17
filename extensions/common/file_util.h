@@ -23,7 +23,6 @@ class FilePath;
 
 namespace extensions {
 class Extension;
-class ExtensionSet;
 struct InstallWarning;
 
 // Utilities for manipulating the on-disk storage of extensions.
@@ -135,12 +134,18 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const std::string& extension_id,
     const std::string& default_locale);
 
-// Loads the extension message bundle substitution map, including messages from
-// Shared Modules that the given extension imports. Contains at least the
-// extension_id item.
-MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapWithImports(
+// Loads the extension message bundle substitution map for a non-localized
+// extension. Contains only the extension_id item.
+// This doesn't require hitting disk, so it's safe to call on any thread.
+MessageBundle::SubstitutionMap* LoadNonLocalizedMessageBundleSubstitutionMap(
+    const std::string& extension_id);
+
+// Loads the extension message bundle substitution map from the specified paths.
+// Contains at least the extension_id item.
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapFromPaths(
+    const std::vector<base::FilePath>& paths,
     const std::string& extension_id,
-    const ExtensionSet& extension_set);
+    const std::string& default_locale);
 
 // Helper functions for getting paths for files used in content verification.
 base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path);

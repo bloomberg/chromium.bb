@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_EXTENSION_MESSAGE_FILTER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -71,7 +72,9 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   void OnGetExtMessageBundle(const std::string& extension_id,
                              IPC::Message* reply_msg);
   void OnGetExtMessageBundleOnBlockingPool(
-      const std::string& extension_id,
+      const std::vector<base::FilePath>& extension_paths,
+      const std::string& main_extension_id,
+      const std::string& default_locale,
       IPC::Message* reply_msg);
   void OnAddAPIActionToExtensionActivityLog(
       const std::string& extension_id,

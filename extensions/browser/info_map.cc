@@ -49,6 +49,16 @@ InfoMap::ExtraData::~ExtraData() {}
 InfoMap::InfoMap() {
 }
 
+const ExtensionSet& InfoMap::extensions() const {
+  CheckOnValidThread();
+  return extensions_;
+}
+
+const ExtensionSet& InfoMap::disabled_extensions() const {
+  CheckOnValidThread();
+  return disabled_extensions_;
+}
+
 void InfoMap::AddExtension(const Extension* extension,
                            base::Time install_time,
                            bool incognito_enabled,
