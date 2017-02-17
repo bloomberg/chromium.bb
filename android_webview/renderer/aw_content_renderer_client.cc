@@ -182,7 +182,7 @@ void AwContentRendererClient::RenderViewCreated(
 }
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code,
-                          std::string* error_domain) {
+                                           std::string* error_domain) {
   return http_status_code >= 400;
 }
 
@@ -192,57 +192,76 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& error,
     std::string* error_html,
     base::string16* error_description) {
-  if (error_html) {
-    GURL gurl(failed_request.url());
-    std::string url = net::EscapeForHTML(gurl.possibly_invalid_spec());
-    std::string err = error.localizedDescription.utf8(
-        blink::WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-
-    std::vector<std::string> replacements;
-    replacements.push_back(
-        l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_NOT_AVAILABLE));
-    if (err.empty()) {
-      replacements.push_back(l10n_util::GetStringFUTF8(
-          IDS_AW_WEBPAGE_TEMPORARILY_DOWN, base::UTF8ToUTF16(url)));
-      replacements.push_back(l10n_util::GetStringUTF8(
-          IDS_AW_WEBPAGE_TEMPORARILY_DOWN_SUGGESTIONS));
-    } else {
-      replacements.push_back(l10n_util::GetStringFUTF8(
-          IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED, base::UTF8ToUTF16(url)));
-      replacements.push_back(err);
-    }
-    if (base::i18n::IsRTL())
-      replacements.push_back("direction: rtl;");
-    else
-      replacements.push_back("");
-    *error_html = base::ReplaceStringPlaceholders(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_AW_LOAD_ERROR_HTML),
-        replacements, nullptr);
-    if (error.reason == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
-      // This needs more information
-      render_frame->GetRemoteInterfaces()->GetInterface(
-          &web_restrictions_service_);
-      web_restrictions::mojom::ClientResultPtr result;
-      if (web_restrictions_service_->GetResult(gurl.possibly_invalid_spec(),
-                                               &result)) {
-        std::string detailed_error_html =
-            supervised_user_error_page::BuildHtmlFromWebRestrictionsResult(
-                result, RenderThread::Get()->GetLocale());
-        if (!detailed_error_html.empty()) {
-          *error_html = detailed_error_html;
-          supervised_user_error_page::GinWrapper::InstallWhenFrameReady(
-              render_frame, url, web_restrictions_service_);
-        }
-      }
-    }
-  }
   if (error_description) {
     if (error.localizedDescription.isEmpty())
       *error_description = base::ASCIIToUTF16(net::ErrorToString(error.reason));
     else
       *error_description = error.localizedDescription.utf16();
   }
+
+  if (!error_html)
+    return;
+
+  // Create the error page based on the error reason.
+  GURL gurl(failed_request.url());
+  std::string url_string = gurl.possibly_invalid_spec();
+  int reason_id = IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED;
+
+  if (error.reason == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
+    // This creates a different error page giving considerably more
+    // detail, and possibly allowing the user to request access.
+    // Get the details this needs from the browser.
+    render_frame->GetRemoteInterfaces()->GetInterface(
+        &web_restrictions_service_);
+    web_restrictions::mojom::ClientResultPtr result;
+    if (web_restrictions_service_->GetResult(url_string, &result)) {
+      std::string detailed_error_html =
+          supervised_user_error_page::BuildHtmlFromWebRestrictionsResult(
+              result, RenderThread::Get()->GetLocale());
+      if (!detailed_error_html.empty()) {
+        *error_html = detailed_error_html;
+        supervised_user_error_page::GinWrapper::InstallWhenFrameReady(
+            render_frame, url_string, web_restrictions_service_);
+        return;
+      }
+      // If the error page isn't available (it is only available in
+      // Monochrome) but the user is a child then we want to give a simple
+      // custom message.
+      if (result->intParams["Is child account"])
+        reason_id = IDS_AW_WEBPAGE_PARENTAL_PERMISSION_NEEDED;
+    }
+  }
+
+  std::string err = error.localizedDescription.utf8(
+      blink::WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
+
+  if (err.empty())
+    reason_id = IDS_AW_WEBPAGE_TEMPORARILY_DOWN;
+
+  std::string escaped_url = net::EscapeForHTML(url_string);
+  std::vector<std::string> replacements;
+  replacements.push_back(
+      l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_NOT_AVAILABLE));
+  replacements.push_back(
+      l10n_util::GetStringFUTF8(reason_id, base::UTF8ToUTF16(escaped_url)));
+
+  // Having chosen the base reason, chose what extra information to add.
+  if (reason_id == IDS_AW_WEBPAGE_PARENTAL_PERMISSION_NEEDED) {
+    replacements.push_back("");
+  } else if (reason_id == IDS_AW_WEBPAGE_TEMPORARILY_DOWN) {
+    replacements.push_back(
+        l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_TEMPORARILY_DOWN_SUGGESTIONS));
+  } else {
+    replacements.push_back(err);
+  }
+  if (base::i18n::IsRTL())
+    replacements.push_back("direction: rtl;");
+  else
+    replacements.push_back("");
+  *error_html = base::ReplaceStringPlaceholders(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_AW_LOAD_ERROR_HTML),
+      replacements, nullptr);
 }
 
 unsigned long long AwContentRendererClient::VisitedLinkHash(
