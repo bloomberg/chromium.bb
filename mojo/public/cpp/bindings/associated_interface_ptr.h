@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -160,12 +159,6 @@ class AssociatedInterfacePtr {
     return state.PassInterface();
   }
 
-  // Returns the associated group that this object belongs to. Returns null if
-  // the object is not bound.
-  AssociatedGroup* associated_group() {
-    return internal_state_.associated_group();
-  }
-
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::AssociatedInterfacePtrState<Interface>* internal_state() {
     return &internal_state_;
@@ -205,11 +198,9 @@ class AssociatedInterfacePtr {
 // Violating that will lead to crash. On the other hand, as soon as the request
 // is sent, |ptr| is usable. There is no need to wait until the request is bound
 // to an implementation at the remote side.
-// TODO(yzshen): Remove the |group| parameter.
 template <typename Interface>
 AssociatedInterfaceRequest<Interface> MakeRequest(
     AssociatedInterfacePtr<Interface>* ptr,
-    AssociatedGroup* group = nullptr,
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get()) {
   AssociatedInterfacePtrInfo<Interface> ptr_info;

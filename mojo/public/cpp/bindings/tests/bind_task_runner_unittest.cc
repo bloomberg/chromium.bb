@@ -222,7 +222,7 @@ class AssociatedBindTaskRunnerTest : public testing::Test {
                    base::Unretained(this)));
 
     connection_ptr_->GetSender(
-        MakeRequest(&sender_ptr_, nullptr, sender_ptr_task_runner_));
+        MakeRequest(&sender_ptr_, sender_ptr_task_runner_));
     connection_binding_task_runner_->Run();
   }
 

@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -60,12 +60,6 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
 
   // Indicates whether the associated binding has been completed.
   bool is_bound() const { return !!endpoint_client_; }
-
-  // Returns the associated group that this object belongs to. Returns null if
-  // the object is not bound.
-  AssociatedGroup* associated_group() {
-    return endpoint_client_ ? endpoint_client_->associated_group() : nullptr;
-  }
 
   // Sends a message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to
@@ -110,11 +104,10 @@ class AssociatedBinding : public AssociatedBindingBase {
   // should be sent by another interface. |impl| must outlive this object.
   AssociatedBinding(ImplPointerType impl,
                     AssociatedInterfacePtrInfo<Interface>* ptr_info,
-                    AssociatedGroup* associated_group = nullptr,
                     scoped_refptr<base::SingleThreadTaskRunner> runner =
                         base::ThreadTaskRunnerHandle::Get())
       : AssociatedBinding(std::move(impl)) {
-    Bind(ptr_info, associated_group, std::move(runner));
+    Bind(ptr_info, std::move(runner));
   }
 
   // Constructs a completed associated binding of |impl|. |impl| must outlive
@@ -133,7 +126,6 @@ class AssociatedBinding : public AssociatedBindingBase {
   // implementation side. The output |ptr_info| should be sent by another
   // interface.
   void Bind(AssociatedInterfacePtrInfo<Interface>* ptr_info,
-            AssociatedGroup* associated_group = nullptr,
             scoped_refptr<base::SingleThreadTaskRunner> runner =
                 base::ThreadTaskRunnerHandle::Get()) {
     auto request = MakeRequest(ptr_info);

@@ -22,8 +22,6 @@
 
 namespace mojo {
 
-class AssociatedGroup;
-
 // A pointer to a local proxy of a remote Interface implementation. Uses a
 // message pipe to communicate with the remote implementation, and automatically
 // closes the pipe and deletes the proxy on destruction. The pointer must be
@@ -184,14 +182,6 @@ class InterfacePtr {
     internal_state_.Swap(&state);
 
     return state.PassInterface();
-  }
-
-  // Returns the associated group that this object belongs to. Returns null if:
-  //   - this object is not bound; or
-  //   - the interface doesn't have methods to pass associated interface
-  //     pointers or requests.
-  AssociatedGroup* associated_group() {
-    return internal_state_.associated_group();
   }
 
   bool Equals(const InterfacePtr& other) const {
