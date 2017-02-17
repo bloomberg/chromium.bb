@@ -35,7 +35,6 @@ class Text;
 #define AppleInterchangeNewline "Apple-interchange-newline"
 #define AppleConvertedSpace "Apple-converted-space"
 #define ApplePasteAsQuotation "Apple-paste-as-quotation"
-#define AppleStyleSpanClass "Apple-style-span"
 #define AppleTabSpanClass "Apple-tab-span"
 
 enum EAnnotateForInterchange {

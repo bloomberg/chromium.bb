@@ -1064,9 +1064,6 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(
     return false;
   }
 
-  if (element->getAttribute(HTMLNames::classAttr) == AppleStyleSpanClass)
-    matchedAttributes++;
-
   if (element->hasAttribute(HTMLNames::styleAttr)) {
     if (const StylePropertySet* style = element->inlineStyle()) {
       unsigned propertyCount = style->propertyCount();

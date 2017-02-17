@@ -56,22 +56,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static String& styleSpanClassString() {
-  DEFINE_STATIC_LOCAL(String, styleSpanClassString, ((AppleStyleSpanClass)));
-  return styleSpanClassString;
-}
-
-bool isLegacyAppleHTMLSpanElement(const Node* node) {
-  if (!isHTMLSpanElement(node))
-    return false;
-
-  const HTMLSpanElement& span = toHTMLSpanElement(*node);
-  if (span.getAttribute(classAttr) != styleSpanClassString())
-    return false;
-  UseCounter::count(span.document(), UseCounter::EditingAppleStyleSpanClass);
-  return true;
-}
-
 static bool hasNoAttributeOrOnlyStyleAttribute(
     const HTMLElement* element,
     ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty) {
@@ -80,8 +64,6 @@ static bool hasNoAttributeOrOnlyStyleAttribute(
     return true;
 
   unsigned matchedAttributes = 0;
-  if (element->getAttribute(classAttr) == styleSpanClassString())
-    matchedAttributes++;
   if (element->hasAttribute(styleAttr) &&
       (shouldStyleAttributeBeEmpty == AllowNonEmptyStyleAttribute ||
        !element->inlineStyle() || element->inlineStyle()->isEmpty()))
