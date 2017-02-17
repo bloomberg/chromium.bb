@@ -501,6 +501,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/trace_event/memory_allocator_dump_guid.cc',
       'base/trace_event/memory_dump_manager.cc',
       'base/trace_event/memory_dump_request_args.cc',
+      'base/trace_event/memory_dump_scheduler.cc',
       'base/trace_event/memory_dump_session_state.cc',
       'base/trace_event/memory_infra_background_whitelist.cc',
       'base/trace_event/process_memory_dump.cc',
