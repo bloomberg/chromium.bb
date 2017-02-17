@@ -4,12 +4,23 @@
 
 package org.chromium.webview_shell.test;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.ActivityInstrumentationTestCase2;
+import android.support.test.rule.ActivityTestRule;
 
 import junit.framework.ComparisonFailure;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.Log;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
@@ -32,9 +43,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests running end-to-end layout tests.
  */
-public class WebViewLayoutTest
-        extends ActivityInstrumentationTestCase2<WebViewLayoutTestActivity> {
-
+@RunWith(BaseJUnit4ClassRunner.class)
+public class WebViewLayoutTest {
     private static final String TAG = "WebViewLayoutTest";
 
     private static final String EXTERNAL_PREFIX = UrlUtils.getIsolatedTestRoot() + "/";
@@ -62,29 +72,35 @@ public class WebViewLayoutTest
 
     private static final long TIMEOUT_SECONDS = 20;
 
+    private static final String MODE_REBASELINE = "rebaseline";
+
     private WebViewLayoutTestActivity mTestActivity;
+    private boolean mRebaseLine;
 
-    public WebViewLayoutTest() {
-        super(WebViewLayoutTestActivity.class);
+    @Rule
+    public ActivityTestRule<WebViewLayoutTestActivity> mActivityTestRule =
+            new ActivityTestRule<>(WebViewLayoutTestActivity.class, false, false);
+
+    @Before
+    public void setUp() throws Exception {
+        mTestActivity = mActivityTestRule.launchActivity(new Intent());
+        Bundle arguments = InstrumentationRegistry.getArguments();
+        if (arguments != null) {
+            String modeArgument = arguments.getString("mode");
+            mRebaseLine = modeArgument != null ? modeArgument.equals(MODE_REBASELINE) : false;
+        }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestActivity = (WebViewLayoutTestActivity) getActivity();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestActivity.finish();
-        super.tearDown();
     }
 
-    @Override
-    public WebViewLayoutTestRunner getInstrumentation() {
-        return (WebViewLayoutTestRunner) super.getInstrumentation();
+    private boolean isRebaseline() {
+        return mRebaseLine;
     }
 
+    @Test
     @MediumTest
     public void testSimple() throws Exception {
         runWebViewLayoutTest("experimental/basic-logging.html",
@@ -92,6 +108,7 @@ public class WebViewLayoutTest
     }
 
     // This is a non-failing test because it tends to require frequent rebaselines.
+    @Test
     @MediumTest
     public void testGlobalInterfaceNoFail() throws Exception {
         runBlinkLayoutTest("webexposed/global-interface-listing.html",
@@ -100,6 +117,7 @@ public class WebViewLayoutTest
 
     // This is a non-failing test to avoid 'blind' rebaselines by the sheriff
     // (see crbug.com/564765).
+    @Test
     @MediumTest
     public void testNoUnexpectedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -127,6 +145,7 @@ public class WebViewLayoutTest
         }
     }
 
+    @Test
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -151,7 +170,7 @@ public class WebViewLayoutTest
                 webviewExcludedInterfacesMap.entrySet()) {
             String interfaceS = entry.getKey();
             HashSet<String> subsetBlink = blinkInterfacesMap.get(interfaceS);
-            assertNotNull("Interface " + interfaceS + " not exposed in blink", subsetBlink);
+            Assert.assertNotNull("Interface " + interfaceS + " not exposed in blink", subsetBlink);
 
             HashSet<String> subsetWebView = webviewInterfacesMap.get(interfaceS);
             HashSet<String> subsetExcluded = entry.getValue();
@@ -161,16 +180,18 @@ public class WebViewLayoutTest
             }
 
             for (String property : subsetExcluded) {
-                assertTrue("Interface " + interfaceS + "." + property + " not exposed in blink",
+                Assert.assertTrue(
+                        "Interface " + interfaceS + "." + property + " not exposed in blink",
                         subsetBlink.contains(property));
                 if (subsetWebView != null && subsetWebView.contains(property)) {
                     unexpected.append(interfaceS + "." + property + "\n");
                 }
             }
         }
-        assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
+        Assert.assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
+    @Test
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -212,15 +233,17 @@ public class WebViewLayoutTest
                 }
             }
         }
-        assertEquals("Missing webview interfaces found", "", missing.toString());
+        Assert.assertEquals("Missing webview interfaces found", "", missing.toString());
     }
 
+    @Test
     @MediumTest
     public void testRequestMIDIAccess() throws Exception {
         runWebViewLayoutTest("blink-apis/webmidi/requestmidiaccess.html",
                 "blink-apis/webmidi/requestmidiaccess-expected.txt");
     }
 
+    @Test
     @MediumTest
     public void testRequestMIDIAccessWithSysex() throws Exception {
         mTestActivity.setGrantPermission(true);
@@ -229,6 +252,7 @@ public class WebViewLayoutTest
         mTestActivity.setGrantPermission(false);
     }
 
+    @Test
     @MediumTest
     public void testRequestMIDIAccessDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webmidi/requestmidiaccess-permission-denied.html",
@@ -237,6 +261,7 @@ public class WebViewLayoutTest
 
     // Blink platform API tests
 
+    @Test
     @MediumTest
     public void testGeolocationCallbacks() throws Exception {
         runWebViewLayoutTest("blink-apis/geolocation/geolocation-permission-callbacks.html",
@@ -244,6 +269,7 @@ public class WebViewLayoutTest
     }
 
     @DisabledTest(message = "crbug.com/690536")
+    @Test
     @MediumTest
     public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
@@ -251,6 +277,7 @@ public class WebViewLayoutTest
     }
 
     @DisabledTest(message = "crbug.com/690536")
+    @Test
     @MediumTest
     public void testMediaStreamApi() throws Exception {
         mTestActivity.setGrantPermission(true);
@@ -259,6 +286,7 @@ public class WebViewLayoutTest
         mTestActivity.setGrantPermission(false);
     }
 
+    @Test
     @MediumTest
     public void testBatteryApi() throws Exception {
         runWebViewLayoutTest("blink-apis/battery-status/battery-callback.html",
@@ -268,6 +296,7 @@ public class WebViewLayoutTest
     /*
     currently failing on aosp bots, see crbug.com/607350
     */
+    @Test
     @MediumTest
     @DisableIf.Build(product_name_includes = "aosp")
     public void testEMEPermission() throws Exception {
@@ -294,7 +323,7 @@ public class WebViewLayoutTest
             throws FileNotFoundException, IOException, InterruptedException, TimeoutException {
         loadUrlWebViewAsync("file://" + fileName, mTestActivity);
 
-        if (getInstrumentation().isRebaseline()) {
+        if (isRebaseline()) {
             // this is the rebaseline process
             mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             String result = mTestActivity.getTestResult();
@@ -308,14 +337,14 @@ public class WebViewLayoutTest
                 ComparisonFailure cf = new ComparisonFailure("Unexpected result", expected, result);
                 Log.e(TAG, cf.toString());
             } else {
-                assertEquals(expected, result);
+                Assert.assertEquals(expected, result);
             }
         }
     }
 
     private void loadUrlWebViewAsync(final String fileUrl,
             final WebViewLayoutTestActivity activity) {
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 activity.loadUrl(fileUrl);
