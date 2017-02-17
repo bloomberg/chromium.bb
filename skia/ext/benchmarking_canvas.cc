@@ -210,8 +210,6 @@ std::unique_ptr<base::Value> AsValue(const SkPaint& paint) {
     FlagsBuilder builder('|');
     builder.addFlag(paint.isAntiAlias(), "AntiAlias");
     builder.addFlag(paint.isDither(), "Dither");
-    builder.addFlag(paint.isUnderlineText(), "UnderlineText");
-    builder.addFlag(paint.isStrikeThruText(), "StrikeThruText");
     builder.addFlag(paint.isFakeBoldText(), "FakeBoldText");
     builder.addFlag(paint.isLinearText(), "LinearText");
     builder.addFlag(paint.isSubpixelText(), "SubpixelText");

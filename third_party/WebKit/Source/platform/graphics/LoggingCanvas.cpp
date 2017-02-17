@@ -343,8 +343,6 @@ String stringForSkPaintFlags(const SkPaint& paint) {
   String flagsString = "";
   appendFlagToString(&flagsString, paint.isAntiAlias(), "AntiAlias");
   appendFlagToString(&flagsString, paint.isDither(), "Dither");
-  appendFlagToString(&flagsString, paint.isUnderlineText(), "UnderlinText");
-  appendFlagToString(&flagsString, paint.isStrikeThruText(), "StrikeThruText");
   appendFlagToString(&flagsString, paint.isFakeBoldText(), "FakeBoldText");
   appendFlagToString(&flagsString, paint.isLinearText(), "LinearText");
   appendFlagToString(&flagsString, paint.isSubpixelText(), "SubpixelText");
