@@ -1043,8 +1043,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
-    for folder in self.STATEFUL_FOLDER_TO_CHECK:
-      test_file_path = os.path.join(folder, self.STATEFUL_TEST_FILE)
+    for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
+      test_file_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
       # If stateful update succeeds, these test files should not exist.
       if self.device.IfFileExists(test_file_path,
                                   **self._cmd_kwargs_omit_error):
@@ -1068,7 +1068,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     logging.info('Checking whether devserver files are still on the device...')
     try:
       devserver_bin = os.path.join(self.device_dev_dir,
-                                   self.DEVSERVER_FILENAME)
+                                   self.REMOTE_DEVSERVER_FILENAME)
       if not self.device.IfFileExists(
           devserver_bin, **self._cmd_kwargs_omit_error):
         self.TransferDevServerPackage()
