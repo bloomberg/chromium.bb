@@ -958,6 +958,8 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
 Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
+crbug.com/692400 editing/pasteboard/display-block-on-spans.html [ NeedsRebaseline ]
+crbug.com/692400 editing/selection/home-end.html [ NeedsRebaseline ]
 
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]

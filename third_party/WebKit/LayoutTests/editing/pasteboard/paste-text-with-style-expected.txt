@@ -5,10 +5,10 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 
 Markup before:
 | "
-"
+<#selection-caret>"
 | <b>
 |   <i>
-|     "<#selection-caret>hello bold and italic"
+|     "hello bold and italic"
 | <div>
 |   <i>
 |     "hello italic"

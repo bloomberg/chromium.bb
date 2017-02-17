@@ -12,9 +12,14 @@ table, td {
 <script>
 test(function () {
     var selection = window.getSelection();
-    selection.collapse(sample, sample.childNodes.length);
+    let childLength = sample.childNodes.length;
+    selection.collapse(sample, childLength);
     assert_true(selection.isCollapsed, 'isCollapsed');
-    assert_equals(selection.anchorNode, div, 'anchorNode');
-    assert_equals(selection.anchorOffset, 2, 'anchorOffset');
+
+    assert_equals(selection.anchorNode, sample, 'DOM anchorNode');
+    assert_equals(selection.anchorOffset, childLength, 'DOM anchorOffset');
+    assert_exists(window, 'internals');
+    assert_equals(internals.visibleSelectionAnchorNode, div, 'Canonicalized anchorNode');
+    assert_equals(internals.visibleSelectionAnchorOffset, 2, 'Canonicalized anchorOffset');
 });
 </script>

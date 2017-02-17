@@ -10,9 +10,15 @@ test(function() {
     selection.collapse(select, 0);
 
     var anchor = document.getElementById('anchor');
-    assert_equals(selection.anchorNode, anchor, 'anchorNode');
-    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-    assert_equals(selection.focusNode, anchor, 'focusNode');
-    assert_equals(selection.focusOffset, 0, 'focusOffset');
-}, 'can not place caret inside SELECT element');
+    assert_equals(selection.anchorNode, select, 'DOM anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'DOM anchorOffset');
+    assert_equals(selection.focusNode, select, 'DOM focusNode');
+    assert_equals(selection.focusOffset, 0, 'DOM focusOffset');
+
+    assert_exists(window, 'internals');
+    assert_equals(internals.visibleSelectionAnchorNode, anchor, 'Canonicalized anchorNode');
+    assert_equals(internals.visibleSelectionAnchorOffset, 0, 'Canonicalized anchorOffset');
+    assert_equals(internals.visibleSelectionFocusNode, anchor, 'Canonicalized focusNode');
+    assert_equals(internals.visibleSelectionFocusOffset, 0, 'Canonicalized focusOffset');
+}, 'can not place canonicalized caret inside SELECT element');
 </script>

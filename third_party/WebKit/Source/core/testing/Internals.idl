@@ -272,6 +272,10 @@
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);
     void resetTypeAheadSession(HTMLSelectElement select);
 
+    readonly attribute Node? visibleSelectionAnchorNode;
+    readonly attribute unsigned long visibleSelectionAnchorOffset;
+    readonly attribute Node? visibleSelectionFocusNode;
+    readonly attribute unsigned long visibleSelectionFocusOffset;
     [RaisesException] ClientRect selectionBounds();
 
     boolean loseSharedGraphicsContext3D();

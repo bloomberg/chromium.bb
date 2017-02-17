@@ -2607,6 +2607,34 @@ void Internals::forceReload(bool bypassCache) {
                   ClientRedirectPolicy::NotClientRedirect);
 }
 
+Node* Internals::visibleSelectionAnchorNode() {
+  if (!frame())
+    return nullptr;
+  Position position = frame()->selection().base();
+  return position.isNull() ? nullptr : position.computeContainerNode();
+}
+
+unsigned Internals::visibleSelectionAnchorOffset() {
+  if (!frame())
+    return 0;
+  Position position = frame()->selection().base();
+  return position.isNull() ? 0 : position.computeOffsetInContainerNode();
+}
+
+Node* Internals::visibleSelectionFocusNode() {
+  if (!frame())
+    return nullptr;
+  Position position = frame()->selection().extent();
+  return position.isNull() ? nullptr : position.computeContainerNode();
+}
+
+unsigned Internals::visibleSelectionFocusOffset() {
+  if (!frame())
+    return 0;
+  Position position = frame()->selection().extent();
+  return position.isNull() ? 0 : position.computeOffsetInContainerNode();
+}
+
 ClientRect* Internals::selectionBounds(ExceptionState& exceptionState) {
   if (!frame()) {
     exceptionState.throwDOMException(

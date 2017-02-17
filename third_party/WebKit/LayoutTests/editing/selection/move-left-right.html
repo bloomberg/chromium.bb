@@ -41,9 +41,9 @@
         {
             var positions = [];
             while (true) {
-                positions.push({ node: sel.anchorNode, offset: sel.anchorOffset, point: caretCoordinates() });
+                positions.push({ node: internals.visibleSelectionAnchorNode, offset: internals.visibleSelectionAnchorOffset, point: caretCoordinates() });
                 sel.modify("move", direction, "character");
-                if (positions[positions.length - 1].node == sel.anchorNode && positions[positions.length - 1].offset == sel.anchorOffset)
+                if (positions[positions.length - 1].node == internals.visibleSelectionAnchorNode && positions[positions.length - 1].offset == internals.visibleSelectionAnchorOffset)
                     break;
             };
             return positions;

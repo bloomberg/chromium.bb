@@ -54,18 +54,18 @@ function collectWordBreaks(test, searchDirection)
 
 function moveByWord(sel, test, searchDirection, dir)
 {
-    var prevOffset = sel.anchorOffset;
-    var prevNode = sel.anchorNode;
+    var prevOffset = internals.visibleSelectionAnchorOffset;
+    var prevNode = internals.visibleSelectionAnchorNode;
     var positions = [];
-    positions.push({ node: sel.anchorNode, offset: sel.anchorOffset });
+    positions.push({ node: prevNode, offset: prevOffset });
 
     while (1) {
         sel.modify('move', searchDirection, 'word');
-        if (prevNode == sel.anchorNode && prevOffset == sel.anchorOffset)
+        if (prevNode == internals.visibleSelectionAnchorNode && prevOffset == internals.visibleSelectionAnchorOffset)
             break;
-        positions.push({ node: sel.anchorNode, offset: sel.anchorOffset });
-        prevNode = sel.anchorNode;
-        prevOffset = sel.anchorOffset;
+        prevNode = internals.visibleSelectionAnchorNode;
+        prevOffset = internals.visibleSelectionAnchorOffset;
+        positions.push({ node: prevNode, offset: prevOffset });
     };
 
     var wordBreaks = collectWordBreaks(test, searchDirection);
@@ -78,34 +78,33 @@ function moveByWordOnEveryChar(sel, test, searchDirection, dir)
 {
     var wordBreaks = collectWordBreaks(test, searchDirection);
     var wordBreakIndex = 1;
-    var prevOffset = sel.anchorOffset;
-    var prevNode = sel.anchorNode;
+    var prevOffset = internals.visibleSelectionAnchorOffset;
+    var prevNode = internals.visibleSelectionAnchorNode;
 
     while (1) {
         sel.modify('move', searchDirection, 'word');
 
         if (wordBreaks != TEST_FOR_CRASH) {
             if (wordBreakIndex >= wordBreaks.length) {
-                assert_equals(sel.anchorNode, prevNode, 'expected to stay in the same position');
-                assert_equals(sel.anchorOffset, prevOffset, 'expected to stay in the same position');
+                assert_equals(internals.visibleSelectionAnchorNode, prevNode, 'expected to stay in the same position');
+                assert_equals(internals.visibleSelectionAnchorOffset, prevOffset, 'expected to stay in the same position');
             } else {
-                assert_true(positionEqualToWordBreak({ node: sel.anchorNode, offset: sel.anchorOffset }, wordBreaks[wordBreakIndex]), 'positionEqualToWordBreak of ' + wordBreakIndex);
+                assert_true(positionEqualToWordBreak({ node: internals.visibleSelectionAnchorNode, offset: internals.visibleSelectionAnchorOffset }, wordBreaks[wordBreakIndex]), 'positionEqualToWordBreak of ' + wordBreakIndex);
             }
         }
 
         // Restore position and move by 1 character.
         sel.collapse(prevNode, prevOffset);
         sel.modify('move', searchDirection, 'character');
-        if (prevNode == sel.anchorNode && prevOffset == sel.anchorOffset)
+        if (prevNode == internals.visibleSelectionAnchorNode && prevOffset == internals.visibleSelectionAnchorOffset)
             return;
 
+        prevNode = internals.visibleSelectionAnchorNode;
+        prevOffset = internals.visibleSelectionAnchorOffset;
         if (wordBreakIndex < wordBreaks.length &&
-            positionEqualToWordBreak({ node: sel.anchorNode, offset: sel.anchorOffset }, wordBreaks[wordBreakIndex])) {
+            positionEqualToWordBreak({ node: prevNode, offset: prevOffset }, wordBreaks[wordBreakIndex])) {
             ++wordBreakIndex;
         }
-
-        prevNode = sel.anchorNode;
-        prevOffset = sel.anchorOffset;
     };
 }
 
@@ -121,7 +120,7 @@ function moveByWordForEveryPosition(sel, test, dir)
     moveByWordOnEveryChar(sel, test, direction, dir);
 
     sel.modify('move', 'forward', 'lineBoundary');
-    var position = { node: sel.anchorNode, offset: sel.anchorOffset };
+    var position = { node: internals.visibleSelectionAnchorNode, offset: internals.visibleSelectionAnchorOffset };
 
     // Check ctrl-left-arrow works for every position.
     if (dir == 'ltr')
@@ -143,6 +142,7 @@ function runTest() {
   var sel = getSelection();
   for (var testcase of tests) {
       test(function () {
+          assert_exists(window, 'internals');
           if (testcase.className.search('fix_width') != -1) {
               var span = document.getElementById('span_size');
               var length = span.offsetWidth;

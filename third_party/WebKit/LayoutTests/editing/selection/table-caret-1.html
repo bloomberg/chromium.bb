@@ -15,7 +15,7 @@ test(() => assert_selection(
     [
       '<div contenteditable>',
           'foo',
-          '|<table><tbody><tr><td>this</td></tr><tr><td>is</td></tr><tr><td>a table</td></tr></tbody></table>',
+          '<table>|<tbody><tr><td>this</td></tr><tr><td>is</td></tr><tr><td>a table</td></tr></tbody></table>',
           'baz',
       '</div>'
     ].join('')), 'Place the caret before a block table.');

@@ -202,18 +202,23 @@ int DOMSelection::rangeCount() const {
   return frame()->selection().isNone() ? 0 : 1;
 }
 
+// https://www.w3.org/TR/selection-api/#dom-selection-collapse
 void DOMSelection::collapse(Node* node,
                             int offset,
                             ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
 
+  // 1. If node is null, this method must behave identically as
+  // removeAllRanges() and abort these steps.
   if (!node) {
     UseCounter::count(frame(), UseCounter::SelectionCollapseNull);
     frame()->selection().clear();
     return;
   }
 
+  // 2. The method must throw an IndexSizeError exception if offset is longer
+  // than node's length ([DOM4]) and abort these steps.
   if (offset < 0) {
     exceptionState.throwDOMException(
         IndexSizeError, String::number(offset) + " is not a valid offset.");
@@ -223,14 +228,29 @@ void DOMSelection::collapse(Node* node,
   if (exceptionState.hadException())
     return;
 
+  // 3. If node's root is not the document associated with the context object,
+  // abort these steps.
   if (!isValidForPosition(node))
     return;
 
+  // 4. Otherwise, let newRange be a new range.
+  Range* newRange = Range::create(*frame()->document());
+
+  // 5. Set ([DOM4]) the start and the end of newRange to (node, offset).
+  newRange->setStart(node, offset, exceptionState);
+  if (exceptionState.hadException())
+    return;
+  newRange->setEnd(node, offset, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  // 6. Set the context object's range to newRange.
   frame()->selection().setSelection(
       SelectionInDOMTree::Builder()
           .collapse(Position(node, offset))
           .setIsDirectional(frame()->selection().isDirectional())
           .build());
+  cacheRangeIfSelectionOfDocument(newRange);
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {

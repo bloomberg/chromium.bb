@@ -10,6 +10,6 @@ test(() => assert_selection(
         var text = div.firstChild;
         selection.collapse(text, text.length);
     },
-    '<div contenteditable id="div">foo|\n<div>bar</div></div>'),
+    '<div contenteditable id="div">foo\n|<div>bar</div></div>'),
     'Visible position creation in unrenderer space after renderer text.');
 </script>

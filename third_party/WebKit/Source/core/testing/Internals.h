@@ -417,6 +417,10 @@ class Internals final : public GarbageCollected<Internals>,
   int selectPopupItemStyleFontHeight(Node*, int);
   void resetTypeAheadSession(HTMLSelectElement*);
 
+  Node* visibleSelectionAnchorNode();
+  unsigned visibleSelectionAnchorOffset();
+  Node* visibleSelectionFocusNode();
+  unsigned visibleSelectionFocusOffset();
   ClientRect* selectionBounds(ExceptionState&);
 
   bool loseSharedGraphicsContext3D();

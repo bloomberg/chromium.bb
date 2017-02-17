@@ -16,11 +16,11 @@ var before = document.getElementById("before");
 var selection = window.getSelection();
 selection.collapse(before, 0);
 selection.modify("move", "backward", "character");
-shouldBe("selection.focusNode.parentElement", "before");
+shouldBe("selection.focusNode", "before");
 
 selection.collapse(before, 1);
 selection.modify("move", "forward", "character");
-shouldBe("selection.focusNode.parentElement", "before");
+shouldBe("selection.focusNode", "before");
 </script>
 </body>
 </html>
