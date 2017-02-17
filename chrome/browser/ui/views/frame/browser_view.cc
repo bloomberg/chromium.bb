@@ -2319,6 +2319,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (ShouldUseImmersiveFullscreenForUrl(url))
     immersive_mode_controller_->SetEnabled(fullscreen);
 
+  browser_->WindowFullscreenStateWillChange();
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen && !chrome::IsRunningInAppMode()) {

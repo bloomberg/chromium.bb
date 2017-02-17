@@ -238,6 +238,16 @@ void FullscreenController::OnTabClosing(WebContents* web_contents) {
     ExclusiveAccessControllerBase::OnTabClosing(web_contents);
 }
 
+void FullscreenController::WindowFullscreenStateWillChange() {
+  ExclusiveAccessContext* exclusive_access_context =
+      exclusive_access_manager()->context();
+  if (exclusive_access_context->IsFullscreen()) {
+    exclusive_access_context->HideDownloadShelf();
+  } else {
+    exclusive_access_context->UnhideDownloadShelf();
+  }
+}
+
 void FullscreenController::WindowFullscreenStateChanged() {
   reentrant_window_state_change_call_check_ = true;
   ExclusiveAccessContext* const exclusive_access_context =
@@ -249,9 +259,6 @@ void FullscreenController::WindowFullscreenStateChanged() {
     toggled_into_fullscreen_ = false;
     extension_caused_fullscreen_ = GURL();
     NotifyTabExclusiveAccessLost();
-    exclusive_access_context->UnhideDownloadShelf();
-  } else {
-    exclusive_access_context->HideDownloadShelf();
   }
 }
 

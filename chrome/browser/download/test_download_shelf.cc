@@ -47,12 +47,20 @@ void TestDownloadShelf::DoAddDownload(content::DownloadItem* download) {
   did_add_download_ = true;
 }
 
-void TestDownloadShelf::DoShow() {
+void TestDownloadShelf::DoOpen() {
   is_showing_ = true;
 }
 
 void TestDownloadShelf::DoClose(CloseReason reason) {
   is_showing_ = false;
+}
+
+void TestDownloadShelf::DoHide() {
+  is_showing_ = false;
+}
+
+void TestDownloadShelf::DoUnhide() {
+  is_showing_ = true;
 }
 
 base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() {

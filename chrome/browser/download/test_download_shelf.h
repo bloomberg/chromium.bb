@@ -34,8 +34,10 @@ class TestDownloadShelf : public DownloadShelf,
 
  protected:
   void DoAddDownload(content::DownloadItem* download) override;
-  void DoShow() override;
+  void DoOpen() override;
   void DoClose(CloseReason reason) override;
+  void DoHide() override;
+  void DoUnhide() override;
   base::TimeDelta GetTransientDownloadShowDelay() override;
   content::DownloadManager* GetDownloadManager() override;
 

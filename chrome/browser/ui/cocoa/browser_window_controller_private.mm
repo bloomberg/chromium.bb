@@ -610,6 +610,7 @@ willPositionSheet:(NSWindow*)sheet
 
   [self setSheetHiddenForFullscreenTransition:YES];
   [self adjustUIForEnteringFullscreen];
+  browser_->WindowFullscreenStateWillChange();
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
@@ -700,6 +701,7 @@ willPositionSheet:(NSWindow*)sheet
   } else {
     [self adjustUIForExitingFullscreen];
   }
+  browser_->WindowFullscreenStateWillChange();
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {

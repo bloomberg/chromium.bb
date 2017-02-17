@@ -52,7 +52,7 @@ class ViewIDTest : public InProcessBrowserTest {
         DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
 
     // Make sure download shelf is created to test VIEW_ID_DOWNLOAD_SHELF
-    browser()->window()->GetDownloadShelf()->Show();
+    browser()->window()->GetDownloadShelf()->Open();
 
     // Create a bookmark to test VIEW_ID_BOOKMARK_BAR_ELEMENT
     BookmarkModel* bookmark_model =

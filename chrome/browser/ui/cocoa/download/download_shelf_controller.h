@@ -102,7 +102,8 @@ class PageNavigator;
 // directly, the shelf visibility state maintained by DownloadShelf and the
 // owning Browser will not be updated.
 - (void)showDownloadShelf:(BOOL)show
-             isUserAction:(BOOL)isUserAction;
+             isUserAction:(BOOL)isUserAction
+                  animate:(BOOL)animate;
 
 // Returns our view cast as an AnimatableView.
 - (AnimatableView*)animatableView;

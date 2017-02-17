@@ -149,12 +149,12 @@ void DownloadShelf::AddDownload(DownloadItem* download) {
   }
 }
 
-void DownloadShelf::Show() {
+void DownloadShelf::Open() {
   if (is_hidden_) {
     should_show_on_unhide_ = true;
     return;
   }
-  DoShow();
+  DoOpen();
 }
 
 void DownloadShelf::Close(CloseReason reason) {
@@ -171,7 +171,7 @@ void DownloadShelf::Hide() {
   is_hidden_ = true;
   if (IsShowing()) {
     should_show_on_unhide_ = true;
-    DoClose(AUTOMATIC);
+    DoHide();
   }
 }
 
@@ -181,7 +181,7 @@ void DownloadShelf::Unhide() {
   is_hidden_ = false;
   if (should_show_on_unhide_) {
     should_show_on_unhide_ = false;
-    DoShow();
+    DoUnhide();
   }
 }
 
@@ -203,7 +203,7 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
 
   if (is_hidden_)
     Unhide();
-  Show();
+  Open();
   DoAddDownload(download);
 
   // browser() can be NULL for tests.

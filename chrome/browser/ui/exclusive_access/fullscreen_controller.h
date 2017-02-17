@@ -123,6 +123,9 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   void ExitExclusiveAccessIfNecessary() override;
   // Callbacks /////////////////////////////////////////////////////////////////
 
+  // Called by Browser::WindowFullscreenStateWillChange.
+  void WindowFullscreenStateWillChange();
+
   // Called by Browser::WindowFullscreenStateChanged.
   void WindowFullscreenStateChanged();
 

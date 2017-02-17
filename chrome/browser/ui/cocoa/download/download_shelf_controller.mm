@@ -227,7 +227,8 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 }
 
 - (void)showDownloadShelf:(BOOL)show
-             isUserAction:(BOOL)isUserAction {
+             isUserAction:(BOOL)isUserAction
+                  animate:(BOOL)animate {
   [self cancelAutoClose];
   shouldCloseOnMouseExit_ = NO;
 
@@ -251,11 +252,11 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
   // do no animation over janky animation.  Find a way to make animating in
   // smoother.
   AnimatableView* view = [self animatableView];
-  if (show) {
-    [view setHeight:maxShelfHeight_];
-    [view setHidden:NO];
-  } else {
+  if (animate && !show) {
     [view animateToNewHeight:0 duration:kDownloadShelfCloseDuration];
+  } else {
+    [view setHeight:show ? maxShelfHeight_ : 0];
+    [view setHidden:!show];
   }
 
   barIsVisible_ = show;

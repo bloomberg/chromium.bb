@@ -28,16 +28,26 @@ bool DownloadShelfMac::IsClosing() const {
   return false;
 }
 
-void DownloadShelfMac::DoShow() {
-  [shelf_controller_ showDownloadShelf:YES
-                          isUserAction:NO];
+void DownloadShelfMac::DoOpen() {
+  [shelf_controller_ showDownloadShelf:YES isUserAction:NO animate:YES];
   browser_->UpdateDownloadShelfVisibility(true);
 }
 
 void DownloadShelfMac::DoClose(CloseReason reason) {
   [shelf_controller_ showDownloadShelf:NO
-                          isUserAction:reason == USER_ACTION];
+                          isUserAction:reason == USER_ACTION
+                               animate:YES];
   browser_->UpdateDownloadShelfVisibility(false);
+}
+
+void DownloadShelfMac::DoHide() {
+  [shelf_controller_ showDownloadShelf:NO isUserAction:NO animate:NO];
+  browser_->UpdateDownloadShelfVisibility(false);
+}
+
+void DownloadShelfMac::DoUnhide() {
+  [shelf_controller_ showDownloadShelf:YES isUserAction:NO animate:NO];
+  browser_->UpdateDownloadShelfVisibility(true);
 }
 
 Browser* DownloadShelfMac::browser() const {

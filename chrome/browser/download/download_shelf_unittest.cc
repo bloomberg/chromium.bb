@@ -94,7 +94,7 @@ DownloadShelfTest::DownloadShelfTest()
 } // namespace
 
 TEST_F(DownloadShelfTest, ClosesShelfWhenHidden) {
-  shelf()->Show();
+  shelf()->Open();
   EXPECT_TRUE(shelf()->IsShowing());
   shelf()->Hide();
   EXPECT_FALSE(shelf()->IsShowing());
@@ -103,7 +103,7 @@ TEST_F(DownloadShelfTest, ClosesShelfWhenHidden) {
 }
 
 TEST_F(DownloadShelfTest, CloseWhileHiddenPreventsShowOnUnhide) {
-  shelf()->Show();
+  shelf()->Open();
   shelf()->Hide();
   shelf()->Close(DownloadShelf::AUTOMATIC);
   shelf()->Unhide();
@@ -117,7 +117,7 @@ TEST_F(DownloadShelfTest, UnhideDoesntShowIfNotShownOnHide) {
 }
 
 TEST_F(DownloadShelfTest, AddDownloadWhileHiddenUnhides) {
-  shelf()->Show();
+  shelf()->Open();
   shelf()->Hide();
   shelf()->AddDownload(download_item());
   EXPECT_TRUE(shelf()->IsShowing());

@@ -826,6 +826,11 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, Tab adding/showing functions:
 
+void Browser::WindowFullscreenStateWillChange() {
+  exclusive_access_manager_->fullscreen_controller()
+      ->WindowFullscreenStateWillChange();
+}
+
 void Browser::WindowFullscreenStateChanged() {
   exclusive_access_manager_->fullscreen_controller()
       ->WindowFullscreenStateChanged();

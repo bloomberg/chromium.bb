@@ -367,7 +367,7 @@ bool DownloadShelfView::IsClosing() const {
   return shelf_animation_.IsClosing();
 }
 
-void DownloadShelfView::DoShow() {
+void DownloadShelfView::DoOpen() {
   SetVisible(true);
   shelf_animation_.Show();
 }
@@ -382,6 +382,18 @@ void DownloadShelfView::DoClose(CloseReason reason) {
       download_views_.size(), num_in_progress, reason == AUTOMATIC);
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_.Hide();
+}
+
+void DownloadShelfView::DoHide() {
+  SetVisible(false);
+  parent_->ToolbarSizeChanged(false);
+  parent_->SetDownloadShelfVisible(false);
+}
+
+void DownloadShelfView::DoUnhide() {
+  SetVisible(true);
+  parent_->ToolbarSizeChanged(true);
+  parent_->SetDownloadShelfVisible(true);
 }
 
 Browser* DownloadShelfView::browser() const {

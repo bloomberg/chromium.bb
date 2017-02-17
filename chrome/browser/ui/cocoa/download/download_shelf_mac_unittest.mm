@@ -23,7 +23,8 @@
 
 - (BOOL)isVisible;
 - (void)showDownloadShelf:(BOOL)enable
-             isUserAction:(BOOL)isUserAction;
+             isUserAction:(BOOL)isUserAction
+                  animate:(BOOL)animate;
 @end
 
 @implementation FakeDownloadShelfController
@@ -34,7 +35,8 @@
 }
 
 - (void)showDownloadShelf:(BOOL)enable
-             isUserAction:(BOOL)isUserAction {
+             isUserAction:(BOOL)isUserAction
+                  animate:(BOOL)animate {
   if (enable)
     ++callCountShow;
   else
@@ -69,7 +71,7 @@ TEST_F(DownloadShelfMacTest, ForwardsShow) {
   DownloadShelfMac shelf(browser(),
       (DownloadShelfController*)shelf_controller_.get());
   EXPECT_EQ(0, shelf_controller_.get()->callCountShow);
-  shelf.Show();
+  shelf.Open();
   EXPECT_EQ(1, shelf_controller_.get()->callCountShow);
 }
 

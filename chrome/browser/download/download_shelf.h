@@ -95,7 +95,7 @@ class DownloadShelf {
   virtual bool IsClosing() const = 0;
 
   // Opens the shelf.
-  void Show();
+  void Open();
 
   // Closes the shelf.
   void Close(CloseReason reason);
@@ -114,8 +114,10 @@ class DownloadShelf {
 
  protected:
   virtual void DoAddDownload(content::DownloadItem* download) = 0;
-  virtual void DoShow() = 0;
+  virtual void DoOpen() = 0;
   virtual void DoClose(CloseReason reason) = 0;
+  virtual void DoHide() = 0;
+  virtual void DoUnhide() = 0;
 
   // Time delay to wait before adding a transient download to the shelf.
   // Protected virtual for testing.

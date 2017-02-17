@@ -368,9 +368,10 @@ class Browser : public TabStripModelObserver,
 
   // External state change handling ////////////////////////////////////////////
 
-  // Invoked when the fullscreen state of the window changes.
-  // BrowserWindow::EnterFullscreen invokes this after the window has become
-  // fullscreen.
+  // BrowserWindow::EnterFullscreen invokes WindowFullscreenStateWillChange at
+  // the beginning of a fullscreen transition, and WindowFullscreenStateChanged
+  // at the end.
+  void WindowFullscreenStateWillChange();
   void WindowFullscreenStateChanged();
 
   // Assorted browser commands ////////////////////////////////////////////////

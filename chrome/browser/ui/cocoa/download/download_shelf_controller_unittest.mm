@@ -11,7 +11,6 @@
 
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/run_loop.h"
 #include "chrome/browser/download/download_shelf.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
@@ -171,8 +170,7 @@ TEST_VIEW(DownloadShelfControllerTest, [shelf_ view]);
 // immediately.
 TEST_F(DownloadShelfControllerTest, AddAndRemoveDownload) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   EXPECT_TRUE([shelf_ bridge]->IsShowing());
   [shelf_ add:item];
@@ -188,8 +186,7 @@ TEST_F(DownloadShelfControllerTest, AddAndRemoveDownload) {
 TEST_F(DownloadShelfControllerTest, AddAndRemoveWithActiveItem) {
   base::scoped_nsobject<DownloadItemController> item1(CreateItemController());
   base::scoped_nsobject<DownloadItemController> item2(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item1.get()];
   [shelf_ add:item2.get()];
@@ -204,8 +201,7 @@ TEST_F(DownloadShelfControllerTest, AddAndRemoveWithActiveItem) {
 // active downloads on it.
 TEST_F(DownloadShelfControllerTest, HideAndUnhide) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   [shelf_ bridge]->Hide();
@@ -220,8 +216,7 @@ TEST_F(DownloadShelfControllerTest, HideAndUnhide) {
 // active downloads are removed from the shelf while the shelf was hidden.
 TEST_F(DownloadShelfControllerTest, HideAutocloseUnhide) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   [shelf_ bridge]->Hide();
@@ -236,8 +231,7 @@ TEST_F(DownloadShelfControllerTest, HideAutocloseUnhide) {
 // the download shelf at the time the autoclose is scheduled.
 TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
@@ -273,8 +267,7 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
 // Test of autoclosing behavior after opening a download item.
 TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseOffShelf) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
 
@@ -292,8 +285,7 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseOffShelf) {
 // autoClose is cancelled.
 TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
@@ -333,8 +325,7 @@ TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
 // added to it.
 TEST_F(DownloadShelfControllerTest, AddItemWithPendingAutoClose) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
@@ -373,8 +364,7 @@ TEST_F(DownloadShelfControllerTest, AddItemWithPendingAutoClose) {
 // Test that pending autoClose calls are cancelled when exiting.
 TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [shelf_ showDownloadShelf:YES
-               isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
@@ -386,24 +376,16 @@ TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
   shelf_.reset();
 }
 
-// The view should not be hidden when the shelf is shown.
-// The view should be hidden after the closing animation.
-// Failing flakily on Mac 10.9, see: crbug.com/687447.
-TEST_F(DownloadShelfControllerTest, DISABLED_ViewVisibility) {
-  [shelf_ showDownloadShelf:YES isUserAction:NO];
+// The view should not be hidden when the shelf is open.
+// The view should be hidden when the shelf is closed.
+TEST_F(DownloadShelfControllerTest, ViewVisibility) {
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:NO];
   EXPECT_FALSE([[shelf_ view] isHidden]);
 
-  base::RunLoop run_loop;
-  base::RunLoop* const run_loop_ptr = &run_loop;
-
-  [shelf_ setCloseAnimationHandler:^{
-    run_loop_ptr->Quit();
-  }];
-  [shelf_ showDownloadShelf:NO isUserAction:NO];
-  run_loop.Run();
+  [shelf_ showDownloadShelf:NO isUserAction:NO animate:NO];
   EXPECT_TRUE([[shelf_ view] isHidden]);
 
-  [shelf_ showDownloadShelf:YES isUserAction:NO];
+  [shelf_ showDownloadShelf:YES isUserAction:NO animate:NO];
   EXPECT_FALSE([[shelf_ view] isHidden]);
 }
 
