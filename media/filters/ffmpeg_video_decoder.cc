@@ -185,12 +185,12 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   if (codec_context->color_primaries != AVCOL_PRI_UNSPECIFIED ||
       codec_context->color_trc != AVCOL_TRC_UNSPECIFIED ||
       codec_context->colorspace != AVCOL_SPC_UNSPECIFIED) {
-    video_frame->set_color_space(
-        gfx::ColorSpace(codec_context->color_primaries,
-                        codec_context->color_trc, codec_context->colorspace,
-                        codec_context->color_range != AVCOL_RANGE_MPEG
-                            ? gfx::ColorSpace::RangeID::FULL
-                            : gfx::ColorSpace::RangeID::LIMITED));
+    video_frame->set_color_space(gfx::ColorSpace::CreateVideo(
+        codec_context->color_primaries, codec_context->color_trc,
+        codec_context->colorspace,
+        codec_context->color_range != AVCOL_RANGE_MPEG
+            ? gfx::ColorSpace::RangeID::FULL
+            : gfx::ColorSpace::RangeID::LIMITED));
   }
 
   for (size_t i = 0; i < VideoFrame::NumPlanes(video_frame->format()); i++) {

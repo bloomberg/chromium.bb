@@ -25,8 +25,8 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       format.NominalRange = DXVA2_NominalRange_0_255;
       break;
 
-    case gfx::ColorSpace::RangeID::UNSPECIFIED:
     case gfx::ColorSpace::RangeID::DERIVED:
+    case gfx::ColorSpace::RangeID::INVALID:
       // Not handled
       break;
   }
@@ -44,14 +44,12 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       break;
 
     case gfx::ColorSpace::MatrixID::RGB:
-    case gfx::ColorSpace::MatrixID::UNSPECIFIED:
-    case gfx::ColorSpace::MatrixID::RESERVED:
     case gfx::ColorSpace::MatrixID::FCC:
     case gfx::ColorSpace::MatrixID::YCOCG:
     case gfx::ColorSpace::MatrixID::BT2020_NCL:
     case gfx::ColorSpace::MatrixID::BT2020_CL:
     case gfx::ColorSpace::MatrixID::YDZDX:
-    case gfx::ColorSpace::MatrixID::UNKNOWN:
+    case gfx::ColorSpace::MatrixID::INVALID:
       // Not handled
       break;
   }
@@ -73,18 +71,15 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       format.VideoPrimaries = DXVA2_VideoPrimaries_SMPTE240M;
       break;
 
-    case gfx::ColorSpace::PrimaryID::RESERVED0:
-    case gfx::ColorSpace::PrimaryID::UNSPECIFIED:
-    case gfx::ColorSpace::PrimaryID::RESERVED:
     case gfx::ColorSpace::PrimaryID::FILM:
     case gfx::ColorSpace::PrimaryID::BT2020:
     case gfx::ColorSpace::PrimaryID::SMPTEST428_1:
     case gfx::ColorSpace::PrimaryID::SMPTEST431_2:
     case gfx::ColorSpace::PrimaryID::SMPTEST432_1:
-    case gfx::ColorSpace::PrimaryID::UNKNOWN:
     case gfx::ColorSpace::PrimaryID::XYZ_D50:
     case gfx::ColorSpace::PrimaryID::ADOBE_RGB:
     case gfx::ColorSpace::PrimaryID::CUSTOM:
+    case gfx::ColorSpace::PrimaryID::INVALID:
       // Not handled
       break;
   }
@@ -111,9 +106,6 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       format.VideoTransferFunction = DXVA2_VideoTransFunc_sRGB;
       break;
 
-    case gfx::ColorSpace::TransferID::RESERVED0:
-    case gfx::ColorSpace::TransferID::UNSPECIFIED:
-    case gfx::ColorSpace::TransferID::RESERVED:
     case gfx::ColorSpace::TransferID::LOG:
     case gfx::ColorSpace::TransferID::LOG_SQRT:
     case gfx::ColorSpace::TransferID::IEC61966_2_4:
@@ -123,10 +115,10 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::TransferID::SMPTEST2084:
     case gfx::ColorSpace::TransferID::SMPTEST428_1:
     case gfx::ColorSpace::TransferID::ARIB_STD_B67:
-    case gfx::ColorSpace::TransferID::UNKNOWN:
     case gfx::ColorSpace::TransferID::GAMMA24:
     case gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR:
     case gfx::ColorSpace::TransferID::CUSTOM:
+    case gfx::ColorSpace::TransferID::INVALID:
       // Not handled
       break;
   }

@@ -15,31 +15,140 @@
 
 namespace gfx {
 
-ColorSpace::PrimaryID ColorSpace::PrimaryIDFromInt(int primary_id) {
-  if (primary_id < 0 || primary_id > static_cast<int>(PrimaryID::LAST))
-    return PrimaryID::UNKNOWN;
-  if (primary_id > static_cast<int>(PrimaryID::LAST_STANDARD_VALUE) &&
-      primary_id < 1000)
-    return PrimaryID::UNKNOWN;
-  return static_cast<PrimaryID>(primary_id);
-}
-
-ColorSpace::TransferID ColorSpace::TransferIDFromInt(int transfer_id) {
-  if (transfer_id < 0 || transfer_id > static_cast<int>(TransferID::LAST))
-    return TransferID::UNKNOWN;
-  if (transfer_id > static_cast<int>(TransferID::LAST_STANDARD_VALUE) &&
-      transfer_id < 1000)
-    return TransferID::UNKNOWN;
-  return static_cast<TransferID>(transfer_id);
-}
-
-ColorSpace::MatrixID ColorSpace::MatrixIDFromInt(int matrix_id) {
-  if (matrix_id < 0 || matrix_id > static_cast<int>(MatrixID::LAST))
-    return MatrixID::UNKNOWN;
-  if (matrix_id > static_cast<int>(MatrixID::LAST_STANDARD_VALUE) &&
-      matrix_id < 1000)
-    return MatrixID::UNKNOWN;
-  return static_cast<MatrixID>(matrix_id);
+// static
+ColorSpace ColorSpace::CreateVideo(int video_primary,
+                                   int video_transfer,
+                                   int video_matrix,
+                                   RangeID range_id) {
+  // TODO(hubbe): Use more context to decide how to handle UNSPECIFIED values.
+  ColorSpace result;
+  switch (video_primary) {
+    default:
+    case 0:  // RESERVED0
+    case 1:  // BT709
+    case 2:  // UNSPECIFIED
+    case 3:  // RESERVED
+      result.primaries_ = PrimaryID::BT709;
+      break;
+    case 4:  // BT470M
+      result.primaries_ = PrimaryID::BT470M;
+      break;
+    case 5:  // BT470BG
+      result.primaries_ = PrimaryID::BT470BG;
+      break;
+    case 6:  // SMPTE170M
+      result.primaries_ = PrimaryID::SMPTE170M;
+      break;
+    case 7:  // SMPTE240M
+      result.primaries_ = PrimaryID::SMPTE240M;
+      break;
+    case 8:  // FILM
+      result.primaries_ = PrimaryID::FILM;
+      break;
+    case 9:  // BT2020
+      result.primaries_ = PrimaryID::BT2020;
+      break;
+    case 10:  // SMPTEST428_1
+      result.primaries_ = PrimaryID::SMPTEST428_1;
+      break;
+    case 11:  // SMPTEST431_2
+      result.primaries_ = PrimaryID::SMPTEST431_2;
+      break;
+    case 12:  // SMPTEST432_1
+      result.primaries_ = PrimaryID::SMPTEST432_1;
+      break;
+  }
+  switch (video_transfer) {
+    default:
+    case 0:  // RESERVED0
+    case 1:  // BT709
+    case 2:  // UNSPECIFIED
+    case 3:  // RESERVED
+      result.transfer_ = TransferID::BT709;
+      break;
+    case 4:  // GAMMA22
+      result.transfer_ = TransferID::GAMMA22;
+      break;
+    case 5:  // GAMMA28
+      result.transfer_ = TransferID::GAMMA28;
+      break;
+    case 6:  // SMPTE170M
+      result.transfer_ = TransferID::SMPTE170M;
+      break;
+    case 7:  // SMPTE240M
+      result.transfer_ = TransferID::SMPTE240M;
+      break;
+    case 8:  // LINEAR
+      result.transfer_ = TransferID::LINEAR;
+      break;
+    case 9:  // LOG
+      result.transfer_ = TransferID::LOG;
+      break;
+    case 10:  // LOG_SQRT
+      result.transfer_ = TransferID::LOG_SQRT;
+      break;
+    case 11:  // IEC61966_2_4
+      result.transfer_ = TransferID::IEC61966_2_4;
+      break;
+    case 12:  // BT1361_ECG
+      result.transfer_ = TransferID::BT1361_ECG;
+      break;
+    case 13:  // IEC61966_2_1
+      result.transfer_ = TransferID::IEC61966_2_1;
+      break;
+    case 14:  // BT2020_10
+      result.transfer_ = TransferID::BT2020_10;
+      break;
+    case 15:  // BT2020_12
+      result.transfer_ = TransferID::BT2020_12;
+      break;
+    case 16:  // SMPTEST2084
+      result.transfer_ = TransferID::SMPTEST2084;
+      break;
+    case 17:  // SMPTEST428_1
+      result.transfer_ = TransferID::SMPTEST428_1;
+      break;
+    case 18:  // ARIB_STD_B67
+      result.transfer_ = TransferID::ARIB_STD_B67;
+      break;
+  }
+  switch (video_matrix) {
+    case 0:  // RGB
+      result.matrix_ = MatrixID::RGB;
+      break;
+    default:
+    case 1:  // BT709
+    case 2:  // UNSPECIFIED
+    case 3:  // RESERVED
+      result.matrix_ = MatrixID::BT709;
+      break;
+    case 4:  // FCC
+      result.matrix_ = MatrixID::FCC;
+      break;
+    case 5:  // BT470BG
+      result.matrix_ = MatrixID::BT470BG;
+      break;
+    case 6:  // SMPTE170M
+      result.matrix_ = MatrixID::SMPTE170M;
+      break;
+    case 7:  // SMPTE240M
+      result.matrix_ = MatrixID::SMPTE240M;
+      break;
+    case 8:  // YCOCG
+      result.matrix_ = MatrixID::YCOCG;
+      break;
+    case 9:  // BT2020_NCL
+      result.matrix_ = MatrixID::BT2020_NCL;
+      break;
+    case 10:  // BT2020_CL
+      result.matrix_ = MatrixID::BT2020_CL;
+      break;
+    case 11:  // YDZDX
+      result.matrix_ = MatrixID::YDZDX;
+      break;
+  }
+  result.range_ = range_id;
+  return result;
 }
 
 ColorSpace::ColorSpace() {}
@@ -60,12 +169,6 @@ ColorSpace::ColorSpace(PrimaryID primaries,
       matrix_(matrix),
       range_(range) {}
 
-ColorSpace::ColorSpace(int primaries, int transfer, int matrix, RangeID range)
-    : primaries_(PrimaryIDFromInt(primaries)),
-      transfer_(TransferIDFromInt(transfer)),
-      matrix_(MatrixIDFromInt(matrix)),
-      range_(range) {}
-
 ColorSpace::ColorSpace(const ColorSpace& other)
     : primaries_(other.primaries_),
       transfer_(other.transfer_),
@@ -82,11 +185,11 @@ ColorSpace::ColorSpace(const ColorSpace& other)
            sizeof(custom_primary_matrix_));
   }
 }
-
 ColorSpace::~ColorSpace() = default;
 
 bool ColorSpace::IsValid() const {
-  return *this != gfx::ColorSpace();
+  return primaries_ != PrimaryID::INVALID && transfer_ != TransferID::INVALID &&
+         matrix_ != MatrixID::INVALID && range_ != RangeID::INVALID;
 }
 
 // static
@@ -197,10 +300,8 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
     return icc_profile_sk_color_space_;
 
   // Unspecified color spaces correspond to the null SkColorSpace.
-  if (primaries_ == PrimaryID::UNSPECIFIED ||
-      transfer_ == TransferID::UNSPECIFIED) {
+  if (!IsValid())
     return nullptr;
-  }
 
   // Handle only full-range RGB spaces.
   if (matrix_ != MatrixID::RGB) {
@@ -249,10 +350,10 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       to_XYZD50->set3x3RowMajorf(custom_primary_matrix_);
       return;
 
-    case ColorSpace::PrimaryID::RESERVED0:
-    case ColorSpace::PrimaryID::RESERVED:
-    case ColorSpace::PrimaryID::UNSPECIFIED:
-    case ColorSpace::PrimaryID::UNKNOWN:
+    case ColorSpace::PrimaryID::INVALID:
+      to_XYZD50->setIdentity();
+      return;
+
     case ColorSpace::PrimaryID::BT709:
       // BT709 is our default case. Put it after the switch just
       // in case we somehow get an id which is not listed in the switch.
@@ -414,11 +515,6 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
     case ColorSpace::TransferID::GAMMA28:
       fn->fG = 2.8f;
       return true;
-    case ColorSpace::TransferID::RESERVED0:
-    case ColorSpace::TransferID::RESERVED:
-    case ColorSpace::TransferID::UNSPECIFIED:
-    case ColorSpace::TransferID::UNKNOWN:
-    // All unknown values default to BT709
     case ColorSpace::TransferID::BT709:
     case ColorSpace::TransferID::SMPTE170M:
     case ColorSpace::TransferID::BT2020_10:
@@ -458,6 +554,7 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
     case ColorSpace::TransferID::LOG_SQRT:
     case ColorSpace::TransferID::SMPTEST2084:
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
+    case ColorSpace::TransferID::INVALID:
       break;
   }
 
@@ -476,13 +573,11 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
   float Kb = 0;
   switch (matrix_) {
     case ColorSpace::MatrixID::RGB:
+    case ColorSpace::MatrixID::INVALID:
       matrix->setIdentity();
       return;
 
     case ColorSpace::MatrixID::BT709:
-    case ColorSpace::MatrixID::UNSPECIFIED:
-    case ColorSpace::MatrixID::RESERVED:
-    case ColorSpace::MatrixID::UNKNOWN:
       Kr = 0.2126f;
       Kb = 0.0722f;
       break;
@@ -562,7 +657,7 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
 void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
   switch (range_) {
     case RangeID::FULL:
-    case RangeID::UNSPECIFIED:
+    case RangeID::INVALID:
       matrix->setIdentity();
       return;
 
@@ -572,14 +667,13 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
   }
   switch (matrix_) {
     case MatrixID::RGB:
+    case MatrixID::INVALID:
     case MatrixID::YCOCG:
       matrix->setScale(255.0f/219.0f, 255.0f/219.0f, 255.0f/219.0f);
       matrix->postTranslate(-16.0f/219.0f, -16.0f/219.0f, -16.0f/219.0f);
       break;
 
     case MatrixID::BT709:
-    case MatrixID::UNSPECIFIED:
-    case MatrixID::RESERVED:
     case MatrixID::FCC:
     case MatrixID::BT470BG:
     case MatrixID::SMPTE170M:
@@ -587,7 +681,6 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
     case MatrixID::BT2020_NCL:
     case MatrixID::BT2020_CL:
     case MatrixID::YDZDX:
-    case MatrixID::UNKNOWN:
       matrix->setScale(255.0f/219.0f, 255.0f/224.0f, 255.0f/224.0f);
       matrix->postTranslate(-16.0f/219.0f, -15.5f/224.0f, -15.5f/224.0f);
       break;

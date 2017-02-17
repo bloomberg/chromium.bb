@@ -604,11 +604,9 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
     // bitstream data below.
     (*video_frame)->set_color_space(config_.color_space_info());
   } else {
-    gfx::ColorSpace::PrimaryID primaries =
-        gfx::ColorSpace::PrimaryID::UNSPECIFIED;
-    gfx::ColorSpace::TransferID transfer =
-        gfx::ColorSpace::TransferID::UNSPECIFIED;
-    gfx::ColorSpace::MatrixID matrix = gfx::ColorSpace::MatrixID::UNSPECIFIED;
+    gfx::ColorSpace::PrimaryID primaries = gfx::ColorSpace::PrimaryID::INVALID;
+    gfx::ColorSpace::TransferID transfer = gfx::ColorSpace::TransferID::INVALID;
+    gfx::ColorSpace::MatrixID matrix = gfx::ColorSpace::MatrixID::INVALID;
     gfx::ColorSpace::RangeID range = vpx_image->range == VPX_CR_FULL_RANGE
                                          ? gfx::ColorSpace::RangeID::FULL
                                          : gfx::ColorSpace::RangeID::LIMITED;
@@ -651,7 +649,8 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
         break;
     }
 
-    if (primaries != gfx::ColorSpace::PrimaryID::UNSPECIFIED) {
+    // TODO(ccameron): Set a color space even for unspecified values.
+    if (primaries != gfx::ColorSpace::PrimaryID::INVALID) {
       (*video_frame)
           ->set_color_space(
               gfx::ColorSpace(primaries, transfer, matrix, range));

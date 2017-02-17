@@ -542,7 +542,6 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     ColorTransform::Intent intent) {
   if (intent == ColorTransform::Intent::INTENT_PERCEPTUAL) {
     switch (from.transfer_) {
-      case ColorSpace::TransferID::UNSPECIFIED:
       case ColorSpace::TransferID::BT709:
       case ColorSpace::TransferID::SMPTE170M:
         // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
@@ -686,6 +685,11 @@ ScopedQcmsProfile GetXYZD50Profile() {
 ColorTransformInternal::ColorTransformInternal(const ColorSpace& from,
                                                const ColorSpace& to,
                                                Intent intent) {
+  // If no source color space is specified, do no transformation.
+  // TODO(ccameron): We may want to assume sRGB at some point in the future.
+  if (!from.IsValid())
+    return;
+
   ScopedQcmsProfile from_profile = GetQCMSProfileIfAvailable(from);
   ScopedQcmsProfile to_profile = GetQCMSProfileIfAvailable(to);
   bool has_from_profile = !!from_profile;

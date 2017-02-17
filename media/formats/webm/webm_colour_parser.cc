@@ -254,83 +254,6 @@ enum class Primaries : std::uint64_t {
 
 // ---- End copy/paste from libwebm/webm_parser/include/webm/dom_types.h ----
 
-// Ensure that libwebm enum values match enums in gfx::ColorSpace.
-#define STATIC_ASSERT_ENUM(a, b)                                             \
-  static_assert(static_cast<int>(a) == static_cast<int>(gfx::ColorSpace::b), \
-                "mismatching enums: " #a " and " #b)
-
-STATIC_ASSERT_ENUM(MatrixCoefficients::kRgb, MatrixID::RGB);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kBt709, MatrixID::BT709);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kUnspecified, MatrixID::UNSPECIFIED);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kFcc, MatrixID::FCC);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kBt470Bg, MatrixID::BT470BG);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kSmpte170M, MatrixID::SMPTE170M);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kSmpte240M, MatrixID::SMPTE240M);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kYCgCo, MatrixID::YCOCG);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kBt2020NonconstantLuminance,
-                   MatrixID::BT2020_NCL);
-STATIC_ASSERT_ENUM(MatrixCoefficients::kBt2020ConstantLuminance,
-                   MatrixID::BT2020_CL);
-
-gfx::ColorSpace::MatrixID FromWebMMatrixCoefficients(MatrixCoefficients c) {
-  return static_cast<gfx::ColorSpace::MatrixID>(c);
-}
-
-STATIC_ASSERT_ENUM(Range::kUnspecified, RangeID::UNSPECIFIED);
-STATIC_ASSERT_ENUM(Range::kBroadcast, RangeID::LIMITED);
-STATIC_ASSERT_ENUM(Range::kFull, RangeID::FULL);
-STATIC_ASSERT_ENUM(Range::kDerived, RangeID::DERIVED);
-
-gfx::ColorSpace::RangeID FromWebMRange(Range range) {
-  return static_cast<gfx::ColorSpace::RangeID>(range);
-}
-
-STATIC_ASSERT_ENUM(TransferCharacteristics::kBt709, TransferID::BT709);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kUnspecified,
-                   TransferID::UNSPECIFIED);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kGamma22curve, TransferID::GAMMA22);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kGamma28curve, TransferID::GAMMA28);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kSmpte170M, TransferID::SMPTE170M);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kSmpte240M, TransferID::SMPTE240M);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kLinear, TransferID::LINEAR);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kLog, TransferID::LOG);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kLogSqrt, TransferID::LOG_SQRT);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kIec6196624,
-                   TransferID::IEC61966_2_4);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kBt1361ExtendedColourGamut,
-                   TransferID::BT1361_ECG);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kIec6196621,
-                   TransferID::IEC61966_2_1);
-STATIC_ASSERT_ENUM(TransferCharacteristics::k10BitBt2020,
-                   TransferID::BT2020_10);
-STATIC_ASSERT_ENUM(TransferCharacteristics::k12BitBt2020,
-                   TransferID::BT2020_12);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kSmpteSt2084,
-                   TransferID::SMPTEST2084);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kSmpteSt4281,
-                   TransferID::SMPTEST428_1);
-STATIC_ASSERT_ENUM(TransferCharacteristics::kAribStdB67Hlg,
-                   TransferID::ARIB_STD_B67);
-
-gfx::ColorSpace::TransferID FromWebMTransferCharacteristics(
-    TransferCharacteristics tc) {
-  return static_cast<gfx::ColorSpace::TransferID>(tc);
-}
-
-STATIC_ASSERT_ENUM(Primaries::kBt709, PrimaryID::BT709);
-STATIC_ASSERT_ENUM(Primaries::kUnspecified, PrimaryID::UNSPECIFIED);
-STATIC_ASSERT_ENUM(Primaries::kBt470M, PrimaryID::BT470M);
-STATIC_ASSERT_ENUM(Primaries::kBt470Bg, PrimaryID::BT470BG);
-STATIC_ASSERT_ENUM(Primaries::kSmpte170M, PrimaryID::SMPTE170M);
-STATIC_ASSERT_ENUM(Primaries::kSmpte240M, PrimaryID::SMPTE240M);
-STATIC_ASSERT_ENUM(Primaries::kFilm, PrimaryID::FILM);
-STATIC_ASSERT_ENUM(Primaries::kBt2020, PrimaryID::BT2020);
-STATIC_ASSERT_ENUM(Primaries::kSmpteSt4281, PrimaryID::SMPTEST428_1);
-
-gfx::ColorSpace::PrimaryID FromWebMPrimaries(Primaries primaries) {
-  return static_cast<gfx::ColorSpace::PrimaryID>(primaries);
-}
-
 WebMColorMetadata::WebMColorMetadata() {}
 WebMColorMetadata::WebMColorMetadata(const WebMColorMetadata& rhs) = default;
 
@@ -490,28 +413,23 @@ WebMColorMetadata WebMColourParser::GetWebMColorMetadata() const {
   if (chroma_siting_vert_ != -1)
     color_metadata.ChromaSitingVert = chroma_siting_vert_;
 
-  gfx::ColorSpace::MatrixID matrix_id = gfx::ColorSpace::MatrixID::UNSPECIFIED;
-  if (matrix_coefficients_ != -1)
-    matrix_id = FromWebMMatrixCoefficients(
-        static_cast<MatrixCoefficients>(matrix_coefficients_));
-
-  gfx::ColorSpace::RangeID range_id = gfx::ColorSpace::RangeID::UNSPECIFIED;
-  if (range_ != -1)
-    range_id = FromWebMRange(static_cast<Range>(range_));
-
-  gfx::ColorSpace::TransferID transfer_id =
-      gfx::ColorSpace::TransferID::UNSPECIFIED;
-  if (transfer_characteristics_ != -1)
-    transfer_id = FromWebMTransferCharacteristics(
-        static_cast<TransferCharacteristics>(transfer_characteristics_));
-
-  gfx::ColorSpace::PrimaryID primary_id =
-      gfx::ColorSpace::PrimaryID::UNSPECIFIED;
-  if (primaries_ != -1)
-    primary_id = FromWebMPrimaries(static_cast<Primaries>(primaries_));
-
-  color_metadata.color_space =
-      gfx::ColorSpace(primary_id, transfer_id, matrix_id, range_id);
+  gfx::ColorSpace::RangeID range_id = gfx::ColorSpace::RangeID::FULL;
+  switch (static_cast<Range>(range_)) {
+    case Range::kUnspecified:
+      range_id = gfx::ColorSpace::RangeID::FULL;
+      break;
+    case Range::kBroadcast:
+      range_id = gfx::ColorSpace::RangeID::LIMITED;
+      break;
+    case Range::kFull:
+      range_id = gfx::ColorSpace::RangeID::FULL;
+      break;
+    case Range::kDerived:
+      range_id = gfx::ColorSpace::RangeID::DERIVED;
+      break;
+  }
+  color_metadata.color_space = gfx::ColorSpace::CreateVideo(
+      primaries_, transfer_characteristics_, matrix_coefficients_, range_id);
 
   if (max_cll_ != -1)
     color_metadata.hdr_metadata.max_cll = max_cll_;

@@ -125,17 +125,17 @@ base::Optional<gfx::Rect> H264SPS::GetVisibleRect() const {
 // available from http://www.itu.int/rec/T-REC-H.264.
 gfx::ColorSpace H264SPS::GetColorSpace() const {
   if (colour_description_present_flag) {
-    return gfx::ColorSpace(
+    return gfx::ColorSpace::CreateVideo(
         colour_primaries, transfer_characteristics, matrix_coefficients,
         video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
                               : gfx::ColorSpace::RangeID::LIMITED);
   } else {
-    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::UNSPECIFIED,
-                           gfx::ColorSpace::TransferID::UNSPECIFIED,
-                           gfx::ColorSpace::MatrixID::UNSPECIFIED,
-                           video_full_range_flag
-                               ? gfx::ColorSpace::RangeID::FULL
-                               : gfx::ColorSpace::RangeID::LIMITED);
+    // TODO(ccameron/hubbe): Add a uniform way to handle default video frames.
+    return gfx::ColorSpace(
+        gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::BT709,
+        gfx::ColorSpace::MatrixID::BT709,
+        video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
+                              : gfx::ColorSpace::RangeID::LIMITED);
   }
 }
 

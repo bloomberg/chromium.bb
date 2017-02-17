@@ -1055,7 +1055,8 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   const bool is_overlay_candidate = true;
   const bool secure_output_only = true;
   const bool nearest_neighbor = true;
-  const gfx::ColorSpace color_space(4, 5, 9, gfx::ColorSpace::RangeID::LIMITED);
+  const gfx::ColorSpace color_space =
+      gfx::ColorSpace::CreateVideo(4, 5, 9, gfx::ColorSpace::RangeID::LIMITED);
 #if defined(OS_ANDROID)
   const bool is_backed_by_surface_texture = true;
   const bool wants_promotion_hint = true;

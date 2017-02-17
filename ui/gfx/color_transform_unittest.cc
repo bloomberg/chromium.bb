@@ -39,7 +39,6 @@ ColorSpace::TransferID all_transfers[] = {
 
 ColorSpace::MatrixID all_matrices[] = {
     ColorSpace::MatrixID::RGB, ColorSpace::MatrixID::BT709,
-    ColorSpace::MatrixID::UNSPECIFIED, ColorSpace::MatrixID::RESERVED,
     ColorSpace::MatrixID::FCC, ColorSpace::MatrixID::BT470BG,
     ColorSpace::MatrixID::SMPTE170M, ColorSpace::MatrixID::SMPTE240M,
 
@@ -51,8 +50,7 @@ ColorSpace::MatrixID all_matrices[] = {
     ColorSpace::MatrixID::YDZDX,
 };
 
-ColorSpace::RangeID all_ranges[] = {ColorSpace::RangeID::UNSPECIFIED,
-                                    ColorSpace::RangeID::FULL,
+ColorSpace::RangeID all_ranges[] = {ColorSpace::RangeID::FULL,
                                     ColorSpace::RangeID::LIMITED,
                                     ColorSpace::RangeID::DERIVED};
 
@@ -194,8 +192,10 @@ TEST(SimpleColorSpace, GetColorSpace) {
   EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
 }
 
-TEST(SimpleColorSpace, UnknownToSRGB) {
-  ColorSpace unknown;
+TEST(SimpleColorSpace, UnknownVideoToSRGB) {
+  // Invalid video spaces should be BT709.
+  ColorSpace unknown = gfx::ColorSpace::CreateVideo(
+      -1, -1, -1, gfx::ColorSpace::RangeID::LIMITED);
   ColorSpace sRGB = ColorSpace::CreateSRGB();
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
       unknown, sRGB, ColorTransform::Intent::INTENT_PERCEPTUAL));
@@ -217,6 +217,19 @@ TEST(SimpleColorSpace, UnknownToSRGB) {
   t->Transform(&tmp, 1);
   EXPECT_GT(tmp.z(), tmp.x());
   EXPECT_GT(tmp.z(), tmp.y());
+}
+
+TEST(SimpleColorSpace, DefaultToSRGB) {
+  // The default value should do no transformation, regardless of destination.
+  ColorSpace unknown;
+  std::unique_ptr<ColorTransform> t1(ColorTransform::NewColorTransform(
+      unknown, ColorSpace::CreateSRGB(),
+      ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(t1->NumberOfStepsForTesting(), 0u);
+  std::unique_ptr<ColorTransform> t2(ColorTransform::NewColorTransform(
+      unknown, ColorSpace::CreateXYZD50(),
+      ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(t2->NumberOfStepsForTesting(), 0u);
 }
 
 class TransferTest : public testing::TestWithParam<ColorSpace::TransferID> {};

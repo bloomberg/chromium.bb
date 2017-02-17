@@ -2109,6 +2109,9 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
         break;
     }
   }
+  // Invalid or unspecified color spaces should be treated as REC709.
+  if (!src_color_space.IsValid())
+    src_color_space = gfx::ColorSpace::CreateREC709();
 
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
