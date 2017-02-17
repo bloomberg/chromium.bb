@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -26,13 +27,18 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
+
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
+import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -79,6 +85,9 @@ public class VrShellDelegate {
     private static final String VR_ACTIVITY_ALIAS =
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
 
+    private static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
+    private static final int VR_CORE_MIN_VERSION = 160723800;
+
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
 
     private final ChromeTabbedActivity mActivity;
@@ -107,7 +116,6 @@ public class VrShellDelegate {
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
         mVrClassesWrapper = createVrClassesWrapper();
-        updateVrSupportLevel();
     }
 
     /**
@@ -129,19 +137,15 @@ public class VrShellDelegate {
 
         // Check cardboard support for non-daydream devices.
         if (!mVrDaydreamApi.isDaydreamReadyDevice()) {
-            // Native libraries may not be ready in which case skip for now and check later.
-            if (LibraryLoader.isInitialized()) {
-                // Supported Build version is determined by the webvr cardboard support feature.
-                // Default is KITKAT unless specified via server side finch config.
-                if (Build.VERSION.SDK_INT
-                        < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
-                                MIN_SDK_VERSION_PARAM_NAME,
-                                Build.VERSION_CODES.KITKAT)) {
-                    mVrSupportLevel = VR_NOT_AVAILABLE;
-                    mEnterVRIntent = null;
-                    return;
-                }
+            // Supported Build version is determined by the webvr cardboard support feature.
+            // Default is KITKAT unless specified via server side finch config.
+            if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                                ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
+                                                MIN_SDK_VERSION_PARAM_NAME,
+                                                Build.VERSION_CODES.KITKAT)) {
+                mVrSupportLevel = VR_NOT_AVAILABLE;
+                mEnterVRIntent = null;
+                return;
             }
         }
 
@@ -152,12 +156,53 @@ public class VrShellDelegate {
         mVrSupportLevel = mVrDaydreamApi.isDaydreamReadyDevice() ? VR_DAYDREAM : VR_CARDBOARD;
     }
 
+    private boolean verifyOrUpdateVrServices(Tab tab) {
+        if (!LibraryLoader.isInitialized()) {
+            return false;
+        }
+        int vrCoreVersion = PackageUtils.getPackageVersion(mActivity, VR_CORE_PACKAGE_ID);
+        if (vrCoreVersion < VR_CORE_MIN_VERSION) {
+            // Assume upgrade as most common case.
+            String infobarText =
+                    mActivity.getString(R.string.vr_services_check_infobar_update_text);
+            String buttonText =
+                    mActivity.getString(R.string.vr_services_check_infobar_update_button);
+            if (vrCoreVersion == -1) {
+                // VrCore not installed, make sure it's supported before showing the user a prompt.
+                if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                                    ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
+                                                    MIN_SDK_VERSION_PARAM_NAME,
+                                                    Build.VERSION_CODES.KITKAT)) {
+                    return false;
+                }
+                // Supported, but not installed.  Ask user to install instead of upgrade.
+                infobarText = mActivity.getString(R.string.vr_services_check_infobar_install_text);
+                buttonText = mActivity.getString(R.string.vr_services_check_infobar_install_button);
+            }
+            SimpleConfirmInfoBarBuilder.create(tab,
+                    new SimpleConfirmInfoBarBuilder.Listener() {
+                        @Override
+                        public void onInfoBarDismissed() {}
+
+                        @Override
+                        public boolean onInfoBarButtonClicked(boolean isPrimary) {
+                            mActivity.startActivity(new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse("market://details?id=" + VR_CORE_PACKAGE_ID)));
+                            return false;
+                        }
+                    },
+                    InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services,
+                    infobarText, buttonText, null, true);
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Should be called once the native library is loaded so that the native portion of this class
      * can be initialized.
      */
     public void onNativeLibraryReady() {
-        // Libraries may not have been loaded when we first set the support level, so check again.
         updateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
         mNativeVrShellDelegate = nativeInit();
@@ -336,6 +381,8 @@ public class VrShellDelegate {
      */
     @EnterVRResult
     public int enterVRIfNecessary() {
+        // TODO(amp): Move the UpdateVrService check to where it can check after a WebVR API call.
+        if (!verifyOrUpdateVrServices(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
