@@ -383,12 +383,12 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
   // After more days, all pages should be deleted.
   clock()->Advance(base::TimeDelta::FromDays(30));
   TryClearPages();
-  EXPECT_EQ(0, model()->GetTotalSize());
+  EXPECT_EQ(40 * kTestFileSize, model()->GetTotalSize());
   EXPECT_EQ(5, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
-  // Number of removed pages should be all the pages initially created plus 400
-  // more pages added above for bookmark namespace.
-  EXPECT_EQ(171 + 400, static_cast<int>(model()->GetRemovedPages().size()));
+  // Number of removed pages should be all the temporary pages initially
+  // created plus 400 more pages added above for bookmark namespace.
+  EXPECT_EQ(131 + 400, static_cast<int>(model()->GetRemovedPages().size()));
 }
 
 }  // namespace offline_pages

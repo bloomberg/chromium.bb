@@ -102,10 +102,10 @@ void OfflinePageStorageManager::GetPageIdsToClear(
   int64_t kept_pages_size = 0;
 
   for (const auto& page : pages) {
-    if (!IsExpired(page))
-      pages_map[page.client_id.name_space].push_back(page);
-    else
+    if (IsExpired(page))
       page_ids_to_clear->push_back(page.offline_id);
+    else
+      pages_map[page.client_id.name_space].push_back(page);
   }
 
   for (auto& iter : pages_map) {
@@ -114,6 +114,10 @@ void OfflinePageStorageManager::GetPageIdsToClear(
 
     LifetimePolicy policy =
         policy_controller_->GetPolicy(name_space).lifetime_policy;
+    // Storage manager only manages temporary offlined pages, so we shouldn't
+    // clear any persistent pages here.
+    if (policy.lifetime_type == LifetimeType::PERSISTENT)
+      continue;
 
     std::sort(page_list.begin(), page_list.end(),
               [](const OfflinePageItem& a, const OfflinePageItem& b) -> bool {
@@ -123,8 +127,7 @@ void OfflinePageStorageManager::GetPageIdsToClear(
     size_t page_list_size = page_list.size();
     size_t pos = 0;
     while (pos < page_list_size &&
-           (policy.page_limit == kUnlimitedPages || pos < policy.page_limit) &&
-           !IsExpired(page_list.at(pos))) {
+           (policy.page_limit == kUnlimitedPages || pos < policy.page_limit)) {
       kept_pages_size += page_list.at(pos).file_size;
       kept_pages.push_back(page_list.at(pos));
       pos++;
