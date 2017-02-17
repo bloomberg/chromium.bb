@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -88,6 +89,8 @@ class ShareServiceImpl : public blink::mojom::ShareService {
                       const GURL& share_url,
                       const ShareCallback& callback,
                       base::Optional<std::string> result);
+
+  base::WeakPtrFactory<ShareServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareServiceImpl);
 };

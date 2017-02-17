@@ -48,7 +48,7 @@ std::string JoinString(const std::vector<base::StringPiece>& pieces) {
 
 }  // namespace
 
-ShareServiceImpl::ShareServiceImpl() = default;
+ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
 ShareServiceImpl::~ShareServiceImpl() = default;
 
 // static
@@ -203,7 +203,7 @@ void ShareServiceImpl::Share(const std::string& title,
 
   ShowPickerDialog(
       sufficiently_engaged_targets,
-      base::Bind(&ShareServiceImpl::OnPickerClosed, base::Unretained(this),
+      base::Bind(&ShareServiceImpl::OnPickerClosed, weak_factory_.GetWeakPtr(),
                  base::Passed(&share_targets), title, text, share_url,
                  callback));
 }

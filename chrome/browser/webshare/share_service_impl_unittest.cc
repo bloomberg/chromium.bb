@@ -34,6 +34,11 @@ constexpr char kManifestUrlLow[] =
 constexpr char kManifestUrlMin[] =
     "https://www.example-min.com/target/manifest.json";
 
+void DidShare(const base::Optional<std::string>& expected_error,
+              const base::Optional<std::string>& error) {
+  EXPECT_EQ(expected_error, error);
+}
+
 class ShareServiceTestImpl : public ShareServiceImpl {
  public:
   explicit ShareServiceTestImpl(blink::mojom::ShareServiceRequest request)
@@ -43,10 +48,6 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     pref_service_.reset(new TestingPrefServiceSimple());
     pref_service_->registry()->RegisterDictionaryPref(
         prefs::kWebShareVisitedTargets);
-  }
-
-  void set_picker_result(base::Optional<std::string> result) {
-    picker_result_ = result;
   }
 
   void AddShareTargetToPrefs(const std::string& manifest_url,
@@ -74,10 +75,18 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     engagement_map_[manifest_url] = level;
   }
 
+  void set_run_loop(base::RunLoop* run_loop) {
+    quit_run_loop_ = run_loop->QuitClosure();
+  }
+
   const std::string& GetLastUsedTargetURL() { return last_used_target_url_; }
 
   const std::vector<std::pair<base::string16, GURL>>& GetTargetsInPicker() {
     return targets_in_picker_;
+  }
+
+  const base::Callback<void(base::Optional<std::string>)>& picker_callback() {
+    return picker_callback_;
   }
 
  private:
@@ -85,8 +94,13 @@ class ShareServiceTestImpl : public ShareServiceImpl {
       const std::vector<std::pair<base::string16, GURL>>& targets,
       const base::Callback<void(base::Optional<std::string>)>& callback)
       override {
+    // Store the arguments passed to the picker dialog.
     targets_in_picker_ = targets;
-    callback.Run(picker_result_);
+    picker_callback_ = callback;
+
+    // Quit the test's run loop. It is the test's responsibility to call the
+    // callback, to simulate the user's choice.
+    quit_run_loop_.Run();
   }
 
   void OpenTargetURL(const GURL& target_url) override {
@@ -100,12 +114,19 @@ class ShareServiceTestImpl : public ShareServiceImpl {
   }
 
   mojo::Binding<blink::mojom::ShareService> binding_;
-
-  base::Optional<std::string> picker_result_;
-  std::string last_used_target_url_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+
   std::map<std::string, blink::mojom::EngagementLevel> engagement_map_;
+  // Closure to quit the test's run loop.
+  base::Closure quit_run_loop_;
+
+  // The last URL passed to OpenTargetURL.
+  std::string last_used_target_url_;
+  // The targets passed to ShowPickerDialog.
   std::vector<std::pair<base::string16, GURL>> targets_in_picker_;
+  // The callback passed to ShowPickerDialog (which is supposed to be called
+  // with the user's chosen result, or nullopt if cancelled).
+  base::Callback<void(base::Optional<std::string>)> picker_callback_;
 };
 
 class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
@@ -129,27 +150,19 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
-  void DidShare(const std::vector<std::pair<base::string16, GURL>>&
-                    expected_targets_in_picker,
-                const std::string& expected_target_url,
-                const base::Optional<std::string>& expected_error,
-                const base::Optional<std::string>& error) {
-    std::vector<std::pair<base::string16, GURL>> targets_in_picker =
-        share_service_helper_->GetTargetsInPicker();
-    EXPECT_EQ(expected_targets_in_picker, targets_in_picker);
-
-    std::string target_url = share_service_helper_->GetLastUsedTargetURL();
-    EXPECT_EQ(expected_target_url, target_url);
-
-    EXPECT_EQ(expected_error, error);
-
-    if (!on_callback_.is_null())
-      on_callback_.Run();
+  blink::mojom::ShareService* share_service() const {
+    return share_service_.get();
   }
 
+  ShareServiceTestImpl* share_service_helper() const {
+    return share_service_helper_.get();
+  }
+
+  void DeleteShareService() { share_service_helper_.reset(); }
+
+ private:
   blink::mojom::ShareServicePtr share_service_;
   std::unique_ptr<ShareServiceTestImpl> share_service_helper_;
-  base::Closure on_callback_;
 };
 
 }  // namespace
@@ -157,110 +170,155 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
 // Basic test to check the Share method calls the callback with the expected
 // parameters.
 TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
-  share_service_helper_->set_picker_result(
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
+                                                kUrlTemplate);
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
+                                                kUrlTemplate);
+
+  base::Callback<void(const base::Optional<std::string>&)> callback =
+      base::Bind(&DidShare, base::Optional<std::string>());
+
+  base::RunLoop run_loop;
+  share_service_helper()->set_run_loop(&run_loop);
+
+  const GURL url(kUrlSpec);
+  share_service()->Share(kTitle, kText, url, callback);
+
+  run_loop.Run();
+
+  const std::vector<std::pair<base::string16, GURL>> kExpectedTargets{
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlHigh)),
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
+  EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
+
+  // Pick example-low.com.
+  share_service_helper()->picker_callback().Run(
       base::Optional<std::string>(kManifestUrlLow));
 
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                               kUrlTemplate);
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                               kUrlTemplate);
-
-  std::string expected_url =
+  const char kExpectedURL[] =
       "https://www.example-low.com/target/"
       "share?title=My%20title&text=My%20text&url=https%3A%2F%2Fwww."
       "google.com%2F";
-
-  std::vector<std::pair<base::string16, GURL>> expected_targets{
-      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlHigh)),
-      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),
-                 expected_targets, expected_url, base::Optional<std::string>());
-
-  base::RunLoop run_loop;
-  on_callback_ = run_loop.QuitClosure();
-
-  const GURL url(kUrlSpec);
-  share_service_->Share(kTitle, kText, url, callback);
-
-  run_loop.Run();
+  EXPECT_EQ(kExpectedURL, share_service_helper()->GetLastUsedTargetURL());
 }
 
 // Tests the result of cancelling the share in the picker UI, that doesn't have
 // any targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelNoTargets) {
-  // picker_result_ is set to nullopt by default, so this imitates the user
-  // cancelling a share.
   // Expect an error message in response.
   base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),
-                 std::vector<std::pair<base::string16, GURL>>(), std::string(),
-                 base::Optional<std::string>("Share was cancelled"));
+      base::Bind(&DidShare, base::Optional<std::string>("Share was cancelled"));
 
   base::RunLoop run_loop;
-  on_callback_ = run_loop.QuitClosure();
+  share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service_->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, callback);
 
   run_loop.Run();
+
+  EXPECT_TRUE(share_service_helper()->GetTargetsInPicker().empty());
+
+  // Cancel the dialog.
+  share_service_helper()->picker_callback().Run(base::nullopt);
+
+  EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
 }
 
 // Tests the result of cancelling the share in the picker UI, that has targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
-  // picker_result_ is set to nullopt by default, so this imitates the user
-  // cancelling a share.
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                               kUrlTemplate);
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                               kUrlTemplate);
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
+                                                kUrlTemplate);
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
+                                                kUrlTemplate);
 
-  std::vector<std::pair<base::string16, GURL>> expected_targets{
-      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlHigh)),
-      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
   // Expect an error message in response.
   base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),
-                 expected_targets, std::string(),
-                 base::Optional<std::string>("Share was cancelled"));
+      base::Bind(&DidShare, base::Optional<std::string>("Share was cancelled"));
 
   base::RunLoop run_loop;
-  on_callback_ = run_loop.QuitClosure();
+  share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service_->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, callback);
 
   run_loop.Run();
+
+  const std::vector<std::pair<base::string16, GURL>> kExpectedTargets{
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlHigh)),
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
+  EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
+
+  // Cancel the dialog.
+  share_service_helper()->picker_callback().Run(base::nullopt);
+
+  EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
 }
 
 // Test to check that only targets with enough engagement were in picker.
 TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
-  std::string expected_url =
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlMin, kTargetName,
+                                                kUrlTemplate);
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
+                                                kUrlTemplate);
+
+  base::Callback<void(const base::Optional<std::string>&)> callback =
+      base::Bind(&DidShare, base::Optional<std::string>());
+
+  base::RunLoop run_loop;
+  share_service_helper()->set_run_loop(&run_loop);
+
+  const GURL url(kUrlSpec);
+  share_service()->Share(kTitle, kText, url, callback);
+
+  run_loop.Run();
+
+  const std::vector<std::pair<base::string16, GURL>> kExpectedTargets{
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
+  EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
+
+  // Pick example-low.com.
+  share_service_helper()->picker_callback().Run(
+      base::Optional<std::string>(kManifestUrlLow));
+
+  const char kExpectedURL[] =
       "https://www.example-low.com/target/"
       "share?title=My%20title&text=My%20text&url=https%3A%2F%2Fwww."
       "google.com%2F";
+  EXPECT_EQ(kExpectedURL, share_service_helper()->GetLastUsedTargetURL());
+}
 
-  share_service_helper_->set_picker_result(
-      base::Optional<std::string>(kManifestUrlLow));
-
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlMin, kTargetName,
-                                               kUrlTemplate);
-  share_service_helper_->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                               kUrlTemplate);
-
-  std::vector<std::pair<base::string16, GURL>> expected_targets{
-      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),
-                 expected_targets, expected_url, base::Optional<std::string>());
+// Test that deleting the share service while the picker is open does not crash
+// (https://crbug.com/690775).
+TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
+                                                kUrlTemplate);
 
   base::RunLoop run_loop;
-  on_callback_ = run_loop.QuitClosure();
+  share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service_->Share(kTitle, kText, url, callback);
+  // Expect the callback to never be called (since the share service is
+  // destroyed before the picker is closed).
+  // TODO(mgiuca): This probably should still complete the share, if not
+  // cancelled, even if the underlying tab is closed.
+  base::Callback<void(const base::Optional<std::string>&)> callback =
+      base::Bind([](const base::Optional<std::string>& error) { FAIL(); });
+  share_service()->Share(kTitle, kText, url, callback);
 
   run_loop.Run();
+
+  const std::vector<std::pair<base::string16, GURL>> kExpectedTargets{
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
+  EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
+
+  const base::Callback<void(base::Optional<std::string>)> picker_callback =
+      share_service_helper()->picker_callback();
+
+  DeleteShareService();
+
+  // Pick example-low.com.
+  picker_callback.Run(base::Optional<std::string>(kManifestUrlLow));
 }
 
 // Replace various numbers of placeholders in various orders. Placeholders are
