@@ -294,6 +294,9 @@ below:
       <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="accessibility role description for description term(as in a description list)">
         term
       </message>
+      <message name="IDS_AX_ROLE_FEED" desc="Accessibility role description for a scrollable list of articles.">
+        feed
+      </message>
       <message name="IDS_AX_ROLE_FIGURE" desc="accessibility role description for figure">
         figure
       </message>

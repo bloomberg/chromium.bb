@@ -630,7 +630,7 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
       break;
     case ui::AX_ROLE_FEED:
-      // TODO(patricialor): Add a string for this role.
+      message_id = IDS_AX_ROLE_FEED;
       break;
     case ui::AX_ROLE_FIGCAPTION:
       // No role description.
