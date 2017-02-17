@@ -79,7 +79,8 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
                        std::move(save_info_->file),
                        save_info_->offset,
                        save_info_->hash_of_partial_file,
-                       std::move(save_info_->hash_state));
+                       std::move(save_info_->hash_state),
+                       false);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(callback, result));

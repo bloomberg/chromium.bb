@@ -72,7 +72,8 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.Initialize(base::FilePath(), target_directory.GetPath(),
                                    base::File(), 0, std::string(),
-                                   std::unique_ptr<crypto::SecureHash>()));
+                                   std::unique_ptr<crypto::SecureHash>(),
+                                   false));
     ASSERT_FALSE(base_file.full_path().empty());
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.Rename(

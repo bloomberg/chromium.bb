@@ -61,35 +61,51 @@ class CONTENT_EXPORT BaseFile {
   //     will not attempt to determine the |full_path|.
   //
   // |bytes_so_far|: If a file is provided (via |full_path| or |file|), then
-  //     this argument specifies the size of the file to expect. It is legal for
-  //     the file to be larger, in which case the file will be truncated down to
-  //     this size. However, if the file is shorter, then the operation will
+  //     this argument specifies the amount of data that has been written to
+  //     the file. If |is_sparse_file| is false, this value should be the size
+  //     of the file to expect. It is legal for the file to be larger, in which
+  //     case the file will be truncated down to this size if |is_sparse_file|
+  //     is false. However, if the file is shorter, then the operation will
   //     fail with DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT.
+
   //
-  // |hash_so_far|: If |bytes_so_far| is non-zero, this specifies the SHA-256
-  //     hash of the first |bytes_so_far| bytes of the target file. If
-  //     specified, BaseFile will read the first |bytes_so_far| of the target
-  //     file in order to calculate the hash and verify that the file matches.
-  //     If there's a mismatch, then the operation fails with
-  //     DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH. Not used if |hash_state|
-  //     is also specified.
+  // |hash_so_far|: If |bytes_so_far| is non-zero and |is_sparse_file| is
+  //     false, this specifies the SHA-256 hash of the first |bytes_so_far|
+  //     bytes of the target file. If specified, BaseFile will read the first
+  //     |bytes_so_far| of the target file in order to calculate the hash and
+  //     verify that the file matches. If there's a mismatch, then the operation
+  //     fails with DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH. Not used if
+  //     |hash_state| is also specified.
   //
   // |hash_state|: The partial hash object to use. Only meaningful if there's a
   //     preexisting target file and it is non-empty (i.e. bytes_so_far is
   //     non-zero). If specified, BaseFile will assume that the bytes up to
   //     |bytes_so_far| has been accurately hashed into |hash_state| and will
-  //     ignore |hash_so_far|.
+  //     ignore |hash_so_far|. Not used if |is_sparse_file| is true.
+  //
+  // |is_sparse_file|: Specifies whether the file is a sparse file. If so, it is
+  //     possible that a write can happen at an offset that is larger than the
+  //     file size, thus creating holes in it.
   DownloadInterruptReason Initialize(
       const base::FilePath& full_path,
       const base::FilePath& default_directory,
       base::File file,
       int64_t bytes_so_far,
       const std::string& hash_so_far,
-      std::unique_ptr<crypto::SecureHash> hash_state);
+      std::unique_ptr<crypto::SecureHash> hash_state,
+      bool is_sparse_file);
+
+  // Write a new chunk of data to the file. Returns a DownloadInterruptReason
+  // indicating the result of the operation. Works only if |is_sparse_file| is
+  // false.
+  DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
 
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation.
-  DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
+  DownloadInterruptReason WriteDataToFile(
+      int64_t offset,
+      const char* data,
+      size_t data_len);
 
   // Rename the download file. Returns a DownloadInterruptReason indicating the
   // result of the operation. A return code of NONE indicates that the rename
@@ -111,7 +127,8 @@ class CONTENT_EXPORT BaseFile {
 
   // Indicate that the download has finished. No new data will be received.
   // Returns the SecureHash object representing the state of the hash function
-  // at the end of the operation.
+  // at the end of the operation. If |is_sparse_file_| is true, calling this
+  // will cause |secure_hash_| to get calculated.
   std::unique_ptr<crypto::SecureHash> Finish();
 
   // Informs the OS that this file came from the internet. Returns a
@@ -137,7 +154,10 @@ class CONTENT_EXPORT BaseFile {
   // renamed.
   bool in_progress() const { return file_.IsValid(); }
 
-  // Returns the number of bytes in the file pointed to by full_path().
+  // Returns the number of bytes that has been written so far. If
+  // |is_sparse_file_| is false, this should always be equal to the file size.
+  // If |is_sparse_file_| is true, this should not be larger than the file size
+  // as the file may contain holes in it.
   int64_t bytes_so_far() const { return bytes_so_far_; }
 
   std::string DebugString() const;
@@ -148,13 +168,15 @@ class CONTENT_EXPORT BaseFile {
 
   // Creates and opens the file_ if it is invalid.
   //
-  // If |hash_so_far| is not empty, then it must match the SHA-256 hash of the
-  // first |bytes_so_far_| bytes of |file_|. If there's a hash mismatch, Open()
-  // fails with DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH.
+  // If |is_sparse_file_| is false and |hash_so_far| is not empty, then it must
+  // match the SHA-256 hash of the first |bytes_so_far_| bytes of |file_|. If
+  // there's a hash mismatch, Open() fails with
+  // DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH.
   //
   // If the opened file is shorter than |bytes_so_far_| bytes, then Open() fails
-  // with DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT. If the opened file is
-  // longer, then the file is truncated to |bytes_so_far_|.
+  // with DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT. If the opened file is longer
+  // and |is_sparse_file_| is false, then the file is truncated to
+  // |bytes_so_far_|.
   //
   // Open() can fail for other reasons as well. In that case, it returns a
   // relevant interrupt reason. Unless Open() return
@@ -185,6 +207,8 @@ class CONTENT_EXPORT BaseFile {
   //
   // If the result is REASON_NONE, then on return |secure_hash_| is valid and
   // is ready to hash bytes from offset |bytes_so_far_| + 1.
+  // If |is_sparse_file_| is true, this function is only called when Finish()
+  // is called.
   DownloadInterruptReason CalculatePartialHash(
       const std::string& hash_to_expect);
 
@@ -221,6 +245,11 @@ class CONTENT_EXPORT BaseFile {
   // Indicates that this class no longer owns the associated file, and so
   // won't delete it on destruction.
   bool detached_ = false;
+
+  // Whether the file is sparse.
+  // TODO(qinmin): pass the slice information to this class so that we can
+  // verify that writes are not overlapping.
+  bool is_sparse_file_ = false;
 
   net::NetLogWithSource net_log_;
 

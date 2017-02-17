@@ -44,7 +44,8 @@ DownloadInterruptReason BaseFile::Initialize(
     base::File file,
     int64_t bytes_so_far,
     const std::string& hash_so_far,
-    std::unique_ptr<crypto::SecureHash> hash_state) {
+    std::unique_ptr<crypto::SecureHash> hash_state,
+    bool is_sparse_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
@@ -70,6 +71,8 @@ DownloadInterruptReason BaseFile::Initialize(
 
   bytes_so_far_ = bytes_so_far;
   secure_hash_ = std::move(hash_state);
+  is_sparse_file_ = is_sparse_file;
+  DCHECK(!is_sparse_file_ || !secure_hash_);
   file_ = std::move(file);
 
   return Open(hash_so_far);
@@ -77,9 +80,13 @@ DownloadInterruptReason BaseFile::Initialize(
 
 DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
                                                    size_t data_len) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(!detached_);
+  DCHECK(!is_sparse_file_);
+  return WriteDataToFile(bytes_so_far_, data, data_len);
+}
 
+DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
+                                                  const char* data,
+                                                  size_t data_len) {
   // NOTE(benwells): The above DCHECK won't be present in release builds,
   // so we log any occurences to see how common this error is in the wild.
   if (detached_)
@@ -93,27 +100,16 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   if (data_len == 0)
     return DOWNLOAD_INTERRUPT_REASON_NONE;
 
-  // The Write call below is not guaranteed to write all the data.
-  size_t write_count = 0;
-  size_t len = data_len;
-  const char* current_data = data;
   net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN);
-  while (len > 0) {
-    write_count++;
-    int write_result = file_.WriteAtCurrentPos(current_data, len);
-    DCHECK_NE(0, write_result);
+  int write_result = file_.Write(offset, data, data_len);
+  DCHECK_NE(0, write_result);
 
-    // Report errors on file writes.
-    if (write_result < 0)
-      return LogSystemError("Write", logging::GetLastSystemErrorCode());
+  // Report errors on file writes.
+  if (write_result < 0)
+    return LogSystemError("Write", logging::GetLastSystemErrorCode());
 
-    // Update status.
-    size_t write_size = static_cast<size_t>(write_result);
-    DCHECK_LE(write_size, len);
-    len -= write_size;
-    current_data += write_size;
-    bytes_so_far_ += write_size;
-  }
+  DCHECK_EQ(static_cast<size_t>(write_result), data_len);
+  bytes_so_far_ += data_len;
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
                     net::NetLog::Int64Callback("bytes", data_len));
 
@@ -186,6 +182,10 @@ void BaseFile::Cancel() {
 
 std::unique_ptr<crypto::SecureHash> BaseFile::Finish() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  // TODO(qinmin): verify that all the holes have been filled.
+  if (is_sparse_file_)
+    CalculatePartialHash(std::string());
   Close();
   return std::move(secure_hash_);
 }
@@ -287,6 +287,16 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
   net_log_.BeginEvent(
       net::NetLogEventType::DOWNLOAD_FILE_OPENED,
       base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
+
+  // For sparse file, skip hash validation.
+  if (is_sparse_file_) {
+    if (file_.GetLength() < bytes_so_far_) {
+      ClearFile();
+      return LogInterruptReason("File has fewer written bytes than expected", 0,
+                                DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+    }
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
 
   if (!secure_hash_) {
     DownloadInterruptReason reason = CalculatePartialHash(hash_so_far);
