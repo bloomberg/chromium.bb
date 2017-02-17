@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/sys_info.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,7 +22,7 @@ namespace {
 typedef base::Callback<void(int64_t)> GetNecessaryFreeSpaceCallback;
 
 // Part of ComputeSpaceNeedToBeFreed.
-int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataOnBlockingPool(
+int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataAsync(
     const base::FilePath& path,
     int64_t snapshot_size) {
   int64_t free_size = base::SysInfo::AmountOfFreeDiskSpace(path);
@@ -47,11 +47,11 @@ void ComputeSpaceNeedToBeFreedAfterGetMetadata(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadataOnBlockingPool,
-                 path, file_info.size),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_BLOCKING),
+      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
+                 file_info.size),
       callback);
 }
 
