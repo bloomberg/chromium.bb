@@ -3280,7 +3280,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
   size_t size;
 
   if (!is_last) {
-    if (!read_is_valid(*data, 4, data_end))
+    if (!read_is_valid(*data, tile_size_bytes, data_end))
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile length");
 
