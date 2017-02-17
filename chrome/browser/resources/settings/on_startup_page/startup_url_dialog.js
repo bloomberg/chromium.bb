@@ -36,7 +36,7 @@ Polymer({
 
     if (this.model) {
       this.dialogTitle_ = loadTimeData.getString('onStartupEditPage');
-      this.actionButtonText_ = loadTimeData.getString('onStartupEdit');
+      this.actionButtonText_ = loadTimeData.getString('edit');
       this.$.actionButton.disabled = false;
       // Pre-populate the input field.
       this.url_ = this.model.url;

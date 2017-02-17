@@ -311,6 +311,9 @@
   <message name="IDS_SETTINGS_CONTROLLED_BY_EXTENSION" desc="Label text of an indicator that a setting's value is being controlled by an extension.">
     <ph name="NAME">$1<ex>Adblocker plusplus</ex></ph> is controlling this setting
   </message>
+  <message name="IDS_SETTINGS_EDIT" desc="Label used on a menu item or button, used in different contexts to edit an item.">
+    Edit
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_OVERFLOW_MENU" desc="Alt text for the overflow button on a list item. Triggers a context menu when clicked.">
@@ -352,14 +355,8 @@
   <message name="IDS_SETTINGS_AUTOFILL_DETAIL" desc="Description of what toggling the 'Autofill' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL">
     Enable Autofill to fill out forms in a single click
   </message>
-  <message name="IDS_SETTINGS_ADDRESS_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected address." meaning="Edit selected address.">
-    Edit
-  </message>
   <message name="IDS_SETTINGS_ADDRESS_REMOVE" desc="Label for a context menu item that removes the selected address." meaning="Remove selected address.">
     Remove
-  </message>
-  <message name="IDS_SETTINGS_CREDIT_CARD_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected credit card." meaning="Edit selected credit card.">
-    Edit
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_REMOVE" desc="Label for a context menu item that removes the selected credit card." meaning="Remove selected credit card.">
     Remove
@@ -623,9 +620,6 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_VIEW" desc="Label for view button in certificate manager.">
       View
-    </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EDIT" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
-      Edit
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT" desc="Label for import button in certificate manager.">
       Import
@@ -1438,9 +1432,6 @@
   <message name="IDS_SETTINGS_ON_STARTUP_REMOVE" desc="Text displayed on a menu button allowing the user to remove a URL from the list of startup URLs.">
     Remove
   </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_EDIT" desc="Text displayed on a menu button allowing the user to edit a URL from the list of startup URLs.">
-    Edit
-  </message>
 
   <!-- Languages Page -->
   <if expr="chromeos">
@@ -1712,9 +1703,6 @@
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT" desc="Text of the button that makes the selected engine the default search engine">
     Make default
-  </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_EDIT" desc="Label for a button that allows the user to edit a search engine entry">
-   Edit
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST" desc="Label for a button that removes a search engine from the list of search engines">
     Remove from list
