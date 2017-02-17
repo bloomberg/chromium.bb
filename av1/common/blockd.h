@@ -739,21 +739,6 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 #endif  // CONFIG_VAR_TX
 }
 
-#if CONFIG_FILTER_INTRA
-static const TX_TYPE filter_intra_mode_to_tx_type_lookup[FILTER_INTRA_MODES] = {
-  DCT_DCT,    // FILTER_DC
-  ADST_DCT,   // FILTER_V
-  DCT_ADST,   // FILTER_H
-  DCT_DCT,    // FILTER_D45
-  ADST_ADST,  // FILTER_D135
-  ADST_DCT,   // FILTER_D117
-  DCT_ADST,   // FILTER_D153
-  DCT_ADST,   // FILTER_D207
-  ADST_DCT,   // FILTER_D63
-  ADST_ADST,  // FILTER_TM
-};
-#endif  // CONFIG_FILTER_INTRA
-
 #if CONFIG_EXT_INTRA
 #define MAX_ANGLE_DELTA_UV 2
 #define ANGLE_STEP_UV 4
@@ -814,61 +799,6 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 
   if (FIXED_TX_TYPE)
     return get_default_tx_type(plane_type, xd, block_idx, tx_size);
-
-#if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
-  if (!is_inter_block(mbmi)) {
-#if CONFIG_FILTER_INTRA
-    const int use_filter_intra_mode_info =
-        mbmi->filter_intra_mode_info.use_filter_intra_mode[plane_type];
-    const FILTER_INTRA_MODE filter_intra_mode =
-        mbmi->filter_intra_mode_info.filter_intra_mode[plane_type];
-#endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA
-    const PREDICTION_MODE mode = (plane_type == PLANE_TYPE_Y)
-                                     ? get_y_mode(mi, block_idx)
-                                     : mbmi->uv_mode;
-#endif  // CONFIG_EXT_INTRA
-
-    if (xd->lossless[mbmi->segment_id] || tx_size >= TX_32X32) return DCT_DCT;
-
-#if CONFIG_EXT_TX
-#if ALLOW_INTRA_EXT_TX
-    if (mbmi->sb_type >= BLOCK_8X8 && plane_type == PLANE_TYPE_Y)
-      return mbmi->tx_type;
-#endif  // ALLOW_INTRA_EXT_TX
-#endif  // CONFIG_EXT_TX
-
-#if CONFIG_FILTER_INTRA
-    if (use_filter_intra_mode_info)
-      return filter_intra_mode_to_tx_type_lookup[filter_intra_mode];
-#endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA
-#if CONFIG_ALT_INTRA
-    if (mode == SMOOTH_PRED) return ADST_ADST;
-#endif  // CONFIG_ALT_INTRA
-    if (mode == DC_PRED) return DCT_DCT;
-    if (mode == TM_PRED) return ADST_ADST;
-    {
-      int angle = mode_to_angle_map[mode];
-      const int angle_step = av1_get_angle_step(mbmi->sb_type, (int)plane_type);
-      assert(mode == D45_PRED || mode == D63_PRED || mode == D117_PRED ||
-             mode == D135_PRED || mode == D153_PRED || mode == D207_PRED ||
-             mode == V_PRED || mode == H_PRED);
-      if (mbmi->sb_type >= BLOCK_8X8)
-        angle += mbmi->angle_delta[plane_type] * angle_step;
-      assert(angle > 0 && angle < 270);
-      if (angle == 135)
-        return ADST_ADST;
-      else if (angle < 45 || angle > 225)
-        return DCT_DCT;
-      else if (angle < 135)
-        return ADST_DCT;
-      else
-        return DCT_ADST;
-    }
-#endif  // CONFIG_EXT_INTRA
-  }
-#endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_TX
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
