@@ -424,7 +424,6 @@ class ThreadedTesterBase {
           crossThreadBind(threadFunc, crossThreadUnretained(tester)));
     }
     while (tester->m_threadsToFinish) {
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
       testing::yieldCurrentThread();
     }
     delete tester;
@@ -498,7 +497,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
 
     int gcCount = 0;
     while (!done()) {
-      ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
       {
         Persistent<IntWrapper> wrapper;
 
@@ -510,7 +508,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
           if (!(i % 10)) {
             globalPersistent = createGlobalPersistent(0x0ed0cabb);
           }
-          SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
           testing::yieldCurrentThread();
         }
 
@@ -529,7 +526,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
         EXPECT_EQ(wrapper->value(), 0x0bbac0de);
         EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
       }
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
       testing::yieldCurrentThread();
     }
 
@@ -548,7 +544,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
 
     int gcCount = 0;
     while (!done()) {
-      ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
       {
         Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>> weakMap =
             new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
@@ -557,7 +552,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         for (int i = 0; i < numberOfAllocations; i++) {
           weakMap->insert(static_cast<unsigned>(i), IntWrapper::create(0));
           weakMap2.insert(static_cast<unsigned>(i), IntWrapper::create(0));
-          SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
           testing::yieldCurrentThread();
         }
 
@@ -576,7 +570,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         EXPECT_TRUE(weakMap->isEmpty());
         EXPECT_TRUE(weakMap2.isEmpty());
       }
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
       testing::yieldCurrentThread();
     }
     ThreadState::detachCurrentThread();
@@ -5272,10 +5265,7 @@ class ThreadedStrongificationTester {
     wakeWorkerThread();
 
     // Wait for the worker thread to sweep its heaps before checking.
-    {
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-      parkMainThread();
-    }
+    parkMainThread();
   }
 
  private:
@@ -5303,16 +5293,9 @@ class ThreadedStrongificationTester {
     // Signal the main thread that the worker is done with its allocation.
     wakeMainThread();
 
-    {
-      // Wait for the main thread to do two GCs without sweeping
-      // this thread heap. The worker waits within a safepoint,
-      // but there is no sweeping until leaving the safepoint
-      // scope. If the weak collection backing is marked dead
-      // because of this we will not get strongification in the
-      // GC we force when we continue.
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-      parkWorkerThread();
-    }
+    // Wait for the main thread to do two GCs without sweeping
+    // this thread heap.
+    parkWorkerThread();
 
     return weakCollection;
   }
@@ -6108,7 +6091,6 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
 
   {
     // Pretend we have no pointers on stack during the step 4.
-    SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
     wakeWorkerThread();
     parkMainThread();
   }
