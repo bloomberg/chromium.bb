@@ -39,6 +39,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -58,14 +59,15 @@
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/sha2.h"
 #include "net/cookies/cookie_store.h"
@@ -109,22 +111,6 @@ const char kMalwareIFrame[] = "/safe_browsing/malware_iframe.html";
 const char kMalwareImg[] = "/safe_browsing/malware_image.png";
 const char kNeverCompletesPath[] = "/never_completes";
 const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
-
-class MockSubresourceFilterDriver
-    : public subresource_filter::ContentSubresourceFilterDriver {
- public:
-  explicit MockSubresourceFilterDriver(
-      content::RenderFrameHost* render_frame_host)
-      : subresource_filter::ContentSubresourceFilterDriver(render_frame_host) {}
-
-  ~MockSubresourceFilterDriver() override = default;
-
-  MOCK_METHOD2(ActivateForNextCommittedLoad,
-               void(subresource_filter::ActivationLevel, bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
-};
 
 class NeverCompletingHttpResponse : public net::test_server::HttpResponse {
  public:
@@ -553,6 +539,9 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // This test will fill up the database using testing prefixes
     // and urls.
     command_line->AppendSwitch(safe_browsing::switches::kSbDisableAutoUpdate);
+    command_line->AppendSwitchASCII(
+        ::switches::kEnableFeatures,
+        subresource_filter::kSafeBrowsingSubresourceFilter.name);
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
@@ -563,18 +552,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
     g_browser_process->safe_browsing_service()->ui_manager()->AddObserver(
         &observer_);
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    driver_ = new MockSubresourceFilterDriver(contents->GetMainFrame());
-    factory()->SetDriverForFrameHostForTesting(contents->GetMainFrame(),
-                                               base::WrapUnique(driver()));
-  }
-
-  subresource_filter::ContentSubresourceFilterDriverFactory* factory() {
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    return subresource_filter::ContentSubresourceFilterDriverFactory::
-        FromWebContents(contents);
   }
 
   void TearDownOnMainThread() override {
@@ -613,6 +590,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != nullptr;
+  }
+
+  bool WasSubresourceFilterProbeScriptLoaded() {
+    bool script_resource_was_loaded = false;
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents->GetMainFrame(),
+        "domAutomationController.send(!!document.scriptExecuted)",
+        &script_resource_was_loaded));
+    return script_resource_was_loaded;
   }
 
   void IntroduceGetHashDelay(const base::TimeDelta& delay) {
@@ -659,8 +647,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return ui_manager()->hit_report_;
   }
 
-  MockSubresourceFilterDriver* driver() { return driver_; }
-
  protected:
   StrictMock<MockObserver> observer_;
 
@@ -700,9 +686,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   TestSafeBrowsingDatabaseFactory db_factory_;
   TestSBProtocolManagerFactory pm_factory_;
-
-  // Owned by ContentSubresourceFilterFactory.
-  MockSubresourceFilterDriver* driver_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
@@ -920,84 +903,69 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
   EXPECT_FALSE(hit_report().is_subresource);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
-                       SocEngReportingBlacklistNotEmpty) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubresourceFilterEndToEndTest) {
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(
           base::FeatureList::OVERRIDE_ENABLE_FEATURE,
           subresource_filter::kActivationLevelEnabled,
           subresource_filter::kActivationScopeActivationList,
           subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
-  // Tests that when Safe Browsing gets hit which is corresponding to the
-  // SOCIAL_ENGINEERING_ADS threat type, then URL is added to the Subresource
-  // Filter.
-  GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
 
+  subresource_filter::testing::TestRulesetCreator ruleset_creator;
+  subresource_filter::testing::TestRulesetPair test_ruleset_pair;
+  ruleset_creator.CreateRulesetToDisallowURLsWithPathSuffix(
+      "included_script.js", &test_ruleset_pair);
+  subresource_filter::testing::TestRulesetPublisher test_ruleset_publisher;
+  ASSERT_NO_FATAL_FAILURE(
+      test_ruleset_publisher.SetRuleset(test_ruleset_pair.unindexed));
+
+  GURL phishing_url = embedded_test_server()->GetURL(
+      "/subresource_filter/frame_with_included_script.html");
   SBFullHashResult malware_full_hash;
-  GenUrlFullHashResultWithMetadata(bad_url,
-                                   PHISH,
+  GenUrlFullHashResultWithMetadata(phishing_url, PHISH,
                                    ThreatPatternType::SOCIAL_ENGINEERING_ADS,
                                    &malware_full_hash);
-  SetupResponseForUrl(bad_url, malware_full_hash);
+  SetupResponseForUrl(phishing_url, malware_full_hash);
 
-  WebContents* main_contents =
+  // Navigation to a phishing page should trigger an interstitial. If the user
+  // clicks through it, the page load should proceed, but with subresource
+  // filtering activated. This is verified by probing whether `included_script`
+  // that is disallowed above indeed fails to load.
+  WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
-      .Times(1);
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)));
+  ui_test_utils::NavigateToURL(browser(), phishing_url);
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&observer_));
   ASSERT_TRUE(got_hit_report());
+  content::WaitForInterstitialAttach(web_contents);
+  ASSERT_TRUE(ShowingInterstitialPage());
 
-  content::WaitForInterstitialAttach(main_contents);
-  EXPECT_TRUE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(1);
-  InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &web_contents->GetController()));
+  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
   ASSERT_TRUE(interstitial_page);
   interstitial_page->Proceed();
-  content::WaitForInterstitialDetach(main_contents);
+  load_stop_observer.Wait();
+  ASSERT_FALSE(ShowingInterstitialPage());
+  EXPECT_FALSE(WasSubresourceFilterProbeScriptLoaded());
+
+  // Navigate to a page that loads the same script, but is not a phishing page.
+  // The load should be allowed.
+  GURL safe_url = embedded_test_server()->GetURL(
+      "/subresource_filter/frame_with_allowed_script.html");
+  ui_test_utils::NavigateToURL(browser(), safe_url);
   EXPECT_FALSE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-}
+  EXPECT_TRUE(WasSubresourceFilterProbeScriptLoaded());
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
-  // Tests that URLS which doesn't belong to the SOCIAL_ENGINEERING_ADS threat
-  // type aren't seen by the Subresource Filter.
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationLevelEnabled,
-          subresource_filter::kActivationScopeNoSites,
-          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
-
-  GURL bad_url = embedded_test_server()->base_url().Resolve(kMalwarePage);
-
-  SBFullHashResult malware_full_hash;
-  GenUrlFullHashResult(bad_url, MALWARE, &malware_full_hash);
-  SetupResponseForUrl(bad_url, malware_full_hash);
-
-  WebContents* main_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
-      .Times(1);
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  testing::Mock::VerifyAndClearExpectations(driver());
-  ASSERT_TRUE(got_hit_report());
-
-  content::WaitForInterstitialAttach(main_contents);
-  EXPECT_TRUE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  content::WaitForInterstitialDetach(main_contents);
+  // Navigate to the phishing page again -- should be no interstitial shown, but
+  // subresource filtering should still be activated.
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)))
+      .Times(0);
+  ui_test_utils::NavigateToURL(browser(), phishing_url);
   EXPECT_FALSE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
+  EXPECT_FALSE(WasSubresourceFilterProbeScriptLoaded());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
@@ -2135,76 +2103,66 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 }
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
-                       SocEngReportingBlacklistNotEmpty) {
+                       SubresourceFilterEndToEndTest) {
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(
           base::FeatureList::OVERRIDE_ENABLE_FEATURE,
           subresource_filter::kActivationLevelEnabled,
           subresource_filter::kActivationScopeActivationList,
           subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
-  // Tests that when Safe Browsing gets hit which is corresponding to the
-  // SOCIAL_ENGINEERING_ADS threat type, then URL is added to the Subresource
-  // Filter.
-  GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
-  MarkUrlForPhishingUnexpired(bad_url,
+
+  subresource_filter::testing::TestRulesetCreator ruleset_creator;
+  subresource_filter::testing::TestRulesetPair test_ruleset_pair;
+  ruleset_creator.CreateRulesetToDisallowURLsWithPathSuffix(
+      "included_script.js", &test_ruleset_pair);
+  subresource_filter::testing::TestRulesetPublisher test_ruleset_publisher;
+  ASSERT_NO_FATAL_FAILURE(
+      test_ruleset_publisher.SetRuleset(test_ruleset_pair.unindexed));
+
+  GURL phishing_url = embedded_test_server()->GetURL(
+      "/subresource_filter/frame_with_included_script.html");
+  MarkUrlForPhishingUnexpired(phishing_url,
                               ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  WebContents* main_contents =
+  // Navigation to a phishing page should trigger an interstitial. If the user
+  // clicks through it, the page load should proceed, but with subresource
+  // filtering activated. This is verified by probing whether `included_script`
+  // that is disallowed above indeed fails to load.
+  WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
-      .Times(1);
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)));
+  ui_test_utils::NavigateToURL(browser(), phishing_url);
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&observer_));
   ASSERT_TRUE(got_hit_report());
+  content::WaitForInterstitialAttach(web_contents);
+  ASSERT_TRUE(ShowingInterstitialPage());
 
-  content::WaitForInterstitialAttach(main_contents);
-  EXPECT_TRUE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(1);
-  InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &web_contents->GetController()));
+  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
   ASSERT_TRUE(interstitial_page);
   interstitial_page->Proceed();
-  content::WaitForInterstitialDetach(main_contents);
+  load_stop_observer.Wait();
+  ASSERT_FALSE(ShowingInterstitialPage());
+  EXPECT_FALSE(WasSubresourceFilterProbeScriptLoaded());
+
+  // Navigate to a page that loads the same script, but is not a phishing page.
+  // The load should be allowed.
+  GURL safe_url = embedded_test_server()->GetURL(
+      "/subresource_filter/frame_with_allowed_script.html");
+  ui_test_utils::NavigateToURL(browser(), safe_url);
   EXPECT_FALSE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-}
+  EXPECT_TRUE(WasSubresourceFilterProbeScriptLoaded());
 
-IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
-                       SocEngReportingBlacklistEmpty) {
-  // Tests that URLS which doesn't belong to the SOCIAL_ENGINEERING_ADS threat
-  // type aren't seen by the Subresource Filter.
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationLevelEnabled,
-          subresource_filter::kActivationScopeNoSites,
-          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
-
-  GURL bad_url = embedded_test_server()->base_url().Resolve(kMalwarePage);
-  MarkUrlForMalwareUnexpired(bad_url);
-
-  WebContents* main_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
-      .Times(1);
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  ui_test_utils::NavigateToURL(browser(), bad_url);
-  testing::Mock::VerifyAndClearExpectations(driver());
-  ASSERT_TRUE(got_hit_report());
-
-  content::WaitForInterstitialAttach(main_contents);
-  EXPECT_TRUE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForNextCommittedLoad(_, _)).Times(0);
-  InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  content::WaitForInterstitialDetach(main_contents);
+  // Navigate to the phishing page again -- should be no interstitial shown, but
+  // subresource filtering should still be activated.
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(phishing_url)))
+      .Times(0);
+  ui_test_utils::NavigateToURL(browser(), phishing_url);
   EXPECT_FALSE(ShowingInterstitialPage());
-  testing::Mock::VerifyAndClearExpectations(driver());
+  EXPECT_FALSE(WasSubresourceFilterProbeScriptLoaded());
 }
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
