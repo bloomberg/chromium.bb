@@ -2412,7 +2412,8 @@ void WebGL2RenderingContextBase::uniform1fv(
                                                     1, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1fv(location->location(), v.length(),
+  contextGL()->Uniform1fv(location->location(),
+                          srcLength ? srcLength : (v.length() - srcOffset),
                           v.dataMaybeOnStack() + srcOffset);
 }
 
@@ -2426,7 +2427,9 @@ void WebGL2RenderingContextBase::uniform1fv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1fv(location->location(), v.size(), v.data() + srcOffset);
+  contextGL()->Uniform1fv(location->location(),
+                          srcLength ? srcLength : (v.size() - srcOffset),
+                          v.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform2fv(
@@ -2439,8 +2442,10 @@ void WebGL2RenderingContextBase::uniform2fv(
                                                     2, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2fv(location->location(), v.length() >> 1,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform2fv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 1,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform2fv(
@@ -2453,7 +2458,8 @@ void WebGL2RenderingContextBase::uniform2fv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2fv(location->location(), v.size() >> 1,
+  contextGL()->Uniform2fv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) >> 1,
                           v.data() + srcOffset);
 }
 
@@ -2467,8 +2473,10 @@ void WebGL2RenderingContextBase::uniform3fv(
                                                     3, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3fv(location->location(), v.length() / 3,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform3fv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) / 3,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform3fv(
@@ -2481,7 +2489,8 @@ void WebGL2RenderingContextBase::uniform3fv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3fv(location->location(), v.size() / 3,
+  contextGL()->Uniform3fv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) / 3,
                           v.data() + srcOffset);
 }
 
@@ -2495,8 +2504,10 @@ void WebGL2RenderingContextBase::uniform4fv(
                                                     4, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4fv(location->location(), v.length() >> 2,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform4fv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 2,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform4fv(
@@ -2509,7 +2520,8 @@ void WebGL2RenderingContextBase::uniform4fv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4fv(location->location(), v.size() >> 2,
+  contextGL()->Uniform4fv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) >> 2,
                           v.data() + srcOffset);
 }
 
@@ -2523,7 +2535,8 @@ void WebGL2RenderingContextBase::uniform1iv(
                                                   srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1iv(location->location(), v.length(),
+  contextGL()->Uniform1iv(location->location(),
+                          srcLength ? srcLength : (v.length() - srcOffset),
                           v.dataMaybeOnStack() + srcOffset);
 }
 
@@ -2537,7 +2550,9 @@ void WebGL2RenderingContextBase::uniform1iv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1iv(location->location(), v.size(), v.data() + srcOffset);
+  contextGL()->Uniform1iv(location->location(),
+                          srcLength ? srcLength : (v.size() - srcOffset),
+                          v.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform2iv(
@@ -2550,8 +2565,10 @@ void WebGL2RenderingContextBase::uniform2iv(
                                                   srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2iv(location->location(), v.length() >> 1,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform2iv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 1,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform2iv(
@@ -2564,7 +2581,8 @@ void WebGL2RenderingContextBase::uniform2iv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2iv(location->location(), v.size() >> 1,
+  contextGL()->Uniform2iv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) >> 1,
                           v.data() + srcOffset);
 }
 
@@ -2578,8 +2596,10 @@ void WebGL2RenderingContextBase::uniform3iv(
                                                   srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3iv(location->location(), v.length() / 3,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform3iv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) / 3,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform3iv(
@@ -2592,7 +2612,8 @@ void WebGL2RenderingContextBase::uniform3iv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3iv(location->location(), v.size() / 3,
+  contextGL()->Uniform3iv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) / 3,
                           v.data() + srcOffset);
 }
 
@@ -2606,8 +2627,10 @@ void WebGL2RenderingContextBase::uniform4iv(
                                                   srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4iv(location->location(), v.length() >> 2,
-                          v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform4iv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 2,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform4iv(
@@ -2620,7 +2643,8 @@ void WebGL2RenderingContextBase::uniform4iv(
                                  srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4iv(location->location(), v.size() >> 2,
+  contextGL()->Uniform4iv(location->location(),
+                          (srcLength ? srcLength : (v.size() - srcOffset)) >> 2,
                           v.data() + srcOffset);
 }
 
@@ -2634,7 +2658,8 @@ void WebGL2RenderingContextBase::uniform1uiv(
                                                    1, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1uiv(location->location(), v.length(),
+  contextGL()->Uniform1uiv(location->location(),
+                           srcLength ? srcLength : (v.length() - srcOffset),
                            v.dataMaybeOnStack() + srcOffset);
 }
 
@@ -2648,7 +2673,8 @@ void WebGL2RenderingContextBase::uniform1uiv(
                                  value.size(), 1, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform1uiv(location->location(), value.size(),
+  contextGL()->Uniform1uiv(location->location(),
+                           srcLength ? srcLength : (value.size() - srcOffset),
                            value.data() + srcOffset);
 }
 
@@ -2662,8 +2688,10 @@ void WebGL2RenderingContextBase::uniform2uiv(
                                                    2, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2uiv(location->location(), v.length() >> 1,
-                           v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform2uiv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 1,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform2uiv(
@@ -2676,8 +2704,10 @@ void WebGL2RenderingContextBase::uniform2uiv(
                                  value.size(), 2, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform2uiv(location->location(), value.size() / 2,
-                           value.data() + srcOffset);
+  contextGL()->Uniform2uiv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) >> 1,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform3uiv(
@@ -2690,8 +2720,10 @@ void WebGL2RenderingContextBase::uniform3uiv(
                                                    3, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3uiv(location->location(), v.length() / 3,
-                           v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform3uiv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) / 3,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform3uiv(
@@ -2704,8 +2736,10 @@ void WebGL2RenderingContextBase::uniform3uiv(
                                  value.size(), 3, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform3uiv(location->location(), value.size() / 3,
-                           value.data() + srcOffset);
+  contextGL()->Uniform3uiv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) / 3,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform4uiv(
@@ -2718,8 +2752,10 @@ void WebGL2RenderingContextBase::uniform4uiv(
                                                    4, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4uiv(location->location(), v.length() >> 2,
-                           v.dataMaybeOnStack() + srcOffset);
+  contextGL()->Uniform4uiv(
+      location->location(),
+      (srcLength ? srcLength : (v.length() - srcOffset)) >> 2,
+      v.dataMaybeOnStack() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform4uiv(
@@ -2732,8 +2768,10 @@ void WebGL2RenderingContextBase::uniform4uiv(
                                  value.size(), 4, srcOffset, srcLength))
     return;
 
-  contextGL()->Uniform4uiv(location->location(), value.size() / 4,
-                           value.data() + srcOffset);
+  contextGL()->Uniform4uiv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) >> 2,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2fv(
@@ -2746,8 +2784,10 @@ void WebGL2RenderingContextBase::uniformMatrix2fv(
       !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose,
                                        v, 4, srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix2fv(location->location(), v->length() >> 2,
-                                transpose, v->data() + srcOffset);
+  contextGL()->UniformMatrix2fv(
+      location->location(),
+      (srcLength ? srcLength : (v->length() - srcOffset)) >> 2, transpose,
+      v->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2fv(
@@ -2761,8 +2801,10 @@ void WebGL2RenderingContextBase::uniformMatrix2fv(
                                        v.data(), v.size(), 4, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix2fv(location->location(), v.size() >> 2, transpose,
-                                v.data() + srcOffset);
+  contextGL()->UniformMatrix2fv(
+      location->location(),
+      (srcLength ? srcLength : (v.size() - srcOffset)) >> 2, transpose,
+      v.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3fv(
@@ -2775,8 +2817,10 @@ void WebGL2RenderingContextBase::uniformMatrix3fv(
       !validateUniformMatrixParameters("uniformMatrix3fv", location, transpose,
                                        v, 9, srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix3fv(location->location(), v->length() / 9,
-                                transpose, v->data() + srcOffset);
+  contextGL()->UniformMatrix3fv(
+      location->location(),
+      (srcLength ? srcLength : (v->length() - srcOffset)) / 9, transpose,
+      v->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3fv(
@@ -2790,8 +2834,10 @@ void WebGL2RenderingContextBase::uniformMatrix3fv(
                                        v.data(), v.size(), 9, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix3fv(location->location(), v.size() / 9, transpose,
-                                v.data() + srcOffset);
+  contextGL()->UniformMatrix3fv(
+      location->location(),
+      (srcLength ? srcLength : (v.size() - srcOffset)) / 9, transpose,
+      v.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4fv(
@@ -2804,8 +2850,10 @@ void WebGL2RenderingContextBase::uniformMatrix4fv(
       !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose,
                                        v, 16, srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix4fv(location->location(), v->length() >> 4,
-                                transpose, v->data() + srcOffset);
+  contextGL()->UniformMatrix4fv(
+      location->location(),
+      (srcLength ? srcLength : (v->length() - srcOffset)) >> 4, transpose,
+      v->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4fv(
@@ -2819,8 +2867,10 @@ void WebGL2RenderingContextBase::uniformMatrix4fv(
                                        v.data(), v.size(), 16, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix4fv(location->location(), v.size() >> 4, transpose,
-                                v.data() + srcOffset);
+  contextGL()->UniformMatrix4fv(
+      location->location(),
+      (srcLength ? srcLength : (v.size() - srcOffset)) >> 4, transpose,
+      v.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x3fv(
@@ -2834,8 +2884,10 @@ void WebGL2RenderingContextBase::uniformMatrix2x3fv(
                                        transpose, value, 6, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix2x3fv(location->location(), value->length() / 6,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix2x3fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) / 6, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x3fv(
@@ -2849,8 +2901,10 @@ void WebGL2RenderingContextBase::uniformMatrix2x3fv(
                                        transpose, value.data(), value.size(), 6,
                                        srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix2x3fv(location->location(), value.size() / 6,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix2x3fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) / 6, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x2fv(
@@ -2864,8 +2918,10 @@ void WebGL2RenderingContextBase::uniformMatrix3x2fv(
                                        transpose, value, 6, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix3x2fv(location->location(), value->length() / 6,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix3x2fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) / 6, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x2fv(
@@ -2879,8 +2935,10 @@ void WebGL2RenderingContextBase::uniformMatrix3x2fv(
                                        transpose, value.data(), value.size(), 6,
                                        srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix3x2fv(location->location(), value.size() / 6,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix3x2fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) / 6, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x4fv(
@@ -2894,8 +2952,10 @@ void WebGL2RenderingContextBase::uniformMatrix2x4fv(
                                        transpose, value, 8, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix2x4fv(location->location(), value->length() / 8,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix2x4fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) >> 3, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix2x4fv(
@@ -2909,8 +2969,10 @@ void WebGL2RenderingContextBase::uniformMatrix2x4fv(
                                        transpose, value.data(), value.size(), 8,
                                        srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix2x4fv(location->location(), value.size() / 8,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix2x4fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) >> 3, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x2fv(
@@ -2924,8 +2986,10 @@ void WebGL2RenderingContextBase::uniformMatrix4x2fv(
                                        transpose, value, 8, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix4x2fv(location->location(), value->length() / 8,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix4x2fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) >> 3, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x2fv(
@@ -2939,8 +3003,10 @@ void WebGL2RenderingContextBase::uniformMatrix4x2fv(
                                        transpose, value.data(), value.size(), 8,
                                        srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix4x2fv(location->location(), value.size() / 8,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix4x2fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) >> 3, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x4fv(
@@ -2954,8 +3020,10 @@ void WebGL2RenderingContextBase::uniformMatrix3x4fv(
                                        transpose, value, 12, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix3x4fv(location->location(), value->length() / 12,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix3x4fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) / 12, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix3x4fv(
@@ -2969,8 +3037,10 @@ void WebGL2RenderingContextBase::uniformMatrix3x4fv(
                                        transpose, value.data(), value.size(),
                                        12, srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix3x4fv(location->location(), value.size() / 12,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix3x4fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) / 12, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x3fv(
@@ -2984,8 +3054,10 @@ void WebGL2RenderingContextBase::uniformMatrix4x3fv(
                                        transpose, value, 12, srcOffset,
                                        srcLength))
     return;
-  contextGL()->UniformMatrix4x3fv(location->location(), value->length() / 12,
-                                  transpose, value->data() + srcOffset);
+  contextGL()->UniformMatrix4x3fv(
+      location->location(),
+      (srcLength ? srcLength : (value->length() - srcOffset)) / 12, transpose,
+      value->data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniformMatrix4x3fv(
@@ -2999,8 +3071,10 @@ void WebGL2RenderingContextBase::uniformMatrix4x3fv(
                                        transpose, value.data(), value.size(),
                                        12, srcOffset, srcLength))
     return;
-  contextGL()->UniformMatrix4x3fv(location->location(), value.size() / 12,
-                                  transpose, value.data() + srcOffset);
+  contextGL()->UniformMatrix4x3fv(
+      location->location(),
+      (srcLength ? srcLength : (value.size() - srcOffset)) / 12, transpose,
+      value.data() + srcOffset);
 }
 
 void WebGL2RenderingContextBase::uniform1fv(
