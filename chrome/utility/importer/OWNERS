@@ -6,3 +6,5 @@ per-file nss_*=engedy@chromium.org
 
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
+
+# COMPONENT: UI>Browser>Import
