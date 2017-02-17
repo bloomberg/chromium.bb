@@ -34,6 +34,8 @@ namespace device {
 typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
 
+class UsbDeviceImpl;
+
 class UsbServiceImpl :
 #if defined(OS_WIN)
     public DeviceMonitorWin::Observer,

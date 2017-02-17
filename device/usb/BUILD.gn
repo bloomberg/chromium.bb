@@ -34,6 +34,8 @@ static_library("usb") {
     "usb_device_handle_android.h",
     "usb_device_linux.cc",
     "usb_device_linux.h",
+    "usb_device_win.cc",
+    "usb_device_win.h",
     "usb_endpoint_android.cc",
     "usb_endpoint_android.h",
     "usb_ids.cc",
@@ -87,6 +89,10 @@ static_library("usb") {
     ]
 
     deps += [ "//third_party/libusb" ]
+  }
+
+  if (is_win) {
+    libs = [ "setupapi.lib" ]
   }
 
   if (is_android || is_chromeos || is_linux) {

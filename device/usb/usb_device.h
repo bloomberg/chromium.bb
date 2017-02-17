@@ -96,6 +96,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  protected:
   friend class UsbService;
 
+  UsbDevice();
   UsbDevice(const UsbDeviceDescriptor& descriptor,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
@@ -134,6 +135,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   friend class UsbServiceAndroid;
   friend class UsbServiceImpl;
   friend class UsbServiceLinux;
+  friend class UsbServiceWin;
 
   void OnDisconnect();
   void HandleClosed(UsbDeviceHandle* handle);

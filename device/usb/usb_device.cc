@@ -14,6 +14,8 @@ UsbDevice::Observer::~Observer() {}
 
 void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
 
+UsbDevice::UsbDevice() : guid_(base::GenerateGUID()) {}
+
 UsbDevice::UsbDevice(const UsbDeviceDescriptor& descriptor,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
@@ -47,8 +49,7 @@ UsbDevice::UsbDevice(uint16_t usb_version,
   descriptor_.device_version = device_version;
 }
 
-UsbDevice::~UsbDevice() {
-}
+UsbDevice::~UsbDevice() {}
 
 void UsbDevice::CheckUsbAccess(const ResultCallback& callback) {
   // By default assume that access to the device is allowed. This is implemented
