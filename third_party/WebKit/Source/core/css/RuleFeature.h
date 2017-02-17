@@ -280,8 +280,6 @@ class CORE_EXPORT RuleFeatureSet {
       const InvalidationSetFeatures& siblingFeatures,
       const InvalidationSetFeatures& descendantFeatures);
 
-  void addClassToInvalidationSet(const AtomicString& className, Element&);
-
   FeatureMetadata m_metadata;
   InvalidationSetMap m_classInvalidationSets;
   InvalidationSetMap m_attributeInvalidationSets;
