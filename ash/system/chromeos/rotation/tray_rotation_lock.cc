@@ -4,7 +4,6 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -16,11 +15,9 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -161,7 +158,7 @@ void RotationLockDefaultView::OnRotationLockChanged(bool rotation_locked) {
 
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
     : TrayImageItem(system_tray,
-                    IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED,
+                    kSystemTrayRotationLockLockedIcon,
                     UMA_ROTATION_LOCK) {
   WmShell::Get()->AddShellObserver(this);
 }
@@ -177,7 +174,7 @@ void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
 views::View* TrayRotationLock::CreateDefaultView(LoginStatus status) {
   if (OnPrimaryDisplay())
     return new tray::RotationLockDefaultView(this);
-  return NULL;
+  return nullptr;
 }
 
 void TrayRotationLock::OnMaximizeModeStarted() {

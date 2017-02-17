@@ -14,13 +14,19 @@ namespace views {
 class ImageView;
 }
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace ash {
 class TrayItemView;
 
 // A system tray item that uses an image as its "tray view" in the status area.
 class ASH_EXPORT TrayImageItem : public SystemTrayItem {
  public:
-  TrayImageItem(SystemTray* system_tray, int resource_id, UmaType uma_type);
+  TrayImageItem(SystemTray* system_tray,
+                const gfx::VectorIcon& icon,
+                UmaType uma_type);
   ~TrayImageItem() override;
 
   views::View* tray_view();
@@ -38,24 +44,15 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
-  // Sets the color of the material design icon to |color|.
+  // Sets the color of the icon to |color|.
   void SetIconColor(SkColor color);
-
-  // Changes the icon of the tray-view to the specified resource.
-  // TODO(tdanderson): This is only used for non-material design, so remove it
-  // when material design is the default. See crbug.com/625692.
-  void SetImageFromResourceId(int resource_id);
 
  private:
   // Sets the current icon on |tray_view_|'s ImageView.
   void UpdateImageOnImageView();
 
-  // The resource ID for the non-material design icon in the tray.
-  // TODO(tdanderson): This is only used for non-material design, so remove it
-  // when material design is the default. See crbug.com/625692.
-  int resource_id_;
-
-  // The color of the material design icon in the tray.
+  // The icon and its current color.
+  const gfx::VectorIcon& icon_;
   SkColor icon_color_;
 
   // The image view in the tray.

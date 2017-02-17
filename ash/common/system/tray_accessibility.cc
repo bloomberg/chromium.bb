@@ -86,14 +86,8 @@ class DefaultAccessibilityView : public TrayItemMore {
  public:
   explicit DefaultAccessibilityView(SystemTrayItem* owner)
       : TrayItemMore(owner, true) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    if (!MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      // The icon doesn't change in non-md.
-      SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
-                    .ToImageSkia());
-    }
     base::string16 label =
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);
     SetAccessibleName(label);
     set_id(test::kAccessibilityTrayItemViewId);
@@ -105,10 +99,6 @@ class DefaultAccessibilityView : public TrayItemMore {
   // TrayItemMore:
   void UpdateStyle() override {
     TrayItemMore::UpdateStyle();
-
-    if (!UseMdMenu())
-      return;
-
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
     SetImage(gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon,
                                    style->GetIconColor()));
@@ -350,7 +340,7 @@ void AccessibilityDetailedView::ShowHelp() {
 
 TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
     : TrayImageItem(system_tray,
-                    IDR_AURA_UBER_TRAY_ACCESSIBILITY,
+                    kSystemTrayAccessibilityIcon,
                     UMA_ACCESSIBILITY),
       default_(NULL),
       detailed_popup_(NULL),

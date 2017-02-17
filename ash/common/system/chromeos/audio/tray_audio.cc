@@ -13,7 +13,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "grit/ash_resources.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -27,7 +26,7 @@ using system::TrayAudioDelegate;
 using system::TrayAudioDelegateChromeOs;
 
 TrayAudio::TrayAudio(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE, UMA_AUDIO),
+    : TrayImageItem(system_tray, kSystemTrayVolumeMuteIcon, UMA_AUDIO),
       audio_delegate_(new TrayAudioDelegateChromeOs()),
       volume_view_(nullptr),
       pop_up_volume_view_(false),
