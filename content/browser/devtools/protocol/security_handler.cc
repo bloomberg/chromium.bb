@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -55,6 +56,15 @@ void AddExplanations(
 }
 
 }  // namespace
+
+// static
+SecurityHandler* SecurityHandler::FromAgentHost(DevToolsAgentHostImpl* host) {
+  DevToolsSession* session = DevToolsDomainHandler::GetFirstSession(host);
+  if (!session)
+    return nullptr;
+  return static_cast<SecurityHandler*>(
+      session->GetHandlerByName(Security::Metainfo::domainName));
+}
 
 SecurityHandler::SecurityHandler()
     : DevToolsDomainHandler(Security::Metainfo::domainName),

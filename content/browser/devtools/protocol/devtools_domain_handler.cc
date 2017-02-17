@@ -4,10 +4,17 @@
 
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/protocol.h"
 
 namespace content {
 namespace protocol {
+
+// static
+DevToolsSession* DevToolsDomainHandler::GetFirstSession(
+    DevToolsAgentHostImpl* host) {
+  return host->session();
+}
 
 DevToolsDomainHandler::DevToolsDomainHandler(const std::string& name)
     : name_(name) {

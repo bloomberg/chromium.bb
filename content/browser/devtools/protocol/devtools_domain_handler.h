@@ -9,6 +9,8 @@
 
 namespace content {
 
+class DevToolsSession;
+class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -23,6 +25,9 @@ class DevToolsDomainHandler {
   virtual Response Disable();
 
   const std::string& name() const { return name_; }
+
+ protected:
+  static DevToolsSession* GetFirstSession(DevToolsAgentHostImpl* host);
 
  private:
   std::string name_;

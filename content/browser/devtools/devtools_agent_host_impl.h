@@ -20,6 +20,10 @@ namespace content {
 class BrowserContext;
 class DevToolsSession;
 
+namespace protocol {
+class DevToolsDomainHandler;
+}
+
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
@@ -67,6 +71,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
  private:
   friend class DevToolsAgentHost; // for static methods
+  friend class protocol::DevToolsDomainHandler;
   bool InnerAttachClient(DevToolsAgentHostClient* client, bool force);
   void InnerDetachClient();
   void NotifyAttached();

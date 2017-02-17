@@ -12,6 +12,7 @@
 
 namespace content {
 
+class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -25,6 +26,8 @@ class SecurityHandler : public DevToolsDomainHandler,
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+
+  static SecurityHandler* FromAgentHost(DevToolsAgentHostImpl* host);
 
   Response Enable() override;
   Response Disable() override;
