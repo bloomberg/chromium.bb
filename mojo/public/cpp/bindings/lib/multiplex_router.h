@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -242,8 +243,8 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   base::ThreadChecker thread_checker_;
 
   // Protects the following members.
-  // Sets to nullptr in Config::SINGLE_INTERFACE* mode.
-  std::unique_ptr<base::Lock> lock_;
+  // Not set in Config::SINGLE_INTERFACE* mode.
+  mutable base::Optional<base::Lock> lock_;
   PipeControlMessageHandler control_message_handler_;
 
   // NOTE: It is unsafe to call into this object while holding |lock_|.

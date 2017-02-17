@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
@@ -29,7 +28,7 @@ class ScopedInterfaceEndpointHandle::State
     DCHECK(!lock_);
     DCHECK(!pending_association_);
 
-    lock_ = base::MakeUnique<base::Lock>();
+    lock_.emplace();
     pending_association_ = true;
     peer_state_ = std::move(peer);
   }
@@ -40,7 +39,7 @@ class ScopedInterfaceEndpointHandle::State
     scoped_refptr<State> cached_peer_state;
 
     {
-      internal::MayAutoLock locker(lock_.get());
+      internal::MayAutoLock locker(&lock_);
 
       if (!association_event_handler_.is_null()) {
         association_event_handler_.Reset();
@@ -93,7 +92,7 @@ class ScopedInterfaceEndpointHandle::State
   }
 
   void SetAssociationEventHandler(AssociationEventCallback handler) {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
 
     if (!pending_association_ && !IsValidInterfaceId(id_))
       return;
@@ -125,7 +124,7 @@ class ScopedInterfaceEndpointHandle::State
       scoped_refptr<AssociatedGroupController> peer_group_controller) {
     scoped_refptr<State> cached_peer_state;
     {
-      internal::MayAutoLock locker(lock_.get());
+      internal::MayAutoLock locker(&lock_);
 
       DCHECK(pending_association_);
       pending_association_ = false;
@@ -140,27 +139,27 @@ class ScopedInterfaceEndpointHandle::State
   }
 
   bool is_valid() const {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
     return pending_association_ || IsValidInterfaceId(id_);
   }
 
   bool pending_association() const {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
     return pending_association_;
   }
 
   InterfaceId id() const {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
     return id_;
   }
 
   AssociatedGroupController* group_controller() const {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
     return group_controller_.get();
   }
 
   const base::Optional<DisconnectReason>& disconnect_reason() const {
-    internal::MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(&lock_);
     return disconnect_reason_;
   }
 
@@ -177,7 +176,7 @@ class ScopedInterfaceEndpointHandle::State
                     scoped_refptr<AssociatedGroupController> group_controller) {
     AssociationEventCallback handler;
     {
-      internal::MayAutoLock locker(lock_.get());
+      internal::MayAutoLock locker(&lock_);
 
       // There may be race between Close() of endpoint A and
       // NotifyPeerAssociation() of endpoint A_peer on different threads.
@@ -213,7 +212,7 @@ class ScopedInterfaceEndpointHandle::State
       const base::Optional<DisconnectReason>& reason) {
     AssociationEventCallback handler;
     {
-      internal::MayAutoLock locker(lock_.get());
+      internal::MayAutoLock locker(&lock_);
 
       // There may be race between Close()/NotifyPeerAssociation() of endpoint
       // A and Close() of endpoint A_peer on different threads.
@@ -251,7 +250,7 @@ class ScopedInterfaceEndpointHandle::State
     AssociationEventCallback handler;
 
     {
-      internal::MayAutoLock locker(lock_.get());
+      internal::MayAutoLock locker(&lock_);
       if (posted_to_runner == runner_) {
         runner_ = nullptr;
         handler = std::move(association_event_handler_);
@@ -264,7 +263,7 @@ class ScopedInterfaceEndpointHandle::State
 
   // Protects the following members if the handle is initially set to pending
   // association.
-  std::unique_ptr<base::Lock> lock_;
+  mutable base::Optional<base::Lock> lock_;
 
   bool pending_association_ = false;
   base::Optional<DisconnectReason> disconnect_reason_;
