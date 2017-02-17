@@ -13,6 +13,10 @@ When modifying cq.proto, consider adding checks to validator in
 [https://chrome-internal.googlesource.com/infra/infra_internal/+/master/appengine/commit_queue/src/commitqueue/validate.go]().
 
 
+## Updating depot_tools with the copy of this.
+
+    make update-depot-tools
+
 ## Generation of Python and Go bindings
 
 ### tl;dr

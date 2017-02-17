@@ -45,10 +45,10 @@ message Config {
   // source repository is not supported by luci-config (e.g. GitHub).
   optional string git_repo_url = 10;
 
-  // Target ref to commit to. This can be used to specify a different ref than
-  // the one where the luci config is located. This is useful, e.g. for projects
-  // that use gnumbd where CQ should commit into a pending ref.
-  optional string target_ref = 11;
+  // DO NOT USE. Kept here for validator error messages
+  // and internal CQ usage (and insanity).
+  // TODO(tandrii): clean insanity internally and update this message.
+  optional string target_ref = 11 [deprecated = true];
 
   // DO NOT USE. Kept here for validator error messages.
   optional string svn_repo_url = 12 [deprecated = true];
@@ -104,12 +104,18 @@ message Gerrit {
 // describes types of verifiers that should be applied to each CL and their
 // parameters.
 message Verifiers {
-  // This verifier is used to ensure that an LGTM was posted to the code review
-  // site from a valid project committer.
-  // It is ignored in case of Gerrit, and you should not declare it unless you
-  // use both Gerrit and Rietveld for codereview. Unlike Rietveld, Gerrit has
-  // its own ACL system which should be set up by project admins.
+  // [Rietveld only] This verifier is used to ensure that an LGTM was posted to
+  // the code review site from a valid project committer. It also validates
+  // ability of non-committers to trigger CQ, which for Gerrit is done by
+  // GerritCQAbilityVerifier.
   optional ReviewerLgtmVerifier reviewer_lgtm = 1;
+
+  // [Gerrit only] GerritCQAbilityVerifier ensures that a user who triggered
+  // this CQ attempt has actually rights to do so based on 3 factors:
+  //  * membership of the user in committers & dryrunners group,
+  //  * the state of CL/patchset on which CQ is triggered,
+  //  * relationship of the user to the CL.
+  optional GerritCQAbilityVerifier gerrit_cq_ability = 5;
 
   // This verifier is used to check tree status before committing a CL. If the
   // tree is closed, then the verifier will wait until it is reopened.
@@ -144,6 +150,19 @@ message Verifiers {
 
     // Optional, but recommended. Name of the chrome-infra-auth group,
     // which contains the list of identities authorized to trigger CQ dry run.
+    // This is usually the same group as tryjob-access.
+    optional string dry_run_access_list = 4;
+  }
+
+  message GerritCQAbilityVerifier {
+    // Required. Name of the chrome-infra-auth group, which contains the list of
+    // identities authorized to trigger CQ runs on any CLs in this project.
+    optional string committer_list = 1;
+
+    // Optional, but strongly recommended. Name of the chrome-infra-auth group,
+    // which contains the list of identities authorized to trigger CQ dry run
+    // on Gerrit CLs they own (not to be confused with OWNER files) even if CL
+    // hasn't been approved.
     // This is usually the same group as tryjob-access.
     optional string dry_run_access_list = 4;
   }
