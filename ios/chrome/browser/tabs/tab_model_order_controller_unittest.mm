@@ -86,10 +86,10 @@ class TabModelOrderControllerTest : public PlatformTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   base::scoped_nsobject<SessionWindowIOS> sessionWindow_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  base::mac::ScopedNSAutoreleasePool pool_;
   base::scoped_nsobject<Tab> dummy_tab_;
   base::scoped_nsobject<TabModelOrderController> orderController_;
   base::scoped_nsobject<TabModel> tabModel_;
-  base::mac::ScopedNSAutoreleasePool pool_;
 };
 
 // Verifies that tabs added in the background (e.g. from context menu -> Open in

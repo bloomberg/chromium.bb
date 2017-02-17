@@ -102,6 +102,7 @@ source_set("tabs_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
     "//net",
     "//ui/base",
@@ -127,6 +128,7 @@ source_set("tabs_internal_arc") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
   ]
   libs = [ "Foundation.framework" ]
