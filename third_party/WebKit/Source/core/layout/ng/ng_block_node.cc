@@ -244,6 +244,13 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   intrinsic_logical_height -= border_and_padding.BlockSum();
   layout_box_->setIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
+  // We may still have unpositioned floats when we reach the root box.
+  if (!layout_box_->parent()) {
+    for (const auto& floating_object : fragment_->PositionedFloats()) {
+      FloatingObjectPositionedUpdated(floating_object, layout_box_);
+    }
+  }
+
   // TODO(layout-dev): Currently we are not actually performing layout on
   // inline children. For now just clear the needsLayout bit so that we can
   // run unittests.

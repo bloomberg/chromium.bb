@@ -411,12 +411,21 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
   // Margins collapsing:
   //   Do not collapse margins between parent and its child if there is
   //   border/padding between them.
-  if (border_and_padding_.block_start ||
-      ConstraintSpace().IsNewFormattingContext()) {
+  if (border_and_padding_.block_start) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    builder_->SetBfcOffset(curr_bfc_offset_);
+    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
     curr_margin_strut_ = NGMarginStrut();
   }
+
+  // Block that establishes a new BFC knows its BFC offset == {}
+  // If a new formatting context hits the if branch above then the BFC offset is
+  // still {} as the margin strut from the constraint space must also be empty.
+  if (ConstraintSpace().IsNewFormattingContext()) {
+    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    DCHECK_EQ(builder_->BfcOffset().value(), NGLogicalOffset());
+    DCHECK_EQ(curr_margin_strut_, NGMarginStrut());
+  }
+
   curr_bfc_offset_.block_offset += content_size_;
 
   while (current_child_) {
@@ -468,7 +477,7 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
   // Layout our absolute and fixed positioned children.
   NGOutOfFlowLayoutPart(Style(), builder_.get()).Run();
 
-  // Non empty blocks always know their position in space:
+  // Non-empty blocks always know their position in space:
   if (block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
@@ -515,8 +524,6 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
   NGBoxFragment fragment(ConstraintSpace().WritingMode(),
                          physical_fragment.get());
 
-  if (!physical_fragment->UnpositionedFloats().isEmpty())
-    DCHECK(!builder_->BfcOffset()) << "Parent BFC offset shouldn't be set here";
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
   // empty and therefore couldn't determine its position in space.
@@ -553,6 +560,15 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
     // Fragment that knows its offset can be used to set parent's BFC position.
     curr_bfc_offset_.block_offset = fragment.BfcOffset().value().block_offset;
     bfc_offset = curr_bfc_offset_;
+  } else if (builder_->BfcOffset()) {
+    // Fragment doesn't know its offset but we can still calculate its BFC
+    // position because the parent fragment's BFC is known.
+    // Example:
+    // BFC Offset is known here because of the padding.
+    // <div style="padding: 1px">
+    //   <div id="empty-div" style="margins: 1px"></div>
+    bfc_offset = curr_bfc_offset_;
+    bfc_offset.value().block_offset += curr_margin_strut_.Sum();
   }
   if (bfc_offset) {
     UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
@@ -570,7 +586,15 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
   curr_margin_strut_ = fragment.EndMarginStrut();
   curr_margin_strut_.Append(curr_child_margins_.block_end);
 
-  content_size_ = fragment.BlockSize() + logical_offset.block_offset;
+  // Only modify content_size if BlockSize is not empty. It's needed to prevent
+  // the situation when logical_offset is included in content_size for empty
+  // blocks. Example:
+  //   <div style="overflow:hidden">
+  //     <div style="margin-top: 8px"></div>
+  //     <div style="margin-top: 10px"></div>
+  //   </div>
+  if (fragment.BlockSize())
+    content_size_ = fragment.BlockSize() + logical_offset.block_offset;
   max_inline_size_ =
       std::max(max_inline_size_, fragment.InlineSize() +
                                      curr_child_margins_.InlineSum() +
@@ -788,22 +812,22 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
                       builder_->BfcOffset().value(), &content_size_);
   }
 
-  // Append the current margin strut with child's block start margin.
-  // Non empty border/padding use cases are handled inside of the child's
-  // layout.
-  curr_margin_strut_.Append(curr_child_margins_.block_start);
-  space_builder_->SetMarginStrut(curr_margin_strut_);
-
   // Set estimated BFC offset to the next child's constraint space.
   curr_bfc_offset_ = builder_->BfcOffset() ? builder_->BfcOffset().value()
                                            : ConstraintSpace().BfcOffset();
   curr_bfc_offset_.block_offset += content_size_;
   curr_bfc_offset_.inline_offset += border_and_padding_.inline_start;
 
-  // Floats margins are not included in child's CS because they are used to
-  // calculate floating exclusions.
+  // Floats margins are not included in child's CS because
+  // 1) Floats do not participate in margins collapsing
+  // 2) Floats margins are used separately to calculate floating exclusions.
   if (!CurrentChildStyle().isFloating()) {
     curr_bfc_offset_.inline_offset += curr_child_margins_.inline_start;
+    // Append the current margin strut with child's block start margin.
+    // Non empty border/padding use cases are handled inside of the child's
+    // layout.
+    curr_margin_strut_.Append(curr_child_margins_.block_start);
+    space_builder_->SetMarginStrut(curr_margin_strut_);
   }
 
   space_builder_->SetBfcOffset(curr_bfc_offset_);

@@ -66,6 +66,11 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     return offset_.top;
   }
 
+  NGPhysicalOffset Offset() const {
+    DCHECK(is_placed_);
+    return offset_;
+  }
+
   // Should only be used by the parent fragement's layout.
   void SetOffset(NGPhysicalOffset offset) {
     DCHECK(!is_placed_);

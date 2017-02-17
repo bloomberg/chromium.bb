@@ -171,6 +171,10 @@ NGPhysicalOffset& NGPhysicalOffset::operator-=(const NGPhysicalOffset& other) {
   return *this;
 }
 
+bool NGPhysicalOffset::operator==(const NGPhysicalOffset& other) const {
+  return other.left == left && other.top == top;
+}
+
 bool NGBoxStrut::IsEmpty() const {
   return *this == NGBoxStrut();
 }

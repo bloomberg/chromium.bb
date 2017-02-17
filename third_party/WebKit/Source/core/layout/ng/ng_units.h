@@ -100,7 +100,7 @@ CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
 
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.
-struct NGPhysicalOffset {
+struct CORE_EXPORT NGPhysicalOffset {
   NGPhysicalOffset() {}
   NGPhysicalOffset(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
 
@@ -112,6 +112,8 @@ struct NGPhysicalOffset {
 
   NGPhysicalOffset operator-(const NGPhysicalOffset& other) const;
   NGPhysicalOffset& operator-=(const NGPhysicalOffset& other);
+
+  bool operator==(const NGPhysicalOffset& other) const;
 
   String ToString() const {
     return String::format("%dx%d", left.toInt(), top.toInt());

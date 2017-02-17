@@ -2006,5 +2006,64 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
+// Verifies that we position empty blocks and floats correctly inside of the
+// block that establishes new BFC.
+TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #container {
+        overflow: hidden;
+      }
+      #empty-block1 {
+        margin: 8px;
+      }
+      #left-float {
+        float: left;
+        background: red;
+        height: 20px;
+        width: 10px;
+        margin: 15px;
+      }
+      #empty-block2 {
+        margin-top: 50px;
+      }
+    </style>
+    <div id="container">
+      <div id="left-float"></div>
+      <div id="empty-block1"></div>
+      <div id="empty-block2"></div>
+    </div>
+  )HTML");
+  Element* body = document().getElementsByTagName("body")->item(0);
+  auto& floating_objects =
+      const_cast<FloatingObjects*>(
+          toLayoutBlockFlow(body->layoutObject())->floatingObjects())
+          ->mutableSet();
+  ASSERT_EQ(1UL, floating_objects.size());
+  auto floating_object = floating_objects.takeFirst();
+  // left-float's margin = 15.
+  EXPECT_THAT(LayoutUnit(15), floating_object->x());
+  EXPECT_THAT(LayoutUnit(15), floating_object->y());
+
+  RefPtr<const NGPhysicalBoxFragment> html_fragment;
+  std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
+      document().getElementsByTagName("html")->item(0));
+  auto* body_fragment =
+      toNGPhysicalBoxFragment(html_fragment->Children()[0].get());
+  auto* container_fragment =
+      toNGPhysicalBoxFragment(body_fragment->Children()[0].get());
+  auto* empty_block1 =
+      toNGPhysicalBoxFragment(container_fragment->Children()[0].get());
+  // empty-block1's margin == 8
+  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(8), LayoutUnit(8)),
+              empty_block1->Offset());
+
+  auto* empty_block2 =
+      toNGPhysicalBoxFragment(container_fragment->Children()[1].get());
+  // empty-block2's margin == 50
+  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(50)),
+              empty_block2->Offset());
+}
+
 }  // namespace
 }  // namespace blink

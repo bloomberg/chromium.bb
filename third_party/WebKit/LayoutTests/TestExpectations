@@ -489,8 +489,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/white-space-pre-wraps.html [ Skip ]
 
 #### fast/block/margin-collapse
-#### Passed: 7
-#### Skipped: 81
+#### Passed: 6
+#### Skipped: 82
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/003.html [ Skip ]
@@ -574,6 +574,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/table-beside-float
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-container.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-change-composited-scrolling.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
 #### Passed: 56
