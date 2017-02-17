@@ -1,66 +1,53 @@
-<!DOCTYPE html>
 <html>
-    <head>
-        <style>
-.hide {display:none}
-.row {display:table-row}
-.cell {display:table-cell; padding:10px}
-#test-output {display:table}
-label {display:row}
-        </style>
-    </head>
-    <body>
+<head>
+<style>
+    .hide {display:none}
+    .row {display:table-row}
+    .cell {display:table-cell; padding:10px}
+    #test-output {display:table}
+    label {display:row}
+</style>
+<body>
 
-        <script src="../../resources/js-test.js"></script>
-        <canvas class="hide" id="source-up-canvas"></canvas>
-        <canvas class="hide" id="source-down-canvas"></canvas>
-        <div id="test-output">
-            <label>Scale Up</label>
-            <div id="up" class="row">
-                <div class="cell">
-                    <div id="low-up"></div>
-                    <canvas id="low-up-canvas"></canvas>
-                </div>
-                <div class="cell">
-                    <div id="medium-up"></div>
-                    <canvas id="medium-up-canvas"></canvas>
-                </div>
-                <div class="cell">
-                    <div id="high-up"></div>
-                    <canvas id="high-up-canvas"></canvas>
-                </div>
-            </div>
-
-            <label>Scale Down</label>
-            <div id="down" class="row">
-                <div class="cell">
-                    <div id="low-down"></div>
-                    <canvas id="low-down-canvas"></canvas>
-                </div>
-                <div class="cell">
-                    <div id="medium-down"></div>
-                    <canvas id="medium-down-canvas"></canvas>
-                </div>
-                <div class="cell">
-                    <div id="high-down"></div>
-                    <canvas id="high-down-canvas"></canvas>
-                </div>
-            </div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas class="hide" id="source-up-canvas"></canvas>
+<canvas class="hide" id="source-down-canvas"></canvas>
+<div id="test-output">
+    <label>Scale Up</label>
+    <div id="up" class="row">
+        <div class="cell">
+            <div id="low-up"></div>
+            <canvas id="low-up-canvas"></canvas>
         </div>
-        <script>
-if (window.testRunner)
-    window.testRunner.dumpAsTextWithPixelResults();
+        <div class="cell">
+            <div id="medium-up"></div>
+            <canvas id="medium-up-canvas"></canvas>
+        </div>
+        <div class="cell">
+            <div id="high-up"></div>
+            <canvas id="high-up-canvas"></canvas>
+        </div>
+    </div>
 
-drawCanvas("source", "up", drawPicture);
-drawCanvas("source", "down", drawWord);
+    <label>Scale Down</label>
+    <div id="down" class="row">
+        <div class="cell">
+            <div id="low-down"></div>
+            <canvas id="low-down-canvas"></canvas>
+        </div>
+        <div class="cell">
+            <div id="medium-down"></div>
+            <canvas id="medium-down-canvas"></canvas>
+        </div>
+        <div class="cell">
+            <div id="high-down"></div>
+            <canvas id="high-down-canvas"></canvas>
+        </div>
+    </div>
+</div>
 
-qualities = ["low", "medium", "high"];
-scales = ["up", "down"];
-for (var i = 0; i < scales.length; i++) {
-    for (var j = 0; j < qualities.length; j++) {
-        drawCanvas(qualities[j], scales[i], copyPicture);
-    }
-}
+<script>
 
 function drawCanvas(quality, scale, drawFunc) {
     var id = quality + "-" + scale;
@@ -89,7 +76,6 @@ function drawWord(canvas, context) {
     context.fillStyle = 'blue';
     context.fillText('Hello World!', canvas.width/2, canvas.height/2);
 }
-
 
 function drawPicture(canvas, context) {
     canvas.width = 5;
@@ -121,6 +107,18 @@ function drawPicture(canvas, context) {
     }
     context.putImageData(image, 0, 0);
 }
-        </script>
-    </body>
-</html>
+
+test(function(t) {
+    drawCanvas("source", "up", drawPicture);
+    drawCanvas("source", "down", drawWord);
+
+    qualities = ["low", "medium", "high"];
+    scales = ["up", "down"];
+    for (var i = 0; i < scales.length; i++) {
+        for (var j = 0; j < qualities.length; j++) {
+            drawCanvas(qualities[j], scales[i], copyPicture);
+        }
+    }
+}, 'Test that createImageBitmap from a bitmaprenderer canvas produces correct result');
+</script>
+</body>

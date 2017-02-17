@@ -1,9 +1,94 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-invalid-values.js"></script>
+<script>
+
+// Test that setting various CanvasRenderingContext2D properties to invalid values has no effect.
+ctx = document.createElement('canvas').getContext('2d');
+
+function trySettingMiterLimit(value) {
+    ctx.miterLimit = 1.5;
+    ctx.miterLimit = value;
+    return ctx.miterLimit;
+}
+
+function trySettingLineWidth(value) {
+    ctx.lineWidth = 1.5;
+    ctx.lineWidth = value;
+    return ctx.lineWidth;
+}
+
+function trySettingShadowBlur(value) {
+    ctx.shadowBlur = 1.5;
+    ctx.shadowBlur = value;
+    return ctx.shadowBlur;
+}
+
+function trySettingShadowOffsetX(value) {
+    ctx.shadowOffsetX = 1.5;
+    ctx.shadowOffsetX = value;
+    return ctx.shadowOffsetX;
+}
+
+function trySettingShadowOffsetY(value) {
+    ctx.shadowOffsetY = 1.5;
+    ctx.shadowOffsetY = value;
+    return ctx.shadowOffsetY;
+}
+       
+var testScenarios = [
+    [ "Invalid value has no effect", trySettingMiterLimit(1), 1],
+    [ "Invalid value has no effect", trySettingMiterLimit(0), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit(-1), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit(Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit(-Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit(NaN), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit('string'), 1.5],
+    [ "Invalid value has no effect", trySettingMiterLimit(true), 1],
+    [ "Invalid value has no effect", trySettingMiterLimit(false), 1.5],
+    
+    [ "Invalid value has no effect", trySettingLineWidth(1), 1],
+    [ "Invalid value has no effect", trySettingLineWidth(0), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth(-1), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth(Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth(-Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth(NaN), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth('string'), 1.5],
+    [ "Invalid value has no effect", trySettingLineWidth(true), 1],
+    [ "Invalid value has no effect", trySettingLineWidth(false), 1.5],
+    
+    [ "Invalid value has no effect", trySettingShadowBlur(1), 1],
+    [ "Invalid value has no effect", trySettingShadowBlur(0), 0],
+    [ "Invalid value has no effect", trySettingShadowBlur(-1), 1.5],
+    [ "Invalid value has no effect", trySettingShadowBlur(Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowBlur(-Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowBlur(NaN), 1.5],
+    [ "Invalid value has no effect", trySettingShadowBlur('string'), 1.5],
+    [ "Invalid value has no effect", trySettingShadowBlur(true), 1],
+    [ "Invalid value has no effect", trySettingShadowBlur(false), 0],
+    
+    [ "Invalid value has no effect", trySettingShadowOffsetX(1), 1],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(0), 0],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(-1), -1],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(-Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(NaN), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetX('string'), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(true), 1],
+    [ "Invalid value has no effect", trySettingShadowOffsetX(false), 0],
+    
+    [ "Invalid value has no effect", trySettingShadowOffsetY(1), 1],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(0), 0],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(-1), -1],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(-Infinity), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(NaN), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetY('string'), 1.5],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(true), 1],
+    [ "Invalid value has no effect", trySettingShadowOffsetY(false), 0],
+];
+
+generate_tests(assert_equals, testScenarios);
+
+</script>
 </body>
-</html>

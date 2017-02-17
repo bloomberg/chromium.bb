@@ -1,17 +1,15 @@
-<!DOCTYPE html>
 <html>
-    <body>
-        <script src="../../resources/js-test.js"></script>
-        <canvas id="source"></canvas>
-        <canvas id="default"></canvas>
-        <script>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas id="source"></canvas>
+<canvas id="default"></canvas>
+<script>
 
-description("Tests for the imageSmoothingQuality attribute.");
-
-var source = document.getElementById("source");
+var source = document.createElement('canvas');
 source.width = 60;
 source.height = 12;
-var sourceContext = source.getContext("2d");
+var sourceContext = source.getContext('2d');
 var sourceImage = sourceContext.createImageData(source.width, source.height);
 
 function drawBlackDot(x, y) {
@@ -23,9 +21,9 @@ function drawBlackDot(x, y) {
 }
 
 for (var x = 0; x < source.width; x++) {
-	for (var y = 1; y < 3; y++) {
-		 drawBlackDot(x, y);
-	}
+    for (var y = 1; y < 3; y++) {
+         drawBlackDot(x, y);
+    }
 }
 
 sourceContext.putImageData(sourceImage, 0, 0);
@@ -52,93 +50,83 @@ function scaleImageData(destinationCanvas, quality) {
     return JSON.stringify(data);
 }
 
-function testInvalidInput(badInput){
-    shouldNotThrow(badInput);
-    shouldBe("highContext.imageSmoothingQuality", "'high'");
-}
-
 function sampleAlpha(data){
     return JSON.parse(data)[3]
 }
 
-debug("On getting, must return the last value it was set to.");
-var lowData = scaleTestResults("low");
-var lowContext = document.getElementById("lowCanvas").getContext('2d');
-shouldBe("lowContext.imageSmoothingQuality", "'low'");
-
-var mediumData = scaleTestResults("medium");
-var mediumContext = document.getElementById("mediumCanvas").getContext('2d');
-shouldBe("mediumContext.imageSmoothingQuality", "'medium'");
-
-var highData = scaleTestResults("high");
-var highContext = document.getElementById("highCanvas").getContext('2d');
-var highCanvas = document.getElementById("highCanvas");
-shouldBe("highContext.imageSmoothingQuality", "'high'");
-
-lowContext.imageSmoothingEnabled = false;
-var noFilterData = scaleImageData(lowCanvas, lowCanvas.imageSmoothingQuality);
-
-debug("");
-shouldNotBe("lowData", "mediumData");
-// Skia uses mipmaps when downscaling, for both high and medium quality
-shouldBe("mediumData", "highData");
-shouldNotBe("lowData", "highData");
-
-debug("");
-shouldBe("sampleAlpha(noFilterData)", "sampleAlpha(lowData)");
-shouldBeGreaterThan("sampleAlpha(lowData)", "sampleAlpha(mediumData)");
-// Skia uses mipmaps when downscaling, for both high and medium quality
-shouldBe("sampleAlpha(mediumData)", "sampleAlpha(highData)");
-
-
-debug("\n\nOn setting, it must be set to the new value.");
-evalAndLog("highContext.imageSmoothingQuality = 'medium';");
-shouldBe("highContext.imageSmoothingQuality", "'medium'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality);",
-			   "mediumData");
-evalAndLog("highContext.imageSmoothingQuality = 'high';");
-shouldBe("highContext.imageSmoothingQuality", "'high'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality);",
-		     "highData");
-
-
-debug("\n\nWhen the CanvasRenderingContext2D object is created, " +
-		  "the attribute must be set to 'low'.");
-shouldBe('document.getElementById("default").getContext("2d").' +
-		     'imageSmoothingQuality', "'low'");
-
-
-debug("\n\nImageSmoothingQuality can be set without real effect when " +
-		  "imageSmoothingEnabled is false.");
-evalAndLog("highContext.imageSmoothingEnabled = false;");
-shouldBe("highContext.imageSmoothingQuality", "'high'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality)",
-		     "noFilterData");
-evalAndLog("highContext.imageSmoothingQuality = 'medium'");
-shouldBe("highContext.imageSmoothingQuality", "'medium'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality)",
-		     "noFilterData");
-
-
-debug("\n\nInvalid Input is not accpeted.");
-evalAndLog("highContext.imageSmoothingEnabled = true; " +
-		       "highContext.imageSmoothingQuality = 'high';");
-testInvalidInput("scaleImageData(highCanvas, '3223')");
-testInvalidInput("scaleImageData(highCanvas, 'bad_input')");
-testInvalidInput("scaleImageData(highCanvas, 'LOW')");
-testInvalidInput("scaleImageData(highCanvas, 'Medium')");
-
-
-debug("\n\nThe save() and restore() should work.");
-evalAndLog("highContext.save(); highContext.imageSmoothingQuality = 'medium';");
-shouldBe("highContext.imageSmoothingQuality", "'medium'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality);",
-		     "mediumData");
-shouldBe("highContext.restore(); highContext.imageSmoothingQuality", "'high'");
-shouldBe("scaleImageData(highCanvas, highCanvas.imageSmoothingQuality);",
-		     "highData");
-
-debug("");
-        </script>
-    </body>
-</html>
+test(function(t) {
+    // On getting, must return the last value it was set to.");
+    var lowData = scaleTestResults("low");
+    var lowContext = document.getElementById("lowCanvas").getContext('2d');
+    assert_equals(lowContext.imageSmoothingQuality, 'low');
+    
+    var mediumData = scaleTestResults("medium");
+    var mediumContext = document.getElementById("mediumCanvas").getContext('2d');
+    assert_equals(mediumContext.imageSmoothingQuality, 'medium');
+    
+    var highData = scaleTestResults("high");
+    var highContext = document.getElementById("highCanvas").getContext('2d');
+    var highCanvas = document.getElementById("highCanvas");
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    
+    lowContext.imageSmoothingEnabled = false;
+    var noFilterData = scaleImageData(lowCanvas, lowCanvas.imageSmoothingQuality);
+    
+    assert_false(lowData === mediumData);
+    // Skia uses mipmaps when downscaling, for both high and medium quality
+    assert_equals(mediumData, highData);
+    assert_false(lowData === highData);
+    
+    assert_equals(sampleAlpha(noFilterData), sampleAlpha(lowData));
+    assert_true(sampleAlpha(lowData) > sampleAlpha(mediumData));
+    // Skia uses mipmaps when downscaling, for both high and medium quality
+    assert_equals(sampleAlpha(mediumData), sampleAlpha(highData));
+    
+    // On setting, it must be set to the new value.
+    highContext.imageSmoothingQuality = 'medium';
+    assert_equals(highContext.imageSmoothingQuality, 'medium');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
+                  mediumData);
+    highContext.imageSmoothingQuality = 'high';
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
+                  highData);
+    
+    // When the CanvasRenderingContext2D object is created, the attribute must be set to 'low'.
+    assert_equals(document.getElementById("default").getContext("2d").imageSmoothingQuality, 'low');
+    
+    // ImageSmoothingQuality can be set without real effect when imageSmoothingEnabled is false.
+    highContext.imageSmoothingEnabled = false;
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
+                 noFilterData);
+    highContext.imageSmoothingQuality = 'medium';
+    assert_equals(highContext.imageSmoothingQuality, 'medium');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
+                 noFilterData);
+    
+    // Invalid Input is not accepted.
+    highContext.imageSmoothingEnabled = true;
+    highContext.imageSmoothingQuality = 'high';
+    scaleImageData(highCanvas, '3223');
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    scaleImageData(highCanvas, 'bad_input');
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    scaleImageData(highCanvas, 'LOW');
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    scaleImageData(highCanvas, 'Medium');
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    
+    
+    // The save() and restore() should work.
+    highContext.save();
+    highContext.imageSmoothingQuality = 'medium';
+    assert_equals(highContext.imageSmoothingQuality, 'medium');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality), mediumData);
+    highContext.restore();
+    assert_equals(highContext.imageSmoothingQuality, 'high');
+    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality), highData);
+    
+    }, 'Tests for the imageSmoothingQuality attribute.');
+</script>
+</body>
