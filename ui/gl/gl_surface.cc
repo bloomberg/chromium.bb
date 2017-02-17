@@ -354,6 +354,10 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
   return surface_->BuffersFlipped();
 }
 
+void GLSurfaceAdapter::OnSetSwapInterval(int interval) {
+  surface_->OnSetSwapInterval(interval);
+}
+
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
 
 scoped_refptr<GLSurface> InitializeGLSurfaceWithFormat(

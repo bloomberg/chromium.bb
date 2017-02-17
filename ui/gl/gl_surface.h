@@ -273,6 +273,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool IsSurfaceless() const override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
+  void OnSetSwapInterval(int interval) override;
 
   GLSurface* surface() const { return surface_.get(); }
 
