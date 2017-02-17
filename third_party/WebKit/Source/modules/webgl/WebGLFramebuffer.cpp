@@ -506,18 +506,30 @@ void WebGLFramebuffer::commitWebGL1DepthStencilIfConsistent(GLenum target) {
 
   gpu::gles2::GLES2Interface* gl = context()->contextGL();
   if (depthAttachment) {
+    gl->FramebufferRenderbuffer(target, GL_DEPTH_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, 0);
     depthAttachment->attach(gl, target, GL_DEPTH_ATTACHMENT);
     gl->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
                                 0);
   } else if (stencilAttachment) {
+    gl->FramebufferRenderbuffer(target, GL_DEPTH_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, 0);
     gl->FramebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
                                 0);
     stencilAttachment->attach(gl, target, GL_STENCIL_ATTACHMENT);
   } else if (depthStencilAttachment) {
+    gl->FramebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                0);
+    gl->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                0);
     depthStencilAttachment->attach(gl, target, GL_DEPTH_STENCIL_ATTACHMENT);
   } else {
     gl->FramebufferRenderbuffer(target, GL_DEPTH_STENCIL_ATTACHMENT,
                                 GL_RENDERBUFFER, 0);
+    gl->FramebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                0);
+    gl->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                0);
   }
 }
 
