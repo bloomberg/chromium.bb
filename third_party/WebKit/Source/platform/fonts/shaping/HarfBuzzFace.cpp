@@ -258,8 +258,8 @@ static hb_position_t harfBuzzGetGlyphHorizontalKerning(
   if (typeface->getKerningPairAdjustments(glyphs, 2, kerningAdjustments)) {
     SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
     SkScalar size = hbFontData->m_paint.getTextSize();
-    return SkiaScalarToHarfBuzzPosition(
-        SkScalarMulDiv(SkIntToScalar(kerningAdjustments[0]), size, upm));
+    return SkiaScalarToHarfBuzzPosition(SkIntToScalar(kerningAdjustments[0]) *
+                                        size / upm);
   }
 
   return 0;
