@@ -595,7 +595,7 @@ void NativeExtensionBindingsSystem::GetInternalAPI(
 }
 
 void NativeExtensionBindingsSystem::SendRequest(
-    std::unique_ptr<APIBinding::Request> request,
+    std::unique_ptr<APIRequestHandler::Request> request,
     v8::Local<v8::Context> context) {
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(context);

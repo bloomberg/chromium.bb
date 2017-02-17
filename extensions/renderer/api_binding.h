@@ -41,25 +41,6 @@ class APITypeReferenceMap;
 // contexts.
 class APIBinding {
  public:
-  // TODO(devlin): We may want to coalesce this with the
-  // ExtensionHostMsg_Request_Params IPC struct.
-  struct Request {
-    Request();
-    ~Request();
-
-    int request_id = -1;
-    std::string method_name;
-    bool has_callback = false;
-    bool has_user_gesture = false;
-    std::unique_ptr<base::ListValue> arguments;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
-  using SendRequestMethod =
-      base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
-
   // The callback for determining if a given API method (specified by |name|)
   // is available.
   using AvailabilityCallback = base::Callback<bool(const std::string& name)>;
@@ -75,7 +56,6 @@ class APIBinding {
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
              const base::DictionaryValue* property_definitions,
-             const SendRequestMethod& callback,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler,
@@ -126,9 +106,6 @@ class APIBinding {
 
   // The associated properties of the API, if any.
   const base::DictionaryValue* property_definitions_;
-
-  // The callback to use when an API is invoked with valid arguments.
-  SendRequestMethod method_callback_;
 
   // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;

@@ -126,7 +126,7 @@ void OnEventListenersChanged(const std::string& event_name,
 
 class APIBindingUnittest : public APIBindingTest {
  public:
-  void OnFunctionCall(std::unique_ptr<APIBinding::Request> request,
+  void OnFunctionCall(std::unique_ptr<APIRequestHandler::Request> request,
                       v8::Local<v8::Context> context) {
     last_request_ = std::move(request);
   }
@@ -137,6 +137,7 @@ class APIBindingUnittest : public APIBindingTest {
   void SetUp() override {
     APIBindingTest::SetUp();
     request_handler_ = base::MakeUnique<APIRequestHandler>(
+        base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         APILastError(APILastError::GetParent()));
   }
@@ -184,7 +185,6 @@ class APIBindingUnittest : public APIBindingTest {
     binding_ = base::MakeUnique<APIBinding>(
         "test", binding_functions_.get(), binding_types_.get(),
         binding_events_.get(), binding_properties_.get(),
-        base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
         std::move(binding_hooks_), &type_refs_, request_handler_.get(),
         event_handler_.get());
     EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
@@ -216,7 +216,7 @@ class APIBindingUnittest : public APIBindingTest {
   }
 
   bool HandlerWasInvoked() const { return last_request_ != nullptr; }
-  const APIBinding::Request* last_request() const {
+  const APIRequestHandler::Request* last_request() const {
     return last_request_.get();
   }
   void reset_last_request() { last_request_.reset(); }
@@ -234,7 +234,7 @@ class APIBindingUnittest : public APIBindingTest {
                bool expect_callback,
                const std::string& expected_error);
 
-  std::unique_ptr<APIBinding::Request> last_request_;
+  std::unique_ptr<APIRequestHandler::Request> last_request_;
   std::unique_ptr<APIBinding> binding_;
   std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;

@@ -26,20 +26,43 @@ namespace extensions {
 // thread, but amongst multiple contexts.
 class APIRequestHandler {
  public:
+  // TODO(devlin): We may want to coalesce this with the
+  // ExtensionHostMsg_Request_Params IPC struct.
+  struct Request {
+    Request();
+    ~Request();
+
+    int request_id = -1;
+    std::string method_name;
+    bool has_callback = false;
+    bool has_user_gesture = false;
+    std::unique_ptr<base::ListValue> arguments;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
+  };
+
+  using SendRequestMethod =
+      base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
+
   using CallJSFunction = base::Callback<void(v8::Local<v8::Function>,
                                              v8::Local<v8::Context>,
                                              int argc,
                                              v8::Local<v8::Value>[])>;
 
-  APIRequestHandler(const CallJSFunction& call_js, APILastError last_error);
+  APIRequestHandler(const SendRequestMethod& send_request,
+                    const CallJSFunction& call_js,
+                    APILastError last_error);
   ~APIRequestHandler();
 
-  // Adds a pending request to the map. Returns a unique identifier for that
-  // request.
-  int AddPendingRequest(v8::Isolate* isolate,
-                        v8::Local<v8::Function> callback,
-                        v8::Local<v8::Context> context,
-                        const std::vector<v8::Local<v8::Value>>& callback_args);
+  // Begins the process of processing the request. Returns the identifier of the
+  // pending request, or -1 if no pending request was added (which can happen if
+  // no callback was specified).
+  int StartRequest(v8::Local<v8::Context> context,
+                   const std::string& method,
+                   std::unique_ptr<base::ListValue> arguments,
+                   v8::Local<v8::Function> callback,
+                   v8::Local<v8::Function> custom_callback);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
@@ -75,6 +98,8 @@ class APIRequestHandler {
 
   // A map of all pending requests.
   std::map<int, PendingRequest> pending_requests_;
+
+  SendRequestMethod send_request_;
 
   // The method to call into a JS with specific arguments. We curry this in
   // because the manner we want to do this is a unittest (e.g.

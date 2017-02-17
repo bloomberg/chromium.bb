@@ -58,7 +58,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  private:
   // Handles sending a given |request|, forwarding it on to the send_ipc_ after
   // adding additional info.
-  void SendRequest(std::unique_ptr<APIBinding::Request> request,
+  void SendRequest(std::unique_ptr<APIRequestHandler::Request> request,
                    v8::Local<v8::Context> context);
 
   // Called when listeners for a given event have changed, and forwards it along

@@ -132,9 +132,6 @@ void DecorateTemplateWithProperties(
 
 }  // namespace
 
-APIBinding::Request::Request() {}
-APIBinding::Request::~Request() {}
-
 struct APIBinding::MethodData {
   MethodData(std::string full_name,
              const base::ListValue& method_signature)
@@ -174,20 +171,16 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
                        const base::DictionaryValue* property_definitions,
-                       const SendRequestMethod& callback,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
                        APIEventHandler* event_handler)
     : api_name_(api_name),
       property_definitions_(property_definitions),
-      method_callback_(callback),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
       weak_factory_(this) {
-  DCHECK(!method_callback_.is_null());
-
   // TODO(devlin): It might make sense to instantiate the object_template_
   // directly here, which would avoid the need to hold on to
   // |property_definitions_| and |enums_|. However, there are *some* cases where
@@ -418,34 +411,8 @@ void APIBinding::HandleCall(const std::string& name,
     return;
   }
 
-  auto request = base::MakeUnique<Request>();
-  if (!callback.IsEmpty()) {
-    // In the JS bindings, custom callbacks are called with the arguments of
-    // name, the full request object (see below), the original callback, and
-    // the responses from the API. The responses from the API are handled by the
-    // APIRequestHandler, but we need to curry in the other values.
-    std::vector<v8::Local<v8::Value>> callback_args;
-    if (!custom_callback.IsEmpty()) {
-      // TODO(devlin): The |request| object in the JS bindings includes
-      // properties for callback, callbackSchema, args, stack, id, and
-      // customCallback. Of those, it appears that we only use stack, args, and
-      // id (since callback is curried in separately). We may be able to update
-      // bindings to get away from some of those. For now, just pass in an empty
-      // object (most APIs don't rely on it).
-      v8::Local<v8::Object> request = v8::Object::New(isolate);
-      callback_args = { gin::StringToSymbol(isolate, name), request, callback };
-      callback = custom_callback;
-    }
-    request->request_id = request_handler_->AddPendingRequest(
-        isolate, callback, context, callback_args);
-    request->has_callback = true;
-  }
-  request->has_user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
-  request->arguments = std::move(converted_arguments);
-  request->method_name = name;
-
-  method_callback_.Run(std::move(request), context);
+  request_handler_->StartRequest(context, name, std::move(converted_arguments),
+                                 callback, custom_callback);
 }
 
 }  // namespace extensions

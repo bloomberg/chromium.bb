@@ -95,7 +95,7 @@ class APIBindingsSystemTestBase : public APIBindingTest {
       const std::string& api_name) = 0;
 
   // Stores the request in |last_request_|.
-  void OnAPIRequest(std::unique_ptr<APIBinding::Request> request,
+  void OnAPIRequest(std::unique_ptr<APIRequestHandler::Request> request,
                     v8::Local<v8::Context> context) {
     ASSERT_FALSE(last_request_);
     last_request_ = std::move(request);
@@ -131,7 +131,7 @@ class APIBindingsSystemTestBase : public APIBindingTest {
   void ValidateLastRequest(const std::string& expected_name,
                            const std::string& expected_arguments);
 
-  const APIBinding::Request* last_request() const {
+  const APIRequestHandler::Request* last_request() const {
     return last_request_.get();
   }
   void reset_last_request() { last_request_.reset(); }
@@ -144,7 +144,7 @@ class APIBindingsSystemTestBase : public APIBindingTest {
 
   // The last request to be received from the APIBindingsSystem, or null if
   // there is none.
-  std::unique_ptr<APIBinding::Request> last_request_;
+  std::unique_ptr<APIRequestHandler::Request> last_request_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingsSystemTestBase);
 };
