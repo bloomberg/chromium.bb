@@ -75,28 +75,14 @@ ThreadIdentifier currentThreadSyscall() {
 
 }  // namespace internal
 
-static Mutex* atomicallyInitializedStaticMutex;
-
 void initializeThreading() {
   // This should only be called once.
-  DCHECK(!atomicallyInitializedStaticMutex);
-
   WTFThreadData::initialize();
 
-  atomicallyInitializedStaticMutex = new Mutex;
   initializeDates();
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.
   double_conversion::DoubleToStringConverter::EcmaScriptConverter();
-}
-
-void lockAtomicallyInitializedStaticMutex() {
-  DCHECK(atomicallyInitializedStaticMutex);
-  atomicallyInitializedStaticMutex->lock();
-}
-
-void unlockAtomicallyInitializedStaticMutex() {
-  atomicallyInitializedStaticMutex->unlock();
 }
 
 ThreadIdentifier currentThread() {
@@ -232,11 +218,6 @@ void ThreadCondition::broadcast() {
 
 #if DCHECK_IS_ON()
 static bool s_threadCreated = false;
-
-bool isAtomicallyInitializedStaticMutexLockHeld() {
-  return atomicallyInitializedStaticMutex &&
-         atomicallyInitializedStaticMutex->locked();
-}
 
 bool isBeforeThreadCreated() {
   return !s_threadCreated;

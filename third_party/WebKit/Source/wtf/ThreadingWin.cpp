@@ -125,8 +125,6 @@ typedef struct tagTHREADNAME_INFO {
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-static Mutex* atomicallyInitializedStaticMutex;
-
 namespace internal {
 
 ThreadIdentifier currentThreadSyscall() {
@@ -135,22 +133,10 @@ ThreadIdentifier currentThreadSyscall() {
 
 }  // namespace internal
 
-void lockAtomicallyInitializedStaticMutex() {
-  DCHECK(atomicallyInitializedStaticMutex);
-  atomicallyInitializedStaticMutex->lock();
-}
-
-void unlockAtomicallyInitializedStaticMutex() {
-  atomicallyInitializedStaticMutex->unlock();
-}
-
 void initializeThreading() {
   // This should only be called once.
-  DCHECK(!atomicallyInitializedStaticMutex);
-
   WTFThreadData::initialize();
 
-  atomicallyInitializedStaticMutex = new Mutex;
   initializeDates();
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.
@@ -396,11 +382,6 @@ DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime) {
 
 #if DCHECK_IS_ON()
 static bool s_threadCreated = false;
-
-bool isAtomicallyInitializedStaticMutexLockHeld() {
-  return atomicallyInitializedStaticMutex &&
-         atomicallyInitializedStaticMutex->locked();
-}
 
 bool isBeforeThreadCreated() {
   return !s_threadCreated;

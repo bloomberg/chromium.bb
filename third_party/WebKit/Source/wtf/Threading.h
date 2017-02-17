@@ -35,25 +35,6 @@
 #include "wtf/WTFExport.h"
 #include <stdint.h>
 
-// For portability, we do not make use of C++11 thread-safe statics, as
-// supported by some toolchains. Make use of double-checked locking to reduce
-// overhead.  Note that this uses system-wide default lock, and cannot be used
-// before WTF::initializeThreading() is called.
-#define DEFINE_THREAD_SAFE_STATIC_LOCAL(T, name, initializer)             \
-  static_assert(!WTF::IsGarbageCollectedType<T>::value,                   \
-                "Garbage collected types should not be a static local!"); \
-  /* Init to nullptr is thread-safe on all implementations. */            \
-  static void* name##Pointer = nullptr;                                   \
-  if (!WTF::acquireLoad(&name##Pointer)) {                                \
-    WTF::lockAtomicallyInitializedStaticMutex();                          \
-    if (!WTF::acquireLoad(&name##Pointer)) {                              \
-      std::remove_const<T>::type* initializerResult = initializer;        \
-      WTF::releaseStore(&name##Pointer, initializerResult);               \
-    }                                                                     \
-    WTF::unlockAtomicallyInitializedStaticMutex();                        \
-  }                                                                       \
-  T& name = *static_cast<T*>(name##Pointer)
-
 namespace WTF {
 
 #if OS(WIN)
@@ -68,11 +49,7 @@ WTF_EXPORT ThreadIdentifier currentThreadSyscall();
 
 WTF_EXPORT ThreadIdentifier currentThread();
 
-WTF_EXPORT void lockAtomicallyInitializedStaticMutex();
-WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
-
 #if DCHECK_IS_ON()
-WTF_EXPORT bool isAtomicallyInitializedStaticMutexLockHeld();
 WTF_EXPORT bool isBeforeThreadCreated();
 WTF_EXPORT void willCreateThread();
 #endif

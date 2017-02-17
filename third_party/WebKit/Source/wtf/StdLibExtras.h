@@ -26,99 +26,127 @@
 #ifndef WTF_StdLibExtras_h
 #define WTF_StdLibExtras_h
 
+#include <cstddef>
 #include "base/numerics/safe_conversions.h"
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/LeakAnnotations.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/TypeTraits.h"
-#include <cstddef>
 
 #if DCHECK_IS_ON()
-#include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
-
-class WTF_EXPORT StaticLocalVerifier {
-  WTF_MAKE_NONCOPYABLE(StaticLocalVerifier);
-
- public:
-  StaticLocalVerifier()
-      : m_safelyInitialized(WTF::isBeforeThreadCreated()),
-        m_thread(WTF::internal::currentThreadSyscall()) {}
-
-  bool isNotRacy() {
-    // Make sure that this 1) is safely initialized, 2) keeps being called
-    // on the same thread, or 3) is called within
-    // AtomicallyInitializedStatic (i.e. with a lock held).
-    return m_safelyInitialized ||
-           m_thread == WTF::internal::currentThreadSyscall() ||
-           WTF::isAtomicallyInitializedStaticMutexLockHeld();
-  }
-
- private:
-  bool m_safelyInitialized;
-  ThreadIdentifier m_thread;
-};
 #endif
+
+// Use |DEFINE_STATIC_LOCAL()| to declare and define a static local variable
+// (|static T;|) so that it is leaked and its destructors are not called at
+// exit. T may also be a Blink garbage collected object, in which case it is
+// wrapped up by an off-heap |Persistent<T>| reference to the object, keeping
+// it alive across GCs.
+//
+// A |DEFINE_STATIC_LOCAL()| static should only be used on the thread it was
+// created on.
+//
+#define DEFINE_STATIC_LOCAL(Type, Name, Arguments)            \
+  static WTF::StaticSingleton<Type> s_##Name(                 \
+      new WTF::StaticSingleton<Type>::WrapperType Arguments); \
+  Type& Name = s_##Name.get(false)
+
+// |DEFINE_THREAD_SAFE_STATIC_LOCAL()| is the cross-thread accessible variant
+// of |DEFINE_STATIC_LOCAL()|; use it if the singleton can be accessed by
+// multiple threads.
+//
+// TODO: rename as DEFINE_CROSS_THREAD_STATIC_LOCAL() ?
+#define DEFINE_THREAD_SAFE_STATIC_LOCAL(Type, Name, Initializer) \
+  static WTF::StaticSingleton<Type> s_##Name(Initializer);       \
+  Type& Name = s_##Name.get(true)
 
 namespace blink {
 template <typename T>
 class Persistent;
-};
 
-template <typename T,
-          bool = WTF::IsGarbageCollectedType<T>::value &&
-                 !WTF::IsPersistentReferenceType<T>::value>
-class StaticLocalWrapper {
+}  // namespace blink
+
+namespace WTF {
+
+template <typename Type>
+class StaticSingleton final {
+  WTF_MAKE_NONCOPYABLE(StaticSingleton);
+
  public:
-  using WrapType = T;
+  template <typename T,
+            bool = WTF::IsGarbageCollectedType<T>::value &&
+                   !WTF::IsPersistentReferenceType<T>::value>
+  struct Wrapper {
+    using type = T;
 
-  static T& unwrap(T* singleton) { return *singleton; }
-};
+    static T& unwrap(T* singleton) { return *singleton; }
+  };
 
-template <typename T>
-class StaticLocalWrapper<T, true> {
- public:
-  using WrapType = blink::Persistent<T>;
+  template <typename T>
+  struct Wrapper<T, true> {
+    using type = blink::Persistent<T>;
 
-  static T& unwrap(blink::Persistent<T>* singleton) {
-    DCHECK(singleton);
-    // If this assert triggers, you're supplying an empty ("()") 'Arguments'
-    // argument to DEFINE_STATIC_LOCAL() - it must be the heap object you wish
-    // to create as a static singleton and wrapped up with a Persistent
-    // reference.
-    DCHECK(*singleton);
-    return **singleton;
-  }
-};
+    static T& unwrap(blink::Persistent<T>* singleton) {
+      DCHECK(singleton);
+      // If this assert triggers, you're supplying an empty ("()") 'Arguments'
+      // argument to DEFINE_STATIC_LOCAL() - it must be the heap object you wish
+      // to create as a static singleton and wrapped up with a Persistent
+      // reference.
+      DCHECK(*singleton);
+      return **singleton;
+    }
+  };
 
+  using WrapperType = typename Wrapper<Type>::type;
+
+  // To cooperate with leak detection(LSan) for Blink garbage collected objects,
+  // the objects owned by persistent local statics will in some cases have to be
+  // finalized prior to leak checking. This only applies to static references to
+  // Blink heap objects and what they transitively hold on to. Hence the
+  // LEAK_SANITIZER_REGISTER_STATIC_LOCAL() use, it taking care of the grungy
+  // details.
+
+  explicit StaticSingleton(WrapperType* instance)
+      : m_instance(LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrapperType, instance))
 #if DCHECK_IS_ON()
-#define DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name) \
-  static StaticLocalVerifier Name##StaticLocalVerifier;   \
-  DCHECK(Name##StaticLocalVerifier.isNotRacy())
-#else
-#define DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name)
+        ,
+        m_safelyInitialized(WTF::isBeforeThreadCreated()),
+        m_thread(WTF::internal::currentThreadSyscall())
+#endif
+  {
+  }
+
+  Type& get(bool allowCrossThreadUse) const {
+#if DCHECK_IS_ON()
+    DCHECK(isNotRacy(allowCrossThreadUse));
+#endif
+    ALLOW_UNUSED_LOCAL(allowCrossThreadUse);
+    return Wrapper<Type>::unwrap(m_instance);
+  }
+
+  operator Type&() { return get(); }
+
+ private:
+#if DCHECK_IS_ON()
+
+  bool isNotRacy(bool allowCrossThreadUse) const {
+    // Make sure that singleton is safely initialized, or
+    // keeps being called on the same thread if cross-thread
+    // use is not permitted.
+    return allowCrossThreadUse || m_safelyInitialized ||
+           m_thread == WTF::internal::currentThreadSyscall();
+  }
 #endif
 
-// Use DEFINE_STATIC_LOCAL() to declare and define a static local variable
-// (static T;) so that it is leaked and its destructors are not called at exit.
-// T may also be a Blink garbage collected object, in which case it is
-// wrapped up by an off-heap Persistent<T> reference to the object, keeping
-// it alive across GCs.
-//
-// To cooperate with leak detection(LSan) for Blink garbage collected objects,
-// the objects owned by persistent local statics will in some cases have to be
-// finalized prior to leak checking. This only applies to static references to
-// Blink heap objects and what they transitively hold on to. Hence the
-// LEAK_SANITIZER_REGISTER_STATIC_LOCAL() use, it taking care of the grungy
-// details.
-//
-#define DEFINE_STATIC_LOCAL(Type, Name, Arguments)                   \
-  DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name);                 \
-  using WrappedTypeFor##Name = StaticLocalWrapper<Type>::WrapType;   \
-  static WrappedTypeFor##Name* WrappedInstanceFor##Name =            \
-      LEAK_SANITIZER_REGISTER_STATIC_LOCAL(                          \
-          WrappedTypeFor##Name, new WrappedTypeFor##Name Arguments); \
-  Type& Name = StaticLocalWrapper<Type>::unwrap(WrappedInstanceFor##Name);
+  WrapperType* m_instance;
+#if DCHECK_IS_ON()
+  bool m_safelyInitialized;
+  ThreadIdentifier m_thread;
+#endif
+};
+
+}  // namespace WTF
 
 // Use this to declare and define a static local pointer to a ref-counted object
 // so that it is leaked so that the object's destructors are not called at
