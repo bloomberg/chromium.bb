@@ -121,11 +121,15 @@ Color CSSColorInterpolationType::resolveInterpolableColor(
                                   ? ColorPropertyFunctions::getVisitedColor
                                   : ColorPropertyFunctions::getUnvisitedColor;
     StyleColor currentStyleColor = StyleColor::currentColor();
-    if (isTextDecoration)
+    if (isTextDecoration) {
       currentStyleColor =
-          currentColorGetter(CSSPropertyWebkitTextFillColor, *state.style());
-    if (currentStyleColor.isCurrentColor())
-      currentStyleColor = currentColorGetter(CSSPropertyColor, *state.style());
+          currentColorGetter(CSSPropertyWebkitTextFillColor, *state.style())
+              .access();
+    }
+    if (currentStyleColor.isCurrentColor()) {
+      currentStyleColor =
+          currentColorGetter(CSSPropertyColor, *state.style()).access();
+    }
     addPremultipliedColor(red, green, blue, alpha, currentcolorFraction,
                           currentStyleColor.getColor());
   }
@@ -156,12 +160,12 @@ class InheritedColorChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedColorChecker> create(
       CSSPropertyID property,
-      const StyleColor& color) {
+      const OptionalStyleColor& color) {
     return WTF::wrapUnique(new InheritedColorChecker(property, color));
   }
 
  private:
-  InheritedColorChecker(CSSPropertyID property, const StyleColor& color)
+  InheritedColorChecker(CSSPropertyID property, const OptionalStyleColor& color)
       : m_property(property), m_color(color) {}
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -171,7 +175,7 @@ class InheritedColorChecker : public InterpolationType::ConversionChecker {
   }
 
   const CSSPropertyID m_property;
-  const StyleColor m_color;
+  const OptionalStyleColor m_color;
 };
 
 InterpolationValue CSSColorInterpolationType::maybeConvertNeutral(
@@ -184,10 +188,11 @@ InterpolationValue CSSColorInterpolationType::maybeConvertNeutral(
 InterpolationValue CSSColorInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversionCheckers) const {
-  StyleColor initialColor;
-  if (ColorPropertyFunctions::getInitialColor(cssProperty(), initialColor))
-    return convertStyleColorPair(initialColor, initialColor);
-  return nullptr;
+  OptionalStyleColor initialColor =
+      ColorPropertyFunctions::getInitialColor(cssProperty());
+  if (initialColor.isNull())
+    return nullptr;
+  return convertStyleColorPair(initialColor.access(), initialColor.access());
 }
 
 InterpolationValue CSSColorInterpolationType::maybeConvertInherit(
@@ -197,7 +202,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(
     return nullptr;
   // Visited color can never explicitly inherit from parent visited color so
   // only use the unvisited color.
-  const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(
+  OptionalStyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(
       cssProperty(), *state.parentStyle());
   conversionCheckers.push_back(
       InheritedColorChecker::create(cssProperty(), inheritedColor));
@@ -232,12 +237,15 @@ InterpolationValue CSSColorInterpolationType::maybeConvertValue(
 }
 
 InterpolationValue CSSColorInterpolationType::convertStyleColorPair(
-    const StyleColor& unvisitedColor,
-    const StyleColor& visitedColor) const {
+    const OptionalStyleColor& unvisitedColor,
+    const OptionalStyleColor& visitedColor) const {
+  if (unvisitedColor.isNull() || visitedColor.isNull()) {
+    return nullptr;
+  }
   std::unique_ptr<InterpolableList> colorPair =
       InterpolableList::create(InterpolableColorPairIndexCount);
-  colorPair->set(Unvisited, createInterpolableColor(unvisitedColor));
-  colorPair->set(Visited, createInterpolableColor(visitedColor));
+  colorPair->set(Unvisited, createInterpolableColor(unvisitedColor.access()));
+  colorPair->set(Visited, createInterpolableColor(visitedColor.access()));
   return InterpolationValue(std::move(colorPair));
 }
 

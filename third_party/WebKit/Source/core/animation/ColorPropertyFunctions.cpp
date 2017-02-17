@@ -8,17 +8,12 @@
 
 namespace blink {
 
-bool ColorPropertyFunctions::getInitialColor(CSSPropertyID property,
-                                             StyleColor& initialColor) {
-  if (property == CSSPropertyCaretColor)
-    return false;
-  // TODO(rego): Make getUnvisitedColor() return a bool, so we don't need a
-  // special case for caret-color here (http://crbug.com/676295).
-  initialColor = getUnvisitedColor(property, ComputedStyle::initialStyle());
-  return true;
+OptionalStyleColor ColorPropertyFunctions::getInitialColor(
+    CSSPropertyID property) {
+  return getUnvisitedColor(property, ComputedStyle::initialStyle());
 }
 
-StyleColor ColorPropertyFunctions::getUnvisitedColor(
+OptionalStyleColor ColorPropertyFunctions::getUnvisitedColor(
     CSSPropertyID property,
     const ComputedStyle& style) {
   switch (property) {
@@ -33,10 +28,8 @@ StyleColor ColorPropertyFunctions::getUnvisitedColor(
     case CSSPropertyBorderBottomColor:
       return style.borderBottomColor();
     case CSSPropertyCaretColor:
-      // TODO(rego): "auto" value for caret-color should not interpolate
-      // (http://crbug.com/676295).
       if (style.caretColor().isAutoColor())
-        return StyleColor::currentColor();
+        return nullptr;
       return style.caretColor().toStyleColor();
     case CSSPropertyColor:
       return style.color();
@@ -62,12 +55,13 @@ StyleColor ColorPropertyFunctions::getUnvisitedColor(
       return style.textDecorationColor();
     default:
       NOTREACHED();
-      return StyleColor::currentColor();
+      return nullptr;
   }
 }
 
-StyleColor ColorPropertyFunctions::getVisitedColor(CSSPropertyID property,
-                                                   const ComputedStyle& style) {
+OptionalStyleColor ColorPropertyFunctions::getVisitedColor(
+    CSSPropertyID property,
+    const ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundColor:
       return style.visitedLinkBackgroundColor();
@@ -109,7 +103,7 @@ StyleColor ColorPropertyFunctions::getVisitedColor(CSSPropertyID property,
       return style.visitedLinkTextDecorationColor();
     default:
       NOTREACHED();
-      return StyleColor::currentColor();
+      return nullptr;
   }
 }
 
