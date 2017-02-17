@@ -142,8 +142,6 @@ constexpr unsigned char kJpegImage2[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x03, 0xff, 0xd9};
 
-constexpr int kJpegImage2Width = 50;
-
 constexpr char kSvgImage[] =
     "<svg width=\"200\" height=\"200\" xmlns=\"http://www.w3.org/2000/svg\" "
     "xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
@@ -174,6 +172,64 @@ void receiveResponse(ImageResource* imageResource,
   imageResource->responseReceived(response, nullptr);
   imageResource->appendData(data, dataSize);
   imageResource->finish();
+}
+
+void testThatReloadIsStartedThenServeReload(const KURL& testURL,
+                                            ImageResource* imageResource,
+                                            ImageResourceContent* content,
+                                            MockImageResourceObserver* observer,
+                                            WebCachePolicy policyForReload) {
+  const char* data = reinterpret_cast<const char*>(kJpegImage2);
+  constexpr size_t dataLength = sizeof(kJpegImage2);
+  constexpr int imageWidth = 50;
+  constexpr int imageHeight = 50;
+
+  // Checks that |imageResource| and |content| are ready for non-placeholder
+  // reloading.
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
+  EXPECT_FALSE(imageResource->resourceBuffer());
+  EXPECT_FALSE(imageResource->isPlaceholder());
+  EXPECT_EQ(nullAtom,
+            imageResource->resourceRequest().httpHeaderField("range"));
+  EXPECT_EQ(policyForReload, imageResource->resourceRequest().getCachePolicy());
+  EXPECT_EQ(content, imageResource->getContent());
+  EXPECT_FALSE(content->hasImage());
+
+  // Checks |observer| before reloading.
+  const int originalImageChangedCount = observer->imageChangedCount();
+  const bool alreadyNotifiedFinish = observer->imageNotifyFinishedCalled();
+  const int imageWidthOnImageNotifyFinished =
+      observer->imageWidthOnImageNotifyFinished();
+  ASSERT_NE(imageWidth, imageWidthOnImageNotifyFinished);
+
+  // Does Reload.
+  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
+      ResourceResponse(testURL, "image/jpeg", dataLength, nullAtom)));
+  imageResource->loader()->didReceiveData(data, dataLength);
+  imageResource->loader()->didFinishLoading(0.0, dataLength, dataLength);
+
+  // Checks |imageResource|'s status after reloading.
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
+  EXPECT_FALSE(imageResource->errorOccurred());
+  EXPECT_EQ(dataLength, imageResource->encodedSize());
+
+  // Checks |observer| after reloading that it is notified of updates/finish.
+  EXPECT_LT(originalImageChangedCount, observer->imageChangedCount());
+  EXPECT_EQ(imageWidth, observer->imageWidthOnLastImageChanged());
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
+  if (!alreadyNotifiedFinish) {
+    // If imageNotifyFinished() has not been called before the reloaded
+    // response is served, then imageNotifyFinished() should be called with
+    // the new image (of width |imageWidth|).
+    EXPECT_EQ(imageWidth, observer->imageWidthOnImageNotifyFinished());
+  }
+
+  // Checks |content| receives the correct image.
+  EXPECT_TRUE(content->hasImage());
+  EXPECT_FALSE(content->getImage()->isNull());
+  EXPECT_EQ(imageWidth, content->getImage()->width());
+  EXPECT_EQ(imageHeight, content->getImage()->height());
+  EXPECT_TRUE(content->getImage()->isBitmapImage());
 }
 
 AtomicString buildContentRange(size_t rangeLength, size_t totalLength) {
@@ -398,30 +454,11 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
   imageResource->reloadIfLoFiOrPlaceholderImage(fetcher,
                                                 Resource::kReloadAlways);
-  EXPECT_FALSE(imageResource->errorOccurred());
-  EXPECT_FALSE(imageResource->resourceBuffer());
-  EXPECT_FALSE(imageResource->getContent()->hasImage());
+
   EXPECT_EQ(3, observer->imageChangedCount());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(resourceResponse), nullptr);
-  imageResource->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
-  imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
-                                            sizeof(kJpegImage2));
-  EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->getContent()->hasImage());
-  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
-  EXPECT_EQ(kJpegImage2Width, observer->imageWidthOnLastImageChanged());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-
-  // The observer should not have been notified of completion again.
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
-
-  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->width());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->height());
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::BypassingCache);
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
@@ -452,34 +489,16 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
   imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
                                             sizeof(kJpegImage));
 
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(imageResource, fetcher->cachedResource(testURL));
 
   fetcher->reloadLoFiImages();
 
-  EXPECT_FALSE(imageResource->errorOccurred());
-  EXPECT_FALSE(imageResource->resourceBuffer());
-  EXPECT_FALSE(imageResource->getContent()->hasImage());
   EXPECT_EQ(3, observer->imageChangedCount());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
 
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(resourceResponse), nullptr);
-  imageResource->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
-  imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
-                                            sizeof(kJpegImage2));
-  EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->getContent()->hasImage());
-  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
-  EXPECT_EQ(kJpegImage2Width, observer->imageWidthOnLastImageChanged());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-
-  // The observer should not have been notified of completion again.
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
-
-  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->width());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->height());
+  testThatReloadIsStartedThenServeReload(testURL, imageResource, content,
+                                         observer.get(),
+                                         WebCachePolicy::BypassingCache);
 
   memoryCache()->remove(imageResource);
 }
@@ -520,36 +539,16 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
   // Call reloadIfLoFiOrPlaceholderImage() while the image is still loading.
   imageResource->reloadIfLoFiOrPlaceholderImage(fetcher,
                                                 Resource::kReloadAlways);
-  EXPECT_FALSE(imageResource->errorOccurred());
-  EXPECT_FALSE(imageResource->resourceBuffer());
-  EXPECT_FALSE(imageResource->getContent()->hasImage());
+
   EXPECT_EQ(2, observer->imageChangedCount());
   EXPECT_EQ(0, observer->imageWidthOnLastImageChanged());
   // The observer should not have been notified of completion yet, since the
-  // image
-  // is still loading.
+  // image is still loading.
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
 
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(testURL, "image/jpeg",
-                                               sizeof(kJpegImage2), nullAtom)),
-      nullptr);
-  imageResource->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
-  imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
-                                            sizeof(kJpegImage2));
-
-  EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->getContent()->hasImage());
-  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
-  EXPECT_EQ(kJpegImage2Width, observer->imageWidthOnLastImageChanged());
-  // The observer should have been notified of completion only after the reload
-  // completed.
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImage2Width, observer->imageWidthOnImageNotifyFinished());
-  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->width());
-  EXPECT_EQ(50, imageResource->getContent()->getImage()->height());
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::BypassingCache);
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
@@ -584,19 +583,14 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
 
   EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_TRUE(imageResource->isPlaceholder());
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
 
   imageResource->reloadIfLoFiOrPlaceholderImage(fetcher,
                                                 Resource::kReloadAlways);
 
-  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_EQ(nullAtom,
-            imageResource->resourceRequest().httpHeaderField("range"));
-  EXPECT_EQ(
-      static_cast<int>(WebCachePolicy::BypassingCache),
-      static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
-
-  imageResource->loader()->cancel();
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::BypassingCache);
 }
 
 TEST(ImageResourceTest, SVGImage) {
@@ -1121,35 +1115,12 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   // The dimensions could not be extracted, so the full original image should be
   // loading.
-  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_EQ(nullAtom,
-            imageResource->resourceRequest().httpHeaderField("range"));
-  EXPECT_EQ(
-      static_cast<int>(WebCachePolicy::BypassingCache),
-      static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(3, observer->imageChangedCount());
 
-  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
-      ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
-  imageResource->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-  imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
-                                            sizeof(kJpegImage));
-
-  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
-  EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_LT(3, observer->imageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnLastImageChanged());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
-
-  ASSERT_TRUE(imageResource->getContent()->hasImage());
-  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
-  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
-  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::BypassingCache);
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
@@ -1190,37 +1161,12 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
       0.0, kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength);
 
-  // Decode error didn't occur but the dimensions could not be extracted,
-  // so the full original image should be loading.
-  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_EQ(nullAtom,
-            imageResource->resourceRequest().httpHeaderField("range"));
-  EXPECT_EQ(
-      static_cast<int>(WebCachePolicy::BypassingCache),
-      static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(2, observer->imageChangedCount());
 
-  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
-      ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
-  imageResource->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-  imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
-                                            sizeof(kJpegImage));
-
-  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
-  EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_LT(0, observer->imageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnLastImageChanged());
-  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
-
-  ASSERT_TRUE(imageResource->getContent()->hasImage());
-  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
-  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
-  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::BypassingCache);
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
@@ -1238,17 +1184,13 @@ TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
   FetchRequest nonPlaceholderRequest(testURL, FetchInitiatorInfo());
   ImageResource* secondImageResource =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
+
   EXPECT_EQ(imageResource, secondImageResource);
-  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_EQ(nullAtom,
-            imageResource->resourceRequest().httpHeaderField("range"));
-  EXPECT_EQ(
-      static_cast<int>(WebCachePolicy::UseProtocolCachePolicy),
-      static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
 
-  imageResource->loader()->cancel();
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::UseProtocolCachePolicy);
 }
 
 TEST(ImageResourceTest,
@@ -1290,15 +1232,10 @@ TEST(ImageResourceTest,
   ImageResource* secondImageResource =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
   EXPECT_EQ(imageResource, secondImageResource);
-  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-  EXPECT_FALSE(imageResource->isPlaceholder());
-  EXPECT_EQ(nullAtom,
-            imageResource->resourceRequest().httpHeaderField("range"));
-  EXPECT_EQ(
-      static_cast<int>(WebCachePolicy::UseProtocolCachePolicy),
-      static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
 
-  imageResource->loader()->cancel();
+  testThatReloadIsStartedThenServeReload(
+      testURL, imageResource, imageResource->getContent(), observer.get(),
+      WebCachePolicy::UseProtocolCachePolicy);
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
@@ -1425,36 +1362,13 @@ TEST(ImageResourceTest,
     imageResource->loader()->didReceiveData(kBadImageData,
                                             sizeof(kBadImageData));
 
-    // The dimensions could not be extracted, and the response code was a 4xx
-    // error, so the full original image should be loading.
-    EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
-    EXPECT_FALSE(imageResource->isPlaceholder());
-    EXPECT_EQ(nullAtom,
-              imageResource->resourceRequest().httpHeaderField("range"));
-    EXPECT_EQ(
-        static_cast<int>(WebCachePolicy::BypassingCache),
-        static_cast<int>(imageResource->resourceRequest().getCachePolicy()));
     EXPECT_FALSE(observer->imageNotifyFinishedCalled());
 
-    imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
-        ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
-    imageResource->loader()->didReceiveData(
-        reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-    imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
-                                              sizeof(kJpegImage));
-
-    EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
-    EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
-    EXPECT_FALSE(imageResource->isPlaceholder());
-    EXPECT_LT(0, observer->imageChangedCount());
-    EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnLastImageChanged());
-    EXPECT_TRUE(observer->imageNotifyFinishedCalled());
-    EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
-
-    ASSERT_TRUE(imageResource->getContent()->hasImage());
-    EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
-    EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
-    EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+    // The dimensions could not be extracted, and the response code was a 4xx
+    // error, so the full original image should be loading.
+    testThatReloadIsStartedThenServeReload(
+        testURL, imageResource, imageResource->getContent(), observer.get(),
+        WebCachePolicy::BypassingCache);
   }
 }
 
