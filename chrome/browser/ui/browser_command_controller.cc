@@ -372,9 +372,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SELECT_TAB_5:
     case IDC_SELECT_TAB_6:
     case IDC_SELECT_TAB_7:
+      content::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
       SelectNumberedTab(browser_, id - IDC_SELECT_TAB_0);
       break;
     case IDC_SELECT_LAST_TAB:
+      content::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
       SelectLastTab(browser_);
       break;
     case IDC_DUPLICATE_TAB:
