@@ -88,6 +88,8 @@ class CastCdmContextForTest : public CastCdmContext {
                     CastKeyStatus key_status,
                     uint32_t system_code) override {}
 
+  void SetVideoResolution(int width, int height) override {}
+
  private:
   bool license_installed_;
   base::Closure new_key_cb_;

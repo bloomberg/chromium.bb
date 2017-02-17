@@ -44,6 +44,10 @@ class CastCdmContext : public ::media::CdmContext {
   virtual void SetKeyStatus(const std::string& key_id,
                             CastKeyStatus key_status,
                             uint32_t system_code) = 0;
+
+  // Notifies of current decoded video resolution (used for licence policy
+  // enforcement).
+  virtual void SetVideoResolution(int width, int height) = 0;
 };
 
 }  // namespace media

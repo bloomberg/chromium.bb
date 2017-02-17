@@ -51,6 +51,10 @@ class CastCdmContextImpl : public CastCdmContext {
     cast_cdm_->SetKeyStatus(key_id, key_status, system_code);
   }
 
+  void SetVideoResolution(int width, int height) override {
+    cast_cdm_->SetVideoResolution(width, height);
+  }
+
  private:
   // The CastCdm object which owns |this|.
   CastCdm* const cast_cdm_;

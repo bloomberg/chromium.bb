@@ -65,6 +65,9 @@ class CastCdm : public ::media::ContentDecryptionModule {
                             CastKeyStatus key_status,
                             uint32_t system_code) = 0;
 
+  // Notifies of current decoded video resolution.
+  virtual void SetVideoResolution(int width, int height) = 0;
+
   // ::media::ContentDecryptionModule implementation.
   ::media::CdmContext* GetCdmContext() override;
 

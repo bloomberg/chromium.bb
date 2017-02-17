@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
@@ -91,6 +92,11 @@ void VideoPipelineImpl::OnVideoResolutionChanged(const Size& size) {
 
   if (!natural_size_changed_cb_.is_null()) {
     natural_size_changed_cb_.Run(gfx::Size(size.width, size.height));
+  }
+
+  CastCdmContext* cdm = cdm_context();
+  if (cdm) {
+    cdm->SetVideoResolution(size.width, size.height);
   }
 }
 
