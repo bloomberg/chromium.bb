@@ -30,6 +30,10 @@ class SpeechMonitor : public TtsPlatformImpl {
   bool SkipChromeVoxEnabledMessage();
   bool SkipChromeVoxMessage(const std::string& message);
 
+  // Returns true if StopSpeaking() was called on TtsController.
+  bool DidStop();
+
+ private:
   // TtsPlatformImpl implementation.
   bool PlatformImplAvailable() override;
   bool Speak(int utterance_id,
@@ -48,9 +52,9 @@ class SpeechMonitor : public TtsPlatformImpl {
   void WillSpeakUtteranceWithVoice(const Utterance* utterance,
                                    const VoiceData& voice_data) override;
 
- private:
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   std::deque<std::string> utterance_queue_;
+  bool did_stop_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };

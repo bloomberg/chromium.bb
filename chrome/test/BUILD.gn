@@ -217,6 +217,10 @@ static_library("test_support") {
     ]
   }
   if (is_chromeos) {
+    sources += [
+      "../browser/chromeos/accessibility/speech_monitor.cc",
+      "../browser/chromeos/accessibility/speech_monitor.h",
+    ]
     public_deps += [
       "//components/ownership",
       "//components/user_manager:test_support",
@@ -617,8 +621,6 @@ if (!is_android) {
         "../../ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
         "../browser/chromeos/accessibility/accessibility_highlight_manager_interactive_uitest.cc",
         "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
-        "../browser/chromeos/accessibility/speech_monitor.cc",
-        "../browser/chromeos/accessibility/speech_monitor.h",
         "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
         "../browser/chromeos/accessibility/sticky_keys_browsertest.cc",
         "../browser/chromeos/input_method/textinput_browsertest.cc",

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SELECT_TO_SPEAK_EVENT_HANDLER_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chromeos {
 
@@ -51,6 +54,13 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   };
 
   State state_ = INACTIVE;
+
+  // The set of keys that are currently down. Updated whenever a key is
+  // pressed or released.
+  std::set<ui::KeyboardCode> keys_currently_down_;
+  // The set of keys that have been pressed together. Updated whenever a key
+  // is pressed, and only cleared when all keys are released.
+  std::set<ui::KeyboardCode> keys_pressed_together_;
 
   int last_view_storage_id_ = 0;
 

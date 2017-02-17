@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 
 #include "ash/shell.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
@@ -26,7 +28,33 @@ SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
 }
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() == ui::VKEY_LWIN) {
+  // We can only call TtsController on the UI thread, make sure we
+  // don't ever try to run this code on some other thread.
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ui::KeyboardCode key_code = event->key_code();
+
+  // Stop speech when the user taps and releases Control or Search
+  // without pressing any other keys along the way.
+  if (state_ != MOUSE_RELEASED && event->type() == ui::ET_KEY_RELEASED &&
+      (key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LWIN) &&
+      keys_pressed_together_.find(key_code) != keys_pressed_together_.end() &&
+      keys_pressed_together_.size() == 1) {
+    TtsController::GetInstance()->Stop();
+  }
+
+  // Update keys_currently_down_ and keys_pressed_together_.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    keys_currently_down_.insert(key_code);
+    keys_pressed_together_.insert(key_code);
+  } else if (event->type() == ui::ET_KEY_RELEASED) {
+    keys_currently_down_.erase(key_code);
+    if (keys_currently_down_.empty())
+      keys_pressed_together_.clear();
+  }
+
+  // Update the state when pressing and releasing the Search key (VKEY_LWIN).
+  if (key_code == ui::VKEY_LWIN) {
     if (event->type() == ui::ET_KEY_PRESSED && state_ == INACTIVE) {
       state_ = SEARCH_DOWN;
     } else if (event->type() == ui::ET_KEY_RELEASED) {

@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/window.h"
@@ -113,6 +114,8 @@ class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
 };
 
 }  // namespace
+
+namespace chromeos {
 
 TEST_F(SelectToSpeakEventHandlerTest, PressAndReleaseSearchNotHandled) {
   // If the user presses and releases the Search key, with no mouse
@@ -275,3 +278,37 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusKeyIgnoresClicks) {
   ASSERT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
+
+TEST_F(SelectToSpeakEventHandlerTest, TappingControlStopsSpeech) {
+  SpeechMonitor monitor;
+  EXPECT_FALSE(monitor.DidStop());
+  generator_->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(monitor.DidStop());
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, TappingSearchStopsSpeech) {
+  SpeechMonitor monitor;
+  EXPECT_FALSE(monitor.DidStop());
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(monitor.DidStop());
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, TappingShiftDoesNotStopSpeech) {
+  SpeechMonitor monitor;
+  generator_->PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
+  generator_->ReleaseKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
+  EXPECT_FALSE(monitor.DidStop());
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, PressingControlZDoesNotStopSpeech) {
+  SpeechMonitor monitor;
+  generator_->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator_->PressKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
+  generator_->ReleaseKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
+  generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  EXPECT_FALSE(monitor.DidStop());
+}
+
+}  // namespace chromeos

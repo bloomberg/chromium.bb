@@ -36,6 +36,10 @@ bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
   return SkipChromeVoxMessage(kChromeVoxEnabledMessage);
 }
 
+bool SpeechMonitor::DidStop() {
+  return did_stop_;
+}
+
 bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
   while (true) {
     if (utterance_queue_.empty()) {
@@ -70,6 +74,7 @@ bool SpeechMonitor::Speak(
 }
 
 bool SpeechMonitor::StopSpeaking() {
+  did_stop_ = true;
   return true;
 }
 
