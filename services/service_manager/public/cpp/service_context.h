@@ -146,6 +146,7 @@ class ServiceContext : public mojom::Service {
   // is unbound and therefore invalid until OnStart() is called.
   mojom::ServiceControlAssociatedPtr service_control_;
 
+  bool service_started_ = false;
   bool service_quit_ = false;
 
   base::Closure connection_lost_closure_;
