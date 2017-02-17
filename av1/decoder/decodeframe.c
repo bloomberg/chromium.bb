@@ -153,6 +153,7 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_TX64X64
 }
 
+#if !CONFIG_EC_ADAPT
 static void read_tx_size_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j, k;
   for (i = 0; i < MAX_TX_DEPTH; ++i)
@@ -160,6 +161,7 @@ static void read_tx_size_probs(FRAME_CONTEXT *fc, aom_reader *r) {
       for (k = 0; k < i + 1; ++k)
         av1_diff_update_prob(r, &fc->tx_size_probs[i][j][k], ACCT_STR);
 }
+#endif
 
 #if !CONFIG_EC_ADAPT
 static void read_switchable_interp_probs(FRAME_CONTEXT *fc, aom_reader *r) {
@@ -4533,7 +4535,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   decode_restoration(cm, &r);
 #endif
 
+#if !CONFIG_EC_ADAPT
   if (cm->tx_mode == TX_MODE_SELECT) read_tx_size_probs(fc, &r);
+#endif
 
 #if !CONFIG_PVQ
 #if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
