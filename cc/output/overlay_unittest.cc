@@ -772,7 +772,7 @@ TEST_F(SingleOverlayOnTopTest, AllowClipped) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
+TEST_F(UnderlayTest, AllowVerticalFlip) {
   gfx::Rect rect = kOverlayRect;
   rect.set_width(rect.width() / 2);
   rect.Offset(0, -rect.height());
@@ -792,7 +792,7 @@ TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
             candidate_list.back().transform);
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowHorizontalFlip) {
+TEST_F(UnderlayTest, AllowHorizontalFlip) {
   gfx::Rect rect = kOverlayRect;
   rect.set_height(rect.height() / 2);
   rect.Offset(-rect.width(), 0);
@@ -830,7 +830,25 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
+TEST_F(SingleOverlayOnTopTest, RejectTransform) {
+  gfx::Rect rect = kOverlayRect;
+  rect.Offset(0, -rect.height());
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
+  pass->shared_quad_state_list.back()
+      ->quad_to_target_transform.RotateAboutZAxis(90.f);
+
+  OverlayCandidateList candidate_list;
+  RenderPassFilterList render_pass_filters;
+  RenderPassFilterList render_pass_background_filters;
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), pass.get(), render_pass_filters,
+      render_pass_background_filters, &candidate_list, nullptr, &damage_rect_);
+  ASSERT_EQ(0U, candidate_list.size());
+}
+
+TEST_F(UnderlayTest, Allow90DegreeRotation) {
   gfx::Rect rect = kOverlayRect;
   rect.Offset(0, -rect.height());
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -849,7 +867,7 @@ TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
 }
 
-TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
+TEST_F(UnderlayTest, Allow180DegreeRotation) {
   gfx::Rect rect = kOverlayRect;
   rect.Offset(-rect.width(), -rect.height());
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -868,7 +886,7 @@ TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
 }
 
-TEST_F(SingleOverlayOnTopTest, Allow270DegreeRotation) {
+TEST_F(UnderlayTest, Allow270DegreeRotation) {
   gfx::Rect rect = kOverlayRect;
   rect.Offset(-rect.width(), 0);
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -997,7 +1015,7 @@ TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowVideoXMirrorTransform) {
+TEST_F(UnderlayTest, AllowVideoXMirrorTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateVideoQuad(resource_provider_.get(),
                                      pass->shared_quad_state_list.back(),
@@ -1012,7 +1030,7 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoXMirrorTransform) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowVideoBothMirrorTransform) {
+TEST_F(UnderlayTest, AllowVideoBothMirrorTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateVideoQuad(resource_provider_.get(),
                                      pass->shared_quad_state_list.back(),
@@ -1027,7 +1045,7 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoBothMirrorTransform) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, AllowVideoNormalTransform) {
+TEST_F(UnderlayTest, AllowVideoNormalTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateVideoQuad(resource_provider_.get(),
                                      pass->shared_quad_state_list.back(),

@@ -39,6 +39,10 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
     QuadList::Iterator candidate_iterator) {
+  // Reject transformed overlays.
+  // TODO(dcastagna): Remove this once drm platform supports transforms.
+  if (candidate.transform != gfx::OVERLAY_TRANSFORM_NONE)
+    return false;
   // Check that no prior quads overlap it.
   if (OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(),
                                    candidate_iterator))
