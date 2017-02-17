@@ -32,6 +32,10 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // Emulates clicking Agree button.
   void ClickAgreeButton();
 
+  bool metrics_mode() const { return metrics_mode_; }
+  bool backup_and_restore_mode() const { return backup_and_restore_mode_; }
+  bool location_service_mode() const { return location_service_mode_; }
+
   // Emulates checking preference box.
   void set_metrics_mode(bool mode) { metrics_mode_ = mode; }
   void set_backup_and_restore_mode(bool mode) {
