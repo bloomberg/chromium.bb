@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 83: The behavior that Selection.addRange() merges existing Range and the specified Range is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/6680566019653632 for more details.
 CONSOLE ERROR: line 132: Discontiguous selection is not supported.
 CONSOLE ERROR: line 132: Discontiguous selection is not supported.
 CONSOLE ERROR: line 132: Discontiguous selection is not supported.

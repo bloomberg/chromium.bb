@@ -39,6 +39,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -616,7 +617,8 @@ void DOMSelection::addRange(Range* newRange) {
   // really do the same, since we don't support discontiguous selection. Further
   // discussions at
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
-  UseCounter::count(frame(), UseCounter::SelectionAddRangeIntersect);
+  Deprecation::countDeprecation(frame(),
+                                UseCounter::SelectionAddRangeIntersect);
 
   Range* start = originalRange->compareBoundaryPoints(
                      Range::kStartToStart, newRange, ASSERT_NO_EXCEPTION) < 0
