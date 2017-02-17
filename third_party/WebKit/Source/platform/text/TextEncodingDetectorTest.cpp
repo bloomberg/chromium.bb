@@ -73,4 +73,14 @@ TEST(TextEncodingDetectorTest, LanguageHintHelpsEUCJP) {
       << "With language hint 'ja', it's detected as EUC-JP";
 }
 
+TEST(TextEncodingDetectorTest, UTF8DetectionShouldFail) {
+  std::string utf8Bytes =
+      "tnegirjji gosa gii beare s\xC3\xA1htt\xC3\xA1 \xC4\x8D\xC3"
+      "\xA1llit artihkkaliid. Maid don s\xC3\xA1ht\xC3\xA1t dievasmah";
+  WTF::TextEncoding encoding;
+  bool result = detectTextEncoding(utf8Bytes.c_str(), utf8Bytes.length(),
+                                   nullptr, nullptr, nullptr, &encoding);
+  EXPECT_FALSE(result);
+}
+
 }  // namespace blink
