@@ -5,24 +5,9 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.common import exportable_commits_since
-
-
-# TODO(qyearsley): Move this to executive_mock.
-def mock_command_exec(vals):
-    def run_fn(args):
-        sub_command = args[1]
-        return vals.get(sub_command, '')
-    return MockExecutive(run_command_fn=run_fn)
-
-
-def mock_command_exec_strict(vals):
-    def run_fn(args):
-        sub_command = args[1]
-        return vals[sub_command]
-    return MockExecutive(run_command_fn=run_fn)
 
 
 class MockLocalWPT(object):
@@ -35,7 +20,7 @@ class CommonTest(unittest.TestCase):
 
     def test_exportable_commits_since(self):
         host = MockHost()
-        host.executive = mock_command_exec({
+        host.executive = mock_git_commands({
             'show': 'fake message',
             'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
             'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
@@ -62,7 +47,7 @@ class CommonTest(unittest.TestCase):
 
     def test_ignores_commits_with_noexport_true(self):
         host = MockHost()
-        host.executive = mock_command_exec({
+        host.executive = mock_git_commands({
             'show': 'Commit message\nNOEXPORT=true',
             'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
             'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
@@ -82,13 +67,13 @@ class CommonTest(unittest.TestCase):
 
     def test_ignores_reverted_commits_with_noexport_true(self):
         host = MockHost()
-        host.executive = mock_command_exec_strict({
+        host.executive = mock_git_commands({
             'show': 'Commit message\n> NOEXPORT=true',
             'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
             'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
             'footers': 'cr-rev-position',
             'diff-tree': '',
-        })
+        }, strict=True)
 
         commits = exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
         self.assertEqual(len(commits), 0)
@@ -103,7 +88,7 @@ class CommonTest(unittest.TestCase):
 
     def test_ignores_commits_that_start_with_import(self):
         host = MockHost()
-        host.executive = mock_command_exec({
+        host.executive = mock_git_commands({
             'show': 'Import rutabaga@deadbeef',
             'rev-list': 'add087a97844f4b9e307d9a216940582d96db306',
             'rev-parse': 'add087a97844f4b9e307d9a216940582d96db306',

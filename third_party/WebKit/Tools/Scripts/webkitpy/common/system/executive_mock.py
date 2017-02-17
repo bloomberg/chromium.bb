@@ -194,3 +194,13 @@ class MockExecutive(object):
 
     def process_dump(self):
         return []
+
+
+def mock_git_commands(vals, strict=False):
+    def run_fn(args):
+        sub_command = args[1]
+        if strict and sub_command not in vals:
+            raise AssertionError('{} not found in sub-command list {}'.format(
+                sub_command, vals))
+        return vals.get(sub_command, '')
+    return MockExecutive(run_command_fn=run_fn)
