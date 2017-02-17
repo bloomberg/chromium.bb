@@ -39,6 +39,7 @@
 #include "modules/quota/StorageQuotaClient.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "platform/StorageQuotaCallbacks.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -61,17 +62,17 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+        ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
+                                        errorCallback, NotSupportedError));
     return;
   }
 
   SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
   if (securityOrigin->isUnique()) {
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+        ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
+                                        errorCallback, NotSupportedError));
     return;
   }
 
@@ -94,17 +95,17 @@ void DeprecatedStorageQuota::requestQuota(ScriptState* scriptState,
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+        ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
+                                        errorCallback, NotSupportedError));
     return;
   }
 
   StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
   if (!client) {
-    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
-                               StorageErrorCallback::createSameThreadTask(
-                                   errorCallback, NotSupportedError));
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+        ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
+                                        errorCallback, NotSupportedError));
     return;
   }
 
