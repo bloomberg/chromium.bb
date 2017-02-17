@@ -132,7 +132,7 @@ Polymer({
 // </if>
 
   /** @private */
-  onResetDone_: function() {
+  onResetProfileBannerClosed_: function() {
     this.showResetProfileBanner_ = false;
   },
 

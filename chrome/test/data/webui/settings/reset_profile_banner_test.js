@@ -12,40 +12,26 @@ suite('BannerTests', function() {
     PolymerTest.clearBody();
     resetBanner = document.createElement('settings-reset-profile-banner');
     document.body.appendChild(resetBanner);
+    assertTrue(resetBanner.$.dialog.open);
   });
 
   teardown(function() { resetBanner.remove(); });
 
-  // Tests that the reset profile banner
-  //  - opens the reset profile dialog when the reset button is clicked.
-  //  - reset happens when clicking on the dialog's reset button.
-  //  - the reset profile dialog is closed after reset is done.
+  // Tests that the reset profile banner navigates to the Reset profile dialog
+  // URL when the "reset all settings" button is clicked.
   test('ResetBannerReset', function() {
-    var dialog = resetBanner.$$('settings-reset-profile-dialog');
-    assertFalse(!!dialog);
+    assertNotEquals(settings.Route.RESET_DIALOG, settings.getCurrentRoute());
     MockInteractions.tap(resetBanner.$.reset);
-    Polymer.dom.flush();
-    assertTrue(resetBanner.showResetProfileDialog_)
-    dialog = resetBanner.$$('settings-reset-profile-dialog');
-    assertTrue(!!dialog);
-
-    MockInteractions.tap(dialog.$.reset);
-
-    return browserProxy.whenCalled('performResetProfileSettings')
-        .then(PolymerTest.flushTasks)
-        .then(function() {
-          assertFalse(resetBanner.showResetProfileDialog_);
-          dialog = resetBanner.$$('settings-reset-profile-dialog');
-          assertFalse(!!dialog);
-        });
+    assertEquals(settings.Route.RESET_DIALOG, settings.getCurrentRoute());
+    assertFalse(resetBanner.$.dialog.open);
   });
 
-  // Tests that the reset profile banner removes itself from the DOM when
-  // the close button is clicked and that |onHideResetProfileBanner| is
-  // called.
-  test('ResetBannerClose', function() {
-    MockInteractions.tap(resetBanner.$.close);
-    assertFalse(!!resetBanner.parentNode);
-    return browserProxy.whenCalled('onHideResetProfileBanner');
+  // Tests that the reset profile banner closes itself when the OK button is
+  // clicked and that |onHideResetProfileBanner| is called.
+  test('ResetBannerOk', function() {
+    MockInteractions.tap(resetBanner.$.ok);
+    return browserProxy.whenCalled('onHideResetProfileBanner').then(function() {
+      assertFalse(resetBanner.$.dialog.open);
+    });
   });
 });
