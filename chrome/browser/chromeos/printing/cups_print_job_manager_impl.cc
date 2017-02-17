@@ -224,8 +224,10 @@ void CupsPrintJobManagerImpl::JobStateUpdated(CupsPrintJob* job,
   job->set_state(new_state);
   switch (new_state) {
     case CupsPrintJob::State::STATE_NONE:
+      // State does not require notification.
+      break;
     case CupsPrintJob::State::STATE_WAITING:
-      // States do not require notification.
+      NotifyJobUpdated(job);
       break;
     case CupsPrintJob::State::STATE_STARTED:
       NotifyJobStarted(job);
