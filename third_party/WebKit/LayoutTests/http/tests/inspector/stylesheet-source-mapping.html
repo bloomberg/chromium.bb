@@ -18,7 +18,7 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     var target = InspectorTest.mainTarget;
-    var cssModel = SDK.CSSModel.fromTarget(target);
+    var cssModel = InspectorTest.cssModel;
 
     const styleSheetURL = "http://127.0.0.1:8000/inspector/resources/example.css";
     const sourceURL = "http://127.0.0.1:8000/inspector/resources/example.scss";
@@ -40,7 +40,7 @@ function test()
     function cssUISourceCodeAdded(uiSourceCode)
     {
         styleSheetId = cssModel.styleSheetIdsForURL(styleSheetURL)[0];
-        InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.TargetInfo.prototype, "_updateLocations", locationsUpdated, true);
+        InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.ModelInfo.prototype, "_updateLocations", locationsUpdated, true);
         InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.url());
         InspectorTest.waitForUISourceCode(sourceURL).then(scssUISourceCodeAdded);
     }

@@ -970,7 +970,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.debuggerModel = SDK.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
         InspectorTest.domModel = SDK.DOMModel.fromTarget(target);
-        InspectorTest.cssModel = SDK.CSSModel.fromTarget(target);
+        InspectorTest.cssModel = target.model(SDK.CSSModel);
         InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
         InspectorTest.heapProfilerModel = target.heapProfilerModel;

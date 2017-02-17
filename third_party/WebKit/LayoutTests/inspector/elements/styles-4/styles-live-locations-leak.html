@@ -64,9 +64,9 @@ function test()
     function countLiveLocations()
     {
         var locationsCount = 0;
-        var targetInfos = Bindings.cssWorkspaceBinding._modelToTargetInfo.valuesArray();
-        for (var targetInfo of targetInfos)
-            locationsCount += targetInfo._locations.valuesArray().length;
+        var modelInfos = Bindings.cssWorkspaceBinding._modelToInfo.valuesArray();
+        for (var modelInfo of modelInfos)
+            locationsCount += modelInfo._locations.valuesArray().length;
         return locationsCount;
     }
 }
