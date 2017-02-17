@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace content {
@@ -19,6 +20,8 @@ namespace options {
 class OptionsUIBrowserTest : public InProcessBrowserTest {
  public:
   OptionsUIBrowserTest();
+
+  void SetUpInProcessBrowserTestFixture() override;
 
   // Navigate to the Uber/Settings page and block until it has loaded.
   void NavigateToSettings();
@@ -44,6 +47,8 @@ class OptionsUIBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* GetSettingsFrame();
 
  private:
+  base::test::ScopedFeatureList disable_md_settings_;
+
   DISALLOW_COPY_AND_ASSIGN(OptionsUIBrowserTest);
 };
 

@@ -35,6 +35,7 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
+    options::OptionsUIBrowserTest::SetUpInProcessBrowserTestFixture();
 #if defined(OS_CHROMEOS)
     device_policy_test_helper_.MarkAsEnterpriseOwned();
 #endif

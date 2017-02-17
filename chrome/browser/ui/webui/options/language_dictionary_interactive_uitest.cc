@@ -4,11 +4,13 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -25,6 +27,8 @@ class LanguageDictionaryWebUITest : public InProcessBrowserTest {
 
   // Navigate to the editDictionary page.
   void SetUpOnMainThread() override {
+    disable_md_settings_.InitAndDisableFeature(
+        features::kMaterialDesignSettings);
     const GURL url = chrome::GetSettingsUrl("editDictionary");
     ui_test_utils::NavigateToURL(browser(), url);
   }
@@ -177,6 +181,7 @@ class LanguageDictionaryWebUITest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<content::DOMMessageQueue> dom_message_queue_;
+  base::test::ScopedFeatureList disable_md_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageDictionaryWebUITest);
 };
