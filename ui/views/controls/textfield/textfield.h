@@ -373,8 +373,8 @@ class VIEWS_EXPORT Textfield : public View,
   // A callback function to periodically update the cursor node_data.
   void UpdateCursor();
 
-  // Repaint the cursor.
-  void RepaintCursor();
+  // Update the cursor position in the text field.
+  void UpdateCursorView();
 
   void PaintTextAndCursor(gfx::Canvas* canvas);
 
@@ -523,6 +523,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
+
+  // View containing the text cursor.
+  View cursor_view_;
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

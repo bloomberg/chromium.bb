@@ -864,9 +864,6 @@ void RenderText::Draw(Canvas* canvas) {
   if (!text().empty() && focused())
     DrawSelection(canvas);
 
-  if (cursor_enabled() && cursor_visible() && focused())
-    DrawCursor(canvas, selection_model_);
-
   if (!text().empty()) {
     internal::SkiaTextRenderer renderer(canvas);
     if (halo_effect())
@@ -876,12 +873,6 @@ void RenderText::Draw(Canvas* canvas) {
 
   if (clip_to_display_rect())
     canvas->Restore();
-}
-
-void RenderText::DrawCursor(Canvas* canvas, const SelectionModel& position) {
-  // Paint cursor. Replace cursor is drawn as rectangle for now.
-  // TODO(msw): Draw a better cursor with a better indication of association.
-  canvas->FillRect(GetCursorBounds(position, true), cursor_color_);
 }
 
 bool RenderText::IsValidLogicalIndex(size_t index) const {
@@ -1079,8 +1070,6 @@ RenderText::RenderText()
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
-      cursor_visible_(false),
-      cursor_color_(kDefaultColor),
       selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),

@@ -98,7 +98,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   ASSERT_EQ(cached_textfield, textfield);
   std::vector<AXAuraObjWrapper*> textfield_children;
   ax_tree.GetChildren(textfield, &textfield_children);
-  ASSERT_EQ(0U, textfield_children.size());
+  ASSERT_EQ(1U, textfield_children.size());
 
   ASSERT_EQ(content, textfield->GetParent());
 
