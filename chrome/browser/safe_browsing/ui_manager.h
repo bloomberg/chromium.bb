@@ -63,13 +63,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // on IO thread. If shutdown is true, the manager is disabled permanently.
   void StopOnIOThread(bool shutdown) override;
 
-  // Called on the UI thread to display an interstitial page.
-  // |url| is the url of the resource that matches a safe browsing list.
-  // If the request contained a chain of redirects, |url| is the last url
-  // in the chain, and |original_url| is the first one (the root of the
-  // chain). Otherwise, |original_url| = |url|.
-  void DisplayBlockingPage(const UnsafeResource& resource) override;
-
   // Called on the IO thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
   void SendSerializedThreatDetails(const std::string& serialized) override;
@@ -106,6 +99,14 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Call protocol manager on IO thread to report hits of unsafe contents.
   void ReportSafeBrowsingHitOnIOThread(
       const safe_browsing::HitReport& hit_report) override;
+
+  // Creates a hit report for the given resource and calls
+  // MaybeReportSafeBrowsingHit. This also notifies all observers in
+  // |observer_list_|.
+  void CreateAndSendHitReport(const UnsafeResource& resource) override;
+
+  // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
+  void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
  private:
   friend class SafeBrowsingUIManagerTest;

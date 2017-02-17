@@ -215,13 +215,15 @@ void BaseUIManager::DisplayBlockingPage(
     return;
   }
 
-  // BaseUIManager does not send SafeBrowsingHitReport. Subclasses should
-  // implement the reporting logic themselves if needed.
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
+    CreateAndSendHitReport(resource);
+  }
+
   AddToWhitelistUrlSet(GetMainFrameWhitelistUrlForResource(resource),
                        resource.web_contents_getter.Run(),
                        true /* A decision is now pending */,
                        resource.threat_type);
-  BaseBlockingPage::ShowBlockingPage(this, resource);
+  ShowBlockingPageForResource(resource);
 }
 
 void BaseUIManager::EnsureWhitelistCreated(
@@ -232,6 +234,13 @@ void BaseUIManager::EnsureWhitelistCreated(
 void BaseUIManager::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
   return;
+}
+
+void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}
+
+void BaseUIManager::ShowBlockingPageForResource(
+    const UnsafeResource& resource) {
+  BaseBlockingPage::ShowBlockingPage(this, resource);
 }
 
 // A safebrowsing hit is sent after a blocking page for malware/phishing

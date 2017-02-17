@@ -55,97 +55,51 @@ void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
     sb_service_ = NULL;
 }
 
-void SafeBrowsingUIManager::DisplayBlockingPage(
+void SafeBrowsingUIManager::CreateAndSendHitReport(
     const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (resource.is_subresource && !resource.is_subframe) {
-    // Sites tagged as serving Unwanted Software should only show a warning for
-    // main-frame or sub-frame resource. Similar warning restrictions should be
-    // applied to malware sites tagged as "landing sites" (see "Types of
-    // Malware sites" under
-    // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
-    if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-        (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-         resource.threat_metadata.threat_pattern_type ==
-             ThreatPatternType::MALWARE_LANDING)) {
-      if (!resource.callback.is_null()) {
-        DCHECK(resource.callback_thread);
-        resource.callback_thread->PostTask(FROM_HERE,
-                                           base::Bind(resource.callback, true));
-      }
-
-      return;
-    }
-  }
-
-  // The tab might have been closed. If it was closed, just act as if "Don't
-  // Proceed" had been chosen.
   WebContents* web_contents = resource.web_contents_getter.Run();
-  if (!web_contents) {
-    std::vector<UnsafeResource> resources;
-    resources.push_back(resource);
-    OnBlockingPageDone(resources, false, web_contents,
-                       GetMainFrameWhitelistUrlForResource(resource));
-    return;
+  DCHECK(web_contents);
+  HitReport hit_report;
+  hit_report.malicious_url = resource.url;
+  hit_report.is_subresource = resource.is_subresource;
+  hit_report.threat_type = resource.threat_type;
+  hit_report.threat_source = resource.threat_source;
+  hit_report.population_id = resource.threat_metadata.population_id;
+
+  NavigationEntry* entry = resource.GetNavigationEntryForResource();
+  if (entry) {
+    hit_report.page_url = entry->GetURL();
+    hit_report.referrer_url = entry->GetReferrer().url;
   }
 
-  // Check if the user has already ignored a SB warning for the same WebContents
-  // and top-level domain.
-  if (IsWhitelisted(resource)) {
-    if (!resource.callback.is_null()) {
-      DCHECK(resource.callback_thread);
-      resource.callback_thread->PostTask(FROM_HERE,
-                                         base::Bind(resource.callback, true));
-    }
-    return;
+  // When the malicious url is on the main frame, and resource.original_url
+  // is not the same as the resource.url, that means we have a redirect from
+  // resource.original_url to resource.url.
+  // Also, at this point, page_url points to the _previous_ page that we
+  // were on. We replace page_url with resource.original_url and referrer
+  // with page_url.
+  if (!resource.is_subresource && !resource.original_url.is_empty() &&
+      resource.original_url != resource.url) {
+    hit_report.referrer_url = hit_report.page_url;
+    hit_report.page_url = resource.original_url;
   }
 
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
-    HitReport hit_report;
-    hit_report.malicious_url = resource.url;
-    hit_report.is_subresource = resource.is_subresource;
-    hit_report.threat_type = resource.threat_type;
-    hit_report.threat_source = resource.threat_source;
-    hit_report.population_id = resource.threat_metadata.population_id;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  hit_report.extended_reporting_level =
+      profile ? GetExtendedReportingLevel(*profile->GetPrefs())
+              : SBER_LEVEL_OFF;
+  hit_report.is_metrics_reporting_active =
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
-    NavigationEntry* entry = resource.GetNavigationEntryForResource();
-    if (entry) {
-      hit_report.page_url = entry->GetURL();
-      hit_report.referrer_url = entry->GetReferrer().url;
-    }
+  MaybeReportSafeBrowsingHit(hit_report);
 
-    // When the malicious url is on the main frame, and resource.original_url
-    // is not the same as the resource.url, that means we have a redirect from
-    // resource.original_url to resource.url.
-    // Also, at this point, page_url points to the _previous_ page that we
-    // were on. We replace page_url with resource.original_url and referrer
-    // with page_url.
-    if (!resource.is_subresource &&
-        !resource.original_url.is_empty() &&
-        resource.original_url != resource.url) {
-      hit_report.referrer_url = hit_report.page_url;
-      hit_report.page_url = resource.original_url;
-    }
+  for (Observer& observer : observer_list_)
+    observer.OnSafeBrowsingHit(resource);
+}
 
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    hit_report.extended_reporting_level =
-        profile ? GetExtendedReportingLevel(*profile->GetPrefs())
-                : SBER_LEVEL_OFF;
-    hit_report.is_metrics_reporting_active =
-        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
-
-    MaybeReportSafeBrowsingHit(hit_report);
-  }
-
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
-    for (Observer& observer : observer_list_)
-      observer.OnSafeBrowsingHit(resource);
-  }
-  AddToWhitelistUrlSet(GetMainFrameWhitelistUrlForResource(resource),
-                       resource.web_contents_getter.Run(),
-                       true /* A decision is now pending */,
-                       resource.threat_type);
+void SafeBrowsingUIManager::ShowBlockingPageForResource(
+    const UnsafeResource& resource) {
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
