@@ -6770,4 +6770,30 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_FALSE(handle_observer.was_renderer_initiated());
 }
 
+// Tests that a 204 response to a browser-initiated navigation does not result
+// in a new NavigationEntry being committed.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       204Navigation) {
+  const GURL kURL = embedded_test_server()->GetURL("/title1.html");
+  const GURL kURL204 = embedded_test_server()->GetURL("/page204.html");
+
+  // Navigate to the initial page.
+  EXPECT_TRUE(NavigateToURL(shell(), kURL));
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(kURL, entry->GetURL());
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Do a 204 navigation.
+  EXPECT_FALSE(NavigateToURL(shell(), kURL204));
+
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(kURL, entry->GetURL());
+  EXPECT_EQ(1, controller.GetEntryCount());
+}
+
 }  // namespace content
