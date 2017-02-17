@@ -807,6 +807,11 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   gc_revisions = {
       dirname: rev for dirname, rev in revisions.iteritems()
       if dirname not in solution_dirs}
+  # Gclient sometimes ignores "unmanaged": "False" in the gclient solution
+  # if --revision <anything> is passed (for example, for subrepos).
+  # This forces gclient to always treat solutions deps as unmanaged.
+  for solution_name in list(solution_dirs):
+    gc_revisions[solution_name] = 'unmanaged'
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
