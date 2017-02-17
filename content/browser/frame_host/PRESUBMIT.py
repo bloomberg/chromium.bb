@@ -33,21 +33,9 @@ def PostUploadHook(cl, change, output_api):
   This hook adds extra try bots to the CL description in order to run site
   isolation tests in addition to CQ try bots.
   """
-  rietveld_obj = cl.RpcServer()
-  issue = cl.issue
-  description = rietveld_obj.get_description(issue)
-  if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
-    return []
-
-  masters = _GetTryMasters(None, change)
-  results = []
-  new_description = description
-  new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(
-      '%s:%s' % (master, ','.join(bots))
-      for master, bots in masters.iteritems())
-  results.append(output_api.PresubmitNotifyResult(
-      'Automatically added site isolation trybots to run tests on CQ.'))
-
-  rietveld_obj.update_description(issue, new_description)
-
-  return results
+  return output_api.EnsureCQIncludeTrybotsAreAdded(
+    cl,
+    [
+      'master.tryserver.chromium.linux:linux_site_isolation'
+    ],
+    'Automatically added site isolation trybots to run tests on CQ.')

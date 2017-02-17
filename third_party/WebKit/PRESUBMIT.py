@@ -362,25 +362,9 @@ def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
     """
     if not _ArePaintOrCompositingDirectoriesModified(change):
         return []
-
-    rietveld_obj = cl.RpcServer()
-    issue = cl.issue
-    description = rietveld_obj.get_description(issue)
-    if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
-        return []
-
-    bots = [
-        'master.tryserver.chromium.linux:linux_layout_tests_slimming_paint_v2',
-    ]
-
-    results = []
-    new_description = description
-    new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(bots)
-    results.append(output_api.PresubmitNotifyResult(
+    return output_api.EnsureCQIncludeTrybotsAreAdded(
+        cl,
+        ['master.tryserver.chromium.linux:'
+         'linux_layout_tests_slimming_paint_v2'],
         'Automatically added slimming-paint-v2 tests to run on CQ due to '
-        'changes in paint or compositing directories.'))
-
-    if new_description != description:
-        rietveld_obj.update_description(issue, new_description)
-
-    return results
+        'changes in paint or compositing directories.')
