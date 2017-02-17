@@ -815,10 +815,6 @@ void RenderThreadImpl::Init(
                  base::Unretained(this))));
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    // Currently it is not possible to enable both PurgeAndSuspend and
-    // MemoryCoordinator at the same time.
-    DCHECK(!base::FeatureList::IsEnabled(features::kPurgeAndSuspend));
-
     // Disable MemoryPressureListener when memory coordinator is enabled.
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
 
@@ -1634,11 +1630,6 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     needs_to_record_first_active_paint_ = false;
   } else {
     renderer_scheduler_->OnRendererForegrounded();
-    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
-    if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
-      base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-          base::MemoryState::NORMAL);
 
     record_purge_suspend_metric_closure_.Cancel();
     record_purge_suspend_metric_closure_.Reset(
@@ -1656,13 +1647,7 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   if (!RendererIsHidden())
     return;
 
-  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
-    return;
-
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
     base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
   }
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
@@ -1833,24 +1818,6 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
       "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         total_allocated_mb) * 1024);
-}
-
-void RenderThreadImpl::OnProcessResume() {
-  ChildThreadImpl::OnProcessResume();
-
-  if (!RendererIsHidden())
-    return;
-
-  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
-    return;
-
-  if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-        base::MemoryState::NORMAL);
-  }
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
