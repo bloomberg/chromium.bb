@@ -136,8 +136,8 @@ function test()
 
                 function onContentDumped()
                 {
-                    Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode1.url());
-                    Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode2.url());
+                    Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode1);
+                    Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode2);
                     Snippets.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
                 }
             }
@@ -146,7 +146,7 @@ function test()
             {
                 var uiSourceCode3 = uiSourceCode;
                 InspectorTest.addResult("Snippet3 created.");
-                Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode3.url());
+                Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode3);
                 InspectorTest.addResult("Snippet3 deleted.");
 
                 InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);

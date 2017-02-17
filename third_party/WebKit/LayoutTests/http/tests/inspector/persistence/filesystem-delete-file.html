@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./automapping-test.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    InspectorTest.addFiles(fs, {
+        "script.js": { content: "testme" },
+        "bar.js": { content: "another" },
+    });
+    fs.reportCreated(function() { });
+    InspectorTest.waitForUISourceCode("script.js").then(onUISourceCode);
+
+    function onUISourceCode(uiSourceCode) {
+        InspectorTest.addResult("BEFORE:\n" + fs.dumpAsText());
+        uiSourceCode.remove();
+        InspectorTest.addResult("\nAFTER:\n" + fs.dumpAsText());
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verifies that uiSourceCode.delete actually deltes file from IsolatedFileSystem.</p>
+</body>
+</html>
