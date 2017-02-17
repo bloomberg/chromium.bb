@@ -6,6 +6,7 @@ module cc.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
+import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_reference.mojom";
@@ -47,8 +48,6 @@ interface MojoCompositorFrameSink {
 
   // Mark the sequence as satisfied and garbage collect surfaces.
   Satisfy(cc.mojom.SurfaceSequence sequence);
-
-  // TODO(fsamuel): ReadbackBitmap API would be useful here.
 };
 
 interface MojoCompositorFrameSinkClient {
@@ -78,4 +77,9 @@ interface MojoCompositorFrameSinkClient {
 interface MojoCompositorFrameSinkPrivate {
   AddChildFrameSink(FrameSinkId child_frame_sink_id);
   RemoveChildFrameSink(FrameSinkId child_frame_sink_id);
+
+  // Requests that the renderer send back a copy of the surface that this
+  // CompositorFrameSink submits to. The result can be in form of a bitmap
+  // or a texture. See cc::CopyOutputRequest.
+  RequestCopyOfSurface(cc.mojom.CopyOutputRequest request);
 };

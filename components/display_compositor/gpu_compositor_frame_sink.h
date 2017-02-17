@@ -47,6 +47,8 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;
   void RemoveChildFrameSink(
       const cc::FrameSinkId& child_frame_sink_id) override;
+  void RequestCopyOfSurface(
+      std::unique_ptr<cc::CopyOutputRequest> request) override;
 
  protected:
   void OnClientConnectionLost();

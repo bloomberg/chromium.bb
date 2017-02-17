@@ -97,4 +97,9 @@ void GpuCompositorFrameSink::OnPrivateConnectionLost() {
                                      client_connection_lost_);
 }
 
+void GpuCompositorFrameSink::RequestCopyOfSurface(
+    std::unique_ptr<cc::CopyOutputRequest> request) {
+  support_->RequestCopyOfSurface(std::move(request));
+}
+
 }  // namespace display_compositor

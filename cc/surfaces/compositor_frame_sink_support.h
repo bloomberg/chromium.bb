@@ -55,6 +55,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void Satisfy(const SurfaceSequence& sequence);
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
+  void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
 
  private:
   // Update surface references with SurfaceManager for current CompositorFrame

@@ -247,4 +247,9 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
     begin_frame_source_->RemoveObserver(this);
 }
 
+void CompositorFrameSinkSupport::RequestCopyOfSurface(
+    std::unique_ptr<CopyOutputRequest> request) {
+  surface_factory_.RequestCopyOfSurface(std::move(request));
+}
+
 }  // namespace cc
