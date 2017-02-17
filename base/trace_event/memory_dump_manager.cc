@@ -12,6 +12,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/thread_heap_usage_tracker.h"
@@ -667,6 +668,16 @@ void MemoryDumpManager::InvokeOnMemoryDump(
                            TRACE_ID_MANGLE(pmd_async_state->req_args.dump_guid),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "dump_provider.name", mdpinfo->name);
+
+    // A stack allocated string with dump provider name is useful to debug
+    // crashes while invoking dump after a |dump_provider| is not unregistered
+    // in safe way.
+    // TODO(ssid): Remove this after fixing crbug.com/643438.
+    char provider_name_for_debugging[16];
+    strncpy(provider_name_for_debugging, mdpinfo->name,
+            sizeof(provider_name_for_debugging) - 1);
+    provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] = '\0';
+    base::debug::Alias(provider_name_for_debugging);
 
     // Pid of the target process being dumped. Often kNullProcessId (= current
     // process), non-zero when the coordinator process creates dumps on behalf
