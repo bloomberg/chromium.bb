@@ -29,6 +29,11 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
      */
     private static final String PARAM_CHROME_HOME_MAX_TILE_ROWS = "chrome_home_max_tile_rows";
 
+    /**
+     * Experiment parameter for the number of tile title lines to show.
+     */
+    private static final String PARAM_CHROME_HOME_TILE_TITLE_LINES = "chrome_home_tile_title_lines";
+
     private final TileGroup mTileGroup;
 
     public TileGrid(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
@@ -78,6 +83,12 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
                 ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_MAX_TILE_ROWS, defaultValue);
     }
 
+    private static int getTileTitleLines() {
+        int defaultValue = 1;
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_TILE_TITLE_LINES, defaultValue);
+    }
+
     /**
      * The {@code ViewHolder} for the {@link TileGrid}.
      */
@@ -92,7 +103,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
 
         public void onBindViewHolder(TileGroup tileGroup) {
             mLayout.setMaxRows(getMaxTileRows());
-            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false);
+            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false, getTileTitleLines());
         }
 
         public void updateIconView(Tile tile) {

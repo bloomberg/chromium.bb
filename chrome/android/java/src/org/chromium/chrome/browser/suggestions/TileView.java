@@ -35,11 +35,13 @@ public class TileView extends FrameLayout {
      * Initializes the view using the data held by {@code tile}. This should be called immediately
      * after inflation.
      * @param tile The tile that holds the data to populate this view.
+     * @param titleLines The number of text lines to use for the tile title.
      */
-    public void initialize(Tile tile) {
+    public void initialize(Tile tile, int titleLines) {
         mTile = tile;
-        ((TextView) findViewById(R.id.tile_view_title))
-                .setText(TitleUtil.getTitleForDisplay(mTile.getTitle(), mTile.getUrl()));
+        TextView titleView = (TextView) findViewById(R.id.tile_view_title);
+        titleView.setLines(titleLines);
+        titleView.setText(TitleUtil.getTitleForDisplay(mTile.getTitle(), mTile.getUrl()));
         renderIcon();
         findViewById(R.id.offline_badge)
                 .setVisibility(mTile.isOfflineAvailable() ? View.VISIBLE : View.GONE);

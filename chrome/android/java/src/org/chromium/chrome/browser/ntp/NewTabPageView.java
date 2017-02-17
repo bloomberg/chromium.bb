@@ -71,6 +71,11 @@ public class NewTabPageView
     private static final String PARAM_NTP_MAX_TILE_ROWS = "ntp_max_tile_rows";
 
     /**
+     * Experiment parameter for the number of tile title lines to show.
+     */
+    private static final String PARAM_NTP_TILE_TITLE_LINES = "ntp_tile_title_lines";
+
+    /**
      * The maximum number of tiles to try and fit in a row. On smaller screens, there may not be
      * enough space to fit all of them.
      */
@@ -800,6 +805,15 @@ public class NewTabPageView
                 ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_NTP_MAX_TILE_ROWS, defaultValue);
     }
 
+    private static int getTileTitleLines() {
+        int defaultValue = 2;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
+            defaultValue = 1;
+        }
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_NTP_TILE_TITLE_LINES, defaultValue);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (mNewTabPageLayout != null) {
@@ -841,7 +855,7 @@ public class NewTabPageView
 
     @Override
     public void onTileDataChanged() {
-        mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted);
+        mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted, getTileTitleLines());
         mSnapshotTileGridChanged = true;
 
         // The page contents are initially hidden; otherwise they'll be drawn centered on the page

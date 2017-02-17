@@ -192,8 +192,10 @@ public class TileGroup implements MostVisitedSites.Observer {
      * possible because view inflation and icon loading are slow.
      * @param tileGridLayout The layout to render the tile views into.
      * @param trackLoadTasks Whether to track load tasks.
+     * @param titleLines The number of text lines to use for each tile title.
      */
-    public void renderTileViews(TileGridLayout tileGridLayout, boolean trackLoadTasks) {
+    public void renderTileViews(
+            TileGridLayout tileGridLayout, boolean trackLoadTasks, int titleLines) {
         // Map the old tile views by url so they can be reused later.
         Map<String, TileView> oldTileViews = new HashMap<>();
         int childCount = tileGridLayout.getChildCount();
@@ -227,7 +229,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             }
 
             // No view was reused, create a new one.
-            TileView tileView = buildTileView(tile, tileGridLayout, trackLoadTasks);
+            TileView tileView = buildTileView(tile, tileGridLayout, trackLoadTasks, titleLines);
 
             tileView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -303,12 +305,14 @@ public class TileGroup implements MostVisitedSites.Observer {
      * @param tile The tile that holds the data to populate the new tile view.
      * @param parentView The parent of the new tile view.
      * @param trackLoadTask Whether to track a load task.
+     * @param titleLines The number of text lines to use for each tile title.
      * @return The new tile view.
      */
-    private TileView buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask) {
+    private TileView buildTileView(
+            Tile tile, ViewGroup parentView, boolean trackLoadTask, int titleLines) {
         TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
                                     .inflate(R.layout.tile_view, parentView, false);
-        tileView.initialize(tile);
+        tileView.initialize(tile, titleLines);
 
         LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile, trackLoadTask);
         if (trackLoadTask) mObserver.onLoadTaskAdded();
