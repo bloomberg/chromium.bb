@@ -613,8 +613,16 @@
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:minHeight">18dp</item>
         <item name="android:textColor">@color/google_grey_600</item>
-        <item name="android:textSize">12sp</item>1
+        <item name="android:textSize">12sp</item>
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="DateView" parent="RobotoMediumStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 </resources>

@@ -371,7 +371,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
     @SmallTest
     public void testToolbarShadow() throws Exception {
-        View toolbarShadow = mHistoryManager.getToolbarShadowForTests();
+        View toolbarShadow = mHistoryManager.getSelectableListLayout().getToolbarShadowForTests();
         assertEquals(View.GONE, toolbarShadow.getVisibility());
 
         toggleItemSelection(2);
@@ -386,7 +386,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     @SmallTest
     public void testSearchView() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
-        View toolbarShadow = mHistoryManager.getToolbarShadowForTests();
+        View toolbarShadow = mHistoryManager.getSelectableListLayout().getToolbarShadowForTests();
         View toolbarSearchView = toolbar.getSearchViewForTests();
         assertEquals(View.GONE, toolbarShadow.getVisibility());
         assertEquals(View.GONE, toolbarSearchView.getVisibility());

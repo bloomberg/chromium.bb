@@ -3,12 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<!-- TODO(twellington): merge with history_date_view.xml once downloads
+                        is width constrained to 600dp. -->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/RobotoMediumStyle"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
+    style="@style/DateView"
     android:layout_marginEnd="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="16dp"
-    android:textSize="16sp" />
+    android:layout_marginStart="16dp" />

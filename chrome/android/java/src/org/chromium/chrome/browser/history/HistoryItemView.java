@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 
 /**
  * The SelectableItemView for items displayed in the browsing history UI.
@@ -127,7 +128,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         MarginResizer.createWithViewAdapter(this,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
-                mHistoryManager.getDefaultLateralListItemMarginPx(), 0);
+                SelectableListLayout.getDefaultListItemLateralMarginPx(getResources()), 0);
     }
 
     /**
@@ -203,20 +204,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      * Sets the background resource for this view using the item's positioning in its group.
      */
     public void setBackgroundResourceForGroupPosition() {
-        int backgroundResource;
-
-        boolean isLastInGroup =  getItem().isLastInGroup();
-        boolean isFirstInGroup = getItem().isFirstInGroup();
-        if (!isLastInGroup && !isFirstInGroup) {
-            backgroundResource = R.drawable.list_item_middle;
-        } else if (!isLastInGroup) {
-            backgroundResource = R.drawable.list_item_top;
-        } else if (!isFirstInGroup) {
-            backgroundResource = R.drawable.list_item_bottom;
-        } else {
-            backgroundResource = R.drawable.list_item_single;
-        }
-
-        setBackgroundResource(backgroundResource);
+        setBackgroundResourceForGroupPosition(
+                getItem().isFirstInGroup(), getItem().isLastInGroup());
     }
 }

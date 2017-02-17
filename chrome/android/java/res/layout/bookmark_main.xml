@@ -13,13 +13,13 @@
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/bookmark_drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/white" >
+        android:layout_height="match_parent" >
 
         <org.chromium.chrome.browser.widget.selection.SelectableListLayout
             android:id="@+id/selectable_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:background="@color/default_primary_color" />
 
         <org.chromium.chrome.browser.bookmarks.BookmarkDrawerListView
             android:id="@+id/bookmark_drawer_list"

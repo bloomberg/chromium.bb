@@ -7,12 +7,16 @@ package org.chromium.chrome.browser.widget.selection;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
+import android.support.v7.widget.RecyclerView.ItemAnimator;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -30,7 +34,10 @@ import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig.DisplayStyle;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.base.DeviceFormFactor;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -43,15 +50,47 @@ import javax.annotation.Nullable;
  *
  * @param <E> The type of the selectable items this layout holds.
  */
-public class SelectableListLayout<E> extends RelativeLayout implements DisplayStyleObserver {
+public class SelectableListLayout<E>
+        extends RelativeLayout implements DisplayStyleObserver, SelectionObserver<E> {
+    /**
+     * @param res Resources used to retrieve drawables and dimensions.
+     * @return The default list item lateral margin size in pixels. This value should be used in
+     *         {@link HorizontalDisplayStyle#REGULAR} to hide the lateral shadow and rounded edges
+     *         on items that use the list_item* 9-patches as a background.
+     */
+    public static int getDefaultListItemLateralMarginPx(Resources res) {
+        if (sDefaultListItemLateralMarginPx == -1) {
+            Rect listItemShadow = new Rect();
+            ApiCompatibilityUtils.getDrawable(res, R.drawable.card_middle)
+                    .getPadding(listItemShadow);
+            int cardCornerRadius = res.getDimensionPixelSize(R.dimen.list_item_corner_radius);
+
+            assert listItemShadow.left == listItemShadow.right;
+
+            // A negative margin is used in HorizontalDisplayStyle#REGULAR to hide the lateral
+            // shadow.
+            sDefaultListItemLateralMarginPx = -(listItemShadow.left + cardCornerRadius);
+        }
+
+        return sDefaultListItemLateralMarginPx;
+    }
+
     private static final int WIDE_DISPLAY_MIN_PADDING_DP = 16;
+
+    private static int sDefaultListItemLateralMarginPx = -1;
 
     private Adapter<RecyclerView.ViewHolder> mAdapter;
     private ViewStub mToolbarStub;
     private TextView mEmptyView;
     private LoadingView mLoadingView;
     private RecyclerView mRecyclerView;
+    private ItemAnimator mItemAnimator;
     SelectableListToolbar<E> mToolbar;
+    private FadingShadowView mToolbarShadow;
+
+    private boolean mToolbarPermanentlyHidden;
+    private int mEmptyStringResId;
+    private int mSearchEmptyStringResId;
 
     private UiConfig mUiConfig;
 
@@ -85,14 +124,6 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
             updateEmptyViewVisibility();
         }
     };
-
-    /**
-     * Unlike ListView or GridView, RecyclerView does not provide default empty
-     * view implementation. We need to check it ourselves.
-     */
-    private void updateEmptyViewVisibility() {
-        mEmptyView.setVisibility(mAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-    }
 
     public SelectableListLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -135,7 +166,16 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
         mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                setToolbarShadowVisibility();
+            }
+        });
+
+        mItemAnimator = mRecyclerView.getItemAnimator();
 
         return mRecyclerView;
     }
@@ -165,14 +205,6 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
             int normalGroupResId, int selectedGroupResId,
             @Nullable Integer normalBackgroundColorResId, boolean hideShadowOnLargeTablets,
             @Nullable OnMenuItemClickListener listener) {
-        FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
-        if (hideShadowOnLargeTablets && DeviceFormFactor.isLargeTablet(getContext())) {
-            shadow.setVisibility(View.GONE);
-        } else {
-            shadow.init(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
-        }
-
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
         SelectableListToolbar<E> toolbar = (SelectableListToolbar<E>) mToolbarStub.inflate();
@@ -184,6 +216,18 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
             mToolbar.setOnMenuItemClickListener(listener);
         }
 
+        mToolbarShadow = (FadingShadowView) findViewById(R.id.shadow);
+        if (hideShadowOnLargeTablets && DeviceFormFactor.isLargeTablet(getContext())) {
+            mToolbarPermanentlyHidden = true;
+            mToolbarShadow.setVisibility(View.GONE);
+        } else {
+            mToolbarShadow.init(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color),
+                    FadingShadow.POSITION_TOP);
+            delegate.addObserver(this);
+            setToolbarShadowVisibility();
+        }
+
         return mToolbar;
     }
 
@@ -192,19 +236,18 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
      *
      * @param emptyDrawable The Drawable to show when the selectable list is empty.
      * @param emptyStringResId The string to show when the selectable list is empty.
+     * @param searchEmptyStringResId The string to show when the selectable list is empty during
+     *                               a search.
      * @return The {@link TextView} displayed when the list is empty.
      */
-    public TextView initializeEmptyView(Drawable emptyDrawable, int emptyStringResId) {
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
-        mEmptyView.setText(emptyStringResId);
-        return mEmptyView;
-    }
+    public TextView initializeEmptyView(
+            Drawable emptyDrawable, int emptyStringResId, int searchEmptyStringResId) {
+        mEmptyStringResId = emptyStringResId;
+        mSearchEmptyStringResId = searchEmptyStringResId;
 
-    /**
-     * @param emptyStringResId The string to show when the selectable list is empty.
-     */
-    public void setEmptyViewText(int emptyStringResId) {
-        mEmptyView.setText(emptyStringResId);
+        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
+        mEmptyView.setText(mEmptyStringResId);
+        return mEmptyView;
     }
 
     /**
@@ -212,6 +255,7 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
      */
     public void onDestroyed() {
         mAdapter.unregisterAdapterDataObserver(mAdapterObserver);
+        mToolbar.getSelectionDelegate().removeObserver(this);
     }
 
     /**
@@ -248,6 +292,29 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
                 padding, mRecyclerView.getPaddingBottom());
     }
 
+    @Override
+    public void onSelectionStateChange(List<E> selectedItems) {
+        setToolbarShadowVisibility();
+    }
+
+    /**
+     * Called when a search is starting.
+     */
+    public void onStartSearch() {
+        mRecyclerView.setItemAnimator(null);
+        mToolbarShadow.setVisibility(View.VISIBLE);
+        mEmptyView.setText(mSearchEmptyStringResId);
+    }
+
+    /**
+     * Called when a search has ended.
+     */
+    public void onEndSearch() {
+        mRecyclerView.setItemAnimator(mItemAnimator);
+        setToolbarShadowVisibility();
+        mEmptyView.setText(mEmptyStringResId);
+    }
+
     /**
      * @param displayStyle The current display style..
      * @param resources The {@link Resources} used to retrieve configuration and display metrics.
@@ -263,5 +330,26 @@ public class SelectableListLayout<E> extends RelativeLayout implements DisplaySt
             padding = (int) Math.max(WIDE_DISPLAY_MIN_PADDING_DP * dpToPx, padding);
         }
         return padding;
+    }
+
+    private void setToolbarShadowVisibility() {
+        if (mToolbarPermanentlyHidden || mToolbar == null || mRecyclerView == null) return;
+
+        boolean showShadow = mRecyclerView.computeVerticalScrollOffset() != 0
+                || mToolbar.isSearching() || mToolbar.getSelectionDelegate().isSelectionEnabled();
+        mToolbarShadow.setVisibility(showShadow ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Unlike ListView or GridView, RecyclerView does not provide default empty
+     * view implementation. We need to check it ourselves.
+     */
+    private void updateEmptyViewVisibility() {
+        mEmptyView.setVisibility(mAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    @VisibleForTesting
+    public View getToolbarShadowForTests() {
+        return mToolbarShadow;
     }
 }

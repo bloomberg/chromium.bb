@@ -20,8 +20,8 @@
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginEnd="1dp"
+        android:layout_marginStart="@dimen/list_item_lateral_padding"
+        android:layout_marginEnd="@dimen/list_item_lateral_padding"
         android:orientation="horizontal" >
 
         <ImageView

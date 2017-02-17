@@ -454,6 +454,14 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         setContentInsetEndWithActions(contentInsetEndWithActions);
     }
 
+    SelectionDelegate<E> getSelectionDelegate() {
+        return mSelectionDelegate;
+    }
+
+    boolean isSearching() {
+        return mIsSearching;
+    }
+
     /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
      */

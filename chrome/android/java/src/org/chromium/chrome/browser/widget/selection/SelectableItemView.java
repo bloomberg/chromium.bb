@@ -9,9 +9,11 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.Checkable;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 
@@ -150,4 +152,53 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
      * that case.
      */
     protected abstract void onClick();
+
+    /**
+     * Sets the background resource for this view using the item's positioning in its group.
+     * @param isFirstInGroup Whether this item is the first in its group.
+     * @param isLastInGroup Whether this item is the last in its group.
+     */
+    public void setBackgroundResourceForGroupPosition(
+            boolean isFirstInGroup, boolean isLastInGroup) {
+        int backgroundResource;
+
+        if (!isLastInGroup && !isFirstInGroup) {
+            backgroundResource = R.drawable.list_item_middle;
+        } else if (!isLastInGroup) {
+            backgroundResource = R.drawable.list_item_top;
+        } else if (!isFirstInGroup) {
+            backgroundResource = R.drawable.list_item_bottom;
+        } else {
+            backgroundResource = R.drawable.list_item_single;
+        }
+
+        setBackgroundResource(backgroundResource);
+    }
+
+    /**
+     * Sets lateral margins to effectively hide the lateral shadow and rounded corners on the
+     * list_item* 9-patches used as backgrounds.
+     * @param contentView The container view surrounding the list item content. Extra start and end
+     *                    padding will be added to this view to account for incorrect internal
+     *                    padding in the 9-patches.
+     */
+    public void setLateralMarginsForDefaultDisplay(View contentView) {
+        MarginLayoutParams layoutParams = (MarginLayoutParams) getLayoutParams();
+        layoutParams.setMargins(
+                SelectableListLayout.getDefaultListItemLateralMarginPx(getResources()),
+                layoutParams.topMargin,
+                SelectableListLayout.getDefaultListItemLateralMarginPx(getResources()),
+                layoutParams.bottomMargin);
+
+        // TODO(twellington): remove this when new assets with the correct built in padding are
+        //                    available. This can move to XML once the bookmark and download layouts
+        //                    are width constrained to 600dp.
+        int lateralPaddingOffset =
+                getResources().getDimensionPixelSize(R.dimen.list_item_lateral_padding);
+        int startPadding = ApiCompatibilityUtils.getPaddingStart(contentView);
+        int endPadding = ApiCompatibilityUtils.getPaddingEnd(contentView);
+        ApiCompatibilityUtils.setPaddingRelative(contentView, startPadding + lateralPaddingOffset,
+                contentView.getPaddingTop(), endPadding + lateralPaddingOffset,
+                contentView.getPaddingBottom());
+    }
 }

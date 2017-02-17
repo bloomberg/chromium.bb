@@ -143,7 +143,8 @@ public class BookmarkManager implements BookmarkDelegate {
         mSelectableListLayout.initializeEmptyView(
                 ApiCompatibilityUtils.getDrawable(
                         mActivity.getResources(), R.drawable.bookmark_logo_large),
-                R.string.bookmarks_folder_empty);
+                R.string.bookmarks_folder_empty,
+                0 /* Bookmarks search is not yet controlled by the SelectableListLayout. */);
 
         mAdapter = new BookmarkItemsAdapter(activity);
 

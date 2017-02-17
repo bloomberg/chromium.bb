@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.DateViewHolder;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
+import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.components.signin.ChromeSigninController;
@@ -311,7 +312,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mClearBrowsingDataButtonContainer = (FrameLayout) mClearBrowsingDataButton.getParent();
         MarginResizer.createWithViewAdapter(mClearBrowsingDataButtonContainer,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
-                mHistoryManager.getDefaultLateralListItemMarginPx(), 0);
+                SelectableListLayout.getDefaultListItemLateralMarginPx(resources), 0);
         updateClearBrowsingDataButtonVisibility();
 
         mPrivacyDisclaimers = (ViewGroup) v.findViewById(R.id.privacy_disclaimers);

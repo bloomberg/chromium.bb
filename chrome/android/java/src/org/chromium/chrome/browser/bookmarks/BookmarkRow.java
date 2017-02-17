@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     protected BookmarkId mBookmarkId;
     private ListPopupWindow mPopupMenu;
     private boolean mIsAttachedToWindow;
+    private boolean mShouldUseListItemBackground;
 
     /**
      * Constructor for inflating from XML.
@@ -186,6 +188,18 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
                 }
             });
         }
+
+        // TODO(twellington): remove this after the bookmarks 720dp layout is restyled
+        //                    to match the < 720dp style and BookmarkSearchView is refactored.
+        //                    Currently BookmarkSearchRow extends BookmarkRow but is not selectable.
+        mShouldUseListItemBackground =
+                isSelectable() && !DeviceFormFactor.isLargeTablet(getContext());
+
+        // TODO(twellington): Replace this with a MarginResizer after the bookmarks layout is width
+        //                    constrained to 600dp.
+        if (mShouldUseListItemBackground) {
+            setLateralMarginsForDefaultDisplay(findViewById(R.id.bookmark_row));
+        }
     }
 
     @Override
@@ -252,4 +266,10 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     public void onFolderStateSet(BookmarkId folder) {
     }
 
+    @Override
+    public void setBackgroundResourceForGroupPosition(
+            boolean isFirstInGroup, boolean isLastInGroup) {
+        if (!mShouldUseListItemBackground) return;
+        super.setBackgroundResourceForGroupPosition(isFirstInGroup, isLastInGroup);
+    }
 }
