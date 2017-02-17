@@ -1659,7 +1659,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
 #if CONFIG_CB4X4
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+      const BLOCK_SIZE plane_bsize =
+          AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else
       const BLOCK_SIZE plane_bsize =
           get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
@@ -1667,6 +1668,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
+
+#if CONFIG_CB4X4
+      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+        continue;
+#endif
 
       for (row = 0; row < max_blocks_high; row += stepr)
         for (col = 0; col < max_blocks_wide; col += stepc)
@@ -1738,7 +1744,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_CB4X4
-        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+        const BLOCK_SIZE plane_bsize =
+            AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else
         const BLOCK_SIZE plane_bsize =
             get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
@@ -1746,6 +1753,12 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;
+
+#if CONFIG_CB4X4
+        if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+          continue;
+#endif
+
 #if CONFIG_VAR_TX
         const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
         const int bh_var_tx = tx_size_high_unit[max_tx_size];

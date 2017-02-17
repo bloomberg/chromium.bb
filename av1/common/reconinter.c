@@ -1085,6 +1085,11 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
     const int bw = pd->width;
     const int bh = pd->height;
 
+#if CONFIG_CB4X4
+    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      continue;
+#endif
+
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !unify_bsize) {
       const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
       const int have_vsplit = bp != PARTITION_HORZ;

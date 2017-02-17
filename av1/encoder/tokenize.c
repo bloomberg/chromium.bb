@@ -816,6 +816,16 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 
     td->counts->skip[ctx][0] += skip_inc;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col)) {
+        (*t)->token = EOSB_TOKEN;
+        (*t)++;
+        continue;
+      }
+#else
+      (void)mi_row;
+      (void)mi_col;
+#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, tokenize_b,
                                              &arg);
       (*t)->token = EOSB_TOKEN;

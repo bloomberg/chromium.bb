@@ -584,6 +584,9 @@ static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh) {
 
     xd->plane[i].width = (bw * MI_SIZE) >> xd->plane[i].subsampling_x;
     xd->plane[i].height = (bh * MI_SIZE) >> xd->plane[i].subsampling_y;
+
+    xd->plane[i].width = AOMMAX(xd->plane[i].width, 4);
+    xd->plane[i].height = AOMMAX(xd->plane[i].height, 4);
   }
 }
 
