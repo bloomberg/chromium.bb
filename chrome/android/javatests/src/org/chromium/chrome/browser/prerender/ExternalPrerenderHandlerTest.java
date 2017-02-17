@@ -114,8 +114,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             @Override
             public WebContents call() {
                 Pair<WebContents, WebContents> webContents =
-                        mExternalPrerenderHandler.addPrerender(
-                                mProfile, url, "", new Rect(), false);
+                        mExternalPrerenderHandler.addPrerender(mProfile, url, "", new Rect(), true);
                 assertNotNull(webContents);
                 assertNotNull(webContents.first);
                 assertNotNull(webContents.second);

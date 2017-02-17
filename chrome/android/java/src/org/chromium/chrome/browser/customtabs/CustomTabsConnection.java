@@ -132,6 +132,7 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
+    private boolean mForcePrerenderForTesting;
 
     // Conversion between native TimeTicks and SystemClock.uptimeMillis().
     private long mNativeTickOffsetUs;
@@ -178,6 +179,7 @@ public class CustomTabsConnection {
 
     public boolean newSession(CustomTabsSessionToken session) {
         boolean success = newSessionInternal(session);
+        if (mForcePrerenderForTesting) mClientManager.setPrerenderCellularForSession(session, true);
         logCall("newSession()", success);
         return success;
     }
@@ -974,5 +976,10 @@ public class CustomTabsConnection {
     @VisibleForTesting
     void ban(Context context, int uid) {
         mClientManager.ban(uid);
+    }
+
+    @VisibleForTesting
+    void setForcePrerender(boolean force) {
+        mForcePrerenderForTesting = force;
     }
 }

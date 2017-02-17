@@ -159,10 +159,19 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         mWebServer = TestWebServer.start();
+
+        CustomTabsConnection connection =
+                CustomTabsConnection.getInstance((Application) appContext);
+        connection.setForcePrerender(true);
     }
 
     @Override
     protected void tearDown() throws Exception {
+        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
+        CustomTabsConnection connection =
+                CustomTabsConnection.getInstance((Application) appContext);
+        connection.setForcePrerender(false);
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
