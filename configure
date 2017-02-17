@@ -311,6 +311,7 @@ EXPERIMENT_LIST="
     palette_throughput
     ref_adapt
     lv_map
+    mv_compress
 "
 CONFIG_LIST="
     dependency_tracking
