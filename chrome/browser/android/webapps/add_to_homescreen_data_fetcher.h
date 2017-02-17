@@ -14,6 +14,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace content {
 class WebContents;
 }
@@ -114,15 +118,17 @@ class AddToHomescreenDataFetcher
   // Creates the launcher icon from the given bitmap. shortcut_info_.url is
   // used to generate an icon if there is no bitmap in |bitmap_result| or the
   // bitmap is not large enough.
-  void CreateLauncherIconFromFaviconInBackground(
+  SkBitmap CreateLauncherIconFromFaviconInBackground(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Creates the launcher icon from the given |raw_icon|.
   void CreateLauncherIcon(const SkBitmap& raw_icon);
-  void CreateLauncherIconInBackground(const SkBitmap& raw_icon);
+  SkBitmap CreateLauncherIconInBackground(const SkBitmap& raw_icon);
 
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const SkBitmap& icon);
+
+  scoped_refptr<base::TaskRunner> background_task_runner_;
 
   Observer* weak_observer_;
 

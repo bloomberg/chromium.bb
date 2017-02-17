@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -74,6 +75,10 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     bool check_webapk_compatibility,
     Observer* observer)
     : WebContentsObserver(web_contents),
+      background_task_runner_(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       weak_observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents->GetBrowserContext(),
                                     web_contents->GetLastCommittedURL())),
@@ -286,14 +291,16 @@ void AddToHomescreenDataFetcher::OnFaviconFetched(
   if (!web_contents() || !weak_observer_ || is_icon_saved_)
     return;
 
-  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE, base::Bind(&AddToHomescreenDataFetcher::
-                                CreateLauncherIconFromFaviconInBackground,
-                            this, bitmap_result),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::Bind(&AddToHomescreenDataFetcher::
+                     CreateLauncherIconFromFaviconInBackground,
+                 base::Unretained(this), bitmap_result),
+      base::Bind(&AddToHomescreenDataFetcher::NotifyObserver,
+                 base::RetainedRef(this)));
 }
 
-void AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
+SkBitmap AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
@@ -304,19 +311,20 @@ void AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
   }
 
   shortcut_info_.best_primary_icon_url = bitmap_result.icon_url;
-  CreateLauncherIconInBackground(raw_icon);
+  return CreateLauncherIconInBackground(raw_icon);
 }
 
 void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& raw_icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
       base::Bind(&AddToHomescreenDataFetcher::CreateLauncherIconInBackground,
-                 this, raw_icon),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+                 base::Unretained(this), raw_icon),
+      base::Bind(&AddToHomescreenDataFetcher::NotifyObserver,
+                 base::RetainedRef(this)));
 }
 
-void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
+SkBitmap AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
     const SkBitmap& raw_icon) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
@@ -330,10 +338,7 @@ void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
   if (is_generated)
     shortcut_info_.best_primary_icon_url = GURL();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&AddToHomescreenDataFetcher::NotifyObserver, this,
-                 primary_icon));
+  return primary_icon;
 }
 
 void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& primary_icon) {
