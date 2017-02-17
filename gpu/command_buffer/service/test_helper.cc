@@ -365,10 +365,12 @@ void TestHelper::SetupContextGroupInitExpectations(
         .RetiresOnSaturation();
   }
 
-  if (strstr(extensions, "GL_EXT_draw_buffers") ||
-      strstr(extensions, "GL_ARB_draw_buffers") ||
-      (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers")) ||
-      gl_info.is_desktop_core_profile) {
+  if (enable_es3 ||
+      (!enable_es3 &&
+       (gl_info.is_desktop_core_profile ||
+        strstr(extensions, "GL_EXT_draw_buffers") ||
+        strstr(extensions, "GL_ARB_draw_buffers") ||
+        (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
         .WillOnce(SetArgumentPointee<1>(8))
         .RetiresOnSaturation();
@@ -656,10 +658,12 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
 #endif
   }
 
-  if (strstr(extensions, "GL_EXT_draw_buffers") ||
-      strstr(extensions, "GL_ARB_draw_buffers") ||
-      (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers")) ||
-      gl_info.is_desktop_core_profile) {
+  if (enable_es3 ||
+      (!enable_es3 &&
+       (gl_info.is_desktop_core_profile ||
+        strstr(extensions, "GL_EXT_draw_buffers") ||
+        strstr(extensions, "GL_ARB_draw_buffers") ||
+        (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
         .WillOnce(SetArgumentPointee<1>(8))
         .RetiresOnSaturation();

@@ -1155,14 +1155,17 @@ void FeatureInfo::InitializeFeatures() {
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
   }
 
-  bool vendor_agnostic_draw_buffers =
+  bool have_es2_draw_buffers_vendor_agnostic =
+      gl_version_info_->is_desktop_core_profile ||
       extensions.Contains("GL_ARB_draw_buffers") ||
       extensions.Contains("GL_EXT_draw_buffers");
-  if (!workarounds_.disable_ext_draw_buffers &&
-      (vendor_agnostic_draw_buffers ||
-       (extensions.Contains("GL_NV_draw_buffers") &&
-        gl_version_info_->is_es3) ||
-       gl_version_info_->is_desktop_core_profile)) {
+  bool can_emulate_es2_draw_buffers_on_es3_nv =
+      gl_version_info_->is_es3 && extensions.Contains("GL_NV_draw_buffers");
+  bool have_es2_draw_buffers = !workarounds_.disable_ext_draw_buffers &&
+                               IsWebGL1OrES2Context() &&
+                               (have_es2_draw_buffers_vendor_agnostic ||
+                                can_emulate_es2_draw_buffers_on_es3_nv);
+  if (have_es2_draw_buffers) {
     AddExtensionString("GL_EXT_draw_buffers");
     feature_flags_.ext_draw_buffers = true;
 
@@ -1174,8 +1177,11 @@ void FeatureInfo::InitializeFeatures() {
     // into multiple gl_FragData values, which is not by default possible in
     // ESSL 100 with core GLES 3.0. For more information, see the
     // NV_draw_buffers specification.
-    feature_flags_.nv_draw_buffers = !vendor_agnostic_draw_buffers;
+    feature_flags_.nv_draw_buffers = can_emulate_es2_draw_buffers_on_es3_nv &&
+                                     !have_es2_draw_buffers_vendor_agnostic;
+  }
 
+  if (IsWebGL2OrES3Context() || have_es2_draw_buffers) {
     GLint max_color_attachments = 0;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments);
     for (GLenum i = GL_COLOR_ATTACHMENT1_EXT;

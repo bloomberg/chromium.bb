@@ -1529,15 +1529,17 @@ TEST_P(FeatureInfoTest, InitializeWithNVFence) {
 
 TEST_P(FeatureInfoTest, InitializeWithNVDrawBuffers) {
   SetupInitExpectationsWithGLVersion("GL_NV_draw_buffers", "", "OpenGL ES 3.0");
-  EXPECT_TRUE(info_->feature_flags().nv_draw_buffers);
-  EXPECT_TRUE(info_->feature_flags().ext_draw_buffers);
+  bool is_es2 = GetContextType() == CONTEXT_TYPE_OPENGLES2;
+  EXPECT_EQ(is_es2, info_->feature_flags().nv_draw_buffers);
+  EXPECT_EQ(is_es2, info_->feature_flags().ext_draw_buffers);
 }
 
 TEST_P(FeatureInfoTest, InitializeWithPreferredEXTDrawBuffers) {
   SetupInitExpectationsWithGLVersion(
       "GL_NV_draw_buffers GL_EXT_draw_buffers", "", "OpenGL ES 3.0");
+  bool is_es2 = GetContextType() == CONTEXT_TYPE_OPENGLES2;
   EXPECT_FALSE(info_->feature_flags().nv_draw_buffers);
-  EXPECT_TRUE(info_->feature_flags().ext_draw_buffers);
+  EXPECT_EQ(is_es2, info_->feature_flags().ext_draw_buffers);
 }
 
 TEST_P(FeatureInfoTest, BlendEquationAdvancedDisabled) {

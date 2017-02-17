@@ -120,9 +120,9 @@ ContextGroup::ContextGroup(
 bool ContextGroup::Initialize(GLES2Decoder* decoder,
                               ContextType context_type,
                               const DisallowedFeatures& disallowed_features) {
-  if (!gpu_preferences_.enable_es3_apis &&
-      (context_type == CONTEXT_TYPE_OPENGLES3 ||
-       context_type == CONTEXT_TYPE_WEBGL2)) {
+  bool enable_es3 = context_type == CONTEXT_TYPE_OPENGLES3 ||
+                    context_type == CONTEXT_TYPE_WEBGL2;
+  if (!gpu_preferences_.enable_es3_apis && enable_es3) {
     DLOG(ERROR) << "ContextGroup::Initialize failed because ES3 APIs are "
                 << "not available.";
     return false;
@@ -170,7 +170,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     }
   }
 
-  if (feature_info_->feature_flags().ext_draw_buffers) {
+  if (enable_es3 || feature_info_->feature_flags().ext_draw_buffers) {
     GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments_);
     if (max_color_attachments_ < 1)
       max_color_attachments_ = 1;
