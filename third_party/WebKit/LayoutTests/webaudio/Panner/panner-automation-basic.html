@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/panner-formulas.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test Basic PannerNode with Automation Position Properties.");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
 
       // These tests are quite slow, so don't run for many frames.  256 frames should be enough to
@@ -174,11 +172,6 @@
         }).then(done);
       });
 
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
-        done();
-      });
-
       audit.runTasks();
 
       function createGraph(channelCount) {
@@ -245,10 +238,8 @@
             .notBeEqualTo(data1[0]) && success;
 
           var prefix = "Directly setting " + message + ".value";
-          if (success)
-            testPassed(prefix + " worked.\n");
-          else
-            testFailed(prefix + " failed.\n");
+          Should(prefix, success)
+            .summarize("worked", "failed");
       }
     </script>
   </body>

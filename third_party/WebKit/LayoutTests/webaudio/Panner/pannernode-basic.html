@@ -2,16 +2,14 @@
 <html>
 
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Basic tests for PannerNode.");
-      window.jsTestIsAsync = true;
-
       var context;
       var panner;
       var audit = Audit.createTaskRunner();
@@ -77,10 +75,8 @@
         success = Should("panner.orientationZ", panner.orientationZ.value)
           .beEqualTo(0) && success;
 
-        if (success)
-          testPassed("Basic Panner attribute tests.\n");
-        else
-          testFailed("Basic Panner attribute tests.\n");
+        Should("Basic Panner attribute tests", success)
+          .summarize("passed", "failed");
 
         done();
       });
@@ -107,10 +103,8 @@
         success = Should("listener.upZ", context.listener.upZ.value)
           .beEqualTo(0) && success;
 
-        if (success)
-          testPassed("Basic AudioListener attribute tests.\n");
-        else
-          testFailed("Basic AudioListener attribute tests.\n");
+        Should("Basic AudioListener attribute tests", success)
+          .summarize("passed", "failed");
         done();
       });
 
@@ -145,10 +139,8 @@
         success = Should('panner.panningModel', panner.panningModel)
           .beEqualTo("HRTF") && success;
 
-        if (success)
-          testPassed("Basic Panner panning models tests.\n");
-        else
-          testFailed("Basic Panner panning models tests.\n");
+        Should("Basic Panner panning models tests", success)
+          .summarize("passed", "failed");
         done();
       });
 
@@ -175,18 +167,10 @@
         success = Should("panner.distanceModel", panner.distanceModel)
           .beEqualTo("exponential") && success;
 
-        if (success)
-          testPassed("Basic Panner distance models tests.\n");
-        else
-          testFailed("Basic Panner distance models tests.\n");
+        Should("Basic Panner distance models tests", success)
+          .summarize("passed", "failed");
         done();
       });
-
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
-        done();
-      });
-
 
       audit.runTasks();
     </script>

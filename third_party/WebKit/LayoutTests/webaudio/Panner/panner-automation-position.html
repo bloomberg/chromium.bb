@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <script src="../resources/panner-formulas.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test Automation of PannerNode Positions.");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       // These tests are quite slow, so don't run for many frames.  256 frames should be enough to
       // demonstrate that automations are working.
@@ -92,11 +90,6 @@
         audit.defineTask(k + ": 1-channel " + baseTestName, tester(config, 1));
         audit.defineTask(k + ": 2-channel " + baseTestName, tester(config, 2));
       }
-
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
-        done();
-      });
 
       audit.runTasks();
 
