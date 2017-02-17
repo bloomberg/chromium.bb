@@ -16,25 +16,25 @@
 
 int sign(int i) { return i < 0 ? -1 : 1; }
 
-int constrain(int x, int s, unsigned int bitdepth) {
+int constrain(int x, int s, unsigned int damping) {
   return sign(x) *
-         AOMMAX(0, abs(x) - AOMMAX(0, abs(x) - s + (abs(x) >> (bitdepth - 3 -
-                                                               get_msb(s)))));
+         AOMMAX(0, abs(x) - AOMMAX(0, abs(x) - s +
+                                          (abs(x) >> (damping - get_msb(s)))));
 }
 
 int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
-                    int H, int s, unsigned int bd) {
-  int delta = 1 * constrain(A - X, s, bd) + 3 * constrain(B - X, s, bd) +
-              1 * constrain(C - X, s, bd) + 3 * constrain(D - X, s, bd) +
-              3 * constrain(E - X, s, bd) + 1 * constrain(F - X, s, bd) +
-              3 * constrain(G - X, s, bd) + 1 * constrain(H - X, s, bd);
+                    int H, int s, unsigned int dmp) {
+  int delta = 1 * constrain(A - X, s, dmp) + 3 * constrain(B - X, s, dmp) +
+              1 * constrain(C - X, s, dmp) + 3 * constrain(D - X, s, dmp) +
+              3 * constrain(E - X, s, dmp) + 1 * constrain(F - X, s, dmp) +
+              3 * constrain(G - X, s, dmp) + 1 * constrain(H - X, s, dmp);
   return (8 + delta - (delta < 0)) >> 4;
 }
 
 void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
                       int dstride, int x0, int y0, int sizex, int sizey,
                       unsigned int strength, BOUNDARY_TYPE bt,
-                      unsigned int bitdepth) {
+                      unsigned int damping) {
   int x, y;
   const int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
   const int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY) * 2;
@@ -53,7 +53,7 @@ void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
       const int G = src[AOMMIN(ymax, y + 1) * sstride + x];
       const int H = src[AOMMIN(ymax, y + 2) * sstride + x];
       const int delta =
-          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, bitdepth);
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, damping);
       dst[y * dstride + x] = X + delta;
     }
   }
@@ -64,7 +64,7 @@ void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
 void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
                           int dstride, int x0, int y0, int sizex, int sizey,
                           unsigned int strength, BOUNDARY_TYPE bt,
-                          unsigned int bitdepth) {
+                          unsigned int damping) {
   int x, y;
   const int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
   const int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY) * 2;
@@ -83,7 +83,7 @@ void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
       const int G = src[AOMMIN(ymax, y + 1) * sstride + x];
       const int H = src[AOMMIN(ymax, y + 2) * sstride + x];
       const int delta =
-          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, bitdepth);
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, damping);
       dst[y * dstride + x] = X + delta;
     }
   }
@@ -91,14 +91,13 @@ void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
 #endif
 
 // Return number of filtered blocks
-void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
-                    const YV12_BUFFER_CONFIG *org, AV1_COMMON *cm,
-                    int enable_fb_flag, unsigned int strength,
-                    unsigned int fb_size_log2, int plane,
-                    int (*decision)(int, int, const YV12_BUFFER_CONFIG *,
-                                    const YV12_BUFFER_CONFIG *,
-                                    const AV1_COMMON *cm, int, int, int,
-                                    unsigned int, unsigned int, int8_t *)) {
+void av1_clpf_frame(
+    const YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *org,
+    AV1_COMMON *cm, int enable_fb_flag, unsigned int strength,
+    unsigned int fb_size_log2, int plane,
+    int (*decision)(int, int, const YV12_BUFFER_CONFIG *,
+                    const YV12_BUFFER_CONFIG *, const AV1_COMMON *cm, int, int,
+                    int, unsigned int, unsigned int, int8_t *, int)) {
   /* Constrained low-pass filter (CLPF) */
   int c, k, l, m, n;
   const int subx = plane != AOM_PLANE_Y && frame->subsampling_x;
@@ -124,6 +123,11 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
           ? (plane == AOM_PLANE_U ? frame->u_buffer : frame->v_buffer)
           : frame->y_buffer;
   uint8_t *dst_buffer;
+  // Damping is the filter cut-off log2 point for the constrain function.
+  // For instance, if the damping is 5, neighbour differences above 32 will
+  // be ignored and half of the strength will be applied for a difference of 16.
+  int damping =
+      cm->bit_depth - 5 - (plane != AOM_PLANE_Y) + (cm->base_qindex >> 6);
 
 // Make buffer space for in-place filtering
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -169,7 +173,8 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
            decision(k, l, frame, org, cm, bs, w / bs, h / bs, strength,
                     fb_size_log2,
                     cm->clpf_blocks + yoff / MIN_FB_SIZE * cm->clpf_stride +
-                        xoff / MIN_FB_SIZE))) {
+                        xoff / MIN_FB_SIZE,
+                    plane))) {
         // Iterate over all smaller blocks inside the filter block
         for (m = 0; m < ((h + bs - 1) >> bslog); m++) {
           for (n = 0; n < ((w + bs - 1) >> bslog); n++) {
@@ -260,16 +265,16 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
                 aom_clpf_block_hbd(CONVERT_TO_SHORTPTR(src_buffer),
                                    CONVERT_TO_SHORTPTR(dst_buffer), sstride,
                                    dstride, xpos, ypos, sizex, sizey, strength,
-                                   boundary_type, cm->bit_depth);
+                                   boundary_type, damping);
               } else {
                 aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
                                ypos, sizex, sizey, strength, boundary_type,
-                               cm->bit_depth);
+                               damping);
               }
 #else
               aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
                              ypos, sizex, sizey, strength, boundary_type,
-                             cm->bit_depth);
+                             damping);
 #endif
             }
           }

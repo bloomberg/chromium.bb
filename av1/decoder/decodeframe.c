@@ -2746,7 +2746,8 @@ static int clpf_bit(UNUSED int k, UNUSED int l,
                     UNUSED const YV12_BUFFER_CONFIG *org,
                     UNUSED const AV1_COMMON *cm, UNUSED int block_size,
                     UNUSED int w, UNUSED int h, UNUSED unsigned int strength,
-                    UNUSED unsigned int fb_size_log2, int8_t *bit) {
+                    UNUSED unsigned int fb_size_log2, int8_t *bit,
+                    UNUSED int plane) {
   return *bit;
 }
 
