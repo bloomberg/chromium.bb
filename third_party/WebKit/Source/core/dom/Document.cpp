@@ -997,6 +997,10 @@ ProcessingInstruction* Document::createProcessingInstruction(
         "The data provided ('" + data + "') contains '?>'.");
     return nullptr;
   }
+  if (isHTMLDocument()) {
+    UseCounter::count(*this,
+                      UseCounter::HTMLDocumentCreateProcessingInstruction);
+  }
   return ProcessingInstruction::create(*this, target, data);
 }
 

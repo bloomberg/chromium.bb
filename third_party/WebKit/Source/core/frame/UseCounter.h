@@ -1472,6 +1472,7 @@ class CORE_EXPORT UseCounter {
     PresentationRequestSecureOrigin = 1822,
     RtcpMuxPolicyNegotiate = 1823,
     DOMClobberedVariableAccessed = 1824,
+    HTMLDocumentCreateProcessingInstruction = 1825,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
