@@ -37,7 +37,7 @@ static_assert(sizeof(Channel::Message::Header) == 8,
 }  // namespace
 
 const size_t kReadBufferSize = 4096;
-const size_t kMaxUnusedReadBufferCapacity = 64 * 1024;
+const size_t kMaxUnusedReadBufferCapacity = 4096;
 const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
 const size_t kMaxAttachedHandles = 128;
 
