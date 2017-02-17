@@ -377,12 +377,15 @@ void V8Window::namedPropertyGetterCustom(
 
   if (!hasNamedItem && hasIdItem &&
       !doc->containsMultipleElementsWithId(name)) {
+    UseCounter::count(doc, UseCounter::DOMClobberedVariableAccessed);
     v8SetReturnValueFast(info, doc->getElementById(name), window);
     return;
   }
 
   HTMLCollection* items = doc->windowNamedItems(name);
   if (!items->isEmpty()) {
+    UseCounter::count(doc, UseCounter::DOMClobberedVariableAccessed);
+
     // TODO(esprehn): Firefox doesn't return an HTMLCollection here if there's
     // multiple with the same name, but Chrome and Safari does. What's the
     // right behavior?
