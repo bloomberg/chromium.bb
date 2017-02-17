@@ -8034,18 +8034,15 @@ static int64_t handle_inter_mode(
           joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, NULL,
                               single_newmv, &rate_mv, 0);
         } else {
+          rate_mv = 0;
+          for (i = 0; i < 2; ++i) {
 #if CONFIG_REF_MV
-          av1_set_mvcost(x, mbmi->ref_frame[0], 0, mbmi->ref_mv_idx);
+            av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
-          rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
-                                    &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
-                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-#if CONFIG_REF_MV
-          av1_set_mvcost(x, mbmi->ref_frame[1], 1, mbmi->ref_mv_idx);
-#endif  // CONFIG_REF_MV
-          rate_mv += av1_mv_bit_cost(
-              &frame_mv[refs[1]].as_mv, &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
-              x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+            rate_mv += av1_mv_bit_cost(
+                &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
+                x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+          }
         }
       } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
         frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
@@ -8067,18 +8064,15 @@ static int64_t handle_inter_mode(
         joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col,
                             single_newmv, &rate_mv, 0);
       } else {
+        rate_mv = 0;
+        for (i = 0; i < 2; ++i) {
 #if CONFIG_REF_MV
-        av1_set_mvcost(x, mbmi->ref_frame[0], 0, mbmi->ref_mv_idx);
+          av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
 #endif  // CONFIG_REF_MV
-        rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
-                                  &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
-                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-#if CONFIG_REF_MV
-        av1_set_mvcost(x, mbmi->ref_frame[1], 1, mbmi->ref_mv_idx);
-#endif  // CONFIG_REF_MV
-        rate_mv += av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
-                                   &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
-                                   x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+          rate_mv += av1_mv_bit_cost(
+              &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
+              x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+        }
       }
 #endif  // CONFIG_EXT_INTER
     } else {
