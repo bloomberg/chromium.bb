@@ -40,7 +40,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # These are to prevent git from hanging.  If the git connection is slower
     # than 1KB/s for more than 5 minutes then git will kill the connection
     # and die with an error "error: RPC failed; curl 28 Operation too slow"
-    kwargs['env']['GIT_HTTP_LOW_SPEED_LIMIT '] = 1000
+    kwargs['env']['GIT_HTTP_LOW_SPEED_LIMIT'] = 1000
     kwargs['env']['GIT_HTTP_LOW_SPEED_TIME'] = 300
     return self.m.python(name, bot_update_path, cmd, **kwargs)
 
