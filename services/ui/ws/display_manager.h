@@ -18,6 +18,7 @@
 namespace ui {
 namespace ws {
 
+class CursorLocationManager;
 class Display;
 class ServerWindow;
 class UserDisplayManager;
@@ -37,6 +38,9 @@ class DisplayManager : public UserIdTrackerObserver,
   // Returns the UserDisplayManager for |user_id|. DisplayManager owns the
   // return value.
   UserDisplayManager* GetUserDisplayManager(const UserId& user_id);
+
+  // Returns the CursorLocationManager for |user_id|.
+  CursorLocationManager* GetCursorLocationManager(const UserId& user_id);
 
   // Adds/removes a Display. DisplayManager owns the Displays.
   // TODO(sky): make add take a scoped_ptr.
@@ -98,6 +102,9 @@ class DisplayManager : public UserIdTrackerObserver,
   std::set<Display*> displays_;
 
   std::map<UserId, std::unique_ptr<UserDisplayManager>> user_display_managers_;
+
+  std::map<UserId, std::unique_ptr<CursorLocationManager>>
+      cursor_location_managers_;
 
   // ID to use for next root node.
   ClientSpecificId next_root_id_;

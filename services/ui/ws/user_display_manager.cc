@@ -35,8 +35,7 @@ UserDisplayManager::UserDisplayManager(ws::DisplayManager* display_manager,
       delegate_(delegate),
       user_id_(user_id),
       got_valid_frame_decorations_(
-          delegate->GetFrameDecorationsForUser(user_id, nullptr)),
-      current_cursor_location_(0) {}
+          delegate->GetFrameDecorationsForUser(user_id, nullptr)) {}
 
 UserDisplayManager::~UserDisplayManager() {}
 
@@ -91,38 +90,6 @@ void UserDisplayManager::OnPrimaryDisplayChanged(int64_t primary_display_id) {
       [primary_display_id](mojom::DisplayManagerObserver* observer) {
         observer->OnPrimaryDisplayChanged(primary_display_id);
       });
-}
-
-void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {
-  current_cursor_location_ =
-      static_cast<base::subtle::Atomic32>(
-          (point.x() & 0xFFFF) << 16 | (point.y() & 0xFFFF));
-  if (cursor_location_memory()) {
-    base::subtle::NoBarrier_Store(cursor_location_memory(),
-                                  current_cursor_location_);
-  }
-}
-
-mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
-  if (!cursor_location_handle_.is_valid()) {
-    // Create our shared memory segment to share the cursor state with our
-    // window clients.
-    cursor_location_handle_ =
-        mojo::SharedBufferHandle::Create(sizeof(base::subtle::Atomic32));
-
-    if (!cursor_location_handle_.is_valid())
-      return mojo::ScopedSharedBufferHandle();
-
-    cursor_location_mapping_ =
-        cursor_location_handle_->Map(sizeof(base::subtle::Atomic32));
-    if (!cursor_location_mapping_)
-      return mojo::ScopedSharedBufferHandle();
-    base::subtle::NoBarrier_Store(cursor_location_memory(),
-                                  current_cursor_location_);
-  }
-
-  return cursor_location_handle_->Clone(
-      mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 }
 
 void UserDisplayManager::AddObserver(

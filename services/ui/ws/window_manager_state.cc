@@ -10,6 +10,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/ws/accelerator.h"
+#include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"
@@ -571,7 +572,7 @@ void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
 void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {
   window_server()
       ->display_manager()
-      ->GetUserDisplayManager(user_id())
+      ->GetCursorLocationManager(user_id())
       ->OnMouseCursorLocationChanged(point);
 }
 

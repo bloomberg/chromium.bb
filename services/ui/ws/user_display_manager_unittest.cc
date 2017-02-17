@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -208,34 +207,6 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 
   EXPECT_EQ("OnDisplayRemoved 2",
             display_manager_observer1.GetAndClearObserverCalls());
-}
-
-TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
-  screen_manager().AddDisplay();
-
-  TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = window_server()->display_manager();
-  AddWindowManager(window_server(), kUserId1);
-  UserDisplayManager* user_display_manager1 =
-      display_manager->GetUserDisplayManager(kUserId1);
-  ASSERT_TRUE(user_display_manager1);
-
-  user_display_manager1->OnMouseCursorLocationChanged(gfx::Point(-10, -11));
-
-  base::subtle::Atomic32* cursor_location_memory = nullptr;
-  mojo::ScopedSharedBufferHandle handle =
-      user_display_manager1->GetCursorLocationMemory();
-  mojo::ScopedSharedBufferMapping cursor_location_mapping =
-      handle->Map(sizeof(base::subtle::Atomic32));
-  ASSERT_TRUE(cursor_location_mapping);
-  cursor_location_memory =
-      reinterpret_cast<base::subtle::Atomic32*>(cursor_location_mapping.get());
-
-  base::subtle::Atomic32 location =
-      base::subtle::NoBarrier_Load(cursor_location_memory);
-  EXPECT_EQ(gfx::Point(static_cast<int16_t>(location >> 16),
-                       static_cast<int16_t>(location & 0xFFFF)),
-            gfx::Point(-10, -11));
 }
 
 }  // namespace test
