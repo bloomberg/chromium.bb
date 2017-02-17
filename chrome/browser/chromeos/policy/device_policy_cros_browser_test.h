@@ -28,6 +28,8 @@ class DevicePolicyCrosTestHelper {
   // policies apply Chrome-wide. If this is not called, device policies will
   // affect CrosSettings only.
   static void MarkAsEnterpriseOwnedBy(const std::string& user_name);
+  // Marks the device as Active Directory enterprise-owned.
+  static void MarkAsActiveDirectoryEnterpriseOwned(const std::string& realm);
   void MarkAsEnterpriseOwned();
 
   // Writes the owner key to disk. To be called before installing a policy.
@@ -52,6 +54,8 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
+
+  virtual void MarkOwnership();
 
   // Marks the device as enterprise-owned. Must be called to make device
   // policies apply Chrome-wide. If this is not called, device policies will

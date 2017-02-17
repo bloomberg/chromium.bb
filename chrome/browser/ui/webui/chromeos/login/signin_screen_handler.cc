@@ -1159,6 +1159,8 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   UserContext user_context(account_id);
   user_context.SetKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+    user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   delegate_->Login(user_context, SigninSpecifics());
 
   HidePinKeyboardIfNeeded(account_id);

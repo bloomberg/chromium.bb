@@ -78,6 +78,7 @@ const char kGaiaID[] = "12345";
 const char kUsername[] = "test_user@gmail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
+const char kActiveDirectoryRealm[] = "active.directory.realm";
 
 const char kPublicSessionUserEmail[] = "public_session_user@localhost";
 const int kAutoLoginNoDelay = 0;
@@ -230,23 +231,25 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   // Mock URLFetcher.
   MockURLFetcherFactory<SuccessFetcher> factory_;
 
-  const AccountId account_id_ =
+  const AccountId gaia_account_id_ =
       AccountId::FromUserEmailGaiaId(kUsername, kGaiaID);
+  const AccountId ad_account_id_ =
+      AccountId::AdFromUserEmailObjGuid(kUsername, kGaiaID);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, PRE_ExistingUserLogin) {
-  RegisterUser(account_id_.GetUserEmail());
+  RegisterUser(gaia_account_id_.GetUserEmail());
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(2);
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(account_id_.GetUserEmail());
+  user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
   session_manager_test_api.InjectStubUserContext(user_context);
@@ -297,9 +300,9 @@ void ExistingUserControllerUntrustedTest::SetUpSessionManager() {
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        ExistingUserLoginForbidden) {
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(account_id_.GetUserEmail());
+  user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
 }
 
@@ -311,9 +314,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        MAYBE_NewUserLoginForbidden) {
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(account_id_.GetUserEmail());
+  user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->CompleteLogin(user_context);
 }
 
@@ -328,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        SupervisedUserLoginForbidden) {
   UserContext user_context(AccountId::FromUserEmail(kSupervisedUserID));
   user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(account_id_.GetUserEmail());
+  user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
 }
 
@@ -339,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   SupervisedUserCreationScreen supervised_user_creation_screen(
       &mock_base_screen_delegate, &supervised_user_creation_screen_handler);
 
-  supervised_user_creation_screen.AuthenticateManager(account_id_, kPassword);
+  supervised_user_creation_screen.AuthenticateManager(gaia_account_id_,
+                                                      kPassword);
 }
 
 MATCHER_P(HasDetails, expected, "") {
@@ -597,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        DISABLED_LoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
@@ -632,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(2);
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
@@ -661,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        CompleteLoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
@@ -733,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 
   // Check that the attempt to start a public session fails with an error.
   ExpectLoginFailure();
-  UserContext user_context(account_id_);
+  UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
@@ -762,6 +766,83 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        TestLoadingPublicUsersFromLocalState) {
   // Second run loads list of public accounts from Local State.
+}
+
+class ExistingUserControllerActiveDirectoryTest
+    : public ExistingUserControllerTest {
+ public:
+  ExistingUserControllerActiveDirectoryTest() = default;
+
+  // Overriden from DevicePolicyCrosBrowserTest:
+  void MarkOwnership() override {
+    policy::DevicePolicyCrosTestHelper::MarkAsActiveDirectoryEnterpriseOwned(
+        kActiveDirectoryRealm);
+  }
+
+  // Overriden from ExistingUserControllerTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    RefreshDevicePolicy();
+    ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ protected:
+  void ExpectLoginFailure() {
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
+    EXPECT_CALL(*mock_login_display_,
+                ShowError(IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED, 1,
+                          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT))
+        .Times(1);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
+  }
+  void ExpectLoginSuccess() {
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
+    EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin()).Times(1);
+  }
+};
+
+// Tests that Active Directory online login succeeds on the Active Directory
+// managed device.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
+                       ActiveDirectoryOnlineLogin_Success) {
+  ExpectLoginSuccess();
+  UserContext user_context(ad_account_id_);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+  existing_user_controller()->CompleteLogin(user_context);
+
+  profile_prepared_observer.Wait();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearNotifications));
+  content::RunAllPendingInMessageLoop();
+}
+
+// Tests that Active Directory offline login fails on the Active Directory
+// managed device.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
+                       ActiveDirectoryOfflineLogin_Failure) {
+  ExpectLoginFailure();
+  UserContext user_context(ad_account_id_);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
+  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  existing_user_controller()->Login(user_context, SigninSpecifics());
+}
+
+// Tests that Gaia login fails on the Active Directory managed device.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
+                       GAIAAccountLogin_Failure) {
+  ExpectLoginFailure();
+  EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin()).Times(1);
+  UserContext user_context(gaia_account_id_);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
+  existing_user_controller()->CompleteLogin(user_context);
 }
 
 }  // namespace chromeos

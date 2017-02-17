@@ -28,6 +28,19 @@ using ::testing::Return;
 
 namespace policy {
 
+namespace {
+
+void WriteInstallAttributesFile(const std::string& install_attrs_blob) {
+  base::FilePath install_attrs_file;
+  ASSERT_TRUE(
+      PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
+  ASSERT_EQ(base::checked_cast<int>(install_attrs_blob.size()),
+            base::WriteFile(install_attrs_file, install_attrs_blob.c_str(),
+                            install_attrs_blob.size()));
+}
+
+}  // namespace
+
 DevicePolicyCrosTestHelper::DevicePolicyCrosTestHelper() {}
 
 DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
@@ -36,17 +49,19 @@ DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
 void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
     const std::string& user_name) {
   OverridePaths();
-
-  const std::string install_attrs_blob(
+  WriteInstallAttributesFile(
       chromeos::InstallAttributes::
           GetEnterpriseOwnedInstallAttributesBlobForTesting(user_name));
+}
 
-  base::FilePath install_attrs_file;
-  ASSERT_TRUE(
-      PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
-  ASSERT_EQ(base::checked_cast<int>(install_attrs_blob.size()),
-            base::WriteFile(install_attrs_file, install_attrs_blob.c_str(),
-                            install_attrs_blob.size()));
+// static
+void DevicePolicyCrosTestHelper::MarkAsActiveDirectoryEnterpriseOwned(
+    const std::string& realm) {
+  OverridePaths();
+  WriteInstallAttributesFile(
+      chromeos::InstallAttributes::
+          GetActiveDirectoryEnterpriseOwnedInstallAttributesBlobForTesting(
+              realm));
 }
 
 void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
@@ -84,7 +99,7 @@ DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
   InstallOwnerKey();
-  MarkAsEnterpriseOwned();
+  MarkOwnership();
   dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
   dbus_setter_->SetSessionManagerClient(
       std::unique_ptr<chromeos::SessionManagerClient>(
@@ -94,6 +109,10 @@ void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
 
 void DevicePolicyCrosBrowserTest::TearDownInProcessBrowserTestFixture() {
   InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+}
+
+void DevicePolicyCrosBrowserTest::MarkOwnership() {
+  MarkAsEnterpriseOwned();
 }
 
 void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned() {

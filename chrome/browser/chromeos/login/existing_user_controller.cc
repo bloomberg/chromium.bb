@@ -447,6 +447,15 @@ void ExistingUserController::PerformLogin(
     login_performer_.reset(nullptr);
     login_performer_.reset(new ChromeLoginPerformer(this));
   }
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsActiveDirectoryManaged() &&
+      user_context.GetAuthFlow() != UserContext::AUTH_FLOW_ACTIVE_DIRECTORY) {
+    PerformLoginFinishedActions(false /* don't start auto login timer */);
+    ShowError(IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED,
+              "Google accounts are not allowed on this device");
+    return;
+  }
 
   if (gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()) ==
       user_manager::kSupervisedUserDomain) {
