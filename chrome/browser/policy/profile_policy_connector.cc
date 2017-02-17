@@ -154,27 +154,16 @@ void ProfilePolicyConnector::Shutdown() {
 bool ProfilePolicyConnector::IsManaged() const {
   if (is_managed_override_)
     return *is_managed_override_;
-  return !GetManagementDomain().empty();
+  const CloudPolicyStore* actual_policy_store = GetActualPolicyStore();
+  if (actual_policy_store)
+    return actual_policy_store->is_managed();
+  return false;
 }
 
 std::string ProfilePolicyConnector::GetManagementDomain() const {
-  if (policy_store_)
-    return GetStoreManagementDomain(policy_store_);
-#if defined(OS_CHROMEOS)
-  if (special_user_policy_provider_) {
-    // |special_user_policy_provider_| is non-null for device-local accounts and
-    // for the login profile.
-    // They receive policy iff the device itself is managed.
-    const DeviceCloudPolicyManagerChromeOS* const device_cloud_policy_manager =
-        g_browser_process->platform_part()
-            ->browser_policy_connector_chromeos()
-            ->GetDeviceCloudPolicyManager();
-    // The device_cloud_policy_manager can be a nullptr in unit tests.
-    if (device_cloud_policy_manager)
-      return GetStoreManagementDomain(
-          device_cloud_policy_manager->core()->store());
-  }
-#endif
+  const CloudPolicyStore* actual_policy_store = GetActualPolicyStore();
+  if (actual_policy_store)
+    return GetStoreManagementDomain(actual_policy_store);
   return std::string();
 }
 
@@ -182,6 +171,25 @@ bool ProfilePolicyConnector::IsProfilePolicy(const char* policy_key) const {
   const ConfigurationPolicyProvider* const provider =
       DeterminePolicyProviderForPolicy(policy_key);
   return provider == configuration_policy_provider_;
+}
+
+const CloudPolicyStore* ProfilePolicyConnector::GetActualPolicyStore() const {
+  if (policy_store_)
+    return policy_store_;
+#if defined(OS_CHROMEOS)
+  if (special_user_policy_provider_) {
+    // |special_user_policy_provider_| is non-null for device-local accounts and
+    // for the login profile.
+    const DeviceCloudPolicyManagerChromeOS* const device_cloud_policy_manager =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceCloudPolicyManager();
+    // The device_cloud_policy_manager can be a nullptr in unit tests.
+    if (device_cloud_policy_manager)
+      return device_cloud_policy_manager->core()->store();
+  }
+#endif
+  return nullptr;
 }
 
 const ConfigurationPolicyProvider*

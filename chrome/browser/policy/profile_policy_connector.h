@@ -62,6 +62,9 @@ class ProfilePolicyConnector : public KeyedService {
   bool IsProfilePolicy(const char* policy_key) const;
 
  private:
+  // Returns the policy store which is actually used.
+  const CloudPolicyStore* GetActualPolicyStore() const;
+
   // Find the policy provider that provides the |policy_key| policy, if any. In
   // case of multiple providers sharing the same policy, the one with the
   // highest priority will be returned.
