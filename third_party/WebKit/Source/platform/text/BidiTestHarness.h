@@ -58,6 +58,7 @@
 namespace bidi_test {
 
 enum ParagraphDirection {
+  DirectionNone = 0,
   DirectionAutoLTR = 1,
   DirectionLTR = 2,
   DirectionRTL = 4,
@@ -74,9 +75,10 @@ std::string nameFromParagraphDirection(ParagraphDirection paragraphDirection) {
       return "LTR";
     case bidi_test::DirectionRTL:
       return "RTL";
+    default:
+      // This should never be reached.
+      return "";
   }
-  // This should never be reached.
-  return "";
 }
 
 template <class Runner>
@@ -128,11 +130,15 @@ static std::vector<std::string> parseStringList(const std::string& str) {
   return strings;
 }
 
+static int parseInt(const std::string& str) {
+  return atoi(str.c_str());
+}
+
 static std::vector<int> parseIntList(const std::string& str) {
   std::vector<int> ints;
   std::vector<std::string> strings = parseStringList(str);
   for (size_t x = 0; x < strings.size(); x++) {
-    int i = atoi(strings[x].c_str());
+    int i = parseInt(strings[x]);
     ints.push_back(i);
   }
   return ints;
@@ -147,7 +153,7 @@ static std::vector<int> parseLevels(const std::string& line) {
     if (levelString == "x")
       i = -1;
     else
-      i = atoi(levelString.c_str());
+      i = parseInt(levelString);
     levels.push_back(i);
   }
   return levels;
@@ -195,7 +201,7 @@ static std::basic_string<UChar> parseTestString(const std::string& line) {
 
 static bool parseParagraphDirectionMask(const std::string& line,
                                         int& modeMask) {
-  modeMask = atoi(line.c_str());
+  modeMask = parseInt(line);
   return modeMask >= 1 && modeMask <= kMaxParagraphDirection;
 }
 
@@ -260,6 +266,143 @@ void Harness<Runner>::parse(std::istream& bidiTestFile) {
         m_runner.runTest(testString, reorder, levels, DirectionRTL,
                          originalLine, lineNumber);
     }
+  }
+}
+
+template <class Runner>
+class CharacterHarness {
+ public:
+  CharacterHarness(Runner& runner) : m_runner(runner) {}
+  void parse(std::istream& bidiTestFile);
+
+ private:
+  Runner& m_runner;
+};
+
+static std::basic_string<UChar> parseUCharHexadecimalList(
+    const std::string& str) {
+  std::basic_string<UChar> string;
+  std::vector<std::string> strings = parseStringList(str);
+  for (size_t x = 0; x < strings.size(); x++) {
+    int i = strtol(strings[x].c_str(), nullptr, 16);
+    string.push_back((UChar)i);
+  }
+  return string;
+}
+
+static ParagraphDirection parseParagraphDirection(const std::string& str) {
+  int i = parseInt(str);
+  switch (i) {
+    case 0:
+      return DirectionLTR;
+    case 1:
+      return DirectionRTL;
+    case 2:
+      return DirectionAutoLTR;
+    default:
+      return DirectionNone;
+  }
+}
+
+static int parseSuppresedChars(const std::string& str) {
+  std::vector<std::string> strings = parseStringList(str);
+  int suppresedChars = 0;
+  for (size_t x = 0; x < strings.size(); x++) {
+    if (strings[x] == "x")
+      suppresedChars++;
+  }
+  return suppresedChars;
+}
+
+template <class Runner>
+void CharacterHarness<Runner>::parse(std::istream& bidiTestFile) {
+  std::string line;
+  size_t lineNumber = 0;
+  while (std::getline(bidiTestFile, line)) {
+    lineNumber++;
+
+    const std::string originalLine = line;
+    size_t commentStart = line.find_first_of('#');
+    if (commentStart != std::string::npos)
+      line = line.substr(0, commentStart);
+    trim(line);
+    if (line.empty())
+      continue;
+
+    // Field 0: list of uchars as 4 char strings
+    size_t separatorIndex = line.find_first_of(';');
+    if (separatorIndex == std::string::npos) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    std::basic_string<UChar> testString =
+        parseUCharHexadecimalList(line.substr(0, separatorIndex));
+    if (testString.empty()) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+    line = line.substr(separatorIndex + 1);
+
+    // Field 1: paragraph direction (0 LTR, 1 RTL, 2 AutoLTR)
+    separatorIndex = line.find_first_of(';');
+    if (separatorIndex == std::string::npos) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    ParagraphDirection paragraphDirection =
+        parseParagraphDirection(line.substr(0, separatorIndex));
+    if (paragraphDirection == DirectionNone) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+    line = line.substr(separatorIndex + 1);
+
+    // Field 2: resolved paragraph embedding level
+    separatorIndex = line.find_first_of(';');
+    if (separatorIndex == std::string::npos) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    int paragraphEmbeddingLevel = parseInt(line.substr(0, separatorIndex));
+    if (paragraphEmbeddingLevel < 0) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+    line = line.substr(separatorIndex + 1);
+
+    // Field 3: List of resolved levels
+    separatorIndex = line.find_first_of(';');
+    if (separatorIndex == std::string::npos) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    int supressedChars = parseSuppresedChars(line.substr(0, separatorIndex));
+    std::vector<int> levels = parseLevels(line.substr(0, separatorIndex));
+    if (testString.size() != levels.size()) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+    line = line.substr(separatorIndex + 1);
+
+    // Field 4: visual ordering of characters
+    separatorIndex = line.find_first_of(';');
+    if (separatorIndex != std::string::npos) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    std::vector<int> visualOrdering = parseIntList(line);
+    if (testString.size() - supressedChars != visualOrdering.size()) {
+      parseError(originalLine, lineNumber);
+      continue;
+    }
+
+    m_runner.runTest(testString, visualOrdering, levels, paragraphDirection,
+                     originalLine, lineNumber);
   }
 }
 

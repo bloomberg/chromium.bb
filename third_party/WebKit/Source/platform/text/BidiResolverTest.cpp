@@ -190,6 +190,8 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input,
     case bidi_test::DirectionRTL:
       textRun.setDirection(TextDirection::kRtl);
       break;
+    default:
+      break;
   }
   BidiResolver<TextRunIterator, BidiCharacterRun> resolver;
   resolver.setStatus(
@@ -252,7 +254,7 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input,
   runs.deleteRuns();
 }
 
-TEST(BidiResolver, BidiTest_txt) {
+TEST(BidiResolver, DISABLED_BidiTest_txt) {
   BidiTestRunner runner;
   // Blink's Unicode Bidi Algorithm (UBA) doesn't yet support the
   // new isolate directives from Unicode 6.3:
@@ -262,32 +264,18 @@ TEST(BidiResolver, BidiTest_txt) {
   runner.skipTestsWith(0x2068);  // FSI
   runner.skipTestsWith(0x2069);  // PDI
 
-  // This code wants to use PathService from base/path_service.h
-  // but we aren't allowed to depend on base/ directly from Blink yet.
-  // Alternatively we could use:
-  // blink::Platform::current()->unitTestSupport()->webKitRootDir()
-  // and a relative path, but that would require running inside
-  // webkit_unit_tests (to have a functioning Platform object).
-  // The file we want is:
-  // src/third_party/icu/source/test/testdata/BidiTest.txt
-  // but we don't have any good way to find it from this unittest.
-  // Just assume we're running this test manually for now. On the
-  // bots we just print a warning that we can't find the test file.
   std::string bidiTestPath = "BidiTest.txt";
   std::ifstream bidiTestFile(bidiTestPath.c_str());
-  if (!bidiTestFile.is_open()) {
-    printf("ERROR: Failed to open BidiTest.txt, cannot run tests.\n");
-    return;
-  }
-
+  EXPECT_TRUE(bidiTestFile.is_open());
   bidi_test::Harness<BidiTestRunner> harness(runner);
   harness.parse(bidiTestFile);
   bidiTestFile.close();
 
   if (runner.m_testsSkipped)
-    printf("WARNING: Skipped %zu tests.\n", runner.m_testsSkipped);
-  printf("Ran %zu tests: %zu level failures %zu order failures.\n",
-         runner.m_testsRun, runner.m_levelFailures, runner.m_orderFailures);
+    LOG(WARNING) << "WARNING: Skipped " << runner.m_testsSkipped << " tests.";
+  LOG(INFO) << "Ran " << runner.m_testsRun
+            << " tests: " << runner.m_levelFailures << " level failures "
+            << runner.m_orderFailures << " order failures.";
 
   // The unittest harness only pays attention to GTest output, so we verify
   // that the tests behaved as expected:
@@ -296,6 +284,36 @@ TEST(BidiResolver, BidiTest_txt) {
   EXPECT_EQ(0u, runner.m_ignoredCharFailures);
   EXPECT_EQ(44882u, runner.m_levelFailures);
   EXPECT_EQ(19151u, runner.m_orderFailures);
+}
+
+TEST(BidiResolver, DISABLED_BidiCharacterTest_txt) {
+  BidiTestRunner runner;
+  // Blink's Unicode Bidi Algorithm (UBA) doesn't yet support the
+  // new isolate directives from Unicode 6.3:
+  // http://www.unicode.org/reports/tr9/#Explicit_Directional_Isolates
+  runner.skipTestsWith(0x2066);  // LRI
+  runner.skipTestsWith(0x2067);  // RLI
+  runner.skipTestsWith(0x2068);  // FSI
+  runner.skipTestsWith(0x2069);  // PDI
+
+  std::string bidiTestPath = "BidiCharacterTest.txt";
+  std::ifstream bidiTestFile(bidiTestPath.c_str());
+  EXPECT_TRUE(bidiTestFile.is_open());
+  bidi_test::CharacterHarness<BidiTestRunner> harness(runner);
+  harness.parse(bidiTestFile);
+  bidiTestFile.close();
+
+  if (runner.m_testsSkipped)
+    LOG(WARNING) << "WARNING: Skipped " << runner.m_testsSkipped << " tests.";
+  LOG(INFO) << "Ran " << runner.m_testsRun
+            << " tests: " << runner.m_levelFailures << " level failures "
+            << runner.m_orderFailures << " order failures.";
+
+  EXPECT_EQ(91660u, runner.m_testsRun);
+  EXPECT_EQ(39u, runner.m_testsSkipped);
+  EXPECT_EQ(0u, runner.m_ignoredCharFailures);
+  EXPECT_EQ(14533u, runner.m_levelFailures);
+  EXPECT_EQ(14533u, runner.m_orderFailures);
 }
 
 }  // namespace blink
