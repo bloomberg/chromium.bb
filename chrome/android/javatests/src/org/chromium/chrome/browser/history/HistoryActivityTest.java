@@ -461,6 +461,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         });
 
         // Check that the copy link item is not visible when more than one item is selected.
+        toggleItemSelection(2);
         toggleItemSelection(3);
         assertFalse(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
     }

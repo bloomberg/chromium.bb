@@ -39,6 +39,9 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -54,7 +57,8 @@ import java.util.List;
  * Displays and manages the UI for browsing history.
  */
 public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver,
-        SelectionObserver<HistoryItem>, SearchDelegate {
+                                       SelectionObserver<HistoryItem>, SearchDelegate,
+                                       SnackbarController {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
@@ -118,8 +122,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         Rect listItemShadow = new Rect();
         ApiCompatibilityUtils.getDrawable(
                 mActivity.getResources(), R.drawable.card_middle).getPadding(listItemShadow);
-        int cardCornerRadius = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.card_corner_radius);
+        int cardCornerRadius =
+                mActivity.getResources().getDimensionPixelSize(R.dimen.list_item_corner_radius);
 
         assert listItemShadow.left == listItemShadow.right;
         // The list item shadow size is used in HorizontalDisplayStyle.WIDE to visually align other
@@ -184,6 +188,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+        mToolbar.hideOverflowMenu();
+
         if (item.getItemId() == R.id.close_menu_id && !isDisplayedInNativePage()) {
             mActivity.finish();
             return true;
@@ -195,6 +201,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             recordUserActionWithOptionalSearch("CopyLink");
             Clipboard clipboard = new Clipboard(mActivity);
             clipboard.setText(mSelectionDelegate.getSelectedItems().get(0).getUrl());
+            mSelectionDelegate.clearSelection();
+            Snackbar snackbar = Snackbar.make(mActivity.getString(R.string.copied), this,
+                    Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_HISTORY_LINK_COPIED);
+            ((SnackbarManageable) mActivity).getSnackbarManager().showSnackbar(snackbar);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_incognito) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), true);
@@ -437,6 +447,16 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     public void onSelectionStateChange(List<HistoryItem> selectedItems) {
         mHistoryAdapter.onSelectionStateChange(mSelectionDelegate.isSelectionEnabled());
         setToolbarShadowVisibility();
+    }
+
+    @Override
+    public void onAction(Object actionData) {
+        // Handler for the link copied snackbar. Do nothing.
+    }
+
+    @Override
+    public void onDismissNoAction(Object actionData) {
+        // Handler for the link copied snackbar. Do nothing.
     }
 
     private void setToolbarShadowVisibility() {

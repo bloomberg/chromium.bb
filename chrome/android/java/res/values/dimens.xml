@@ -407,5 +407,6 @@
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_corner_radius">2dp</dimen>
+    <dimen name="list_item_corner_radius">3dp</dimen>
     <dimen name="history_default_text_margin">16dp</dimen>
 </resources>

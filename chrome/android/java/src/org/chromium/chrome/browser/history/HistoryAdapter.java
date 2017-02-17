@@ -52,6 +52,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private final ArrayList<HistoryItemView> mItemViews;
     private RecyclerView mRecyclerView;
 
+    private ViewGroup mPrivacyDisclaimers;
     private TextView mSignedInNotSyncedTextView;
     private TextView mSignedInSyncedTextView;
     private TextView mOtherFormsOfBrowsingHistoryTextView;
@@ -313,6 +314,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 mHistoryManager.getDefaultLateralListItemMarginPx(), 0);
         updateClearBrowsingDataButtonVisibility();
 
+        mPrivacyDisclaimers = (ViewGroup) v.findViewById(R.id.privacy_disclaimers);
+
         mSignedInNotSyncedTextView = (TextView) v.findViewById(R.id.signed_in_not_synced);
         setPrivacyDisclaimerText(mSignedInNotSyncedTextView,
                 R.string.android_history_no_synced_results, LEARN_MORE_LINK);
@@ -380,6 +383,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mSignedInSyncedTextView.setVisibility(mHasSyncedData ? View.VISIBLE : View.GONE);
         mOtherFormsOfBrowsingHistoryTextView.setVisibility(
                 mHasOtherFormsOfBrowsingData ? View.VISIBLE : View.GONE);
+
+        boolean arePrivacyDisclaimersVisible =
+                isSignedIn || mHasSyncedData || mHasOtherFormsOfBrowsingData;
+        mPrivacyDisclaimers.setVisibility(arePrivacyDisclaimersVisible ? View.VISIBLE : View.GONE);
     }
 
     private void updateClearBrowsingDataButtonVisibility() {

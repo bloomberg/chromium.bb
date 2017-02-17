@@ -53,6 +53,7 @@ public class Snackbar {
     public static final int UMA_SPECIAL_LOCALE = 14;
     // Obsolete; don't use: UMA_BLIMP = 15;
     public static final int UMA_DATA_REDUCTION_PROMO = 16;
+    public static final int UMA_HISTORY_LINK_COPIED = 17;
 
     private SnackbarController mController;
     private CharSequence mText;
