@@ -72,8 +72,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   // Helper for one time initialization of application
   void PlatformInitialize();
   void PlatformCreateWindow();
-  void PlatformSetWebContents(const gfx::Size& initial_size,
-                              content::WebContents* web_contents);
+  void PlatformInitializeWebContents(const gfx::Size& initial_size,
+                                     content::WebContents* web_contents);
 
  protected:
 #if defined(USE_AURA)

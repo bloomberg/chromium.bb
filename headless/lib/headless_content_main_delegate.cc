@@ -160,9 +160,14 @@ void HeadlessContentMainDelegate::InitCrashReporter(
 void HeadlessContentMainDelegate::PreSandboxStartup() {
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
-  const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+#if defined(OS_WIN)
+  // Windows always needs to initialize logging, otherwise you get a renderer
+  // crash.
   InitLogging(command_line);
+#else
+  if (command_line.HasSwitch(switches::kEnableLogging))
+    InitLogging(command_line);
+#endif
   InitCrashReporter(command_line);
   InitializeResourceBundle();
 }

@@ -31,7 +31,7 @@ void HeadlessBrowserImpl::PlatformCreateWindow() {
   window_tree_host_->SetParentWindow(window_tree_host_->window());
 }
 
-void HeadlessBrowserImpl::PlatformSetWebContents(
+void HeadlessBrowserImpl::PlatformInitializeWebContents(
     const gfx::Size& initial_size,
     content::WebContents* web_contents) {
   gfx::NativeView contents = web_contents->GetNativeView();
