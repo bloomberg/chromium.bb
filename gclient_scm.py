@@ -293,15 +293,35 @@ class GitWrapper(SCMWrapper):
         cwd=self.checkout_path,
         filter_fn=GitDiffFilterer(self.relpath, print_func=self.Print).Filter)
 
-  def _FetchAndReset(self, revision, file_list, options):
-    """Equivalent to git fetch; git reset."""
+  def _Scrub(self, target, options):
+    """Scrubs out all changes in the local repo, back to the state of target."""
     quiet = []
     if not options.verbose:
       quiet = ['--quiet']
+    self._Run(['reset', '--hard', target] + quiet, options)
+    if options.force and options.delete_unversioned_trees:
+      # where `target` is a commit that contains both upper and lower case
+      # versions of the same file on a case insensitive filesystem, we are
+      # actually in a broken state here. The index will have both 'a' and 'A',
+      # but only one of them will exist on the disk. To progress, we delete
+      # everything that status thinks is modified.
+      for line in self._Capture(['status', '--porcelain']).splitlines():
+        # --porcelain (v1) looks like:
+        # XY filename
+        try:
+          filename = line[3:]
+          self.Print('_____ Deleting residual after reset: %r.' % filename)
+          gclient_utils.rm_file_or_tree(
+            os.path.join(self.checkout_path, line[3:]))
+        except OSError:
+          pass
+
+  def _FetchAndReset(self, revision, file_list, options):
+    """Equivalent to git fetch; git reset."""
     self._UpdateBranchHeads(options, fetch=False)
 
     self._Fetch(options, prune=True, quiet=options.verbose)
-    self._Run(['reset', '--hard', revision] + quiet, options)
+    self._Scrub(revision, options)
     if file_list is not None:
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -406,7 +426,7 @@ class GitWrapper(SCMWrapper):
       gclient_utils.safe_makedirs(self.checkout_path)
       os.rename(backup_dir, target_dir)
       # Reset to a clean state
-      self._Run(['reset', '--hard', 'HEAD'], options)
+      self._Scrub('HEAD', options)
 
     if (not os.path.exists(self.checkout_path) or
         (os.path.isdir(self.checkout_path) and
@@ -527,11 +547,17 @@ class GitWrapper(SCMWrapper):
       target = 'HEAD'
       if options.upstream and upstream_branch:
         target = upstream_branch
-      self._Run(['reset', '--hard', target], options)
+      self._Scrub(target, options)
 
     if current_type == 'detached':
       # case 0
-      self._CheckClean(revision)
+      # We just did a Scrub, this is as clean as it's going to get. In
+      # particular if HEAD is a commit that contains two versions of the same
+      # file on a case-insensitive filesystem (e.g. 'a' and 'A'), there's no way
+      # to actually "Clean" the checkout; that commit is uncheckoutable on this
+      # system. The best we can do is carry forward to the checkout step.
+      if not (options.force or options.reset):
+        self._CheckClean(revision)
       self._CheckDetachedHead(revision, options)
       if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
@@ -736,7 +762,7 @@ class GitWrapper(SCMWrapper):
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()
 
-    self._Run(['reset', '--hard', deps_revision], options)
+    self._Scrub(deps_revision, options)
     self._Run(['clean', '-f', '-d'], options)
 
     if file_list is not None:
@@ -961,7 +987,7 @@ class GitWrapper(SCMWrapper):
               'WARNING: destroys any uncommitted work in your current branch!'
               ' (y)es / (q)uit / (s)how : ', options)
           if re.match(r'yes|y', rebase_action, re.I):
-            self._Run(['reset', '--hard', 'HEAD'], options)
+            self._Scrub('HEAD', options)
             # Should this be recursive?
             rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
             break
@@ -1032,7 +1058,7 @@ class GitWrapper(SCMWrapper):
       os.path.isdir(os.path.join(g, "rebase-merge")) or
       os.path.isdir(os.path.join(g, "rebase-apply")))
 
-  def _CheckClean(self, revision):
+  def _CheckClean(self, revision, fixup=False):
     lockfile = os.path.join(self.checkout_path, ".git", "index.lock")
     if os.path.exists(lockfile):
       raise gclient_utils.Error(
