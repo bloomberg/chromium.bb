@@ -54,7 +54,7 @@ void InputMethodMus::DispatchKeyEvent(
 
   // If no text input client, do nothing.
   if (!GetTextInputClient()) {
-    ignore_result(DispatchKeyEventPostIME(event));
+    DispatchKeyEventPostIME(event);
     if (ack_callback) {
       ack_callback->Run(event->handled() ? EventResult::HANDLED
                                          : EventResult::UNHANDLED);
@@ -122,6 +122,13 @@ bool InputMethodMus::IsCandidatePopupOpen() const {
 void InputMethodMus::SendKeyEventToInputMethod(
     const ui::KeyEvent& event,
     std::unique_ptr<EventResultCallback> ack_callback) {
+  if (!input_method_) {
+    // This code path is hit in tests that don't connect to the server.
+    DCHECK(!ack_callback);
+    std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
+    DispatchKeyEventPostIME(event_clone->AsKeyEvent());
+    return;
+  }
   // IME driver will notify us whether it handled the event or not by calling
   // ProcessKeyEventCallback(), in which we will run the |ack_callback| to tell
   // the window server if client handled the event or not.
@@ -180,7 +187,7 @@ void InputMethodMus::ProcessKeyEventCallback(
     // any client-side post-ime processing needs to be done. This includes cases
     // like backspace, return key, etc.
     std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
-    ignore_result(DispatchKeyEventPostIME(event_clone->AsKeyEvent()));
+    DispatchKeyEventPostIME(event_clone->AsKeyEvent());
     event_result =
         event_clone->handled() ? EventResult::HANDLED : EventResult::UNHANDLED;
   } else {
