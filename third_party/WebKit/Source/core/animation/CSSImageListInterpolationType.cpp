@@ -62,7 +62,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertStyleImageList(
   return ListInterpolationFunctions::createList(
       imageList.size(), [&imageList](size_t index) {
         return CSSImageInterpolationType::maybeConvertStyleImage(
-            *imageList[index], false);
+            imageList[index].get(), false);
       });
 }
 
