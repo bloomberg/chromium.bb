@@ -110,6 +110,8 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
   gfx::ICCProfile GetICCProfileForCurrentDisplay() override;
+  void MoveCursorToScreenLocationInPixels(
+      const gfx::Point& location_in_pixels) override;
 
  private:
   int64_t display_id_;

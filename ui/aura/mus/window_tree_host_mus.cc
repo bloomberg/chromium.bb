@@ -216,4 +216,13 @@ gfx::ICCProfile WindowTreeHostMus::GetICCProfileForCurrentDisplay() {
   return gfx::ICCProfile();
 }
 
+void WindowTreeHostMus::MoveCursorToScreenLocationInPixels(
+    const gfx::Point& location_in_pixels) {
+  // TODO: this needs to message the server http://crbug.com/693340. Setting
+  // the location is really only appropriate in tests, outside of tests this
+  // value is ignored.
+  NOTIMPLEMENTED();
+  Env::GetInstance()->set_last_mouse_location(location_in_pixels);
+}
+
 }  // namespace aura
