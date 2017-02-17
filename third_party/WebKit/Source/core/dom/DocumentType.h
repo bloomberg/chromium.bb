@@ -51,7 +51,7 @@ class DocumentType final : public Node {
 
   String nodeName() const override;
   NodeType getNodeType() const override;
-  Node* cloneNode(bool deep) override;
+  Node* cloneNode(bool deep, ExceptionState&) override;
 
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;

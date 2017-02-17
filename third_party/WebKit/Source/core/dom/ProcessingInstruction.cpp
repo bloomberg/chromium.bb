@@ -79,7 +79,7 @@ Node::NodeType ProcessingInstruction::getNodeType() const {
   return kProcessingInstructionNode;
 }
 
-Node* ProcessingInstruction::cloneNode(bool /*deep*/) {
+Node* ProcessingInstruction::cloneNode(bool /*deep*/, ExceptionState&) {
   // FIXME: Is it a problem that this does not copy m_localHref?
   // What about other data members?
   return create(document(), m_target, m_data);

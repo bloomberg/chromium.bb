@@ -1376,7 +1376,7 @@ class CORE_EXPORT Document : public ContainerNode,
   String nodeName() const final;
   NodeType getNodeType() const final;
   bool childTypeAllowed(NodeType) const final;
-  Node* cloneNode(bool deep) final;
+  Node* cloneNode(bool deep, ExceptionState&) final;
   void cloneDataFromDocument(const Document&);
   bool isSecureContextImpl(
       const SecureContextCheck priviligeContextCheck) const;

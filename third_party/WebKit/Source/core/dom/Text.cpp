@@ -233,7 +233,7 @@ Node::NodeType Text::getNodeType() const {
   return kTextNode;
 }
 
-Node* Text::cloneNode(bool /*deep*/) {
+Node* Text::cloneNode(bool /*deep*/, ExceptionState&) {
   return cloneWithData(data());
 }
 

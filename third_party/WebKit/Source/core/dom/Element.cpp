@@ -249,7 +249,7 @@ bool Element::layoutObjectIsFocusable() const {
          layoutObject()->style()->visibility() == EVisibility::kVisible;
 }
 
-Node* Element::cloneNode(bool deep) {
+Node* Element::cloneNode(bool deep, ExceptionState&) {
   return deep ? cloneElementWithChildren() : cloneElementWithoutChildren();
 }
 

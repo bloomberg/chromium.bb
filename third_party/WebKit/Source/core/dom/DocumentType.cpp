@@ -44,7 +44,7 @@ Node::NodeType DocumentType::getNodeType() const {
   return kDocumentTypeNode;
 }
 
-Node* DocumentType::cloneNode(bool /*deep*/) {
+Node* DocumentType::cloneNode(bool /*deep*/, ExceptionState&) {
   return create(&document(), m_name, m_publicId, m_systemId);
 }
 

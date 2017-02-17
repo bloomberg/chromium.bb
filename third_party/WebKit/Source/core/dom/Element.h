@@ -907,7 +907,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   // cloneNode is private so that non-virtual cloneElementWithChildren and
   // cloneElementWithoutChildren are used instead.
-  Node* cloneNode(bool deep) override;
+  Node* cloneNode(bool deep, ExceptionState&) override;
   virtual Element* cloneElementWithoutAttributesAndChildren();
 
   QualifiedName m_tagName;

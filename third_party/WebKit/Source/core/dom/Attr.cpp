@@ -95,7 +95,7 @@ void Attr::setNodeValue(const String& v) {
   setValue(v.isNull() ? emptyAtom : AtomicString(v));
 }
 
-Node* Attr::cloneNode(bool /*deep*/) {
+Node* Attr::cloneNode(bool /*deep*/, ExceptionState&) {
   return new Attr(document(), m_name, value());
 }
 

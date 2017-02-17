@@ -52,7 +52,7 @@ class HTMLTemplateElement final : public HTMLElement {
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  Node* cloneNode(bool deep) override;
+  Node* cloneNode(bool deep, ExceptionState&) override;
   void didMoveToNewDocument(Document& oldDocument) override;
 
   explicit HTMLTemplateElement(Document&);

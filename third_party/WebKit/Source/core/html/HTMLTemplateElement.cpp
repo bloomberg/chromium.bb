@@ -54,7 +54,7 @@ DocumentFragment* HTMLTemplateElement::content() const {
   return m_content.get();
 }
 
-Node* HTMLTemplateElement::cloneNode(bool deep) {
+Node* HTMLTemplateElement::cloneNode(bool deep, ExceptionState&) {
   if (!deep)
     return cloneElementWithoutChildren();
 

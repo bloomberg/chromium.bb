@@ -32,12 +32,6 @@ interface ShadowRoot : DocumentFragment {
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     readonly attribute boolean delegatesFocus;
-
-    // TODO(foolip): The spec does not override cloneNode() on the ShadowRoot
-    // interface. Here, it's used to implement "Invoking the cloneNode() method
-    // on a ShadowRoot instance must always throw a DATA_CLONE_ERR exception" as
-    // Node.cloneNode() does not have [RaisesException].
-    [RaisesException] Node cloneNode(optional boolean deep = false);
 };
 
 ShadowRoot implements DocumentOrShadowRoot;

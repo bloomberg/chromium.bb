@@ -226,7 +226,7 @@ class CORE_EXPORT Node : public EventTarget {
   Node* appendChild(Node* newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
   bool hasChildren() const { return firstChild(); }
-  virtual Node* cloneNode(bool deep) = 0;
+  virtual Node* cloneNode(bool deep, ExceptionState& = ASSERT_NO_EXCEPTION) = 0;
   void normalize();
 
   bool isEqualNode(Node*) const;

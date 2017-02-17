@@ -74,7 +74,7 @@ class CORE_EXPORT Attr final : public Node {
 
   String nodeValue() const override { return value(); }
   void setNodeValue(const String&) override;
-  Node* cloneNode(bool deep) override;
+  Node* cloneNode(bool deep, ExceptionState&) override;
 
   bool isAttributeNode() const override { return true; }
 

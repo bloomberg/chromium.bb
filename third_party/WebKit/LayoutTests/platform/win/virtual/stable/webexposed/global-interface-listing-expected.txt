@@ -5335,7 +5335,6 @@ interface ShadowRoot : DocumentFragment
     getter olderShadowRoot
     getter pointerLockElement
     getter styleSheets
-    method cloneNode
     method constructor
     method elementFromPoint
     method elementsFromPoint

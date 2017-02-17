@@ -40,7 +40,7 @@ Node::NodeType Comment::getNodeType() const {
   return kCommentNode;
 }
 
-Node* Comment::cloneNode(bool /*deep*/) {
+Node* Comment::cloneNode(bool /*deep*/, ExceptionState&) {
   return create(document(), data());
 }
 

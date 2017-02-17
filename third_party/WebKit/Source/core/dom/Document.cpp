@@ -3703,7 +3703,7 @@ bool Document::canAcceptChild(const Node& newChild,
   return true;
 }
 
-Node* Document::cloneNode(bool deep) {
+Node* Document::cloneNode(bool deep, ExceptionState&) {
   Document* clone = cloneDocumentWithoutChildren();
   clone->cloneDataFromDocument(*this);
   if (deep)

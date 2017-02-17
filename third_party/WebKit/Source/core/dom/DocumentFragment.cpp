@@ -57,7 +57,7 @@ bool DocumentFragment::childTypeAllowed(NodeType type) const {
   }
 }
 
-Node* DocumentFragment::cloneNode(bool deep) {
+Node* DocumentFragment::cloneNode(bool deep, ExceptionState&) {
   DocumentFragment* clone = create(document());
   if (deep)
     cloneChildNodes(clone);
