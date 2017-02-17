@@ -15,6 +15,7 @@
         ]
       },
       "requires": {
+        "*": [ "app" ],
         "service_manager": [ "service_manager:instance_per_child" ],
         "catalog": [ "control" ],
         "ash": [ "app" ],
