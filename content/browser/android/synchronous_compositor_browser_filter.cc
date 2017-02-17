@@ -194,12 +194,14 @@ void SynchronousCompositorBrowserFilter::VSyncComplete() {
   if (!render_process_host_->Send(
           new SyncCompositorMsg_SynchronizeRendererState(routing_ids,
                                                          &params))) {
+    compositor_host_pending_renderer_state_.clear();
     return;
   }
 
   if (compositor_host_pending_renderer_state_.size() != params.size()) {
     bad_message::ReceivedBadMessage(render_process_host_,
                                     bad_message::SCO_INVALID_ARGUMENT);
+    compositor_host_pending_renderer_state_.clear();
     return;
   }
 
