@@ -2644,6 +2644,11 @@ void Element::focus(const FocusParams& params) {
   if (!document().isActive())
     return;
 
+  if (isFrameOwnerElement() &&
+      toHTMLFrameOwnerElement(this)->contentDocument() &&
+      toHTMLFrameOwnerElement(this)->contentDocument()->unloadStarted())
+    return;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
   if (!isFocusable())
     return;
