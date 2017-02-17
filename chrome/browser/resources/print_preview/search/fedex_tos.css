@@ -3,10 +3,10 @@
  * found in the LICENSE file. */
 
 .fedex-tos {
-  -webkit-transition: height 300ms;
   overflow: hidden;
   padding: 0 36px;
   text-align: center;
+  transition: height 300ms;
 }
 
 .fedex-tos .tos-text {

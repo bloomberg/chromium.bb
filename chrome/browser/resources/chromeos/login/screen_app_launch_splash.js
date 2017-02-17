@@ -22,17 +22,17 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
 
       var networkContainer = $('splash-config-network-container');
       networkContainer.addEventListener(
-          'webkitTransitionEnd',
+          'transitionend',
           function(e) {
             if (this.classList.contains('faded'))
               $('splash-config-network').hidden = true;
           }.bind(networkContainer)
       );
 
-      // Ensure the webkitTransitionEnd event gets called after a wait time.
+      // Ensure the transitionend event gets called after a wait time.
       // The wait time should be inline with the transition duration time
       // defined in css file. The current value in css is 1000ms. To avoid
-      // the emulated webkitTransitionEnd firing before real one, a 1050ms
+      // the emulated transitionend firing before real one, a 1050ms
       // delay is used.
       ensureTransitionEndEvent(networkContainer, 1050);
     },

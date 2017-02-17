@@ -57,7 +57,7 @@ cr.define('ntp', function() {
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
       this.dragWrapper_ = new cr.ui.DragWrapper(this, this);
-      this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
+      this.addEventListener('transitionend', this.onTransitionEnd_);
 
       this.input_.addEventListener('blur', this.onInputBlur_.bind(this));
       this.input_.addEventListener('mousedown',

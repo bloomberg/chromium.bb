@@ -133,7 +133,7 @@ html[dir='rtl'] #attribution {
 }
 
 .starting-up * {
-  -webkit-transition: none !important;
+  transition: none !important;
 }
 
 /* Login Status. **************************************************************/
@@ -211,14 +211,14 @@ html[dir='rtl'] .login-status-icon {
 
 #trash {
   -webkit-padding-start: 10px;
-  -webkit-transition: top 200ms, opacity 0ms;
-  -webkit-transition-delay: 0ms, 200ms;
   color: #222;
   height: 100%;
   opacity: 0;
   position: absolute;
   right: 0;
   top: 50px;
+  transition: top 200ms, opacity 0ms;
+  transition-delay: 0ms, 200ms;
   width: auto;
 }
 
@@ -228,10 +228,10 @@ html[dir='rtl'] #trash {
 }
 
 #footer.showing-trash-mode #trash {
-  -webkit-transition-delay: 0ms, 0ms;
-  -webkit-transition-duration: 0ms, 200ms;
   opacity: 0.75;
   top: 0;
+  transition-delay: 0ms, 0ms;
+  transition-duration: 0ms, 200ms;
 }
 
 #footer.showing-trash-mode #trash.drag-target {
@@ -281,7 +281,6 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 /* Page switcher buttons. *****************************************************/
 
 .page-switcher {
-  -webkit-transition: width 150ms, right 150ms, background-color 150ms;
   background-color: transparent;
   border: none;
   bottom: 0;
@@ -293,6 +292,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   padding: 0;
   position: absolute;
   top: 0;
+  transition: width 150ms, right 150ms, background-color 150ms;
   z-index: 5;
 }
 
@@ -301,12 +301,12 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 #chrome-web-store-link {
   -webkit-order: 3;
   -webkit-padding-end: 12px;
-  -webkit-transition-delay: 100ms;
   color: inherit;
   cursor: pointer;
   display: inline-block;
   margin: 0;
   text-decoration: none;
+  transition-delay: 100ms;
   white-space: nowrap;
 }
 
@@ -328,8 +328,8 @@ html[dir='rtl'] #chrome-web-store-title {
 
 /* In trash mode, hide the menus and web store link. */
 #footer.showing-trash-mode .menu-container {
-  -webkit-transition-delay: 0ms;
   opacity: 0;
+  transition-delay: 0ms;
   visibility: hidden;
 }
 

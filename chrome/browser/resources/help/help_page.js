@@ -226,7 +226,7 @@ cr.define('help', function() {
 
       moreInfo.classList.toggle('visible', visible);
       moreInfo.style.height = visible ? moreInfo.scrollHeight + 'px' : '';
-      moreInfo.addEventListener('webkitTransitionEnd', function(event) {
+      moreInfo.addEventListener('transitionend', function(event) {
         $('more-info-expander').textContent = visible ?
             loadTimeData.getString('hideMoreInfo') :
             loadTimeData.getString('showMoreInfo');
@@ -321,8 +321,8 @@ cr.define('help', function() {
     },
 
     /**
-     * @param {string} eolStatus: The EndofLife status of the device.
-     * @param {string} eolMessage: The EndofLife message to display.
+     * @param {string} eolStatus The EndofLife status of the device.
+     * @param {string} eolMessage The EndofLife message to display.
      * @private
      */
     updateEolMessage_: function(eolStatus, eolMessage) {

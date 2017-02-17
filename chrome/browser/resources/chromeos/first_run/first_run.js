@@ -37,8 +37,8 @@ function changeVisibility(
   var transition = visible ? 'show-animated' : 'hide-animated';
   classes.add(transition);
   classes.toggle('transparent');
-  element.addEventListener('webkitTransitionEnd', function f() {
-    element.removeEventListener('webkitTransitionEnd', f);
+  element.addEventListener('transitionend', function f() {
+    element.removeEventListener('transitionend', f);
     classes.remove(transition);
     if (oldDurationValue)
       style.setProperty('transition-duration', oldDurationValue);

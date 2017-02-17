@@ -140,7 +140,7 @@ cr.define('cr.ui', function() {
             'mousewheel', this.onMouseWheel_.bind(this));
       }
       this.container_.addEventListener(
-          'webkitTransitionEnd', this.onWebkitTransitionEnd_.bind(this));
+          'transitionend', this.onTransitionEnd_.bind(this));
 
       // Also support touch events in case a touch screen happens to be
       // available.  Note that this has minimal impact in the common case of
@@ -333,12 +333,12 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Handles the ends of -webkit-transitions on transform (animated
+     * Handles the ends of transitions on transform (animated
      * card switches).
-     * @param {Event} e The webkitTransitionEnd event.
+     * @param {Event} e The transitionend event.
      * @private
      */
-    onWebkitTransitionEnd_: function(e) {
+    onTransitionEnd_: function(e) {
       // Ignore irrelevant transitions that might bubble up.
       if (e.target !== this.container_ || e.propertyName != 'transform')
         return;
@@ -571,7 +571,7 @@ cr.define('cr.ui', function() {
         transition =
             'transform ' + CardSlider.TRANSITION_TIME_ + 'ms ease-in-out';
       }
-      this.container_.style.WebkitTransition = transition;
+      this.container_.style.transition = transition;
       this.translateTo_(this.currentLeft_);
 
       return true;
@@ -601,7 +601,7 @@ cr.define('cr.ui', function() {
      */
     onTouchStart_: function(e) {
       e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
-      this.container_.style.WebkitTransition = '';
+      this.container_.style.transition = '';
       e.enableDrag = true;
     },
 

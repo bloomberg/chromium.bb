@@ -52,7 +52,6 @@
 
 #create-profile-error-bubble,
 #manage-profile-error-bubble {
-  -webkit-transition: max-height 200ms, padding 200ms;
   background-color: rgb(238, 185, 57);
   border-radius: 4px;
   font-weight: bold;
@@ -62,6 +61,7 @@
   overflow: hidden;
   padding: 10px 10px;
   text-align: center;
+  transition: max-height 200ms, padding 200ms;
   width: 80%;
 }
 

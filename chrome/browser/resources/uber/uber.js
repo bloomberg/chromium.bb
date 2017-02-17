@@ -459,7 +459,7 @@ cr.define('uber', function() {
         container.hidden = true;
         container.setAttribute('aria-hidden', 'true');
       }
-      container.addEventListener('webkitTransitionEnd', function(event) {
+      container.addEventListener('transitionend', function(event) {
         if (!event.target.classList.contains('selected'))
           event.target.hidden = true;
       });

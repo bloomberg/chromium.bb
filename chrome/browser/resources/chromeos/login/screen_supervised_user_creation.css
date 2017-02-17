@@ -413,7 +413,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 #supervised-user-creation-image-preview-img.animated-transform {
-  -webkit-transition: transform 200ms linear;
+  transition: transform 200ms linear;
 }
 
 .camera.live #supervised-user-creation-image-preview-img {
@@ -442,10 +442,10 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 #supervised-user-creation-image-stream-crop {
-  -webkit-transition: transform 200ms linear;
   height: 220px;
   overflow: hidden;
   position: relative;
+  transition: transform 200ms linear;
   width: 220px;
 }
 
@@ -477,7 +477,6 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 }
 
 #supervised-user-creation-flip-photo {
-  -webkit-transition: opacity 75ms linear;
   background: url(chrome://theme/IDR_MIRROR_FLIP) no-repeat;
   border: none;
   bottom: 44px;  /* 8px + image bottom. */
@@ -486,6 +485,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   opacity: 0;
   position: absolute;
   right: 8px;
+  transition: opacity 75ms linear;
   width: 32px;
 }
 

@@ -29,7 +29,6 @@ tabs.new-style-tabs {
 
 tabs > * {
   -webkit-margin-start: 5px;
-  -webkit-transition: border-color 150ms, background-color 150ms;
   background: rgba(160, 160, 160, .3);
   border: 1px solid rgba(160, 160, 160, .3);
   border-bottom: 0;
@@ -40,17 +39,18 @@ tabs > * {
   min-width: 4em;
   padding: 2px 10px;
   text-align: center;
+  transition: border-color 150ms, background-color 150ms;
 }
 
 tabs.new-style-tabs > * {
   -webkit-margin-start: 0;
-  -webkit-transition: none;
   background: #fbfbfb;
   border: 1px solid #fbfbfb;
   border-bottom: 0;
   border-radius: 0;
   min-width: 0;
   padding: 4px 9px 4px 10px;
+  transition: none;
 }
 
 tabs > :not([selected]) {
@@ -72,11 +72,11 @@ tabs.new-style-tabs > :not([selected]):hover {
 }
 
 tabs > [selected] {
-  -webkit-transition: none;
   background: white;
   border-color: rgb(160, 160, 160);
   margin-bottom: -1px;
   position: relative;
+  transition: none;
   z-index: 0;
 }
 

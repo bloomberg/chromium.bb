@@ -6,16 +6,16 @@
  */
 
 .bubble {
-  -webkit-transition: opacity 200ms ease-in-out;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
-  color: rgba(255, 255, 255, 0.87);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.87);
   font-size: 12px;
   margin: 2px;
   max-width: 250px;
   padding: 8px;
   position: absolute;
+  transition: opacity 200ms ease-in-out;
 }
 
 /* --- oldstyle begin --- */

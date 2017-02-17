@@ -104,9 +104,9 @@ body.hide-tmi-mode-initial .show-in-tmi-mode {
 }
 
 body.hide-tmi-mode .show-in-tmi-mode {
-  -webkit-transition: all 100ms ease-out;
   height: 0 !important;
   opacity: 0;
+  transition: all 100ms ease-out;
 }
 
 body.show-tmi-mode-initial .show-in-tmi-mode {
@@ -114,8 +114,8 @@ body.show-tmi-mode-initial .show-in-tmi-mode {
 }
 
 body.show-tmi-mode .show-in-tmi-mode {
-  -webkit-transition: all 100ms ease-in;
   opacity: 1;
+  transition: all 100ms ease-in;
 }
 
 .wbox-tmi-mode {

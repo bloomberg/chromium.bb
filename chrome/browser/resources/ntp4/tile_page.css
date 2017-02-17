@@ -93,14 +93,14 @@
 }
 
 .tile.drag-representation {
-  -webkit-transition: opacity 200ms;
   pointer-events: none;
   position: fixed;
+  transition: opacity 200ms;
   z-index: 3;
 }
 
 .tile.drag-representation.placing > * {
-  -webkit-transition: transform 200ms;
+  transition: transform 200ms;
 }
 
 /* When a drag finishes while we're not showing the page where the tile
@@ -110,13 +110,13 @@
 }
 
 .tile.drag-representation.deleting > * {
-  -webkit-transition: transform 600ms;
   transform: scale(0) rotate(360deg);
+  transition: transform 600ms;
 }
 
 .animating-tile-page .tile,
 .tile.drag-representation.placing {
-  -webkit-transition: left 200ms, right 200ms, top 200ms;
+  transition: left 200ms, right 200ms, top 200ms;
 }
 
 .hovering-on-trash {
@@ -124,7 +124,7 @@
 }
 
 .animating-tile-page .top-margin {
-  -webkit-transition: margin-bottom 200ms;
+  transition: margin-bottom 200ms;
 }
 
 @keyframes bounce {
@@ -175,7 +175,7 @@
 }
 
 .tile-page:not(.selected-card) * {
-  -webkit-transition: none !important;
+  transition: none !important;
 }
 
 /** Scrollbars ****************************************************************/

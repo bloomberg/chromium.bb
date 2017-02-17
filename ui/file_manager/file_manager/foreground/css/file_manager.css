@@ -720,9 +720,9 @@ html[dir='rtl'] #search-box .clear {
 
 /* Container for the detail and thumbnail list views. */
 .dialog-body {
-  -webkit-transition: all 180ms ease;
   flex: auto;
   position: relative;
+  transition: all 180ms ease;
 }
 
 .main-panel {

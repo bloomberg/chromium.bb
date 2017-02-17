@@ -103,7 +103,7 @@ cr.define('snackbar', function() {
         return Promise.resolve();
 
       return new Promise(function(resolve) {
-        listenOnce(this, 'webkitTransitionEnd', function() {
+        listenOnce(this, 'transitionend', function() {
           this.dispatchEvent(new CustomEvent('dismissed'));
           resolve();
         }.bind(this));

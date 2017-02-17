@@ -241,17 +241,17 @@ cr.define('cr.ui.pageManager', function() {
       var loading = PageManager.isLoading();
       if (!loading) {
         // TODO(flackr): Use an event delegate to avoid having to subscribe and
-        // unsubscribe for webkitTransitionEnd events.
-        container.addEventListener('webkitTransitionEnd', function f(e) {
+        // unsubscribe for transitionend events.
+        container.addEventListener('transitionend', function f(e) {
           var propName = e.propertyName;
           if (e.target != e.currentTarget ||
               (propName && propName != 'opacity')) {
             return;
           }
-          container.removeEventListener('webkitTransitionEnd', f);
+          container.removeEventListener('transitionend', f);
           self.fadeCompleted_();
         });
-        // -webkit-transition is 200ms. Let's wait for 400ms.
+        // transition is 200ms. Let's wait for 400ms.
         ensureTransitionEndEvent(container, 400);
       }
 
@@ -260,7 +260,7 @@ cr.define('cr.ui.pageManager', function() {
         pageDiv.hidden = false;
         pageDiv.page = this;
         // NOTE: This is a hacky way to force the container to layout which
-        // will allow us to trigger the webkit transition.
+        // will allow us to trigger the transition.
         /** @suppress {uselessCode} */
         container.scrollTop;
 

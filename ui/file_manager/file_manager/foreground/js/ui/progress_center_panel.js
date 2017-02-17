@@ -81,7 +81,7 @@ ProgressCenterItemElement.decorate = function(element) {
   element = /** @type {ProgressCenterItemElement} */ (element);
   element.state_ = ProgressItemState.PROGRESSING;
   element.track_ = element.querySelector('.progress-track');
-  element.track_.addEventListener('webkitTransitionEnd',
+  element.track_.addEventListener('transitionend',
                                   element.onTransitionEnd_.bind(element));
   element.cancelTransition_ = null;
   return element;

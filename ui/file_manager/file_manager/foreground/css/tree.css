@@ -18,16 +18,16 @@ tree {
 }
 
 .tree-row > .expand-icon {
-  transform: rotate(-90deg);
-  -webkit-transition: all 150ms;
   background-image: -webkit-image-set(
       url(../images/files/ui/expand_more.png) 1x,
       url(../images/files/ui/2x/expand_more.png) 2x);
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: 16px 16px;
-  vertical-align: top;
   position: relative;
+  transform: rotate(-90deg);
+  transition: all 150ms;
+  vertical-align: top;
 }
 
 .tree-row[selected] > .expand-icon {

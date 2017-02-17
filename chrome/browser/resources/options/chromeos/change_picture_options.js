@@ -87,11 +87,11 @@ cr.define('options', function() {
       $('flip-photo').addEventListener(
           'click', this.handleFlipPhoto_.bind(this));
       $('user-image-stream-crop').addEventListener(
-          'webkitTransitionEnd', function(e) {
+          'transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
       $('user-image-preview-img').addEventListener(
-          'webkitTransitionEnd', function(e) {
+          'transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
 

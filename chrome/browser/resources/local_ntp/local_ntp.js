@@ -545,7 +545,7 @@ function handlePostMessage(event) {
  */
 function init() {
   // Hide notifications after fade out, so we can't focus on links via keyboard.
-  $(IDS.NOTIFICATION).addEventListener('webkitTransitionEnd', hideNotification);
+  $(IDS.NOTIFICATION).addEventListener('transitionend', hideNotification);
 
   $(IDS.NOTIFICATION_MESSAGE).textContent =
       configData.translatedStrings.thumbnailRemovedNotification;

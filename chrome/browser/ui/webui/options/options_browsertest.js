@@ -126,9 +126,9 @@ function waitUntilHidden(targets) {
   function isHidden(el) { return el.hidden; }
   function ensureTransition(el) { ensureTransitionEndEvent(el, 500); }
 
-  document.addEventListener('webkitTransitionEnd', function f(e) {
+  document.addEventListener('transitionend', function f(e) {
     if (targets.indexOf(e.target) >= 0 && targets.every(isHidden)) {
-      document.removeEventListener(f, 'webkitTransitionEnd');
+      document.removeEventListener(f, 'transitionend');
       testDone();
     }
   });
@@ -346,7 +346,7 @@ TEST_F('OptionsWebUITest', 'DISABLED_OverlayShowDoesntShift', function() {
   var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
   expectEquals(0, frozenPages.length);
 
-  document.addEventListener('webkitTransitionEnd', function(e) {
+  document.addEventListener('transitionend', function(e) {
     if (e.target != overlay)
       return;
 

@@ -49,8 +49,8 @@ a {
 }
 
 #help-box-outer {
-  -webkit-transition: height ease-in 218ms;
   overflow: hidden;
+  transition: height ease-in 218ms;
 }
 
 #help-box-inner {

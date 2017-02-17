@@ -35,7 +35,7 @@ cr.define('chrome.supervised_user_internals', function() {
       // Note the addListener function does not end up creating duplicate
       // listeners.  There can be only one listener per event at a time.
       // See https://developer.mozilla.org/en/DOM/element.addEventListener
-      node.addEventListener('webkitAnimationEnd', clearHighlight, false);
+      node.addEventListener('animationend', clearHighlight, false);
       node.setAttribute('highlighted', '');
     }
   }

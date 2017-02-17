@@ -52,7 +52,6 @@
 }
 
 #supervised-user-import-error-bubble {
-  -webkit-transition: max-height 200ms, padding 200ms;
   background-color: rgb(238, 185, 57);
   border-radius: 4px;
   font-weight: bold;
@@ -63,6 +62,7 @@
   overflow: hidden;
   padding: 1px 10px;
   text-align: center;
+  transition: max-height 200ms, padding 200ms;
   width: 80%;
 }
 

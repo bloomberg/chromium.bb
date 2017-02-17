@@ -477,7 +477,6 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .gallery .ribbon-image > .indicator {
-  -webkit-transition: opacity 500ms ease-in;
   background-image: -webkit-image-set(
       url(../images/100/slide_view.png) 1x,
       url(../images/200/slide_view.png) 2x);
@@ -486,6 +485,7 @@ html[dir='rtl'] .gallery .toolbar .bubble {
   height: 100%;
   opacity: 0;
   position: absolute;
+  transition: opacity 500ms ease-in;
   width: 100%;
 }
 

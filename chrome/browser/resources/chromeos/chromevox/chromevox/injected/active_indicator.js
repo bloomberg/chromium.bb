@@ -157,7 +157,7 @@ cvox.ActiveIndicator.STYLE =
     '}' +
     '.cvox_indicator_region {' +
     '  opacity: 0 !important;' +
-    '  -webkit-transition: opacity 1s !important;' +
+    '  transition: opacity 1s !important;' +
     '}' +
     '.cvox_indicator_visible {' +
     '  opacity: 1 !important;' +
@@ -168,13 +168,13 @@ cvox.ActiveIndicator.STYLE =
     '  border-radius: 6px !important;' +
     '  margin: 0px !important;' +
     '  padding: 0px !important;' +
-    '  -webkit-transition: none !important;' +
+    '  transition: none !important;' +
     '}' +
     '.cvox_indicator_animate_normal .cvox_indicator_region * {' +
-    '  -webkit-transition: all 0.3s !important;' +
+    '  transition: all 0.3s !important;' +
     '}' +
     '.cvox_indicator_animate_quick .cvox_indicator_region * {' +
-    '  -webkit-transition: all 0.1s !important;' +
+    '  transition: all 0.1s !important;' +
     '}' +
     '.cvox_indicator_top {' +
     '  border-radius: inherit inherit 0 0 !important;' +

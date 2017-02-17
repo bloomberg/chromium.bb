@@ -60,12 +60,12 @@ body {
 
 #categories-list > li {
   -webkit-box-align: center;
-  -webkit-transition: border-top 130ms ease;
   -webkit-user-select: none;
   border-top: 4px solid transparent;
   color: #777;
   display: -webkit-box;
   height: 50px;
+  transition: border-top 130ms ease;
 }
 
 #categories-list:not([disabled]) > li:hover {
@@ -107,11 +107,11 @@ body {
 }
 
 #bar {
-  -webkit-transition: left 130ms ease-in-out;
   background-color: #eee;
   height: 4px;
   position: absolute;
   top: 0;
+  transition: left 130ms ease-in-out;
 }
 
 .dialog-main {
@@ -287,9 +287,9 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 }
 
 .progress-track {
-  -webkit-transition: width 1ms linear;
   background-color: rgb(66, 129, 244);
   height: 100%;
+  transition: width 1ms linear;
   width: 0;
 }
 

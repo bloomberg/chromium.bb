@@ -104,7 +104,7 @@ cr.define('cr.ui.login', function() {
    * The value is used as the duration for ensureTransitionEndEvent below.
    * It needs to be inline with the step screen transition duration time
    * defined in css file. The current value in css is 200ms. To avoid emulated
-   * webkitTransitionEnd fired before real one, 250ms is used.
+   * transitionend fired before real one, 250ms is used.
    * @const
    */
   var MAX_SCREEN_TRANSITION_DURATION = 250;
@@ -539,8 +539,8 @@ cr.define('cr.ui.login', function() {
           !oldStep.classList.contains('hidden')) {
         if (oldStep.classList.contains('animated')) {
           innerContainer.classList.add('animation');
-          oldStep.addEventListener('webkitTransitionEnd', function f(e) {
-            oldStep.removeEventListener('webkitTransitionEnd', f);
+          oldStep.addEventListener('transitionend', function f(e) {
+            oldStep.removeEventListener('transitionend', f);
             if (oldStep.classList.contains('faded') ||
                 oldStep.classList.contains('left') ||
                 oldStep.classList.contains('right')) {
@@ -566,8 +566,8 @@ cr.define('cr.ui.login', function() {
         if (this.isOobeUI() && innerContainer.classList.contains('down')) {
           innerContainer.classList.remove('down');
           innerContainer.addEventListener(
-              'webkitTransitionEnd', function f(e) {
-                innerContainer.removeEventListener('webkitTransitionEnd', f);
+              'transitionend', function f(e) {
+                innerContainer.removeEventListener('transitionend', f);
                 outerContainer.classList.remove('down');
                 $('progress-dots').classList.remove('down');
                 chrome.send('loginVisible', ['oobe']);

@@ -101,7 +101,6 @@ html[dir=rtl] list .url {
 }
 
 list > * > button {
-  -webkit-transition: opacity 150ms;
   background: #fff no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
@@ -112,6 +111,7 @@ list > * > button {
   position: absolute;
   right: 3px;
   top: 1px;
+  transition: opacity 150ms;
   width: 15px;
 }
 

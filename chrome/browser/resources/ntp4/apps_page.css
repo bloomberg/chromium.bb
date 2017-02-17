@@ -9,7 +9,7 @@
 }
 
 .app-contents {
-  -webkit-transition: transform 100ms;
+  transition: transform 100ms;
 }
 
 .app-contents:active:not(.suppress-active),
@@ -23,7 +23,7 @@
 /* Active gets applied right before .suppress-active, so to avoid flicker
  * we need to make the scale go back to normal without an animation. */
 .app-contents.suppress-active {
-  -webkit-transition-duration: 0ms;
+  transition-duration: 0ms;
 }
 
 .app-contents > span {

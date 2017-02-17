@@ -36,7 +36,6 @@ input[type='radio'] {
 select {
   min-height: 2em;
   min-width: 4em;
-  padding-top: 1px;
   padding-bottom: 1px;
 <if expr="is_win or is_macosx">
   /* The following platform-specific rule is necessary to get adjacent
@@ -44,6 +43,7 @@ select {
    * aligning on the text's baselines. */
   padding-bottom: 2px;
 </if>
+  padding-top: 1px;
 }
 
 :-webkit-any(button,
@@ -100,8 +100,8 @@ textarea {
   margin: 0;
   /* Use min-height to accommodate addditional padding for touch as needed. */
   min-height: 2em;
-  padding: 3px;
   outline: none;
+  padding: 3px;
 <if expr="is_win or is_macosx or is_ios">
   /* For better alignment between adjacent buttons and inputs. */
   padding-bottom: 4px;
@@ -234,12 +234,12 @@ input:disabled:-webkit-any([type='password'],
          button,
          input[type='button'],
          input[type='submit']):not(.custom-appearance)) {
-  /* OVERRIDE */
-  -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
    * This is particularly noticeable on mac. */
   border-color: rgb(77, 144, 254);
   outline: none;
+  /* OVERRIDE */
+  transition: border-color 200ms;
 }
 
 /* Checkbox/radio helpers ******************************************************

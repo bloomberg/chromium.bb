@@ -120,7 +120,7 @@ cr.define('ntp', function() {
       this.dragClone.style.right = '';
       this.dragClone.classList.add('drag-representation');
       $('card-slider-frame').appendChild(this.dragClone);
-      this.eventTracker.add(this.dragClone, 'webkitTransitionEnd',
+      this.eventTracker.add(this.dragClone, 'transitionend',
                             this.onDragCloneTransitionEnd_.bind(this));
 
       this.classList.add('dragging');
@@ -273,7 +273,7 @@ cr.define('ntp', function() {
       this.dragClone = null;
 
       clone.parentNode.removeChild(clone);
-      this.eventTracker.remove(clone, 'webkitTransitionEnd');
+      this.eventTracker.remove(clone, 'transitionend');
       this.classList.remove('dragging');
       if (this.firstChild.finalizeDrag)
         this.firstChild.finalizeDrag();

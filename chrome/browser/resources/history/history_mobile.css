@@ -194,8 +194,8 @@ input {
 /* Fade out the entry-box, rather than its parent node, so that the dividing
    line between entries doesn't fade out. */
 .entry.fade-out .entry-box {
-  -webkit-transition: opacity 200ms;
   opacity: 1;
+  transition: opacity 200ms;
 }
 
 .entry.fade-out {

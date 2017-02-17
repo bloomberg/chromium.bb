@@ -250,7 +250,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
           }
         }
         var showBubbleCallback = function() {
-          activatedPod.removeEventListener("webkitTransitionEnd",
+          activatedPod.removeEventListener("transitionend",
               showBubbleCallback);
           $('bubble').showContentForElement(bubbleAnchor,
                                             attachment,
@@ -258,7 +258,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
                                             BUBBLE_OFFSET,
                                             bubblePositioningPadding, true);
         };
-        activatedPod.addEventListener("webkitTransitionEnd",
+        activatedPod.addEventListener("transitionend",
                                       showBubbleCallback);
         ensureTransitionEndEvent(activatedPod);
       }

@@ -139,7 +139,7 @@ cvox.BrailleOverlayWidget.prototype.createContainerNode_ = function() {
   containerNode.style['position'] = 'fixed';
   containerNode.style['top'] = '50%';
   containerNode.style['left'] = '50%';
-  containerNode.style['-webkit-transition'] = 'all 0.3s ease-in';
+  containerNode.style['transition'] = 'all 0.3s ease-in';
   containerNode.style['opacity'] = '0.0';
   containerNode.style['z-index'] = '2147483647';
   containerNode.setAttribute('aria-hidden', 'true');

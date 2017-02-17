@@ -68,7 +68,7 @@ cr.define('cr.ui', function() {
       this.ownerDocument.addEventListener('keydown',
                                           this.docKeyDownHandler_);
       window.addEventListener('blur', this.handleWindowBlur_.bind(this));
-      this.addEventListener('webkitTransitionEnd',
+      this.addEventListener('transitionend',
                             this.handleTransitionEnd_.bind(this));
       // Guard timer for 200ms + epsilon.
       ensureTransitionEndEvent(this, 250);

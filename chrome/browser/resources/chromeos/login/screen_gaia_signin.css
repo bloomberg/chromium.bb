@@ -19,9 +19,9 @@
 }
 
 .signin-link:focus {
-  -webkit-transition: outline-color 200ms;
   /* Note: May use 1px solid here. */
   outline-color: rgb(77, 144, 254);
+  transition: outline-color 200ms;
 }
 
 #gaia-signin-form-container,

@@ -131,7 +131,6 @@
 /* Notification */
 
 #notification {
-  -webkit-transition: opacity 150ms;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
   border-radius: 6px;
@@ -146,6 +145,7 @@
   padding: 7px 15px;
   pointer-events: none;
   position: relative;
+  transition: opacity 150ms;
   white-space: nowrap;
   z-index: 1;
 }
@@ -158,9 +158,9 @@
 }
 
 #notification.show {
-  -webkit-transition: opacity 1s;
   opacity: 1;
   pointer-events: all;
+  transition: opacity 1s;
 }
 
 #notification .link {

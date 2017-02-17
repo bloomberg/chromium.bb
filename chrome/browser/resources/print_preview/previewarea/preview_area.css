@@ -17,45 +17,45 @@
 }
 
 #preview-area .preview-area-plugin {
-  /* pluginFadeInTransitionDuration = 200ms */
-  -webkit-transition: opacity 200ms linear;
-  /* pluginFadeInTransitionDelay = overlayFadeOutTransitionDuration = 100ms */
-  -webkit-transition-delay: 100ms;
   border: none;
   cursor: inherit;
   height: 100%;
   opacity: 1;
+  /* pluginFadeInTransitionDuration = 200ms */
+  transition: opacity 200ms linear;
+  /* pluginFadeInTransitionDelay = overlayFadeOutTransitionDuration = 100ms */
+  transition-delay: 100ms;
   width: 100%;
 }
 
 #preview-area .preview-area-plugin.invisible {
-  /* pluginFadeOutTransitionDuration = 100ms */
-  -webkit-transition: opacity 100ms linear;
-  /* pluginFadeOutTransitionDelay = 250ms */
-  -webkit-transition-delay: 250ms;
   opacity: 0;
+  /* pluginFadeOutTransitionDuration = 100ms */
+  transition: opacity 100ms linear;
+  /* pluginFadeOutTransitionDelay = 250ms */
+  transition-delay: 250ms;
 }
 
 #preview-area .preview-area-overlay-layer {
-  -webkit-transition: opacity 200ms linear;
-  /* overlayFadeInTransitionDelay = pluginFadeOutTransitionDelay +
-   *     pluginFadeOutTransitionDuration = 350ms */
-  -webkit-transition-delay: 350ms;
   -webkit-user-select: none;
   background: #e6e6e6;
   height: 100%;
   margin: 0;
   opacity: 1;
   position: absolute;
+  transition: opacity 200ms linear;
+  /* overlayFadeInTransitionDelay = pluginFadeOutTransitionDelay +
+   *     pluginFadeOutTransitionDuration = 350ms */
+  transition-delay: 350ms;
   width: 100%;
   z-index: 1;
 }
 
 #preview-area .preview-area-overlay-layer.invisible {
-  /* overlayFadeOutTransitionDuration = 100ms */
-  -webkit-transition: opacity 100ms linear;
   opacity: 0;
   pointer-events: none;
+  /* overlayFadeOutTransitionDuration = 100ms */
+  transition: opacity 100ms linear;
 }
 
 #preview-area .preview-area-messages {

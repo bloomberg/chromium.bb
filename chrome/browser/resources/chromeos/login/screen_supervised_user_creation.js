@@ -609,11 +609,11 @@ login.createScreen('SupervisedUserCreationScreen',
       this.getScreenElement('flip-photo').addEventListener(
           'click', this.handleFlipPhoto_.bind(this));
       this.getScreenElement('image-stream-crop').addEventListener(
-          'webkitTransitionEnd', function(e) {
+          'transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
       this.getScreenElement('image-preview-img').addEventListener(
-          'webkitTransitionEnd', function(e) {
+          'transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
 

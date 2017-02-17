@@ -36,10 +36,10 @@ button {
 /* Do not apply this style to restricted button state. */
 button.custom-appearance:not(.button-restricted):not(.button-fancy):not(
     [is="gaia-icon-button"]) {
-  -webkit-transition: border-color 200ms;
   border: 2px solid transparent;
   /* Don't grey out disabled buttons. */
   color: buttontext !important;
+  transition: border-color 200ms;
 }
 
 /* ':focus' used three times to increase specificity. */
@@ -135,7 +135,7 @@ button.button-red:active {
 }
 
 #bubble {
-  -webkit-transition: 250ms opacity;
+  transition: 250ms opacity;
 }
 
 span.bold {
@@ -143,7 +143,6 @@ span.bold {
 }
 
 #version-labels {
-  -webkit-transition: all 500ms linear;
   color: #fff;
   font-size: 11px;
   margin: 10px;
@@ -153,16 +152,17 @@ span.bold {
       0 0 4px rgba(0,0,0,.6),
       0 1px 2px rgba(0,0,0,.8),
       0 -1px 2px rgba(0,0,0,1);
+  transition: all 500ms linear;
   z-index: 1;
 }
 
 #background {
-  -webkit-transition: 700ms opacity;
   background-size: 100% 100%;
   height: 100%;
   left: 0;
   position: absolute;
   top: 0;
+  transition: 700ms opacity;
   width: 100%;
 }
 

@@ -3,10 +3,10 @@
  * found in the LICENSE file. */
 
 :host {
-  -webkit-transition: opacity 400ms ease-in-out;
   pointer-events: none;
   position: fixed;
   right: 0;
+  transition: opacity 400ms ease-in-out;
 }
 
 #text {

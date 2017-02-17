@@ -186,11 +186,11 @@ var HSTSView = (function() {
   }
 
   function yellowFade(element) {
-    element.style.webkitTransitionProperty = 'background-color';
-    element.style.webkitTransitionDuration = '0';
+    element.style.transitionProperty = 'background-color';
+    element.style.transitionDuration = '0';
     element.style.backgroundColor = '#fffccf';
     setTimeout(function() {
-      element.style.webkitTransitionDuration = '1000ms';
+      element.style.transitionDuration = '1000ms';
       element.style.backgroundColor = '#fff';
     }, 0);
   }

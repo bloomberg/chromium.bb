@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Counter used to give webkit animations unique names.
+// Counter used to give animations unique names.
 var animationCounter = 0;
 
 var animationEventTracker_ = new EventTracker();
@@ -11,7 +11,7 @@ function addAnimation(code) {
   var name = 'anim' + animationCounter;
   animationCounter++;
   var rules = document.createTextNode(
-      '@-webkit-keyframes ' + name + ' {' + code + '}');
+      '@keyframes ' + name + ' {' + code + '}');
   var el = document.createElement('style');
   el.type = 'text/css';
   el.appendChild(rules);
@@ -55,8 +55,8 @@ function fadeInElement(el, opt_justShow) {
     el.style.height = height + 'px';
     var animName = addAnimation(getFadeInAnimationCode(height));
     animationEventTracker_.add(
-        el, 'webkitAnimationEnd', onFadeInAnimationEnd.bind(el), false);
-    el.style.webkitAnimationName = animName;
+        el, 'animationend', onFadeInAnimationEnd.bind(el), false);
+    el.style.animationName = animName;
   }
   el.classList.add('visible');
 }
@@ -75,7 +75,7 @@ function fadeOutElement(el) {
   el.style.height = height + 'px';
   el.offsetHeight;  // Should force an update of the computed style.
   animationEventTracker_.add(
-      el, 'webkitTransitionEnd', onFadeOutTransitionEnd.bind(el), false);
+      el, 'transitionend', onFadeOutTransitionEnd.bind(el), false);
   el.classList.add('closing');
   el.classList.remove('visible');
   el.setAttribute('aria-hidden', 'true');
@@ -83,19 +83,19 @@ function fadeOutElement(el) {
 
 /**
  * Executes when a fade out animation ends.
- * @param {WebkitTransitionEvent} event The event that triggered this listener.
+ * @param {Event} event The event that triggered this listener.
  * @this {HTMLElement} The element where the transition occurred.
  */
 function onFadeOutTransitionEnd(event) {
   if (event.propertyName != 'height')
     return;
-  animationEventTracker_.remove(this, 'webkitTransitionEnd');
+  animationEventTracker_.remove(this, 'transitionend');
   this.hidden = true;
 }
 
 /**
  * Executes when a fade in animation ends.
- * @param {WebkitAnimationEvent} event The event that triggered this listener.
+ * @param {Event} event The event that triggered this listener.
  * @this {HTMLElement} The element where the transition occurred.
  */
 function onFadeInAnimationEnd(event) {
@@ -108,12 +108,12 @@ function onFadeInAnimationEnd(event) {
  * @param {HTMLElement} element The animated element.
  */
 function fadeInAnimationCleanup(element) {
-  if (element.style.webkitAnimationName) {
-    var animEl = document.getElementById(element.style.webkitAnimationName);
+  if (element.style.animationName) {
+    var animEl = document.getElementById(element.style.animationName);
     if (animEl)
       animEl.parentNode.removeChild(animEl);
-    element.style.webkitAnimationName = '';
-    animationEventTracker_.remove(element, 'webkitAnimationEnd');
+    element.style.animationName = '';
+    animationEventTracker_.remove(element, 'animationend');
   }
 }
 

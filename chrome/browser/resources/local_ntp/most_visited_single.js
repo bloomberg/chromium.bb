@@ -271,7 +271,7 @@ var swapInNewTiles = function() {
     old.removeAttribute('id');
     old.classList.add('mv-tiles-old');
     old.style.opacity = 0.0;
-    cur.addEventListener('webkitTransitionEnd', function(ev) {
+    cur.addEventListener('transitionend', function(ev) {
       if (ev.target === cur) {
         removeAllOldTiles();
       }
@@ -336,7 +336,7 @@ var addTile = function(args) {
  */
 var blacklistTile = function(tile) {
   tile.classList.add('blacklisted');
-  tile.addEventListener('webkitTransitionEnd', function(ev) {
+  tile.addEventListener('transitionend', function(ev) {
     if (ev.propertyName != 'width') return;
 
     window.parent.postMessage({cmd: 'tileBlacklisted',

@@ -27,12 +27,12 @@
 }
 
 .handlers-remove-link {
-  -webkit-transition: 150ms opacity;
   color: #555;
   cursor: pointer;
   opacity: 0;
   padding-left: 14px;
   text-decoration: underline;
+  transition: 150ms opacity;
 }
 
 div > .handlers-remove-column {

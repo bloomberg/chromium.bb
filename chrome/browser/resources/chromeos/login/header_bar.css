@@ -23,12 +23,12 @@ html[screen=oobe] .login-header-bar-hidden {
 
 html[screen=lock] .login-header-bar-animate-fast,
 html[screen=oobe] .login-header-bar-animate-fast {
-  -webkit-transition: opacity 200ms ease-out;
+  transition: opacity 200ms ease-out;
 }
 
 html[screen=lock] .login-header-bar-animate-slow,
 html[screen=oobe] .login-header-bar-animate-slow {
-  -webkit-transition: opacity 2s ease-out;
+  transition: opacity 2s ease-out;
 }
 
 #login-header-bar button,

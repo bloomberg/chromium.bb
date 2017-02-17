@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 .popup-overlay {
-  -webkit-transition: 250ms opacity;
   align-items: center;
   background: rgba(255, 255, 255, .75);
   bottom: 0;
@@ -14,6 +13,7 @@
   position: fixed;
   right: 0;
   top: 0;
+  transition: 250ms opacity;
   z-index: 5;
 }
 

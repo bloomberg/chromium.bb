@@ -285,12 +285,12 @@ function createElementWithClassName(type, className) {
 }
 
 /**
- * webkitTransitionEnd does not always fire (e.g. when animation is aborted
+ * transitionend does not always fire (e.g. when animation is aborted
  * or when no paint happens during the animation). This function sets up
  * a timer and emulate the event if it is not fired when the timer expires.
- * @param {!HTMLElement} el The element to watch for webkitTransitionEnd.
+ * @param {!HTMLElement} el The element to watch for transitionend.
  * @param {number=} opt_timeOut The maximum wait time in milliseconds for the
- *     webkitTransitionEnd to happen. If not specified, it is fetched from |el|
+ *     transitionend to happen. If not specified, it is fetched from |el|
  *     using the transitionDuration style value.
  */
 function ensureTransitionEndEvent(el, opt_timeOut) {
@@ -303,13 +303,13 @@ function ensureTransitionEndEvent(el, opt_timeOut) {
   }
 
   var fired = false;
-  el.addEventListener('webkitTransitionEnd', function f(e) {
-    el.removeEventListener('webkitTransitionEnd', f);
+  el.addEventListener('transitionend', function f(e) {
+    el.removeEventListener('transitionend', f);
     fired = true;
   });
   window.setTimeout(function() {
     if (!fired)
-      cr.dispatchSimpleEvent(el, 'webkitTransitionEnd', true);
+      cr.dispatchSimpleEvent(el, 'transitionend', true);
   }, opt_timeOut);
 }
 

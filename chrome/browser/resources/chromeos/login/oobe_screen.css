@@ -15,9 +15,9 @@
 }
 
 .step.animated:not(.faded) {
-  -webkit-transition: transform 200ms ease-in-out,
-                      opacity 200ms ease-in-out,
-                      visibility 200ms ease-in-out;
+  transition: transform 200ms ease-in-out,
+              opacity 200ms ease-in-out,
+              visibility 200ms ease-in-out;
 }
 
 .step.hidden {
@@ -122,9 +122,9 @@ html[dir=rtl] .step-controls {
 #security-info a:focus,
 #eula a:focus,
 .step-extra-controls a:focus {
-  -webkit-transition: outline-color 200ms;
   /* Note: May use 1px solid here. */
   outline-color: rgb(77, 144, 254);
+  transition: outline-color 200ms;
 }
 
 .step-extra-controls > *:not(:first-child) {

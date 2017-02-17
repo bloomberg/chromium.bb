@@ -101,9 +101,9 @@ header {
 
 .two-column:not(.visible) .left-column,
 .two-column:not(.visible) .right-column {
-  -webkit-transition: padding-bottom 150ms, padding-top 150ms;
   padding-bottom: 0;
   padding-top: 0;
+  transition: padding-bottom 150ms, padding-top 150ms;
 }
 
 .two-column:not(.visible) select {
@@ -147,7 +147,6 @@ button.loading {
 }
 
 span.hint {
-  -webkit-transition: color 200ms;
   background: white;
   display: block;
   font-size: 0.9em;
@@ -156,6 +155,7 @@ span.hint {
   line-height: 10px;
   margin: 0;
   overflow: hidden;
+  transition: color 200ms;
 }
 
 span.hint.visible {
@@ -170,11 +170,11 @@ span.hint.visible {
 }
 
 span.hint.closing {
-  -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   background: transparent;
   height: 0 !important;
   margin: 0;
   opacity: 0;
+  transition: margin 150ms, height 150ms, opacity 150ms;
 }
 
 .collapsible {
@@ -189,10 +189,10 @@ span.hint.closing {
 }
 
 .collapsible.closing {
-  -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   height: 0 !important;
   opacity: 0;
   overflow: hidden;
+  transition: margin 150ms, height 150ms, opacity 150ms;
 }
 
 .collapsible.closing > * {
@@ -233,13 +233,12 @@ label {
 }
 
 .closing .extra {
-  -webkit-transition: padding-top 100ms, height 100ms, opacity 200ms,
-      background 300ms;
   height: 0 !important;
   opacity: 0;
   overflow: hidden;
   padding-top: 0;
   position: static;
+  transition: padding-top 100ms, height 100ms, opacity 200ms, background 300ms;
   visibility: visible;
 }
 

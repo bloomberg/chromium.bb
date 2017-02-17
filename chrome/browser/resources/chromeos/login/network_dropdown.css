@@ -64,9 +64,9 @@ html[dir=rtl] .dropdown-title {
 }
 
 .dropdown-title:focus {
-  -webkit-transition: border-color 200ms;
   border-color: rgb(77, 144, 254);
   outline: none;
+  transition: border-color 200ms;
 }
 
 html[highlight=strong] .dropdown-title:focus {

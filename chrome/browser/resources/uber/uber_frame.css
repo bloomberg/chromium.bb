@@ -12,7 +12,7 @@ body {
 }
 
 html.changing-content body {
-  -webkit-transition: transform 100ms;
+  transition: transform 100ms;
 }
 
 h1 {

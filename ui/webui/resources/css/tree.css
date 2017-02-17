@@ -22,8 +22,6 @@ tree {
 }
 
 .expand-icon {
-  transform: rotate(-90deg);
-  -webkit-transition: all 150ms;
   background: url(../images/tree_triangle.svg) no-repeat center center;
   background-size: 8px 5px;
   display: inline-block;
@@ -31,6 +29,8 @@ tree {
   opacity: .6;
   position: relative;
   top: 6px;
+  transform: rotate(-90deg);
+  transition: all 150ms;
   vertical-align: top;
   width: 16px;
 }
@@ -40,9 +40,9 @@ html[dir=rtl] .expand-icon {
 }
 
 .tree-item[expanded] > .tree-row > .expand-icon {
-  transform: rotate(0);
   background-image: url(../images/tree_triangle.svg);
   opacity: .5;
+  transform: rotate(0);
 }
 
 .tree-row .expand-icon {

@@ -28,26 +28,26 @@ body {
 }
 
 #navigation.changing-content {
-  -webkit-transition: transform 100ms, width 100ms;
+  transition: transform 100ms, width 100ms;
 }
 
 .iframe-container {
   -webkit-margin-start: -20px;
-  -webkit-transition: margin 100ms, opacity 100ms;
   bottom: 0;
   left: 0;
   opacity: 0;
   position: absolute;
   right: 0;
   top: 0;
+  transition: margin 100ms, opacity 100ms;
   z-index: 1;
 }
 
 .iframe-container.selected {
   -webkit-margin-start: 0;
-  -webkit-transition: margin 200ms, opacity 200ms;
-  -webkit-transition-delay: 100ms;
   opacity: 1;
+  transition: margin 200ms, opacity 200ms;
+  transition-delay: 100ms;
   z-index: 2;
 }
 

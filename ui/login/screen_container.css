@@ -125,7 +125,7 @@
 
 /* Only play this animation when 'down' class is removed. */
 .oobe-display #inner-container:not(.down) {
-  -webkit-transition: transform 200ms ease-in-out;
+  transition: transform 200ms ease-in-out;
 }
 
 .oobe-display #inner-container.down {
@@ -145,10 +145,9 @@
 
 #progress-dots {
   -webkit-box-pack: center;
-  -webkit-transition: opacity 200ms ease-in-out,
-                      visibility 200ms ease-in-out;
   display: -webkit-box;
   margin-top: 15px;
+  transition: opacity 200ms ease-in-out, visibility 200ms ease-in-out;
 }
 
 #oobe[md-mode] #progress-dots {

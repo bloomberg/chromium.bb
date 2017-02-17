@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 #preview-area .margin-control {
-  -webkit-transition: opacity 150ms linear;
   position: absolute;
+  transition: opacity 150ms linear;
 }
 
 #preview-area .margin-control.invisible {

@@ -404,14 +404,14 @@ CaretBrowsing.animateCaretElement = function() {
       return;
     }
     CaretBrowsing.setCaretElementNormalStyle();
-    element.style['-webkit-transition'] = 'all 0.8s ease-in';
+    element.style['transition'] = 'all 0.8s ease-in';
     function listener() {
       element.removeEventListener(
-          'webkitTransitionEnd', listener, false);
-      element.style['-webkit-transition'] = 'none';
+          'transitionend', listener, false);
+      element.style['transition'] = 'none';
     }
     element.addEventListener(
-        'webkitTransitionEnd', listener, false);
+        'transitionend', listener, false);
   }, 0);
 };
 

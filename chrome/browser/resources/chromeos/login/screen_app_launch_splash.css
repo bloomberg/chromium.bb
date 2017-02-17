@@ -40,10 +40,10 @@
 }
 
 #splash-config-network-container {
-  -webkit-transition: 1s opacity;
   height : 30px;
   opacity: 1;
   padding-bottom: 20px;
+  transition: 1s opacity;
 }
 
 #splash-config-network-container.faded {

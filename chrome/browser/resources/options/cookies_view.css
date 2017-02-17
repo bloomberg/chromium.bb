@@ -57,7 +57,7 @@
 
 /* Enable animating the height of items. */
 list.cookie-list .deletable-item {
-  -webkit-transition: height 150ms ease-in-out;
+  transition: height 150ms ease-in-out;
 }
 
 /* Disable webkit-box display. */
@@ -115,17 +115,17 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
   /* Notice that the margin and padding match up with those above. */
   -webkit-margin-start: 14em;
   -webkit-padding-start: 7px;
-  -webkit-transition: 150ms ease-in-out;
   display: none;
   height: 0;
   opacity: 0;
+  transition: 150ms ease-in-out;
   /* Make the cookie items wrap correctly. */
   white-space: normal;
 }
 
 .measure-items .cookie-items {
-  -webkit-transition: none;
   height: auto;
+  transition: none;
   visibility: hidden;
 }
 

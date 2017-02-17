@@ -22,7 +22,6 @@
 /* TODO(xiyuan): The .row-delete-button rules probably should live somewhere
  * else and be shared with options.css */
 list .row-delete-button {
-  -webkit-transition: 150ms opacity;
   background-color: transparent;
   background-image: -webkit-image-set(
       url(../../../../../ui/resources/default_100_percent/close_2.png) 1x,
@@ -31,6 +30,7 @@ list .row-delete-button {
   display: block;
   height: 16px;
   opacity: 1;
+  transition: 150ms opacity;
   width: 16px;
 }
 
@@ -80,11 +80,11 @@ list .row-delete-button:active {
 }
 
 #kiosk-apps-error-banner {
-  -webkit-transition: opacity 150ms;
   background-color: rgb(223, 165, 165);
   margin: 2px 0;
   opacity: 0;
   padding: 5px;
+  transition: opacity 150ms;
   visibility: hidden;
   white-space: nowrap;
   width: 100%;

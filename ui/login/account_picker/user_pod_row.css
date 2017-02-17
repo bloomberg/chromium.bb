@@ -303,8 +303,7 @@ html[dir=rtl] .main-pane {
 }
 
 .custom-icon.faded {
-  -webkit-transition: opacity 200ms ease-in-out,
-                      visibility 200ms ease-in-out;
+  transition: opacity 200ms ease-in-out, visibility 200ms ease-in-out;
 }
 
 .custom-icon-hardlocked {

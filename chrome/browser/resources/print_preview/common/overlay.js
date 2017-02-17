@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
 
-      this.getElement().addEventListener('webkitTransitionEnd', function f(e) {
+      this.getElement().addEventListener('transitionend', function f(e) {
         if (e.target == e.currentTarget && e.propertyName == 'opacity' &&
             e.target.classList.contains('transparent')) {
           setIsVisible(e.target, false);
@@ -67,7 +67,7 @@ cr.define('print_preview', function() {
           this.getElement(), 'click', this.onOverlayClick_.bind(this));
       this.tracker.add(
           this.getChildElement('.page'),
-          'webkitAnimationEnd',
+          'animationend',
           this.onAnimationEnd_.bind(this));
     },
 

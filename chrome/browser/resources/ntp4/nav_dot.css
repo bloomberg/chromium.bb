@@ -24,12 +24,12 @@ html.starting-up #dot-list {
 .dot {
   -webkit-margin-end: 10px;
   -webkit-padding-start: 2px;
-  -webkit-transition: -webkit-margin-end 250ms, max-width 250ms, opacity 250ms;
   box-sizing: border-box;
   cursor: pointer;
   /* max-width: Set in new_tab.js. See measureNavDots() */
   outline: none;
   text-align: left;
+  transition: -webkit-margin-end 250ms, max-width 250ms, opacity 250ms;
 }
 
 .dot:last-child {
@@ -48,22 +48,22 @@ html.starting-up #dot-list {
 }
 
 .dot .selection-bar {
-  -webkit-transition: border-color 200ms;
   border-bottom: 5px solid;
   border-color: rgba(0, 0, 0, 0.1);
   height: 10px;
+  transition: border-color 200ms;
 }
 
 .dot input {
   -webkit-appearance: caret;
   -webkit-margin-start: 2px;
-  -webkit-transition: color 200ms;
   background-color: transparent;
   cursor: inherit;
   font: inherit;
   height: auto;
   margin-top: 2px;
   padding: 1px 0;
+  transition: color 200ms;
   width: 90%;
 }
 

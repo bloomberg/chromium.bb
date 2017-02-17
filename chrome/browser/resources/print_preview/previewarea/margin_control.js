@@ -325,8 +325,8 @@ cr.define('print_preview', function() {
           this.getElement(), 'mousedown', this.onMouseDown_.bind(this));
       this.tracker.add(
           this.getElement(),
-          'webkitTransitionEnd',
-          this.onWebkitTransitionEnd_.bind(this));
+          'transitionend',
+          this.onTransitionEnd_.bind(this));
       this.tracker.add(
           this.textbox_, 'input', this.onTextboxInput_.bind(this));
       this.tracker.add(
@@ -383,9 +383,10 @@ cr.define('print_preview', function() {
 
     /**
      * Called when opacity CSS transition ends.
+     * @param {Event} event The event that triggered this listener.
      * @private
      */
-    onWebkitTransitionEnd_: function(event) {
+    onTransitionEnd_: function(event) {
       if (event.propertyName != 'opacity')
         return;
       var elStyle = window.getComputedStyle(this.getElement());

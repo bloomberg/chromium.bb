@@ -211,5 +211,5 @@ html[dir='rtl'] #learn-more-link {
 
 #customize-link,
 #use-default-link {
-  -webkit-transition: opacity 250ms;
+  transition: opacity 250ms;
 }

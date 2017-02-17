@@ -4,8 +4,7 @@
  */
 
 .account-picker.flying-pods #account-picker {
-  -webkit-transition: width 180ms ease,
-                      height 180ms ease;
+  transition: width 180ms ease, height 180ms ease;
 }
 
 #bubble {
@@ -59,7 +58,7 @@ html[screen=lock] #signin-banner {
 }
 
 html[screen=lock] #signin-banner.message-set {
-  -webkit-transition: opacity 1s;
   opacity: 1;
+  transition: opacity 1s;
   visibility: visible;
 }

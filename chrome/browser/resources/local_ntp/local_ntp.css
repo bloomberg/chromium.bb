@@ -50,7 +50,6 @@ body.alternate-logo #logo {
 }
 
 #fakebox {
-  -webkit-transition: transform 100ms linear, border-color 100ms linear;
   background-color: #fff;
   border: 1px solid rgb(185, 185, 185);
   border-radius: 1px;
@@ -62,6 +61,7 @@ body.alternate-logo #logo {
   max-width: 672px;
   position: relative;
   transform: translate3d(0, 0, 0);
+  transition: transform 100ms linear, border-color 100ms linear;
   /* #fakebox width (here and below) should be 2px less than #mv-tiles
      to account for its border. */
   width: 298px;
@@ -248,9 +248,9 @@ html[dir=rtl] #mv-notice-x {
 }
 
 #mv-notice.mv-notice-delayed-hide {
-  -webkit-transition-delay: 10s;
-  -webkit-transition-property: opacity;
   opacity: 0;
+  transition-delay: 10s;
+  transition-property: opacity;
 }
 
 #mv-notice.mv-notice-hide {

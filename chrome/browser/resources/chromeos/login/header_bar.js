@@ -355,8 +355,8 @@ cr.define('login', function() {
     animateOut: function(callback) {
       var launcher = this;
       launcher.addEventListener(
-          'webkitTransitionEnd', function f(e) {
-            launcher.removeEventListener('webkitTransitionEnd', f);
+          'transitionend', function f(e) {
+            launcher.removeEventListener('transitionend', f);
             callback();
           });
       // Guard timer for 2 seconds + 200 ms + epsilon.
@@ -378,8 +378,8 @@ cr.define('login', function() {
       if (callback) {
         var launcher = this;
         launcher.addEventListener(
-            'webkitTransitionEnd', function f(e) {
-              launcher.removeEventListener('webkitTransitionEnd', f);
+            'transitionend', function f(e) {
+              launcher.removeEventListener('transitionend', f);
               callback();
             });
         // Guard timer for 2 seconds + 200 ms + epsilon.

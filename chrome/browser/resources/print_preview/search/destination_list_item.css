@@ -11,7 +11,7 @@
 }
 
 :not(.moving).destination-list-item {
-  -webkit-transition: background-color 150ms;
+  transition: background-color 150ms;
 }
 
 .destination-list-item:hover,
@@ -33,10 +33,10 @@
 
 .destination-list-item-icon {
   -webkit-margin-end: 8px;
-  -webkit-transition: opacity 150ms;
   display: inline-block;
   flex: 0 0 auto;
   height: 24px;
+  transition: opacity 150ms;
   vertical-align: middle;
   width: 24px;
 }
