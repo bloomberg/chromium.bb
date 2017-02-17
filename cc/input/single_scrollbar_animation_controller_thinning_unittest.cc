@@ -21,10 +21,11 @@ using testing::_;
 namespace cc {
 namespace {
 
-// These constants are hard-coded and should match the values in
-// single_scrollbar_animation_controller_thinning.cc.
-const float kIdleThicknessScale = 0.4f;
-const float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
+const float kIdleThicknessScale =
+    SingleScrollbarAnimationControllerThinning::kIdleThicknessScale;
+const float kDefaultMouseMoveDistanceToTriggerAnimation =
+    SingleScrollbarAnimationControllerThinning::
+        kDefaultMouseMoveDistanceToTriggerAnimation;
 
 class MockSingleScrollbarAnimationControllerClient
     : public ScrollbarAnimationControllerClient {

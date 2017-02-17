@@ -103,7 +103,8 @@ class ScrollbarLayerTest : public testing::Test {
   ScrollbarLayerTest() {
     layer_tree_settings_.single_thread_proxy_scheduler = false;
     layer_tree_settings_.use_zero_copy = true;
-    layer_tree_settings_.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
+    layer_tree_settings_.scrollbar_animator =
+        LayerTreeSettings::ANDROID_OVERLAY;
     layer_tree_settings_.scrollbar_fade_delay =
         base::TimeDelta::FromMilliseconds(20);
     layer_tree_settings_.scrollbar_fade_duration =

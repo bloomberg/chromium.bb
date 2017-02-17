@@ -22,7 +22,6 @@
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
-#include "cc/input/scrollbar_animation_controller_thinning.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
@@ -2889,12 +2888,12 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
   }
 };
 
-TEST_F(LayerTreeHostImplTestScrollbarAnimation, LinearFade) {
-  RunTest(LayerTreeSettings::LINEAR_FADE);
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, Android) {
+  RunTest(LayerTreeSettings::ANDROID_OVERLAY);
 }
 
-TEST_F(LayerTreeHostImplTestScrollbarAnimation, Thinning) {
-  RunTest(LayerTreeSettings::THINNING);
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, AuraOverlay) {
+  RunTest(LayerTreeSettings::AURA_OVERLAY);
 }
 
 TEST_F(LayerTreeHostImplTestScrollbarAnimation, NoAnimator) {
@@ -2988,12 +2987,12 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
   }
 };
 
-TEST_F(LayerTreeHostImplTestScrollbarOpacity, LinearFade) {
-  RunTest(LayerTreeSettings::LINEAR_FADE);
+TEST_F(LayerTreeHostImplTestScrollbarOpacity, Android) {
+  RunTest(LayerTreeSettings::ANDROID_OVERLAY);
 }
 
-TEST_F(LayerTreeHostImplTestScrollbarOpacity, Thinning) {
-  RunTest(LayerTreeSettings::THINNING);
+TEST_F(LayerTreeHostImplTestScrollbarOpacity, AuraOverlay) {
+  RunTest(LayerTreeSettings::AURA_OVERLAY);
 }
 
 TEST_F(LayerTreeHostImplTestScrollbarOpacity, NoAnimator) {
@@ -3036,7 +3035,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
 
 TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   LayerTreeSettings settings = DefaultSettings();
-  settings.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
+  settings.scrollbar_animator = LayerTreeSettings::ANDROID_OVERLAY;
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
   CreateHostImpl(settings, CreateCompositorFrameSink());
@@ -3159,7 +3158,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
-  settings.scrollbar_animator = LayerTreeSettings::THINNING;
+  settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
 
   gfx::Size viewport_size(300, 200);
   gfx::Size device_viewport_size =
@@ -3194,26 +3193,26 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   DrawFrame();
   host_impl_->active_tree()->UpdateDrawProperties(false);
 
-  ScrollbarAnimationControllerThinning* scrollbar_animation_controller =
-      static_cast<ScrollbarAnimationControllerThinning*>(
-          host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
-  scrollbar_animation_controller->set_mouse_move_distance_for_test(100.f);
+  ScrollbarAnimationController* scrollbar_animation_controller =
+      host_impl_->ScrollbarAnimationControllerForId(root_scroll->id());
 
-  host_impl_->MouseMoveAt(gfx::Point(200, 1));
+  const float kMouseDistanceToTriggerAnimation =
+      SingleScrollbarAnimationControllerThinning::
+          kDefaultMouseMoveDistanceToTriggerAnimation;
+
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseDistanceToTriggerAnimation * 2, 1));
   EXPECT_FALSE(
       scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
-  host_impl_->MouseMoveAt(gfx::Point(100, 50));
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseDistanceToTriggerAnimation - 1, 50));
   EXPECT_TRUE(
       scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
-  host_impl_->MouseMoveAt(gfx::Point(116, 100));
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 100));
   EXPECT_FALSE(
-      scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
-
-  scrollbar_animation_controller->set_mouse_move_distance_for_test(102.f);
-  host_impl_->MouseMoveAt(gfx::Point(116, 100));
-  EXPECT_TRUE(
       scrollbar_animation_controller->mouse_is_near_scrollbar(VERTICAL));
 
   did_request_redraw_ = false;
@@ -11562,7 +11561,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
-  settings.scrollbar_animator = LayerTreeSettings::THINNING;
+  settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
 
   gfx::Size viewport_size(300, 200);
   gfx::Size content_size(1000, 1000);
@@ -11609,20 +11608,24 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   DrawFrame();
   host_impl_->active_tree()->UpdateDrawProperties(false);
 
-  ScrollbarAnimationControllerThinning* scrollbar_1_animation_controller =
-      static_cast<ScrollbarAnimationControllerThinning*>(
-          host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+  ScrollbarAnimationController* scrollbar_1_animation_controller =
+      host_impl_->ScrollbarAnimationControllerForId(root_scroll->id());
   EXPECT_TRUE(scrollbar_1_animation_controller);
-  scrollbar_1_animation_controller->set_mouse_move_distance_for_test(40.f);
+
+  const float kMouseDistanceToTriggerAnimation =
+      SingleScrollbarAnimationControllerThinning::
+          kDefaultMouseMoveDistanceToTriggerAnimation;
 
   // Mouse moves close to the scrollbar, goes over the scrollbar, and
   // moves back to where it was.
-  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_TRUE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
@@ -11632,12 +11635,14 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_TRUE(
       scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_TRUE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->mouse_is_over_scrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
@@ -11673,11 +11678,9 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
-  ScrollbarAnimationControllerThinning* scrollbar_2_animation_controller =
-      static_cast<ScrollbarAnimationControllerThinning*>(
-          host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+  ScrollbarAnimationController* scrollbar_2_animation_controller =
+      host_impl_->ScrollbarAnimationControllerForId(child_scroll_id);
   EXPECT_TRUE(scrollbar_2_animation_controller);
-  scrollbar_2_animation_controller->set_mouse_move_distance_for_test(40.f);
 
   // Mouse goes over scrollbar_2, moves close to scrollbar_2, moves close to
   // scrollbar_1, goes over scrollbar_1.
@@ -11690,7 +11693,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_TRUE(
       scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(64 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
@@ -11699,7 +11703,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       scrollbar_2_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(
       scrollbar_2_animation_controller->mouse_is_over_scrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  host_impl_->MouseMoveAt(
+      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
   EXPECT_TRUE(
       scrollbar_1_animation_controller->mouse_is_near_scrollbar(VERTICAL));
   EXPECT_FALSE(

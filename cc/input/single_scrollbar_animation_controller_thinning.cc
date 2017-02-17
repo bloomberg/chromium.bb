@@ -13,11 +13,6 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/trees/layer_tree_impl.h"
 
-namespace {
-const float kIdleThicknessScale = 0.4f;
-const float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
-}
-
 namespace cc {
 
 std::unique_ptr<SingleScrollbarAnimationControllerThinning>
@@ -44,8 +39,6 @@ SingleScrollbarAnimationControllerThinning::
       mouse_is_over_scrollbar_(false),
       mouse_is_near_scrollbar_(false),
       thickness_change_(NONE),
-      mouse_move_distance_to_trigger_animation_(
-          kDefaultMouseMoveDistanceToTriggerAnimation),
       thinning_duration_(thinning_duration) {
   ApplyThumbThicknessScale(kIdleThicknessScale);
 }
@@ -140,7 +133,7 @@ void SingleScrollbarAnimationControllerThinning::DidMouseMoveNear(
     float distance) {
   bool mouse_is_over_scrollbar = distance == 0.0f;
   bool mouse_is_near_scrollbar =
-      distance < mouse_move_distance_to_trigger_animation_;
+      distance < kDefaultMouseMoveDistanceToTriggerAnimation;
 
   if (!captured_ && mouse_is_near_scrollbar != mouse_is_near_scrollbar_) {
     thickness_change_ = mouse_is_near_scrollbar ? INCREASE : DECREASE;

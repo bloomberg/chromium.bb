@@ -385,7 +385,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   } else {
-    settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
+    settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
     settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
     settings.scrollbar_fade_resize_delay =
         base::TimeDelta::FromMilliseconds(2000);
@@ -424,7 +424,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 #else  // defined(OS_ANDROID)
 #if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
-    settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
+    settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
     settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeOutDelay;
     settings.scrollbar_fade_resize_delay =
         ui::kOverlayScrollbarFadeOutDelay;
@@ -435,7 +435,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   } else {
     // TODO(bokan): This section is probably unneeded? We don't use scrollbar
     // animations for non overlay scrollbars.
-    settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
+    settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
     settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
     settings.scrollbar_fade_resize_delay =

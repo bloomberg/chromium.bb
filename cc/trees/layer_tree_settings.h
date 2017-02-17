@@ -45,8 +45,8 @@ class CC_EXPORT LayerTreeSettings {
 
   enum ScrollbarAnimator {
     NO_ANIMATOR,
-    LINEAR_FADE,
-    THINNING,
+    ANDROID_OVERLAY,
+    AURA_OVERLAY,
   };
   ScrollbarAnimator scrollbar_animator = NO_ANIMATOR;
   base::TimeDelta scrollbar_fade_delay;

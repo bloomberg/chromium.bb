@@ -22,6 +22,9 @@ class ScrollbarAnimationControllerClient;
 // ScrollbarAnimationControllerThinning for one scrollbar
 class CC_EXPORT SingleScrollbarAnimationControllerThinning {
  public:
+  static constexpr float kIdleThicknessScale = 0.4f;
+  static constexpr float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
+
   static std::unique_ptr<SingleScrollbarAnimationControllerThinning> Create(
       int scroll_layer_id,
       ScrollbarOrientation orientation,
@@ -30,9 +33,6 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
 
   ~SingleScrollbarAnimationControllerThinning() {}
 
-  void set_mouse_move_distance_for_test(float distance) {
-    mouse_move_distance_to_trigger_animation_ = distance;
-  }
   bool mouse_is_over_scrollbar() const { return mouse_is_over_scrollbar_; }
   bool mouse_is_near_scrollbar() const { return mouse_is_near_scrollbar_; }
   bool captured() const { return captured_; }
@@ -84,8 +84,6 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
   bool mouse_is_near_scrollbar_;
   // Are we narrowing or thickening the bars.
   AnimationChange thickness_change_;
-  // How close should the mouse be to the scrollbar before we thicken it.
-  float mouse_move_distance_to_trigger_animation_;
 
   base::TimeDelta thinning_duration_;
 
