@@ -494,7 +494,17 @@ void SpellChecker::markMisspellingsAfterTypingToWord(
 }
 
 bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const {
-  Node* focusedNode = frame().selection().start().anchorNode();
+  // To avoid regression on speedometer benchmark[1] test, we should not
+  // update layout tree in this code block.
+  // [1] http://browserbench.org/Speedometer/
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      frame().document()->lifecycle());
+
+  Node* focusedNode = frame()
+                          .selection()
+                          .selectionInDOMTree()
+                          .computeStartPosition()
+                          .anchorNode();
   if (!focusedNode)
     return false;
   const Element* focusedElement = focusedNode->isElementNode()

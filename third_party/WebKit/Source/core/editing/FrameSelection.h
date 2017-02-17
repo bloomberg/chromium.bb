@@ -169,7 +169,7 @@ class CORE_EXPORT FrameSelection final
     return selection().getSelectionType();
   }
 
-  TextAffinity affinity() const { return selection().affinity(); }
+  TextAffinity affinity() const { return selectionInDOMTree().affinity(); }
 
   bool modify(EAlteration,
               SelectionDirection,

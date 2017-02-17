@@ -1628,7 +1628,10 @@ void Editor::respondToChangedSelection(
     FrameSelection::SetSelectionOptions options) {
   spellChecker().respondToChangedSelection(oldSelectionStart, options);
   client().respondToChangedSelection(&frame(),
-                                     frame().selection().getSelectionType());
+                                     frame()
+                                         .selection()
+                                         .selectionInDOMTree()
+                                         .selectionTypeWithLegacyGranularity());
   setStartNewKillRingSequence(true);
 }
 

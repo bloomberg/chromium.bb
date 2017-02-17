@@ -1051,12 +1051,25 @@ bool SelectionController::mouseDownWasSingleClickInSelection() const {
 }
 
 void SelectionController::notifySelectionChanged() {
-  if (selection().getSelectionType() == SelectionType::RangeSelection)
-    m_selectionState = SelectionState::ExtendedSelection;
-  else if (selection().getSelectionType() == SelectionType::CaretSelection)
-    m_selectionState = SelectionState::PlacedCaret;
-  else
-    m_selectionState = SelectionState::HaveNotStartedSelection;
+  // To avoid regression on speedometer benchmark[1] test, we should not
+  // update layout tree in this code block.
+  // [1] http://browserbench.org/Speedometer/
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      m_frame->document()->lifecycle());
+
+  const SelectionInDOMTree& selection = this->selection().selectionInDOMTree();
+  switch (selection.selectionTypeWithLegacyGranularity()) {
+    case NoSelection:
+      m_selectionState = SelectionState::HaveNotStartedSelection;
+      return;
+    case CaretSelection:
+      m_selectionState = SelectionState::PlacedCaret;
+      return;
+    case RangeSelection:
+      m_selectionState = SelectionState::ExtendedSelection;
+      return;
+  }
+  NOTREACHED() << "We should handle all SelectionType" << selection;
 }
 
 FrameSelection& SelectionController::selection() const {

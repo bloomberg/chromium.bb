@@ -668,9 +668,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
   if (!isAvailable())
     return false;
 
-  FrameSelection& selection = frame()->selection();
-
-  if (frame()->document() != n->document() || selection.isNone())
+  if (frame()->document() != n->document())
     return false;
 
   unsigned nodeIndex = n->nodeIndex();
@@ -680,8 +678,11 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
   // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
+  FrameSelection& selection = frame()->selection();
   const EphemeralRange selectedRange =
       selection.selection().toNormalizedEphemeralRange();
+  if (selectedRange.isNull())
+    return false;
 
   ContainerNode* parentNode = n->parentNode();
   if (!parentNode)

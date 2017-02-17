@@ -5,15 +5,16 @@
 #ifndef SelectionTemplate_h
 #define SelectionTemplate_h
 
+#include <iosfwd>
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/editing/PositionWithAffinity.h"
+#include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextGranularity.h"
 #include "wtf/Allocator.h"
-#include <iosfwd>
 
 namespace blink {
 
@@ -87,14 +88,26 @@ class CORE_EXPORT SelectionTemplate final {
   TextAffinity affinity() const { return m_affinity; }
   TextGranularity granularity() const { return m_granularity; }
   bool hasTrailingWhitespace() const { return m_hasTrailingWhitespace; }
+  bool isCaret() const { return m_base.isNotNull() && m_base == m_extent; }
   bool isDirectional() const { return m_isDirectional; }
   bool isHandleVisible() const { return m_isHandleVisible; }
   bool isNone() const { return m_base.isNull(); }
+  bool isRange() const { return m_base != m_extent; }
 
   // Returns true if |this| selection holds valid values otherwise it causes
   // assertion failure.
   bool assertValid() const;
   bool assertValidFor(const Document&) const;
+
+  const PositionTemplate<Strategy>& computeEndPosition() const;
+  const PositionTemplate<Strategy>& computeStartPosition() const;
+
+  // Returns |SelectionType| for |this| based on |m_base| and |m_extent|
+  // If |m_granularity| is |CharacterGranularity|, otherwise this function
+  // returns |RangeSelection| event if |m_base| == |m_extent|.
+  // Note: |m_granularity| will be removed, using this function is not
+  // encouraged.
+  SelectionType selectionTypeWithLegacyGranularity() const;
 
   DECLARE_TRACE();
 

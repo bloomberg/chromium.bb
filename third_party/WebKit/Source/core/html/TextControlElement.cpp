@@ -485,9 +485,24 @@ unsigned TextControlElement::selectionStart() const {
 
 unsigned TextControlElement::computeSelectionStart() const {
   DCHECK(isTextControl());
-  if (LocalFrame* frame = document().frame())
-    return indexForPosition(innerEditorElement(), frame->selection().start());
-  return 0;
+  LocalFrame* frame = document().frame();
+  if (!frame)
+    return 0;
+  {
+    // To avoid regression on speedometer benchmark[1] test, we should not
+    // update layout tree in this code block.
+    // [1] http://browserbench.org/Speedometer/
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(
+        document().lifecycle());
+    const SelectionInDOMTree& selection =
+        frame->selection().selectionInDOMTree();
+    if (selection.granularity() == CharacterGranularity) {
+      return indexForPosition(innerEditorElement(),
+                              selection.computeStartPosition());
+    }
+  }
+  const VisibleSelection& visibleSelection = frame->selection().selection();
+  return indexForPosition(innerEditorElement(), visibleSelection.start());
 }
 
 unsigned TextControlElement::selectionEnd() const {
@@ -500,9 +515,24 @@ unsigned TextControlElement::selectionEnd() const {
 
 unsigned TextControlElement::computeSelectionEnd() const {
   DCHECK(isTextControl());
-  if (LocalFrame* frame = document().frame())
-    return indexForPosition(innerEditorElement(), frame->selection().end());
-  return 0;
+  LocalFrame* frame = document().frame();
+  if (!frame)
+    return 0;
+  {
+    // To avoid regression on speedometer benchmark[1] test, we should not
+    // update layout tree in this code block.
+    // [1] http://browserbench.org/Speedometer/
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(
+        document().lifecycle());
+    const SelectionInDOMTree& selection =
+        frame->selection().selectionInDOMTree();
+    if (selection.granularity() == CharacterGranularity) {
+      return indexForPosition(innerEditorElement(),
+                              selection.computeEndPosition());
+    }
+  }
+  const VisibleSelection& visibleSelection = frame->selection().selection();
+  return indexForPosition(innerEditorElement(), visibleSelection.end());
 }
 
 static const AtomicString& directionString(
@@ -539,10 +569,16 @@ TextFieldSelectionDirection TextControlElement::computeSelectionDirection()
   if (!frame)
     return SelectionHasNoDirection;
 
-  const VisibleSelection& selection = frame->selection().selection();
+  // To avoid regression on speedometer benchmark[1] test, we should not
+  // update layout tree in this code block.
+  // [1] http://browserbench.org/Speedometer/
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document().lifecycle());
+  const SelectionInDOMTree& selection = frame->selection().selectionInDOMTree();
+  const Position& start = selection.computeStartPosition();
   return selection.isDirectional()
-             ? (selection.isBaseFirst() ? SelectionHasForwardDirection
-                                        : SelectionHasBackwardDirection)
+             ? (selection.base() == start ? SelectionHasForwardDirection
+                                          : SelectionHasBackwardDirection)
              : SelectionHasNoDirection;
 }
 
@@ -685,10 +721,13 @@ void TextControlElement::selectionChanged(bool userTriggered) {
   cacheSelection(computeSelectionStart(), computeSelectionEnd(),
                  computeSelectionDirection());
 
-  if (LocalFrame* frame = document().frame()) {
-    if (frame->selection().isRange() && userTriggered)
-      dispatchEvent(Event::createBubble(EventTypeNames::select));
-  }
+  LocalFrame* frame = document().frame();
+  if (!frame || !userTriggered)
+    return;
+  const SelectionInDOMTree& selection = frame->selection().selectionInDOMTree();
+  if (selection.selectionTypeWithLegacyGranularity() != RangeSelection)
+    return;
+  dispatchEvent(Event::createBubble(EventTypeNames::select));
 }
 
 void TextControlElement::scheduleSelectEvent() {

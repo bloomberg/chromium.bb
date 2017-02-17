@@ -230,21 +230,16 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
   m_selectionEditor->setSelection(newSelection);
   scheduleVisualUpdateForPaintInvalidationIfNeeded();
 
-  // TODO(yosin): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-
   const Document& currentDocument = document();
   // TODO(yosin): We should get rid of unsued |options| for
   // |Editor::respondToChangedSelection()|.
   // Note: Since, setting focus can modify DOM tree, we should use
   // |oldSelection| before setting focus
   m_frame->editor().respondToChangedSelection(
-      createVisibleSelection(oldSelectionInDOMTree).start(), options);
+      oldSelectionInDOMTree.computeStartPosition(), options);
   DCHECK_EQ(currentDocument, document());
 
-  if (!computeVisibleSelectionInDOMTree().isNone() &&
-      !(options & DoNotSetFocus)) {
+  if (!selectionInDOMTree().isNone() && !(options & DoNotSetFocus)) {
     setFocusedNodeIfNeeded();
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
     // "FocusIn", |m_frame| may associate to another document.
@@ -786,8 +781,10 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
 
   // Check if the selection contains the entire frame contents; if not, then
   // there is nothing to do.
-  if (!isRange())
+  if (selectionInDOMTree().selectionTypeWithLegacyGranularity() !=
+      RangeSelection) {
     return;
+  }
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -936,10 +933,13 @@ bool FrameSelection::isInPasswordField() const {
 }
 
 void FrameSelection::notifyAccessibilityForSelectionChange() {
-  if (selection().start().isNotNull() && selection().end().isNotNull()) {
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-      cache->selectionChanged(selection().start().computeContainerNode());
-  }
+  if (selectionInDOMTree().isNone())
+    return;
+  AXObjectCache* cache = document().existingAXObjectCache();
+  if (!cache)
+    return;
+  const Position& start = selectionInDOMTree().computeStartPosition();
+  cache->selectionChanged(start.computeContainerNode());
 }
 
 void FrameSelection::notifyCompositorForSelectionChange() {
@@ -1045,8 +1045,11 @@ void FrameSelection::updateAppearance() {
 
 void FrameSelection::notifyLayoutObjectOfSelectionChange(
     EUserTriggered userTriggered) {
-  if (TextControlElement* textControl = enclosingTextControl(start()))
-    textControl->selectionChanged(userTriggered == UserTriggered);
+  TextControlElement* textControl =
+      enclosingTextControl(selectionInDOMTree().base());
+  if (!textControl)
+    return;
+  textControl->selectionChanged(userTriggered == UserTriggered);
 }
 
 // Helper function that tells whether a particular node is an element that has

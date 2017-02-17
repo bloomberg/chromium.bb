@@ -133,6 +133,32 @@ void SelectionTemplate<Strategy>::showTreeForThis() const {
 #endif
 
 template <typename Strategy>
+const PositionTemplate<Strategy>&
+SelectionTemplate<Strategy>::computeEndPosition() const {
+  if (m_base == m_extent)
+    return m_base;
+  return m_base < m_extent ? m_extent : m_base;
+}
+
+template <typename Strategy>
+const PositionTemplate<Strategy>&
+SelectionTemplate<Strategy>::computeStartPosition() const {
+  if (m_base == m_extent)
+    return m_base;
+  return m_base < m_extent ? m_base : m_extent;
+}
+
+template <typename Strategy>
+SelectionType SelectionTemplate<Strategy>::selectionTypeWithLegacyGranularity()
+    const {
+  if (m_base.isNull())
+    return NoSelection;
+  if (m_base == m_extent && m_granularity == CharacterGranularity)
+    return CaretSelection;
+  return RangeSelection;
+}
+
+template <typename Strategy>
 void SelectionTemplate<Strategy>::printTo(std::ostream* ostream,
                                           const char* type) const {
   if (isNone()) {
