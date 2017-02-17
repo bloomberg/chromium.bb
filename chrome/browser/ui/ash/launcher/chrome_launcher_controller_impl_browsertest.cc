@@ -1065,7 +1065,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, Navigation) {
 
 // Confirm that a tab can be moved between browsers while maintaining the
 // correct running state.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
+// Disabled due to flake: crbug.com/693341.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_TabDragAndDrop) {
   TabStripModel* tab_strip_model1 = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model1->count());
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
