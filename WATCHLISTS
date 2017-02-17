@@ -1081,8 +1081,10 @@
     },
     'virtual_keyboard': {
       'filepath': 'ui/keyboard/'\
-                  'chrome/test/data/chromeos/virtual_keyboard/'\
-                  'chrome/common/extensions/api/virtual_keyboard',
+                  '|chrome/test/data/chromeos/virtual_keyboard/'\
+                  '|extensions/browser/api/virtual_keyboard_private/'\
+                  '|ash/common/system/chromeos/virtual_keyboard/'\
+                  '|ash/virtual_keyboard',
     },
     'virtual_reality': {
       'filepath': 'vr_shell/|'\
