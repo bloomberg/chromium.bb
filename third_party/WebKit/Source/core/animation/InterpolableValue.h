@@ -39,6 +39,7 @@ class CORE_EXPORT InterpolableValue {
                            InterpolableValue& result) const = 0;
 
   friend class LegacyStyleInterpolation;
+  friend class TransitionInterpolation;
   friend class PairwisePrimitiveInterpolation;
 
   // Keep interpolate private, but allow calls within the hierarchy without
