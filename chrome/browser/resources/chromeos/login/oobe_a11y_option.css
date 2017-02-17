@@ -14,10 +14,7 @@
 }
 
 paper-toggle-button {
-  min-height: 20px;
-  min-width: 32px;
-  /* paper-toggle-button has fixed width of 36px. Make it 32. */
-  transform: scale(.8888);
+  width: 36px;
 }
 
 #titleContainer {
