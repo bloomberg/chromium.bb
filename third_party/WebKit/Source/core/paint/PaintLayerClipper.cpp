@@ -510,6 +510,10 @@ void PaintLayerClipper::applyOverflowClipToBackgroundRectWithGeometryMapper(
 ClipRect PaintLayerClipper::backgroundClipRect(
     const ClipRectsContext& context) const {
   if (m_geometryMapper) {
+    // TODO(chrishtr): fix the underlying bug that causes this situation.
+    if (!m_layer.layoutObject()->paintProperties())
+      return ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+
     ClipRect backgroundClipRect = clipRectWithGeometryMapper(context, false);
 #ifdef CHECK_CLIP_RECTS
     ClipRect testBackgroundClipRect =
