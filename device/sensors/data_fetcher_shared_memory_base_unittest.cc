@@ -118,9 +118,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
 
   DeviceLightHardwareBuffer* GetLightBuffer() const { return light_buffer_; }
 
-  DeviceMotionHardwareBuffer* GetMotionBuffer() const {
-    return motion_buffer_;
-  }
+  DeviceMotionHardwareBuffer* GetMotionBuffer() const { return motion_buffer_; }
 
   DeviceOrientationHardwareBuffer* GetOrientationBuffer() const {
     return orientation_buffer_;
@@ -213,19 +211,23 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
     Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        if (update_) UpdateMotion();
+        if (update_)
+          UpdateMotion();
         start_motion_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        if (update_) UpdateOrientation();
+        if (update_)
+          UpdateOrientation();
         start_orientation_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        if (update_) UpdateOrientationAbsolute();
+        if (update_)
+          UpdateOrientationAbsolute();
         start_orientation_absolute_.Signal();
         break;
       case CONSUMER_TYPE_LIGHT:
-        if (update_) UpdateLight();
+        if (update_)
+          UpdateLight();
         start_light_.Signal();
         break;
       default:
@@ -256,7 +258,7 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
 
   void Fetch(unsigned consumer_bitmask) override {
     FAIL() << "fetch should not be called, "
-        << "because this is a non-polling fetcher";
+           << "because this is a non-polling fetcher";
   }
 
   FetcherType GetType() const override { return FakeDataFetcher::GetType(); }
@@ -270,7 +272,7 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
 
 class FakePollingDataFetcher : public FakeDataFetcher {
  public:
-  FakePollingDataFetcher() { }
+  FakePollingDataFetcher() {}
   ~FakePollingDataFetcher() override {}
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
@@ -346,7 +348,7 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
 class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
  public:
-  FakeZeroDelayPollingDataFetcher() { }
+  FakeZeroDelayPollingDataFetcher() {}
   ~FakeZeroDelayPollingDataFetcher() override {}
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
@@ -410,11 +412,10 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
   DISALLOW_COPY_AND_ASSIGN(FakeZeroDelayPollingDataFetcher);
 };
 
-
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
   FakeNonPollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
@@ -429,10 +430,10 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
   FakeNonPollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
 
   EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
@@ -444,7 +445,7 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientationAbsolute) {
   FakeNonPollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION_ABSOLUTE));
@@ -474,7 +475,7 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartLight) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
   FakePollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
@@ -490,10 +491,10 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
   FakePollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_ORIENTATION);
 
@@ -506,7 +507,7 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientationAbsolute) {
   FakePollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION_ABSOLUTE));
@@ -538,16 +539,15 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollLight) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
   FakePollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   mojo::ScopedSharedBufferHandle handle_orientation =
       fake_data_fetcher.GetSharedMemoryHandle(CONSUMER_TYPE_ORIENTATION);
   EXPECT_TRUE(handle_orientation.is_valid());
 
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_MOTION));
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   mojo::ScopedSharedBufferHandle handle_motion =
       fake_data_fetcher.GetSharedMemoryHandle(CONSUMER_TYPE_MOTION);
   EXPECT_TRUE(handle_motion.is_valid());
@@ -571,10 +571,10 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
 TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
   FakeZeroDelayPollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_SEPARATE_THREAD,
-      fake_data_fetcher.GetType());
+            fake_data_fetcher.GetType());
 
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
 
   EXPECT_FALSE(fake_data_fetcher.IsPollingTimerRunningForTesting());
@@ -586,8 +586,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesClearBufferOnStart) {
   FakeNonPollingDataFetcher fake_data_fetcher;
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
   EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
@@ -596,8 +596,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesClearBufferOnStart) {
   // Restart orientation without updating the memory buffer and check that
   // it has been cleared to its initial state.
   fake_data_fetcher.set_update(false);
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(
+      fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_ORIENTATION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
   EXPECT_EQ(0, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);

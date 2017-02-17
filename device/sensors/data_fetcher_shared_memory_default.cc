@@ -9,8 +9,7 @@
 
 namespace {
 
-bool SetMotionBuffer(device::DeviceMotionHardwareBuffer* buffer,
-    bool enabled) {
+bool SetMotionBuffer(device::DeviceMotionHardwareBuffer* buffer, bool enabled) {
   if (!buffer)
     return false;
   buffer->seqlock.WriteBegin();
@@ -19,8 +18,8 @@ bool SetMotionBuffer(device::DeviceMotionHardwareBuffer* buffer,
   return true;
 }
 
-bool SetOrientationBuffer(
-    device::DeviceOrientationHardwareBuffer* buffer, bool enabled) {
+bool SetOrientationBuffer(device::DeviceOrientationHardwareBuffer* buffer,
+                          bool enabled) {
   if (!buffer)
     return false;
   buffer->seqlock.WriteBegin();
@@ -29,8 +28,7 @@ bool SetOrientationBuffer(
   return true;
 }
 
-bool SetLightBuffer(device::DeviceLightHardwareBuffer* buffer,
-                           double lux) {
+bool SetLightBuffer(device::DeviceLightHardwareBuffer* buffer, double lux) {
   if (!buffer)
     return false;
   buffer->seqlock.WriteBegin();
@@ -45,8 +43,7 @@ namespace device {
 
 DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
-DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-}
+DataFetcherSharedMemory::~DataFetcherSharedMemory() {}
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(buffer);
@@ -60,7 +57,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationDefaultAvailable",
-          false);
+                            false);
       return SetOrientationBuffer(orientation_buffer_, true);
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       orientation_absolute_buffer_ =

@@ -31,19 +31,16 @@ void SetLightBuffer(device::DeviceLightHardwareBuffer* buffer, double lux) {
 namespace device {
 
 class DataFetcherSharedMemory::SensorEventSink
-    : public ISensorEvents, public base::win::IUnknownImpl {
+    : public ISensorEvents,
+      public base::win::IUnknownImpl {
  public:
   SensorEventSink() {}
   ~SensorEventSink() override {}
 
   // IUnknown interface
-  ULONG STDMETHODCALLTYPE AddRef() override {
-    return IUnknownImpl::AddRef();
-  }
+  ULONG STDMETHODCALLTYPE AddRef() override { return IUnknownImpl::AddRef(); }
 
-  ULONG STDMETHODCALLTYPE Release() override {
-    return IUnknownImpl::Release();
-  }
+  ULONG STDMETHODCALLTYPE Release() override { return IUnknownImpl::Release(); }
 
   STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
     if (riid == __uuidof(ISensorEvents)) {
@@ -61,9 +58,7 @@ class DataFetcherSharedMemory::SensorEventSink
     return S_OK;
   }
 
-  STDMETHODIMP OnLeave(REFSENSOR_ID sensor_id) override {
-    return S_OK;
-  }
+  STDMETHODIMP OnLeave(REFSENSOR_ID sensor_id) override { return S_OK; }
 
   STDMETHODIMP OnStateChanged(ISensor* sensor, SensorState state) override {
     return S_OK;
@@ -77,11 +72,13 @@ class DataFetcherSharedMemory::SensorEventSink
   }
 
  protected:
-  virtual bool UpdateSharedMemoryBuffer(
-      ISensor* sensor, ISensorDataReport* new_data) = 0;
+  virtual bool UpdateSharedMemoryBuffer(ISensor* sensor,
+                                        ISensorDataReport* new_data) = 0;
 
-  void GetSensorValue(REFPROPERTYKEY property, ISensorDataReport* new_data,
-      double* value, bool* has_value) {
+  void GetSensorValue(REFPROPERTYKEY property,
+                      ISensorDataReport* new_data,
+                      double* value,
+                      bool* has_value) {
     PROPVARIANT variant_value = {};
     if (SUCCEEDED(new_data->GetSensorValue(property, &variant_value))) {
       if (variant_value.vt == VT_R8)
@@ -96,7 +93,6 @@ class DataFetcherSharedMemory::SensorEventSink
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(SensorEventSink);
 };
 
@@ -104,21 +100,21 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
     : public DataFetcherSharedMemory::SensorEventSink {
  public:
   explicit SensorEventSinkOrientation(
-      DeviceOrientationHardwareBuffer* const buffer) : buffer_(buffer) {}
+      DeviceOrientationHardwareBuffer* const buffer)
+      : buffer_(buffer) {}
   ~SensorEventSinkOrientation() override {}
 
  protected:
-  bool UpdateSharedMemoryBuffer(
-      ISensor* sensor, ISensorDataReport* new_data) override {
+  bool UpdateSharedMemoryBuffer(ISensor* sensor,
+                                ISensorDataReport* new_data) override {
     double alpha, beta, gamma;
     bool has_alpha, has_beta, has_gamma;
 
-    GetSensorValue(SENSOR_DATA_TYPE_TILT_X_DEGREES, new_data, &beta,
-        &has_beta);
+    GetSensorValue(SENSOR_DATA_TYPE_TILT_X_DEGREES, new_data, &beta, &has_beta);
     GetSensorValue(SENSOR_DATA_TYPE_TILT_Y_DEGREES, new_data, &gamma,
-        &has_gamma);
+                   &has_gamma);
     GetSensorValue(SENSOR_DATA_TYPE_TILT_Z_DEGREES, new_data, &alpha,
-        &has_alpha);
+                   &has_alpha);
 
     if (buffer_) {
       buffer_->seqlock.WriteBegin();
@@ -150,9 +146,8 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
   ~SensorEventSinkMotion() override {}
 
  protected:
-  bool UpdateSharedMemoryBuffer(
-      ISensor* sensor, ISensorDataReport* new_data) override {
-
+  bool UpdateSharedMemoryBuffer(ISensor* sensor,
+                                ISensorDataReport* new_data) override {
     SENSOR_TYPE_ID sensor_type = GUID_NULL;
     if (!SUCCEEDED(sensor->GetType(&sensor_type)))
       return false;
@@ -166,14 +161,14 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
       bool has_acceleration_including_gravity_z;
 
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_X_G, new_data,
-          &acceleration_including_gravity_x,
-          &has_acceleration_including_gravity_x);
+                     &acceleration_including_gravity_x,
+                     &has_acceleration_including_gravity_x);
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_Y_G, new_data,
-          &acceleration_including_gravity_y,
-          &has_acceleration_including_gravity_y);
+                     &acceleration_including_gravity_y,
+                     &has_acceleration_including_gravity_y);
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_Z_G, new_data,
-          &acceleration_including_gravity_z,
-          &has_acceleration_including_gravity_z);
+                     &acceleration_including_gravity_z,
+                     &has_acceleration_including_gravity_z);
 
       if (buffer_) {
         buffer_->seqlock.WriteBegin();
@@ -200,11 +195,11 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
       bool has_alpha, has_beta, has_gamma;
 
       GetSensorValue(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND,
-          new_data, &alpha, &has_alpha);
+                     new_data, &alpha, &has_alpha);
       GetSensorValue(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND,
-          new_data, &beta, &has_beta);
+                     new_data, &beta, &has_beta);
       GetSensorValue(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND,
-          new_data, &gamma, &has_gamma);
+                     new_data, &gamma, &has_gamma);
 
       if (buffer_) {
         buffer_->seqlock.WriteBegin();
@@ -237,13 +232,13 @@ class DataFetcherSharedMemory::SensorEventSinkLight
 
  protected:
   bool UpdateSharedMemoryBuffer(ISensor* sensor,
-                                        ISensorDataReport* new_data) override {
+                                ISensorDataReport* new_data) override {
     double lux;
     bool has_lux;
 
     GetSensorValue(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, new_data, &lux, &has_lux);
 
-    if(!has_lux) {
+    if (!has_lux) {
       // Could not get lux value.
       return false;
     }
@@ -261,8 +256,7 @@ class DataFetcherSharedMemory::SensorEventSinkLight
 
 DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
-DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-}
+DataFetcherSharedMemory::~DataFetcherSharedMemory() {}
 
 DataFetcherSharedMemory::FetcherType DataFetcherSharedMemory::GetType() const {
   return FETCHER_TYPE_SEPARATE_THREAD;
@@ -272,80 +266,71 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(buffer);
 
   switch (consumer_type) {
-    case CONSUMER_TYPE_ORIENTATION:
-      {
-        orientation_buffer_ =
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-        scoped_refptr<SensorEventSink> sink(
-            new SensorEventSinkOrientation(orientation_buffer_));
-        bool inclinometer_available = RegisterForSensor(
-            SENSOR_TYPE_INCLINOMETER_3D, sensor_inclinometer_.Receive(), sink);
-        UMA_HISTOGRAM_BOOLEAN("InertialSensor.InclinometerWindowsAvailable",
-            inclinometer_available);
-        if (inclinometer_available)
-          return true;
-        // if no sensors are available set buffer to ready, to fire null-events.
-        SetBufferAvailableState(consumer_type, true);
+    case CONSUMER_TYPE_ORIENTATION: {
+      orientation_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      scoped_refptr<SensorEventSink> sink(
+          new SensorEventSinkOrientation(orientation_buffer_));
+      bool inclinometer_available = RegisterForSensor(
+          SENSOR_TYPE_INCLINOMETER_3D, sensor_inclinometer_.Receive(), sink);
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.InclinometerWindowsAvailable",
+                            inclinometer_available);
+      if (inclinometer_available)
+        return true;
+      // if no sensors are available set buffer to ready, to fire null-events.
+      SetBufferAvailableState(consumer_type, true);
+    } break;
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE: {
+      orientation_absolute_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      scoped_refptr<SensorEventSink> sink(
+          new SensorEventSinkOrientation(orientation_absolute_buffer_));
+      // Currently we use the same sensor as for orientation which provides
+      // absolute angles.
+      bool inclinometer_available =
+          RegisterForSensor(SENSOR_TYPE_INCLINOMETER_3D,
+                            sensor_inclinometer_absolute_.Receive(), sink);
+      // TODO(timvolodine): consider adding UMA.
+      if (inclinometer_available)
+        return true;
+      // if no sensors are available set buffer to ready, to fire null-events.
+      SetBufferAvailableState(consumer_type, true);
+    } break;
+    case CONSUMER_TYPE_MOTION: {
+      motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
+      scoped_refptr<SensorEventSink> sink(
+          new SensorEventSinkMotion(motion_buffer_));
+      bool accelerometer_available = RegisterForSensor(
+          SENSOR_TYPE_ACCELEROMETER_3D, sensor_accelerometer_.Receive(), sink);
+      bool gyrometer_available = RegisterForSensor(
+          SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.Receive(), sink);
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerWindowsAvailable",
+                            accelerometer_available);
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyrometerWindowsAvailable",
+                            gyrometer_available);
+      if (accelerometer_available || gyrometer_available) {
+        motion_buffer_->seqlock.WriteBegin();
+        motion_buffer_->data.interval = GetInterval().InMilliseconds();
+        motion_buffer_->seqlock.WriteEnd();
+        return true;
       }
-      break;
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      {
-        orientation_absolute_buffer_ =
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-        scoped_refptr<SensorEventSink> sink(
-            new SensorEventSinkOrientation(orientation_absolute_buffer_));
-        // Currently we use the same sensor as for orientation which provides
-        // absolute angles.
-        bool inclinometer_available = RegisterForSensor(
-            SENSOR_TYPE_INCLINOMETER_3D,
-            sensor_inclinometer_absolute_.Receive(), sink);
-        // TODO(timvolodine): consider adding UMA.
-        if (inclinometer_available)
-          return true;
-        // if no sensors are available set buffer to ready, to fire null-events.
-        SetBufferAvailableState(consumer_type, true);
+      // if no sensors are available set buffer to ready, to fire null-events.
+      SetBufferAvailableState(consumer_type, true);
+    } break;
+    case CONSUMER_TYPE_LIGHT: {
+      light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
+      scoped_refptr<SensorEventSink> sink(
+          new SensorEventSinkLight(light_buffer_));
+      bool sensor_light_available = RegisterForSensor(
+          SENSOR_TYPE_AMBIENT_LIGHT, sensor_light_.Receive(), sink);
+      if (sensor_light_available) {
+        SetLightBuffer(light_buffer_, -1);
+        return true;
       }
-      break;
-    case CONSUMER_TYPE_MOTION:
-      {
-        motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
-        scoped_refptr<SensorEventSink> sink(
-            new SensorEventSinkMotion(motion_buffer_));
-        bool accelerometer_available = RegisterForSensor(
-            SENSOR_TYPE_ACCELEROMETER_3D, sensor_accelerometer_.Receive(),
-            sink);
-        bool gyrometer_available = RegisterForSensor(
-            SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.Receive(), sink);
-        UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerWindowsAvailable",
-            accelerometer_available);
-        UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyrometerWindowsAvailable",
-            gyrometer_available);
-        if (accelerometer_available || gyrometer_available) {
-          motion_buffer_->seqlock.WriteBegin();
-          motion_buffer_->data.interval = GetInterval().InMilliseconds();
-          motion_buffer_->seqlock.WriteEnd();
-          return true;
-        }
-        // if no sensors are available set buffer to ready, to fire null-events.
-        SetBufferAvailableState(consumer_type, true);
-      }
-      break;
-    case CONSUMER_TYPE_LIGHT:
-      {
-        light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
-        scoped_refptr<SensorEventSink> sink(
-            new SensorEventSinkLight(light_buffer_));
-        bool sensor_light_available = RegisterForSensor(
-            SENSOR_TYPE_AMBIENT_LIGHT, sensor_light_.Receive(), sink);
-        if (sensor_light_available) {
-          SetLightBuffer(light_buffer_, -1);
-          return true;
-        }
 
-        // if no sensors are available, fire an Infinity event.
-        SetLightBuffer(light_buffer_, std::numeric_limits<double>::infinity());
-      }
-      break;
+      // if no sensors are available, fire an Infinity event.
+      SetLightBuffer(light_buffer_, std::numeric_limits<double>::infinity());
+    } break;
     default:
       NOTREACHED();
   }
@@ -390,8 +375,8 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     return false;
 
   base::win::ScopedComPtr<ISensorCollection> sensor_collection;
-  hr = sensor_manager->GetSensorsByType(
-      sensor_type, sensor_collection.Receive());
+  hr = sensor_manager->GetSensorsByType(sensor_type,
+                                        sensor_collection.Receive());
 
   if (FAILED(hr) || !sensor_collection.get())
     return false;
@@ -408,16 +393,16 @@ bool DataFetcherSharedMemory::RegisterForSensor(
   base::win::ScopedComPtr<IPortableDeviceValues> device_values;
   if (SUCCEEDED(device_values.CreateInstance(CLSID_PortableDeviceValues))) {
     if (SUCCEEDED(device_values->SetUnsignedIntegerValue(
-        SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
-        GetInterval().InMilliseconds()))) {
+            SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
+            GetInterval().InMilliseconds()))) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_values;
       (*sensor)->SetProperties(device_values.get(), return_values.Receive());
     }
   }
 
   base::win::ScopedComPtr<ISensorEvents> sensor_events;
-  hr = event_sink->QueryInterface(
-      __uuidof(ISensorEvents), sensor_events.ReceiveVoid());
+  hr = event_sink->QueryInterface(__uuidof(ISensorEvents),
+                                  sensor_events.ReceiveVoid());
   if (FAILED(hr) || !sensor_events.get())
     return false;
 
@@ -429,7 +414,7 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 }
 
 void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
-  switch(consumer_type) {
+  switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       if (sensor_inclinometer_.get()) {
         sensor_inclinometer_->SetEventSink(nullptr);
@@ -464,8 +449,9 @@ void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
 }
 
 void DataFetcherSharedMemory::SetBufferAvailableState(
-    ConsumerType consumer_type, bool enabled) {
-  switch(consumer_type) {
+    ConsumerType consumer_type,
+    bool enabled) {
+  switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       if (orientation_buffer_) {
         orientation_buffer_->seqlock.WriteBegin();

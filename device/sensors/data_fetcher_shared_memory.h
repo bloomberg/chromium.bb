@@ -32,7 +32,6 @@ class AmbientLightSensor;
 
 class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
     : public DataFetcherSharedMemoryBase {
-
  public:
   DataFetcherSharedMemory();
   ~DataFetcherSharedMemory() override;
@@ -70,8 +69,9 @@ class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
 
   FetcherType GetType() const override;
 
-  bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type, ISensor** sensor,
-      scoped_refptr<SensorEventSink> event_sink);
+  bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type,
+                         ISensor** sensor,
+                         scoped_refptr<SensorEventSink> event_sink);
   void DisableSensors(ConsumerType consumer_type);
   void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
 

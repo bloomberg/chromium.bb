@@ -27,7 +27,9 @@ void UpdateDeviceOrientationHistogram(
 }
 
 void SetOrientation(device::DeviceOrientationHardwareBuffer* buffer,
-    double alpha, double beta, double gamma) {
+                    double alpha,
+                    double beta,
+                    double gamma) {
   buffer->seqlock.WriteBegin();
   buffer->data.alpha = alpha;
   buffer->data.hasAlpha = true;
@@ -65,8 +67,7 @@ SensorManagerAndroid::SensorManagerAndroid()
       AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
-SensorManagerAndroid::~SensorManagerAndroid() {
-}
+SensorManagerAndroid::~SensorManagerAndroid() {}
 
 bool SensorManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -95,7 +96,7 @@ void SensorManagerAndroid::GotOrientation(JNIEnv*,
     OrientationSensorType type =
         static_cast<OrientationSensorType>(GetOrientationSensorTypeUsed());
     SetOrientationBufferStatus(device_orientation_buffer_, true,
-        type != GAME_ROTATION_VECTOR);
+                               type != GAME_ROTATION_VECTOR);
     orientation_buffer_initialized_ = true;
     UpdateDeviceOrientationHistogram(type);
   }
@@ -330,8 +331,9 @@ void SensorManagerAndroid::StopFetchingDeviceMotionData() {
 
 void SensorManagerAndroid::CheckMotionBufferReadyToRead() {
   if (received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION] +
-      received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY] +
-      received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
+          received_motion_data_
+              [RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY] +
+          received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
       number_active_device_motion_sensors_) {
     device_motion_buffer_->seqlock.WriteBegin();
     device_motion_buffer_->data.interval =
@@ -339,13 +341,15 @@ void SensorManagerAndroid::CheckMotionBufferReadyToRead() {
     device_motion_buffer_->seqlock.WriteEnd();
     SetMotionBufferReadyStatus(true);
 
-    UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerAndroidAvailable",
+    UMA_HISTOGRAM_BOOLEAN(
+        "InertialSensor.AccelerometerAndroidAvailable",
         received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION] > 0);
     UMA_HISTOGRAM_BOOLEAN(
         "InertialSensor.AccelerometerIncGravityAndroidAvailable",
-        received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY]
-        > 0);
-    UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyroscopeAndroidAvailable",
+        received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY] >
+            0);
+    UMA_HISTOGRAM_BOOLEAN(
+        "InertialSensor.GyroscopeAndroidAvailable",
         received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] > 0);
   }
 }
@@ -383,7 +387,7 @@ void SensorManagerAndroid::StartFetchingDeviceOrientationData(
     // If Start() was unsuccessful then set the buffer ready flag to true
     // to start firing all-null events.
     SetOrientationBufferStatus(buffer, !success /* ready */,
-        false /* absolute */);
+                               false /* absolute */);
     orientation_buffer_initialized_ = !success;
   }
 
@@ -425,7 +429,7 @@ void SensorManagerAndroid::StartFetchingDeviceOrientationAbsoluteData(
     // If Start() was unsuccessful then set the buffer ready flag to true
     // to start firing all-null events.
     SetOrientationBufferStatus(buffer, !success /* ready */,
-        false /* absolute */);
+                               false /* absolute */);
     orientation_absolute_buffer_initialized_ = !success;
   }
 }
@@ -440,7 +444,7 @@ void SensorManagerAndroid::StopFetchingDeviceOrientationAbsoluteData() {
     base::AutoLock autolock(orientation_absolute_buffer_lock_);
     if (device_orientation_absolute_buffer_) {
       SetOrientationBufferStatus(device_orientation_absolute_buffer_, false,
-          false);
+                                 false);
       orientation_absolute_buffer_initialized_ = false;
       device_orientation_absolute_buffer_ = nullptr;
     }

@@ -97,9 +97,9 @@ void FetchOrientation(SuddenMotionSensor* sensor,
 
   // At this point, DCHECKing is paranoia. Never hurts.
   DCHECK_GE(beta, -180.0);
-  DCHECK_LT(beta,  180.0);
+  DCHECK_LT(beta, 180.0);
   DCHECK_GE(gamma, -90.0);
-  DCHECK_LT(gamma,  90.0);
+  DCHECK_LT(gamma, 90.0);
 
   buffer->seqlock.WriteBegin();
   buffer->data.beta = beta;
@@ -110,11 +110,9 @@ void FetchOrientation(SuddenMotionSensor* sensor,
   buffer->seqlock.WriteEnd();
 }
 
-DataFetcherSharedMemory::DataFetcherSharedMemory() {
-}
+DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
-DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-}
+DataFetcherSharedMemory::~DataFetcherSharedMemory() {}
 
 void DataFetcherSharedMemory::Fetch(unsigned consumer_bitmask) {
   DCHECK(GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
@@ -147,7 +145,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionMacAvailable",
-          sudden_motion_sensor_available);
+                            sudden_motion_sensor_available);
       if (!sudden_motion_sensor_available) {
         // No motion sensor available, fire an all-null event.
         motion_buffer_->seqlock.WriteBegin();
@@ -165,7 +163,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationMacAvailable",
-          sudden_motion_sensor_available);
+                            sudden_motion_sensor_available);
       if (sudden_motion_sensor_available) {
         // On Mac we cannot provide absolute orientation.
         orientation_buffer_->seqlock.WriteBegin();

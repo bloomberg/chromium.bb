@@ -19,11 +19,9 @@ const double kRad2deg = 180.0 / M_PI;
 namespace device {
 
 SensorManagerChromeOS::SensorManagerChromeOS()
-    : motion_buffer_(nullptr), orientation_buffer_(nullptr) {
-}
+    : motion_buffer_(nullptr), orientation_buffer_(nullptr) {}
 
-SensorManagerChromeOS::~SensorManagerChromeOS() {
-}
+SensorManagerChromeOS::~SensorManagerChromeOS() {}
 
 void SensorManagerChromeOS::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {

@@ -64,17 +64,15 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
 // --- PollingThread methods
 
 DataFetcherSharedMemoryBase::PollingThread::PollingThread(
-    const char* name, DataFetcherSharedMemoryBase* fetcher)
-    : base::Thread(name),
-      consumers_bitmask_(0),
-      fetcher_(fetcher) {
-}
+    const char* name,
+    DataFetcherSharedMemoryBase* fetcher)
+    : base::Thread(name), consumers_bitmask_(0), fetcher_(fetcher) {}
 
-DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {
-}
+DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {}
 
 void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
-    ConsumerType consumer_type, void* buffer) {
+    ConsumerType consumer_type,
+    void* buffer) {
   DCHECK(fetcher_);
   if (!fetcher_->Start(consumer_type, buffer))
     return;
@@ -83,9 +81,8 @@ void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
 
   if (!timer_ && fetcher_->GetType() == FETCHER_TYPE_POLLING_CALLBACK) {
     timer_.reset(new base::RepeatingTimer());
-    timer_->Start(FROM_HERE,
-                  fetcher_->GetInterval(),
-                  this, &PollingThread::DoPoll);
+    timer_->Start(FROM_HERE, fetcher_->GetInterval(), this,
+                  &PollingThread::DoPoll);
   }
 }
 
@@ -110,8 +107,7 @@ void DataFetcherSharedMemoryBase::PollingThread::DoPoll() {
 // --- end of PollingThread methods
 
 DataFetcherSharedMemoryBase::DataFetcherSharedMemoryBase()
-    : started_consumers_(0) {
-}
+    : started_consumers_(0) {}
 
 DataFetcherSharedMemoryBase::~DataFetcherSharedMemoryBase() {
   DCHECK_EQ(0u, started_consumers_);
@@ -204,8 +200,8 @@ void DataFetcherSharedMemoryBase::Fetch(unsigned consumer_bitmask) {
   NOTIMPLEMENTED();
 }
 
-DataFetcherSharedMemoryBase::FetcherType
-DataFetcherSharedMemoryBase::GetType() const {
+DataFetcherSharedMemoryBase::FetcherType DataFetcherSharedMemoryBase::GetType()
+    const {
   return FETCHER_TYPE_DEFAULT;
 }
 

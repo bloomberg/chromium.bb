@@ -22,7 +22,7 @@ const double kMeanGravity = -9.80665;
 class TestSensorManagerChromeOS : public device::SensorManagerChromeOS {
  public:
   TestSensorManagerChromeOS() {}
-  ~TestSensorManagerChromeOS() override {};
+  ~TestSensorManagerChromeOS() override {}
 
  protected:
   void StartObservingAccelerometer() override {}

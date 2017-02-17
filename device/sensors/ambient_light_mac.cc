@@ -33,8 +33,7 @@ AmbientLightSensor::~AmbientLightSensor() {
     IOServiceClose(io_connection_);
 }
 
-AmbientLightSensor::AmbientLightSensor() : io_connection_(IO_OBJECT_NULL) {
-}
+AmbientLightSensor::AmbientLightSensor() : io_connection_(IO_OBJECT_NULL) {}
 
 bool AmbientLightSensor::Init() {
   // Tested and verified by riju that the following call works on

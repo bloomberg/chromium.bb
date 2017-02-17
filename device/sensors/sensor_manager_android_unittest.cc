@@ -52,7 +52,9 @@ class AndroidSensorManagerTest : public testing::Test {
 
   void VerifyOrientationBufferValues(
       const DeviceOrientationHardwareBuffer* buffer,
-      double alpha, double beta, double gamma) {
+      double alpha,
+      double beta,
+      double gamma) {
     ASSERT_TRUE(buffer->data.allAvailableSensorsAreActive);
     ASSERT_EQ(alpha, buffer->data.alpha);
     ASSERT_TRUE(buffer->data.hasAlpha);
