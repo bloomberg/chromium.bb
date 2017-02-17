@@ -43,19 +43,9 @@ function runLateStartTest(audit, context, node) {
       Should('The rendered buffer', success)
           .summarize('contains non-zero values after the first sample',
                      'was all zeros or has non-zero first sample.');
-
       done();
     });
   });
 
-  audit.defineTask('finish-test', function (done) {
-    done();
-    finishJSTest();
-  });
-
-  audit.runTasks(
-    'test-late-start',
-    'finish-test'
-  );
-
+  audit.runTasks();
 }

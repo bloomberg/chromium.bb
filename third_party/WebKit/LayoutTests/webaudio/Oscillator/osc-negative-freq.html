@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test OscillatorNode with Negative Frequency</title>
@@ -9,9 +10,6 @@
 
   <body>
     <script>
-      description("Test OscillatorNode with Negative Frequency.");
-      window.jsTestIsAsync = true;
-
       // Some arbitrary sample rate for the offline context. 
       var sampleRate = 48000;
       var renderDuration = 1;
@@ -142,13 +140,6 @@
               })
             .beCloseToArray(expected, 4.7684e-7);
         }).then(done);
-      });
-
-
-      // All done!
-      audit.defineTask("finish", function (done) {
-        finishJSTest();
-        done();
       });
 
       audit.runTasks();

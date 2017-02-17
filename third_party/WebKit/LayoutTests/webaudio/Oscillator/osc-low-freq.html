@@ -2,16 +2,14 @@
 <html>
   <head>
     <title>Test Custom Oscillator at Very Low Frequency</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script>
-      description("Test Custom Oscillator at Very Low Frequency");
-      window.jsTestIsAsync = true;
-
       // Create a custom oscillator and verify that the parts of a periodic wave that should be
       // ignored really are ignored.
 
@@ -79,11 +77,10 @@
         osc.start();
         context.startRendering().then(function (buffer) {
           checkCosineResult(buffer, desiredFrequencyHz, sampleRate);
-        }).then(finishJSTest);
+        });
       };
 
       runTest();
-      successfullyParsed = true;
     </script>
   </body>
 </html>
