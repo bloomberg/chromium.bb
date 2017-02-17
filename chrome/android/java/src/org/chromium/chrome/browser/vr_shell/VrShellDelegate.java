@@ -238,8 +238,9 @@ public class VrShellDelegate {
     }
 
     private void enterVR() {
-        if (mActivity.getResources()
-                .getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        if (mRestoreSystemUiVisibilityFlag == -1
+                || mActivity.getResources().getConfiguration().orientation
+                        != Configuration.ORIENTATION_LANDSCAPE) {
             prepareToEnterVR();
             new Handler().post(new Runnable() {
                 @Override
