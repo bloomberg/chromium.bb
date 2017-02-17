@@ -448,6 +448,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       should_normally_be_visible_(true),
       did_first_set_visible_(false),
       is_being_destroyed_(false),
+      is_notifying_observers_(false),
       notify_disconnection_(false),
       dialog_manager_(NULL),
       is_showing_before_unload_dialog_(false),
@@ -493,6 +494,11 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
+
+  // A WebContents should never be deleted while it is notifying observers,
+  // since this will lead to a use-after-free as it continues to notfiy later
+  // observers.
+  CHECK(!is_notifying_observers_);
 
   rwh_input_event_router_.reset();
 
@@ -4558,8 +4564,10 @@ void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
   ShowInsecureLocalhostWarningIfNeeded();
 
+  is_notifying_observers_ = true;
   for (auto& observer : observers_)
     observer.DocumentOnLoadCompletedInMainFrame();
+  is_notifying_observers_ = false;
 
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
