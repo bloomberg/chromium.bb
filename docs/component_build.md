@@ -253,3 +253,12 @@ the object file might not be brought into the link. Even if it is brought in
 today, it might not be brought in due to completely unrelated changes in the
 future. The result will be undefined symbol errors from other components. Use
 source sets if your component is made up of more than one target.
+
+### Exporting functions and classes implemented in headers
+
+When you implement a symbol in a header the compiler will put that in every
+necessary translation unit and the linker will pick one. If the symbol is never
+referenced by code in the shared library it's supposed exported from, it will
+never be instantiated and never exported. The result will be undefined external
+symbol errors when linking. Exported symbols should be declared in a header but
+always implemented in a .cc file.
