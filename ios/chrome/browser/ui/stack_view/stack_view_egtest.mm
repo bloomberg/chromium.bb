@@ -187,7 +187,13 @@ void SelectTabUsingStackView(Tab* tab) {
 }
 
 // Tests closing all Tabs in the stack view.
-- (void)testCloseAllTabs {
+// TODO(crbug.com/693517): Re-enable this test on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testCloseAllTabs FLAKY_testCloseAllTabs
+#else
+#define MAYBE_testCloseAllTabs testCloseAllTabs
+#endif
+- (void)MAYBE_testCloseAllTabs {
   // The StackViewController is only used on iPhones.
   if (IsIPadIdiom())
     EARL_GREY_TEST_SKIPPED(@"Stack view is not used on iPads.");
