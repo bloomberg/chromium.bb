@@ -29,10 +29,8 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     self.master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname')
 
-  def test_GetSlaveMappingAndCLActions(self):
-    """Tests _GetSlaveMappingAndCLActions."""
+  def _InsertSlaveBuildAndCLActions(self, slave_config):
     changes = set(self.GetPatches(how_many=4))
-    slave_config = 'test-paladin'
     test_build_id = self.fake_cidb.InsertBuild(
         slave_config, 'chromeos', '2', slave_config, 'bot_hostname',
         master_build_id=self.master_build_id, buildbucket_id='bb_id_1')
@@ -42,16 +40,36 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
           test_build_id, [clactions.CLAction.FromGerritPatchAndAction(
               change, constants.CL_ACTION_PICKED_UP)])
 
+    return test_build_id, changes
+
+  def test_GetSlaveMappingAndCLActionsIncludesMaster(self):
+    """Tests _GetSlaveMappingAndCLActions with include_master=True."""
+    slave_config = 'test-paladin'
+    test_build_id, changes = self._InsertSlaveBuildAndCLActions(slave_config)
+
     config_map, action_history = (
         relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
             self.master_build_id, self.fake_cidb, self.build_config,
-            changes, ['bb_id_1']))
-
+            changes, ['bb_id_1'], include_master=True))
     expected_config_map = {
         self.master_build_id: self._bot_id,
         test_build_id: slave_config
     }
+    self.assertDictEqual(config_map, expected_config_map)
+    self.assertEqual(len(action_history), 4)
 
+  def test_GetSlaveMappingAndCLActionsExcludesMaster(self):
+    """Tests _GetSlaveMappingAndCLActions with include_master=False."""
+    slave_config = 'test-paladin'
+    test_build_id, changes = self._InsertSlaveBuildAndCLActions(slave_config)
+
+    config_map, action_history = (
+        relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
+            self.master_build_id, self.fake_cidb, self.build_config,
+            changes, ['bb_id_1']))
+    expected_config_map = {
+        test_build_id: slave_config
+    }
     self.assertDictEqual(config_map, expected_config_map)
     self.assertEqual(len(action_history), 4)
 

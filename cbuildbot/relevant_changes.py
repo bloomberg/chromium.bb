@@ -16,7 +16,7 @@ class RelevantChanges(object):
 
   @classmethod
   def _GetSlaveMappingAndCLActions(cls, master_build_id, db, config, changes,
-                                   slave_buildbucket_ids):
+                                   slave_buildbucket_ids, include_master=False):
     """Query CIDB to for slaves and CL actions.
 
     Args:
@@ -26,12 +26,14 @@ class RelevantChanges(object):
       changes: A list of GerritPatch instances to examine.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
                              scheduled by Buildbucket.
+      include_master: Boolean indicating whether to include the master build in
+                      the config_map. Default to False.
 
     Returns:
-      A tuple of (config_map, action_history), where the config_map
-      is a dictionary mapping build_id to config name for all slaves
-      in this run plus the master, and action_history is a list of all
-      CL actions associated with |changes|.
+      A tuple of (config_map, action_history). The config_map is a dictionary
+      mapping build_id to config name for all slaves in this run. If
+      include_master is True, the config_map also includes master build. The
+      action_history is a list of all CL actions associated with |changes|.
     """
     assert db, 'No database connection to use.'
 
@@ -48,18 +50,20 @@ class RelevantChanges(object):
     for d in slave_list:
       config_map[d['id']] = d['build_config']
 
-    # TODO(akeshet): We are giving special treatment to the CQ master, which
-    # makes this logic CQ specific. We only use this logic in the CQ anyway at
-    # the moment, but may need to reconsider if we need to generalize to other
-    # master-slave builds.
-    assert config.name == constants.CQ_MASTER
-    config_map[master_build_id] = constants.CQ_MASTER
+    if include_master:
+      # TODO(akeshet): We are giving special treatment to the CQ master, which
+      # makes this logic CQ specific. We only use this logic in the CQ anyway at
+      # the moment, but may need to reconsider if we need to generalize to other
+      # master-slave builds.
+      assert config.name == constants.CQ_MASTER
+      config_map[master_build_id] = constants.CQ_MASTER
 
     return config_map, action_history
 
   @classmethod
   def GetRelevantChangesForSlaves(cls, master_build_id, db, config, changes,
-                                  no_stat, slave_buildbucket_ids):
+                                  no_stat, slave_buildbucket_ids,
+                                  include_master=False):
     """Compile a set of relevant changes for each slave.
 
     Args:
@@ -70,14 +74,18 @@ class RelevantChanges(object):
       no_stat: Set of builder names of slave builders that had status None.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
                              scheduled by Buildbucket.
+      include_master: Boolean indicating whether to include the master build in
+                      the config_map. Default to False.
 
     Returns:
       A dictionary mapping a slave config name to a set of relevant changes
-      (as GerritPatch instances).
+      (as GerritPatch instances). If include_master is True, the dictionary
+      includes the master build config and its relevant changes.
     """
     # Retrieve the slaves and clactions from CIDB.
     config_map, action_history = cls._GetSlaveMappingAndCLActions(
-        master_build_id, db, config, changes, slave_buildbucket_ids)
+        master_build_id, db, config, changes, slave_buildbucket_ids,
+        include_master=include_master)
     changes_by_build_id = clactions.GetRelevantChangesForBuilds(
         changes, action_history, config_map.keys())
 

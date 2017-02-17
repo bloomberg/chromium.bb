@@ -710,7 +710,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       changes_by_config = (
           relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
               build_id, db, self._run.config, changes, no_stat,
-              slave_buildbucket_ids))
+              slave_buildbucket_ids, include_master=True))
       subsys_by_config = (
           relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
               build_id, db))
