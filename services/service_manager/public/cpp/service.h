@@ -23,21 +23,10 @@ class Service {
   Service();
   virtual ~Service();
 
-  // Called exactly once when a bidirectional connection with the Service
-  // Manager has been established. No calls to OnConnect(), OnBindInterface(),
-  // or OnStop() will be made before this. Note that this call is mutually
-  // exclusive to OnStartFailed() - either one or the other will be the first
-  // call on any given Service instance.
+  // Called exactly once, when a bidirectional connection with the Service
+  // Manager has been established. No calls to OnConnect() will be received
+  // before this.
   virtual void OnStart();
-
-  // Called if the Service loses its connection to the Service Manager before
-  // OnStart() could be invoked. Once this called, none of the other public
-  // Service interface methods will be called.  Note that this call is mutually
-  // exclusive to OnStart() - either one or the other will be the first call on
-  // any given Service instance.
-  //
-  // The default implementation calls QuitNow() on context().
-  virtual void OnStartFailed();
 
   // Called each time a connection to this service is brokered by the Service
   // Manager. Implement this to expose interfaces to other services.
@@ -62,23 +51,24 @@ class Service {
   // service should use this as a signal to shut down, and in fact its process
   // may be reaped shortly afterward if applicable.
   //
-  // Returning true from this method signals that the Service instance can be
-  // destroyed immediately. More precisely, it will cause the context()'s
-  // QuitNow() method to be invoked immediately after this OnStop() call.
-  //
-  // If shutdown is deferred by returning false, the Service itself is
-  // responsible for explicitly calling QuitNow() on context() when it's ready
-  // to be destroyed.
+  // Return true from this method to tell the ServiceContext to signal its
+  // shutdown externally (i.e. to invoke its "connection lost" closure if set),
+  // or return false to defer the signal. If deferred, the Service should
+  // explicitly call QuitNow() on the ServiceContext when it's ready to be
+  // torn down.
   //
   // The default implementation returns true.
   //
-  // NOTE: This will only be called after OnStart(), and none of the other
-  // public Service methods will be called after this.
+  // While it's possible for this to be invoked before either OnStart() or
+  // OnConnect() is invoked, neither will be invoked at any point after this
+  // OnStop().
   virtual bool OnStop();
 
  protected:
-  // Accesses the ServiceContext associated with this Service. Note that this is
-  // only valid during or after OnStart() or OnStartFailed(), but never before.
+  // Access the ServiceContext associated with this Service. Note that this is
+  // only valid to call during or after OnStart(), but never before! As such,
+  // it's always safe to call in OnStart() and OnConnect(), but should generally
+  // be avoided in OnStop().
   ServiceContext* context() const;
 
  private:
@@ -105,11 +95,7 @@ class ForwardingService : public Service {
   void OnStart() override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
-  void OnBindInterface(const ServiceInfo& remote_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnStop() override;
-  void OnStartFailed() override;
 
  private:
   Service* const target_ = nullptr;

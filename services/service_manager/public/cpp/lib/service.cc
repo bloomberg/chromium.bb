@@ -44,10 +44,6 @@ void Service::OnBindInterface(const ServiceInfo& source_info,
 
 bool Service::OnStop() { return true; }
 
-void Service::OnStartFailed() {
-  context()->QuitNow();
-}
-
 ServiceContext* Service::context() const {
   DCHECK(service_context_)
       << "Service::context() may only be called during or after OnStart().";
@@ -68,19 +64,6 @@ bool ForwardingService::OnConnect(const ServiceInfo& remote_info,
   return target_->OnConnect(remote_info, registry);
 }
 
-void ForwardingService::OnBindInterface(
-    const ServiceInfo& remote_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  target_->OnBindInterface(remote_info, interface_name,
-                           std::move(interface_pipe));
-}
-
 bool ForwardingService::OnStop() { return target_->OnStop(); }
-
-void ForwardingService::OnStartFailed() {
-  target_->set_context(context());
-  return target_->OnStartFailed();
-}
 
 }  // namespace service_manager

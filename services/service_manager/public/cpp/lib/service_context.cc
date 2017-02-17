@@ -80,7 +80,6 @@ void ServiceContext::DestroyService() {
 
 void ServiceContext::OnStart(const ServiceInfo& info,
                              const OnStartCallback& callback) {
-  service_started_ = true;
   local_info_ = info;
   callback.Run(std::move(pending_connector_request_),
                mojo::MakeRequest(&service_control_));
@@ -141,13 +140,6 @@ void ServiceContext::CallOnConnect(const ServiceInfo& source_info,
 }
 
 void ServiceContext::OnConnectionError() {
-  if (!service_started_) {
-    // The pipe was broken before we even received OnStart().
-    service_->set_context(this);
-    service_->OnStartFailed();
-    return;
-  }
-
   // Note that the Service doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
