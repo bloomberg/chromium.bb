@@ -26,7 +26,7 @@ namespace base {
 // TaskScheduler must have been registered for the current process via
 // TaskScheduler::SetInstance() before the functions below are valid.
 //
-// To post a simple one-off task:
+// To post a simple one-off task with default traits:
 //     PostTask(FROM_HERE, Bind(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
@@ -35,7 +35,7 @@ namespace base {
 //         TaskTraits().WithPriority(TaskPriority::USER_BLOCKING),
 //         Bind(...));
 //
-// To post tasks that must run in sequence:
+// To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
 //         CreateSequencedTaskRunnerWithTraits(TaskTraits());
 //     task_runner.PostTask(FROM_HERE, Bind(...));
@@ -50,17 +50,18 @@ namespace base {
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //
-// The default TaskTraits apply to tasks that:
+// The default traits apply to tasks that:
 //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
 //     (2) prefer inheriting the current priority to specifying their own, and
 //     (3) can either block shutdown or be skipped on shutdown
-//         (barring current TaskScheduler default).
-// If those loose requirements are sufficient for your task, use
-// PostTask[AndReply], otherwise override these with explicit traits via
-// PostTaskWithTraits[AndReply].
+//         (TaskScheduler implementation is free to choose a fitting default).
+// Explicit traits must be specified for tasks for which these loose
+// requirements are not sufficient.
 //
-// Tasks posted to TaskScheduler with a delay may be coalesced (i.e. delays may
-// be adjusted to reduce the number of wakeups and hence power consumption).
+// Tasks posted through functions below will run on threads owned by the
+// registered TaskScheduler (i.e. not on the main thread). Tasks posted through
+// functions below with a delay may be coalesced (i.e. delays may be adjusted to
+// reduce the number of wakeups and hence power consumption).
 
 // Posts |task| to the TaskScheduler. Calling this is equivalent to calling
 // PostTaskWithTraits with plain TaskTraits.
