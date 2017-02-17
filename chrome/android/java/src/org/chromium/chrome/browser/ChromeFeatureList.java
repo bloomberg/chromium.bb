@@ -75,7 +75,7 @@ public abstract class ChromeFeatureList {
      * @return The parameter value as an int. Default value if the feature does not exist or the
      *         specified parameter does not exist or its string value does not represent an int.
      */
-    public static long getFieldTrialParamByFeatureAsInt(
+    public static int getFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue) {
         return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
     }

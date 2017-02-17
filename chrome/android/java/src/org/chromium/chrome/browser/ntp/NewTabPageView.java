@@ -65,9 +65,16 @@ public class NewTabPageView
 
     private static final long SNAP_SCROLL_DELAY_MS = 30;
 
-    private static final int MAX_TILES = 12;
-    private static final int MAX_TILE_ROWS_WITH_LOGO = 2;
-    private static final int MAX_TILE_ROWS_WITHOUT_LOGO = 3;
+    /**
+     * Experiment parameter for the maximum number of tile suggestion rows to show.
+     */
+    private static final String PARAM_NTP_MAX_TILE_ROWS = "ntp_max_tile_rows";
+
+    /**
+     * The maximum number of tiles to try and fit in a row. On smaller screens, there may not be
+     * enough space to fit all of them.
+     */
+    private static final int MAX_TILE_COLUMNS = 4;
 
     private NewTabPageRecyclerView mRecyclerView;
 
@@ -217,8 +224,7 @@ public class NewTabPageView
         });
 
         mTileGridLayout = (TileGridLayout) mNewTabPageLayout.findViewById(R.id.tile_grid_layout);
-        mTileGridLayout.setMaxRows(
-                searchProviderHasLogo ? MAX_TILE_ROWS_WITH_LOGO : MAX_TILE_ROWS_WITHOUT_LOGO);
+        mTileGridLayout.setMaxRows(getMaxTileRows(searchProviderHasLogo));
         mTileGroup = new TileGroup(
                 mManager, mContextMenuManager, mTileGroupDelegate, /* observer = */ this);
 
@@ -234,7 +240,7 @@ public class NewTabPageView
         setSearchProviderHasLogo(searchProviderHasLogo);
 
         mPendingLoadTasks++;
-        mTileGroup.startObserving(MAX_TILES);
+        mTileGroup.startObserving(getMaxTileRows(searchProviderHasLogo) * MAX_TILE_COLUMNS);
 
         // Set up snippets
         NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
@@ -782,6 +788,16 @@ public class NewTabPageView
             mTileGridLayout.setVisibility(VISIBLE);
             mTileGridPlaceholder.setVisibility(GONE);
         }
+    }
+
+    private static int getMaxTileRows(boolean searchProviderHasLogo) {
+        int defaultValue = 2;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)
+                && !searchProviderHasLogo) {
+            defaultValue = 3;
+        }
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_NTP_MAX_TILE_ROWS, defaultValue);
     }
 
     @Override
