@@ -31,6 +31,7 @@ void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           ConvolveParams *conv_params) {
   int x, y;
   int filter_size = filter_params.taps;
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= filter_size / 2 - 1;
   for (y = 0; y < h; ++y) {
     int x_q4 = subpel_x_q4;
@@ -41,21 +42,11 @@ void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
       int k, sum = 0;
       for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
 
-      if (conv_params->round == CONVOLVE_OPT_ROUND) {
-        sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-        if (conv_params->ref)
-          dst[x] = ROUND_POWER_OF_TWO(dst[x] + sum, 1);
-        else
-          dst[x] = sum;
-      } else {
-        int tmp = conv_params->dst[y * conv_params->dst_stride + x];
-        if (conv_params->ref)
-          tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
-        else
-          tmp = sum;
-        conv_params->dst[y * conv_params->dst_stride + x] =
-            clamp(tmp, INT32_MIN, INT32_MAX);
-      }
+      sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+      if (conv_params->ref)
+        dst[x] = ROUND_POWER_OF_TWO(dst[x] + sum, 1);
+      else
+        dst[x] = sum;
 
       x_q4 += x_step_q4;
     }
@@ -71,8 +62,8 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
                          ConvolveParams *conv_params) {
   int x, y;
   int filter_size = filter_params.taps;
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= src_stride * (filter_size / 2 - 1);
-
   for (x = 0; x < w; ++x) {
     int y_q4 = subpel_y_q4;
     for (y = 0; y < h; ++y) {
@@ -83,22 +74,11 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
       for (k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
 
-      if (conv_params->round == CONVOLVE_OPT_ROUND) {
-        sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-        if (conv_params->ref)
-          dst[y * dst_stride] =
-              ROUND_POWER_OF_TWO(dst[y * dst_stride] + sum, 1);
-        else
-          dst[y * dst_stride] = sum;
-      } else {
-        int tmp = conv_params->dst[y * conv_params->dst_stride + x];
-        if (conv_params->ref)
-          tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
-        else
-          tmp = sum;
-        conv_params->dst[y * conv_params->dst_stride + x] =
-            clamp(tmp, INT32_MIN, INT32_MAX);
-      }
+      sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+      if (conv_params->ref)
+        dst[y * dst_stride] = ROUND_POWER_OF_TWO(dst[y * dst_stride] + sum, 1);
+      else
+        dst[y * dst_stride] = sum;
 
       y_q4 += y_step_q4;
     }
@@ -110,16 +90,11 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
 static void convolve_copy(const uint8_t *src, int src_stride, uint8_t *dst,
                           int dst_stride, int w, int h,
                           ConvolveParams *conv_params) {
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
   if (conv_params->ref == 0) {
-    int r, c;
+    int r;
     for (r = 0; r < h; ++r) {
-      if (conv_params->round == CONVOLVE_OPT_ROUND) {
-        memcpy(dst, src, w);
-      } else {
-        for (c = 0; c < w; ++c)
-          conv_params->dst[r * conv_params->dst_stride + c] = ((uint16_t)src[c])
-                                                              << FILTER_BITS;
-      }
+      memcpy(dst, src, w);
       src += src_stride;
       dst += dst_stride;
     }
@@ -127,14 +102,7 @@ static void convolve_copy(const uint8_t *src, int src_stride, uint8_t *dst,
     int r, c;
     for (r = 0; r < h; ++r) {
       for (c = 0; c < w; ++c) {
-        if (conv_params->round == CONVOLVE_OPT_ROUND) {
-          dst[c] = clip_pixel(ROUND_POWER_OF_TWO(dst[c] + src[c], 1));
-        } else {
-          int tmp = conv_params->dst[r * conv_params->dst_stride + c];
-          tmp = ROUND_POWER_OF_TWO(tmp + (((int32_t)src[c]) << FILTER_BITS), 1);
-          conv_params->dst[r * conv_params->dst_stride + c] =
-              clamp(tmp, INT32_MIN, INT32_MAX);
-        }
+        dst[c] = clip_pixel(ROUND_POWER_OF_TWO(dst[c] + src[c], 1));
       }
       src += src_stride;
       dst += dst_stride;
@@ -147,8 +115,8 @@ void av1_convolve_horiz_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                                const InterpFilterParams filter_params,
                                const int subpel_x_q4, int x_step_q4,
                                ConvolveParams *conv_params) {
-  if (filter_params.taps == SUBPEL_TAPS &&
-      conv_params->round == CONVOLVE_OPT_ROUND) {
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
+  if (filter_params.taps == SUBPEL_TAPS) {
     const int16_t *filter_x =
         av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
     if (conv_params->ref == 0)
@@ -158,14 +126,8 @@ void av1_convolve_horiz_facade(const uint8_t *src, int src_stride, uint8_t *dst,
       aom_convolve8_avg_horiz(src, src_stride, dst, dst_stride, filter_x,
                               x_step_q4, NULL, -1, w, h);
   } else {
-    if (conv_params->round == CONVOLVE_OPT_ROUND) {
-      av1_convolve_horiz(src, src_stride, dst, dst_stride, w, h, filter_params,
-                         subpel_x_q4, x_step_q4, conv_params);
-    } else {
-      // TODO(angiebird) need SIMD implementation here
-      av1_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h,
-                           filter_params, subpel_x_q4, x_step_q4, conv_params);
-    }
+    av1_convolve_horiz(src, src_stride, dst, dst_stride, w, h, filter_params,
+                       subpel_x_q4, x_step_q4, conv_params);
   }
 }
 
@@ -174,8 +136,8 @@ void av1_convolve_vert_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                               const InterpFilterParams filter_params,
                               const int subpel_y_q4, int y_step_q4,
                               ConvolveParams *conv_params) {
-  if (filter_params.taps == SUBPEL_TAPS &&
-      conv_params->round == CONVOLVE_OPT_ROUND) {
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
+  if (filter_params.taps == SUBPEL_TAPS) {
     const int16_t *filter_y =
         av1_get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
     if (conv_params->ref == 0) {
@@ -186,14 +148,8 @@ void av1_convolve_vert_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                              filter_y, y_step_q4, w, h);
     }
   } else {
-    if (conv_params->round == CONVOLVE_OPT_ROUND) {
-      av1_convolve_vert(src, src_stride, dst, dst_stride, w, h, filter_params,
-                        subpel_y_q4, y_step_q4, conv_params);
-    } else {
-      // TODO(angiebird) need SIMD implementation here
-      av1_convolve_vert_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                          subpel_y_q4, y_step_q4, conv_params);
-    }
+    av1_convolve_vert(src, src_stride, dst, dst_stride, w, h, filter_params,
+                      subpel_y_q4, y_step_q4, conv_params);
   }
 }
 
@@ -345,6 +301,7 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
   InterpFilterParams filter_params =
       av1_get_interp_filter_params(interp_filter);
 #endif
+  assert(conv_params->round == CONVOLVE_OPT_ROUND);
 
   assert(w <= MAX_BLOCK_WIDTH);
   assert(h <= MAX_BLOCK_HEIGHT);
