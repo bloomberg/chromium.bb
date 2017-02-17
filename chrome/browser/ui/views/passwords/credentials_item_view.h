@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -30,7 +30,7 @@ class Label;
 // CredentialsItemView represents a credential view in the account chooser
 // bubble.
 class CredentialsItemView : public AccountAvatarFetcherDelegate,
-                            public views::LabelButton {
+                            public views::CustomButton {
  public:
   CredentialsItemView(views::ButtonListener* button_listener,
                       const base::string16& upper_text,
@@ -51,7 +51,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   int GetPreferredHeight() const;
 
  private:
-  // views::LabelButton:
+  // views::View:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;

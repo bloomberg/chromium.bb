@@ -12,12 +12,9 @@
 #include "components/autofill/core/common/password_form.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
@@ -59,14 +56,6 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
   ImageView::OnPaint(canvas);
 }
 
-// An ImageView that consumes the mouse events.
-class InfoImageView : public views::ImageView {
- public:
-  // View:
-  bool OnMousePressed(const ui::MouseEvent& event) override { return true; }
-  bool OnMouseDragged(const ui::MouseEvent& event) override { return true; }
-};
-
 }  // namespace
 
 CredentialsItemView::CredentialsItemView(
@@ -76,7 +65,7 @@ CredentialsItemView::CredentialsItemView(
     SkColor hover_color,
     const autofill::PasswordForm* form,
     net::URLRequestContextGetter* request_context)
-    : LabelButton(button_listener, base::string16()),
+    : CustomButton(button_listener),
       form_(form),
       upper_label_(nullptr),
       lower_label_(nullptr),
@@ -118,11 +107,7 @@ CredentialsItemView::CredentialsItemView(
   }
 
   if (form_->is_public_suffix_match) {
-    info_icon_ = new InfoImageView;
-    info_icon_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::INFO_OUTLINE,
-                                               kInfoIconSize,
-                                               gfx::kChromeIconGrey));
-    info_icon_->SetTooltipText(
+    info_icon_ = new views::TooltipIcon(
         base::UTF8ToUTF16(form_->origin.GetOrigin().spec()));
     AddChildView(info_icon_);
   }
@@ -172,7 +157,7 @@ int CredentialsItemView::GetHeightForWidth(int w) const {
 }
 
 void CredentialsItemView::Layout() {
-  gfx::Rect child_area(GetChildAreaBounds());
+  gfx::Rect child_area(GetLocalBounds());
   child_area.Inset(GetInsets());
 
   gfx::Size image_size(image_view_->GetPreferredSize());
@@ -207,5 +192,5 @@ void CredentialsItemView::OnPaint(gfx::Canvas* canvas) {
   if (state() == STATE_PRESSED || state() == STATE_HOVERED)
     canvas->DrawColor(hover_color_);
 
-  LabelButton::OnPaint(canvas);
+  CustomButton::OnPaint(canvas);
 }

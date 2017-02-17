@@ -2,50 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_TOOLTIP_ICON_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_TOOLTIP_ICON_H_
+#ifndef UI_VIEWS_BUBBLE_TOOLTIP_ICON_H_
+#define UI_VIEWS_BUBBLE_TOOLTIP_ICON_H_
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace autofill {
+namespace views {
 
 class InfoBubble;
 
-// A tooltip icon that shows a bubble on hover. Looks like (?).
-class TooltipIcon : public views::ImageView,
-                    public views::MouseWatcherListener,
-                    public views::WidgetObserver {
+// A tooltip icon that shows a bubble on hover. Looks like (i).
+class VIEWS_EXPORT TooltipIcon : public ImageView,
+                                 public MouseWatcherListener,
+                                 public WidgetObserver {
  public:
-  static const char kViewClassName[];
-
   explicit TooltipIcon(const base::string16& tooltip);
   ~TooltipIcon() override;
 
-  // views::ImageView:
+  // ImageView:
   const char* GetClassName() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // views::MouseWatcherListener:
+  // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
-  // views::WidgetObserver:
-  void OnWidgetDestroyed(views::Widget* widget) override;
+  // WidgetObserver:
+  void OnWidgetDestroyed(Widget* widget) override;
 
-  void set_bubble_arrow(views::BubbleBorder::Arrow arrow) {
-    bubble_arrow_ = arrow;
+  void set_bubble_width(int preferred_width) {
+    preferred_width_ = preferred_width;
   }
 
  private:
@@ -68,20 +65,20 @@ class TooltipIcon : public views::ImageView,
   // A bubble shown on hover. Weak; owns itself. NULL while hiding.
   InfoBubble* bubble_;
 
-  // The position of the bubble's arrow.
-  views::BubbleBorder::Arrow bubble_arrow_;
+  // The width the tooltip prefers to be. Default is 0 (no preference).
+  int preferred_width_;
 
   // A timer to delay showing |bubble_|.
   base::OneShotTimer show_timer_;
 
   // A watcher that keeps |bubble_| open if the user's mouse enters it.
-  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
+  std::unique_ptr<MouseWatcher> mouse_watcher_;
 
-  ScopedObserver<views::Widget, TooltipIcon> observer_;
+  ScopedObserver<Widget, TooltipIcon> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
 };
 
-}  // namespace autofill
+}  // namespace views
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_TOOLTIP_ICON_H_
+#endif  // UI_VIEWS_BUBBLE_TOOLTIP_ICON_H_
