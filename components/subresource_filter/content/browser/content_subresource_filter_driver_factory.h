@@ -15,7 +15,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/subresource_filter/content/common/document_load_statistics.h"
+#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"

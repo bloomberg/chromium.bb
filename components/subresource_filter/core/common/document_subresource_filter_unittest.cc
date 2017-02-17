@@ -2,21 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/content/common/document_subresource_filter.h"
+#include "components/subresource_filter/core/common/document_subresource_filter.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "url/gurl.h"
 
 namespace subresource_filter {
 
@@ -26,28 +20,14 @@ constexpr auto kDisabled = ActivationLevel::DISABLED;
 constexpr auto kDryRun = ActivationLevel::DRYRUN;
 constexpr auto kEnabled = ActivationLevel::ENABLED;
 
-const char kTestAlphaURL[] = "http://example.com/alpha";
-const char kTestAlphaDataURI[] = "data:text/plain,alpha";
-const char kTestBetaURL[] = "http://example.com/beta";
+constexpr auto kImageType = proto::ELEMENT_TYPE_IMAGE;
+constexpr auto kSubdocumentType = proto::ELEMENT_TYPE_SUBDOCUMENT;
 
-const char kTestAlphaURLPathSuffix[] = "alpha";
+constexpr const char kTestAlphaURL[] = "http://example.com/alpha";
+constexpr const char kTestAlphaDataURI[] = "data:text/plain,alpha";
+constexpr const char kTestBetaURL[] = "http://example.com/beta";
 
-class TestCallbackReceiver {
- public:
-  TestCallbackReceiver() = default;
-  base::OnceClosure closure() {
-    return base::BindOnce(&TestCallbackReceiver::CallbackMethod,
-                          base::Unretained(this));
-  }
-  size_t callback_count() const { return callback_count_; }
-
- private:
-  void CallbackMethod() { ++callback_count_; }
-
-  size_t callback_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbackReceiver);
-};
+constexpr const char kTestAlphaURLPathSuffix[] = "alpha";
 
 }  // namespace
 
@@ -82,55 +62,45 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
 };
 
 TEST_F(DocumentSubresourceFilterTest, DryRun) {
-  blink::WebURLRequest::RequestContext request_context =
-      blink::WebURLRequest::RequestContextImage;
-  TestCallbackReceiver first_disallowed_load_callback_receiver;
-
   ActivationState activation_state(kDryRun);
   activation_state.measure_performance = true;
-  DocumentSubresourceFilter filter(
-      url::Origin(), activation_state, ruleset(),
-      first_disallowed_load_callback_receiver.closure());
+  DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
 
-  EXPECT_EQ(blink::WebDocumentSubresourceFilter::WouldDisallow,
-            filter.getLoadPolicy(GURL(kTestAlphaURL), request_context));
-  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-            filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
-  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-            filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
-  EXPECT_EQ(blink::WebDocumentSubresourceFilter::WouldDisallow,
-            filter.GetLoadPolicyForSubdocument(GURL(kTestAlphaURL)));
-  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-            filter.GetLoadPolicyForSubdocument(GURL(kTestBetaURL)));
+  EXPECT_EQ(LoadPolicy::WOULD_DISALLOW,
+            filter.GetLoadPolicy(GURL(kTestAlphaURL), kImageType));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            filter.GetLoadPolicy(GURL(kTestAlphaDataURI), kImageType));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            filter.GetLoadPolicy(GURL(kTestBetaURL), kImageType));
+  EXPECT_EQ(LoadPolicy::WOULD_DISALLOW,
+            filter.GetLoadPolicy(GURL(kTestAlphaURL), kSubdocumentType));
+  EXPECT_EQ(LoadPolicy::ALLOW,
+            filter.GetLoadPolicy(GURL(kTestBetaURL), kSubdocumentType));
 
   const auto& statistics = filter.statistics();
   EXPECT_EQ(5, statistics.num_loads_total);
   EXPECT_EQ(4, statistics.num_loads_evaluated);
   EXPECT_EQ(2, statistics.num_loads_matching_rules);
   EXPECT_EQ(0, statistics.num_loads_disallowed);
-
-  EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
 }
 
 TEST_F(DocumentSubresourceFilterTest, Enabled) {
   auto test_impl = [this](bool measure_performance) {
-    blink::WebURLRequest::RequestContext request_context =
-        blink::WebURLRequest::RequestContextImage;
     ActivationState activation_state(kEnabled);
     activation_state.measure_performance = measure_performance;
-    DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset(),
-                                     base::OnceClosure());
+    DocumentSubresourceFilter filter(url::Origin(), activation_state,
+                                     ruleset());
 
-    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Disallow,
-              filter.getLoadPolicy(GURL(kTestAlphaURL), request_context));
-    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-              filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
-    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-              filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
-    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Disallow,
-              filter.GetLoadPolicyForSubdocument(GURL(kTestAlphaURL)));
-    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
-              filter.GetLoadPolicyForSubdocument(GURL(kTestBetaURL)));
+    EXPECT_EQ(LoadPolicy::DISALLOW,
+              filter.GetLoadPolicy(GURL(kTestAlphaURL), kImageType));
+    EXPECT_EQ(LoadPolicy::ALLOW,
+              filter.GetLoadPolicy(GURL(kTestAlphaDataURI), kImageType));
+    EXPECT_EQ(LoadPolicy::ALLOW,
+              filter.GetLoadPolicy(GURL(kTestBetaURL), kImageType));
+    EXPECT_EQ(LoadPolicy::DISALLOW,
+              filter.GetLoadPolicy(GURL(kTestAlphaURL), kSubdocumentType));
+    EXPECT_EQ(LoadPolicy::ALLOW,
+              filter.GetLoadPolicy(GURL(kTestBetaURL), kSubdocumentType));
 
     const auto& statistics = filter.statistics();
     EXPECT_EQ(5, statistics.num_loads_total);
@@ -148,23 +118,6 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
 
   test_impl(true /* measure_performance */);
   test_impl(false /* measure_performance */);
-}
-
-TEST_F(DocumentSubresourceFilterTest,
-       CallbackFiredExactlyOnceAfterFirstDisallowedLoad) {
-  TestCallbackReceiver first_disallowed_load_callback_receiver;
-
-  ActivationState activation_state(kEnabled);
-  activation_state.measure_performance = true;
-  DocumentSubresourceFilter filter(
-      url::Origin(), activation_state, ruleset(),
-      first_disallowed_load_callback_receiver.closure());
-
-  EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
-  filter.reportDisallowedLoad();
-  EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
-  filter.reportDisallowedLoad();
-  EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
 }
 
 // Tests for ComputeActivationState functions. ---------------------------------

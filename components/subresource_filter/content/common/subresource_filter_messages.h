@@ -5,8 +5,8 @@
 // Message definition file, included multiple times, hence no include guard.
 
 #include "base/time/time.h"
-#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"

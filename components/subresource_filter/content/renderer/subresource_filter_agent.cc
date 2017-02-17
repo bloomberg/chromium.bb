@@ -4,23 +4,26 @@
 
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "components/subresource_filter/content/common/document_subresource_filter.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
+#include "components/subresource_filter/content/renderer/web_document_subresource_filter_impl.h"
+#include "components/subresource_filter/core/common/document_load_statistics.h"
+#include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "url/gurl.h"
 
 namespace subresource_filter {
 
@@ -88,7 +91,8 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   DCHECK(filter_for_last_committed_load_);
-  const auto& statistics = filter_for_last_committed_load_->statistics();
+  const auto& statistics =
+      filter_for_last_committed_load_->filter().statistics();
 
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total",
@@ -106,7 +110,9 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   // If ThreadTicks is not supported or performance measuring is switched off,
   // then no time measurements have been collected.
   if (ScopedThreadTimers::IsSupported() &&
-      filter_for_last_committed_load_->is_performance_measuring_enabled()) {
+      filter_for_last_committed_load_->filter()
+          .activation_state()
+          .measure_performance) {
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.DocumentLoad.SubresourceEvaluation."
         "TotalWallDuration",
@@ -161,10 +167,9 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
                                  measure_performance_for_next_commit_,
                                  ancestor_document_urls, ruleset.get());
       DCHECK(!ancestor_document_urls.empty());
-      std::unique_ptr<DocumentSubresourceFilter> filter(
-          new DocumentSubresourceFilter(
-              url::Origin(ancestor_document_urls[0]), activation_state,
-              std::move(ruleset), std::move(first_disallowed_load_callback)));
+      auto filter = base::MakeUnique<WebDocumentSubresourceFilterImpl>(
+          url::Origin(ancestor_document_urls[0]), activation_state,
+          std::move(ruleset), std::move(first_disallowed_load_callback));
 
       filter_for_last_committed_load_ = filter->AsWeakPtr();
       SetSubresourceFilterForCommittedLoad(std::move(filter));
@@ -183,7 +188,6 @@ void SubresourceFilterAgent::DidFailProvisionalLoad(
 void SubresourceFilterAgent::DidFinishLoad() {
   if (!filter_for_last_committed_load_)
     return;
-
   RecordHistogramsOnLoadFinished();
 }
 

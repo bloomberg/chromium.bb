@@ -4,9 +4,6 @@
 
 static_library("common") {
   sources = [
-    "document_load_statistics.h",
-    "document_subresource_filter.cc",
-    "document_subresource_filter.h",
     "ruleset_dealer.cc",
     "ruleset_dealer.h",
     "subresource_filter_message_generator.cc",
@@ -17,24 +14,21 @@ static_library("common") {
     "//components/subresource_filter/core/common",
     "//content/public/common",
     "//ipc",
+    "//url",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "document_subresource_filter_unittest.cc",
     "ruleset_dealer_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
-    "//base/test:test_support",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/common:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
-    "//url",
   ]
 }

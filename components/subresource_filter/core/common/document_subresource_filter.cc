@@ -2,76 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/content/common/document_subresource_filter.h"
+#include "components/subresource_filter/core/common/document_subresource_filter.h"
 
-#include <climits>
+#include <utility>
 
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace subresource_filter {
 
 namespace {
-
-proto::ElementType ToElementType(
-    blink::WebURLRequest::RequestContext request_context) {
-  switch (request_context) {
-    case blink::WebURLRequest::RequestContextAudio:
-    case blink::WebURLRequest::RequestContextVideo:
-    case blink::WebURLRequest::RequestContextTrack:
-      return proto::ELEMENT_TYPE_MEDIA;
-    case blink::WebURLRequest::RequestContextBeacon:
-    case blink::WebURLRequest::RequestContextPing:
-      return proto::ELEMENT_TYPE_PING;
-    case blink::WebURLRequest::RequestContextEmbed:
-    case blink::WebURLRequest::RequestContextObject:
-    case blink::WebURLRequest::RequestContextPlugin:
-      return proto::ELEMENT_TYPE_OBJECT;
-    case blink::WebURLRequest::RequestContextEventSource:
-    case blink::WebURLRequest::RequestContextFetch:
-    case blink::WebURLRequest::RequestContextXMLHttpRequest:
-      return proto::ELEMENT_TYPE_XMLHTTPREQUEST;
-    case blink::WebURLRequest::RequestContextFavicon:
-    case blink::WebURLRequest::RequestContextImage:
-    case blink::WebURLRequest::RequestContextImageSet:
-      return proto::ELEMENT_TYPE_IMAGE;
-    case blink::WebURLRequest::RequestContextFont:
-      return proto::ELEMENT_TYPE_FONT;
-    case blink::WebURLRequest::RequestContextFrame:
-    case blink::WebURLRequest::RequestContextForm:
-    case blink::WebURLRequest::RequestContextHyperlink:
-    case blink::WebURLRequest::RequestContextIframe:
-    case blink::WebURLRequest::RequestContextInternal:
-    case blink::WebURLRequest::RequestContextLocation:
-      return proto::ELEMENT_TYPE_SUBDOCUMENT;
-    case blink::WebURLRequest::RequestContextScript:
-    case blink::WebURLRequest::RequestContextServiceWorker:
-    case blink::WebURLRequest::RequestContextSharedWorker:
-      return proto::ELEMENT_TYPE_SCRIPT;
-    case blink::WebURLRequest::RequestContextStyle:
-    case blink::WebURLRequest::RequestContextXSLT:
-      return proto::ELEMENT_TYPE_STYLESHEET;
-
-    case blink::WebURLRequest::RequestContextPrefetch:
-    case blink::WebURLRequest::RequestContextSubresource:
-      return proto::ELEMENT_TYPE_OTHER;
-
-    case blink::WebURLRequest::RequestContextCSPReport:
-    case blink::WebURLRequest::RequestContextDownload:
-    case blink::WebURLRequest::RequestContextImport:
-    case blink::WebURLRequest::RequestContextManifest:
-    case blink::WebURLRequest::RequestContextUnspecified:
-    default:
-      return proto::ELEMENT_TYPE_UNSPECIFIED;
-  }
-}
 
 ActivationState ComputeActivationStateImpl(
     const GURL& document_url,
@@ -141,13 +87,10 @@ ActivationState ComputeActivationState(
 DocumentSubresourceFilter::DocumentSubresourceFilter(
     url::Origin document_origin,
     ActivationState activation_state,
-    scoped_refptr<const MemoryMappedRuleset> ruleset,
-    base::OnceClosure first_disallowed_load_callback)
+    scoped_refptr<const MemoryMappedRuleset> ruleset)
     : activation_state_(activation_state),
       ruleset_(std::move(ruleset)),
-      ruleset_matcher_(ruleset_->data(), ruleset_->length()),
-      first_disallowed_load_callback_(
-          std::move(first_disallowed_load_callback)) {
+      ruleset_matcher_(ruleset_->data(), ruleset_->length()) {
   DCHECK_NE(activation_state_.activation_level, ActivationLevel::DISABLED);
   if (!activation_state_.filtering_disabled_for_document)
     document_origin_.reset(new FirstPartyOrigin(std::move(document_origin)));
@@ -155,44 +98,18 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
 
 DocumentSubresourceFilter::~DocumentSubresourceFilter() = default;
 
-blink::WebDocumentSubresourceFilter::LoadPolicy
-DocumentSubresourceFilter::getLoadPolicy(
-    const blink::WebURL& resourceUrl,
-    blink::WebURLRequest::RequestContext request_context) {
+LoadPolicy DocumentSubresourceFilter::GetLoadPolicy(
+    const GURL& subresource_url,
+    proto::ElementType subresource_type) {
+  TRACE_EVENT1("loader", "DocumentSubresourceFilter::GetLoadPolicy", "url",
+               subresource_url.spec());
+
   ++statistics_.num_loads_total;
 
   if (activation_state_.filtering_disabled_for_document)
-    return Allow;
-  if (resourceUrl.protocolIs(url::kDataScheme))
-    return Allow;
-
-  // TODO(pkalinnikov): Would be good to avoid converting to GURL.
-  return EvaluateLoadPolicy(GURL(resourceUrl), ToElementType(request_context));
-}
-
-blink::WebDocumentSubresourceFilter::LoadPolicy
-DocumentSubresourceFilter::GetLoadPolicyForSubdocument(
-    const GURL& subdocument_url) {
-  ++statistics_.num_loads_total;
-
-  if (activation_state_.filtering_disabled_for_document)
-    return Allow;
-  if (subdocument_url.SchemeIs(url::kDataScheme))
-    return Allow;
-  return EvaluateLoadPolicy(subdocument_url, proto::ELEMENT_TYPE_SUBDOCUMENT);
-}
-
-void DocumentSubresourceFilter::reportDisallowedLoad() {
-  if (first_disallowed_load_callback_.is_null())
-    return;
-  std::move(first_disallowed_load_callback_).Run();
-}
-
-blink::WebDocumentSubresourceFilter::LoadPolicy
-DocumentSubresourceFilter::EvaluateLoadPolicy(const GURL& resource_url,
-                                              proto::ElementType element_type) {
-  TRACE_EVENT1("loader", "DocumentSubresourceFilter::EvaluateLoadPolicy", "url",
-               resource_url.spec());
+    return LoadPolicy::ALLOW;
+  if (subresource_url.SchemeIs(url::kDataScheme))
+    return LoadPolicy::ALLOW;
 
   auto wall_duration_timer = ScopedTimers::StartIf(
       activation_state_.measure_performance &&
@@ -212,17 +129,17 @@ DocumentSubresourceFilter::EvaluateLoadPolicy(const GURL& resource_url,
   ++statistics_.num_loads_evaluated;
   DCHECK(document_origin_);
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
-          resource_url, *document_origin_, element_type,
+          subresource_url, *document_origin_, subresource_type,
           activation_state_.generic_blocking_rules_disabled)) {
     ++statistics_.num_loads_matching_rules;
     if (activation_state_.activation_level == ActivationLevel::ENABLED) {
       ++statistics_.num_loads_disallowed;
-      return Disallow;
+      return LoadPolicy::DISALLOW;
     } else if (activation_state_.activation_level == ActivationLevel::DRYRUN) {
-      return WouldDisallow;
+      return LoadPolicy::WOULD_DISALLOW;
     }
   }
-  return Allow;
+  return LoadPolicy::ALLOW;
 }
 
 }  // namespace subresource_filter

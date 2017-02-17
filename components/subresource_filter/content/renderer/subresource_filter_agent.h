@@ -6,16 +6,12 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_RENDERER_SUBRESOURCE_FILTER_AGENT_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
-
-class GURL;
 
 namespace blink {
 class WebDocumentSubresourceFilter;
@@ -23,8 +19,9 @@ class WebDocumentSubresourceFilter;
 
 namespace subresource_filter {
 
+struct DocumentLoadStatistics;
 class UnverifiedRulesetDealer;
-class DocumentSubresourceFilter;
+class WebDocumentSubresourceFilterImpl;
 
 // The renderer-side agent of the ContentSubresourceFilterDriver. There is one
 // instance per RenderFrame, responsible for setting up the subresource filter
@@ -82,7 +79,8 @@ class SubresourceFilterAgent
   ActivationLevel activation_level_for_next_commit_ = ActivationLevel::DISABLED;
   bool measure_performance_for_next_commit_ = false;
 
-  base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;
+  base::WeakPtr<WebDocumentSubresourceFilterImpl>
+      filter_for_last_committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgent);
 };

@@ -2,32 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
 
 #include <stddef.h>
 
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
-#include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
-#include "url/gurl.h"
-#include "url/origin.h"
+
+class GURL;
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace subresource_filter {
 
 class FirstPartyOrigin;
 class MemoryMappedRuleset;
+
+enum class LoadPolicy {
+  ALLOW,
+  DISALLOW,
+  WOULD_DISALLOW,
+};
 
 // Computes whether/how subresource filtering should be activated while loading
 // |document_url| in a frame, based on the parent document's |activation_state|,
@@ -53,40 +59,31 @@ ActivationState ComputeActivationState(
     const MemoryMappedRuleset* ruleset);
 
 // Performs filtering of subresource loads in the scope of a given document.
-class DocumentSubresourceFilter
-    : public blink::WebDocumentSubresourceFilter,
-      public base::SupportsWeakPtr<DocumentSubresourceFilter> {
+class DocumentSubresourceFilter {
  public:
   // Constructs a new filter that will:
   //  -- Operate in a manner prescribed in |activation_state|.
   //  -- Filter subresource loads in the scope of a document loaded from
   //     |document_origin|.
   //  -- Hold a reference to and use |ruleset| for its entire lifetime.
-  //  -- Invoke |first_disallowed_load_callback|, if it is non-null, on the
-  //     first disallowed subresource load.
   DocumentSubresourceFilter(url::Origin document_origin,
                             ActivationState activation_state,
-                            scoped_refptr<const MemoryMappedRuleset> ruleset,
-                            base::OnceClosure first_disallowed_load_callback);
+                            scoped_refptr<const MemoryMappedRuleset> ruleset);
 
-  ~DocumentSubresourceFilter() override;
+  ~DocumentSubresourceFilter();
 
+  ActivationState activation_state() const { return activation_state_; }
   const DocumentLoadStatistics& statistics() const { return statistics_; }
-  bool is_performance_measuring_enabled() const {
-    return activation_state_.measure_performance;
-  }
 
-  // blink::WebDocumentSubresourceFilter:
-  LoadPolicy getLoadPolicy(const blink::WebURL& resourceUrl,
-                           blink::WebURLRequest::RequestContext) override;
-  void reportDisallowedLoad() override;
+  // WARNING: This is only to allow DocumentSubresourceFilter's wrappers to
+  // modify the |statistics|.
+  // TODO(pkalinnikov): Find a better way to achieve this.
+  DocumentLoadStatistics& statistics() { return statistics_; }
 
-  LoadPolicy GetLoadPolicyForSubdocument(const GURL& subdocument_url);
+  LoadPolicy GetLoadPolicy(const GURL& subresource_url,
+                           proto::ElementType subresource_type);
 
  private:
-  LoadPolicy EvaluateLoadPolicy(const GURL& resource_url,
-                                proto::ElementType element_type);
-
   const ActivationState activation_state_;
   const scoped_refptr<const MemoryMappedRuleset> ruleset_;
   const IndexedRulesetMatcher ruleset_matcher_;
@@ -94,7 +91,6 @@ class DocumentSubresourceFilter
   // Equals nullptr iff |activation_state_.filtering_disabled_for_document|.
   std::unique_ptr<FirstPartyOrigin> document_origin_;
 
-  base::OnceClosure first_disallowed_load_callback_;
   DocumentLoadStatistics statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSubresourceFilter);
@@ -102,4 +98,4 @@ class DocumentSubresourceFilter
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_DOCUMENT_SUBRESOURCE_FILTER_H_
