@@ -1082,8 +1082,8 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
 #endif
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
-    const int bw = block_size_wide[bsize] >> pd->subsampling_x;
-    const int bh = block_size_high[bsize] >> pd->subsampling_y;
+    const int bw = pd->width;
+    const int bh = pd->height;
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !unify_bsize) {
       const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
