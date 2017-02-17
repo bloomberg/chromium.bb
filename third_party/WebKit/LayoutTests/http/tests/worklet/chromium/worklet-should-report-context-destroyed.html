@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<title>Worklet: Worklet should report context destroyed</title>
+<body>
+<script>
+// This test was added for confirming a crash bug fix (see
+// https://crbug.com/657450). This should be in chromium/ because of using
+// testRunner and GCController.
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+}
+
+function gc()
+{
+  if (window.GCController) {
+    GCController.collect();
+  } else {
+    for (var i = 0; i < 10000; ++i)
+      new Object;
+  }
+}
+
+function tryCrash()
+{
+  document.frame.paintWorklet;
+  tCF1.outerHTML = "";
+  gc();
+  if (window.testRunner)
+    testRunner.notifyDone();
+}
+</script>
+<div id=tCF1><iframe onload="tryCrash()" name=frame id=frame></iframe></div>
+</body>
+</html>
