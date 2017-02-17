@@ -615,8 +615,7 @@ void PaintPropertyTreeBuilder::updateOverflowClip(
     // like overflow clip.
     LayoutRect clipRect;
     if (box.shouldClipOverflow()) {
-      clipRect = LayoutRect(pixelSnappedIntRect(
-          box.overflowClipRect(context.current.paintOffset)));
+      clipRect = LayoutRect(box.overflowClipRect(context.current.paintOffset));
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties()) {
         context.forceSubtreeUpdate |= properties->clearInnerBorderRadiusClip();

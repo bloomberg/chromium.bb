@@ -247,8 +247,16 @@ LayoutRect PaintLayerClipper::localClipRect(
 
 #ifdef CHECK_CLIP_RECTS
 #define CHECK_RECTS_EQ(expected, actual)                                \
-  CHECK((expected.isEmpty() && actual.isEmpty()) || expected == actual) \
-      << "expected=" << expected.toString() << " actual=" << actual.toString()
+  do {                                                                  \
+    bool matches =                                                      \
+        (expected.isEmpty() && actual.isEmpty()) || expected == actual; \
+    if (!matches) {                                                     \
+      LOG(ERROR) << "Rects don't match for m_layer="                    \
+                 << m_layer.layoutObject()->debugName()                 \
+                 << " expected=" << expected.toString()                 \
+                 << " actual=" << actual.toString();                    \
+    }                                                                   \
+  } while (false);
 #endif
 
 void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
@@ -270,6 +278,7 @@ void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
   rectToMap = LayoutRect(m_geometryMapper->sourceToDestinationRect(
       localRect, layerTransform, rootTransform));
   rectToMap.moveBy(-context.rootLayer->layoutObject()->paintOffset());
+  rectToMap.move(context.subPixelAccumulation);
 }
 
 void PaintLayerClipper::calculateRectsWithGeometryMapper(
@@ -286,16 +295,15 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
     foregroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
   } else {
     backgroundRect = clipRectWithGeometryMapper(context, false);
+
+    backgroundRect.move(context.subPixelAccumulation);
+    backgroundRect.intersect(paintDirtyRect);
+
     applyOverflowClipToBackgroundRectWithGeometryMapper(context,
                                                         backgroundRect);
 
-    backgroundRect.move(
-        context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
-    backgroundRect.intersect(paintDirtyRect);
-
-    foregroundRect.move(
-        context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
     foregroundRect = clipRectWithGeometryMapper(context, true);
+    foregroundRect.move(context.subPixelAccumulation);
     foregroundRect.intersect(paintDirtyRect);
   }
   LayoutPoint offset;
@@ -308,9 +316,9 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
 #ifdef CHECK_CLIP_RECTS
   ClipRect testBackgroundRect, testForegroundRect;
   LayoutRect testLayerBounds;
-  PaintLayerClipper(m_layer, false)
+  PaintLayerClipper(m_layer, nullptr)
       .calculateRects(context, paintDirtyRect, testLayerBounds,
-                      testBackgroundRect, testForegroundRect);
+                      testBackgroundRect, testForegroundRect, offsetFromRoot);
   CHECK_RECTS_EQ(testBackgroundRect, backgroundRect);
   CHECK_RECTS_EQ(testForegroundRect, foregroundRect);
   CHECK_RECTS_EQ(testLayerBounds, layerBounds);
@@ -505,7 +513,7 @@ ClipRect PaintLayerClipper::backgroundClipRect(
     ClipRect backgroundClipRect = clipRectWithGeometryMapper(context, false);
 #ifdef CHECK_CLIP_RECTS
     ClipRect testBackgroundClipRect =
-        PaintLayerClipper(m_layer, false).backgroundClipRect(context);
+        PaintLayerClipper(m_layer, nullptr).backgroundClipRect(context);
     CHECK_RECTS_EQ(testBackgroundClipRect, backgroundClipRect);
 #endif
     return backgroundClipRect;

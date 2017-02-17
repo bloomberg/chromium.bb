@@ -3174,4 +3174,21 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollTranslationHasCompositorElementId) {
             properties->scrollTranslation()->compositorElementId());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
+  setBodyInnerHTML(
+      "<style>body { margin: 20px 30px; }</style>"
+      "<div id='clipper'"
+      "    style='position: relative; overflow: hidden; "
+      "           width: 400px; height: 300px; left: 1.5px'>"
+      "</div>");
+
+  LayoutBoxModelObject* clipper = toLayoutBoxModelObject(
+      document().getElementById("clipper")->layoutObject());
+  const ObjectPaintProperties* clipProperties = clipper->paintProperties();
+
+  EXPECT_EQ(LayoutPoint(FloatPoint(31.5, 20)), clipper->paintOffset());
+  EXPECT_EQ(FloatRect(31.5, 20, 400, 300),
+            clipProperties->overflowClip()->clipRect().rect());
+}
+
 }  // namespace blink
