@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -51,9 +53,6 @@ using chromeos::LoginState;
 using views::Widget;
 
 namespace {
-
-const char kDisplaySettingsSubPageName[] = "display";
-const char kPaletteSettingsSubPageName[] = "stylus-overlay";
 
 SystemTrayClient* g_instance = nullptr;
 
@@ -226,12 +225,12 @@ void SystemTrayClient::ShowSetTimeDialog() {
 
 void SystemTrayClient::ShowDisplaySettings() {
   content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
-  ShowSettingsSubPageForActiveUser(kDisplaySettingsSubPageName);
+  ShowSettingsSubPageForActiveUser(chrome::kDisplaySubPage);
 }
 
 void SystemTrayClient::ShowPowerSettings() {
   content::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
-  ShowSettingsSubPageForActiveUser(chrome::kPowerOptionsSubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kPowerSubPage);
 }
 
 void SystemTrayClient::ShowChromeSlow() {
@@ -270,7 +269,7 @@ void SystemTrayClient::ShowPaletteHelp() {
 
 void SystemTrayClient::ShowPaletteSettings() {
   content::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
-  ShowSettingsSubPageForActiveUser(kPaletteSettingsSubPageName);
+  ShowSettingsSubPageForActiveUser(chrome::kStylusSubPage);
 }
 
 void SystemTrayClient::ShowPublicAccountInfo() {
@@ -321,9 +320,12 @@ void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
     return;
   }
 
-  std::string page = chrome::kInternetOptionsSubPage;
-  if (!network_id.empty())
+  std::string page = chrome::kInternetSubPage;
+  if (!network_id.empty()) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings))
+      page = chrome::kNetworkDetailSubPage;
     page += "?guid=" + net::EscapeUrlEncodedData(network_id, true);
+  }
   content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);
 }

@@ -80,7 +80,8 @@ bool WillHandleBrowserAboutURL(GURL* url,
     }
   // Redirect chrome://settings/extensions (legacy URL).
   } else if (host == chrome::kChromeUISettingsHost &&
-      url->path() == std::string("/") + chrome::kExtensionsSubPage) {
+             url->path() ==
+                 std::string("/") + chrome::kDeprecatedExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

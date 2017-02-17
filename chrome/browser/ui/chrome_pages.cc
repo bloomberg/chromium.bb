@@ -262,16 +262,7 @@ void ShowSlow(Browser* browser) {
 }
 
 GURL GetSettingsUrl(const std::string& sub_page) {
-  std::string url = std::string(kChromeUISettingsURL) + sub_page;
-#if defined(OS_CHROMEOS)
-  if (sub_page.find(kInternetOptionsSubPage, 0) != std::string::npos) {
-    std::string::size_type loc = sub_page.find("?", 0);
-    std::string network_page =
-        loc != std::string::npos ? sub_page.substr(loc) : std::string();
-    url = std::string(kChromeUISettingsURL) + network_page;
-  }
-#endif
-  return GURL(url);
+  return GURL(std::string(kChromeUISettingsURL) + sub_page);
 }
 
 bool IsSettingsSubPage(const GURL& url, const std::string& sub_page) {
@@ -323,6 +314,15 @@ void ShowSettingsSubPageForProfile(Profile* profile,
     } else if (sub_page == chrome::kDateTimeSubPage) {
       sub_page_path = GenerateContentSettingsSearchQueryPath(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
+    } else if (sub_page == chrome::kStylusSubPage ||
+               sub_page == chrome::kPowerSubPage) {
+      sub_page_path += "-overlay";
+    }
+  } else {
+    if (sub_page == chrome::kPowerSubPage) {
+      // TODO(stevenjbj/derat): Remove this once we have a 'power' subpage,
+      // crbug.com/633455.
+      sub_page_path = "device";
     }
   }
 #endif

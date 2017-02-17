@@ -433,6 +433,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
   RunBidiCheckerOnPage(url);
 }
 
+#if !defined(OS_CHROMEOS)
 //========================================
 // chrome://settings-frame/manageProfile
 //========================================
@@ -450,6 +451,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
   url += chrome::kManageProfileSubPage;
   RunBidiCheckerOnPage(url);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 //===================================================
 // chrome://settings-frame/contentExceptions#cookies

@@ -352,20 +352,21 @@ const char kChromeUICastHost[] = "cast";
 #endif
 #endif
 
-// Option sub pages.
-// Add sub page paths to kChromeSettingsSubPages in builtin_provider.cc to be
-// listed by the built-in AutocompleteProvider.
+// Settings sub pages.
+
+// NOTE: Add sub page paths to kChromeSettingsSubPages in
+// chrome_autocomplete_provider_client.cc to be listed by the built-in
+// AutocompleteProvider.
+
 const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";
-const char kCreateProfileSubPage[] = "createProfile";
 const char kDeprecatedOptionsContentSettingsExceptionsSubPage[] =
     "contentExceptions";
-const char kExtensionsSubPage[] = "extensions";
+const char kDeprecatedExtensionsSubPage[] = "extensions";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";
 const char kLanguageOptionsSubPage[] = "languages";
-const char kManageProfileSubPage[] = "manageProfile";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchEnginesSubPage[] = "searchEngines";
@@ -375,11 +376,17 @@ const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
 #if defined(OS_CHROMEOS)
 const char kAccessibilitySubPage[] = "accessibility";
-const char kBluetoothSubPage[] = "bluetooth";
+const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kDateTimeSubPage[] = "dateTime";
 const char kDeprecatedOptionsSearchSubPage[] = "search";
-const char kInternetOptionsSubPage[] = "internet";
-const char kPowerOptionsSubPage[] = "power-overlay";
+const char kDisplaySubPage[] = "display";
+const char kInternetSubPage[] = "internet";
+const char kNetworkDetailSubPage[] = "networkDetail";
+const char kPowerSubPage[] = "power";
+const char kStylusSubPage[] = "stylus";
+#else
+const char kCreateProfileSubPage[] = "createProfile";
+const char kManageProfileSubPage[] = "manageProfile";
 #endif
 
 // Extension sub pages.

@@ -335,7 +335,7 @@ extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
 extern const char kCreateProfileSubPage[];
 extern const char kDeprecatedOptionsContentSettingsExceptionsSubPage[];
-extern const char kExtensionsSubPage[];
+extern const char kDeprecatedExtensionsSubPage[];
 extern const char kHandlerSettingsSubPage[];
 extern const char kImportDataSubPage[];
 extern const char kLanguageOptionsSubPage[];
@@ -350,9 +350,12 @@ extern const char kTriggeredResetProfileSettingsSubPage[];
 extern const char kAccessibilitySubPage[];
 extern const char kBluetoothSubPage[];
 extern const char kDateTimeSubPage[];
+extern const char kDisplaySubPage[];
 extern const char kDeprecatedOptionsSearchSubPage[];
-extern const char kInternetOptionsSubPage[];
-extern const char kPowerOptionsSubPage[];
+extern const char kInternetSubPage[];
+extern const char kNetworkDetailSubPage[];
+extern const char kPowerSubPage[];
+extern const char kStylusSubPage[];
 #endif
 
 // Extensions sub pages.
