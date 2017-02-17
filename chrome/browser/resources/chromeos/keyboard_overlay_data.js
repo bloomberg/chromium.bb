@@ -15870,6 +15870,7 @@ var keyboardOverlayData = {
     'g<>CTRL': 'keyboardOverlayFindTextAgain',
     'g<>CTRL<>SHIFT': 'keyboardOverlayFindPreviousText',
     'h<>CTRL': 'keyboardOverlayHistory',
+    'h<>SEARCH<>SHIFT': 'keyboardOverlayToggleHighContrastMode',
     'i<>ALT<>SHIFT': 'keyboardOverlayReportIssue',
     'i<>CTRL<>SHIFT': 'keyboardOverlayDeveloperTools',
     'j<>CTRL': 'keyboardOverlayDownloads',
