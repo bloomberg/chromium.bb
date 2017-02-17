@@ -277,6 +277,11 @@ class ColorTransformInternal : public ColorTransform {
                                              ColorTransform::Intent intent);
   void Simplify();
 
+  // Retrieve the ICC profile from which |color_space| was created, only if that
+  // is a more precise representation of the color space than the primaries and
+  // transfer function in |color_space|.
+  ScopedQcmsProfile GetQCMSProfileIfNecessary(const ColorSpace& color_space);
+
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
 };
 
@@ -653,9 +658,10 @@ class QCMSColorTransform : public ColorTransformStep {
   ScopedQcmsProfile to_;
 };
 
-ScopedQcmsProfile GetQCMSProfileIfAvailable(const ColorSpace& color_space) {
-  ICCProfile icc_profile = ICCProfile::FromColorSpace(color_space);
-  if (icc_profile.GetData().empty())
+ScopedQcmsProfile ColorTransformInternal::GetQCMSProfileIfNecessary(
+    const ColorSpace& color_space) {
+  ICCProfile icc_profile;
+  if (!ICCProfile::FromId(color_space.icc_profile_id_, true, &icc_profile))
     return nullptr;
   return ScopedQcmsProfile(qcms_profile_from_memory(
       icc_profile.GetData().data(), icc_profile.GetData().size()));
@@ -690,8 +696,8 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& from,
   if (!from.IsValid())
     return;
 
-  ScopedQcmsProfile from_profile = GetQCMSProfileIfAvailable(from);
-  ScopedQcmsProfile to_profile = GetQCMSProfileIfAvailable(to);
+  ScopedQcmsProfile from_profile = GetQCMSProfileIfNecessary(from);
+  ScopedQcmsProfile to_profile = GetQCMSProfileIfNecessary(to);
   bool has_from_profile = !!from_profile;
   bool has_to_profile = !!to_profile;
 

@@ -38,6 +38,9 @@ class GFX_EXPORT ICCProfile {
   bool operator==(const ICCProfile& other) const;
   bool operator!=(const ICCProfile& other) const;
 
+  // Returns true if this profile was successfully parsed by SkICC.
+  bool IsValid() const;
+
   // Returns the color profile of the monitor that can best represent color.
   // This profile should be used for creating content that does not know on
   // which monitor it will be displayed.
@@ -77,6 +80,12 @@ class GFX_EXPORT ICCProfile {
   static const uint64_t test_id_generic_rgb_;
   static const uint64_t test_id_srgb_;
 
+  // Populate |icc_profile| with the ICCProfile corresponding to id |id|. Return
+  // false if |id| is not in the cache. If |only_if_needed| is true, then return
+  // false if |color_space_is_accurate_| is true for this profile (that is, if
+  // the ICCProfile is needed to know the space precisely).
+  static bool FromId(uint64_t id, bool only_if_needed, ICCProfile* icc_profile);
+
   // This method is used to hard-code the |id_| to a specific value, and is
   // used by test methods to ensure that they don't conflict with the values
   // generated in the browser.
@@ -95,10 +104,18 @@ class GFX_EXPORT ICCProfile {
 
   gfx::ColorSpace color_space_;
 
+  // True if |color_space_| accurately represents this color space (this is
+  // false e.g, for lookup-based profiles).
+  bool color_space_is_accurate_ = false;
+
+  // This is set to true if SkICC successfully parsed this profile.
+  bool successfully_parsed_by_sk_icc_ = false;
+
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
   friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
   friend class ColorSpace;
+  friend class ColorTransformInternal;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;
 };
 

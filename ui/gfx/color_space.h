@@ -144,6 +144,13 @@ class GFX_EXPORT ColorSpace {
   // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
 
+  // Populate |icc_profile| with an ICC profile that represents this color
+  // space. Returns false if this space is not representable. This ICC profile
+  // will be constructed ignoring the range adjust and transfer matrices (this
+  // is to match the IOSurface interface which takes the ICC profile and range
+  // and transfer matrices separately).
+  bool GetICCProfile(ICCProfile* icc_profile) const;
+
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
   bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;

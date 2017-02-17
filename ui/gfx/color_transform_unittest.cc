@@ -97,8 +97,8 @@ TEST(SimpleColorSpace, SRGBFromICCAndNotICC) {
   std::unique_ptr<ColorTransform> toxyzd50_fromicc(
       ColorTransform::NewColorTransform(
           srgb_fromicc, xyzd50, ColorTransform::Intent::INTENT_ABSOLUTE));
-  // This will have 1 step, namely, the QCMS transform.
-  EXPECT_EQ(toxyzd50_fromicc->NumberOfStepsForTesting(), 1u);
+  // This will be converted to a transfer function and then linear transform.
+  EXPECT_EQ(toxyzd50_fromicc->NumberOfStepsForTesting(), 2u);
   toxyzd50_fromicc->Transform(&value_fromicc, 1);
 
   std::unique_ptr<ColorTransform> toxyzd50_default(

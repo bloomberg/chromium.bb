@@ -709,10 +709,9 @@ void GetScreenInfoForWindow(ScreenInfo* results,
   results->is_monochrome = false;
   results->device_scale_factor = display.device_scale_factor();
   results->icc_profile = gfx::ICCProfile::FromBestMonitor();
-  if (results->icc_profile == gfx::ICCProfile()) {
-    results->icc_profile =
-        gfx::ICCProfile::FromColorSpace(gfx::ColorSpace::CreateSRGB());
-  }
+  if (!results->icc_profile.IsValid())
+    gfx::ColorSpace::CreateSRGB().GetICCProfile(&results->icc_profile);
+  DCHECK(results->icc_profile.IsValid());
 
   // The Display rotation and the ScreenInfo orientation are not the same
   // angle. The former is the physical display rotation while the later is the

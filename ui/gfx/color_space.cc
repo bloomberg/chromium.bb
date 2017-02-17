@@ -9,6 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
 #include "ui/gfx/transform.h"
@@ -199,6 +201,28 @@ ColorSpace ColorSpace::CreateSRGB() {
 }
 
 // static
+ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
+                                    const SkColorSpaceTransferFn& fn) {
+  ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
+                    ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
+                    ColorSpace::RangeID::FULL);
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      result.custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
+    }
+  }
+  result.custom_transfer_params_[0] = fn.fA;
+  result.custom_transfer_params_[1] = fn.fB;
+  result.custom_transfer_params_[2] = fn.fC;
+  result.custom_transfer_params_[3] = fn.fD;
+  result.custom_transfer_params_[4] = fn.fE;
+  result.custom_transfer_params_[5] = fn.fF;
+  result.custom_transfer_params_[6] = fn.fG;
+  // TODO(ccameron): Use enums for near matches to know color spaces.
+  return result;
+}
+
+// static
 ColorSpace ColorSpace::CreateSCRGBLinear() {
   return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
                     RangeID::FULL);
@@ -341,6 +365,34 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
     return nullptr;
   }
   return SkColorSpace::MakeRGB(fn, to_xyz_d50);
+}
+
+bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
+  if (!IsValid())
+    return false;
+
+  // If this was created from an ICC profile, retrieve that exact profile.
+  ICCProfile result;
+  if (ICCProfile::FromId(icc_profile_id_, false, icc_profile))
+    return true;
+
+  // Otherwise, construct an ICC profile based on the best approximated
+  // primaries and matrix.
+  SkMatrix44 to_XYZD50_matrix;
+  GetPrimaryMatrix(&to_XYZD50_matrix);
+  SkColorSpaceTransferFn fn;
+  if (!GetTransferFunction(&fn)) {
+    DLOG(ERROR) << "Failed to get ColorSpace transfer function for ICCProfile.";
+    return false;
+  }
+  sk_sp<SkData> data = SkICC::WriteToICC(fn, to_XYZD50_matrix);
+  if (!data) {
+    DLOG(ERROR) << "Failed to create SkICC.";
+    return false;
+  }
+  *icc_profile = ICCProfile::FromData(data->data(), data->size());
+  DCHECK(icc_profile->IsValid());
+  return true;
 }
 
 void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
