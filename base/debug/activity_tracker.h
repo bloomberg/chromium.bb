@@ -751,6 +751,9 @@ class BASE_EXPORT GlobalActivityTracker {
         subtle::Acquire_Load(&g_tracker_));
   }
 
+  // Convenience method for determining if a global tracker is active.
+  static bool IsEnabled() { return Get() != nullptr; }
+
   // Gets the persistent-memory-allocator in which data is stored. Callers
   // can store additional records here to pass more information to the
   // analysis process.
@@ -783,15 +786,31 @@ class BASE_EXPORT GlobalActivityTracker {
   // Records a log message. The current implementation does NOT recycle these
   // only store critical messages such as FATAL ones.
   void RecordLogMessage(StringPiece message);
+  static void RecordLogMessageIfEnabled(StringPiece message) {
+    GlobalActivityTracker* tracker = Get();
+    if (tracker)
+      tracker->RecordLogMessage(message);
+  }
 
   // Records a module load/unload event. This is safe to call multiple times
   // even with the same information.
   void RecordModuleInfo(const ModuleInfo& info);
+  static void RecordModuleInfoIfEnabled(const ModuleInfo& info) {
+    GlobalActivityTracker* tracker = Get();
+    if (tracker)
+      tracker->RecordModuleInfo(info);
+  }
 
   // Record field trial information. This call is thread-safe. In addition to
   // this, construction of a GlobalActivityTracker will cause all existing
   // active field trials to be fetched and recorded.
   void RecordFieldTrial(const std::string& trial_name, StringPiece group_name);
+  static void RecordFieldTrialIfEnabled(const std::string& trial_name,
+                                        StringPiece group_name) {
+    GlobalActivityTracker* tracker = Get();
+    if (tracker)
+      tracker->RecordFieldTrial(trial_name, group_name);
+  }
 
   // Accesses the global data record for storing arbitrary key/value pairs.
   ActivityUserData& global_data() { return global_data_; }
