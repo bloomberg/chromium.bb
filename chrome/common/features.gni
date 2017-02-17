@@ -65,9 +65,11 @@ declare_args() {
   # Indicates if the build is using PGO.
   pgo_build = chrome_pgo_phase > 0
 
-  # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
-  # pages. https://github.com/polymer/vulcanize
-  use_vulcanize = true
+  # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)
+  # for runtime performance purposes. This does more work at compile time for
+  # speed benefits at runtime (so we skip in debug builds). TODO(dbeam): rename
+  # this flag "optimize_web_uis" because we run more than vulcanize these days.
+  use_vulcanize = !is_debug
 }
 
 # Use brlapi from brltty for braille display support.
