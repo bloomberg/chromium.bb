@@ -877,8 +877,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 
 std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
     const gfx::Rect& bounding_rect) {
-  std::unique_ptr<ScopedResource> device_background_texture =
-      ScopedResource::Create(resource_provider_);
+  auto device_background_texture =
+      base::MakeUnique<ScopedResource>(resource_provider_);
   // CopyTexImage2D fails when called on a texture having immutable storage.
   device_background_texture->Allocate(
       bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,

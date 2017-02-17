@@ -242,8 +242,8 @@ class RasterBufferProviderPerfTestBase {
     const gfx::Size size(1, 1);
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
-      std::unique_ptr<ScopedResource> resource(
-          ScopedResource::Create(resource_provider_.get()));
+      auto resource =
+          base::MakeUnique<ScopedResource>(resource_provider_.get());
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          RGBA_8888, gfx::ColorSpace());
 

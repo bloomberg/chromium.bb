@@ -21,10 +21,7 @@ namespace cc {
 
 class CC_EXPORT ScopedResource : public Resource {
  public:
-  static std::unique_ptr<ScopedResource> Create(
-      ResourceProvider* resource_provider) {
-    return base::WrapUnique(new ScopedResource(resource_provider));
-  }
+  explicit ScopedResource(ResourceProvider* provider);
   virtual ~ScopedResource();
 
   void Allocate(const gfx::Size& size,
@@ -36,9 +33,6 @@ class CC_EXPORT ScopedResource : public Resource {
                                    gfx::BufferUsage usage,
                                    const gfx::ColorSpace& color_space);
   void Free();
-
- protected:
-  explicit ScopedResource(ResourceProvider* provider);
 
  private:
   ResourceProvider* resource_provider_;

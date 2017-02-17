@@ -236,8 +236,7 @@ class RasterBufferProviderTest
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {
-    std::unique_ptr<ScopedResource> resource(
-        ScopedResource::Create(resource_provider_.get()));
+    auto resource = base::MakeUnique<ScopedResource>(resource_provider_.get());
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        RGBA_8888, gfx::ColorSpace());
 
@@ -256,8 +255,7 @@ class RasterBufferProviderTest
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
     const gfx::Size size(1, 1);
 
-    std::unique_ptr<ScopedResource> resource(
-        ScopedResource::Create(resource_provider_.get()));
+    auto resource = base::MakeUnique<ScopedResource>(resource_provider_.get());
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        RGBA_8888, gfx::ColorSpace());
 

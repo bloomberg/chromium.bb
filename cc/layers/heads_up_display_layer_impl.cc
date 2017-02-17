@@ -93,8 +93,7 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
     }
   }
 
-  std::unique_ptr<ScopedResource> resource =
-      ScopedResource::Create(resource_provider);
+  auto resource = base::MakeUnique<ScopedResource>(resource_provider);
   resource->Allocate(
       internal_content_bounds_, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
