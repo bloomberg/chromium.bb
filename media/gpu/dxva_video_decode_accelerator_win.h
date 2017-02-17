@@ -5,7 +5,7 @@
 #ifndef MEDIA_GPU_DXVA_VIDEO_DECODE_ACCELERATOR_WIN_H_
 #define MEDIA_GPU_DXVA_VIDEO_DECODE_ACCELERATOR_WIN_H_
 
-#include <d3d11_1.h>
+#include <d3d11.h>
 #include <d3d9.h>
 #include <initguid.h>
 #include <stdint.h>
@@ -317,7 +317,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       ID3D11Texture2D* dest_texture,
       base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
       uint64_t keyed_mutex_value,
-      base::win::ScopedComPtr<IMFSample> input_sample,
+      base::win::ScopedComPtr<IMFSample> video_frame,
       int picture_buffer_id,
       int input_buffer_id);
 
@@ -334,11 +334,12 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // before reusing it.
   void WaitForOutputBuffer(int32_t picture_buffer_id, int count);
 
-  // Initialize the DX11 video processor.
+  // Initializes the DX11 Video format converter media types.
   // Returns true on success.
-  bool InitializeID3D11VideoProcessor(int width,
-                                      int height,
-                                      const gfx::ColorSpace& color_space);
+  bool InitializeDX11VideoFormatConverterMediaType(
+      int width,
+      int height,
+      const gfx::ColorSpace& color_space);
 
   // Returns the output video frame dimensions (width, height).
   // |sample| :- This is the output sample containing the video frame.
@@ -376,6 +377,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   VideoDecodeAccelerator::Client* client_;
 
   base::win::ScopedComPtr<IMFTransform> decoder_;
+  base::win::ScopedComPtr<IMFTransform> video_format_converter_mft_;
 
   base::win::ScopedComPtr<IDirect3D9Ex> d3d9_;
   base::win::ScopedComPtr<IDirect3DDevice9Ex> d3d9_device_ex_;
@@ -388,14 +390,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
   base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context_;
   base::win::ScopedComPtr<ID3D11Query> d3d11_query_;
-
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
-  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
-  base::win::ScopedComPtr<ID3D11VideoProcessor> d3d11_processor_;
-
-  int processor_width_ = 0;
-  int processor_height_ = 0;
 
   base::win::ScopedComPtr<IDirectXVideoProcessorService>
       video_processor_service_;
@@ -531,6 +525,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // True if we should use DXGI keyed mutexes to synchronize between the two
   // contexts.
   bool use_keyed_mutex_;
+
+  // Set to true if the DX11 video format converter input media types need to
+  // be initialized. Defaults to true.
+  bool dx11_video_format_converter_media_type_needs_init_;
 
   // Color spaced used when initializing the dx11 format converter.
   gfx::ColorSpace dx11_converter_color_space_;
