@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
@@ -411,45 +411,21 @@ class ControlledPrefsReenableExtension : public ExtensionControlledPrefsTest {
 };
 TEST_F(ControlledPrefsDisableExtension, ControlledPrefsReenableExtension) { }
 
-// Mock class to test whether objects are deleted correctly.
-class MockStringValue : public base::StringValue {
- public:
-  explicit MockStringValue(const std::string& in_value)
-      : base::StringValue(in_value) {
-  }
-  virtual ~MockStringValue() {
-    Die();
-  }
-  MOCK_METHOD0(Die, void());
-};
-
 class ControlledPrefsSetExtensionControlledPref
     : public ExtensionControlledPrefsTest {
  public:
   void Initialize() override {
-    MockStringValue* v1 = new MockStringValue("https://www.chromium.org");
-    MockStringValue* v2 = new MockStringValue("https://www.chromium.org");
-    MockStringValue* v1i = new MockStringValue("https://www.chromium.org");
-    MockStringValue* v2i = new MockStringValue("https://www.chromium.org");
+    base::StringValue* v1 = new base::StringValue("https://www.chromium.org");
+    base::StringValue* v2 = new base::StringValue("https://www.chromium.org");
+    base::StringValue* v1i = new base::StringValue("https://www.chromium.org");
+    base::StringValue* v2i = new base::StringValue("https://www.chromium.org");
     // Ownership is taken, value shall not be deleted.
-    EXPECT_CALL(*v1, Die()).Times(0);
-    EXPECT_CALL(*v1i, Die()).Times(0);
     InstallExtensionControlledPref(extension1(), kPref1, v1);
     InstallExtensionControlledPrefIncognito(extension1(), kPref1, v1i);
-    testing::Mock::VerifyAndClearExpectations(v1);
-    testing::Mock::VerifyAndClearExpectations(v1i);
     // Make sure there is no memory leak and both values are deleted.
-    EXPECT_CALL(*v1, Die()).Times(1);
-    EXPECT_CALL(*v1i, Die()).Times(1);
-    EXPECT_CALL(*v2, Die()).Times(1);
-    EXPECT_CALL(*v2i, Die()).Times(1);
     InstallExtensionControlledPref(extension1(), kPref1, v2);
     InstallExtensionControlledPrefIncognito(extension1(), kPref1, v2i);
     prefs_.RecreateExtensionPrefs();
-    testing::Mock::VerifyAndClearExpectations(v1);
-    testing::Mock::VerifyAndClearExpectations(v1i);
-    testing::Mock::VerifyAndClearExpectations(v2);
-    testing::Mock::VerifyAndClearExpectations(v2i);
   }
 
   void Verify() override {}
