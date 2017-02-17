@@ -58,14 +58,17 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir) {
     above_type =
         get_ref_filter_type(xd->mi[-xd->mi_stride], xd, dir, ref_frame);
 
-  if (left_type == above_type)
+  if (left_type == above_type) {
     filter_type_ctx += left_type;
-  else if (left_type == SWITCHABLE_FILTERS && above_type != SWITCHABLE_FILTERS)
+  } else if (left_type == SWITCHABLE_FILTERS) {
+    assert(above_type != SWITCHABLE_FILTERS);
     filter_type_ctx += above_type;
-  else if (left_type != SWITCHABLE_FILTERS && above_type == SWITCHABLE_FILTERS)
+  } else if (above_type == SWITCHABLE_FILTERS) {
+    assert(left_type != SWITCHABLE_FILTERS);
     filter_type_ctx += left_type;
-  else
+  } else {
     filter_type_ctx += SWITCHABLE_FILTERS;
+  }
 
   return filter_type_ctx;
 }
@@ -84,14 +87,17 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
                              ? above_mbmi->interp_filter
                              : SWITCHABLE_FILTERS;
 
-  if (left_type == above_type)
+  if (left_type == above_type) {
     return left_type;
-  else if (left_type == SWITCHABLE_FILTERS && above_type != SWITCHABLE_FILTERS)
+  } else if (left_type == SWITCHABLE_FILTERS) {
+    assert(above_type != SWITCHABLE_FILTERS);
     return above_type;
-  else if (left_type != SWITCHABLE_FILTERS && above_type == SWITCHABLE_FILTERS)
+  } else if (above_type == SWITCHABLE_FILTERS) {
+    assert(left_type != SWITCHABLE_FILTERS);
     return left_type;
-  else
+  } else {
     return SWITCHABLE_FILTERS;
+  }
 }
 #endif
 
