@@ -407,14 +407,13 @@ public class ChildProcessLauncher {
     private static ChildProcessConnection allocateBoundConnection(SpawnData spawnData,
             boolean alwaysInForeground, ChildProcessConnection.StartCallback startCallback) {
         final Context context = spawnData.context();
-        final String[] commandLine = spawnData.commandLine();
         final boolean inSandbox = spawnData.inSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
         ChromiumLinkerParams chromiumLinkerParams = getLinkerParamsForNewConnection();
         ChildProcessConnection connection =
                 allocateConnection(spawnData, chromiumLinkerParams, alwaysInForeground);
         if (connection != null) {
-            connection.start(commandLine, startCallback);
+            connection.start(startCallback);
 
             String packageName = creationParams != null ? creationParams.getPackageName()
                                                         : context.getPackageName();

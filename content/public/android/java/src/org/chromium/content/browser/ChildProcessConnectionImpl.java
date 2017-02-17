@@ -131,7 +131,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             mBindFlags = bindFlags;
         }
 
-        boolean bind(String[] commandLine) {
+        boolean bind() {
             if (!mBound) {
                 try {
                     TraceEvent.begin("ChildProcessConnectionImpl.ChildServiceConnection.bind");
@@ -323,7 +323,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @Override
-    public void start(String[] commandLine, ChildProcessConnection.StartCallback startCallback) {
+    public void start(ChildProcessConnection.StartCallback startCallback) {
         try {
             TraceEvent.begin("ChildProcessConnectionImpl.start");
             synchronized (mLock) {
@@ -333,13 +333,13 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
                 mStartCallback = startCallback;
 
-                if (!mInitialBinding.bind(commandLine)) {
+                if (!mInitialBinding.bind()) {
                     Log.e(TAG, "Failed to establish the service connection.");
                     // We have to notify the caller so that they can free-up associated resources.
                     // TODO(ppi): Can we hard-fail here?
                     mDeathCallback.onChildProcessDied(ChildProcessConnectionImpl.this);
                 } else {
-                    mWaivedBinding.bind(null);
+                    mWaivedBinding.bind();
                 }
             }
         } finally {
@@ -493,7 +493,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 return;
             }
             if (mStrongBindingCount == 0) {
-                mStrongBinding.bind(null);
+                mStrongBinding.bind();
             }
             mStrongBindingCount++;
         }
@@ -528,7 +528,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 Log.w(TAG, "The connection is not bound for %d", mPid);
                 return;
             }
-            mModerateBinding.bind(null);
+            mModerateBinding.bind();
         }
     }
 

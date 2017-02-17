@@ -73,11 +73,9 @@ public interface ChildProcessConnection {
      * setupConnection() to setup the connection parameters. start() and setupConnection() are
      * separate to allow to pass whatever parameters are available in start(), and complete the
      * remainder later while reducing the connection setup latency.
-     * @param commandLine (optional) command line for the child process. If omitted, then
-     *                    the command line parameters must instead be passed to setupConnection().
      * @param startCallback (optional) callback when the child process starts or fails to start.
      */
-    void start(String[] commandLine, StartCallback startCallback);
+    void start(StartCallback startCallback);
 
     /**
      * Setups the connection after it was started with start().

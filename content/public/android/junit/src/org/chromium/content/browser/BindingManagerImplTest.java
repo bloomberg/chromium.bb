@@ -120,7 +120,7 @@ public class BindingManagerImplTest {
         }
 
         @Override
-        public void start(String[] commandLine, StartCallback startCallback) {
+        public void start(StartCallback startCallback) {
             throw new UnsupportedOperationException();
         }
 
