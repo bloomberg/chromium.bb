@@ -273,7 +273,6 @@ class PLATFORM_EXPORT ThreadHeap {
   RecursiveMutex& threadAttachMutex() { return m_threadAttachMutex; }
   const ThreadStateSet& threads() const { return m_threads; }
   ThreadHeapStats& heapStats() { return m_stats; }
-  SafePointBarrier* safePointBarrier() { return m_safePointBarrier.get(); }
   CallbackStack* markingStack() const { return m_markingStack.get(); }
   CallbackStack* postMarkingCallbackStack() const {
     return m_postMarkingCallbackStack.get();
@@ -460,7 +459,6 @@ class PLATFORM_EXPORT ThreadHeap {
   ThreadHeapStats m_stats;
   std::unique_ptr<RegionTree> m_regionTree;
   std::unique_ptr<HeapDoesNotContainCache> m_heapDoesNotContainCache;
-  std::unique_ptr<SafePointBarrier> m_safePointBarrier;
   std::unique_ptr<PagePool> m_freePagePool;
   std::unique_ptr<CallbackStack> m_markingStack;
   std::unique_ptr<CallbackStack> m_postMarkingCallbackStack;

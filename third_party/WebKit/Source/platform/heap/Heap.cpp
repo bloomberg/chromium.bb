@@ -148,7 +148,6 @@ void ThreadHeapStats::decreaseAllocatedSpace(size_t delta) {
 ThreadHeap::ThreadHeap()
     : m_regionTree(WTF::makeUnique<RegionTree>()),
       m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
-      m_safePointBarrier(WTF::makeUnique<SafePointBarrier>()),
       m_freePagePool(WTF::wrapUnique(new PagePool)),
       m_markingStack(CallbackStack::create()),
       m_postMarkingCallbackStack(CallbackStack::create()),
@@ -537,14 +536,6 @@ void ThreadHeap::visitStackRoots(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   for (ThreadState* state : m_threads)
     state->visitStack(visitor);
-}
-
-void ThreadHeap::enterSafePoint(ThreadState* threadState) {
-  m_safePointBarrier->enterSafePoint(threadState);
-}
-
-void ThreadHeap::leaveSafePoint() {
-  m_safePointBarrier->leaveSafePoint();
 }
 
 BasePage* ThreadHeap::lookupPageForAddress(Address address) {

@@ -57,7 +57,6 @@ class GarbageCollectedMixinConstructorMarker;
 class PersistentNode;
 class PersistentRegion;
 class BaseArena;
-class SafePointBarrier;
 class ThreadHeap;
 class ThreadState;
 class Visitor;
@@ -328,6 +327,7 @@ class PLATFORM_EXPORT ThreadState {
   void leaveSafePoint();
 
   void recordStackEnd(intptr_t* endOfStack) { m_endOfStack = endOfStack; }
+  NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
 
   // Get one of the heap structures for this thread.
   // The thread heap is split into multiple heap parts based on object types
@@ -537,7 +537,6 @@ class PLATFORM_EXPORT ThreadState {
   ThreadState();
   ~ThreadState();
 
-  NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
   void clearSafePointScopeMarker() {
     m_safePointStackCopy.clear();
     m_safePointScopeMarker = nullptr;
@@ -601,7 +600,6 @@ class PLATFORM_EXPORT ThreadState {
 
   void reportMemoryToV8();
 
-  friend class SafePointBarrier;
   friend class SafePointScope;
 
   static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;

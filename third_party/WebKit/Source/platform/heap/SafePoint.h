@@ -32,28 +32,6 @@ class SafePointScope final {
   ThreadState* m_state;
 };
 
-class SafePointBarrier final {
-  USING_FAST_MALLOC(SafePointBarrier);
-  WTF_MAKE_NONCOPYABLE(SafePointBarrier);
-
- public:
-  SafePointBarrier();
-  ~SafePointBarrier();
-
-  void enterSafePoint(ThreadState*);
-  void leaveSafePoint();
-
- private:
-  void doPark(ThreadState*, intptr_t* stackEnd);
-  void doEnterSafePoint(ThreadState*, intptr_t* stackEnd);
-  static void enterSafePointAfterPushRegisters(SafePointBarrier* barrier,
-                                               ThreadState* state,
-                                               intptr_t* stackEnd) {
-    barrier->doEnterSafePoint(state, stackEnd);
-  }
-  Mutex m_mutex;
-};
-
 }  // namespace blink
 
 #endif

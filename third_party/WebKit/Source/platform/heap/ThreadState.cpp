@@ -1125,6 +1125,17 @@ NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(
 }
 #endif
 
+// TODO(haraken): The first void* pointer is unused. Remove it.
+using PushAllRegistersCallback = void (*)(void*, ThreadState*, intptr_t*);
+extern "C" void pushAllRegisters(void*, ThreadState*, PushAllRegistersCallback);
+
+static void enterSafePointAfterPushRegisters(void*,
+                                             ThreadState* state,
+                                             intptr_t* stackEnd) {
+  state->recordStackEnd(stackEnd);
+  state->copyStackUntilSafePointScope();
+}
+
 void ThreadState::enterSafePoint(BlinkGC::StackState stackState,
                                  void* scopeMarker) {
   ASSERT(checkThread());
@@ -1136,12 +1147,11 @@ void ThreadState::enterSafePoint(BlinkGC::StackState stackState,
   runScheduledGC(stackState);
   m_stackState = stackState;
   m_safePointScopeMarker = scopeMarker;
-  m_heap->enterSafePoint(this);
+  pushAllRegisters(nullptr, this, enterSafePointAfterPushRegisters);
 }
 
 void ThreadState::leaveSafePoint() {
   ASSERT(checkThread());
-  m_heap->leaveSafePoint();
   m_stackState = BlinkGC::HeapPointersOnStack;
   clearSafePointScopeMarker();
 }
