@@ -7,18 +7,18 @@ layer at (0,0) size 800x142
         LayoutText {#text} at (0,0) size 273x18
           text run at (0,0) width 273: "Editable text should be centered vertically."
       LayoutBlockFlow {DIV} at (0,34) size 784x28
-        LayoutTextControl {INPUT} at (0,0) size 251x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-        LayoutTextControl {INPUT} at (251,0) size 251x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutTextControl {INPUT} at (0,0) size 194x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutTextControl {INPUT} at (194,0) size 194x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,62) size 784x28
         LayoutTextControl {INPUT} at (0,0) size 260x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,90) size 784x28
         LayoutTextControl {INPUT} at (0,0) size 170x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (10,52) size 247x25
-  LayoutBlockFlow {DIV} at (2,1.50) size 247x25
+layer at (10,52) size 190x25
+  LayoutBlockFlow {DIV} at (2,1.50) size 190x25
     LayoutText {#text} at (0,0) size 74x24
       text run at (0,0) width 74: "\x{3075} ABCgjy"
-layer at (261,52) size 247x25
-  LayoutBlockFlow {DIV} at (2,1.50) size 247x25
+layer at (204,52) size 190x25
+  LayoutBlockFlow {DIV} at (2,1.50) size 190x25
     LayoutText {#text} at (0,0) size 74x24
       text run at (0,0) width 74: "\x{3075} ABCgjy"
 layer at (10,78) size 256x28
