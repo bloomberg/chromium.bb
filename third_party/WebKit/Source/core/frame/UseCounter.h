@@ -1470,6 +1470,7 @@ class CORE_EXPORT UseCounter {
     PresentationReceiverSecureOrigin = 1820,
     PresentationRequestInsecureOrigin = 1821,
     PresentationRequestSecureOrigin = 1822,
+    RtcpMuxPolicyNegotiate = 1823,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

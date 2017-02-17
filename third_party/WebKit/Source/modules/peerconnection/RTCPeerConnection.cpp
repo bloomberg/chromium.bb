@@ -264,6 +264,7 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
   String rtcpMuxPolicyString = configuration.rtcpMuxPolicy();
   if (rtcpMuxPolicyString == "negotiate") {
     rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
+    UseCounter::count(context, UseCounter::RtcpMuxPolicyNegotiate);
   } else {
     DCHECK_EQ(rtcpMuxPolicyString, "require");
   }
