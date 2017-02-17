@@ -312,37 +312,20 @@ LayoutRect LayoutMultiColumnSet::overflowRectForFlowThreadPortion(
     const LayoutRect& flowThreadPortionRect,
     bool isFirstPortion,
     bool isLastPortion) const {
-  if (hasOverflowClip())
-    return flowThreadPortionRect;
+  // Only clip along the block direction axis.
+  LayoutRect clipRect(LayoutRect::infiniteIntRect());
 
-  LayoutRect flowThreadOverflow = m_flowThread->visualOverflowRect();
-
-  // Only clip along the flow thread axis.
-  LayoutRect clipRect;
   if (m_flowThread->isHorizontalWritingMode()) {
-    LayoutUnit minY =
-        isFirstPortion ? flowThreadOverflow.y() : flowThreadPortionRect.y();
-    LayoutUnit maxY = isLastPortion ? std::max(flowThreadPortionRect.maxY(),
-                                               flowThreadOverflow.maxY())
-                                    : flowThreadPortionRect.maxY();
-    LayoutUnit minX =
-        std::min(flowThreadPortionRect.x(), flowThreadOverflow.x());
-    LayoutUnit maxX =
-        std::max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX());
-    clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
-  } else {
-    LayoutUnit minX =
-        isFirstPortion ? flowThreadOverflow.x() : flowThreadPortionRect.x();
-    LayoutUnit maxX = isLastPortion ? std::max(flowThreadPortionRect.maxX(),
-                                               flowThreadOverflow.maxX())
-                                    : flowThreadPortionRect.maxX();
-    LayoutUnit minY =
-        std::min(flowThreadPortionRect.y(), (flowThreadOverflow.y()));
-    LayoutUnit maxY =
-        std::max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY()));
-    clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
+    if (!isFirstPortion)
+      clipRect.shiftYEdgeTo(flowThreadPortionRect.y());
+    if (!isLastPortion)
+      clipRect.shiftMaxYEdgeTo(flowThreadPortionRect.maxY());
+    return clipRect;
   }
-
+  if (!isFirstPortion)
+    clipRect.shiftXEdgeTo(flowThreadPortionRect.x());
+  if (!isLastPortion)
+    clipRect.shiftMaxXEdgeTo(flowThreadPortionRect.maxX());
   return clipRect;
 }
 
