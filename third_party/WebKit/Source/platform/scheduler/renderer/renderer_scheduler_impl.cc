@@ -55,6 +55,8 @@ void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
     return;
 
   int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.ForegroundRendererMainThreadLoad",
                            load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
@@ -66,6 +68,8 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
     return;
 
   int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.BackgroundRendererMainThreadLoad",
                            load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
