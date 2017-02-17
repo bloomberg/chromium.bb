@@ -790,7 +790,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #endif  // CONFIG_VAR_TX
 
 void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
-                     RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate) {
+                     RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
+                     const int mi_row, const int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -823,14 +824,30 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #endif
   } else if (dry_run == DRY_RUN_NORMAL) {
     int plane;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+        continue;
+#else
+      (void)mi_row;
+      (void)mi_col;
+#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane,
                                              set_entropy_context_b, &arg);
+    }
   } else if (dry_run == DRY_RUN_COSTCOEFFS) {
     int plane;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+        continue;
+#else
+      (void)mi_row;
+      (void)mi_col;
+#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, cost_coeffs_b,
                                              &arg);
+    }
   }
 #else
   if (!dry_run) {
@@ -838,9 +855,17 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 
     td->counts->skip[ctx][0] += skip_inc;
 
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+        continue;
+#else
+      (void)mi_row;
+      (void)mi_col;
+#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, tokenize_pvq,
                                              &arg);
+    }
   }
 #endif
   if (rate) *rate += arg.this_rate;

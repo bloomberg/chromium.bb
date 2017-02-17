@@ -82,7 +82,7 @@ void av1_tokenize_palette_sb(const struct AV1_COMP *cpi,
 #endif  // CONFIG_PALETTE
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                     int *rate);
+                     int *rate, const int mi_row, const int mi_col);
 #if CONFIG_SUPERTX
 void av1_tokenize_sb_supertx(const struct AV1_COMP *cpi, struct ThreadData *td,
                              TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,

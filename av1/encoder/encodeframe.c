@@ -5591,7 +5591,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     int plane;
     mbmi->skip = 1;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1);
+      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
+                                   mi_row, mi_col);
     if (!dry_run)
       sum_intra_stats(td->counts, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm));
@@ -5650,7 +5651,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_VAR_TX
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif
-    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate);
+    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col);
   } else {
     int ref;
     const int is_compound = has_second_ref(mbmi);
@@ -5706,13 +5707,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     }
 #endif  // CONFIG_MOTION_VAR
 
-    av1_encode_sb((AV1_COMMON *)cm, x, block_size);
+    av1_encode_sb((AV1_COMMON *)cm, x, block_size, mi_row, mi_col);
 #if CONFIG_VAR_TX
     if (mbmi->skip) mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size,
                           rate);
 #else
-    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate);
+    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col);
 #endif
   }
 

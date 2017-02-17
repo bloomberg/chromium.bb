@@ -9170,9 +9170,9 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
 #if CONFIG_FILTER_INTRA
 static void pick_filter_intra_interframe(
     const AV1_COMP *cpi, MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
-    BLOCK_SIZE bsize, int *rate_uv_intra, int *rate_uv_tokenonly,
-    int64_t *dist_uv, int *skip_uv, PREDICTION_MODE *mode_uv,
-    FILTER_INTRA_MODE_INFO *filter_intra_mode_info_uv,
+    BLOCK_SIZE bsize, int mi_row, int mi_col, int *rate_uv_intra,
+    int *rate_uv_tokenonly, int64_t *dist_uv, int *skip_uv,
+    PREDICTION_MODE *mode_uv, FILTER_INTRA_MODE_INFO *filter_intra_mode_info_uv,
 #if CONFIG_EXT_INTRA
     int8_t *uv_angle_delta,
 #endif  // CONFIG_EXT_INTRA
@@ -9292,7 +9292,8 @@ static void pick_filter_intra_interframe(
                              mbmi->filter_intra_mode_info.filter_intra_mode[1]);
   }
   distortion2 = distortion_y + distortion_uv;
-  av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, 0, 0);
+  av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, 0, 0, mi_row,
+                               mi_col);
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     x->recon_variance = av1_high_get_sby_perpixel_variance(
@@ -10806,8 +10807,8 @@ PALETTE_EXIT:
       !dc_skipped && best_mode_index >= 0 &&
       best_intra_rd < (best_rd + (best_rd >> 3))) {
     pick_filter_intra_interframe(
-        cpi, x, ctx, bsize, rate_uv_intra, rate_uv_tokenonly, dist_uvs,
-        skip_uvs, mode_uv, filter_intra_mode_info_uv,
+        cpi, x, ctx, bsize, mi_row, mi_col, rate_uv_intra, rate_uv_tokenonly,
+        dist_uvs, skip_uvs, mode_uv, filter_intra_mode_info_uv,
 #if CONFIG_EXT_INTRA
         uv_angle_delta,
 #endif  // CONFIG_EXT_INTRA

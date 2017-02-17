@@ -874,7 +874,8 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
                                          encode_block_pass1, &args);
 }
 
-void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
+void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
+                   const int mi_row, const int mi_col) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -910,6 +911,14 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 #endif
     arg.ta = ctx.ta[plane];
     arg.tl = ctx.tl[plane];
+
+#if CONFIG_CB4X4
+    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      continue;
+#else
+    (void)mi_row;
+    (void)mi_col;
+#endif
 
 #if CONFIG_VAR_TX
     for (idy = 0; idy < mi_height; idy += bh) {
@@ -1121,7 +1130,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b) {
+                                  int enable_optimize_b, const int mi_row,
+                                  const int mi_col) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   ENTROPY_CONTEXT ta[2 * MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE] = { 0 };
@@ -1129,6 +1139,15 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
   struct encode_b_args arg = {
     cm, x, NULL, &xd->mi[0]->mbmi.skip, ta, tl, enable_optimize_b
   };
+
+#if CONFIG_CB4X4
+  if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+    return;
+#else
+  (void)mi_row;
+  (void)mi_col;
+#endif
+
   if (enable_optimize_b) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const TX_SIZE tx_size =

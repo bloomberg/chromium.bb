@@ -871,6 +871,9 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
 
   uv_txsize = uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
                               [pd->subsampling_y];
+#if CONFIG_CB4X4
+  uv_txsize = AOMMAX(uv_txsize, TX_4X4);
+#endif
   assert(uv_txsize != TX_INVALID);
   return uv_txsize;
 }

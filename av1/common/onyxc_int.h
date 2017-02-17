@@ -719,6 +719,12 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
+#if CONFIG_CB4X4
+static INLINE int is_chroma_reference(const int mi_row, const int mi_col) {
+  return !((mi_row & 0x01) || (mi_col & 0x01));
+}
+#endif
+
 #if CONFIG_EXT_PARTITION_TYPES
 static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
                                                 int mi_col, BLOCK_SIZE subsize,
