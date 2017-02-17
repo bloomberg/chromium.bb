@@ -81,11 +81,9 @@ afterEvaluate {
     def tasksToDisable = tasks.findAll {
         return (it.name.equals('generateDebugSources')  // causes unwanted AndroidManifest.java
                 || it.name.equals('generateReleaseSources')
-{% if not use_gradle_process_resources %}
-                || it.name.endsWith('Assets')
-{% endif %}
                 || it.name.endsWith('BuildConfig')  // causes unwanted BuildConfig.java
 {% if not use_gradle_process_resources %}
+                || it.name.endsWith('Assets')
                 || it.name.endsWith('Resources')
                 || it.name.endsWith('ResValues')
 {% endif %}
