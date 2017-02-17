@@ -45,6 +45,8 @@ const char kShillManagerClientStubDefaultWifi[] = "/service/wifi1";
 const char kShillManagerClientStubWifi2[] = "/service/wifi2";
 const char kShillManagerClientStubCellular[] = "/service/cellular1";
 
+const char kTetherName[] = "Device";
+
 using chromeos::DeviceState;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -540,6 +542,26 @@ TEST_F(NetworkStateHandlerTest, GetState) {
   service_test_->RemoveService(wifi_path);
   UpdateManagerProperties();
   EXPECT_FALSE(network_state_handler_->GetNetworkState(wifi_path));
+}
+
+TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
+  EXPECT_EQ(0u, test_observer_->network_list_changed_count());
+
+  const std::string& guid =
+      network_state_handler_->CreateTetherNetworkState(kTetherName);
+
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  ASSERT_TRUE(tether_network);
+  EXPECT_EQ(kTetherName, tether_network->name());
+
+  network_state_handler_->RemoveTetherNetworkState(guid);
+
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+
+  ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(guid));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {

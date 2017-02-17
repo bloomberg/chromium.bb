@@ -326,12 +326,50 @@ const NetworkState* NetworkStateHandler::GetNetworkStateFromServicePath(
 const NetworkState* NetworkStateHandler::GetNetworkStateFromGuid(
     const std::string& guid) const {
   DCHECK(!guid.empty());
+
   for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     if (network->guid() == guid)
       return network;
   }
+
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    const NetworkState* network = (*iter)->AsNetworkState();
+    if (network->guid() == guid)
+      return network;
+  }
+
   return nullptr;
+}
+
+const std::string NetworkStateHandler::CreateTetherNetworkState(
+    const std::string& name) {
+  const std::string& guid = base::GenerateGUID();
+
+  std::unique_ptr<NetworkState> tether_managed_state =
+      base::MakeUnique<NetworkState>(base::GenerateGUID());
+
+  tether_managed_state->set_name(name);
+  tether_managed_state->set_type(kTypeTether);
+  tether_managed_state->SetGuid(guid);
+  tether_managed_state->set_update_received();
+
+  tether_network_list_.push_back(std::move(tether_managed_state));
+  NotifyNetworkListChanged();
+
+  return guid;
+}
+
+void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    if (iter->get()->AsNetworkState()->guid() == guid) {
+      tether_network_list_.erase(iter);
+      NotifyNetworkListChanged();
+      return;
+    }
+  }
 }
 
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
@@ -712,11 +750,7 @@ void NetworkStateHandler::ManagedStateListChanged(
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     SortNetworkList();
     UpdateNetworkStats();
-    // Notify observers that the list of networks has changed.
-    NET_LOG_EVENT("NOTIFY:NetworkListChanged",
-                  base::StringPrintf("Size:%" PRIuS, network_list_.size()));
-    for (auto& observer : observers_)
-      observer.NetworkListChanged();
+    NotifyNetworkListChanged();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     std::string devices;
     for (auto iter = device_list_.begin(); iter != device_list_.end(); ++iter) {
@@ -852,6 +886,13 @@ void NetworkStateHandler::UpdateGuid(NetworkState* network) {
     specifier_guid_map_[specifier] = guid;
   }
   network->SetGuid(guid);
+}
+
+void NetworkStateHandler::NotifyNetworkListChanged() {
+  NET_LOG_EVENT("NOTIFY:NetworkListChanged",
+                base::StringPrintf("Size:%" PRIuS, network_list_.size()));
+  for (auto& observer : observers_)
+    observer.NetworkListChanged();
 }
 
 void NetworkStateHandler::NotifyDeviceListChanged() {

@@ -12,6 +12,9 @@
 
 namespace chromeos {
 
+// A special case non-shill type.
+CHROMEOS_EXPORT extern const char kTypeTether[];
+
 class CHROMEOS_EXPORT NetworkTypePattern {
  public:
   // Matches any network.
@@ -33,6 +36,8 @@ class CHROMEOS_EXPORT NetworkTypePattern {
   static NetworkTypePattern Cellular();
   static NetworkTypePattern VPN();
   static NetworkTypePattern Wimax();
+
+  static NetworkTypePattern Tether();
 
   // Matches only networks of exactly the type |shill_network_type|, which must
   // be one of the types defined in service_constants.h (e.g.

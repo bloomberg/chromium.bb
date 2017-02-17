@@ -108,6 +108,7 @@ class CHROMEOS_EXPORT ManagedState {
                       uint32_t* out_value);
 
   void set_name(const std::string& name) { name_ = name; }
+  void set_type(const std::string& type) { type_ = type; }
 
  private:
   friend class NetworkChangeNotifierChromeosUpdateTest;
