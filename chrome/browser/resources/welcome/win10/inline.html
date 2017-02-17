@@ -5,6 +5,8 @@
 
   <link rel="import" href="chrome://resources/cr_elements/icons.html">
   <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/action_link.html">
+  <link rel="import" href="chrome://resources/html/action_link_css.html">
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://resources/html/util.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -23,27 +25,36 @@
       <div class="heading">$i18n{headerText}</div>
       <div class="sections">
         <div class$="[[computeClasses(isCombined)]]">
-          <div class="section-heading" on-tap="onToggle">
-            <div class="section-heading-text">
-              $i18n{defaultBrowserSubheaderText}
-            </div>
-            <template is="dom-if" if="[[isCombined]]">
+          <template is="dom-if" if="[[isCombined]]">
+            <a is="action-link" class="section-heading" on-tap="onToggle">
+              <div class="section-heading-text">
+                $i18n{defaultBrowserSubheaderText}
+              </div>
               <iron-icon class="section-heading-expand" icon="cr:expand-more">
               </iron-icon>
-            </template>
-          </div>
+            </a>
+          </template>
+          <template is="dom-if" if="[[!isCombined]]">
+            <div class="section-heading">
+              <div class="section-heading-text">
+                $i18n{defaultBrowserSubheaderText}
+              </div>
+            </div>
+          </template>
           <ol class="section-steps">
             <li>
-              <a href="#" on-tap="onOpenSettings">$i18n{openSettingsText}</a>
+              <a is="action-link" on-tap="onOpenSettings">
+                $i18n{openSettingsText}
+              </a>
             </li>
             <li>
               <div>$i18nRaw{clickEdgeText}</div>
               <div class="screenshot-image" id="default-image">
                 <div class="screenshot-overlay" id="browser-overlay">
-                  <div>$i18n{webBrowserLabel}</div>
+                  <div aria-hidden="true">$i18n{webBrowserLabel}</div>
                 </div>
                 <div class="screenshot-overlay" id="edge-overlay">
-                  <div>$i18n{microsoftEdgeLabel}</div>
+                  <div aria-hidden="true">$i18n{microsoftEdgeLabel}</div>
                 </div>
               </div>
             </li>
@@ -52,18 +63,18 @@
         </div>
         <template is="dom-if" if="[[isCombined]]">
           <div class="section expandable">
-            <div class="section-heading" on-tap="onToggle">
+            <a is="action-link" class="section-heading" on-tap="onToggle">
               <div class="section-heading-text">$i18n{pinSubheaderText}</div>
               <iron-icon class="section-heading-expand" icon="cr:expand-more">
               </iron-icon>
-            </div>
+            </a>
             <ol class="section-steps">
               <li>$i18nRaw{rightClickText}</li>
               <li>
                 <div>$i18nRaw{pinInstructionText}</div>
                 <div class="screenshot-image" id="taskbar-image">
                   <div class="screenshot-overlay" id="taskbar-overlay">
-                    <div>$i18n{pinToTaskbarLabel}</div>
+                    <div aria-hidden="true">$i18n{pinToTaskbarLabel}</div>
                   </div>
                   <div class="screenshot-overlay" id="icon-overlay">
                   </div>
