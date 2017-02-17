@@ -505,6 +505,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=645298)
 
     # Mac Pro with AMD GPU
+    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
+        ['mac', ('amd', 0x679e)], bug=679682)
+    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
+        ['mac', ('amd', 0x679e)], bug=679682)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('amd', 0x679e)], bug=636648)
     self.Flaky('deqp/functional/gles3/shaderindexing/tmp.html',
@@ -515,10 +519,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=483282)
 
     # Mac Multi-vendor failures.
-    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
-        ['mac', 'nvidia', 'amd'], bug=679682)
-    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
-        ['mac', 'nvidia', 'amd'], bug=679682)
     self.Fail('deqp/functional/gles3/fragmentoutput/basic.float.html',
         ['mac', 'nvidia', 'amd'], bug=679684)
     self.Fail('deqp/functional/gles3/fragmentoutput/array.float.html',
