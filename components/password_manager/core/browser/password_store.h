@@ -208,6 +208,10 @@ class PasswordStore : protected PasswordStoreSync,
   // Removes the statistics for |origin_domain|.
   void RemoveSiteStats(const GURL& origin_domain);
 
+  // Retrieves the statistics for all sites and notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  void GetAllSiteStats(PasswordStoreConsumer* consumer);
+
   // Retrieves the statistics for |origin_domain| and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
@@ -358,6 +362,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
+  virtual std::vector<InteractionsStats> GetAllSiteStatsImpl() = 0;
   virtual std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) = 0;
 
@@ -453,6 +458,9 @@ class PasswordStore : protected PasswordStoreSync,
   // credentials.
   void GetBlacklistLoginsWithAffiliatedRealmsImpl(
       std::unique_ptr<GetLoginsRequest> request);
+
+  // Notifies |request| about the stats for all sites.
+  void NotifyAllSiteStats(std::unique_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for |origin_domain|.
   void NotifySiteStats(const GURL& origin_domain,

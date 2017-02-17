@@ -100,6 +100,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   void AddSiteStatsImpl(
       const password_manager::InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
+  std::vector<password_manager::InteractionsStats> GetAllSiteStatsImpl()
+      override;
   std::vector<password_manager::InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 

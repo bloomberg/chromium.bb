@@ -1301,6 +1301,14 @@ void PasswordStoreMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
 }
 
 std::vector<password_manager::InteractionsStats>
+PasswordStoreMac::GetAllSiteStatsImpl() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  return login_metadata_db_
+             ? login_metadata_db_->stats_table().GetAllRows()
+             : std::vector<password_manager::InteractionsStats>();
+}
+
+std::vector<password_manager::InteractionsStats>
 PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_metadata_db_

@@ -25,6 +25,21 @@ enum LoginTableColumns {
   COLUMN_DATE,
 };
 
+// Iterates through all rows of s constructing a stats vector.
+std::vector<InteractionsStats> StatementToInteractionsStats(sql::Statement* s) {
+  std::vector<InteractionsStats> results;
+  while (s->Step()) {
+    results.push_back(InteractionsStats());
+    results.back().origin_domain = GURL(s->ColumnString(COLUMN_ORIGIN_DOMAIN));
+    results.back().username_value = s->ColumnString16(COLUMN_USERNAME);
+    results.back().dismissal_count = s->ColumnInt(COLUMN_DISMISSALS);
+    results.back().update_time =
+        base::Time::FromInternalValue(s->ColumnInt64(COLUMN_DATE));
+  }
+
+  return results;
+}
+
 }  // namespace
 
 InteractionsStats::InteractionsStats() = default;
@@ -106,6 +121,14 @@ bool StatisticsTable::RemoveRow(const GURL& domain) {
   return s.Run();
 }
 
+std::vector<InteractionsStats> StatisticsTable::GetAllRows() {
+  static constexpr char query[] =
+      "SELECT origin_domain, username_value, "
+      "dismissal_count, update_time FROM stats";
+  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
+  return StatementToInteractionsStats(&s);
+}
+
 std::vector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
   if (!domain.is_valid())
     return std::vector<InteractionsStats>();
@@ -114,16 +137,7 @@ std::vector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
       "dismissal_count, update_time FROM stats WHERE origin_domain == ?";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
   s.BindString(0, domain.spec());
-  std::vector<InteractionsStats> result;
-  while (s.Step()) {
-    result.push_back(InteractionsStats());
-    result.back().origin_domain = GURL(s.ColumnString(COLUMN_ORIGIN_DOMAIN));
-    result.back().username_value = s.ColumnString16(COLUMN_USERNAME);
-    result.back().dismissal_count = s.ColumnInt(COLUMN_DISMISSALS);
-    result.back().update_time =
-        base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE));
-  }
-  return result;
+  return StatementToInteractionsStats(&s);
 }
 
 bool StatisticsTable::RemoveStatsByOriginAndTime(

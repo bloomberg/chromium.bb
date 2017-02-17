@@ -265,6 +265,12 @@ void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
       base::Bind(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
 }
 
+void PasswordStore::GetAllSiteStats(PasswordStoreConsumer* consumer) {
+  std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
+  ScheduleTask(base::Bind(&PasswordStore::NotifyAllSiteStats, this,
+                          base::Passed(&request)));
+}
+
 void PasswordStore::GetSiteStats(const GURL& origin_domain,
                                  PasswordStoreConsumer* consumer) {
   std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
@@ -518,6 +524,11 @@ void PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl(
       FROM_HERE,
       base::Bind(&PasswordStore::InjectAffiliatedWebRealms, this,
                  base::Passed(&obtained_forms), base::Passed(&request)));
+}
+
+void PasswordStore::NotifyAllSiteStats(
+    std::unique_ptr<GetLoginsRequest> request) {
+  request->NotifyWithSiteStatistics(GetAllSiteStatsImpl());
 }
 
 void PasswordStore::NotifySiteStats(const GURL& origin_domain,

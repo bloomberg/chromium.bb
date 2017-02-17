@@ -205,6 +205,12 @@ void PasswordStoreDefault::RemoveSiteStatsImpl(const GURL& origin_domain) {
     login_db_->stats_table().RemoveRow(origin_domain);
 }
 
+std::vector<InteractionsStats> PasswordStoreDefault::GetAllSiteStatsImpl() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  return login_db_ ? login_db_->stats_table().GetAllRows()
+                   : std::vector<InteractionsStats>();
+}
+
 std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
     const GURL& origin_domain) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());

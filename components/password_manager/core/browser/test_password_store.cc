@@ -166,6 +166,10 @@ void TestPasswordStore::AddSiteStatsImpl(const InteractionsStats& stats) {
 void TestPasswordStore::RemoveSiteStatsImpl(const GURL& origin_domain) {
 }
 
+std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
+  return std::vector<InteractionsStats>();
+}
+
 std::vector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
     const GURL& origin_domain) {
   return std::vector<InteractionsStats>();
