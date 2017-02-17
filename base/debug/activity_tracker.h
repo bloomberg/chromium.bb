@@ -162,7 +162,7 @@ class BASE_EXPORT ActivityTrackerMemoryAllocator {
   // Helper function to access an object allocated using this instance.
   template <typename T>
   T* GetAsObject(Reference ref) {
-    return allocator_->GetAsObject<T>(ref, object_type_);
+    return allocator_->GetAsObject<T>(ref);
   }
 
   // Similar to GetAsObject() but converts references to arrays of objects.
@@ -198,6 +198,12 @@ class BASE_EXPORT ActivityTrackerMemoryAllocator {
 // the |data| field. All fields must be explicitly sized types to ensure no
 // interoperability problems between 32-bit and 64-bit systems.
 struct Activity {
+  // SHA1(base::debug::Activity): Increment this if structure changes!
+  static constexpr uint32_t kPersistentTypeId = 0x99425159 + 1;
+  // Expected size for 32/64-bit check. Update this if structure changes!
+  static constexpr size_t kExpectedInstanceSize =
+      48 + 8 * kActivityCallStackSize;
+
   // The type of an activity on the stack. Activities are broken into
   // categories with the category ID taking the top 4 bits and the lower
   // bits representing an action within that category. This combination
