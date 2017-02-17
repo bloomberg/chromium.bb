@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
@@ -35,7 +36,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::RecentTabHelper);
 namespace {
 class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
  public:
-  DefaultDelegate() {}
+  DefaultDelegate() : is_low_end_device_(base::SysInfo::IsLowEndDevice()) {}
 
   // offline_pages::RecentTabHelper::Delegate
   std::unique_ptr<offline_pages::OfflinePageArchiver> CreatePageArchiver(
@@ -49,6 +50,11 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override {
     return offline_pages::OfflinePageUtils::GetTabId(web_contents, tab_id);
   }
+  bool IsLowEndDevice() override { return is_low_end_device_; }
+
+ private:
+  // Cached value of whether low end device.
+  bool is_low_end_device_;
 };
 }  // namespace
 
@@ -212,7 +218,8 @@ void RecentTabHelper::DidFinishNavigation(
 
   if (!can_save)
     snapshot_controller_->Stop();
-  last_n_listen_to_tab_hidden_ = can_save && IsOffliningRecentPagesEnabled();
+  last_n_listen_to_tab_hidden_ = can_save && !delegate_->IsLowEndDevice() &&
+                                 IsOffliningRecentPagesEnabled();
   last_n_latest_saved_quality_ = PageQuality::POOR;
 }
 

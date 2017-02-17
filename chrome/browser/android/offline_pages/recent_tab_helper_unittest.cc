@@ -52,6 +52,7 @@ class TestDelegate: public RecentTabHelper::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
     // There is no expectations that tab_id is always present.
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override;
+  bool IsLowEndDevice() override { return is_low_end_device_; }
 
   void set_archive_result(
       offline_pages::OfflinePageArchiver::ArchiverResult result) {
@@ -59,6 +60,8 @@ class TestDelegate: public RecentTabHelper::Delegate {
   }
 
   void set_archive_size(int64_t size) { archive_size_ = size; }
+
+  void SetAsLowEndDevice() { is_low_end_device_ = true; }
 
  private:
   OfflinePageTestArchiver::Observer* observer_;  // observer owns this.
@@ -71,6 +74,7 @@ class TestDelegate: public RecentTabHelper::Delegate {
   offline_pages::OfflinePageArchiver::ArchiverResult archive_result_ =
       offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED;
   int64_t archive_size_ = kArchiveSizeToReport;
+  bool is_low_end_device_ = false;
 };
 
 class RecentTabHelperTest
@@ -103,6 +107,8 @@ class RecentTabHelperTest
   RecentTabHelper* recent_tab_helper() const { return recent_tab_helper_; }
 
   OfflinePageModel* model() const { return model_; }
+
+  TestDelegate* default_test_delegate() { return default_test_delegate_; }
 
   // Returns a OfflinePageItem pointer from |all_pages| that matches the
   // provided |offline_id|. If a match is not found returns nullptr.
@@ -141,8 +147,9 @@ class RecentTabHelperTest
  private:
   void OnGetAllPagesDone(const std::vector<OfflinePageItem>& result);
 
-  RecentTabHelper* recent_tab_helper_;  // Owned by WebContents.
-  OfflinePageModel* model_;  // Keyed service
+  RecentTabHelper* recent_tab_helper_;   // Owned by WebContents.
+  OfflinePageModel* model_;              // Keyed service.
+  TestDelegate* default_test_delegate_;  // Created at SetUp.
   size_t page_added_count_;
   size_t model_removed_count_;
   std::vector<OfflinePageItem> all_pages_;
@@ -187,6 +194,7 @@ bool TestDelegate::GetTabId(content::WebContents* web_contents, int* tab_id) {
 RecentTabHelperTest::RecentTabHelperTest()
     : recent_tab_helper_(nullptr),
       model_(nullptr),
+      default_test_delegate_(nullptr),
       page_added_count_(0),
       model_removed_count_(0),
       all_pages_needs_updating_(true),
@@ -208,8 +216,10 @@ void RecentTabHelperTest::SetUp() {
   RecentTabHelper::CreateForWebContents(web_contents());
   recent_tab_helper_ = RecentTabHelper::FromWebContents(web_contents());
 
-  recent_tab_helper_->SetDelegate(base::MakeUnique<TestDelegate>(
-      this, task_runner(), kTabId, true));
+  std::unique_ptr<TestDelegate> test_delegate(
+      new TestDelegate(this, task_runner(), kTabId, true));
+  default_test_delegate_ = test_delegate.get();
+  recent_tab_helper_->SetDelegate(std::move(test_delegate));
 
   model_ = OfflinePageModelFactory::GetForBrowserContext(browser_context());
   model_->AddObserver(this);
@@ -333,6 +343,30 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   ASSERT_EQ(0U, GetAllPages().size());
 }
 
+// Checks that last_n is disabled if the device is low-end (aka svelte) but that
+// download requests still work.
+TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
+  // Simulates a low end device.
+  default_test_delegate()->SetAsLowEndDevice();
+
+  // Navigate and finish loading then hide the tab. Nothing should be saved.
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, page_added_count());
+  ASSERT_EQ(0U, GetAllPages().size());
+
+  // But the following download request should work normally
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
+                                                     123L);
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+}
+
 // Triggers two last_n snapshot captures during a single page load. Should end
 // up with one snapshot, the 1st being replaced by the 2nd.
 TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
@@ -390,15 +424,11 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesWhere2ndFailsSamePageLoad) {
   EXPECT_EQ(kTestPageUrl, GetAllPages()[0].url);
   int64_t first_offline_id = GetAllPages()[0].offline_id;
 
-  // Sets a new delegate that will make the second snapshot fail.
-  TestDelegate* failing_delegate =
-      new TestDelegate(this, task_runner(), kTabId, true);
-  failing_delegate->set_archive_size(-1);
-  failing_delegate->set_archive_result(
+  // Updates the delegate so that will make the second snapshot fail.
+  default_test_delegate()->set_archive_size(-1);
+  default_test_delegate()->set_archive_result(
       offline_pages::OfflinePageArchiver::ArchiverResult::
           ERROR_ARCHIVE_CREATION_FAILED);
-  recent_tab_helper()->SetDelegate(
-      std::unique_ptr<TestDelegate>(failing_delegate));
 
   // Advance loading to the 2nd and final stage and then hide the tab. A new
   // capture is requested but its creation will fail. The exact same snapshot
@@ -463,15 +493,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
   ASSERT_EQ(1U, GetAllPages().size());
   EXPECT_EQ(kTestPageUrl, GetAllPages()[0].url);
 
-  // Sets a new delegate that will make the second snapshot fail.
-  TestDelegate* failing_delegate =
-      new TestDelegate(this, task_runner(), kTabId, true);
-  failing_delegate->set_archive_size(-1);
-  failing_delegate->set_archive_result(
+  // Updates the delegate so that will make the second snapshot fail.
+  default_test_delegate()->set_archive_size(-1);
+  default_test_delegate()->set_archive_result(
       offline_pages::OfflinePageArchiver::ArchiverResult::
           ERROR_ARCHIVE_CREATION_FAILED);
-  recent_tab_helper()->SetDelegate(
-      std::unique_ptr<TestDelegate>(failing_delegate));
 
   // Fully load the page once more then hide the tab again. A capture happens
   // and fails but no snapshot should remain.

@@ -54,6 +54,7 @@ class RecentTabHelper
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
     // There is no expectations that tab_id is always present.
     virtual bool GetTabId(content::WebContents* web_contents, int* tab_id) = 0;
+    virtual bool IsLowEndDevice() = 0;
   };
   void SetDelegate(std::unique_ptr<RecentTabHelper::Delegate> delegate);
 
