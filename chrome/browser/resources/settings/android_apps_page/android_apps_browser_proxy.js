@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A helper object used by the "Google Play Store" (Arc++) section
+ * @fileoverview A helper object used by the "Google Play Store" (ARC) section
  * to retrieve information about android apps.
  */
 

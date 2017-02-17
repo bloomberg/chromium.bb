@@ -107,7 +107,7 @@ namespace app.runtime {
     // action intent.
     ActionData? actionData;
 
-    // Internal fields used to indicate ARC++ status on the device.
+    // Internal fields used to indicate ARC status on the device.
     [nodoc] PlayStoreStatus? playStoreStatus;
   };
 

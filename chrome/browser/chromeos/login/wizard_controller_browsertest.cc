@@ -1311,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-// TODO(khmel): Add tests for Arc OptIn flow.
+// TODO(khmel): Add tests for ARC OptIn flow.
 // http://crbug.com/651144
 static_assert(BaseScreenDelegate::EXIT_CODES_COUNT == 25,
               "tests for new control flow are missing");

@@ -14,7 +14,7 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 
-// ArcPackage sync service is controlled by apps checkbox in sync settings. Arc
+// ArcPackage sync service is controlled by apps checkbox in sync settings. ARC
 // apps and regular Chrome apps have same user control.
 namespace {
 
@@ -69,7 +69,7 @@ void ArcPackageSyncDataTypeController::StopModels() {
 
 void ArcPackageSyncDataTypeController::OnPackageListInitialRefreshed() {
   // model_normal_start_ is true by default. Normally,
-  // ArcPackageSyncDataTypeController::StartModels() gets called before Arc
+  // ArcPackageSyncDataTypeController::StartModels() gets called before ARC
   // package list is refreshed. But in integration test, the order can be either
   // way. If OnPackageListInitialRefreshed comes before
   // ArcPackageSyncDataTypeController ::StartModels(), this function is no-op
@@ -85,12 +85,12 @@ void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {
   DCHECK(CalledOnValidThread());
 
   if (!ReadyForStart()) {
-    // If enable Arc in settings is turned off then generate an unrecoverable
+    // If enable ARC in settings is turned off then generate an unrecoverable
     // error.
     if (state() != NOT_RUNNING && state() != STOPPING) {
       syncer::SyncError error(
           FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-          "Arc package sync is now disabled because user disables Arc.",
+          "ARC package sync is now disabled because user disables ARC.",
           type());
       CreateErrorHandler()->OnUnrecoverableError(error);
     }

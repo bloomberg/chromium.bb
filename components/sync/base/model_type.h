@@ -127,7 +127,7 @@ enum ModelType {
   // Supervised user whitelists. Each item contains a CRX ID (like an extension
   // ID) and a name.
   SUPERVISED_USER_WHITELISTS,
-  // Arc Package items.
+  // ARC Package items.
   ARC_PACKAGE,
   // Printer device information.
   PRINTERS,

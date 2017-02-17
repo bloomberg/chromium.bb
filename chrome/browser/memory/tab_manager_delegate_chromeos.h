@@ -79,7 +79,7 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   void AdjustOomPriorities(const TabStatsList& tab_list);
 
  protected:
-  // Kills an Arc process. Returns true if the kill request is successfully sent
+  // Kills an ARC process. Returns true if the kill request is successfully sent
   // to Android. Virtual for unit testing.
   virtual bool KillArcProcess(const int nspid);
 

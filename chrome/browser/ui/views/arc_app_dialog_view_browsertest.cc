@@ -109,7 +109,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppUninstallDialogViewBrowserTest);
 };
 
-// User confirms/cancels Arc app uninstall. Note that the shortcut is removed
+// User confirms/cancels ARC app uninstall. Note that the shortcut is removed
 // when the app and the package are uninstalled since the shortcut and the app
 // share same package.
 IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
   controller->DismissView();
 }
 
-// User confirms/cancels Arc app shortcut removal. Note that the app is not
+// User confirms/cancels ARC app shortcut removal. Note that the app is not
 // uninstalled when the shortcut is removed.
 IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
                        UserConfirmsUninstallShortcut) {

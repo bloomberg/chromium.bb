@@ -199,13 +199,13 @@ class ArcAppListPrefs
   // Sets last launched time for the requested app.
   void SetLastLaunchTime(const std::string& app_id, const base::Time& time);
 
-  // Requests to load an app icon for specific scale factor. If the app or Arc
+  // Requests to load an app icon for specific scale factor. If the app or ARC
   // bridge service is not ready, then defer this request until the app gets
   // available. Once new icon is installed notifies an observer
   // OnAppIconUpdated.
   void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
 
-  // Sets notification enabled flag for given value. If the app or Arc bridge
+  // Sets notification enabled flag for given value. If the app or ARC bridge
   // service is not ready, then defer this request until the app gets
   // available. Once new value is set notifies an observer
   // OnNotificationsEnabledChanged.
@@ -329,7 +329,7 @@ class ArcAppListPrefs
   void RemoveAllApps();
   std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;
   // Enumerates apps from preferences and notifies listeners about available
-  // apps while Arc is not started yet. All apps in this case have disabled
+  // apps while ARC is not started yet. All apps in this case have disabled
   // state.
   void NotifyRegisteredApps();
   base::Time GetInstallTime(const std::string& app_id) const;
@@ -395,7 +395,7 @@ class ArcAppListPrefs
   bool is_initialized_ = false;
   // True if apps were restored.
   bool apps_restored_ = false;
-  // True is Arc package list has been refreshed once.
+  // True is ARC package list has been refreshed once.
   bool package_list_initial_refreshed_ = false;
   // Play Store does not have publicly available observers for default app
   // installations. This timeout is for validating default app availability.

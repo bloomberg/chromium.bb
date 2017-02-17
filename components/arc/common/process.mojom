@@ -88,7 +88,7 @@ struct RunningAppProcessInfo {
   // Package names running in the process.
   [MinVersion=4] array<string>? packages;
 
-  // Whether this app is focused in ARC++ multi-window environment.
+  // Whether this app is focused in ARC multi-window environment.
   [MinVersion=5] bool is_focused;
 
   // Last time the process was active. Milliseconds since boot.

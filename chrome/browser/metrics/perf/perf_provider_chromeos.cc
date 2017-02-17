@@ -174,7 +174,7 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   // requires kernel support, which was added in kernel 4.4, and it was
   // backported to kernel 3.18. Prefer LBR callstack profiling where supported
   // instead of FP callchains, because the former works with binaries compiled
-  // with frame pointers disabled, such as the ARC++ runtime.
+  // with frame pointers disabled, such as the ARC runtime.
   const char *callgraph_cmd = kPerfRecordFPCallgraphCmd;
   if (MicroarchitectureHasLBRCallgraph(intel_uarch) &&
       KernelReleaseHasLBRCallgraph(cpuid.release)) {

@@ -246,7 +246,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   views::Widget* const widget_;
   ArcAppWindowLauncherController* owner_;
   ArcAppWindowLauncherItemController* controller_ = nullptr;
-  // Unowned pointer, represents host Arc window.
+  // Unowned pointer, represents host ARC window.
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
@@ -289,7 +289,7 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
                                               ->GetAccountId()
                                               .GetUserEmail();
   if (user_email == primary_user_email) {
-    // Restore existing Arc window and create controllers for them.
+    // Restore existing ARC window and create controllers for them.
     AttachControllerToWindowsIfNeeded();
 
     // Make sure that we created items for all apps, not only which have a
@@ -300,7 +300,7 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
     // Update active status.
     OnTaskSetActive(active_task_id_);
   } else {
-    // Remove all Arc apps and destroy its controllers. There is no mapping
+    // Remove all ARC apps and destroy its controllers. There is no mapping
     // task id to app window because it is not safe when controller is missing.
     for (auto& it : task_id_to_app_window_info_)
       UnregisterApp(it.second.get());
@@ -334,7 +334,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
   // Attach window to multi-user manager now to let it manage visibility state
-  // of the Arc window correctly.
+  // of the ARC window correctly.
   if (GetWindowTaskId(window) > 0) {
     chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
         window,

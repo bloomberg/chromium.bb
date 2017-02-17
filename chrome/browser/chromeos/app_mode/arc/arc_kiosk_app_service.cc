@@ -21,7 +21,7 @@ namespace chromeos {
 constexpr base::TimeDelta kArcKioskMaintenanceSessionTimeout =
     base::TimeDelta::FromMinutes(30);
 
-// Blocks all notifications for ARC++ Kiosk
+// Blocks all notifications for ARC Kiosk
 class ArcKioskNotificationBlocker : public message_center::NotificationBlocker {
  public:
   ArcKioskNotificationBlocker()

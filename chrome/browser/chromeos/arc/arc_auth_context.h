@@ -67,7 +67,7 @@ class ArcAuthContext : public UbertokenConsumer,
   std::string account_id_;
 
   // Owned by content::BrowserContent. Used to isolate cookies for auth server
-  // communication and shared with Arc OptIn UI platform app.
+  // communication and shared with ARC OptIn UI platform app.
   content::StoragePartition* storage_partition_ = nullptr;
 
   PrepareCallback callback_;

@@ -530,7 +530,7 @@ void WizardController::ShowEnableDebuggingScreen() {
 void WizardController::ShowTermsOfServiceScreen() {
   // Only show the Terms of Service when logging into a public account and Terms
   // of Service have been specified through policy. In all other cases, advance
-  // to the Arc opt-in screen immediately.
+  // to the ARC opt-in screen immediately.
   if (!user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() ||
       !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
           prefs::kTermsOfServiceURL)) {
@@ -550,22 +550,22 @@ void WizardController::ShowArcTermsOfServiceScreen() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kEnableArcOOBEOptIn)) {
-    VLOG(1) << "Skip Arc Terms of Service screen because Arc OOBE OptIn is "
+    VLOG(1) << "Skip ARC Terms of Service screen because ARC OOBE OptIn is "
             << "disabled.";
   } else if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    VLOG(1) << "Skip Arc Terms of Service screen because user is not "
+    VLOG(1) << "Skip ARC Terms of Service screen because user is not "
             << "logged in.";
   } else if (!arc::IsArcAllowedForProfile(profile)) {
-    VLOG(1) << "Skip Arc Terms of Service screen because Arc is not allowed.";
+    VLOG(1) << "Skip ARC Terms of Service screen because ARC is not allowed.";
   } else if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
              !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
-    VLOG(1) << "Skip Arc Terms of Service screen because Arc is disabled.";
+    VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
   } else {
     show_arc_terms = true;
   }
 
   if (show_arc_terms) {
-    VLOG(1) << "Showing Arc Terms of Service screen.";
+    VLOG(1) << "Showing ARC Terms of Service screen.";
     SetStatusAreaVisible(true);
     SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
   } else {

@@ -73,7 +73,7 @@ class ArcDefaultAppList {
 
   const AppInfoMap& app_map() const { return apps_; }
 
-  // Marks default apps as hidden for user, for example in case Arc is managed
+  // Marks default apps as hidden for user, for example in case ARC is managed
   // and disabled.
   void set_hidden(bool hidden) { hidden_ = hidden; }
   bool is_hidden() const { return hidden_; }

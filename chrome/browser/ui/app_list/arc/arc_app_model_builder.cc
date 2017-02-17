@@ -56,7 +56,7 @@ void ArcAppModelBuilder::OnAppRemoved(const std::string& app_id) {
   const arc::ArcSessionManager* arc_session_manager =
       arc::ArcSessionManager::Get();
   DCHECK(arc_session_manager);
-  // Don't sync app removal in case it was caused by disabling Arc.
+  // Don't sync app removal in case it was caused by disabling ARC.
   const bool unsynced_change = !arc_session_manager->IsArcPlayStoreEnabled();
   RemoveApp(app_id, unsynced_change);
 }

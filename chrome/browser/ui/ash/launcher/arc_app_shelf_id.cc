@@ -15,9 +15,9 @@ namespace {
 
 // String representation of Intent starts with this prefix.
 constexpr char kIntent[] = "#Intent";
-// Prefix in intent that specifies Arc shelf group. S. means string type.
+// Prefix in intent that specifies ARC shelf group. S. means string type.
 constexpr char kShelfGroupIntentPrefix[] = "S.org.chromium.arc.shelf_group_id=";
-// Prefix to specify Arc shelf group.
+// Prefix to specify ARC shelf group.
 constexpr char kShelfGroupPrefix[] = "shelf_group:";
 
 }  // namespace

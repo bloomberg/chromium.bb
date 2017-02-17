@@ -41,13 +41,13 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                  ash::ShelfDelegate* shelf_delegate);
   ~ArcAppWindowLauncherController() override;
 
-  // Returns shelf app id. Play Store app is mapped to Arc platform host app.
+  // Returns shelf app id. Play Store app is mapped to ARC platform host app.
   static std::string GetShelfAppIdFromArcAppId(const std::string& arc_app_id);
 
-  // Returns Arc app id. Arc platform host app is mapped to Play Store app.
+  // Returns ARC app id. ARC platform host app is mapped to Play Store app.
   static std::string GetArcAppIdFromShelfAppId(const std::string& shelf_app_id);
 
-  // Returns Arc task id for the window.
+  // Returns ARC task id for the window.
   static int GetWindowTaskId(aura::Window* window);
 
   // AppWindowLauncherController:

@@ -135,7 +135,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 
-  // These functions are specifically for use with ARC++. They have no need to
+  // These functions are specifically for use with ARC. They have no need to
   // exist for other platforms, hence we're putting them directly in the BlueZ
   // specific code.
 

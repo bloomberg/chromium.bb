@@ -38,7 +38,7 @@ const char kEnableAndroidWallpapersApp[] =
 
 }  // namespace
 
-// Only if the current profile is the primary profile && Arc service is enabled
+// Only if the current profile is the primary profile && ARC service is enabled
 // && the Android Wallpapers App has been installed && the finch experiment or
 // chrome flag is enabled, launch the Android Wallpapers App. Otherwise launch
 // the old Chrome OS Wallpaper Picker App.
@@ -46,7 +46,7 @@ bool ShouldUseAndroidWallpapersApp(Profile* profile) {
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return false;
 
-  // Check if the ARC++ is enabled.
+  // Check if the ARC is enabled.
   const arc::ArcSessionManager* const arc_session_manager =
       arc::ArcSessionManager::Get();
   if (!arc_session_manager || !arc_session_manager->IsArcPlayStoreEnabled())

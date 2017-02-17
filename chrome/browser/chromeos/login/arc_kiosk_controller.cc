@@ -20,7 +20,7 @@
 
 namespace chromeos {
 
-// ARC++ Kiosk splash screen minimum show time.
+// ARC Kiosk splash screen minimum show time.
 constexpr base::TimeDelta kArcKioskSplashScreenMinTime =
     base::TimeDelta::FromSeconds(3);
 
@@ -121,7 +121,7 @@ void ArcKioskController::OnAppWindowLaunched() {
   DVLOG(1) << "App window created, closing splash screen.";
   launched_ = true;
   // If timer is running, do not remove splash screen for a few
-  // more seconds to give the user ability to exit ARC++ kiosk.
+  // more seconds to give the user ability to exit ARC kiosk.
   if (splash_wait_timer_.IsRunning())
     return;
   CloseSplashScreen();

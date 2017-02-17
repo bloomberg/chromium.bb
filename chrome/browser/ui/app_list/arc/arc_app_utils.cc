@@ -74,7 +74,7 @@ void SetArcCpuRestrictionCallback(bool success) {
 // WindowPositioner functionality since we do not have an Aura::Window yet.
 gfx::Rect GetTargetRect(const gfx::Size& size) {
   // Make sure that the window will fit into our workspace.
-  // Note that Arc++ will always be on the primary screen (for now).
+  // Note that ARC will always be on the primary screen (for now).
   // Note that Android's coordinate system is only valid inside the working
   // area. We can therefore ignore the provided left / top offsets.
   aura::Window* root = ash::Shell::GetPrimaryRootWindow();
@@ -285,7 +285,7 @@ bool LaunchApp(content::BrowserContext* context,
 
     // PlayStore item has special handling for shelf controllers. In order to
     // avoid unwanted initial animation for PlayStore item do not create
-    // deferred launch request when PlayStore item enables Arc.
+    // deferred launch request when PlayStore item enables ARC.
     if (!arc_activated || app_id != kPlayStoreAppId) {
       ChromeLauncherController* chrome_controller =
           ChromeLauncherController::instance();

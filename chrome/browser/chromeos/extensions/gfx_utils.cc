@@ -97,7 +97,7 @@ const struct {
 };
 
 // This class maintains the maps between the extension id and its equivalent
-// Arc package name.
+// ARC package name.
 class AppDualBadgeMap {
  public:
   using ArcAppToExtensionsMap =

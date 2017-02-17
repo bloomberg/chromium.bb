@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Oobe Arc Terms of Service screen implementation.
+ * @fileoverview Oobe ARC Terms of Service screen implementation.
  */
 
 login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',

@@ -233,7 +233,7 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Called when the user profile is fully loaded and ready to switch to.
   virtual void OnUserProfileReadyToSwitch(Profile* profile) = 0;
 
-  // Controller to launch Arc apps in deferred mode.
+  // Controller to launch ARC apps in deferred mode.
   virtual ArcAppDeferredLauncherController* GetArcDeferredLauncher() = 0;
 
   // Get the launch ID for a given shelf ID.

@@ -33,7 +33,7 @@ namespace {
 
 const int kRightColumnWidth = 210;
 const int kIconSize = 64;
-// Currenty Arc apps only support 48*48 native icon.
+// Currenty ARC apps only support 48*48 native icon.
 const int kIconSourceSize = 48;
 
 using ArcAppConfirmCallback =

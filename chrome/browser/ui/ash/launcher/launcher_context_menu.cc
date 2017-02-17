@@ -50,7 +50,7 @@ LauncherContextMenu* LauncherContextMenu::Create(
   if (!item || item->id == 0)
     return new DesktopShellLauncherContextMenu(controller, item, wm_shelf);
 
-  // Create ArcLauncherContextMenu if the item is an Arc app.
+  // Create ArcLauncherContextMenu if the item is an ARC app.
   const std::string& app_id = controller->GetAppIDForShelfID(item->id);
   if (arc::IsArcItem(controller->profile(), app_id))
     return new ArcLauncherContextMenu(controller, item, wm_shelf);

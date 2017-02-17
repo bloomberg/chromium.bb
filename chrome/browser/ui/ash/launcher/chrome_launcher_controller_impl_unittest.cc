@@ -845,14 +845,14 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     EXPECT_EQ(pin_status, GetPinnedAppStatus());
   }
 
-  // Creates app window and set optional Arc application id.
+  // Creates app window and set optional ARC application id.
   views::Widget* CreateArcWindow(const std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(5, 5, 20, 20);
     params.context = GetContext();
     views::Widget* widget = new views::Widget();
     widget->Init(params);
-    // Set Arc id before showing the window to be recognized in
+    // Set ARC id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
     exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
                                         window_app_id);
@@ -1260,7 +1260,7 @@ TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
 
 TEST_F(ChromeLauncherControllerImplWithArcTest,
        ArcAppPinCrossPlatformWorkflow) {
-  // Work on Arc-disabled platform first.
+  // Work on ARC disabled platform first.
   const std::string arc_app_id1 =
       ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
   const std::string arc_app_id2 =
@@ -1292,7 +1292,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id3));
   EXPECT_EQ("AppList, App1, Chrome, App2, App3", GetPinnedAppStatus());
 
-  // Persist pin state, we don't have active pin for Arc apps yet, but pin
+  // Persist pin state, we don't have active pin for ARC apps yet, but pin
   // model should have it.
   syncer::SyncDataList copy_sync_list =
       app_service_->GetAllSyncData(syncer::APP_LIST);
@@ -1302,7 +1302,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   StopAppSyncService();
   EXPECT_EQ(0U, app_service_->sync_items().size());
 
-  // Move to Arc-enabled platform, restart syncing with stored data.
+  // Move to ARC enabled platform, restart syncing with stored data.
   StartAppSyncService(copy_sync_list);
   RecreateChromeLauncher();
 
@@ -1318,7 +1318,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   EXPECT_EQ("AppList, App1, Chrome, Fake App 0, App2, Fake App 1, App3",
             GetPinnedAppStatus());
 
-  // Now move pins on Arc-enabled platform.
+  // Now move pins on ARC enabled platform.
   model_->Move(1, 4);
   model_->Move(3, 1);
   model_->Move(3, 5);
@@ -1335,7 +1335,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   StopAppSyncService();
   EXPECT_EQ(0U, app_service_->sync_items().size());
 
-  // Move back to Arc-disabled platform.
+  // Move back to ARC disabled platform.
   EnableArc(false);
   StartAppSyncService(copy_sync_list);
   RecreateChromeLauncher();
@@ -1348,7 +1348,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id3));
   EXPECT_EQ("AppList, App2, Chrome, App1, App3", GetPinnedAppStatus());
 
-  // Now move/remove pins on Arc-disabled platform.
+  // Now move/remove pins on ARC disabled platform.
   model_->Move(4, 2);
   launcher_controller_->UnpinAppWithID(extension2_->id());
   EXPECT_EQ("AppList, App3, Chrome, App1", GetPinnedAppStatus());
@@ -1977,7 +1977,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
             launcher_controller_->GetShelfIDForAppID(arc_app_id));
 }
 
-// Test race creation/deletion of Arc app.
+// Test race creation/deletion of ARC app.
 // TODO(khmel): Remove after moving everything to wayland protocol.
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
@@ -1988,7 +1988,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
       ArcAppTest::GetAppId(arc_test_.fake_apps()[1]);
   SendListOfArcApps();
 
-  // Arc window created before and closed after mojom notification.
+  // ARC window created before and closed after mojom notification.
   std::string window_app_id1("org.chromium.arc.1");
   views::Widget* arc_window = CreateArcWindow(window_app_id1);
   EXPECT_EQ(ash::kInvalidShelfID,
@@ -2006,7 +2006,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id1));
 
-  // Arc window created after and closed before mojom notification.
+  // ARC window created after and closed before mojom notification.
   std::string window_app_id2("org.chromium.arc.2");
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
                                             std::string());
@@ -2053,7 +2053,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
   }
 }
 
-// Validate that Arc app is pinned correctly and pin is removed automatically
+// Validate that ARC app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   InitLauncherController();
@@ -2082,7 +2082,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   SendListOfArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 
-  // Disable/Enable Arc should persist pin state.
+  // Disable/Enable ARC should persist pin state.
   launcher_controller_->PinAppWithID(arc_app_id);
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
   arc::ArcSessionManager::Get()->Shutdown();
@@ -2099,7 +2099,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
 }
 
-// Validates that Arc app pins persist across OptOut/OptIn.
+// Validates that ARC app pins persist across OptOut/OptIn.
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
   InitLauncherController();
 
@@ -3576,7 +3576,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
 
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   extension_service_->AddExtension(arc_support_host_.get());
-  // Test enables Arc, so turn it off for initial values.
+  // Test enables ARC, so turn it off for initial values.
   EnableArc(false);
 
   InitLauncherController();
@@ -3588,12 +3588,12 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   arc::ArcSessionManager::SetShelfDelegateForTesting(
       launcher_controller_.get());
 
-  // Initial run, Arc is not managed and disabled, Play Store pin should be
+  // Initial run, ARC is not managed and disabled, Play Store pin should be
   // available.
   ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome, Play Store");
 
-  // Arc is managed and enabled, Play Store pin should be available.
+  // ARC is managed and enabled, Play Store pin should be available.
   // Note: SHOWING_TERMS_OF_SERVICE here means that opt-in flow starts.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, new base::FundamentalValue(true));
@@ -3602,26 +3602,26 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
                    arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
-  // Arc is managed and disabled, Play Store pin should not be available.
+  // ARC is managed and disabled, Play Store pin should not be available.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, new base::FundamentalValue(false));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, true, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");
 
-  // Arc is not managed and disabled, Play Store pin should be available.
+  // ARC is not managed and disabled, Play Store pin should be available.
   profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome, Play Store");
 
-  // Arc is not managed and enabled, Play Store pin should be available.
+  // ARC is not managed and enabled, Play Store pin should be available.
   EnableArc(true);
   ValidateArcState(true, false,
                    arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
-  // User disables Arc. Arc is not managed and disabled, Play Store pin should
+  // User disables ARC. ARC is not managed and disabled, Play Store pin should
   // be automatically removed.
   EnableArc(false);
   ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
@@ -3963,7 +3963,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
 
-  // Stop Arc again. Shelf item should go away.
+  // Stop ARC again. Shelf item should go away.
   EnableArc(false);
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));

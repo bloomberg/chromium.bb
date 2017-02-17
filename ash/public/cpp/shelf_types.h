@@ -104,7 +104,7 @@ enum ShelfItemType {
 
   // Represents an app: Extension "V1" (legacy packaged and hosted) apps,
   //                    Extension "V2" (platform) apps,
-  //                    Arc (App Runtime for Chrome - Android Play Store) apps.
+  //                    ARC (App Runtime for Chrome - Android Play Store) apps.
   TYPE_APP,
 
   // Represents a dialog.

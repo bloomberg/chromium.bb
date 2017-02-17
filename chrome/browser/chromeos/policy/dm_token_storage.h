@@ -18,7 +18,7 @@ namespace policy {
 
 // Helper class to store/retrieve DM token to/from the local state. This is
 // needed for Active Directory management because AD devices lacks DM token in
-// the policies. DM token will be used in the future for ARC++ integration.
+// the policies. DM token will be used in the future for ARC integration.
 //
 // Note that requests must be made from the UI thread because SystemSaltGetter
 // calls CryptohomeClient which must be called from the UI thread.

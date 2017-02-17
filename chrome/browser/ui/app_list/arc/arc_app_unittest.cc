@@ -118,7 +118,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
  protected:
   // Notifies that initial preparation is done, profile is ready and it is time
-  // to initialize Arc subsystem.
+  // to initialize ARC subsystem.
   virtual void OnBeforeArcTestSetup() {}
 
   // Creates a new builder, destroying any existing one.
@@ -302,7 +302,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     }
   }
 
-  // Validates that provided image is acceptable as Arc app icon.
+  // Validates that provided image is acceptable as ARC app icon.
   void ValidateIcon(const gfx::ImageSkia& image) {
     EXPECT_EQ(app_list::kGridIconDimension, image.width());
     EXPECT_EQ(app_list::kGridIconDimension, image.height());

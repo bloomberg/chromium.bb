@@ -418,7 +418,7 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   if (!IsArcEnabled()) {
-    // Default Arc apps available before OptIn.
+    // Default ARC apps available before OptIn.
     std::vector<std::string> ids;
     for (const auto& default_app : default_apps_.app_map()) {
       if (default_apps_.HasApp(default_app.first))
@@ -449,7 +449,7 @@ std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
 
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
-  // Information for default app is available before Arc enabled.
+  // Information for default app is available before ARC enabled.
   if (!IsArcEnabled() && !default_apps_.HasApp(app_id))
     return std::unique_ptr<AppInfo>();
 

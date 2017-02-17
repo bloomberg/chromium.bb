@@ -1236,7 +1236,7 @@ GEN('#endif');
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
- * Test fixture for the Google Play Store (Arc++) page.
+ * Test fixture for the Google Play Store (ARC) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

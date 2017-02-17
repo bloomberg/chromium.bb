@@ -72,8 +72,8 @@ void ArcAppTest::SetUp(Profile* profile) {
   chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                     profile_);
 
-  // A valid |arc_app_list_prefs_| is needed for the Arc bridge service and the
-  // Arc auth service.
+  // A valid |arc_app_list_prefs_| is needed for the ARC bridge service and the
+  // ARC auth service.
   arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
   if (!arc_app_list_pref_) {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(

@@ -599,7 +599,7 @@ void ArcSessionManager::StopAndEnableArc() {
 void ArcSessionManager::StartArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Arc must be started only if no pending data removal request exists.
+  // ARC must be started only if no pending data removal request exists.
   DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 
   arc_start_time_ = base::Time::Now();

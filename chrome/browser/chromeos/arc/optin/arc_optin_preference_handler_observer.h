@@ -7,7 +7,7 @@
 
 namespace arc {
 
-// Notifies about changes in Arc related preferences and metrics mode.
+// Notifies about changes in ARC related preferences and metrics mode.
 class ArcOptInPreferenceHandlerObserver {
  public:
   // Notifies metrics mode has been changed.

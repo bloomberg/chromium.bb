@@ -18,7 +18,7 @@ class WmShelf;
 }
 
 // Base class for context menu which is shown for a regular extension item in
-// the shelf, or for an Arc app item in the shelf, or shown when right click
+// the shelf, or for an ARC app item in the shelf, or shown when right click
 // on desktop shell.
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {

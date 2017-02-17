@@ -69,7 +69,7 @@ struct AppLaunchParams {
   // Different app may have their own enumeration of sources.
   extensions::AppLaunchSource source;
 
-  // Status of ARC++ on this device.
+  // Status of ARC on this device.
   extensions::api::app_runtime::PlayStoreStatus play_store_status;
 };
 

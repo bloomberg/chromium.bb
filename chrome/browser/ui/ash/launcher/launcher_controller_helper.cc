@@ -109,7 +109,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   if (app_id.empty())
     return base::string16();
 
-  // Get the title if the app is an Arc app.
+  // Get the title if the app is an ARC app.
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   const std::string arc_app_id =
       ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(app_id);

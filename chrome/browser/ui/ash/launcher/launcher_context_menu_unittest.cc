@@ -79,7 +79,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     return LauncherContextMenu::Create(controller_.get(), item, wm_shelf);
   }
 
-  // Creates app window and set optional Arc application id.
+  // Creates app window and set optional ARC application id.
   views::Widget* CreateArcWindow(std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget();
@@ -187,7 +187,7 @@ TEST_F(LauncherContextMenuTest,
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
 }
 
-// Verifies contextmenu items for Arc app
+// Verifies contextmenu items for ARC app
 TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(
@@ -206,7 +206,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   std::unique_ptr<LauncherContextMenu> menu(
       new ArcLauncherContextMenu(controller(), item, wm_shelf));
 
-  // Arc app is pinned but not running.
+  // ARC app is pinned but not running.
   EXPECT_TRUE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_OPEN_NEW));
@@ -229,7 +229,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
 
-  // Arc app is running.
+  // ARC app is running.
   std::string window_app_id1("org.chromium.arc.1");
   CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
@@ -243,7 +243,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
 
-  // Arc non-launchable app is running.
+  // ARC non-launchable app is running.
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
   std::string window_app_id2("org.chromium.arc.2");
   CreateArcWindow(window_app_id2);

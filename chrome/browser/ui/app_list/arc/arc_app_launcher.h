@@ -14,7 +14,7 @@ namespace content {
 class BrowserContext;
 }
 
-// Helper class for deferred Arc app launching in case app is not ready on the
+// Helper class for deferred ARC app launching in case app is not ready on the
 // moment of request.
 class ArcAppLauncher : public ArcAppListPrefs::Observer {
  public:
@@ -35,10 +35,10 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
 
   // Unowned pointer.
   content::BrowserContext* context_;
-  // Arc app id and requested layout.
+  // ARC app id and requested layout.
   const std::string app_id_;
   const bool landscape_layout_;
-  // Flag idicating that Arc app was launched.
+  // Flag idicating that ARC app was launched.
   bool app_launched_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncher);

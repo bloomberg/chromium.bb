@@ -487,7 +487,7 @@ TEST_F(ArcSessionManagerTest, DisabledForNonPrimaryProfile) {
   GetFakeUserManager()->SwitchActiveUser(account_id);
   second_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
-  // Check that non-primary user can't use Arc.
+  // Check that non-primary user can't use ARC.
   EXPECT_FALSE(chromeos::ProfileHelper::IsPrimaryProfile(second_profile.get()));
   EXPECT_FALSE(ArcAppListPrefs::Get(second_profile.get()));
 

@@ -24,7 +24,7 @@ const char kName[] = "name";
 const char kOem[] = "oem";
 const char kPackageName[] = "package_name";
 
-// Sub-directory wher Arc apps forward declarations are stored.
+// Sub-directory wher ARC apps forward declarations are stored.
 const base::FilePath::CharType kArcDirectory[] = FILE_PATH_LITERAL("arc");
 const base::FilePath::CharType kArcTestDirectory[] =
     FILE_PATH_LITERAL("arc_default_apps");
@@ -88,8 +88,8 @@ ReadAppsFromFileThread() {
           package_name.empty() ||
           activity.empty() ||
           app_path.empty()) {
-        VLOG(2) << "Arc app declaration is incomplete in file "
-                << file.value() << ".";
+        VLOG(2) << "ARC app declaration is incomplete in file " << file.value()
+                << ".";
         continue;
       }
 

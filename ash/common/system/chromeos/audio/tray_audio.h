@@ -36,7 +36,7 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   explicit TrayAudio(SystemTray* system_tray);
   ~TrayAudio() override;
 
-  // Temporarily shows the pop-up volume slider on all displays. Used by ARC++
+  // Temporarily shows the pop-up volume slider on all displays. Used by ARC
   // when an Android app changes the system volume.
   static void ShowPopUpVolumeView();
 

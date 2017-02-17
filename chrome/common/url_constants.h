@@ -506,7 +506,7 @@ extern const char kNaturalScrollHelpURL[];
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];
 
-// The URL fo the "learn more" link for Google Play Store (Arc++) settings.
+// The URL fo the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 #endif
 

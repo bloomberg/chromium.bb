@@ -121,7 +121,7 @@ class ArcSessionManager : public ArcSessionObserver,
   static void SetShelfDelegateForTesting(ash::ShelfDelegate* shelf_delegate);
   static void EnableCheckAndroidManagementForTesting();
 
-  // Returns true if Arc is allowed to run for the current session.
+  // Returns true if ARC is allowed to run for the current session.
   // TODO(hidehiko): The name is very close to IsArcAllowedForProfile(), but
   // has different meaning. Clean this up.
   bool IsAllowed() const;
@@ -149,7 +149,7 @@ class ArcSessionManager : public ArcSessionObserver,
   bool IsSessionRunning() const;
   bool IsSessionStopped() const;
 
-  // Called from Arc support platform app when user cancels signing.
+  // Called from ARC support platform app when user cancels signing.
   void CancelAuthCode();
 
   // TODO(hidehiko): Better to rename longer but descriptive one, e.g.

@@ -53,8 +53,8 @@ struct TypeConverter<arc::mojom::ShortcutInfoPtr, arc::mojom::ShortcutInfo> {
 
 namespace {
 
-constexpr char kTestAppName[] = "Test Arc App";
-constexpr char kTestAppName2[] = "Test Arc App 2";
+constexpr char kTestAppName[] = "Test ARC App";
+constexpr char kTestAppName2[] = "Test ARC App 2";
 constexpr char kTestShortcutName[] = "Test Shortcut";
 constexpr char kTestShortcutName2[] = "Test Shortcut 2";
 constexpr char kTestAppPackage[] = "test.arc.app.package";
@@ -296,7 +296,7 @@ class ArcAppDeferredLauncherBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherBrowserTest);
 };
 
-// This tests simulates normal workflow for starting Arc app in deferred mode.
+// This tests simulates normal workflow for starting ARC app in deferred mode.
 IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   // Install app to remember existing apps.
   StartInstance();
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   else
     EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
 
-  // Launching non-ready Arc app creates item on shelf and spinning animation.
+  // Launching non-ready ARC app creates item on shelf and spinning animation.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(app_id);
   EXPECT_TRUE(shelf_id);
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
 
   switch (test_action()) {
     case TEST_ACTION_START:
-      // Now simulates that Arc is started and app list is refreshed. This
+      // Now simulates that ARC is started and app list is refreshed. This
       // should stop animation and delete icon from the shelf.
       InstallTestApps(kTestAppPackage, false);
       SendPackageAdded(kTestAppPackage, false);
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
   app_list_service->DismissAppList();
 }
 
-// Test AppListControllerDelegate::IsAppOpen for Arc apps.
+// Test AppListControllerDelegate::IsAppOpen for ARC apps.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   StartInstance();
   InstallTestApps(kTestAppPackage, false);

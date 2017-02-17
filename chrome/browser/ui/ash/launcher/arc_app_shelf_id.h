@@ -7,7 +7,7 @@
 
 #include <string>
 
-// Represents Arc app shelf id that consists from app id and optional shelf
+// Represents ARC app shelf id that consists from app id and optional shelf
 // group id.
 namespace arc {
 

@@ -779,7 +779,7 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile_to_attach) {
       base::Bind(&ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref,
                  base::Unretained(this)));
   // Handling of prefs::kArcEnabled change should be called deferred to avoid
-  // race condition when OnAppUninstalledPrepared for Arc apps is called after
+  // race condition when OnAppUninstalledPrepared for ARC apps is called after
   // UpdateAppLaunchersFromPref.
   pref_change_registrar_.Add(
       prefs::kArcEnabled,

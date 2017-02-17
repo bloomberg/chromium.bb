@@ -14,8 +14,8 @@ class Profile;
 
 namespace arc {
 
-// Shows a dialog for user to confirm uninstallation of Arc app.
-// Currently, Arc app can only be manually uninstalled from AppList. But it
+// Shows a dialog for user to confirm uninstallation of ARC app.
+// Currently, ARC app can only be manually uninstalled from AppList. But it
 // would be simple to enable the dialog to shown from other source.
 void ShowArcAppUninstallDialog(Profile* profile,
                                AppListControllerDelegate* controller,

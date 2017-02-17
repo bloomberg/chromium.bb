@@ -146,7 +146,7 @@ void ArcAppDeferredLauncherController::OnArcPlayStoreEnabledChanged(
   if (enabled)
     return;
 
-  // If Arc was disabled, remove all deferred launch requests.
+  // If ARC was disabled, remove all deferred launch requests.
   while (!app_controller_map_.empty())
     Close(app_controller_map_.begin()->first);
 }
