@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -106,6 +107,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
             MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
             MenuItem addToHomeScreenItem = menu.findItem(R.id.add_to_homescreen_id);
+            addToHomeScreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
