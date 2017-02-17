@@ -15,6 +15,7 @@
 #include "components/guest_view/renderer/iframe_guest_view_request.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
@@ -56,6 +57,18 @@ content::RenderFrame* GetRenderFrame(v8::Handle<v8::Value> value) {
     return nullptr;
   return content::RenderFrame::FromWebFrame(frame);
 }
+
+class RenderFrameStatus : public content::RenderFrameObserver {
+ public:
+  explicit RenderFrameStatus(content::RenderFrame* render_frame)
+      : content::RenderFrameObserver(render_frame) {}
+  ~RenderFrameStatus() final {}
+
+  bool is_ok() { return render_frame() != nullptr; }
+
+  // RenderFrameObserver implementation.
+  void OnDestruct() final {}
+};
 
 }  // namespace
 
@@ -144,6 +157,8 @@ void GuestViewInternalCustomBindings::AttachGuest(
   // is invalid?
   if (!guest_view_container)
     return;
+  // Retain a weak pointer so we can easily test if the container goes away.
+  auto weak_ptr = guest_view_container->GetWeakPtr();
 
   int guest_instance_id = args[1]->Int32Value();
 
@@ -155,6 +170,12 @@ void GuestViewInternalCustomBindings::AttachGuest(
     params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);
   }
+  // We should be careful that some malicious JS in the GuestView's embedder
+  // hasn't destroyed |guest_view_container| during the enumeration of the
+  // properties of the guest's object during extraction of |params| above
+  // (see https://crbug.com/683523).
+  if (!weak_ptr)
+    return;
 
   // Add flag to |params| to indicate that the element size is specified in
   // logical units.
@@ -221,6 +242,12 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   int element_instance_id = args[0]->Int32Value();
   int guest_instance_id = args[1]->Int32Value();
 
+  // Get the WebLocalFrame before (possibly) executing any user-space JS while
+  // getting the |params|. We track the status of the RenderFrame via an
+  // observer in case it is deleted during user code execution.
+  content::RenderFrame* render_frame = GetRenderFrame(args[3]);
+  RenderFrameStatus render_frame_status(render_frame);
+
   std::unique_ptr<base::DictionaryValue> params;
   {
     std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
@@ -229,18 +256,18 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
     params = base::DictionaryValue::From(std::move(params_as_value));
     CHECK(params);
   }
+  if (!render_frame_status.is_ok())
+    return;
 
-  // Add flag to |params| to indicate that the element size is specified in
-  // logical units.
-  params->SetBoolean(guest_view::kElementSizeIsLogical, true);
-
-  content::RenderFrame* render_frame = GetRenderFrame(args[3]);
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
-
   // Parent must exist.
   blink::WebFrame* parent_frame = frame->parent();
   DCHECK(parent_frame);
   DCHECK(parent_frame->isWebLocalFrame());
+
+  // Add flag to |params| to indicate that the element size is specified in
+  // logical units.
+  params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
   content::RenderFrame* embedder_parent_frame =
       content::RenderFrame::FromWebFrame(parent_frame);

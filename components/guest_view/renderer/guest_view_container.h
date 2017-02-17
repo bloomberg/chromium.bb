@@ -66,6 +66,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // BrowserPluginGuestDelegate public implementation.
   void SetElementInstanceID(int element_instance_id) final;
   void DidResizeElement(const gfx::Size& new_size) override;
+  base::WeakPtr<BrowserPluginDelegate> GetWeakPtr() final;
 
  protected:
   ~GuestViewContainer() override;
@@ -89,7 +90,6 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // BrowserPluginDelegate implementation.
   void Ready() final;
   void DidDestroyElement() final;
-  base::WeakPtr<BrowserPluginDelegate> GetWeakPtr() final;
 
   int element_instance_id_;
   content::RenderFrame* render_frame_;
