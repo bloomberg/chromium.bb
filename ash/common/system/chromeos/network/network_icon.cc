@@ -852,7 +852,7 @@ int GetCellularUninitializedMsg() {
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
   } else if (handler->GetScanningByType(NetworkTypePattern::Mobile())) {
-    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING;
+    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_MOBILE_SCANNING;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
   }

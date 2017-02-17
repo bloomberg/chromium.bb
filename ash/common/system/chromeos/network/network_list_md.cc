@@ -164,7 +164,7 @@ namespace {
 class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
  public:
   CellularHeaderRowView()
-      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR) {}
+      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE) {}
 
   ~CellularHeaderRowView() override {}
 
@@ -452,7 +452,7 @@ NetworkListViewMd::UpdateNetworkListEntries() {
     if (!message_id &&
         handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
         !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
-      message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
+      message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
     }
     UpdateInfoLabel(message_id, index, &no_cellular_networks_view_);
     if (message_id)

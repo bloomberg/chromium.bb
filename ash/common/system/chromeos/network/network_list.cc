@@ -210,7 +210,7 @@ bool NetworkListView::UpdateNetworkListEntries(
     if (!message_id &&
         handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
         !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
-      message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
+      message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
     }
     needs_relayout |=
         UpdateInfoLabel(message_id, index, &no_cellular_networks_view_);
