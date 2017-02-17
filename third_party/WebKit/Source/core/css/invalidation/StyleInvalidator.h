@@ -18,7 +18,7 @@ class Element;
 class HTMLSlotElement;
 class InvalidationSet;
 
-class StyleInvalidator {
+class CORE_EXPORT StyleInvalidator {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(StyleInvalidator);
 

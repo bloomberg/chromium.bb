@@ -1128,6 +1128,22 @@ DescendantInvalidationSet& RuleFeatureSet::ensureNthInvalidationSet() {
   return *m_nthInvalidationSet;
 }
 
+void RuleFeatureSet::collectTypeRuleInvalidationSet(
+    InvalidationLists& invalidationLists,
+    ContainerNode& rootNode) const {
+  if (m_typeRuleInvalidationSet) {
+    invalidationLists.descendants.push_back(m_typeRuleInvalidationSet);
+    TRACE_SCHEDULE_STYLE_INVALIDATION(rootNode, *m_typeRuleInvalidationSet,
+                                      ruleSetInvalidation);
+  }
+}
+
+DescendantInvalidationSet& RuleFeatureSet::ensureTypeRuleInvalidationSet() {
+  if (!m_typeRuleInvalidationSet)
+    m_typeRuleInvalidationSet = DescendantInvalidationSet::create();
+  return *m_typeRuleInvalidationSet;
+}
+
 void RuleFeatureSet::addFeaturesToUniversalSiblingInvalidationSet(
     const InvalidationSetFeatures& siblingFeatures,
     const InvalidationSetFeatures& descendantFeatures) {

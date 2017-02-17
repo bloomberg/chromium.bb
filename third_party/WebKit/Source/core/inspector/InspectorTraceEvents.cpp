@@ -180,12 +180,12 @@ String urlForFrame(LocalFrame* frame) {
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
 std::unique_ptr<TracedValue> fillCommonPart(
-    Element& element,
+    ContainerNode& node,
     const InvalidationSet& invalidationSet,
     const char* invalidatedSelector) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
-  value->setString("frame", toHexString(element.document().frame()));
-  setNodeInfo(value.get(), &element, "nodeId", "nodeName");
+  value->setString("frame", toHexString(node.document().frame()));
+  setNodeInfo(value.get(), &node, "nodeId", "nodeName");
   value->setString("invalidationSet",
                    descendantInvalidationSetToIdString(invalidationSet));
   value->setString("invalidatedSelectorId", invalidatedSelector);
@@ -199,6 +199,8 @@ const char InspectorScheduleStyleInvalidationTrackingEvent::Attribute[] =
 const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Id[] = "id";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Pseudo[] = "pseudo";
+const char InspectorScheduleStyleInvalidationTrackingEvent::RuleSet[] =
+    "ruleset";
 
 const char* resourcePriorityString(ResourceLoadPriority priority) {
   const char* priorityString = 0;
@@ -265,6 +267,15 @@ InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(
   std::unique_ptr<TracedValue> value =
       fillCommonPart(element, invalidationSet, Attribute);
   value->setString("changedPseudo", pseudoTypeToString(pseudoType));
+  return value;
+}
+
+std::unique_ptr<TracedValue>
+InspectorScheduleStyleInvalidationTrackingEvent::ruleSetInvalidation(
+    ContainerNode& rootNode,
+    const InvalidationSet& invalidationSet) {
+  std::unique_ptr<TracedValue> value =
+      fillCommonPart(rootNode, invalidationSet, RuleSet);
   return value;
 }
 

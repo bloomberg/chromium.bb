@@ -65,6 +65,7 @@ extern const char Attribute[];
 extern const char Class[];
 extern const char Id[];
 extern const char Pseudo[];
+extern const char RuleSet[];
 
 std::unique_ptr<TracedValue> attributeChange(Element&,
                                              const InvalidationSet&,
@@ -78,6 +79,8 @@ std::unique_ptr<TracedValue> idChange(Element&,
 std::unique_ptr<TracedValue> pseudoChange(Element&,
                                           const InvalidationSet&,
                                           CSSSelector::PseudoType);
+std::unique_ptr<TracedValue> ruleSetInvalidation(ContainerNode&,
+                                                 const InvalidationSet&);
 }  // namespace InspectorScheduleStyleInvalidationTrackingEvent
 
 #define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet,          \
@@ -86,7 +89,7 @@ std::unique_ptr<TracedValue> pseudoChange(Element&,
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),   \
       "ScheduleStyleInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data", \
       InspectorScheduleStyleInvalidationTrackingEvent::changeType(           \
-          (element), (invalidationSet), __VA_ARGS__));
+          (element), (invalidationSet), ##__VA_ARGS__));
 
 namespace InspectorStyleRecalcInvalidationTrackingEvent {
 std::unique_ptr<TracedValue> data(Node*, const StyleChangeReasonForTracing&);

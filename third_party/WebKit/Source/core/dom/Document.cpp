@@ -1711,7 +1711,7 @@ void Document::updateStyleInvalidationIfNeeded() {
   DCHECK(isActive());
   ScriptForbiddenScope forbidScript;
 
-  if (!childNeedsStyleInvalidation())
+  if (!childNeedsStyleInvalidation() && !needsStyleInvalidation())
     return;
   TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
   styleEngine().styleInvalidator().invalidate(*this);

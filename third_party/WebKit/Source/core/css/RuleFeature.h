@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class ContainerNode;
 struct InvalidationLists;
 class QualifiedName;
 class RuleData;
@@ -152,6 +153,7 @@ class CORE_EXPORT RuleFeatureSet {
   void collectUniversalSiblingInvalidationSet(InvalidationLists&,
                                               unsigned minDirectAdjacent) const;
   void collectNthInvalidationSet(InvalidationLists&) const;
+  void collectTypeRuleInvalidationSet(InvalidationLists&, ContainerNode&) const;
 
   bool hasIdsInSelectors() const { return m_idInvalidationSets.size() > 0; }
 
@@ -200,6 +202,7 @@ class CORE_EXPORT RuleFeatureSet {
                                                InvalidationType);
   SiblingInvalidationSet& ensureUniversalSiblingInvalidationSet();
   DescendantInvalidationSet& ensureNthInvalidationSet();
+  DescendantInvalidationSet& ensureTypeRuleInvalidationSet();
 
   void updateInvalidationSets(const RuleData&);
   void updateInvalidationSetsForContentAttribute(const RuleData&);
@@ -286,6 +289,7 @@ class CORE_EXPORT RuleFeatureSet {
   PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
   RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
   RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
+  RefPtr<DescendantInvalidationSet> m_typeRuleInvalidationSet;
   HeapVector<RuleFeature> m_siblingRules;
   HeapVector<RuleFeature> m_uncommonAttributeRules;
   MediaQueryResultList m_viewportDependentMediaQueryResults;

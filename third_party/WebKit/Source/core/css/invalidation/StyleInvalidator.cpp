@@ -33,6 +33,8 @@ static const unsigned char* s_tracingEnabled = nullptr;
 void StyleInvalidator::invalidate(Document& document) {
   RecursionData recursionData;
   SiblingData siblingData;
+  if (UNLIKELY(document.needsStyleInvalidation()))
+    pushInvalidationSetsForContainerNode(document, recursionData, siblingData);
   if (Element* documentElement = document.documentElement())
     invalidate(*documentElement, recursionData, siblingData);
   document.clearChildNeedsStyleInvalidation();

@@ -684,7 +684,7 @@ void Node::setIsLink(bool isLink) {
 }
 
 void Node::setNeedsStyleInvalidation() {
-  DCHECK(isElementNode() || isShadowRoot());
+  DCHECK(isContainerNode());
   setFlag(NeedsStyleInvalidationFlag);
   markAncestorsWithChildNeedsStyleInvalidation();
 }
