@@ -228,7 +228,8 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
   updateIfNeeded();
   lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
-  DocumentAnimations::updateAnimations(m_layoutView.document());
+  DocumentAnimations::updateAnimations(m_layoutView.document(),
+                                       DocumentLifecycle::CompositingClean);
 
   m_layoutView.frameView()
       ->getScrollableArea()

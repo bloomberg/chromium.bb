@@ -32,6 +32,7 @@
 #define DocumentAnimations_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/dom/DocumentLifecycle.h"
 
 namespace blink {
 
@@ -45,7 +46,9 @@ class DocumentAnimations {
 
   // Updates existing animations as part of generating a new (document
   // lifecycle) frame.
-  static void updateAnimations(Document&);
+  static void updateAnimations(
+      Document&,
+      DocumentLifecycle::LifecycleState requiredLifecycleState);
 
  private:
   DocumentAnimations() {}

@@ -27,12 +27,14 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
+#include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/paint/FloatClipRecorder.h"
@@ -523,9 +525,19 @@ void SVGImage::serviceAnimations(double monotonicAnimationStartTime) {
   // actually generating painted output, not only for performance reasons,
   // but to preserve correct coherence of the cache of the output with
   // the needsRepaint bits of the PaintLayers in the image.
-  toLocalFrame(m_page->mainFrame())
-      ->view()
-      ->updateAllLifecyclePhasesExceptPaint();
+  FrameView* frameView = toLocalFrame(m_page->mainFrame())->view();
+  frameView->updateAllLifecyclePhasesExceptPaint();
+
+  // For SPv2 we run updateAnimations after the paint phase, but per above
+  // comment we don't want to run lifecycle through to paint for SVG images.
+  // Since we know SVG images never have composited animations we can update
+  // animations directly without worrying about including
+  // PaintArtifactCompositor analysis of whether animations should be
+  // composited.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    DocumentAnimations::updateAnimations(frameView->layoutView()->document(),
+                                         DocumentLifecycle::LayoutClean);
+  }
 }
 
 void SVGImage::advanceAnimationForTesting() {

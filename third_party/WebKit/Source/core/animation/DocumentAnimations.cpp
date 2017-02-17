@@ -65,11 +65,10 @@ void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document) {
     updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 
-void DocumentAnimations::updateAnimations(Document& document) {
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    DCHECK(document.lifecycle().state() >= DocumentLifecycle::CompositingClean);
-  else
-    DCHECK(document.lifecycle().state() >= DocumentLifecycle::LayoutClean);
+void DocumentAnimations::updateAnimations(
+    Document& document,
+    DocumentLifecycle::LifecycleState requiredLifecycleState) {
+  DCHECK(document.lifecycle().state() >= requiredLifecycleState);
 
   if (document.compositorPendingAnimations().update()) {
     DCHECK(document.view());

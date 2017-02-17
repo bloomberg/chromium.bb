@@ -3050,9 +3050,6 @@ void FrameView::updateLifecyclePhasesInternal(
         prePaint();
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-      DocumentAnimations::updateAnimations(layoutView()->document());
-
     if (targetState == DocumentLifecycle::PaintClean) {
       if (!m_frame->document()->printing() ||
           RuntimeEnabledFeatures::printBrowserEnabled())
@@ -3065,6 +3062,11 @@ void FrameView::updateLifecyclePhasesInternal(
       DCHECK((m_frame->document()->printing() &&
               lifecycle().state() == DocumentLifecycle::PrePaintClean) ||
              lifecycle().state() == DocumentLifecycle::PaintClean);
+
+      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        DocumentAnimations::updateAnimations(layoutView()->document(),
+                                             DocumentLifecycle::PaintClean);
+      }
     }
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
