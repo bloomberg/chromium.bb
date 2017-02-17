@@ -47,6 +47,12 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
                         os.path.join(root_owned_dir, 'nope'), 'data',
                         sudo=True, mode='a')
 
+  def testReadFileNonExistent(self):
+    """Verify what happens if you ReadFile a file that isn't there."""
+    filename = os.path.join(self.tempdir, 'bogus')
+    with self.assertRaises(IOError):
+      osutils.ReadFile(filename)
+
   def testSafeSymlink(self):
     """Test that we can create symlinks."""
     with osutils.TempDir(sudo_rm=True) as tempdir:

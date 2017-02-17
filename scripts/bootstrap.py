@@ -48,6 +48,47 @@ def PreParseArguments(argv):
   return options
 
 
+def CleanBuildroot(branchname, buildroot):
+  """Some kinds of branch transitions break builds.
+
+  This method tries to detect cases where that can happen, and clobber what's
+  needed to succeed. However, the clobbers are costly, and should be avoided
+  if necessary.
+
+  Currently, we only check to see if we are moving between branches, but
+  other checks can be added, as needed.
+
+  Args:
+    branchname: Name of branch to checkout. None for no branch.
+    buildroot: Directory with old buildroot to clean as needed.
+  """
+  # Cleanups to consider, in order of severity.
+  #   1) osutils.RmDir('chroot')
+  #   2) osutils.RmDir('.cache')
+  #   3) EmptyDir(buildroot, excludes=['.repo'])
+  #   4) EmptyDir(buildroot)
+
+  state_file = os.path.join(buildroot, '.bootstrap_state')
+  new_state = branchname or 'TOT'
+
+  try:
+    old_state = osutils.ReadFile(state_file)
+  except IOError:
+    old_state = None
+
+  if old_state != new_state:
+    # If we are changing branches, clobber the chroot. Note that this chroot
+    # clobber is unsafe if the chroot is in use, but since no build is in
+    # progress (and we don't use chroot the), this should be okay.
+    logging.info('Unmatched buildroot state, wipe chroot: %s -> %s',
+                 old_state, new_state)
+    osutils.RmDir(os.path.join(buildroot, 'chroot'),
+                  ignore_missing=True, sudo=True)
+
+  # Finished!
+  osutils.WriteFile(state_file, new_state)
+
+
 def InitialCheckout(branchname, buildroot, git_cache_dir):
   """Preliminary ChromeOS checkout.
 
@@ -65,10 +106,12 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
     buildroot: Directory to checkout into.
     git_cache_dir: Directory to use for git cache. None to not use it.
   """
+  logging.info('Bootstrap script starting initial sync on branch: %s',
+               branchname)
+
   site_config = config_lib.GetConfig()
   manifest_url = site_config.params['MANIFEST_INT_URL']
 
-  osutils.SafeMakedirs(buildroot)
   repo = repository.RepoRepository(manifest_url, buildroot,
                                    branch=branchname,
                                    git_cache_dir=git_cache_dir)
@@ -110,6 +153,13 @@ def main(argv):
   branchname = options.branch
   buildroot = options.buildroot
   git_cache_dir = options.git_cache_dir
+
+  # Ensure buildroot exists.
+  osutils.SafeMakedirs(buildroot)
+
+  # Sometimes, we have to cleanup things that can break cbuildbot, especially
+  # on the branch.
+  CleanBuildroot(branchname, buildroot)
 
   # Get a checkout close enough the branched cbuildbot can handle it.
   InitialCheckout(branchname, buildroot, git_cache_dir)
