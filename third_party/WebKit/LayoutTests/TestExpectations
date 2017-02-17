@@ -738,8 +738,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-crashes-when-sibling-becomes-formatting-context.html [ Skip ]
 # ====== LayoutNG-only failures until here ======
 
-crbug.com/691959 paint/invalidation/control-clip.html [ NeedsRebaseline ]
-
 # Requires ServiceWorkerNavigationPreload feature enabled. Run under
 # virtual/service-worker-navigation-preload only.
 crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
