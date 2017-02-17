@@ -16,8 +16,13 @@
  * @const
  */
 var LOG_TYPE = {
-  // All NTP Tiles have finished loading (successfully or failing).
+  // All NTP tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
+  // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
+  // has been received. In contrast to NTP_ALL_TILES_LOADED, this is recorded
+  // before the actual DOM elements have loaded (in particular the thumbnail
+  // images).
+  NTP_ALL_TILES_RECEIVED: 12,
 };
 
 
@@ -116,7 +121,7 @@ function logMostVisitedNavigation(tileIndex, tileSource) {
 var countLoad = function() {
   loadedCounter -= 1;
   if (loadedCounter <= 0) {
-    showTiles();
+    swapInNewTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
     // TODO(treib): Why do we reset to 1 here?
@@ -151,8 +156,7 @@ var handleCommand = function(data) {
   if (cmd == 'tile') {
     addTile(data);
   } else if (cmd == 'show') {
-    countLoad();
-    hideOverflowTiles(data);
+    showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
   } else if (cmd == 'tilesVisible') {
@@ -163,6 +167,21 @@ var handleCommand = function(data) {
 };
 
 
+/**
+ * Handler for the 'show' message from the host page.
+ * @param {object} info Data received in the message.
+ */
+var showTiles = function(info) {
+  logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
+  countLoad();
+  hideOverflowTiles(info);
+}
+
+
+/**
+ * Handler for the 'updateTheme' message from the host page.
+ * @param {object} info Data received in the message.
+ */
 var updateTheme = function(info) {
   var themeStyle = [];
 
@@ -203,7 +222,8 @@ var updateTheme = function(info) {
 
 
 /**
- * Hides extra tiles that don't fit on screen.
+ * Hides extra tiles that don't fit on screen. Called in response to the 'show'
+ * and 'tilesVisible' messages from the host page.
  */
 var hideOverflowTiles = function(data) {
   var tileAndEmptyTileList = document.querySelectorAll(
@@ -227,10 +247,11 @@ var removeAllOldTiles = function() {
 
 
 /**
- * Called when the host page has finished sending us tile information and
- * we are ready to show the new tiles and drop the old ones.
+ * Called when all tiles have finished loading (successfully or not), including
+ * their thumbnail images, and we are ready to show the new tiles and drop the
+ * old ones.
  */
-var showTiles = function() {
+var swapInNewTiles = function() {
   // Store the tiles on the current closure.
   var cur = tiles;
 
@@ -267,20 +288,22 @@ var showTiles = function() {
   }
   cur.style.opacity = 1.0;
 
-  // Make sure the tiles variable contain the next tileset we may use.
+  // Make sure the tiles variable contain the next tileset we'll use if the host
+  // page sends us an updated set of tiles.
   tiles = document.createElement('div');
 };
 
 
 /**
- * Called when the host page wants to add a suggestion tile.
- * For Most Visited, it grabs the data from Chrome and pass on.
- * For host page generated it just passes the data.
+ * Handler for the 'show' message from the host page, called when it wants to
+ * add a suggestion tile.
+ * It's also used to fill up our tiles to NUMBER_OF_TILES if necessary.
  * @param {object} args Data for the tile to be rendered.
  */
 var addTile = function(args) {
   if (isFinite(args.rid)) {
-    // If a valid number passed in |args.rid|: a local chrome suggestion.
+    // If a valid number passed in |args.rid|: a local Chrome suggestion. Grab
+    // the data from the embeddedSearch API.
     var data =
         chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
     if (!data)
@@ -535,7 +558,7 @@ var renderTile = function(data) {
 var init = function() {
   // Create a new DOM element to hold the tiles. The tiles will be added
   // one-by-one via addTile, and the whole thing will be inserted into the page
-  // in showTiles, after the parent has sent us the 'show' message, and all
+  // in swapInNewTiles, after the parent has sent us the 'show' message, and all
   // thumbnails and favicons have loaded.
   tiles = document.createElement('div');
 

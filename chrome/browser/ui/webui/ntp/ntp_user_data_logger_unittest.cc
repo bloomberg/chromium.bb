@@ -19,6 +19,7 @@ using base::Bucket;
 using ntp_tiles::NTPTileSource;
 using testing::ElementsAre;
 using testing::IsEmpty;
+using testing::SizeIs;
 
 namespace {
 
@@ -210,4 +211,95 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
       ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
+}
+
+TEST(NTPUserDataLoggerTest, TestLoadTime) {
+  base::StatisticsRecorder::Initialize();
+
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger;
+  logger.ntp_url_ = GURL("chrome://newtab/");
+
+  base::TimeDelta delta_tiles_received = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_RECEIVED event.
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received);
+
+  // Log a TOP_SITES impression (for the .MostVisited vs .MostLikely split in
+  // the time histograms).
+  logger.LogMostVisitedImpression(0, NTPTileSource::TOP_SITES);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TilesReceivedTime"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TilesReceivedTime.MostVisited"),
+              SizeIs(1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TilesReceivedTime.MostLikely"),
+      IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime"), SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.MostVisited"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.MostLikely"),
+              IsEmpty());
+
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.TilesReceivedTime",
+                                         delta_tiles_received, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "NewTabPage.TilesReceivedTime.MostVisited", delta_tiles_received, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.MostVisited",
+                                         delta_tiles_loaded, 1);
+
+  // We should not log again for the same NTP.
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received);
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.TilesReceivedTime",
+                                         delta_tiles_received, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded, 1);
+
+  // After navigating away from the NTP and back, we record again.
+  logger.NavigatedFromURLToURL(GURL("chrome://newtab/"),
+                               GURL("http://chromium.org"));
+  logger.NavigatedFromURLToURL(GURL("http://chromium.org"),
+                               GURL("chrome://newtab/"));
+
+  // This time, log a SUGGESTIONS_SERVICE impression, so the times will end up
+  // in .MostLikely.
+  logger.LogMostVisitedImpression(0, NTPTileSource::SUGGESTIONS_SERVICE);
+
+  base::TimeDelta delta_tiles_received2 = base::TimeDelta::FromMilliseconds(50);
+  base::TimeDelta delta_tiles_loaded2 = base::TimeDelta::FromMilliseconds(500);
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received2);
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded2);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TilesReceivedTime"),
+              SizeIs(2));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.TilesReceivedTime.MostVisited"),
+              SizeIs(1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TilesReceivedTime.MostLikely"),
+      SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime"), SizeIs(2));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.MostVisited"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.MostLikely"),
+              SizeIs(1));
+
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.TilesReceivedTime",
+                                         delta_tiles_received2, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "NewTabPage.TilesReceivedTime.MostLikely", delta_tiles_received2, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded2, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.MostLikely",
+                                         delta_tiles_loaded2, 1);
 }

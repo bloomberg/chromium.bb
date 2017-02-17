@@ -55,6 +55,7 @@ class NTPUserDataLogger
 
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLogMostVisitedImpression);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestNumberOfTiles);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLoadTime);
 
   // Number of Most Visited elements on the NTP for logging purposes.
   static const int kNumMostVisited = 8;
@@ -84,6 +85,9 @@ class NTPUserDataLogger
   // Stores the tile source for each impression. Entries are only valid if the
   // corresponding entry in |impression_was_logged_| is true.
   std::vector<ntp_tiles::NTPTileSource> impression_tile_source_;
+
+  // The time we received the NTP_ALL_TILES_RECEIVED event.
+  base::TimeDelta tiles_received_time_;
 
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;
