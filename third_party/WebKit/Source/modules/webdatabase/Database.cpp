@@ -873,11 +873,10 @@ void Database::runTransaction(SQLTransactionCallback* callback,
     if (callback) {
       std::unique_ptr<SQLErrorData> error = SQLErrorData::create(
           SQLError::kUnknownErr, "database has been closed");
-      getExecutionContext()->postTask(
-          TaskType::DatabaseAccess, BLINK_FROM_HERE,
-          createSameThreadTask(&callTransactionErrorCallback,
-                               wrapPersistent(callback),
-                               WTF::passed(std::move(error))));
+      TaskRunnerHelper::get(TaskType::DatabaseAccess, getExecutionContext())
+          ->postTask(BLINK_FROM_HERE, WTF::bind(&callTransactionErrorCallback,
+                                                wrapPersistent(callback),
+                                                WTF::passed(std::move(error))));
     }
   }
 }

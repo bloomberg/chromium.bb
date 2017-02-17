@@ -9,7 +9,6 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
@@ -204,9 +203,9 @@ PresentationConnection* PresentationConnection::take(
   // Fire onconnectionavailable event asynchronously.
   auto* event = PresentationConnectionAvailableEvent::create(
       EventTypeNames::connectionavailable, connection);
-  request->getExecutionContext()->postTask(
-      TaskType::Presentation, BLINK_FROM_HERE,
-      createSameThreadTask(&PresentationConnection::dispatchEventAsync,
+  TaskRunnerHelper::get(TaskType::Presentation, request->getExecutionContext())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&PresentationConnection::dispatchEventAsync,
                            wrapPersistent(request), wrapPersistent(event)));
 
   return connection;
@@ -488,9 +487,9 @@ void PresentationConnection::didFailLoadingBlob(
 }
 
 void PresentationConnection::dispatchStateChangeEvent(Event* event) {
-  getExecutionContext()->postTask(
-      TaskType::Presentation, BLINK_FROM_HERE,
-      createSameThreadTask(&PresentationConnection::dispatchEventAsync,
+  TaskRunnerHelper::get(TaskType::Presentation, getExecutionContext())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&PresentationConnection::dispatchEventAsync,
                            wrapPersistent(this), wrapPersistent(event)));
 }
 

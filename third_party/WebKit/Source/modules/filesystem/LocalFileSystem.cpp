@@ -32,7 +32,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/LocalFrame.h"
@@ -136,17 +135,17 @@ void LocalFileSystem::requestFileSystemAccessInternal(
 
 void LocalFileSystem::fileSystemNotAvailable(ExecutionContext* context,
                                              CallbackWrapper* callbacks) {
-  context->postTask(
-      TaskType::FileReading, BLINK_FROM_HERE,
-      createSameThreadTask(&reportFailure, WTF::passed(callbacks->release()),
+  TaskRunnerHelper::get(TaskType::FileReading, context)
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&reportFailure, WTF::passed(callbacks->release()),
                            FileError::kAbortErr));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(ExecutionContext* context,
                                                    CallbackWrapper* callbacks) {
-  context->postTask(
-      TaskType::FileReading, BLINK_FROM_HERE,
-      createSameThreadTask(&reportFailure, WTF::passed(callbacks->release()),
+  TaskRunnerHelper::get(TaskType::FileReading, context)
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&reportFailure, WTF::passed(callbacks->release()),
                            FileError::kAbortErr));
 }
 

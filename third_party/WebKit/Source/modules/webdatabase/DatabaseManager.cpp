@@ -29,9 +29,9 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
@@ -63,6 +63,8 @@ DatabaseManager::~DatabaseManager() {}
 // This is just for ignoring DatabaseCallback::handleEvent()'s return value.
 static void databaseCallbackHandleEvent(DatabaseCallback* callback,
                                         Database* database) {
+  InspectorInstrumentation::AsyncTask asyncTask(database->getExecutionContext(),
+                                                callback);
   callback->handleEvent(database);
 }
 
@@ -196,12 +198,13 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
   if (database->isNew() && creationCallback) {
     STORAGE_DVLOG(1) << "Scheduling DatabaseCreationCallbackTask for database "
                      << database;
-    database->getExecutionContext()->postTask(
-        TaskType::DatabaseAccess, BLINK_FROM_HERE,
-        createSameThreadTask(&databaseCallbackHandleEvent,
-                             wrapPersistent(creationCallback),
-                             wrapPersistent(database)),
-        "openDatabase");
+    InspectorInstrumentation::asyncTaskScheduled(
+        database->getExecutionContext(), "openDatabase", creationCallback);
+    TaskRunnerHelper::get(TaskType::DatabaseAccess,
+                          database->getExecutionContext())
+        ->postTask(BLINK_FROM_HERE, WTF::bind(&databaseCallbackHandleEvent,
+                                              wrapPersistent(creationCallback),
+                                              wrapPersistent(database)));
   }
 
   ASSERT(database);

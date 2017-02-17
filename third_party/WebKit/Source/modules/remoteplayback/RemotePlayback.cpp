@@ -9,10 +9,10 @@
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/EventTargetModules.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/UserGestureIndicator.h"
@@ -37,6 +37,12 @@ const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
 
   ASSERT_NOT_REACHED();
   return disconnectedValue;
+}
+
+void runNotifyInitialAvailabilityTask(ExecutionContext* context,
+                                      std::unique_ptr<WTF::Closure> task) {
+  InspectorInstrumentation::AsyncTask asyncTask(context, task.get());
+  (*task)();
 }
 
 }  // anonymous namespace
@@ -90,11 +96,18 @@ ScriptPromise RemotePlayback::watchAvailability(
            .isNewEntry);
 
   // Report the current availability via the callback.
-  getExecutionContext()->postTask(
-      TaskType::MediaElementEvent, BLINK_FROM_HERE,
-      createSameThreadTask(&RemotePlayback::notifyInitialAvailability,
-                           wrapPersistent(this), id),
-      "watchAvailabilityCallback");
+  // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as
+  // InspectorInstrumentation requires a globally unique pointer to track tasks.
+  // We can remove the wrapper if InspectorInstrumentation returns a task id.
+  std::unique_ptr<WTF::Closure> task = WTF::bind(
+      &RemotePlayback::notifyInitialAvailability, wrapPersistent(this), id);
+  InspectorInstrumentation::asyncTaskScheduled(
+      getExecutionContext(), "watchAvailabilityCallback", task.get());
+  TaskRunnerHelper::get(TaskType::MediaElementEvent, getExecutionContext())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(runNotifyInitialAvailabilityTask,
+                           wrapPersistent(getExecutionContext()),
+                           WTF::passed(std::move(task))));
 
   // TODO(avayvod): Currently the availability is tracked for each media element
   // as soon as it's created, we probably want to limit that to when the

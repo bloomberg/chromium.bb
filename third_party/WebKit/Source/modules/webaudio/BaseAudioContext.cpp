@@ -33,7 +33,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
@@ -614,9 +613,9 @@ void BaseAudioContext::setContextState(AudioContextState newState) {
 
   // Notify context that state changed
   if (getExecutionContext())
-    getExecutionContext()->postTask(
-        TaskType::MediaElementEvent, BLINK_FROM_HERE,
-        createSameThreadTask(&BaseAudioContext::notifyStateChange,
+    TaskRunnerHelper::get(TaskType::MediaElementEvent, getExecutionContext())
+        ->postTask(BLINK_FROM_HERE,
+                   WTF::bind(&BaseAudioContext::notifyStateChange,
                              wrapPersistent(this)));
 }
 
