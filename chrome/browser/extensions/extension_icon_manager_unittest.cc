@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_icon_manager.h"
+
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
@@ -13,11 +15,10 @@
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -58,18 +59,11 @@ class ScopedSetDeviceScaleFactor {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetDeviceScaleFactor);
 };
 
-using content::BrowserThread;
-
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
 class ExtensionIconManagerTest : public testing::Test {
  public:
-  ExtensionIconManagerTest() :
-      unwaited_image_loads_(0),
-      waiting_(false),
-      ui_thread_(BrowserThread::UI, &ui_loop_),
-      file_thread_(BrowserThread::FILE),
-      io_thread_(BrowserThread::IO) {}
+  ExtensionIconManagerTest() : unwaited_image_loads_(0), waiting_(false) {}
 
   ~ExtensionIconManagerTest() override {}
 
@@ -91,21 +85,13 @@ class ExtensionIconManagerTest : public testing::Test {
   }
 
  private:
-  void SetUp() override {
-    file_thread_.Start();
-    io_thread_.Start();
-  }
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   // The number of observed image loads that have not been waited for.
   int unwaited_image_loads_;
 
   // Whether we are currently waiting for an image load.
   bool waiting_;
-
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconManagerTest);
 };

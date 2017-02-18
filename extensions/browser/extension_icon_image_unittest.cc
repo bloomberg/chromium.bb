@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/test_image_loader.h"
@@ -25,8 +25,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skia_util.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 namespace {
@@ -71,11 +69,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
                                public IconImage::Observer {
  public:
   ExtensionIconImageTest()
-      : image_loaded_count_(0),
-        quit_in_image_loaded_(false),
-        ui_thread_(BrowserThread::UI, &ui_loop_),
-        file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO) {}
+      : image_loaded_count_(0), quit_in_image_loaded_(false) {}
 
   ~ExtensionIconImageTest() override {}
 
@@ -119,12 +113,6 @@ class ExtensionIconImageTest : public ExtensionsTest,
                              Extension::NO_FLAGS, &error);
   }
 
-  // testing::Test overrides:
-  void SetUp() override {
-    file_thread_.Start();
-    io_thread_.Start();
-  }
-
   // IconImage::Delegate overrides:
   void OnExtensionIconImageChanged(IconImage* image) override {
     image_loaded_count_++;
@@ -137,12 +125,9 @@ class ExtensionIconImageTest : public ExtensionsTest,
   }
 
  private:
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   int image_loaded_count_;
   bool quit_in_image_loaded_;
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconImageTest);
 };

@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +37,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
-
-using content::BrowserThread;
 
 namespace extensions {
 namespace {
@@ -88,12 +86,7 @@ class ExtensionActionIconFactoryTest
     : public testing::TestWithParam<ui::MaterialDesignController::Mode>,
       public ExtensionActionIconFactory::Observer {
  public:
-  ExtensionActionIconFactoryTest()
-      : quit_in_icon_updated_(false),
-        ui_thread_(BrowserThread::UI, &ui_loop_),
-        file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO) {
-  }
+  ExtensionActionIconFactoryTest() : quit_in_icon_updated_(false) {}
 
   ~ExtensionActionIconFactoryTest() override {}
 
@@ -138,8 +131,6 @@ class ExtensionActionIconFactoryTest
 
   // testing::Test overrides:
   void SetUp() override {
-    file_thread_.Start();
-    io_thread_.Start();
     profile_.reset(new TestingProfile);
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
@@ -173,11 +164,8 @@ class ExtensionActionIconFactoryTest
   TestingProfile* profile() { return profile_.get(); }
 
  private:
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   bool quit_in_icon_updated_;
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
   std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -25,7 +26,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -34,7 +35,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::DeleteArg;
@@ -50,12 +50,10 @@ namespace context_menus = api::context_menus;
 class MenuManagerTest : public testing::Test {
  public:
   MenuManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_(new TestingProfile()),
+      : profile_(new TestingProfile()),
         manager_(profile_.get(),
                  ExtensionSystem::Get(profile_.get())->state_store()),
-        prefs_(message_loop_.task_runner().get()),
+        prefs_(base::ThreadTaskRunnerHandle::Get()),
         next_id_(1) {}
 
   void TearDown() override {
@@ -94,9 +92,7 @@ class MenuManagerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
   MenuManager manager_;
