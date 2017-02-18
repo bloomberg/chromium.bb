@@ -18,8 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
@@ -196,11 +195,10 @@ ContentHashFetcherJob::ContentHashFetcherJob(
 void ContentHashFetcherJob::Start() {
   base::FilePath verified_contents_path =
       file_util::GetVerifiedContentsPath(extension_path_);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ContentHashFetcherJob::LoadVerifiedContents,
-                 this,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_VISIBLE),
+      base::Bind(&ContentHashFetcherJob::LoadVerifiedContents, this,
                  verified_contents_path),
       base::Bind(&ContentHashFetcherJob::DoneCheckingForVerifiedContents,
                  this));
@@ -289,12 +287,12 @@ void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
     base::FilePath destination =
         file_util::GetVerifiedContentsPath(extension_path_);
     size_t size = response->size();
-    base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::USER_VISIBLE),
         base::Bind(&WriteFileHelper, destination, base::Passed(&response)),
-        base::Bind(
-            &ContentHashFetcherJob::OnVerifiedContentsWritten, this, size));
+        base::Bind(&ContentHashFetcherJob::OnVerifiedContentsWritten, this,
+                   size));
   } else {
     DoneFetchingVerifiedContents(false);
   }
