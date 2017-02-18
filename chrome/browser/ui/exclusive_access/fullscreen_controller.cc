@@ -53,7 +53,6 @@ FullscreenController::FullscreenController(ExclusiveAccessManager* manager)
       state_prior_to_tab_fullscreen_(STATE_INVALID),
       tab_fullscreen_(false),
       toggled_into_fullscreen_(false),
-      reentrant_window_state_change_call_check_(false),
       is_privileged_fullscreen_for_testing_(false),
       ptr_factory_(this) {
 }
@@ -249,7 +248,6 @@ void FullscreenController::WindowFullscreenStateWillChange() {
 }
 
 void FullscreenController::WindowFullscreenStateChanged() {
-  reentrant_window_state_change_call_check_ = true;
   ExclusiveAccessContext* const exclusive_access_context =
       exclusive_access_manager()->context();
   bool exiting_fullscreen = !exclusive_access_context->IsFullscreen();

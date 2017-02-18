@@ -189,10 +189,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // True if this controller has toggled into tab OR browser fullscreen.
   bool toggled_into_fullscreen_;
 
-  // Used to verify that calls we expect to reenter by calling
-  // WindowFullscreenStateChanged do so.
-  bool reentrant_window_state_change_call_check_;
-
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.
   bool is_privileged_fullscreen_for_testing_;
