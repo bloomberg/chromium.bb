@@ -69,7 +69,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     parser = cbuildbot._CreateParser()
     argv = (['-r', self.buildroot, '--buildbot', '--debug', '--nochromesdk'] +
             (extra_argv if extra_argv else []) + [bot_id])
-    options, _ = cbuildbot._ParseCommandLine(parser, argv)
+    options, _ = cbuildbot.ParseCommandLine(parser, argv)
 
     # Yikes.
     options.managed_chrome = build_config['sync_chrome']

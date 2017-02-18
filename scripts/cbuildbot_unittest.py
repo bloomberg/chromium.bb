@@ -26,7 +26,7 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     """Tests for _IsDistributedBuilder() under various configurations."""
     parser = cbuildbot._CreateParser()
     argv = ['x86-generic-paladin']
-    (options, _) = cbuildbot._ParseCommandLine(parser, argv)
+    (options, _) = cbuildbot.ParseCommandLine(parser, argv)
     options.buildbot = False
 
     build_config = dict(pre_cq=False,

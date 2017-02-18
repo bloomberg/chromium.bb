@@ -10,6 +10,7 @@ import mock
 import os
 
 from chromite.cbuildbot import repository
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -19,22 +20,37 @@ from chromite.scripts import bootstrap
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
 
-class BootstrapTest(cros_build_lib_unittest.RunCommandTestCase):
+class BootstrapTest(cros_test_lib.MockTestCase):
   """Tests for bootstrap script."""
 
   def testPreParseArguments(self):
     """Test that we can correctly extract branch values from cbuildbot args."""
-    cases = (
-        (['--buildroot', '/build'], None, '/build', None),
-        (['--branch', 'branch', '-r', '/build'], 'branch', '/build', None),
-        (['-r', '/build', '-b', 'branch', 'config'], 'branch', '/build', None),
+    CASES = (
+        (['--buildroot', '/buildroot', 'daisy-incremental'],
+         (None, '/buildroot', None)),
+
+        (['--buildbot', '--buildroot', '/buildroot',
+          '--git-cache-dir', '/git-cache',
+          '-b', 'release-R57-9202.B',
+          'daisy-incremental'],
+         ('release-R57-9202.B', '/buildroot', '/git-cache')),
+
+        (['--debug', '--buildbot', '--notests',
+          '--buildroot', '/buildroot',
+          '--git-cache-dir', '/git-cache',
+          '--branch', 'release-R57-9202.B',
+          'daisy-incremental'],
+         ('release-R57-9202.B', '/buildroot', '/git-cache')),
     )
 
-    for args, expected_branch, expected_root, expected_git_cache in cases:
-      result = bootstrap.PreParseArguments(args)
-      self.assertEqual(result.branch, expected_branch)
-      self.assertEqual(result.buildroot, expected_root)
-      self.assertEqual(result.git_cache_dir, expected_git_cache)
+    for cmd_args, expected in CASES:
+      expected_branch, expected_buildroot, expected_cache_dir = expected
+
+      options = bootstrap.PreParseArguments(cmd_args)
+
+      self.assertEqual(options.branch, expected_branch)
+      self.assertEqual(options.buildroot, expected_buildroot)
+      self.assertEqual(options.git_cache_dir, expected_cache_dir)
 
   def testInitialCheckoutMin(self):
     """Test InitialCheckout with minimum settings."""
@@ -60,21 +76,59 @@ class BootstrapTest(cros_build_lib_unittest.RunCommandTestCase):
         mock.call().Sync()
     ])
 
-  def testRunCbuildbot(self):
+
+class RunTests(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests for bootstrap script."""
+
+  ARGS_BASE = ['--buildroot', '/buildroot']
+  ARGS_GIT_CACHE = ['--git-cache-dir', '/git-cache']
+  ARGS_CONFIG = ['config']
+  CMD = ['/buildroot/chromite/bin/cbuildbot']
+
+  def verifyRunCbuildbot(self, args, expected_cmd, version):
     """Ensure we invoke cbuildbot correctly."""
-    bootstrap.RunCbuildbot('/buildroot', ['foo', 'bar', 'arg'])
-    self.assertCommandContains(
-        ['/buildroot/chromite/bin/cbuildbot', 'foo', 'bar', 'arg'])
+    options = bootstrap.PreParseArguments(args)
+
+    self.PatchObject(
+        cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
+        return_value=version)
+
+    bootstrap.RunCbuildbot(options)
+
+    self.assertCommandCalled(
+        expected_cmd, cwd=options.buildroot, error_code_ok=True)
+
+  def testRunCbuildbotSimple(self):
+    """Ensure we invoke cbuildbot correctly."""
+    self.verifyRunCbuildbot(
+        self.ARGS_BASE + self.ARGS_CONFIG,
+        self.CMD + self.ARGS_CONFIG + self.ARGS_BASE,
+        (0, 4))
+
+  def testRunCbuildbotNotFiltered(self):
+    """Ensure we invoke cbuildbot correctly."""
+    self.verifyRunCbuildbot(
+        self.ARGS_BASE + self.ARGS_CONFIG + self.ARGS_GIT_CACHE,
+        self.CMD + self.ARGS_CONFIG + self.ARGS_BASE + self.ARGS_GIT_CACHE,
+        (0, 4))
+
+  def testRunCbuildbotFiltered(self):
+    """Ensure we invoke cbuildbot correctly."""
+    self.verifyRunCbuildbot(
+        self.ARGS_BASE + self.ARGS_CONFIG + self.ARGS_GIT_CACHE,
+        self.CMD + self.ARGS_CONFIG + self.ARGS_BASE,
+        (0, 2))
 
   def testMainMin(self):
     """Test a minimal set of command line options."""
+    self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
+    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
+                     autospec=True, return_value=(0, 4))
     mock_clean = self.PatchObject(bootstrap, 'CleanBuildroot', autospec=True)
     mock_checkout = self.PatchObject(bootstrap, 'InitialCheckout',
                                      autospec=True)
-    self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
 
-
-    bootstrap.main(['--buildroot', '/buildroot', 'foo'])
+    bootstrap.main(['--buildroot', '/buildroot', 'config'])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
@@ -87,32 +141,36 @@ class BootstrapTest(cros_build_lib_unittest.RunCommandTestCase):
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
         ['/buildroot/chromite/bin/cbuildbot',
-         '--buildroot', '/buildroot', 'foo'],
+         'config', '--buildroot', '/buildroot'],
         cwd='/buildroot', error_code_ok=True)
 
   def testMainMax(self):
-    """Test a maximal set of command line options."""
+    """Test a larger set of command line options."""
+    self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
+    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
+                     autospec=True, return_value=(0, 4))
     mock_clean = self.PatchObject(bootstrap, 'CleanBuildroot', autospec=True)
     mock_checkout = self.PatchObject(bootstrap, 'InitialCheckout',
                                      autospec=True)
-    self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
 
-    bootstrap.main(['--buildroot', '/buildroot', '--branch', 'branch',
-                    '--git-cache-dir', '/git-cache', 'foo'])
+    bootstrap.main(['--buildroot', '/buildroot',
+                    '--git-cache-dir', '/git-cache',
+                    'config'])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call('branch', '/buildroot')])
+                     [mock.call(None, '/buildroot')])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
-                     [mock.call('branch', '/buildroot', '/git-cache')])
+                     [mock.call(None, '/buildroot', '/git-cache')])
 
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
         ['/buildroot/chromite/bin/cbuildbot',
-         '--buildroot', '/buildroot', '--branch', 'branch',
-         '--git-cache-dir', '/git-cache', 'foo'],
+         'config',
+         '--buildroot', '/buildroot',
+         '--git-cache-dir', '/git-cache'],
         cwd='/buildroot', error_code_ok=True)
 
 

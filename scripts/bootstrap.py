@@ -18,11 +18,13 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import repository
+from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot
+
 
 def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
@@ -35,15 +37,16 @@ def PreParseArguments(argv):
   Returns:
     Branch as a string ('master' if nothing is specified).
   """
-  # Must match cbuildbot._CreateParser().
   parser = cbuildbot.CreateParser()
-
-  # Extract the branch argument, if present, ignore the rest.
-  options, _ = parser.parse_args(argv)
+  options, args = cbuildbot.ParseCommandLine(parser, argv)
 
   # This option isn't required for cbuildbot, but is for us.
   if not options.buildroot:
     cros_build_lib.Die('--buildroot is a required option.')
+
+  # Save off the build targets, in a mirror of cbuildbot code.
+  options.build_targets = args
+  options.Freeze()
 
   return options
 
@@ -118,21 +121,24 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   repo.Sync()
 
 
-def RunCbuildbot(buildroot, argv):
+def RunCbuildbot(options):
   """Start cbuildbot in specified directory with all arguments.
 
   Args:
-    buildroot: Root of ChromeOS checkout to run cbuildbot in.
-    argv: All command line arguments to pass as list of strings.
+    options: Parse command line options.
 
   Returns:
     Return code of cbuildbot as an integer.
   """
-  logging.info('Bootstrap cbuildbot in: %s', buildroot)
-  cbuildbot_cmd = os.path.join(buildroot, 'chromite', 'bin', 'cbuildbot')
-  result = cros_build_lib.RunCommand([cbuildbot_cmd] + argv,
-                                     error_code_ok=True,
-                                     cwd=buildroot)
+  logging.info('Bootstrap cbuildbot in: %s', options.buildroot)
+  cbuildbot_path = os.path.join(
+      options.buildroot, 'chromite', 'bin', 'cbuildbot')
+
+  cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
+      options.buildroot, cbuildbot_path, options)
+
+  result = cros_build_lib.RunCommand(
+      cmd, error_code_ok=True, cwd=options.buildroot)
 
   logging.debug('cbuildbot result is: %s', result.returncode)
   return result.returncode
@@ -165,4 +171,4 @@ def main(argv):
   InitialCheckout(branchname, buildroot, git_cache_dir)
 
   # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-  RunCbuildbot(buildroot, argv)
+  return RunCbuildbot(options)

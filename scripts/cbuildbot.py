@@ -968,7 +968,7 @@ def _PostParseCheck(parser, options, args, site_config):
                        '`cbuildbot --list --all`')
 
 
-def _ParseCommandLine(parser, argv):
+def ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
@@ -1101,7 +1101,7 @@ def main(argv):
   os.umask(0o22)
 
   parser = _CreateParser()
-  options, args = _ParseCommandLine(parser, argv)
+  options, args = ParseCommandLine(parser, argv)
 
   if options.buildbot and options.config_repo:
     _FetchInitialBootstrapConfigRepo(options.config_repo, options.branch)

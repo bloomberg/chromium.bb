@@ -42,7 +42,7 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
     args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
             '6666', '--remote']
     args.extend(self.BOTS)
-    self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
+    self.options, args = cbuildbot.ParseCommandLine(self.parser, args)
     self.options.cache_dir = self.tempdir
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
     self.int_mirror, self.ext_mirror = None, None
