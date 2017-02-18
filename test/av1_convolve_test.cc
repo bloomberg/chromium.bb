@@ -9,19 +9,216 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <algorithm>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./av1_rtcd.h"
 #include "./aom_dsp_rtcd.h"
-#include "test/acm_random.h"
-#include "av1/common/filter.h"
-#include "av1/common/convolve.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
+#include "av1/common/filter.h"
+#include "av1/common/convolve.h"
+#include "test/acm_random.h"
+#include "test/util.h"
 
 using libaom_test::ACMRandom;
 
 namespace {
+using std::tr1::tuple;
+static void filter_block1d_horiz_c(const uint8_t *src_ptr, int src_stride,
+                                   const int16_t *filter, int tap,
+                                   uint8_t *dst_ptr, int dst_stride, int w,
+                                   int h) {
+  src_ptr -= tap / 2 - 1;
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
+      int sum = 0;
+      for (int i = 0; i < tap; ++i) {
+        sum += src_ptr[c + i] * filter[i];
+      }
+      dst_ptr[c] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+    }
+    src_ptr += src_stride;
+    dst_ptr += dst_stride;
+  }
+}
+
+static void filter_block1d_vert_c(const uint8_t *src_ptr, int src_stride,
+                                  const int16_t *filter, int tap,
+                                  uint8_t *dst_ptr, int dst_stride, int w,
+                                  int h) {
+  src_ptr -= (tap / 2 - 1) * src_stride;
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
+      int sum = 0;
+      for (int i = 0; i < tap; ++i) {
+        sum += src_ptr[c + i * src_stride] * filter[i];
+      }
+      dst_ptr[c] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+    }
+    src_ptr += src_stride;
+    dst_ptr += dst_stride;
+  }
+}
+
+static int match(const uint8_t *out, int out_stride, const uint8_t *ref_out,
+                 int ref_out_stride, int w, int h) {
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
+      if (out[r * out_stride + c] != ref_out[r * ref_out_stride + c]) return 0;
+    }
+  }
+  return 1;
+}
+
+typedef void (*ConvolveFunc)(const uint8_t *src, int src_stride, uint8_t *dst,
+                             int dst_stride, int w, int h,
+                             const InterpFilterParams filter_params,
+                             const int subpel_q4, int step_q4,
+                             ConvolveParams *conv_params);
+
+struct ConvolveFunctions {
+  ConvolveFunctions(ConvolveFunc hf, ConvolveFunc vf) : hf_(hf), vf_(vf) {}
+  ConvolveFunc hf_;
+  ConvolveFunc vf_;
+};
+
+typedef tuple<ConvolveFunctions *, InterpFilter /* filter_x */,
+              InterpFilter /* filter_y */>
+    ConvolveParam;
+
+class Av1ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
+ public:
+  virtual void SetUp() {
+    // Force input_ to be unaligned, output to be 16 byte aligned.
+    input_ = reinterpret_cast<uint8_t *>(
+        aom_memalign(kDataAlignment, kInputBufferSize));
+    output_ = reinterpret_cast<uint8_t *>(
+        aom_memalign(kDataAlignment, kOutputBufferSize));
+    ref_output_ = reinterpret_cast<uint8_t *>(
+        aom_memalign(kDataAlignment, kOutputBufferSize));
+    cfs_ = GET_PARAM(0);
+    interp_filter_ls_[0] = GET_PARAM(2);
+    interp_filter_ls_[2] = interp_filter_ls_[0];
+    interp_filter_ls_[1] = GET_PARAM(1);
+    interp_filter_ls_[3] = interp_filter_ls_[1];
+  }
+  virtual void TearDown() {
+    aom_free(input_);
+    aom_free(output_);
+    aom_free(ref_output_);
+  }
+  virtual uint8_t *input(int w, int h, int *stride) {
+    ACMRandom rnd(ACMRandom::DeterministicSeed());
+    *stride = w + MAX_FILTER_TAP - 1;
+    int offset = MAX_FILTER_TAP / 2 - 1;
+    for (int r = 0; r < h + MAX_FILTER_TAP - 1; ++r) {
+      for (int c = 0; c < w + MAX_FILTER_TAP - 1; ++c) {
+        input_[r * (*stride) + c] = rnd.Rand8();
+      }
+    }
+    return input_ + offset * (*stride) + offset;
+  }
+  virtual uint8_t *output(int w, int h, int *stride) {
+    *stride = w;
+    return output_;
+  }
+  virtual uint8_t *ref_output(int w, int h, int *stride) {
+    *stride = w;
+    return ref_output_;
+  }
+
+ protected:
+  static const int kDataAlignment = 16;
+  static const int kOuterBlockSize = MAX_SB_SIZE + MAX_FILTER_TAP - 1;
+  static const int kInputBufferSize = kOuterBlockSize * kOuterBlockSize;
+  static const int kOutputBufferSize = kOuterBlockSize * kOuterBlockSize;
+  uint8_t *input_;
+  uint8_t *output_;
+  uint8_t *ref_output_;
+  InterpFilter interp_filter_ls_[4];
+  ConvolveFunctions *cfs_;
+};
+
+TEST_P(Av1ConvolveTest, av1_convolve_vert) {
+  const int y_step_q4 = 16;
+  ConvolveParams conv_params = get_conv_params(0, 0);
+  conv_params.ref = 0;
+  int bsize_ls[] = { 1, 2, 4, 8, 16, 32, 64, 3, 7, 15, 31, 63 };
+  int bsize_num = sizeof(bsize_ls) / sizeof(bsize_ls[0]);
+
+  for (int hb_idx = 0; hb_idx < bsize_num; ++hb_idx) {
+    for (int vb_idx = 0; vb_idx < bsize_num; ++vb_idx) {
+      int w = bsize_ls[hb_idx];
+      int h = bsize_ls[vb_idx];
+      int in_stride, out_stride, ref_out_stride;
+      uint8_t *in = input(w, h, &in_stride);
+      uint8_t *out = output(w, h, &out_stride);
+      uint8_t *ref_out = ref_output(w, h, &ref_out_stride);
+      for (int subpel_y_q4 = 0; subpel_y_q4 < SUBPEL_SHIFTS; ++subpel_y_q4) {
+        InterpFilter filter_y = interp_filter_ls_[0];
+        InterpFilterParams param_vert = av1_get_interp_filter_params(filter_y);
+        const int16_t *filter_vert =
+            av1_get_interp_filter_subpel_kernel(param_vert, subpel_y_q4);
+
+        filter_block1d_vert_c(in, in_stride, filter_vert, param_vert.taps,
+                              ref_out, ref_out_stride, w, h);
+
+        cfs_->vf_(in, in_stride, out, out_stride, w, h, param_vert, subpel_y_q4,
+                  y_step_q4, &conv_params);
+        EXPECT_EQ(match(out, out_stride, ref_out, ref_out_stride, w, h), 1)
+            << " filter_y " << filter_y;
+      }
+    }
+  }
+};
+
+TEST_P(Av1ConvolveTest, av1_convolve_horiz) {
+  const int x_step_q4 = 16;
+  ConvolveParams conv_params = get_conv_params(0, 0);
+  conv_params.ref = 0;
+  int bsize_ls[] = { 1, 2, 4, 8, 16, 32, 64, 3, 7, 15, 31, 63 };
+  int bsize_num = sizeof(bsize_ls) / sizeof(bsize_ls[0]);
+
+  for (int hb_idx = 0; hb_idx < bsize_num; ++hb_idx) {
+    for (int vb_idx = 0; vb_idx < bsize_num; ++vb_idx) {
+      int w = bsize_ls[hb_idx];
+      int h = bsize_ls[vb_idx];
+      int in_stride, out_stride, ref_out_stride;
+      uint8_t *in = input(w, h, &in_stride);
+      uint8_t *out = output(w, h, &out_stride);
+      uint8_t *ref_out = ref_output(w, h, &ref_out_stride);
+      for (int subpel_x_q4 = 0; subpel_x_q4 < SUBPEL_SHIFTS; ++subpel_x_q4) {
+        InterpFilter filter_x = interp_filter_ls_[1];
+        InterpFilterParams param_horiz = av1_get_interp_filter_params(filter_x);
+        const int16_t *filter_horiz =
+            av1_get_interp_filter_subpel_kernel(param_horiz, subpel_x_q4);
+
+        filter_block1d_horiz_c(in, in_stride, filter_horiz, param_horiz.taps,
+                               ref_out, ref_out_stride, w, h);
+
+        cfs_->hf_(in, in_stride, out, out_stride, w, h, param_horiz,
+                  subpel_x_q4, x_step_q4, &conv_params);
+        EXPECT_EQ(match(out, out_stride, ref_out, ref_out_stride, w, h), 1)
+            << " filter_x " << filter_x;
+      }
+    }
+  }
+};
+
+ConvolveFunctions convolve_functions_c(av1_convolve_horiz_c,
+                                       av1_convolve_vert_c);
+
+InterpFilter filter_ls[] = { EIGHTTAP_REGULAR, EIGHTTAP_SMOOTH,
+                             MULTITAP_SHARP };
+
+INSTANTIATE_TEST_CASE_P(
+    C, Av1ConvolveTest,
+    ::testing::Combine(::testing::Values(&convolve_functions_c),
+                       ::testing::ValuesIn(filter_ls),
+                       ::testing::ValuesIn(filter_ls)));
+
 void setup_convolve() {
 #if HAVE_SSSE3 && CONFIG_RUNTIME_CPU_DETECT
   av1_convolve_horiz = av1_convolve_horiz_c;
@@ -29,184 +226,7 @@ void setup_convolve() {
 #endif
 }
 
-TEST(AV1ConvolveTest, av1_convolve8) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-#if CONFIG_DUAL_FILTER
-  InterpFilter interp_filter[4] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR,
-                                    EIGHTTAP_REGULAR, EIGHTTAP_REGULAR };
-  InterpFilterParams filter_params =
-      av1_get_interp_filter_params(interp_filter[0]);
-#else
-  InterpFilter interp_filter = EIGHTTAP_REGULAR;
-  InterpFilterParams filter_params =
-      av1_get_interp_filter_params(interp_filter);
-#endif
-  int filter_size = filter_params.taps;
-  int filter_center = filter_size / 2 - 1;
-  uint8_t src[12 * 12];
-  int src_stride = filter_size;
-  uint8_t dst[1] = { 0 };
-  uint8_t dst1[1] = { 0 };
-  int dst_stride = 1;
-  int x_step_q4 = 16;
-  int y_step_q4 = 16;
-  int subpel_x_q4 = 3;
-  int subpel_y_q4 = 2;
-  const int plane = 0;
-
-  int w = 1;
-  int h = 1;
-
-  ConvolveParams conv_params = get_conv_params(0, plane);
-
-  setup_convolve();
-
-  for (int i = 0; i < filter_size * filter_size; i++) {
-    src[i] = rnd.Rand16() % (1 << 8);
-  }
-
-  av1_convolve(src + src_stride * filter_center + filter_center, src_stride,
-               dst, dst_stride, w, h, interp_filter, subpel_x_q4, x_step_q4,
-               subpel_y_q4, y_step_q4, &conv_params);
-
-  const int16_t *x_filter =
-      av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
-  const int16_t *y_filter =
-      av1_get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
-
-  aom_convolve8_c(src + src_stride * filter_center + filter_center, src_stride,
-                  dst1, dst_stride, x_filter, 16, y_filter, 16, w, h);
-  EXPECT_EQ(dst[0], dst1[0]);
-}
-TEST(AV1ConvolveTest, av1_convolve) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-#if CONFIG_DUAL_FILTER
-  InterpFilter interp_filter[4] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR,
-                                    EIGHTTAP_REGULAR, EIGHTTAP_REGULAR };
-  InterpFilterParams filter_params =
-      av1_get_interp_filter_params(interp_filter[0]);
-#else
-  InterpFilter interp_filter = EIGHTTAP_REGULAR;
-  InterpFilterParams filter_params =
-      av1_get_interp_filter_params(interp_filter);
-#endif
-  int filter_size = filter_params.taps;
-  int filter_center = filter_size / 2 - 1;
-  uint8_t src[12 * 12];
-  int src_stride = filter_size;
-  uint8_t dst[1] = { 0 };
-  int dst_stride = 1;
-  int x_step_q4 = 16;
-  int y_step_q4 = 16;
-  int w = 1;
-  int h = 1;
-
-  int subpel_x_q4;
-  int subpel_y_q4;
-  const int plane = 0;
-
-  ConvolveParams conv_params = get_conv_params(0, plane);
-
-  ASSERT_LE(filter_size, 12);
-  setup_convolve();
-
-  for (int i = 0; i < static_cast<int>(sizeof(src) / sizeof(src[0])); i++) {
-    src[i] = rnd.Rand16() % (1 << 8);
-  }
-
-  for (subpel_x_q4 = 0; subpel_x_q4 < SUBPEL_SHIFTS; subpel_x_q4++) {
-    for (subpel_y_q4 = 0; subpel_y_q4 < SUBPEL_SHIFTS; subpel_y_q4++) {
-      av1_convolve(src + src_stride * filter_center + filter_center, src_stride,
-                   dst, dst_stride, w, h, interp_filter, subpel_x_q4, x_step_q4,
-                   subpel_y_q4, y_step_q4, &conv_params);
-
-      const int16_t *x_filter =
-          av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
-      const int16_t *y_filter =
-          av1_get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
-
-      int temp[12];
-      int dst_ref = 0;
-      for (int r = 0; r < filter_size; r++) {
-        temp[r] = 0;
-        for (int c = 0; c < filter_size; c++) {
-          temp[r] += x_filter[c] * src[r * filter_size + c];
-        }
-        temp[r] = clip_pixel(ROUND_POWER_OF_TWO(temp[r], FILTER_BITS));
-        dst_ref += temp[r] * y_filter[r];
-      }
-      dst_ref = clip_pixel(ROUND_POWER_OF_TWO(dst_ref, FILTER_BITS));
-      EXPECT_EQ(dst[0], dst_ref);
-    }
-  }
-}
-
-#if CONFIG_DUAL_FILTER
-TEST(AV1ConvolveTest, av1_convolve_vert_first) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  InterpFilter interp_filter[4] = { EIGHTTAP_REGULAR, MULTITAP_SHARP,
-                                    EIGHTTAP_REGULAR, MULTITAP_SHARP };
-  InterpFilterParams filter_params_x =
-      av1_get_interp_filter_params(interp_filter[1]);
-  InterpFilterParams filter_params_y =
-      av1_get_interp_filter_params(interp_filter[0]);
-  int filter_size_x = filter_params_x.taps;
-  int filter_size_y = filter_params_y.taps;
-  int filter_center_x = filter_size_x / 2 - 1;
-  int filter_center_y = filter_size_y / 2 - 1;
-  uint8_t src[12 * 12];
-  int src_stride = filter_size_x;
-  uint8_t dst[1] = { 0 };
-  int dst_stride = 1;
-  int x_step_q4 = 16;
-  int y_step_q4 = 16;
-  int w = 1;
-  int h = 1;
-  const int plane = 0;
-
-  int subpel_x_q4;
-  int subpel_y_q4;
-
-  ConvolveParams conv_params = get_conv_params(0, plane);
-
-  ASSERT_LE(filter_size_x, 12);
-  ASSERT_LE(filter_size_y, 12);
-  setup_convolve();
-
-  for (int i = 0; i < static_cast<int>(sizeof(src) / sizeof(src[0])); i++) {
-    src[i] = rnd.Rand16() % (1 << 8);
-  }
-
-  for (subpel_x_q4 = 1; subpel_x_q4 < SUBPEL_SHIFTS; subpel_x_q4++) {
-    for (subpel_y_q4 = 1; subpel_y_q4 < SUBPEL_SHIFTS; subpel_y_q4++) {
-      av1_convolve(src + src_stride * filter_center_y + filter_center_x,
-                   src_stride, dst, dst_stride, w, h, interp_filter,
-                   subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4,
-                   &conv_params);
-
-      const int16_t *x_filter =
-          av1_get_interp_filter_subpel_kernel(filter_params_x, subpel_x_q4);
-      const int16_t *y_filter =
-          av1_get_interp_filter_subpel_kernel(filter_params_y, subpel_y_q4);
-
-      int temp[12];
-      int dst_ref = 0;
-      for (int c = 0; c < filter_size_x; c++) {
-        temp[c] = 0;
-        for (int r = 0; r < filter_size_y; r++) {
-          temp[c] += y_filter[r] * src[r * filter_size_x + c];
-        }
-        temp[c] = clip_pixel(ROUND_POWER_OF_TWO(temp[c], FILTER_BITS));
-        dst_ref += temp[c] * x_filter[c];
-      }
-      dst_ref = clip_pixel(ROUND_POWER_OF_TWO(dst_ref, FILTER_BITS));
-      EXPECT_EQ(dst[0], dst_ref);
-    }
-  }
-}
-#endif
-
-TEST(AV1ConvolveTest, av1_convolve_avg) {
+TEST(Av1ConvolveTest, av1_convolve_avg) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
 #if CONFIG_DUAL_FILTER
   InterpFilter interp_filter[4] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR,
@@ -232,12 +252,10 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
 
   int w = 1;
   int h = 1;
-  const int plane = 0;
 
   int subpel_x_q4;
   int subpel_y_q4;
-
-  ConvolveParams conv_params = get_conv_params(0, plane);
+  ConvolveParams conv_params;
 
   setup_convolve();
 

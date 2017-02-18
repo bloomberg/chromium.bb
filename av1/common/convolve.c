@@ -22,7 +22,6 @@
 #define MAX_BLOCK_WIDTH (MAX_SB_SIZE)
 #define MAX_BLOCK_HEIGHT (MAX_SB_SIZE)
 #define MAX_STEP (32)
-#define MAX_FILTER_TAP (12)
 
 void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           int dst_stride, int w, int h,

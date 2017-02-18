@@ -22,6 +22,7 @@ extern "C" {
 #endif
 
 #define USE_TEMPORALFILTER_12TAP 1
+#define MAX_FILTER_TAP 12
 
 typedef enum {
   EIGHTTAP_REGULAR,
