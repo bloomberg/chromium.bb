@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
@@ -34,7 +36,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
@@ -176,11 +177,6 @@ gfx::ImageSkia* HungRendererDialogView::frozen_icon_ = NULL;
 static const int kTableViewWidth = 300;
 static const int kTableViewHeight = 100;
 
-// Padding space in pixels between frozen icon to the info label, hung pages
-// list table view and the Kill pages button.
-static const int kCentralColumnPadding =
-    views::kUnrelatedControlLargeHorizontalSpacing;
-
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, public:
 
@@ -233,11 +229,7 @@ bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
 }
 
 HungRendererDialogView::HungRendererDialogView()
-    : info_label_(nullptr),
-      hung_pages_table_(nullptr),
-      kill_button_(nullptr),
-      initialized_(false),
-      kill_button_clicked_(false) {
+    : info_label_(nullptr), hung_pages_table_(nullptr), initialized_(false) {
   InitClass();
 }
 
@@ -334,31 +326,55 @@ void HungRendererDialogView::WindowClosing() {
 }
 
 int HungRendererDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 HungRendererDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
-  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
-}
-
-views::View* HungRendererDialogView::CreateExtraView() {
-  DCHECK(!kill_button_);
-  kill_button_ = views::MdTextButton::CreateSecondaryUiButton(this,
-      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
-  return kill_button_;
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_BROWSER_HANGMONITOR_RENDERER_WAIT
+                                       : IDS_BROWSER_HANGMONITOR_RENDERER_END);
 }
 
 bool HungRendererDialogView::Cancel() {
-  // Start waiting again for responsiveness.
-  if (!kill_button_clicked_ &&
-      hung_pages_table_model_->GetRenderViewHost()) {
-    hung_pages_table_model_->GetRenderViewHost()
-        ->GetWidget()
-        ->RestartHangMonitorTimeoutIfNecessary();
+  content::RenderProcessHost* rph =
+      hung_pages_table_model_->GetRenderProcessHost();
+  if (rph) {
+#if defined(OS_WIN)
+    base::StringPairs crash_keys;
+
+    crash_keys.push_back(std::make_pair(
+        crash_keys::kHungRendererOutstandingAckCount,
+        base::IntToString(unresponsive_state_.outstanding_ack_count)));
+    crash_keys.push_back(std::make_pair(
+        crash_keys::kHungRendererOutstandingEventType,
+        base::IntToString(unresponsive_state_.outstanding_event_type)));
+    crash_keys.push_back(
+        std::make_pair(crash_keys::kHungRendererLastEventType,
+                       base::IntToString(unresponsive_state_.last_event_type)));
+    crash_keys.push_back(
+        std::make_pair(crash_keys::kHungRendererReason,
+                       base::IntToString(unresponsive_state_.reason)));
+
+    // Try to generate a crash report for the hung process.
+    CrashDumpAndTerminateHungChildProcess(rph->GetHandle(), crash_keys);
+#else
+    rph->Shutdown(content::RESULT_CODE_HUNG, false);
+#endif
   }
   return true;
+}
+
+bool HungRendererDialogView::Accept() {
+  // Start waiting again for responsiveness.
+  auto* render_view_host = hung_pages_table_model_->GetRenderViewHost();
+  if (render_view_host)
+    render_view_host->GetWidget()->RestartHangMonitorTimeoutIfNecessary();
+  return true;
+}
+
+bool HungRendererDialogView::Close() {
+  return Accept();
 }
 
 bool HungRendererDialogView::ShouldUseCustomFrame() const {
@@ -368,40 +384,6 @@ bool HungRendererDialogView::ShouldUseCustomFrame() const {
   return ui::win::IsAeroGlassEnabled();
 #else
   return views::DialogDelegateView::ShouldUseCustomFrame();
-#endif
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HungRendererDialogView, views::ButtonListener implementation:
-
-void HungRendererDialogView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  DCHECK_EQ(kill_button_, sender);
-  kill_button_clicked_ = true;
-  content::RenderProcessHost* rph =
-      hung_pages_table_model_->GetRenderProcessHost();
-  if (!rph)
-    return;
-#if defined(OS_WIN)
-  base::StringPairs crash_keys;
-
-  crash_keys.push_back(std::make_pair(
-      crash_keys::kHungRendererOutstandingAckCount,
-      base::IntToString(unresponsive_state_.outstanding_ack_count)));
-  crash_keys.push_back(std::make_pair(
-      crash_keys::kHungRendererOutstandingEventType,
-      base::IntToString(unresponsive_state_.outstanding_event_type)));
-  crash_keys.push_back(
-      std::make_pair(crash_keys::kHungRendererLastEventType,
-                     base::IntToString(unresponsive_state_.last_event_type)));
-  crash_keys.push_back(
-      std::make_pair(crash_keys::kHungRendererReason,
-                     base::IntToString(unresponsive_state_.reason)));
-
-  // Try to generate a crash report for the hung process.
-  CrashDumpAndTerminateHungChildProcess(rph->GetHandle(), crash_keys);
-#else
-  rph->Shutdown(content::RESULT_CODE_HUNG, false);
 #endif
 }
 
@@ -443,14 +425,17 @@ void HungRendererDialogView::Init() {
   using views::GridLayout;
   using views::ColumnSet;
 
-  GridLayout* layout = GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  LayoutDelegate* delegate = LayoutDelegate::Get();
 
   const int double_column_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(double_column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::FIXED, frozen_icon_->width(), 0);
-  column_set->AddPaddingColumn(0, kCentralColumnPadding);
+  column_set->AddPaddingColumn(
+      0,
+      delegate->GetMetric(
+          LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING_LARGE));
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -461,7 +446,9 @@ void HungRendererDialogView::Init() {
   layout->AddView(
       info_label_, 1, 1, GridLayout::FILL, GridLayout::LEADING, 1, 0);
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, delegate->GetMetric(
+             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(0, double_column_set_id);
   layout->SkipColumns(1);

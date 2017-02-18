@@ -15,7 +15,6 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -55,10 +54,8 @@ void LayoutButton(LabelButton* button,
       row_bounds->right(),
       row_bounds->y() + (row_bounds->height() - button_height) / 2,
       size.width(), button_height);
-  int spacing = ViewsDelegate::GetInstance()
-                    ? ViewsDelegate::GetInstance()
-                          ->GetDialogRelatedButtonHorizontalSpacing()
-                    : kRelatedButtonHSpacing;
+  const int spacing =
+      ViewsDelegate::GetInstance()->GetDialogRelatedButtonHorizontalSpacing();
   row_bounds->set_width(row_bounds->width() - spacing);
 }
 
@@ -68,18 +65,12 @@ void LayoutButton(LabelButton* button,
 // DialogClientView, public:
 
 DialogClientView::DialogClientView(Widget* owner, View* contents_view)
-    : ClientView(owner, contents_view) {
-  button_row_insets_ =
-      ViewsDelegate::GetInstance()
-          ? ViewsDelegate::GetInstance()->GetDialogButtonInsets()
-          : gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
-                        kButtonHEdgeMarginNew);
+    : ClientView(owner, contents_view),
+      button_row_insets_(
+          ViewsDelegate::GetInstance()->GetDialogButtonInsets()) {
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  if (ViewsDelegate::GetInstance())
-    button_row_insets_ = ViewsDelegate::GetInstance()->GetDialogButtonInsets();
 }
 
 DialogClientView::~DialogClientView() {
@@ -157,26 +148,24 @@ gfx::Size DialogClientView::GetPreferredSize() const {
   // Initialize the size to fit the buttons and extra view row.
   int extra_view_padding = 0;
   if (!GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
-    extra_view_padding = ViewsDelegate::GetInstance()
-                             ? ViewsDelegate::GetInstance()
-                                   ->GetDialogRelatedButtonHorizontalSpacing()
-                             : kRelatedButtonHSpacing;
+    extra_view_padding =
+        ViewsDelegate::GetInstance()->GetDialogRelatedButtonHorizontalSpacing();
   gfx::Size size(
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
           (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
           (cancel_button_ && ok_button_
-           ? (ViewsDelegate::GetInstance()
-                  ? ViewsDelegate::GetInstance()
-                        ->GetDialogRelatedButtonHorizontalSpacing()
-                  : kRelatedButtonHSpacing) : 0) +
-      (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width() : 0) +
-      (ShouldShow(extra_view_) && has_dialog_buttons() ? extra_view_padding
-                                                       : 0),
+               ? ViewsDelegate::GetInstance()
+                     ->GetDialogRelatedButtonHorizontalSpacing()
+               : 0) +
+          (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width()
+                                   : 0) +
+          (ShouldShow(extra_view_) && has_dialog_buttons() ? extra_view_padding
+                                                           : 0),
       0);
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
   if (buttons_height != 0) {
-    size.Enlarge(0, buttons_height + GetButtonsAndExtraViewRowTopPadding());
+    size.Enlarge(0, buttons_height);
     // Inset the buttons and extra view.
     const gfx::Insets insets = GetButtonRowInsets();
     size.Enlarge(insets.width(), insets.height());
@@ -198,7 +187,11 @@ void DialogClientView::Layout() {
 
   // Layout the row containing the buttons and the extra view.
   if (has_dialog_buttons() || ShouldShow(extra_view_)) {
-    bounds.Inset(GetButtonRowInsets());
+    gfx::Insets button_row_insets = GetButtonRowInsets();
+    // Don't apply the top inset here because it's supposed to go above the
+    // buttons, not at the top of the dialog.
+    bounds.Inset(button_row_insets.left(), 0, button_row_insets.right(),
+                 button_row_insets.bottom());
     const int height = GetButtonsAndExtraViewRowHeight();
     gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,
                          bounds.width(), height);
@@ -218,18 +211,22 @@ void DialogClientView::Layout() {
       int custom_padding = 0;
       if (has_dialog_buttons() &&
           GetDialogDelegate()->GetExtraViewPadding(&custom_padding)) {
-        // The call to LayoutButton() will already have accounted for some of
-        // the padding.
-        custom_padding -= GetButtonsAndExtraViewRowTopPadding();
+        // The padding between buttons applied in LayoutButton() will already
+        // have accounted for some of the distance here.
+        custom_padding -= ViewsDelegate::GetInstance()
+                              ->GetDialogRelatedButtonHorizontalSpacing();
         row_bounds.set_width(row_bounds.width() - custom_padding);
       }
       row_bounds.set_width(std::min(row_bounds.width(),
-          extra_view_->GetPreferredSize().width()));
+                                    extra_view_->GetPreferredSize().width()));
       extra_view_->SetBoundsRect(row_bounds);
     }
 
-    if (height > 0)
-      bounds.Inset(0, 0, 0, height + GetButtonsAndExtraViewRowTopPadding());
+    if (height > 0) {
+      // Inset to the top of the buttons, plus their top padding, in order to
+      // exclude that area from the content view's bounds.
+      bounds.Inset(0, 0, 0, height + button_row_insets.top());
+    }
   }
 
   // Layout the contents view to the top and side edges of the contents bounds.
@@ -344,8 +341,12 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
     button = MdTextButton::CreateSecondaryUiButton(this, title);
   }
 
-  const int kDialogMinButtonWidth = 75;
-  button->SetMinSize(gfx::Size(kDialogMinButtonWidth, 0));
+  // TODO(bsep): Setting the minimum size is redundant with MdTextButton, so
+  // this can be deleted when harmony is always on.
+  const int minimum_width =
+      ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
+  button->SetMinSize(gfx::Size(minimum_width, 0));
+
   button->SetGroup(kButtonGroup);
   return button;
 }
@@ -365,23 +366,20 @@ int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
 }
 
 gfx::Insets DialogClientView::GetButtonRowInsets() const {
-  return GetButtonsAndExtraViewRowHeight() == 0 ? gfx::Insets()
-                                                : button_row_insets_;
-}
+  if (GetButtonsAndExtraViewRowHeight() == 0)
+    return gfx::Insets();
 
-int DialogClientView::GetButtonsAndExtraViewRowTopPadding() const {
-  int spacing = button_row_insets_.top();
   // Some subclasses of DialogClientView, in order to do their own layout, set
   // button_row_insets_ to gfx::Insets(). To avoid breaking behavior of those
   // dialogs, supplying 0 for the top inset of the row falls back to
-  // ViewsDelegate::GetRelatedControlVerticalSpacing or
-  // kRelatedControlVerticalSpacing.
-  if (!spacing)
-    spacing = ViewsDelegate::GetInstance()
-                  ? ViewsDelegate::GetInstance()
-                        ->GetDialogRelatedControlVerticalSpacing()
-                  : kRelatedControlVerticalSpacing;
-  return spacing;
+  // ViewsDelegate::GetRelatedControlVerticalSpacing.
+  // TODO(bsep): The top inset should never be 0 when harmony is enabled.
+  const int top = button_row_insets_.top() == 0
+                      ? ViewsDelegate::GetInstance()
+                            ->GetDialogRelatedControlVerticalSpacing()
+                      : button_row_insets_.top();
+  return gfx::Insets(top, button_row_insets_.left(),
+                     button_row_insets_.bottom(), button_row_insets_.right());
 }
 
 void DialogClientView::SetupFocusChain() {

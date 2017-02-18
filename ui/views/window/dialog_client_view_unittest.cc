@@ -54,7 +54,7 @@ class DialogClientViewTest : public ViewsTestBase,
   void SetUp() override {
     dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
     client_view_.reset(new TestDialogClientView(this));
-    // Add this i.e. the contents view as a child of |client_view_|. This is
+    // Add this (i.e. the contents view) as a child of |client_view_|. This is
     // generally done when the client view is added to the view hierarchy.
     client_view_->AddChildViewAt(this, 0);
     ViewsTestBase::SetUp();
@@ -224,6 +224,7 @@ TEST_F(DialogClientViewTest, ContentsSize) {
 TEST_F(DialogClientViewTest, LayoutWithButtons) {
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   CheckContentsIsSetToPreferredSize();
+
   EXPECT_LT(GetContentsView()->bounds().bottom(),
             client_view()->bounds().bottom());
   gfx::Size no_extra_view_size = client_view()->bounds().size();

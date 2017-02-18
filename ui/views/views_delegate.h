@@ -219,6 +219,12 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the margins that should be applied around a bubble dialog.
   virtual gfx::Insets GetBubbleDialogMargins() const;
 
+  // Returns the default minimum width of a dialog button.
+  virtual int GetDialogButtonMinimumWidth() const;
+
+  // Returns the default padding to add on each side of a button's label.
+  virtual int GetButtonHorizontalPadding() const;
+
  protected:
   ViewsDelegate();
 

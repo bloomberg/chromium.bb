@@ -83,6 +83,9 @@ constexpr int kCheckboxIndent = 10;
 // and the start of its corresponding text.
 constexpr int kItemLabelSpacing = 10;
 
+// Minimum width of dialog buttons.
+const int kDialogMinimumButtonWidth = 75;
+
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_

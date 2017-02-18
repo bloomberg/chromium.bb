@@ -98,12 +98,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Returns the height of the row containing the buttons and the extra view.
   int GetButtonsAndExtraViewRowHeight() const;
 
-  // Returns the insets for the buttons and extra view.
+  // Returns the insets for the buttons and extra view, including the vertical
+  // padding between them and the contents view.
   gfx::Insets GetButtonRowInsets() const;
-
-  // Returns the vertical padding to place between the contents view and the
-  // buttons/extra view.
-  int GetButtonsAndExtraViewRowTopPadding() const;
 
   // Sets up the focus chain for the child views. This is required since the
   // delegate may choose to add/remove views at any time.

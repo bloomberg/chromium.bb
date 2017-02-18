@@ -589,6 +589,16 @@ gfx::Insets ChromeViewsDelegate::GetBubbleDialogMargins() const {
       LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
 }
 
+int ChromeViewsDelegate::GetDialogButtonMinimumWidth() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::DIALOG_BUTTON_MINIMUM_WIDTH);
+}
+
+int ChromeViewsDelegate::GetButtonHorizontalPadding() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::BUTTON_HORIZONTAL_PADDING);
+}
+
 #if !defined(USE_ASH)
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(

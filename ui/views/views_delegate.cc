@@ -152,6 +152,14 @@ gfx::Insets ViewsDelegate::GetBubbleDialogMargins() const {
   return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
 }
 
+int ViewsDelegate::GetDialogButtonMinimumWidth() const {
+  return kDialogMinimumButtonWidth;
+}
+
+int ViewsDelegate::GetButtonHorizontalPadding() const {
+  return 0;
+}
+
 ViewsDelegate::ViewsDelegate()
     : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
   DCHECK(!views_delegate);
