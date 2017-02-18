@@ -6885,6 +6885,7 @@ void GLES2DecoderImpl::DoGetBooleanv(GLenum pname,
                                      GLsizei params_size) {
   DCHECK(params);
   std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  memset(values.get(), 0, params_size * sizeof(GLint));
   DoGetIntegerv(pname, values.get(), params_size);
   for (GLsizei ii = 0; ii < params_size; ++ii) {
     params[ii] = static_cast<GLboolean>(values[ii]);
@@ -6912,6 +6913,7 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname,
   }
 
   std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  memset(values.get(), 0, params_size * sizeof(GLint));
   DoGetIntegerv(pname, values.get(), params_size);
   for (GLsizei ii = 0; ii < params_size; ++ii) {
     params[ii] = static_cast<GLfloat>(values[ii]);
@@ -6942,6 +6944,7 @@ void GLES2DecoderImpl::DoGetInteger64v(GLenum pname,
   }
 
   std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  memset(values.get(), 0, params_size * sizeof(GLint));
   DoGetIntegerv(pname, values.get(), params_size);
   for (GLsizei ii = 0; ii < params_size; ++ii) {
     params[ii] = static_cast<GLint64>(values[ii]);
