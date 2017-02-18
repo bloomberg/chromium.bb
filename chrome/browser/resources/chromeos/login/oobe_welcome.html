@@ -57,7 +57,8 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_welcome.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-welcome-dialog id="welcomeScreen" hidden="[[!welcomeScreenShown]]"
+    <oobe-welcome-dialog id="welcomeScreen" role="dialog"
+        aria-label="[[formatMessage_('networkScreenGreeting')]]"
         current-language="[[currentLanguage]]"
         on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
@@ -67,8 +68,8 @@
         debugging-link-visible="[[debuggingLinkVisible]]"
         >
     </oobe-welcome-dialog>
-    <oobe-dialog id="languageScreen" hidden="[[!languageSelectionScreenShown]]"
-       has-buttons>
+    <oobe-dialog id="languageScreen" role="dialog" hidden has-buttons
+        aria-label="[[formatMessage_('languageSectionTitle')]]">
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="languageSectionTitle"></h1>
@@ -82,8 +83,7 @@
             </div>
             <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
                 on-select-item="onLanguageSelected_"
-                aria-label="[[formatMessage_('languageDropdownLabel',
-                    currentLanguage)]]">
+                class="focus-on-show">
             </oobe-i18n-dropdown>
           </div>
           <div id="keyboardDropdownContainer"
@@ -92,9 +92,7 @@
                 i18n-content="keyboardDropdownTitle">
             </div>
             <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
-                on-select-item="onKeyboardSelected_"
-                aria-label="[[formatMessage_('keyboardDropdownLabel',
-                    currentKeyboard)]]">
+                on-select-item="onKeyboardSelected_">
             </oobe-i18n-dropdown>
           </div>
         </template>
@@ -105,8 +103,8 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="accessibilityScreen"
-        hidden="[[!accessibilityOptionsScreenShown]]" has-buttons>
+    <oobe-dialog id="accessibilityScreen" role="dialog" hidden has-buttons
+        aria-label="[[formatMessage_('accessibilitySectionTitle')]]">
       <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="accessibilitySectionTitle"></h1>
@@ -116,7 +114,8 @@
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableSpokenFeedback"
-            aria-label="[[formatMessage_('spokenFeedbackOption')]]">
+            label-for-aria="[[formatMessage_('spokenFeedbackOption')]]"
+            class="focus-on-show">
           <span class="title" i18n-content="spokenFeedbackOption"></span>
           <span class="checked-value" i18n-content="spokenFeedbackOptionOn">
           </span>
@@ -126,7 +125,7 @@
         <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableLargeCursor"
-            aria-label="[[formatMessage_('largeCursorOption')]]">
+            label-for-aria="[[formatMessage_('largeCursorOption')]]">
           <span class="title" i18n-content="largeCursorOption"></span>
           <span class="checked-value" i18n-content="largeCursorOptionOn">
           </span>
@@ -136,7 +135,7 @@
         <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableHighContrast"
-            aria-label="[[formatMessage_('highContrastOption')]]">
+            label-for-aria="[[formatMessage_('highContrastOption')]]">
           <span class="title" i18n-content="highContrastOption"></span>
           <span class="checked-value" i18n-content="highContrastOptionOn">
           </span>
@@ -146,7 +145,7 @@
         <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableScreenMagnifier"
-            aria-label="[[formatMessage_('screenMagnifierOption')]]">
+            label-for-aria="[[formatMessage_('screenMagnifierOption')]]">
           <span class="title" i18n-content="screenMagnifierOption"></span>
           <span class="checked-value" i18n-content="screenMagnifierOptionOn">
           </span>
@@ -156,7 +155,7 @@
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableVirtualKeyboard"
-            aria-label="[[formatMessage_('virtualKeyboardOption')]]">
+            label-for-aria="[[formatMessage_('virtualKeyboardOption')]]">
           <span class="title" i18n-content="virtualKeyboardOption"></span>
           <span class="checked-value" i18n-content="virtualKeyboardOptionOn">
           </span>
@@ -170,8 +169,8 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="timezoneScreen" hidden="[[!timezoneScreenShown]]"
-       has-buttons>
+    <oobe-dialog id="timezoneScreen" role="dialog" hidden has-buttons
+        aria-label="[[formatMessage_('timezoneSectionTitle')]]">
       <iron-icon icon="oobe-welcome-64:timezone" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="timezoneSectionTitle"></h1>
@@ -183,7 +182,8 @@
           </div>
           <oobe-i18n-dropdown id="timezoneSelect" items="[[timezones]]"
               on-select-item="onTimezoneSelected_"
-              aria-label="[[formatMessage_('timezoneDropdownTitle')]]">
+              label-for-aria="[[formatMessage_('timezoneDropdownTitle')]]"
+              class="focus-on-show">
           </oobe-i18n-dropdown>
         </div>
       </div>
@@ -193,8 +193,9 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="networkSelectionScreen"
-        hidden="[[!networkSelectionScreenShown]]" has-buttons>
+    <oobe-dialog id="networkSelectionScreen" role="dialog" hidden has-buttons
+        aria-label="[[formatMessage_('networkSectionTitle')]]"
+        on-show-dialog="onNetworkSelectionScreenShown_">
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="networkSectionTitle"></h1>
@@ -205,8 +206,9 @@
             on-default-network-changed="onDefaultNetworkChanged_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"
             on-custom-item-selected="onNetworkListCustomItemSelected_"
-            custom-items="[[_getNetworkCustomItems()]]"
-            no-bottom-scroll-border>
+            custom-items="[[getNetworkCustomItems_()]]"
+            no-bottom-scroll-border
+            class="focus-on-show">
         </cr-network-select>
       </div>
       <div class="bottom-buttons layout horizontal justified">

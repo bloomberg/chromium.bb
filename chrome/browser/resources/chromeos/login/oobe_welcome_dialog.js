@@ -12,6 +12,7 @@ Polymer({
       type: String,
       value: '',
     },
+
     /**
      * Controls visibility of "Timezone" button.
      */
@@ -26,25 +27,52 @@ Polymer({
      debuggingLinkVisible: Boolean,
   },
 
+  /**
+   * This is stored ID of currently focused element to restore id on returns
+   * to this dialog from Language / Timezone Selection dialogs.
+   */
+  focusedElement_: 'languageSelectionButton',
+
   onLanguageClicked_: function() {
+    this.focusedElement_ = "languageSelectionButton";
     this.fire('language-button-clicked');
   },
 
   onAccessibilityClicked_: function() {
+    this.focusedElement_ = "accessibilitySettingsButton";
     this.fire('accessibility-button-clicked');
   },
 
   onTimezoneClicked_: function() {
+    this.focusedElement_ = "timezoneSettingsButton";
     this.fire('timezone-button-clicked');
   },
 
   onNextClicked_: function() {
+    this.focusedElement_ = "welcomeNextButton";
     this.fire('next-button-clicked');
   },
 
   onDebuggingLinkClicked_: function() {
     chrome.send('login.NetworkScreen.userActed',
         ['connect-debugging-features']);
+  },
+
+  attached: function() {
+    this.focus();
+  },
+
+  focus: function() {
+    var focusedElement = this.$[this.focusedElement_];
+    if (focusedElement)
+      focusedElement.focus();
+  },
+
+  /**
+    * This is called from oobe_welcome when this dialog is shown.
+    */
+  show: function() {
+    this.focus();
   },
 
   /**

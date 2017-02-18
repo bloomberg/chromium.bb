@@ -146,6 +146,9 @@ login.createScreen('NetworkScreen', 'connect', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
+      if (loadTimeData.getString('newOobeUI') == 'on')
+        return $('oobe-welcome-md');
+
       return $('language-select');
     },
 

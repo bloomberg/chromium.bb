@@ -45,47 +45,6 @@ Polymer({
     },
 
     /**
-     * Flag that shows Welcome screen.
-     */
-    welcomeScreenShown: {
-      type: Boolean,
-      value: true,
-    },
-
-    /**
-     * Flag that shows Language Selection screen.
-     */
-    languageSelectionScreenShown: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Flag that shows Accessibility Options screen.
-     */
-    accessibilityOptionsScreenShown: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Flag that shows Timezone Selection screen.
-     */
-    timezoneScreenShown: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Flag that shows Network Selection screen.
-     */
-    networkSelectionScreenShown: {
-      type: Boolean,
-      value: false,
-      observer: 'networkSelectionScreenShownChanged_',
-    },
-
-    /**
      * Flag that enables MD-OOBE.
      */
     enabled: {
@@ -133,6 +92,13 @@ Polymer({
      debuggingLinkVisible: Boolean,
   },
 
+  /**
+   * GUID of the user-selected network. It is remembered after user taps on
+   * network entry. After we receive event "connected" on this network,
+   * OOBE will proceed.
+   */
+  networkLastSelectedGuid_: '',
+
   /** @override */
   ready: function() {
     CrOncStrings = {
@@ -162,39 +128,56 @@ Polymer({
 
   /**
    * Hides all screens to help switching from one screen to another.
+   * @private
    */
   hideAllScreens_: function() {
-    this.welcomeScreenShown = false;
-    this.networkSelectionScreenShown = false;
-    this.languageSelectionScreenShown = false;
-    this.accessibilityOptionsScreenShown = false;
-    this.timezoneScreenShown = false;
+    this.$.welcomeScreen.hidden = true;
+
+    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog')
+    for (var i = 0; i < screens.length; ++i) {
+      screens[i].hidden = true;
+    }
   },
 
   /**
-   * GUID of the user-selected network. It is remembered after user taps on
-   * network entry. After we receive event "connected" on this network,
-   * OOBE will proceed.
+   * Shows given screen.
+   * @param id String Screen ID.
+   * @private
    */
-  networkLastSelectedGuid_: '',
+  showScreen_: function(id) {
+    this.hideAllScreens_();
+
+    var screen = this.$[id];
+    assert(screen);
+    screen.hidden = false;
+    screen.show();
+  },
 
   /**
-   * Sets proper focus.
+   * Returns active screen object.
+   * @private
    */
+  getActiveScreen_: function() {
+    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog')
+    for (var i = 0; i < screens.length; ++i) {
+      if (!screens[i].hidden)
+        return screens[i];
+    }
+    return this.$.welcomeScreen;
+  },
+
   focus: function() {
-    this.$.welcomeNextButton.focus();
+    this.getActiveScreen_().focus();
   },
 
   /** @private */
-  networkSelectionScreenShownChanged_: function() {
-    if (this.networkSelectionScreenShown) {
-      // After #networkSelect is stamped, trigger a refresh so that the list
-      // will be updated with the currently visible networks and sized
-      // appropriately.
-      this.async(function() {
-        this.$.networkSelect.refreshNetworks();
-      }.bind(this));
-    }
+  onNetworkSelectionScreenShown_: function() {
+    // After #networkSelect is stamped, trigger a refresh so that the list
+    // will be updated with the currently visible networks and sized
+    // appropriately.
+    this.async(function() {
+      this.$.networkSelect.refreshNetworks();
+    }.bind(this));
   },
 
   /**
@@ -207,8 +190,9 @@ Polymer({
 
   /**
    * Returns custom items for network selector.
+   * @private
    */
-  _getNetworkCustomItems: function() {
+  getNetworkCustomItems_: function() {
     var self = this;
     return [
       {
@@ -249,8 +233,7 @@ Polymer({
    * @private
    */
   onWelcomeNextButtonClicked_: function() {
-    this.hideAllScreens_();
-    this.networkSelectionScreenShown = true;
+    this.showScreen_('networkSelectionScreen');
   },
 
   /**
@@ -259,8 +242,7 @@ Polymer({
    * @private
    */
   onWelcomeSelectLanguageButtonClicked_: function() {
-    this.hideAllScreens_();
-    this.languageSelectionScreenShown = true;
+    this.showScreen_('languageScreen');
   },
 
   /**
@@ -269,8 +251,7 @@ Polymer({
    * @private
    */
   onWelcomeAccessibilityButtonClicked_: function() {
-    this.hideAllScreens_();
-    this.accessibilityOptionsScreenShown = true;
+    this.showScreen_('accessibilityScreen');
   },
 
   /**
@@ -279,8 +260,7 @@ Polymer({
    * @private
    */
   onWelcomeTimezoneButtonClicked_: function() {
-    this.hideAllScreens_();
-    this.timezoneScreenShown = true;
+    this.showScreen_('timezoneScreen');
   },
 
   /**
@@ -392,8 +372,7 @@ Polymer({
    */
   onNetworkSelectionBackButtonPressed_: function() {
     this.networkLastSelectedGuid_ = '';
-    this.hideAllScreens_();
-    this.welcomeScreenShown = true;
+    this.showScreen_('welcomeScreen');
   },
 
   /**
@@ -436,8 +415,7 @@ Polymer({
    * @private
    */
   closeLanguageSection_: function() {
-    this.hideAllScreens_();
-    this.welcomeScreenShown = true;
+    this.showScreen_('welcomeScreen');
   },
 
   /** ******************** Accessibility section ******************* */
@@ -448,8 +426,7 @@ Polymer({
    * @private
    */
   closeAccessibilitySection_: function() {
-    this.hideAllScreens_();
-    this.welcomeScreenShown = true;
+    this.showScreen_('welcomeScreen');
   },
 
   /**
@@ -473,8 +450,7 @@ Polymer({
    * @private
    */
   closeTimezoneSection_: function() {
-    this.hideAllScreens_();
-    this.welcomeScreenShown = true;
+    this.showScreen_('welcomeScreen');
   },
 
   /**

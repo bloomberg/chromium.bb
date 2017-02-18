@@ -20,13 +20,6 @@ Polymer({
     },
 
     /**
-     * Shows Terms Of Service frame.
-     */
-    eulaScreenShown: {
-      type: Array,
-    },
-
-    /**
      * "Accepot and continue" button is disabled until content is loaded.
      */
     acceptButtonDisabled: {
@@ -49,6 +42,14 @@ Polymer({
     screen: {
       type: Object,
     },
+  },
+
+  focus: function() {
+    if (this.eulaLoadingScreenShown) {
+      this.$.eulaLoadingDialog.show();
+    } else {
+      this.$.eulaDialog.show();
+    }
   },
 
   /**

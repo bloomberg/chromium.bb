@@ -67,4 +67,8 @@ Polymer({
 
     ariaLabel: String
   },
+
+  focus: function() {
+    this.$.button.focus();
+  },
 });

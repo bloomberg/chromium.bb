@@ -23,6 +23,10 @@ Polymer({
     /**
      * ARIA-label for the button.
      */
-    ariaLabel: String,
+    labelForAria: String,
+  },
+
+  focus: function() {
+    this.$.button.focus();
   },
 });

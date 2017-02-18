@@ -11,15 +11,21 @@
   three parts: header (which should have <h1>title</h1>), footer (content part),
   and optional buttons container at the bottom.
 
+  When shown (i.e. when outside container calls .show()):
+    1. If this dialog has tags in class "focus-on-show", the first one will be
+  focused.
+    2. 'show-dialog' is fired.
+
   Example:
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog has-buttons>
+    <oobe-dialog on-show-dialog="onTestDialogShown_" has-buttons>
       <iron-icon ... class="oobe-icon">
       <div class="header">
         <h1 class="title">Title</h1>
         <div class="subtitle">Subtitle</div>
       </div>
       <div class="footer">
+        <div class="focus-on-show">...</div>
         ...
       </div>
       <div class="bottom-buttons">

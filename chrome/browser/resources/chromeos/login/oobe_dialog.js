@@ -23,4 +23,17 @@ Polymer({
       reflectToAttribute: true,
     },
   },
+
+  focus: function() {},
+
+  /**
+    * This is called from oobe_welcome when this dialog is shown.
+    */
+  show: function() {
+    var focusedElements = this.getElementsByClassName('focus-on-show');
+    if (focusedElements)
+      focusedElements[0].focus();
+
+    this.fire('show-dialog');
+  },
 });

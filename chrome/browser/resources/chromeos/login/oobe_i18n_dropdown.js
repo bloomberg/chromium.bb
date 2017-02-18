@@ -30,7 +30,7 @@ Polymer({
     /**
      * ARIA-label for the selection menu.
      */
-    ariaLabel: String,
+    labelForAria: String,
   },
 
   /**
@@ -38,6 +38,10 @@ Polymer({
    * @type {!Map<string,I18nMenuItem>}
    */
   idToItem_: null,
+
+  focus: function() {
+    this.$.select.focus();
+  },
 
   /**
    * @param {string} value Option value.

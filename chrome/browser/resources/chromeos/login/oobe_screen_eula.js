@@ -117,6 +117,9 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
+      if (loadTimeData.getString('newOobeUI') == 'on')
+        return $('oobe-eula-md');
+
       return $('accept-button').disabled ? $('back-button') :
                                            $('accept-button');
     },

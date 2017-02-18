@@ -24,22 +24,24 @@
         </div>
         <div class="flex"></div>
         <div id="buttons" class="layout horizontal center">
-          <oobe-welcome-secondary-button icon="icons:language"
-              on-tap="onLanguageClicked_"
+          <oobe-welcome-secondary-button id="languageSelectionButton"
+              icon="icons:language" on-tap="onLanguageClicked_"
               aria-label="[[formatMessage_('languageButtonLabel',
                   currentLanguage)]]">
             <div>[[currentLanguage]]</div>
           </oobe-welcome-secondary-button>
-          <oobe-welcome-secondary-button icon="icons:accessibility"
-              on-tap="onAccessibilityClicked_">
+          <oobe-welcome-secondary-button id="accessibilitySettingsButton"
+              icon="icons:accessibility" on-tap="onAccessibilityClicked_">
             <div i18n-content="accessibilityLink"></div>
           </oobe-welcome-secondary-button>
-          <oobe-welcome-secondary-button icon="oobe-welcome-64:timezone"
-              on-tap="onTimezoneClicked_" hidden="[[!timezoneButtonVisible]]">
+          <oobe-welcome-secondary-button id="timezoneSettingsButton"
+              icon="oobe-welcome-64:timezone" on-tap="onTimezoneClicked_"
+              hidden="[[!timezoneButtonVisible]]">
             <div i18n-content="timezoneButtonText"></div>
           </oobe-welcome-secondary-button>
           <div class="flex"></div>
-          <oobe-text-button inverse on-tap="onNextClicked_">
+          <oobe-text-button id="welcomeNextButton"
+              inverse on-tap="onNextClicked_">
             <div i18n-content="welcomeNextButtonText"></div>
           </oobe-text-button>
         </div>
