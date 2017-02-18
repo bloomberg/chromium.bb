@@ -212,7 +212,7 @@ class CORE_EXPORT RuleFeatureSet {
 
     void add(const InvalidationSetFeatures& other);
     bool hasFeatures() const;
-    bool hasTagIdClassOrAttribute() const;
+    bool hasIdClassOrAttribute() const;
 
     Vector<AtomicString> classes;
     Vector<AtomicString> attributes;
@@ -279,6 +279,9 @@ class CORE_EXPORT RuleFeatureSet {
   void addFeaturesToUniversalSiblingInvalidationSet(
       const InvalidationSetFeatures& siblingFeatures,
       const InvalidationSetFeatures& descendantFeatures);
+
+  void updateRuleSetInvalidation(const InvalidationSetFeatures&);
+  void addTagNamesToTypeRuleInvalidationSet(const Vector<AtomicString>&);
 
   FeatureMetadata m_metadata;
   InvalidationSetMap m_classInvalidationSets;

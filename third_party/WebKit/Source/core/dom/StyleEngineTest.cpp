@@ -144,29 +144,44 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
       "<div>"
       "  <span></span>"
       "  <div></div>"
-      "</div>");
+      "</div>"
+      "<b></b><b></b><b></b><b></b>"
+      "<i id=i>"
+      "  <i>"
+      "    <b></b>"
+      "  </i>"
+      "</i>");
 
   document().view()->updateAllLifecyclePhases();
 
   unsigned beforeCount = styleEngine().styleForElementCount();
   EXPECT_EQ(
-      scheduleInvalidationsForRules(document(), "span { background: green}"),
-      RuleSetInvalidationsScheduled);
+      RuleSetInvalidationsScheduled,
+      scheduleInvalidationsForRules(document(), "span { background: green}"));
   document().view()->updateAllLifecyclePhases();
   unsigned afterCount = styleEngine().styleForElementCount();
   EXPECT_EQ(1u, afterCount - beforeCount);
 
   beforeCount = afterCount;
-  EXPECT_EQ(scheduleInvalidationsForRules(document(),
-                                          "body div { background: green}"),
-            RuleSetInvalidationsScheduled);
+  EXPECT_EQ(RuleSetInvalidationsScheduled,
+            scheduleInvalidationsForRules(document(),
+                                          "body div { background: green}"));
   document().view()->updateAllLifecyclePhases();
   afterCount = styleEngine().styleForElementCount();
   EXPECT_EQ(2u, afterCount - beforeCount);
 
   EXPECT_EQ(
-      scheduleInvalidationsForRules(document(), "div * { background: green}"),
-      RuleSetInvalidationFullRecalc);
+      RuleSetInvalidationFullRecalc,
+      scheduleInvalidationsForRules(document(), "div * { background: green}"));
+  document().view()->updateAllLifecyclePhases();
+
+  beforeCount = styleEngine().styleForElementCount();
+  EXPECT_EQ(
+      RuleSetInvalidationsScheduled,
+      scheduleInvalidationsForRules(document(), "#i b { background: green}"));
+  document().view()->updateAllLifecyclePhases();
+  afterCount = styleEngine().styleForElementCount();
+  EXPECT_EQ(1u, afterCount - beforeCount);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {

@@ -832,13 +832,19 @@ void StyleEngine::scheduleRuleSetInvalidationsForElement(
     for (const Attribute& attribute : element.attributes())
       ruleSet->features().collectInvalidationSetsForAttribute(
           invalidationLists, element, attribute.name());
-    if (ruleSet->tagRules(element.localNameForSelectorMatching()))
-      element.setNeedsStyleRecalc(LocalStyleChange,
-                                  StyleChangeReasonForTracing::create(
-                                      StyleChangeReason::StyleSheetChange));
   }
   m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists,
                                                      element);
+}
+
+void StyleEngine::scheduleTypeRuleSetInvalidations(
+    ContainerNode& node,
+    const HeapHashSet<Member<RuleSet>>& ruleSets) {
+  InvalidationLists invalidationLists;
+  for (const auto& ruleSet : ruleSets)
+    ruleSet->features().collectTypeRuleInvalidationSet(invalidationLists, node);
+  DCHECK(invalidationLists.siblings.isEmpty());
+  m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, node);
 }
 
 void StyleEngine::invalidateSlottedElements(HTMLSlotElement& slot) {
@@ -862,6 +868,8 @@ void StyleEngine::scheduleInvalidationsForRuleSets(
 
   TRACE_EVENT0("blink,blink_style",
                "StyleEngine::scheduleInvalidationsForRuleSets");
+
+  scheduleTypeRuleSetInvalidations(treeScope.rootNode(), ruleSets);
 
   bool invalidateSlotted = false;
   if (treeScope.rootNode().isShadowRoot()) {

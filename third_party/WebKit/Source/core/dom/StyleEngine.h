@@ -315,6 +315,8 @@ class CORE_EXPORT StyleEngine final
   void scheduleRuleSetInvalidationsForElement(
       Element&,
       const HeapHashSet<Member<RuleSet>>&);
+  void scheduleTypeRuleSetInvalidations(ContainerNode&,
+                                        const HeapHashSet<Member<RuleSet>>&);
   void invalidateSlottedElements(HTMLSlotElement&);
 
   void updateViewport();

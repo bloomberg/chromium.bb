@@ -467,8 +467,7 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData) {
   const CSSSelector* nextCompound =
       lastInCompound ? lastInCompound->tagHistory() : &ruleData.selector();
   if (!nextCompound) {
-    if (!features.hasFeaturesForRuleSetInvalidation)
-      m_metadata.needsFullRecalcForRuleSetInvalidation = true;
+    updateRuleSetInvalidation(features);
     return;
   }
   if (lastInCompound)
@@ -476,9 +475,17 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData) {
                                  siblingFeatures, features);
 
   addFeaturesToInvalidationSets(*nextCompound, siblingFeatures, features);
+  updateRuleSetInvalidation(features);
+}
 
-  if (!features.hasFeaturesForRuleSetInvalidation)
-    m_metadata.needsFullRecalcForRuleSetInvalidation = true;
+void RuleFeatureSet::updateRuleSetInvalidation(
+    const InvalidationSetFeatures& features) {
+  if (!features.hasFeaturesForRuleSetInvalidation) {
+    if (features.forceSubtree || features.tagNames.isEmpty())
+      m_metadata.needsFullRecalcForRuleSetInvalidation = true;
+    else
+      addTagNamesToTypeRuleInvalidationSet(features.tagNames);
+  }
 }
 
 void RuleFeatureSet::updateInvalidationSetsForContentAttribute(
@@ -608,7 +615,7 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeaturesFromCompound(
     if (!simpleSelector->tagHistory() ||
         simpleSelector->relation() != CSSSelector::SubSelector) {
       features.hasFeaturesForRuleSetInvalidation =
-          features.hasTagIdClassOrAttribute();
+          features.hasIdClassOrAttribute();
       return simpleSelector;
     }
   }
@@ -1160,6 +1167,14 @@ void RuleFeatureSet::addFeaturesToUniversalSiblingInvalidationSet(
                                  descendantFeatures);
 }
 
+void RuleFeatureSet::addTagNamesToTypeRuleInvalidationSet(
+    const Vector<AtomicString>& tagNames) {
+  DCHECK(!tagNames.isEmpty());
+  ensureTypeRuleInvalidationSet();
+  for (auto tagName : tagNames)
+    m_typeRuleInvalidationSet->addTagName(tagName);
+}
+
 DEFINE_TRACE(RuleFeatureSet) {
   visitor->trace(m_siblingRules);
   visitor->trace(m_uncommonAttributeRules);
@@ -1190,9 +1205,8 @@ bool RuleFeatureSet::InvalidationSetFeatures::hasFeatures() const {
          !tagNames.isEmpty() || customPseudoElement;
 }
 
-bool RuleFeatureSet::InvalidationSetFeatures::hasTagIdClassOrAttribute() const {
-  return !classes.isEmpty() || !attributes.isEmpty() || !ids.isEmpty() ||
-         !tagNames.isEmpty();
+bool RuleFeatureSet::InvalidationSetFeatures::hasIdClassOrAttribute() const {
+  return !classes.isEmpty() || !attributes.isEmpty() || !ids.isEmpty();
 }
 
 }  // namespace blink
