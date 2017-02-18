@@ -1043,6 +1043,9 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
 #endif  // CONFIG_EXT_TX
   }
+#if FIXED_TX_TYPE
+  assert(mbmi->tx_type == DCT_DCT);
+#endif
 }
 
 #if CONFIG_INTRABC
