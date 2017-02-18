@@ -979,41 +979,5 @@ TEST_F(TaskQueueThrottlerTest, AddQueueToBudgetPoolWhenThrottlingDisabled) {
                                      base::TimeDelta::FromMilliseconds(300)));
 }
 
-TEST_F(TaskQueueThrottlerTest, DisabledQueueThenEnabledQueue) {
-  std::vector<base::TimeTicks> run_times;
-
-  scoped_refptr<TaskQueue> second_queue =
-      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
-
-  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
-  task_queue_throttler_->IncreaseThrottleRefCount(second_queue.get());
-
-  timer_queue_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&TestTask, &run_times, clock_.get()),
-                                base::TimeDelta::FromMilliseconds(100));
-  second_queue->PostDelayedTask(FROM_HERE,
-                                base::Bind(&TestTask, &run_times, clock_.get()),
-                                base::TimeDelta::FromMilliseconds(200));
-
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      timer_queue_->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
-
-  clock_->Advance(base::TimeDelta::FromMilliseconds(250));
-
-  mock_task_runner_->RunUntilIdle();
-
-  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
-                                     base::TimeDelta::FromMilliseconds(1000)));
-
-  voter->SetQueueEnabled(true);
-  mock_task_runner_->RunUntilIdle();
-
-  EXPECT_THAT(
-      run_times,
-      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000),
-                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2000)));
-}
-
 }  // namespace scheduler
 }  // namespace blink

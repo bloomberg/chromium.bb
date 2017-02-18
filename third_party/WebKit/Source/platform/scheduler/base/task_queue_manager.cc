@@ -230,13 +230,10 @@ void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
     const tracked_objects::Location& from_here,
-    TimeDomain* requesting_time_domain,
     base::TimeTicks now,
-    base::TimeTicks run_time) {
+    base::TimeDelta delay) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Make sure we don't cancel another TimeDomain's wakeup.
-  DCHECK(!next_delayed_do_work_ ||
-         next_delayed_do_work_.time_domain() == requesting_time_domain);
+  DCHECK_GE(delay, base::TimeDelta());
   {
     base::AutoLock lock(any_thread_lock_);
 
@@ -250,33 +247,20 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
     }
   }
 
-  // If there's a delayed DoWork scheduled to run sooner, we don't need to do
-  // anything because DoWork will post a delayed continuation as needed.
-  if (next_delayed_do_work_ && next_delayed_do_work_.run_time() <= run_time)
+  // De-duplicate DoWork posts.
+  base::TimeTicks run_time = now + delay;
+  if (next_scheduled_delayed_do_work_time_ <= run_time &&
+      !next_scheduled_delayed_do_work_time_.is_null())
     return;
 
-  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-
-  base::TimeDelta delay = std::max(base::TimeDelta(), run_time - now);
   TRACE_EVENT1(disabled_by_default_tracing_category_,
                "TaskQueueManager::MaybeScheduleDelayedWork::PostDelayedTask",
                "delay_ms", delay.InMillisecondsF());
 
   cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-  next_delayed_do_work_ = NextDelayedDoWork(run_time, requesting_time_domain);
+  next_scheduled_delayed_do_work_time_ = run_time;
   delegate_->PostDelayedTask(
       from_here, cancelable_delayed_do_work_closure_.callback(), delay);
-}
-
-void TaskQueueManager::CancelDelayedWork(TimeDomain* requesting_time_domain,
-                                         base::TimeTicks run_time) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (next_delayed_do_work_.run_time() != run_time)
-    return;
-
-  DCHECK_EQ(next_delayed_do_work_.time_domain(), requesting_time_domain);
-  cancelable_delayed_do_work_closure_.Cancel();
-  next_delayed_do_work_.Clear();
 }
 
 void TaskQueueManager::DoWork(bool delayed) {
@@ -290,9 +274,10 @@ void TaskQueueManager::DoWork(bool delayed) {
     queues_to_delete_.clear();
 
   // This must be done before running any tasks because they could invoke a
-  // nested message loop and we risk having a stale |next_delayed_do_work_|.
+  // nested message loop and we risk having a stale
+  // |next_scheduled_delayed_do_work_time_|.
   if (delayed)
-    next_delayed_do_work_.Clear();
+    next_scheduled_delayed_do_work_time_ = base::TimeTicks();
 
   for (int i = 0; i < work_batch_size_; i++) {
     IncomingImmediateWorkMap queues_to_reload;
@@ -354,7 +339,7 @@ void TaskQueueManager::DoWork(bool delayed) {
 
   {
     MoveableAutoLock lock(any_thread_lock_);
-    base::Optional<NextTaskDelay> next_delay =
+    base::Optional<base::TimeDelta> next_delay =
         ComputeDelayTillNextTaskLocked(&lazy_now);
 
     any_thread().do_work_running_count--;
@@ -368,10 +353,11 @@ void TaskQueueManager::DoWork(bool delayed) {
 }
 
 void TaskQueueManager::PostDoWorkContinuationLocked(
-    base::Optional<NextTaskDelay> next_delay,
+    base::Optional<base::TimeDelta> next_delay,
     LazyNow* lazy_now,
     MoveableAutoLock&& lock) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  base::TimeDelta delay;
 
   {
     MoveableAutoLock auto_lock(std::move(lock));
@@ -379,8 +365,8 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
     // If there are no tasks left then we don't need to post a continuation.
     if (!next_delay) {
       // If there's a pending delayed DoWork, cancel it because it's not needed.
-      if (next_delayed_do_work_) {
-        next_delayed_do_work_.Clear();
+      if (!next_scheduled_delayed_do_work_time_.is_null()) {
+        next_scheduled_delayed_do_work_time_ = base::TimeTicks();
         cancelable_delayed_do_work_closure_.Cancel();
       }
       return;
@@ -390,37 +376,42 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
     if (any_thread().immediate_do_work_posted_count > 0)
       return;
 
-    if (next_delay->delay() <= base::TimeDelta()) {
+    delay = next_delay.value();
+
+    // This isn't supposed to happen, but in case it does convert to
+    // non-delayed.
+    if (delay < base::TimeDelta())
+      delay = base::TimeDelta();
+
+    if (delay.is_zero()) {
       // If a delayed DoWork is pending then we don't need to post a
       // continuation because it should run immediately.
-      if (next_delayed_do_work_ &&
-          next_delayed_do_work_.run_time() <= lazy_now->Now()) {
+      if (!next_scheduled_delayed_do_work_time_.is_null() &&
+          next_scheduled_delayed_do_work_time_ <= lazy_now->Now()) {
         return;
       }
 
       any_thread().immediate_do_work_posted_count++;
+    } else {
+      base::TimeTicks run_time = lazy_now->Now() + delay;
+      if (next_scheduled_delayed_do_work_time_ == run_time)
+        return;
+
+      next_scheduled_delayed_do_work_time_ = run_time;
     }
   }
 
   // We avoid holding |any_thread_lock_| while posting the task.
-  if (next_delay->delay() <= base::TimeDelta()) {
+  if (delay.is_zero()) {
     delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
   } else {
-    base::TimeTicks run_time = lazy_now->Now() + next_delay->delay();
-
-    if (next_delayed_do_work_.run_time() == run_time)
-      return;
-
-    next_delayed_do_work_ =
-        NextDelayedDoWork(run_time, next_delay->time_domain());
     cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-    delegate_->PostDelayedTask(FROM_HERE,
-                               cancelable_delayed_do_work_closure_.callback(),
-                               next_delay->delay());
+    delegate_->PostDelayedTask(
+        FROM_HERE, cancelable_delayed_do_work_closure_.callback(), delay);
   }
 }
 
-base::Optional<TaskQueueManager::NextTaskDelay>
+base::Optional<base::TimeDelta>
 TaskQueueManager::ComputeDelayTillNextTaskLocked(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -429,32 +420,27 @@ TaskQueueManager::ComputeDelayTillNextTaskLocked(LazyNow* lazy_now) {
   // check is equavalent to calling ReloadEmptyWorkQueues first.
   for (const auto& pair : any_thread().has_incoming_immediate_work) {
     if (pair.first->CouldTaskRun(pair.second))
-      return NextTaskDelay();
+      return base::TimeDelta();
   }
 
   // If the selector has non-empty queues we trivially know there is immediate
   // work to be done.
   if (!selector_.EnabledWorkQueuesEmpty())
-    return NextTaskDelay();
+    return base::TimeDelta();
 
   // Otherwise we need to find the shortest delay, if any.  NB we don't need to
   // call WakeupReadyDelayedQueues because it's assumed DelayTillNextTask will
   // return base::TimeDelta>() if the delayed task is due to run now.
-  base::Optional<NextTaskDelay> delay_till_next_task;
+  base::Optional<base::TimeDelta> next_continuation;
   for (TimeDomain* time_domain : time_domains_) {
-    base::Optional<base::TimeDelta> delay =
+    base::Optional<base::TimeDelta> continuation =
         time_domain->DelayTillNextTask(lazy_now);
-    if (!delay)
+    if (!continuation)
       continue;
-
-    NextTaskDelay task_delay = (delay.value() == base::TimeDelta())
-                                   ? NextTaskDelay()
-                                   : NextTaskDelay(delay.value(), time_domain);
-
-    if (!delay_till_next_task || delay_till_next_task > task_delay)
-      delay_till_next_task = task_delay;
+    if (!next_continuation || next_continuation.value() > continuation.value())
+      next_continuation = continuation;
   }
-  return delay_till_next_task;
+  return next_continuation;
 }
 
 bool TaskQueueManager::SelectWorkQueueToService(
