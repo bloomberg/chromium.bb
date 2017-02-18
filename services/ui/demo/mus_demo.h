@@ -5,17 +5,12 @@
 #ifndef SERVICES_UI_DEMO_MUS_DEMO_H_
 #define SERVICES_UI_DEMO_MUS_DEMO_H_
 
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/display/screen_base.h"
 
@@ -42,13 +37,22 @@ class WindowTreeData;
 // the window. Provides a simple way to demonstrate that the graphic stack works
 // as intended.
 class MusDemo : public service_manager::Service,
-                public aura::WindowTreeClientDelegate,
-                public aura::WindowManagerDelegate {
+                public aura::WindowTreeClientDelegate {
  public:
   MusDemo();
   ~MusDemo() override;
 
+ protected:
+  void AddPrimaryDisplay(const display::Display& display);
+  void InitWindowTreeData(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
+  void CleanupWindowTreeData();
+
  private:
+  virtual void OnStartImpl(
+      std::unique_ptr<aura::WindowTreeClient>& window_tree_client,
+      std::unique_ptr<WindowTreeData>& window_tree_data) = 0;
+
   // service_manager::Service:
   void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -64,38 +68,6 @@ class MusDemo : public service_manager::Service,
                               aura::Window* target) override;
   aura::PropertyConverter* GetPropertyConverter() override;
 
-  // aura::WindowManagerDelegate:
-  void SetWindowManagerClient(aura::WindowManagerClient* client) override;
-  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override;
-  bool OnWmSetProperty(
-      aura::Window* window,
-      const std::string& name,
-      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  void OnWmSetCanFocus(aura::Window* window, bool can_focus) override;
-  aura::Window* OnWmCreateTopLevelWindow(
-      ui::mojom::WindowType window_type,
-      std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
-                                  bool janky) override;
-  void OnWmWillCreateDisplay(const display::Display& display) override;
-  void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-                      const display::Display& display) override;
-  void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override;
-  void OnWmDisplayModified(const display::Display& display) override;
-  ui::mojom::EventResult OnAccelerator(uint32_t id,
-                                       const ui::Event& event) override;
-  void OnWmPerformMoveLoop(aura::Window* window,
-                           ui::mojom::MoveLoopSource source,
-                           const gfx::Point& cursor_location,
-                           const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(aura::Window* window) override;
-  void OnWmSetClientArea(
-      aura::Window* window,
-      const gfx::Insets& insets,
-      const std::vector<gfx::Rect>& additional_client_areas) override;
-  bool IsWindowActive(aura::Window* window) override;
-  void OnWmDeactivateWindow(aura::Window* window) override;
-
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<display::ScreenBase> screen_;
@@ -110,6 +82,6 @@ class MusDemo : public service_manager::Service,
 };
 
 }  // namespace demo
-}  // namespace aura
+}  // namespace ui
 
 #endif  // SERVICES_UI_DEMO_MUS_DEMO_H_

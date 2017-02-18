@@ -12,6 +12,8 @@ source_set("lib") {
   sources = [
     "mus_demo.cc",
     "mus_demo.h",
+    "mus_demo_internal.cc",
+    "mus_demo_internal.h",
     "window_tree_data.cc",
     "window_tree_data.h",
   ]

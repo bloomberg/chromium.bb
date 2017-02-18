@@ -1,0 +1,107 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "services/ui/demo/mus_demo_internal.h"
+
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/ui/demo/window_tree_data.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
+
+namespace ui {
+namespace demo {
+
+namespace {
+
+// Size of square in pixels to draw.
+const int kSquareSize = 300;
+}
+
+MusDemoInternal::MusDemoInternal() {}
+
+MusDemoInternal::~MusDemoInternal() {}
+
+void MusDemoInternal::OnStartImpl(
+    std::unique_ptr<aura::WindowTreeClient>& window_tree_client,
+    std::unique_ptr<WindowTreeData>& window_tree_data) {
+  window_tree_client = base::MakeUnique<aura::WindowTreeClient>(
+      context()->connector(), this, this);
+  window_tree_client->ConnectAsWindowManager();
+  window_tree_data = base::MakeUnique<WindowTreeData>(kSquareSize);
+}
+
+void MusDemoInternal::SetWindowManagerClient(
+    aura::WindowManagerClient* client) {}
+
+bool MusDemoInternal::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
+  return true;
+}
+
+bool MusDemoInternal::OnWmSetProperty(
+    aura::Window* window,
+    const std::string& name,
+    std::unique_ptr<std::vector<uint8_t>>* new_data) {
+  return true;
+}
+
+void MusDemoInternal::OnWmSetCanFocus(aura::Window* window, bool can_focus) {}
+
+aura::Window* MusDemoInternal::OnWmCreateTopLevelWindow(
+    mojom::WindowType window_type,
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  NOTREACHED();
+  return nullptr;
+}
+
+void MusDemoInternal::OnWmClientJankinessChanged(
+    const std::set<aura::Window*>& client_windows,
+    bool janky) {
+  // Don't care
+}
+
+void MusDemoInternal::OnWmWillCreateDisplay(const display::Display& display) {
+  AddPrimaryDisplay(display);
+}
+
+void MusDemoInternal::OnWmNewDisplay(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
+    const display::Display& display) {
+  InitWindowTreeData(std::move(window_tree_host));
+}
+
+void MusDemoInternal::OnWmDisplayRemoved(
+    aura::WindowTreeHostMus* window_tree_host) {
+  CleanupWindowTreeData();
+}
+
+void MusDemoInternal::OnWmDisplayModified(const display::Display& display) {}
+
+mojom::EventResult MusDemoInternal::OnAccelerator(uint32_t id,
+                                                  const Event& event) {
+  return mojom::EventResult::UNHANDLED;
+}
+
+void MusDemoInternal::OnWmPerformMoveLoop(
+    aura::Window* window,
+    mojom::MoveLoopSource source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& on_done) {
+  // Don't care
+}
+
+void MusDemoInternal::OnWmCancelMoveLoop(aura::Window* window) {}
+
+void MusDemoInternal::OnWmSetClientArea(
+    aura::Window* window,
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_areas) {}
+
+bool MusDemoInternal::IsWindowActive(aura::Window* window) {
+  return false;
+}
+
+void MusDemoInternal::OnWmDeactivateWindow(aura::Window* window) {}
+
+}  // namespace demo
+}  // namespace ui
