@@ -178,6 +178,7 @@ WindowTreeClient::WindowTreeClient(
       tree_(nullptr),
       in_destructor_(false),
       weak_factory_(this) {
+  DCHECK(delegate_);
   // Allow for a null request in tests.
   if (request.is_pending())
     binding_.Bind(std::move(request));
