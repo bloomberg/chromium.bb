@@ -17,7 +17,7 @@ function test()
     var scriptFormatter;
 
     var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_renderRuleUsage", onTracingFinished);
+    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateGutter", onTracingFinished);
 
     tracker._toggleRecording(true);
     UI.viewManager.showView("css_tracker");
@@ -55,7 +55,7 @@ function test()
         InspectorTest.addResult(lines);   
         InspectorTest.completeTest();
     }
-    
+
     function inplaceFormatter()
     {
         return self.runtime.allInstances(Sources.SourcesView.EditorAction).then(function(editorActions) {

@@ -13,10 +13,10 @@ var initialize_CSSTracker = function() {
 
 function test()
 {
-    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_onGotStyleSheets", displayResults);
-    
+    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateTree", displayResults);
+
     var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-    
+
     tracker._toggleRecording(true);
     UI.viewManager.showView("css_tracker");
     tracker._toggleRecording(false);

@@ -16,10 +16,10 @@ function test()
 {
     InspectorTest.runTestSuite([
         function testMarking(next)
-        {            
+        {
             var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-            InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_renderRuleUsage", printResults);
-    
+            InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateGutter", printResults);
+
             tracker._toggleRecording(true);
             UI.viewManager.showView("css_tracker");
             tracker._toggleRecording(false);
@@ -28,7 +28,7 @@ function test()
             {
                 UI.inspectorView.showPanel("sources").then(showSource);
             }
-        
+
             function showSource()
             {
                 InspectorTest.showScriptSource("highlight-in-source.css", waitForDecorations);
@@ -44,7 +44,7 @@ function test()
                 var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-css-rule-unused-marker"), 
                                                         e => e.parentElement.previousSibling.textContent);
 
-                InspectorTest.addResult(lines);   
+                InspectorTest.addResult(lines);
                 next();
             }
         }
