@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
-#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace extensions {
@@ -83,9 +84,37 @@ void WriteFromUrlOperation::Download(const base::Closure& continuation) {
 
   SetStage(image_writer_api::STAGE_DOWNLOAD);
 
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("cros_recovery_image_download", R"(
+        semantics {
+          sender: "Chrome OS Recovery Utility"
+          description:
+            "The Google Chrome OS recovery utility downloads the recovery "
+            "image from Google Download Server."
+          trigger:
+            "User uses the Chrome OS Recovery Utility app/extension, selects "
+            "a Chrome OS recovery image, and clicks the Create button to write "
+            "the image to a USB or SD card."
+          data:
+            "URL of the image file to be downloaded. No other data or user "
+            "identifier is sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled by settings, it can only be used "
+            "by whitelisted apps/extension."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+
   // Store the URL fetcher on this object so that it is destroyed before this
   // object is.
-  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                         traffic_annotation);
 
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SaveResponseToFileAtPath(
