@@ -845,8 +845,6 @@ crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ P
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
-crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
-
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
@@ -1729,7 +1727,7 @@ crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-documen
 crbug.com/572723 inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
-crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
+crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 crbug.com/577380 [ Linux Debug ] virtual/mojo-loading/http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
@@ -2253,8 +2251,8 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664839 virtual/mojo-loading/http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
 
-crbug.com/686478 fast/text/ellipsis-with-list-marker-in-ltr-flow.html [ Pass Failure ]
-crbug.com/686478 fast/text/ellipsis-with-list-marker-in-rtl-flow.html [ Pass Failure ]
+crbug.com/686478 fast/text/ellipsis-with-list-marker-in-ltr-flow.html [ NeedsRebaseline ]
+crbug.com/686478 fast/text/ellipsis-with-list-marker-in-rtl-flow.html [ NeedsRebaseline ]
 
 # Possible duplicate of crbug.com/498539
 # crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
