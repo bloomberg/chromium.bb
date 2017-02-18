@@ -28,9 +28,8 @@ import org.chromium.base.test.util.Feature;
  * Unit tests for BackgroundScheduler.
  */
 @RunWith(OfflinePageTestRunner.class)
-@Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class,
-        shadows = {ShadowGcmNetworkManager.class})
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundSchedulerTest {
     private Context mContext;
     private TriggerConditions mConditions1 = new TriggerConditions(

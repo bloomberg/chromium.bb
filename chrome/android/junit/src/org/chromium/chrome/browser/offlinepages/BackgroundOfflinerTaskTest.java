@@ -46,9 +46,8 @@ import org.chromium.net.ConnectionType;
  * Unit tests for BackgroundOfflinerTask.
  */
 @RunWith(OfflinePageTestRunner.class)
-@Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class,
-        shadows = { ShadowGcmNetworkManager.class })
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundOfflinerTaskTest {
     private static final boolean REQUIRE_POWER = true;
     private static final boolean REQUIRE_UNMETERED = true;

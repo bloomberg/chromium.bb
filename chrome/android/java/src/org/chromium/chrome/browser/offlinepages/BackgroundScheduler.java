@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.offlinepages;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.Task;
@@ -45,7 +47,8 @@ public class BackgroundScheduler {
      */
     public static void unschedule(Context context) {
         // Get the GCM Network Scheduler.
-        GcmNetworkManager gcmNetworkManager = GcmNetworkManager.getInstance(context);
+        GcmNetworkManager gcmNetworkManager = getGcmNetworkManager(context);
+        if (gcmNetworkManager == null) return;
         gcmNetworkManager.cancelTask(OfflinePageUtils.TASK_TAG, ChromeBackgroundService.class);
     }
 
@@ -56,7 +59,8 @@ public class BackgroundScheduler {
     private static void schedule(Context context, TriggerConditions triggerConditions,
             long delayStartSecs, boolean overwrite) {
         // Get the GCM Network Scheduler.
-        GcmNetworkManager gcmNetworkManager = GcmNetworkManager.getInstance(context);
+        GcmNetworkManager gcmNetworkManager = getGcmNetworkManager(context);
+        if (gcmNetworkManager == null) return;
 
         Bundle taskExtras = new Bundle();
         TaskExtrasPacker.packTimeInBundle(taskExtras);
@@ -75,6 +79,14 @@ public class BackgroundScheduler {
                             .build();
 
         gcmNetworkManager.schedule(task);
+    }
+
+    private static GcmNetworkManager getGcmNetworkManager(Context context) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                == ConnectionResult.SUCCESS) {
+            return GcmNetworkManager.getInstance(context);
+        }
+        return null;
     }
 
     /**
