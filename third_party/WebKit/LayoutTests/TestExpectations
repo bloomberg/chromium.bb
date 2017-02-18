@@ -118,6 +118,17 @@ crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-r
 crbug.com/683339 paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
 crbug.com/683339 virtual/disable-spinvalidation/paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
 
+
+crbug.com/693510 compositing/overlap-blending/reflection-opacity-huge.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/animation-inside-reflection.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/deeply-nested-reflections.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/load-video-in-reflection.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/nested-reflection-anchor-point.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/nested-reflection-mask-change.html [ NeedsManualRebaseline ]
+crbug.com/693510 compositing/reflections/nested-reflection-opacity.html [ NeedsManualRebaseline ]
+crbug.com/693510 media/video-layer-crash.html [ NeedsManualRebaseline ]
+
 crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/disable-spinvalidation/paint/invalidation/hover-invalidation-table.html [ Failure ]
@@ -1167,7 +1178,8 @@ crbug.com/492664 external/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [
 crbug.com/492664 external/csswg-test/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
-crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
+# TODO(robertphillips@) restore after Skia DEPS roll
+#crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
 crbug.com/691045 media/autoplay-muted.html [ Pass Timeout ]
 
