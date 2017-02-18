@@ -8005,6 +8005,59 @@ I don't think this site should be blocked!
         </message>
       </if>
 
+      <!-- Settings reset prompt dialog messages -->
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is displayed on the accept button that, when clicked, will perform the reset operation.">
+        Restore default settings
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_SHOW_DETAILS_BUTTON_LABEL" desc="The text on the button in the settings reset dialog that will expand the dialog to show more details.">
+        Show details
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_HIDE_DETAILS_BUTTON_LABEL" desc="The text on the button in the settings reset dialog that will hide the details section.">
+        Hide details
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE" desc="Text shown in the settings reset dialog explaining that the user's search engine may have been modified by unwanted software or extensions.">
+        Your search engine may have been modified by unwanted software or extensions.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE" desc="Text shown in the settings reset dialog explaining that the user's startup page may have been modified by unwanted software or extensions.">
+        Your startup page may have been modified by unwanted software or extensions.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_HOMEPAGE" desc="Text shown in the settings reset dialog explaining that the user's homepage may have been modified by unwanted software or extensions.">
+        Your homepage may have been modified by unwanted software or extensions.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_SEARCH_ENGINE_SETTING_NAME" desc="The text referring to Chrome's search engine setting. This will be displayed in a bulleted list of settings when informing the user that some of their settings may have been modified by unwanted software or extensions.">
+        Search engine
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_STARTUP_PAGE_SETTING_NAME" desc="The text referring to Chrome's startup page setting. This will be displayed in a bulleted list of settings when informing the user that some of their settings may have been modified by unwanted software or extensions.">
+        Startup page
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_HOMEPAGE_SETTING_NAME" desc="The text referring to Chrome's homepage setting. This will be displayed in a bulleted list of settings when informing the user that some of their settings may have been modified by unwanted software or extensions.">
+        Homepage
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_SETTINGS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset the settings that were shown in a list and that may have been modified by unwanted software or extensions.">
+        Do you want to restore these settings to their original defaults?
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_SINGLE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown to inform the user about the number of extensions that will be disabled as part of the reset operation.">
+        This will also disable one extension.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown to inform the user about the number of extensions that will be disabled as part of the reset operation.">
+        This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_DETAILS_SECTION_SETTINGS_EXPLANATION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is displayed in the details section of the dialog before listing the current values of the settings that will be reset if the user clicks the accept button.">
+        The following settings will be restored to their default values.
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_DETAILS_SECTION_EXTENSION_EXPLANATION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is displayed in the details section of the dialog before listing all the Chrome extensions that will be disabled if the user clicks the accept button.">
+        The following extensions will be disabled (you can enable them again later):
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_DETAILED_SEARCH_ENGINE_SETTING" desc="The text to be shown in the settings reset dialog when referring to Chrome's current search engine setting. The current value of the setting, which will be changed if the user clicks the accept button in the dialog, will be displayed on the next line.">
+        Search engine, which is currently set to:
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_DETAILED_STARTUP_SETTINGS" desc="The text to be shown in the settings reset dialog when referring to Chrome's current startup page setting. The current set of startup pages, which will be changed if the user clicks the accept button in the dialog, will be displayed after this text.">
+        Startup pages, which are currently set to:
+      </message>
+      <message name="IDS_SETTINGS_RESET_PROMPT_DETAILED_HOMEPAGE_SETTING" desc="The text to be shown in the settings reset dialog when referring to Chrome's current homepage setting. The current value of the setting, which will be changed if the user clicks the accept button in the dialog, will be displayed on the next line.">
+        Homepage, which is currently set to:
+      </message>
+
       <!-- Upgrade bubble messages -->
       <message name="IDS_REENABLE_UPDATES" desc="Text for the button the user clicks to re-enable automatic updates.">
         Enable autoupdate
