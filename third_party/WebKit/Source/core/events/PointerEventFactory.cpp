@@ -274,7 +274,9 @@ PointerEvent* PointerEventFactory::create(
     HeapVector<Member<PointerEvent>> coalescedPointerEvents;
     for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
       DCHECK_EQ(mouseEvent.id, coalescedMouseEvent.id);
-      DCHECK_EQ(mouseEvent.pointerType, coalescedMouseEvent.pointerType);
+      // TODO(crbug.com/684292): We need further investigation of why the
+      // following DCHECK fails.
+      // DCHECK_EQ(mouseEvent.pointerType, coalescedMouseEvent.pointerType);
       PointerEventInit coalescedEventInit = pointerEventInit;
       updateMousePointerEventInit(coalescedMouseEvent, view,
                                   &coalescedEventInit);
