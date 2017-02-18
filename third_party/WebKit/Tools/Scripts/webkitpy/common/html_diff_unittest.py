@@ -149,3 +149,37 @@ class TestHtmlDiff(unittest.TestCase):
             '<tr><th>17<th>17<td>line17\n</tr>'
             '<tr><th>18<th>18<td>line18\n</tr>'
             '<tr><td colspan=3>\n\n</tr>'))
+
+    def test_html_diff_context_at_edge(self):
+        a_lines = [
+            'line1\n',
+            'line2\n',
+            'line3\n',
+            'line4\n',
+            'line5\n',
+            'line6\n',
+            'line7\n',
+            'line8\n',
+        ]
+        b_lines = [
+            'line0\n',
+            'line1\n',
+            'line2\n',
+            'line3\n',
+            'line4\n',
+            'line5\n',
+            'line6\n',
+            'line7\n',
+            'line8\n',
+            'line9\n',
+        ]
+        self.assertEqual(HtmlDiffGenerator().generate_tbody(a_lines, b_lines), (
+            '<tr><th><th>1<td class="add">line0\n</tr>'
+            '<tr><th>1<th>2<td>line1\n</tr>'
+            '<tr><th>2<th>3<td>line2\n</tr>'
+            '<tr><th>3<th>4<td>line3\n</tr>'
+            '<tr><td colspan=3>\n\n</tr>'
+            '<tr><th>6<th>7<td>line6\n</tr>'
+            '<tr><th>7<th>8<td>line7\n</tr>'
+            '<tr><th>8<th>9<td>line8\n</tr>'
+            '<tr><th><th>10<td class="add">line9\n</tr>'))

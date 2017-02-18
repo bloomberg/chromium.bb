@@ -50,6 +50,7 @@ class HtmlDiffGenerator(object):
         self.a_line_no = 0
         self.b_line_no = 0
         self.a_lines_len = len(a_lines)
+        self.b_lines_len = len(b_lines)
         matcher = difflib.SequenceMatcher(None, a_lines, b_lines)
         output = []
         for tag, a_start, a_end, b_start, b_end in matcher.get_opcodes():
@@ -73,7 +74,7 @@ class HtmlDiffGenerator(object):
                 output += self._format_equal_line(line)
         else:
             # Do not show context lines at the beginning of the file.
-            if self.a_line_no == 0:
+            if self.a_line_no == 0 and self.b_line_no == 0:
                 self.a_line_no += 3
                 self.b_line_no += 3
             else:
@@ -83,7 +84,7 @@ class HtmlDiffGenerator(object):
             self.b_line_no += len(common_chunk) - 6
             output += '<tr><td colspan=3>\n\n</tr>'
             # Do not show context lines at the end of the file.
-            if self.a_line_no + 3 != self.a_lines_len:
+            if self.a_line_no + 3 != self.a_lines_len or self.b_line_no + 3 != self.b_lines_len:
                 for line in common_chunk[len(common_chunk) - 3:len(common_chunk)]:
                     output += self._format_equal_line(line)
         return output
