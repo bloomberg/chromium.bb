@@ -181,7 +181,7 @@ class ConnectTestService
     return true;
   }
 
-  bool OnStop() override {
+  bool OnServiceManagerConnectionLost() override {
     provided_services_.clear();
     return true;
   }

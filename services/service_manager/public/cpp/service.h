@@ -23,9 +23,9 @@ class Service {
   Service();
   virtual ~Service();
 
-  // Called exactly once, when a bidirectional connection with the Service
-  // Manager has been established. No calls to OnConnect() will be received
-  // before this.
+  // Called exactly once when a bidirectional connection with the Service
+  // Manager has been established. No calls to OnConnect() or OnBindInterface()
+  // will be made before this.
   virtual void OnStart();
 
   // Called each time a connection to this service is brokered by the Service
@@ -51,32 +51,28 @@ class Service {
   // service should use this as a signal to shut down, and in fact its process
   // may be reaped shortly afterward if applicable.
   //
-  // Return true from this method to tell the ServiceContext to signal its
-  // shutdown externally (i.e. to invoke its "connection lost" closure if set),
-  // or return false to defer the signal. If deferred, the Service should
-  // explicitly call QuitNow() on the ServiceContext when it's ready to be
-  // torn down.
+  // If this returns |true| then QuitNow() will be invoked immediately upon
+  // return to the ServiceContext. Otherwise the Service is responsible for
+  // eventually calling QuitNow().
   //
-  // The default implementation returns true.
+  // The default implementation returns |true|.
   //
-  // While it's possible for this to be invoked before either OnStart() or
-  // OnConnect() is invoked, neither will be invoked at any point after this
-  // OnStop().
-  virtual bool OnStop();
+  // NOTE: This may be called at any time, and once it's been called, none of
+  // the other public Service methods will be invoked by the ServiceContext.
+  virtual bool OnServiceManagerConnectionLost();
 
  protected:
-  // Access the ServiceContext associated with this Service. Note that this is
-  // only valid to call during or after OnStart(), but never before! As such,
-  // it's always safe to call in OnStart() and OnConnect(), but should generally
-  // be avoided in OnStop().
+  // Accesses the ServiceContext associated with this Service. Note that this is
+  // only valid AFTER the Service's constructor has run.
   ServiceContext* context() const;
 
  private:
   friend class ForwardingService;
   friend class ServiceContext;
 
-  // NOTE: This is guaranteed to be called before OnStart().
-  void set_context(ServiceContext* context) { service_context_ = context; }
+  // NOTE: This MUST be called before any public Service methods. ServiceContext
+  // satisfies this guarantee for any Service instance it owns.
+  virtual void SetContext(ServiceContext* context);
 
   ServiceContext* service_context_ = nullptr;
 
@@ -95,9 +91,14 @@ class ForwardingService : public Service {
   void OnStart() override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
-  bool OnStop() override;
+  void OnBindInterface(const ServiceInfo& remote_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  bool OnServiceManagerConnectionLost() override;
 
  private:
+  void SetContext(ServiceContext* context) override;
+
   Service* const target_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingService);

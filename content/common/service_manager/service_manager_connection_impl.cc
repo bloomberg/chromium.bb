@@ -273,7 +273,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
     return accept;
   }
 
-  bool OnStop() override {
+  bool OnServiceManagerConnectionLost() override {
     ClearConnectionFiltersOnIOThread();
     callback_task_runner_->PostTask(FROM_HERE, stop_callback_);
     return true;

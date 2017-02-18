@@ -62,10 +62,6 @@ bool ImageDecoderService::OnConnect(
   return true;
 }
 
-bool ImageDecoderService::OnStop() {
-  return true;
-}
-
 void ImageDecoderService::MaybeRequestQuitDelayed() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

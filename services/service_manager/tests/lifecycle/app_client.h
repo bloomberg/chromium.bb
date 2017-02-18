@@ -31,7 +31,7 @@ class AppClient : public Service,
   // Service:
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
-  bool OnStop() override;
+  bool OnServiceManagerConnectionLost() override;
 
   // InterfaceFactory<LifecycleControl>:
   void Create(const Identity& remote_identity,

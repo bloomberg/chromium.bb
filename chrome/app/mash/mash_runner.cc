@@ -237,8 +237,8 @@ void MashRunner::StartChildApp(
   service_manager::ServiceContext context(
       base::MakeUnique<mash::MashPackagedService>(),
       std::move(service_request));
-  // Quit the child process if it loses its connection to service manager.
-  context.SetConnectionLostClosure(run_loop.QuitClosure());
+  // Quit the child process when the service quits.
+  context.SetQuitClosure(run_loop.QuitClosure());
   run_loop.Run();
   // |context| must be destroyed before |message_loop|.
 }

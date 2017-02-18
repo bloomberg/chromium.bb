@@ -87,7 +87,7 @@ class EmbeddedServiceRunner::InstanceManager
             factory_callback_.Run(), std::move(request));
 
     service_manager::ServiceContext* raw_context = context.get();
-    context->SetConnectionLostClosure(
+    context->SetQuitClosure(
         base::Bind(&InstanceManager::OnInstanceLost, this, instance_id));
     contexts_.insert(std::make_pair(raw_context, std::move(context)));
     id_to_context_map_.insert(std::make_pair(instance_id, raw_context));

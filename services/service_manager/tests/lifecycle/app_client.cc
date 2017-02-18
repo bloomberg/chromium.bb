@@ -21,7 +21,7 @@ bool AppClient::OnConnect(const ServiceInfo& remote_info,
   return true;
 }
 
-bool AppClient::OnStop() {
+bool AppClient::OnServiceManagerConnectionLost() {
   base::MessageLoop::current()->QuitWhenIdle();
   return true;
 }
@@ -54,7 +54,7 @@ void AppClient::CloseServiceManagerConnection() {
 
 void AppClient::BindingLost() {
   if (bindings_.empty())
-    OnStop();
+    OnServiceManagerConnectionLost();
 }
 
 }  // namespace test

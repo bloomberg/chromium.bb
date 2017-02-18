@@ -57,7 +57,7 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
         mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
-    context_->SetConnectionLostClosure(run_loop.QuitClosure());
+    context_->SetQuitClosure(run_loop.QuitClosure());
     run_loop.Run();
     context_.reset();
   }

@@ -38,7 +38,7 @@ class Service : public service_manager::Service,
   // service_manager::Service implementation.
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
-  bool OnStop() override;
+  bool OnServiceManagerConnectionLost() override;
 
   // service_manager::InterfaceFactory<mojom::Factory>:
   void Create(const service_manager::Identity& remote_identity,

@@ -48,8 +48,4 @@ bool ShapeDetectionService::OnConnect(
   return true;
 }
 
-bool ShapeDetectionService::OnStop() {
-  return true;
-}
-
 }  // namespace shape_detection

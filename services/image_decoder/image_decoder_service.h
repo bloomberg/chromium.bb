@@ -27,7 +27,6 @@ class ImageDecoderService : public service_manager::Service {
   void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
-  bool OnStop() override;
 
  private:
   void MaybeRequestQuitDelayed();

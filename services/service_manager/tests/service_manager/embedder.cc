@@ -52,7 +52,7 @@ class Embedder : public service_manager::Service,
     return true;
   }
 
-  bool OnStop() override {
+  bool OnServiceManagerConnectionLost() override {
     base::MessageLoop::current()->QuitWhenIdle();
     return true;
   }

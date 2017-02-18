@@ -28,7 +28,7 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
   return true;
 }
 
-bool Service::OnStop() {
+bool Service::OnServiceManagerConnectionLost() {
   // TODO(beng): This is only required because Service isn't run by
   // ServiceRunner - instead it's launched automatically by the standalone
   // service manager. It shouldn't be.

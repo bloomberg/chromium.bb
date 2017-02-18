@@ -42,14 +42,18 @@ ServiceContext::ServiceContext(
   } else {
     DCHECK(pending_connector_request_.is_pending());
   }
+  service_->SetContext(this);
 }
 
 ServiceContext::~ServiceContext() {}
 
-void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
-  connection_lost_closure_ = closure;
-  if (service_quit_)
-    QuitNow();
+void ServiceContext::SetQuitClosure(const base::Closure& closure) {
+  if (service_quit_) {
+    // CAUTION: May delete |this|.
+    closure.Run();
+  } else {
+    quit_closure_ = closure;
+  }
 }
 
 void ServiceContext::RequestQuit() {
@@ -64,15 +68,13 @@ void ServiceContext::DisconnectFromServiceManager() {
 }
 
 void ServiceContext::QuitNow() {
+  service_quit_ = true;
   if (binding_.is_bound())
     binding_.Close();
-  if (!connection_lost_closure_.is_null())
-    base::ResetAndReturn(&connection_lost_closure_).Run();
-}
-
-void ServiceContext::DestroyService() {
-  QuitNow();
-  service_.reset();
+  if (!quit_closure_.is_null()) {
+    // CAUTION: May delete |this|.
+    base::ResetAndReturn(&quit_closure_).Run();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,8 +85,6 @@ void ServiceContext::OnStart(const ServiceInfo& info,
   local_info_ = info;
   callback.Run(std::move(pending_connector_request_),
                mojo::MakeRequest(&service_control_));
-
-  service_->set_context(this);
   service_->OnStart();
 }
 
@@ -140,19 +140,10 @@ void ServiceContext::CallOnConnect(const ServiceInfo& source_info,
 }
 
 void ServiceContext::OnConnectionError() {
-  // Note that the Service doesn't technically have to quit now, it may live
-  // on to service existing connections. All existing Connectors however are
-  // invalid.
-  service_quit_ = service_->OnStop();
-  if (service_quit_) {
+  if (service_->OnServiceManagerConnectionLost()) {
+    // CAUTION: May delete |this|.
     QuitNow();
-    // NOTE: This call may delete |this|, so don't access any ServiceContext
-    // state beyond this point.
-    return;
   }
-
-  // We don't reset the connector as clients may have taken a raw pointer to it.
-  // Connect() will return nullptr if they try to connect to anything.
 }
 
 void ServiceContext::OnRegistryConnectionError(InterfaceRegistry* registry) {

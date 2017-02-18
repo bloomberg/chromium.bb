@@ -162,7 +162,7 @@ void StartChildApp(service_manager::mojom::ServiceRequest service_request) {
   service_manager::ServiceContext context(
       base::MakeUnique<mash::MashPackagedService>(),
       std::move(service_request));
-  context.SetConnectionLostClosure(run_loop.QuitClosure());
+  context.SetQuitClosure(run_loop.QuitClosure());
   run_loop.Run();
 }
 

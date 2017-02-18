@@ -42,12 +42,18 @@ void Service::OnBindInterface(const ServiceInfo& source_info,
   interface_provider->GetInterface(interface_name, std::move(interface_pipe));
 }
 
-bool Service::OnStop() { return true; }
+bool Service::OnServiceManagerConnectionLost() {
+  return true;
+}
 
 ServiceContext* Service::context() const {
   DCHECK(service_context_)
-      << "Service::context() may only be called during or after OnStart().";
+      << "Service::context() may only be called after the Service constructor.";
   return service_context_;
+}
+
+void Service::SetContext(ServiceContext* context) {
+  service_context_ = context;
 }
 
 ForwardingService::ForwardingService(Service* target) : target_(target) {}
@@ -55,7 +61,6 @@ ForwardingService::ForwardingService(Service* target) : target_(target) {}
 ForwardingService::~ForwardingService() {}
 
 void ForwardingService::OnStart() {
-  target_->set_context(context());
   target_->OnStart();
 }
 
@@ -64,6 +69,20 @@ bool ForwardingService::OnConnect(const ServiceInfo& remote_info,
   return target_->OnConnect(remote_info, registry);
 }
 
-bool ForwardingService::OnStop() { return target_->OnStop(); }
+void ForwardingService::OnBindInterface(
+    const ServiceInfo& remote_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  target_->OnBindInterface(remote_info, interface_name,
+                           std::move(interface_pipe));
+}
+
+bool ForwardingService::OnServiceManagerConnectionLost() {
+  return target_->OnServiceManagerConnectionLost();
+}
+
+void ForwardingService::SetContext(ServiceContext* context) {
+  target_->SetContext(context);
+}
 
 }  // namespace service_manager

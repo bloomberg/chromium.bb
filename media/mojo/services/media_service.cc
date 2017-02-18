@@ -39,7 +39,7 @@ bool MediaService::OnConnect(const service_manager::ServiceInfo& remote_info,
   return true;
 }
 
-bool MediaService::OnStop() {
+bool MediaService::OnServiceManagerConnectionLost() {
   mojo_media_client_.reset();
   return true;
 }

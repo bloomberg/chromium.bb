@@ -28,9 +28,6 @@ class TestClient : public Service,
     registry->AddInterface(this);
     return true;
   }
-  bool OnStop() override {
-    return true;
-  }
 
   // InterfaceFactory<mojom::TestService>:
   void Create(const Identity& remote_identity,

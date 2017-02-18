@@ -41,7 +41,7 @@ class MEDIA_MOJO_EXPORT MediaService
   void OnStart() final;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) final;
-  bool OnStop() final;
+  bool OnServiceManagerConnectionLost() final;
 
   // service_manager::InterfaceFactory<mojom::MediaService> implementation.
   void Create(const service_manager::Identity& remote_identity,
