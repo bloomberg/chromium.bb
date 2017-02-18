@@ -74,6 +74,17 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   void CheckDialogRemainsOpen(content::WebContents* web_contents);
 
+  // Opens "basic_test.html," and starts a session.
+  content::WebContents* StartSessionWithTestPageNow();
+  // Opens "basic_test.html," waits for sinks to be available, and starts a
+  // session.
+  content::WebContents* StartSessionWithTestPageAndSink();
+
+  // Opens "basic_test.html," waits for sinks to be available, starts a session,
+  // and chooses a sink with the name |kTestSinkName|. Also checks that the
+  // session has successfully started if |should_succeed| is true.
+  content::WebContents* StartSessionWithTestPageAndChooseSink();
+
   void OpenTestPage(base::FilePath::StringPieceType file);
   void OpenTestPageInNewTab(base::FilePath::StringPieceType file);
 
@@ -125,6 +136,26 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Wait until media router dialog is fully loaded.
   void WaitUntilDialogFullyLoaded(content::WebContents* dialog_contents);
 
+  // Checks that the session started for |web_contents| has connected and is the
+  // default session.
+  void CheckSessionValidity(content::WebContents* web_contents);
+
+  // Checks that a Media Router dialog is shown for |web_contents|, and returns
+  // its controller.
+  MediaRouterDialogControllerImpl* GetControllerForShownDialog(
+      content::WebContents* web_contents);
+
+  // Returns the active WebContents for the current window.
+  content::WebContents* GetActiveWebContents();
+
+  // Runs a basic test in which a session is created through the MediaRouter
+  // dialog, then terminated.
+  void RunBasicTest();
+
+  // Runs a test in which we start a session and reconnect to it from another
+  // tab.
+  void RunReconnectSessionTest();
+
   std::string receiver() const { return receiver_; }
 
  private:
@@ -139,6 +170,18 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Fields
   std::string receiver_;
+};
+
+class MediaRouterIntegrationIncognitoBrowserTest
+    : public MediaRouterIntegrationBrowserTest {
+ public:
+  void InstallAndEnableMRExtension() override;
+  void UninstallMRExtension() override;
+  Browser* browser() override;
+
+ private:
+  Browser* incognito_browser_ = nullptr;
+  std::string incognito_extension_id_;
 };
 
 }  // namespace media_router

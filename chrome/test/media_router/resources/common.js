@@ -30,7 +30,7 @@ window.navigator.presentation.defaultRequest.onconnectionavailable = function(e)
 };
 
 /**
- * Waits until one device is available.
+ * Waits until one sink is available.
  */
 function waitUntilDeviceAvailable() {
   startSessionRequest.getAvailability(presentationUrl).then(
@@ -44,8 +44,8 @@ function waitUntilDeviceAvailable() {
           sendResult(true, '');
       }
     }
-  }).catch(function(){
-    sendResult(false, 'got error');
+  }).catch(function(e) {
+    sendResult(false, 'got error: ' + e);
   });
 }
 
@@ -140,6 +140,49 @@ function terminateSessionAndWaitForStateChange() {
   }
 }
 
+/**
+ * Closes |startedConnection| and waits for its onclose event.
+ */
+function closeConnectionAndWaitForStateChange() {
+  if (startedConnection) {
+    if (startedConnection.state == 'closed') {
+      sendResult(false, 'startedConnection is unexpectedly closed.');
+    }
+    startedConnection.onclose = function() {
+      sendResult(true, '');
+    };
+    startedConnection.close();
+  } else {
+    sendResult(false, 'startedConnection does not exist.');
+  }
+}
+
+/**
+ * Sends a message to |startedConnection| and expects InvalidStateError to be
+ * thrown. Requires |startedConnection.state| to not equal |initialState|.
+ */
+function checkSendMessageFailed(initialState) {
+  if (!startedConnection) {
+    sendResult(false, 'startedConnection does not exist.');
+    return;
+  }
+  if (startedConnection.state != initialState) {
+    sendResult(false, 'startedConnection.state is "' + startedConnection.state +
+               '", but we expected "' + initialState + '".');
+    return;
+  }
+
+  try {
+    startedConnection.send('test message');
+  } catch (e) {
+    if (e.name == 'InvalidStateError') {
+      sendResult(true, '');
+    } else {
+      sendResult(false, 'Got an unexpected error: ' + e.name);
+    }
+  }
+  sendResult(false, 'Expected InvalidStateError but it was never thrown.');
+}
 
 /**
  * Sends a message, and expects the connection to close on error.

@@ -21,8 +21,6 @@
 
 
 namespace {
-// Command line argument to specify CRX extension location.
-const char kExtensionCrx[] = "extension-crx";
 // Command line argument to specify unpacked extension location.
 const char kExtensionUnpacked[] = "extension-unpacked";
 }  // namespace
@@ -50,8 +48,8 @@ void MediaRouterBaseBrowserTest::TearDown() {
 
 void MediaRouterBaseBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
-  extensions::ProcessManager* process_manager =
-      extensions::ProcessManager::Get(browser()->profile());
+  extensions::ProcessManager* process_manager = extensions::ProcessManager::Get(
+      browser()->profile()->GetOriginalProfile());
   DCHECK(process_manager);
   process_manager->AddObserver(this);
   InstallAndEnableMRExtension();
@@ -68,12 +66,8 @@ void MediaRouterBaseBrowserTest::TearDownOnMainThread() {
 }
 
 void MediaRouterBaseBrowserTest::InstallAndEnableMRExtension() {
-  if (is_unpacked()) {
-    const extensions::Extension* extension = LoadExtension(extension_unpacked_);
-    extension_id_ = extension->id();
-  } else {
-    NOTIMPLEMENTED();
-  }
+  const extensions::Extension* extension = LoadExtension(extension_unpacked_);
+  extension_id_ = extension->id();
 }
 
 void MediaRouterBaseBrowserTest::UninstallMRExtension() {
@@ -117,12 +111,10 @@ void MediaRouterBaseBrowserTest::OnBackgroundHostCreated(
 void MediaRouterBaseBrowserTest::ParseCommandLine() {
   DVLOG(0) << "ParseCommandLine";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  extension_crx_ = command_line->GetSwitchValuePath(kExtensionCrx);
   extension_unpacked_ = command_line->GetSwitchValuePath(kExtensionUnpacked);
 
   // Check if there is mr_extension folder under PRODUCT_DIR folder.
-  if (extension_crx_.empty() && extension_unpacked_.empty()) {
+  if (extension_unpacked_.empty()) {
     base::FilePath base_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &base_dir));
     base::FilePath extension_path =
@@ -132,8 +124,12 @@ void MediaRouterBaseBrowserTest::ParseCommandLine() {
     }
   }
 
-  // Exactly one of these two arguments should be provided.
-  ASSERT_NE(extension_crx_.empty(), extension_unpacked_.empty());
+  // An unpacked component extension must be provided.
+  ASSERT_FALSE(extension_unpacked_.empty());
+}
+
+Browser* MediaRouterBaseBrowserTest::browser() {
+  return ExtensionBrowserTest::browser();
 }
 
 }  // namespace media_router
