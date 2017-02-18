@@ -220,11 +220,9 @@ class ThreadHeapStats {
   double m_estimatedMarkingTimePerByte;
 };
 
-using ThreadStateSet = HashSet<ThreadState*>;
-
 class PLATFORM_EXPORT ThreadHeap {
  public:
-  ThreadHeap();
+  explicit ThreadHeap(ThreadState*);
   ~ThreadHeap();
 
   // Returns true for main thread's heap.
@@ -270,8 +268,6 @@ class PLATFORM_EXPORT ThreadHeap {
 
   StackFrameDepth& stackFrameDepth() { return m_stackFrameDepth; }
 
-  RecursiveMutex& threadAttachMutex() { return m_threadAttachMutex; }
-  const ThreadStateSet& threads() const { return m_threads; }
   ThreadHeapStats& heapStats() { return m_stats; }
   CallbackStack* markingStack() const { return m_markingStack.get(); }
   CallbackStack* postMarkingCallbackStack() const {
@@ -281,11 +277,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return m_globalWeakCallbackStack.get();
   }
   CallbackStack* ephemeronStack() const { return m_ephemeronStack.get(); }
-
-  void attach(ThreadState*);
-  void detach(ThreadState*);
-  void lockThreadAttachMutex();
-  void unlockThreadAttachMutex();
 
   void visitPersistentRoots(Visitor*);
   void visitStackRoots(Visitor*);
@@ -454,8 +445,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void commitCallbackStacks();
   void decommitCallbackStacks();
 
-  RecursiveMutex m_threadAttachMutex;
-  ThreadStateSet m_threads;
+  ThreadState* m_threadState;
   ThreadHeapStats m_stats;
   std::unique_ptr<RegionTree> m_regionTree;
   std::unique_ptr<HeapDoesNotContainCache> m_heapDoesNotContainCache;

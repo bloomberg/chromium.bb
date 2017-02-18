@@ -131,9 +131,7 @@ ThreadState::ThreadState()
   ASSERT(!**s_threadSpecific);
   **s_threadSpecific = this;
 
-  m_heap = new ThreadHeap();
-  ASSERT(m_heap);
-  m_heap->attach(this);
+  m_heap = WTF::wrapUnique(new ThreadHeap(this));
 
   for (int arenaIndex = 0; arenaIndex < BlinkGC::LargeObjectArenaIndex;
        arenaIndex++)
@@ -148,6 +146,10 @@ ThreadState::ThreadState()
 
 ThreadState::~ThreadState() {
   ASSERT(checkThread());
+  if (isMainThread())
+    DCHECK_EQ(heap().heapStats().allocatedSpace(), 0u);
+  CHECK(gcState() == ThreadState::NoGCScheduled);
+
   for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
     delete m_arenas[i];
 
@@ -161,6 +163,12 @@ void ThreadState::attachMainThread() {
 
 void ThreadState::attachCurrentThread() {
   new ThreadState();
+}
+
+void ThreadState::detachCurrentThread() {
+  ThreadState* state = current();
+  state->runTerminationGC();
+  delete state;
 }
 
 void ThreadState::removeAllPages() {
@@ -206,13 +214,6 @@ void ThreadState::runTerminationGC() {
   RELEASE_ASSERT(gcState() == NoGCScheduled);
 
   removeAllPages();
-}
-
-void ThreadState::detachCurrentThread() {
-  ThreadState* state = current();
-  state->heap().detach(state);
-  RELEASE_ASSERT(state->gcState() == ThreadState::NoGCScheduled);
-  delete state;
 }
 
 NO_SANITIZE_ADDRESS
@@ -1255,14 +1256,6 @@ void ThreadState::leaveStaticReferenceRegistrationDisabledScope() {
   m_disabledStaticPersistentsRegistration--;
 }
 #endif
-
-void ThreadState::lockThreadAttachMutex() {
-  m_heap->threadAttachMutex().lock();
-}
-
-void ThreadState::unlockThreadAttachMutex() {
-  m_heap->threadAttachMutex().unlock();
-}
 
 void ThreadState::invokePreFinalizers() {
   ASSERT(checkThread());

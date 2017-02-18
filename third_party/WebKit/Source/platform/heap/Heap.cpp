@@ -145,8 +145,9 @@ void ThreadHeapStats::decreaseAllocatedSpace(size_t delta) {
   ProcessHeap::decreaseTotalAllocatedSpace(delta);
 }
 
-ThreadHeap::ThreadHeap()
-    : m_regionTree(WTF::makeUnique<RegionTree>()),
+ThreadHeap::ThreadHeap(ThreadState* threadState)
+    : m_threadState(threadState),
+      m_regionTree(WTF::makeUnique<RegionTree>()),
       m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
       m_freePagePool(WTF::wrapUnique(new PagePool)),
       m_markingStack(CallbackStack::create()),
@@ -160,41 +161,9 @@ ThreadHeap::ThreadHeap()
 ThreadHeap::~ThreadHeap() {
 }
 
-void ThreadHeap::attach(ThreadState* thread) {
-  MutexLocker locker(m_threadAttachMutex);
-  m_threads.insert(thread);
-}
-
-void ThreadHeap::detach(ThreadState* thread) {
-  ASSERT(ThreadState::current() == thread);
-  bool isLastThread = false;
-  {
-    // Grab the threadAttachMutex to ensure only one thread can shutdown at
-    // a time and that no other thread can do a global GC. It also allows
-    // safe iteration of the m_threads set which happens as part of
-    // thread local GC asserts. We enter a safepoint while waiting for the
-    // lock to avoid a dead-lock where another thread has already requested
-    // GC.
-    MutexLocker locker(m_threadAttachMutex);
-    thread->runTerminationGC();
-    ASSERT(m_threads.contains(thread));
-    m_threads.erase(thread);
-    isLastThread = m_threads.isEmpty();
-  }
-  if (thread->isMainThread())
-    DCHECK_EQ(heapStats().allocatedSpace(), 0u);
-  if (isLastThread)
-    delete this;
-}
-
 #if DCHECK_IS_ON()
 BasePage* ThreadHeap::findPageFromAddress(Address address) {
-  MutexLocker locker(m_threadAttachMutex);
-  for (ThreadState* state : m_threads) {
-    if (BasePage* page = state->findPageFromAddress(address))
-      return page;
-  }
-  return nullptr;
+  return m_threadState->findPageFromAddress(address);
 }
 #endif
 
@@ -346,19 +315,16 @@ void ThreadHeap::decommitCallbackStacks() {
 
 void ThreadHeap::preGC() {
   ASSERT(!ThreadState::current()->isInGC());
-  for (ThreadState* state : m_threads)
-    state->preGC();
+  m_threadState->preGC();
 }
 
 void ThreadHeap::postGC(BlinkGC::GCType gcType) {
   ASSERT(ThreadState::current()->isInGC());
-  for (ThreadState* state : m_threads)
-    state->postGC(gcType);
+  m_threadState->postGC(gcType);
 }
 
 void ThreadHeap::preSweep(BlinkGC::GCType gcType) {
-  for (ThreadState* state : m_threads)
-    state->preSweep(gcType);
+  m_threadState->preSweep(gcType);
 }
 
 void ThreadHeap::processMarkingStack(Visitor* visitor) {
@@ -510,15 +476,12 @@ void ThreadHeap::reportMemoryUsageForTracing() {
 }
 
 size_t ThreadHeap::objectPayloadSizeForTesting() {
-  // MEMO: is threadAttachMutex locked?
   size_t objectPayloadSize = 0;
-  for (ThreadState* state : m_threads) {
-    state->setGCState(ThreadState::GCRunning);
-    state->makeConsistentForGC();
-    objectPayloadSize += state->objectPayloadSizeForTesting();
-    state->setGCState(ThreadState::Sweeping);
-    state->setGCState(ThreadState::NoGCScheduled);
-  }
+  m_threadState->setGCState(ThreadState::GCRunning);
+  m_threadState->makeConsistentForGC();
+  objectPayloadSize += m_threadState->objectPayloadSizeForTesting();
+  m_threadState->setGCState(ThreadState::Sweeping);
+  m_threadState->setGCState(ThreadState::NoGCScheduled);
   return objectPayloadSize;
 }
 
@@ -527,15 +490,13 @@ void ThreadHeap::visitPersistentRoots(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
   ProcessHeap::crossThreadPersistentRegion().tracePersistentNodes(visitor);
 
-  for (ThreadState* state : m_threads)
-    state->visitPersistents(visitor);
+  m_threadState->visitPersistents(visitor);
 }
 
 void ThreadHeap::visitStackRoots(Visitor* visitor) {
   ASSERT(ThreadState::current()->isInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
-  for (ThreadState* state : m_threads)
-    state->visitStack(visitor);
+  m_threadState->visitStack(visitor);
 }
 
 BasePage* ThreadHeap::lookupPageForAddress(Address address) {
@@ -555,8 +516,7 @@ void ThreadHeap::resetHeapCounters() {
   ProcessHeap::decreaseTotalMarkedObjectSize(m_stats.markedObjectSize());
 
   m_stats.reset();
-  for (ThreadState* state : m_threads)
-    state->resetHeapCounters();
+  m_threadState->resetHeapCounters();
 }
 
 ThreadHeap* ThreadHeap::s_mainThreadHeap = nullptr;

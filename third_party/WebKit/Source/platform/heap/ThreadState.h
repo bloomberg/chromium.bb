@@ -158,9 +158,6 @@ class PLATFORM_EXPORT ThreadState {
     ThreadState* m_state;
   };
 
-  void lockThreadAttachMutex();
-  void unlockThreadAttachMutex();
-
   static void attachMainThread();
 
   // Associate ThreadState object with the current thread. After this
@@ -613,7 +610,7 @@ class PLATFORM_EXPORT ThreadState {
   // and lazily construct ThreadState in it using placement new.
   static uint8_t s_mainThreadStateStorage[];
 
-  ThreadHeap* m_heap;
+  std::unique_ptr<ThreadHeap> m_heap;
   ThreadIdentifier m_thread;
   std::unique_ptr<PersistentRegion> m_persistentRegion;
   BlinkGC::StackState m_stackState;
