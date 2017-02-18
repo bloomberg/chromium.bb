@@ -4,6 +4,7 @@
 
 #include "media/audio/win/audio_low_latency_input_win.h"
 
+#include <cmath>
 #include <memory>
 
 #include "base/logging.h"
@@ -14,19 +15,44 @@
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
+#include "media/base/audio_block_fifo.h"
 #include "media/base/audio_bus.h"
+#include "media/base/channel_layout.h"
+#include "media/base/limits.h"
 
 using base::win::ScopedComPtr;
 using base::win::ScopedCOMInitializer;
 
 namespace media {
+namespace {
+bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
+  if (format.nSamplesPerSec < limits::kMinSampleRate ||
+      format.nSamplesPerSec > limits::kMaxSampleRate) {
+    return false;
+  }
+
+  switch (format.wBitsPerSample) {
+    case 8:
+    case 16:
+    case 32:
+      break;
+    default:
+      return false;
+  }
+
+  if (GuessChannelLayout(format.nChannels) == CHANNEL_LAYOUT_UNSUPPORTED) {
+    LOG(ERROR) << "Hardware configuration not supported for audio conversion";
+    return false;
+  }
+
+  return true;
+}
+}
 
 WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
                                                const AudioParameters& params,
                                                const std::string& device_id)
-    : manager_(manager),
-      device_id_(device_id),
-      audio_bus_(media::AudioBus::Create(params)) {
+    : manager_(manager), device_id_(device_id) {
   DCHECK(manager_);
   DCHECK(!device_id_.empty());
 
@@ -123,9 +149,10 @@ bool WASAPIAudioInputStream::Open() {
   // Initialize the audio stream between the client and the device using
   // shared mode and a lowest possible glitch-free latency.
   hr = InitializeAudioEngine();
+  if (SUCCEEDED(hr) && converter_)
+    open_result_ = OPEN_RESULT_OK_WITH_RESAMPLING;
   ReportOpenResult();  // Report before we assign a value to |opened_|.
   opened_ = SUCCEEDED(hr);
-  DCHECK(open_result_ == OPEN_RESULT_OK || !opened_);
 
   return opened_;
 }
@@ -227,6 +254,9 @@ void WASAPIAudioInputStream::Close() {
   // It is also valid to call Close() after Start() has been called.
   Stop();
 
+  if (converter_)
+    converter_->RemoveInput(this);
+
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
   manager_->ReleaseInputStream(this);
@@ -320,11 +350,19 @@ void WASAPIAudioInputStream::Run() {
   //    the selected packet size used in each callback.
   // 2) The selected buffer size is larger than the recorded buffer size in
   //    each event.
-  size_t buffer_frame_index = 0;
-  size_t capture_buffer_size =
-      std::max(2 * endpoint_buffer_size_frames_ * frame_size_,
-               2 * packet_size_frames_ * frame_size_);
-  std::unique_ptr<uint8_t[]> capture_buffer(new uint8_t[capture_buffer_size]);
+  // In the case where no resampling is required, a single buffer should be
+  // enough but in case we get buffers that don't match exactly, we'll go with
+  // two. Same applies if we need to resample and the buffer ratio is perfect.
+  // However if the buffer ratio is imperfect, we will need 3 buffers to safely
+  // be able to buffer up data in cases where a conversion requires two audio
+  // buffers (and we need to be able to write to the third one).
+  DCHECK(!fifo_);
+  const int buffers_required =
+      converter_ && imperfect_buffer_size_conversion_ ? 3 : 2;
+  fifo_.reset(new AudioBlockFifo(format_.nChannels, packet_size_frames_,
+                                 buffers_required));
+
+  DVLOG(1) << "AudioBlockFifo needs " << buffers_required << " buffers";
 
   LARGE_INTEGER now_count = {};
   bool recording = true;
@@ -379,19 +417,12 @@ void WASAPIAudioInputStream::Run() {
         }
 
         if (num_frames_to_read != 0) {
-          size_t pos = buffer_frame_index * frame_size_;
-          size_t num_bytes = num_frames_to_read * frame_size_;
-          DCHECK_GE(capture_buffer_size, pos + num_bytes);
-
           if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-            // Clear out the local buffer since silence is reported.
-            memset(&capture_buffer[pos], 0, num_bytes);
+            fifo_->PushSilence(num_frames_to_read);
           } else {
-            // Copy captured data from audio engine buffer to local buffer.
-            memcpy(&capture_buffer[pos], data_ptr, num_bytes);
+            fifo_->Push(data_ptr, num_frames_to_read,
+                        format_.wBitsPerSample / 8);
           }
-
-          buffer_frame_index += num_frames_to_read;
         }
 
         hr = audio_capture_client_->ReleaseBuffer(num_frames_to_read);
@@ -410,7 +441,7 @@ void WASAPIAudioInputStream::Run() {
                     first_audio_frame_timestamp) /
                    10000.0) *
                           ms_to_frame_count_ +
-                      buffer_frame_index - num_frames_to_read;
+                      fifo_->GetAvailableFrames() - num_frames_to_read;
 
         // Get a cached AGC volume level which is updated once every second
         // on the audio manager thread. Note that, |volume| is also updated
@@ -420,31 +451,22 @@ void WASAPIAudioInputStream::Run() {
         // Deliver captured data to the registered consumer using a packet
         // size which was specified at construction.
         uint32_t delay_frames = static_cast<uint32_t>(audio_delay_frames + 0.5);
-        while (buffer_frame_index >= packet_size_frames_) {
-          // Copy data to audio bus to match the OnData interface.
-          uint8_t* audio_data =
-              reinterpret_cast<uint8_t*>(capture_buffer.get());
-          audio_bus_->FromInterleaved(audio_data, audio_bus_->frames(),
-                                      format_.wBitsPerSample / 8);
+        while (fifo_->available_blocks()) {
+          if (converter_) {
+            if (imperfect_buffer_size_conversion_ &&
+                fifo_->available_blocks() == 1) {
+              // Special case. We need to buffer up more audio before we can
+              // convert or else we'll suffer an underrun.
+              break;
+            }
+            converter_->ConvertWithDelay(delay_frames, convert_bus_.get());
+            sink_->OnData(this, convert_bus_.get(), delay_frames * frame_size_,
+                          volume);
+          } else {
+            sink_->OnData(this, fifo_->Consume(), delay_frames * frame_size_,
+                          volume);
+          }
 
-          // Deliver data packet, delay estimation and volume level to
-          // the user.
-          sink_->OnData(this, audio_bus_.get(), delay_frames * frame_size_,
-                        volume);
-
-          // Store parts of the recorded data which can't be delivered
-          // using the current packet size. The stored section will be used
-          // either in the next while-loop iteration or in the next
-          // capture event.
-          // TODO(tommi): If this data will be used in the next capture
-          // event, we will report incorrect delay estimates because
-          // we'll use the one for the captured data that time around
-          // (i.e. in the future).
-          memmove(&capture_buffer[0], &capture_buffer[packet_size_bytes_],
-                  (buffer_frame_index - packet_size_frames_) * frame_size_);
-
-          DCHECK_GE(buffer_frame_index, packet_size_frames_);
-          buffer_frame_index -= packet_size_frames_;
           if (delay_frames > packet_size_frames_) {
             delay_frames -= packet_size_frames_;
           } else {
@@ -469,6 +491,8 @@ void WASAPIAudioInputStream::Run() {
   if (mm_task && !avrt::AvRevertMmThreadCharacteristics(mm_task)) {
     PLOG(WARNING) << "Failed to disable MMCSS";
   }
+
+  fifo_.reset();
 }
 
 void WASAPIAudioInputStream::HandleError(HRESULT err) {
@@ -587,14 +611,74 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported() {
   // application and the floating-point samples that the engine uses for its
   // internal processing. However, the format for an application stream
   // typically must have the same number of channels and the same sample
-  // rate as the stream format used by the device.
+  // rate as the stream format used byfCHANNEL_LAYOUT_UNSUPPORTED the device.
   // Many audio devices support both PCM and non-PCM stream formats. However,
   // the audio engine can mix only PCM streams.
   base::win::ScopedCoMem<WAVEFORMATEX> closest_match;
   HRESULT hr = audio_client_->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED,
                                                 &format_, &closest_match);
-  DLOG_IF(ERROR, hr == S_FALSE) << "Format is not supported "
-                                << "but a closest match exists.";
+  DLOG_IF(ERROR, hr == S_FALSE)
+      << "Format is not supported but a closest match exists.";
+
+  if (hr == S_FALSE && IsSupportedFormatForConversion(*closest_match.get())) {
+    DVLOG(1) << "Audio capture data conversion needed.";
+    // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
+    // we give to OnData so that each buffer we receive from the OS can be
+    // directly converted to a buffer that matches with what was asked for.
+    const double buffer_ratio =
+        format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
+    double new_frames_per_buffer = closest_match->nSamplesPerSec / buffer_ratio;
+
+    const auto input_layout = GuessChannelLayout(closest_match->nChannels);
+    DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
+    const auto output_layout = GuessChannelLayout(format_.nChannels);
+    DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
+
+    const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                input_layout, closest_match->nSamplesPerSec,
+                                closest_match->wBitsPerSample,
+                                static_cast<int>(new_frames_per_buffer));
+
+    const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 output_layout, format_.nSamplesPerSec,
+                                 format_.wBitsPerSample, packet_size_frames_);
+
+    converter_.reset(new AudioConverter(input, output, false));
+    converter_->AddInput(this);
+    converter_->PrimeWithSilence();
+    convert_bus_ = AudioBus::Create(output);
+
+    // Now change the format we're going to ask for to better match with what
+    // the OS can provide.  If we succeed in opening the stream with these
+    // params, we can take care of the required resampling.
+    format_.wBitsPerSample = closest_match->wBitsPerSample;
+    format_.nSamplesPerSec = closest_match->nSamplesPerSec;
+    format_.nChannels = closest_match->nChannels;
+    format_.nBlockAlign = (format_.wBitsPerSample / 8) * format_.nChannels;
+    format_.nAvgBytesPerSec = format_.nSamplesPerSec * format_.nBlockAlign;
+    DVLOG(1) << "Will convert audio from: \nbits: " << format_.wBitsPerSample
+             << "\nsample rate: " << format_.nSamplesPerSec
+             << "\nchannels: " << format_.nChannels
+             << "\nblock align: " << format_.nBlockAlign
+             << "\navg bytes per sec: " << format_.nAvgBytesPerSec;
+
+    // Update our packet size assumptions based on the new format.
+    const auto new_bytes_per_buffer =
+        static_cast<int>(new_frames_per_buffer) * format_.nBlockAlign;
+    packet_size_frames_ = new_bytes_per_buffer / format_.nBlockAlign;
+    packet_size_bytes_ = new_bytes_per_buffer;
+    frame_size_ = format_.nBlockAlign;
+    ms_to_frame_count_ = static_cast<double>(format_.nSamplesPerSec) / 1000.0;
+
+    imperfect_buffer_size_conversion_ =
+        std::modf(new_frames_per_buffer, &new_frames_per_buffer) != 0.0;
+    DVLOG_IF(1, imperfect_buffer_size_conversion_)
+        << "Audio capture data conversion: Need to inject fifo";
+
+    // Indicate that we're good to go with a close match.
+    hr = S_OK;
+  }
+
   return (hr == S_OK);
 }
 
@@ -736,6 +820,12 @@ void WASAPIAudioInputStream::ReportOpenResult() const {
   DCHECK(!opened_);  // This method must be called before we set this flag.
   UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.Win.Open", open_result_,
                             OPEN_RESULT_MAX + 1);
+}
+
+double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,
+                                            uint32_t frames_delayed) {
+  fifo_->Consume()->CopyTo(audio_bus);
+  return 1.0;
 }
 
 }  // namespace media

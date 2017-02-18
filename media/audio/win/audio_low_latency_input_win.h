@@ -75,11 +75,13 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/agc_audio_stream.h"
+#include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
+class AudioBlockFifo;
 class AudioBus;
 class AudioManagerWin;
 
@@ -87,6 +89,7 @@ class AudioManagerWin;
 class MEDIA_EXPORT WASAPIAudioInputStream
     : public AgcAudioStream<AudioInputStream>,
       public base::DelegateSimpleThread::Delegate,
+      public AudioConverter::InputCallback,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
@@ -125,6 +128,9 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   HRESULT InitializeAudioEngine();
   void ReportOpenResult() const;
 
+  // AudioConverter::InputCallback implementation.
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
+
   // Used to track down where we fail during initialization which at the
   // moment seems to be happening frequently and we're not sure why.
   // The reason might be expected (e.g. trying to open "default" on a machine
@@ -146,7 +152,8 @@ class MEDIA_EXPORT WASAPIAudioInputStream
     OPEN_RESULT_SET_EVENT_HANDLE = 11,
     OPEN_RESULT_NO_CAPTURE_CLIENT = 12,
     OPEN_RESULT_NO_AUDIO_VOLUME = 13,
-    OPEN_RESULT_MAX = OPEN_RESULT_NO_AUDIO_VOLUME
+    OPEN_RESULT_OK_WITH_RESAMPLING = 14,
+    OPEN_RESULT_MAX = OPEN_RESULT_OK_WITH_RESAMPLING
   };
 
   // Our creator, the audio manager needs to be notified when we close.
@@ -233,15 +240,20 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // This event will be signaled when capturing shall stop.
   base::win::ScopedHandle stop_capture_event_;
 
-  // Extra audio bus used for storage of deinterleaved data for the OnData
-  // callback.
-  std::unique_ptr<media::AudioBus> audio_bus_;
-
   // Never set it through external API. Only used when |device_id_| ==
   // kLoopbackWithMuteDeviceId.
   // True, if we have muted the system audio for the stream capturing, and
   // indicates that we need to unmute the system audio when stopping capturing.
   bool mute_done_ = false;
+
+  // Used for the captured audio on the callback thread.
+  std::unique_ptr<AudioBlockFifo> fifo_;
+
+  // If the caller requires resampling (should only be in exceptional cases and
+  // ideally, never), we support using an AudioConverter.
+  std::unique_ptr<AudioConverter> converter_;
+  std::unique_ptr<AudioBus> convert_bus_;
+  bool imperfect_buffer_size_conversion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);
 };
