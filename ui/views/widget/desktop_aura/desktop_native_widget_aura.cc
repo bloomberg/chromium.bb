@@ -389,6 +389,10 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   }
 }
 
+gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
+  return content_window_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -560,10 +564,6 @@ const Widget* DesktopNativeWidgetAura::GetWidget() const {
 }
 
 gfx::NativeView DesktopNativeWidgetAura::GetNativeView() const {
-  return content_window_;
-}
-
-gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
   return content_window_;
 }
 
