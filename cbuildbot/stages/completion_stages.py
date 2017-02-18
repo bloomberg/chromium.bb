@@ -20,6 +20,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import metrics
 from chromite.lib import results_lib
 
 
@@ -585,7 +586,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       chroot_manager = chroot_lib.ChrootManager(self._build_root)
       chroot_manager.SetChrootVersion(version)
 
-    self._RecordSubmissionMetrics()
+    self._RecordSubmissionMetrics(True)
 
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.
@@ -612,10 +613,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       self.CQMasterHandleFailure(
           failing, inflight, no_stat, slave_buildbucket_ids)
 
-    self._RecordSubmissionMetrics()
+    self._RecordSubmissionMetrics(False)
 
-  def _RecordSubmissionMetrics(self):
-    """Record CL handling statistics for submitted changes in monarch."""
+  def _RecordSubmissionMetrics(self, success=False):
+    """Record CL handling statistics for submitted changes in monarch.
+
+    Args:
+      success: bool indicating whether the CQ was a success.
+    """
     if not self._run.config.master:
       return
 
@@ -636,6 +641,16 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                    len(submitted_change_strategies))
       clactions.RecordSubmissionMetrics(action_history,
                                         submitted_change_strategies)
+
+      # Record CQ wall-clock metric.
+      submitted_any = len(submitted_change_strategies) > 0
+      bi = db.GetBuildStatus(build_id)
+      current_time = db.GetTime()
+      elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
+      fields = {'success': success,
+                'submitted_any': submitted_any}
+      m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
+      m.increment_by(elapsed_seconds, fields=fields)
 
   def _ShouldSubmitPartialPool(self, slave_buildbucket_ids):
     """Determine whether we should attempt or skip SubmitPartialPool.

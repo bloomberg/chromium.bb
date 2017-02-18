@@ -235,6 +235,7 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
 )
 
 # Monarch metric names
+MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
