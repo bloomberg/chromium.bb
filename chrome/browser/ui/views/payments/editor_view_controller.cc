@@ -18,6 +18,7 @@
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -77,10 +78,34 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
       std::move(content_view));
 }
 
+// Adds the "required fields" label in disabled text, to obtain this result.
+// +---------------------------------------------------------+
+// | "* indicates required fields"           | CANCEL | DONE |
+// +---------------------------------------------------------+
+std::unique_ptr<views::View> EditorViewController::CreateLeadingFooterView() {
+  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_view->SetLayoutManager(layout);
+
+  // Adds the "* indicates a required field" label in "disabled" grey text.
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE));
+  label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor));
+  label->SetEnabled(false);
+  content_view->AddChildView(label.release());
+  return content_view;
+}
+
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON)));
+          this, l10n_util::GetStringUTF16(IDS_DONE)));
   button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
   button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
   return button;

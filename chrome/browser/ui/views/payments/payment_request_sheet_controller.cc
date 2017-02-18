@@ -13,7 +13,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
-
 namespace payments {
 
 PaymentRequestSheetController::PaymentRequestSheetController(
@@ -54,9 +53,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreatePaymentView(
   views::GridLayout* layout = new views::GridLayout(view.get());
   view->SetLayoutManager(layout);
 
-  constexpr int kTopInsetSize = 9;
-  constexpr int kBottomInsetSize = 18;
-  layout->SetInsets(kTopInsetSize, 0, kBottomInsetSize, 0);
+  // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      1, views::GridLayout::USE_PREF, 0, 0);
@@ -89,24 +86,25 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
+  // The horizontal distance between the right/left edges of the dialog and the
+  // elements.
+  constexpr int kFooterHorizontalInset = 16;
+  // The vertical distance between footer elements and the top/bottom border
+  // (the bottom border is the edge of the dialog).
+  constexpr int kFooterVerticalInset = 16;
+  layout->SetInsets(kFooterVerticalInset, kFooterHorizontalInset,
+                    kFooterVerticalInset, kFooterHorizontalInset);
+
   layout->StartRow(0, 0);
-  std::unique_ptr<views::View> leading_buttons_container =
-      base::MakeUnique<views::View>();
 
-  // TODO(anthonyvd): Add the other buttons that can eventually go into this
-  // footer.
-
-  layout->AddView(leading_buttons_container.release());
+  layout->AddView(CreateLeadingFooterView().release());
 
   std::unique_ptr<views::View> trailing_buttons_container =
       base::MakeUnique<views::View>();
 
   constexpr int kButtonSpacing = 10;
   trailing_buttons_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal,
-      kPaymentRequestRowHorizontalInsets,
-      kPaymentRequestRowVerticalInsets,
-      kButtonSpacing));
+      views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
 
   std::unique_ptr<views::Button> primary_button = CreatePrimaryButton();
   if (primary_button)
@@ -120,6 +118,11 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   layout->AddView(trailing_buttons_container.release());
 
   return container;
+}
+
+std::unique_ptr<views::View>
+PaymentRequestSheetController::CreateLeadingFooterView() {
+  return base::MakeUnique<views::View>();
 }
 
 }  // namespace payments

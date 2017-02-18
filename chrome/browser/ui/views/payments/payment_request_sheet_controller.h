@@ -33,6 +33,9 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   ~PaymentRequestSheetController() override {}
 
   virtual std::unique_ptr<views::View> CreateView() = 0;
+  // A leading view to complement the button(s). See CreateFooterView for how
+  // this is used and what insets are already applied.
+  virtual std::unique_ptr<views::View> CreateLeadingFooterView();
 
   // The PaymentRequest object associated with this instance of the dialog.
   // Caller should not take ownership of the result.

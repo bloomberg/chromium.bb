@@ -88,13 +88,23 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
   views::GridLayout* layout = new views::GridLayout(container.get());
   container->SetLayoutManager(layout);
-  layout->SetInsets(0, kPaymentRequestRowHorizontalInsets,
-                    0, kPaymentRequestRowHorizontalInsets);
+
+  constexpr int kHeaderTopVerticalInset = 14;
+  constexpr int kHeaderBottomVerticalInset = 8;
+  constexpr int kHeaderHorizontalInset = 16;
+  // Top, left, bottom, right.
+  layout->SetInsets(kHeaderTopVerticalInset, kHeaderHorizontalInset,
+                    kHeaderBottomVerticalInset, kHeaderHorizontalInset);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
+
+  constexpr int kPaddingBetweenArrowAndTitle = 16;
+  if (show_back_arrow)
+    columns->AddPaddingColumn(0, kPaddingBetweenArrowAndTitle);
+
   // A column for the title.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      1, views::GridLayout::USE_PREF, 0, 0);
@@ -105,7 +115,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   } else {
     views::VectorIconButton* back_arrow = new views::VectorIconButton(delegate);
     back_arrow->SetIcon(ui::kBackArrowIcon);
-    back_arrow->SetSize(back_arrow->GetPreferredSize());
+    constexpr int kBackArrowSize = 16;
+    back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->set_tag(static_cast<int>(
         PaymentRequestCommonTags::BACK_BUTTON_TAG));
     layout->AddView(back_arrow);
@@ -113,6 +124,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
 
   views::Label* title_label = new views::Label(title);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetFontList(
+      title_label->GetDefaultFontList().DeriveWithSizeDelta(2));
   layout->AddView(title_label);
 
   return container;

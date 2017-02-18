@@ -23,7 +23,7 @@ class View;
 
 namespace payments {
 
-constexpr int kPaymentRequestRowHorizontalInsets = 14;
+constexpr int kPaymentRequestRowHorizontalInsets = 16;
 constexpr int kPaymentRequestRowVerticalInsets = 8;
 // Extra inset relative to the header when a right edge should line up with the
 // close button's X rather than its invisible right edge.
@@ -40,10 +40,10 @@ enum class PaymentRequestCommonTags {
 
 // Creates and returns a header for all the sheets in the PaymentRequest dialog.
 // The header contains an optional back arrow button (if |show_back_arrow| is
-// true), a |title| label, and a right-aligned X close button. |delegate|
-// becomes the delegate for the back and close buttons.
+// true), a |title| label. |delegate| becomes the delegate for the back and
+// close buttons.
 // +---------------------------+
-// | <- | Title            | X |
+// | <- | Title                |
 // +---------------------------+
 std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,
