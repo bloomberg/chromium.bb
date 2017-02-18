@@ -11,6 +11,7 @@ option optimize_for = LITE_RUNTIME;
 package chrome_intelligence;
 
 // Defines a Chrome Ranker Translate model.
+// Next tag: 12
 message TranslateRankerModel {
   // A number that identifies the version of this model.
   optional uint32 version = 1;
@@ -18,9 +19,15 @@ message TranslateRankerModel {
   // Defines the weights and bias of a Logistic Regression Model.
   message LogisticRegressionModel {
     optional float bias = 1;
+
     optional float accept_ratio_weight = 2;
     optional float decline_ratio_weight = 3;
     optional float ignore_ratio_weight = 4;
+
+    optional float accept_count_weight = 9;
+    optional float decline_count_weight = 10;
+    optional float ignore_count_weight = 11;
+
     // One-hot features are encoded in the form of a map. These maps
     // each contain an element 'UNKNOWN' to use in case the key is not
     // found in the map.

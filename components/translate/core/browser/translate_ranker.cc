@@ -136,7 +136,6 @@ bool TranslateRanker::ShouldOfferTranslation(
   }
 
   DCHECK(model_->has_logistic_regression_model());
-
   SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.ShouldOfferTranslation");
 
   // TODO(rogerm): Remove ScopedTracker below once crbug.com/646711 is closed.
@@ -147,31 +146,17 @@ bool TranslateRanker::ShouldOfferTranslation(
   const std::string& app_locale =
       TranslateDownloadManager::GetInstance()->application_locale();
   const std::string& country = translate_prefs.GetCountry();
-  double accept_count = translate_prefs.GetTranslationAcceptedCount(src_lang);
-  double denied_count = translate_prefs.GetTranslationDeniedCount(src_lang);
-  double ignored_count =
-      model_->logistic_regression_model().has_ignore_ratio_weight()
-          ? translate_prefs.GetTranslationIgnoredCount(src_lang)
-          : 0.0;
-  double total_count = accept_count + denied_count + ignored_count;
-  double accept_ratio =
-      (total_count == 0.0) ? 0.0 : (accept_count / total_count);
-  double decline_ratio =
-      (total_count == 0.0) ? 0.0 : (denied_count / total_count);
-  double ignore_ratio =
-      (total_count == 0.0) ? 0.0 : (ignored_count / total_count);
+  int accept_count = translate_prefs.GetTranslationAcceptedCount(src_lang);
+  int decline_count = translate_prefs.GetTranslationDeniedCount(src_lang);
+  int ignore_count = translate_prefs.GetTranslationIgnoredCount(src_lang);
   DVLOG(3) << "TranslateRanker: features=["
            << "src_lang='" << src_lang << "', dst_lang='" << dst_lang
            << "', country='" << country << "', locale='" << app_locale
            << ", accept_count=" << accept_count
-           << ", denied_count=" << denied_count
-           << ", ignored_count=" << ignored_count
-           << ", total_count=" << total_count
-           << ", accept_ratio=" << accept_ratio
-           << ", decline_ratio=" << decline_ratio
-           << ", ignore_ratio=" << ignore_ratio << "]";
+           << ", decline_count=" << decline_count
+           << ", ignore_count=" << ignore_count << "]";
 
-  double score = CalculateScore(accept_ratio, decline_ratio, ignore_ratio,
+  double score = CalculateScore(accept_count, decline_count, ignore_count,
                                 src_lang, dst_lang, app_locale, country);
 
   DVLOG(2) << "TranslateRanker Score: " << score;
@@ -185,9 +170,9 @@ bool TranslateRanker::ShouldOfferTranslation(
 
 TranslateRanker::TranslateRanker() {}
 
-double TranslateRanker::CalculateScore(double accept_ratio,
-                                       double decline_ratio,
-                                       double ignore_ratio,
+double TranslateRanker::CalculateScore(int accept_count,
+                                       int decline_count,
+                                       int ignore_count,
                                        const std::string& src_lang,
                                        const std::string& dst_lang,
                                        const std::string& locale,
@@ -195,12 +180,28 @@ double TranslateRanker::CalculateScore(double accept_ratio,
   SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.CalculateScore");
   DCHECK(model_ != nullptr);
   DCHECK(model_->has_logistic_regression_model());
+
+  int total_count = accept_count + decline_count + ignore_count;
+  double accept_ratio =
+      (total_count == 0) ? 0.0 : (double(accept_count) / total_count);
+  double decline_ratio =
+      (total_count == 0) ? 0.0 : (double(decline_count) / total_count);
+  double ignore_ratio =
+      (total_count == 0) ? 0.0 : (double(ignore_count) / total_count);
+  DVLOG(3) << "TranslateRanker: ratios=["
+           << ", accept_ratio=" << accept_ratio
+           << ", decline_ratio=" << decline_ratio
+           << ", ignore_ratio=" << ignore_ratio << "]";
+
   const chrome_intelligence::TranslateRankerModel::LogisticRegressionModel&
       logit = model_->logistic_regression_model();
   double dot_product =
       (accept_ratio * logit.accept_ratio_weight()) +
       (decline_ratio * logit.decline_ratio_weight()) +
       (ignore_ratio * logit.ignore_ratio_weight()) +
+      (accept_count * logit.accept_count_weight()) +
+      (decline_count * logit.decline_count_weight()) +
+      (ignore_count * logit.ignore_count_weight()) +
       ScoreComponent(logit.source_language_weight(), src_lang) +
       ScoreComponent(logit.dest_language_weight(), dst_lang) +
       ScoreComponent(logit.country_weight(), country) +
@@ -289,6 +290,8 @@ void TranslateRanker::ParseModel(int /* id */,
   ReportModelStatus(MODEL_STATUS_OK);
   model_ = std::move(new_model);
   model_fetcher_.reset();
+
+  DVLOG(3) << "Successfully loaded model version " << GetModelVersion() << ".";
 }
 
 void TranslateRanker::FlushTranslateEvents(
