@@ -16,6 +16,7 @@
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "public/platform/WebLayerScrollClient.h"
 
 namespace blink {
 
@@ -264,12 +265,6 @@ int PropertyTreeManager::ensureCompositorScrollNode(
   int id = scrollTree().Insert(cc::ScrollNode(), parentId);
 
   cc::ScrollNode& compositorNode = *scrollTree().Node(id);
-  // TODO(wkorman): Fix owning layer id to reference a layer id rather than a
-  // scroll node index.
-  compositorNode.owning_layer_id = parentId;
-  m_propertyTrees
-      .layer_id_to_scroll_node_index[compositorNode.owning_layer_id] = id;
-
   compositorNode.scrollable = true;
 
   compositorNode.scroll_clip_layer_bounds.SetSize(scrollNode->clip().width(),
@@ -319,7 +314,41 @@ void PropertyTreeManager::updateScrollAndScrollTranslationNodes(
   compositorTransformNode.local.MakeIdentity();
   compositorTransformNode.scrolls = true;
   transformTree().set_needs_update(true);
-  // TODO(pdr): The scroll tree's scroll offset will need to be set here.
+  // TODO(pdr): Because of a layer dependancy, the scroll tree scroll offset is
+  // set in updateLayerScrollMapping but that should occur here.
+}
+
+void PropertyTreeManager::updateLayerScrollMapping(
+    cc::Layer* layer,
+    const TransformPaintPropertyNode* transform) {
+  auto* enclosingScrollNode = transform->findEnclosingScrollNode();
+  int scrollNodeId = ensureCompositorScrollNode(enclosingScrollNode);
+  layer->SetScrollTreeIndex(scrollNodeId);
+  int layerId = layer->id();
+  m_propertyTrees.layer_id_to_scroll_node_index[layerId] = scrollNodeId;
+
+  if (!transform->isScrollTranslation())
+    return;
+
+  auto& compositorScrollNode = *scrollTree().Node(scrollNodeId);
+
+  // TODO(pdr): Remove the scroll node's owning_layer_id. This approach of
+  // setting owning_layer_id only when it is not set lets us maintain a 1:1
+  // mapping from layer to scroll node.
+  if (compositorScrollNode.owning_layer_id == cc::Layer::INVALID_ID) {
+    compositorScrollNode.owning_layer_id = layerId;
+    auto& compositorTransformNode =
+        *transformTree().Node(compositorScrollNode.transform_id);
+    // TODO(pdr): Set this in updateScrollAndScrollTranslationNodes once the
+    // layer id is no longer needed.
+    scrollTree().SetScrollOffset(layerId,
+                                 compositorTransformNode.scroll_offset);
+    if (auto* scrollClient = enclosingScrollNode->scrollClient()) {
+      layer->set_did_scroll_callback(
+          base::Bind(&blink::WebLayerScrollClient::didScroll,
+                     base::Unretained(scrollClient)));
+    }
+  }
 }
 
 int PropertyTreeManager::switchToEffectNode(

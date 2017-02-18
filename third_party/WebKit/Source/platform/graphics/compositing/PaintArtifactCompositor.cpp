@@ -727,8 +727,7 @@ void PaintArtifactCompositor::update(
     layer->SetTransformTreeIndex(transformId);
     layer->SetClipTreeIndex(clipId);
     layer->SetEffectTreeIndex(effectId);
-    layer->SetScrollTreeIndex(propertyTreeManager.ensureCompositorScrollNode(
-        transform->findEnclosingScrollNode()));
+    propertyTreeManager.updateLayerScrollMapping(layer.get(), transform);
 
     layer->SetShouldCheckBackfaceVisibility(pendingLayer.backfaceHidden);
 

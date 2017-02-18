@@ -18,6 +18,7 @@
 namespace blink {
 
 using MainThreadScrollingReasons = uint32_t;
+class WebLayerScrollClient;
 
 // A scroll node contains auxiliary scrolling information which includes how far
 // an area can be scrolled, main thread scrolling reasons, etc. Scroll nodes
@@ -43,10 +44,11 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons) {
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      WebLayerScrollClient* scrollClient) {
     return adoptRef(new ScrollPaintPropertyNode(
         std::move(parent), clip, bounds, userScrollableHorizontal,
-        userScrollableVertical, mainThreadScrollingReasons));
+        userScrollableVertical, mainThreadScrollingReasons, scrollClient));
   }
 
   void update(PassRefPtr<const ScrollPaintPropertyNode> parent,
@@ -54,7 +56,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
               const IntSize& bounds,
               bool userScrollableHorizontal,
               bool userScrollableVertical,
-              MainThreadScrollingReasons mainThreadScrollingReasons) {
+              MainThreadScrollingReasons mainThreadScrollingReasons,
+              WebLayerScrollClient* scrollClient) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -63,6 +66,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     m_userScrollableHorizontal = userScrollableHorizontal;
     m_userScrollableVertical = userScrollableVertical;
     m_mainThreadScrollingReasons = mainThreadScrollingReasons;
+    m_scrollClient = scrollClient;
   }
 
   const ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
@@ -94,6 +98,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
+  WebLayerScrollClient* scrollClient() const { return m_scrollClient; }
+
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
@@ -101,7 +107,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     RefPtr<ScrollPaintPropertyNode> cloned =
         adoptRef(new ScrollPaintPropertyNode(
             m_parent, m_clip, m_bounds, m_userScrollableHorizontal,
-            m_userScrollableVertical, m_mainThreadScrollingReasons));
+            m_userScrollableVertical, m_mainThreadScrollingReasons,
+            m_scrollClient));
     return cloned;
   }
 
@@ -112,7 +119,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            m_bounds == o.m_bounds &&
            m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
            m_userScrollableVertical == o.m_userScrollableVertical &&
-           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
+           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons &&
+           m_scrollClient == o.m_scrollClient;
   }
 
   String toTreeString() const;
@@ -126,13 +134,15 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
                           IntSize bounds,
                           bool userScrollableHorizontal,
                           bool userScrollableVertical,
-                          MainThreadScrollingReasons mainThreadScrollingReasons)
+                          MainThreadScrollingReasons mainThreadScrollingReasons,
+                          WebLayerScrollClient* scrollClient)
       : m_parent(parent),
         m_clip(clip),
         m_bounds(bounds),
         m_userScrollableHorizontal(userScrollableHorizontal),
         m_userScrollableVertical(userScrollableVertical),
-        m_mainThreadScrollingReasons(mainThreadScrollingReasons) {}
+        m_mainThreadScrollingReasons(mainThreadScrollingReasons),
+        m_scrollClient(scrollClient) {}
 
   RefPtr<const ScrollPaintPropertyNode> m_parent;
   IntSize m_clip;
@@ -140,6 +150,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   bool m_userScrollableHorizontal : 1;
   bool m_userScrollableVertical : 1;
   MainThreadScrollingReasons m_mainThreadScrollingReasons;
+  WebLayerScrollClient* m_scrollClient;
 };
 
 // Redeclared here to avoid ODR issues.

@@ -9,9 +9,10 @@
 namespace blink {
 
 ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
-  DEFINE_STATIC_REF(ScrollPaintPropertyNode, root,
-                    (ScrollPaintPropertyNode::create(
-                        nullptr, IntSize(), IntSize(), false, false, 0)));
+  DEFINE_STATIC_REF(
+      ScrollPaintPropertyNode, root,
+      (ScrollPaintPropertyNode::create(nullptr, IntSize(), IntSize(), false,
+                                       false, 0, nullptr)));
   return root;
 }
 
@@ -40,6 +41,8 @@ String ScrollPaintPropertyNode::toString() const {
   } else {
     text.append("none");
   }
+  if (m_scrollClient)
+    text.append(String::format(" scrollClient=%p", m_scrollClient));
   return text.toString();
 }
 

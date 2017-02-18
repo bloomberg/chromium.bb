@@ -88,7 +88,8 @@ static bool updateScrollTranslation(
     const IntSize& bounds,
     bool userScrollableHorizontal,
     bool userScrollableVertical,
-    MainThreadScrollingReasons mainThreadScrollingReasons) {
+    MainThreadScrollingReasons mainThreadScrollingReasons,
+    WebLayerScrollClient* scrollClient) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   CompositorElementId compositorElementId =
       createDomNodeBasedCompositorElementId(*frameView.layoutView());
@@ -99,7 +100,7 @@ static bool updateScrollTranslation(
         std::move(parent), matrix, origin, false, 0, CompositingReasonNone,
         compositorElementId, std::move(scrollParent), clip, bounds,
         userScrollableHorizontal, userScrollableVertical,
-        mainThreadScrollingReasons);
+        mainThreadScrollingReasons, scrollClient);
     return existingReasons != mainThreadScrollingReasons;
   }
   frameView.setScrollTranslation(
@@ -107,7 +108,7 @@ static bool updateScrollTranslation(
           std::move(parent), matrix, origin, false, 0, CompositingReasonNone,
           compositorElementId, std::move(scrollParent), clip, bounds,
           userScrollableHorizontal, userScrollableVertical,
-          mainThreadScrollingReasons));
+          mainThreadScrollingReasons, scrollClient));
   return true;
 }
 
@@ -175,7 +176,8 @@ void PaintPropertyTreeBuilder::updateProperties(
       context.forceSubtreeUpdate |= updateScrollTranslation(
           frameView, frameView.preTranslation(), frameScroll, FloatPoint3D(),
           context.current.scroll, scrollClip, scrollBounds,
-          userScrollableHorizontal, userScrollableVertical, reasons);
+          userScrollableHorizontal, userScrollableVertical, reasons,
+          frameView.getScrollableArea());
     } else {
       if (frameView.scrollTranslation()) {
         // Ensure pre-existing properties are cleared if there is no scrolling.
@@ -853,7 +855,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
       bool scrollNodeNeededForMainThreadReasons = ancestorReasons != reasons;
 
       const LayoutBox& box = toLayoutBox(object);
-      const auto* scrollableArea = box.getScrollableArea();
+      auto* scrollableArea = box.getScrollableArea();
       IntSize scrollOffset = box.scrolledContentOffset();
       if (scrollNodeNeededForMainThreadReasons || !scrollOffset.isZero() ||
           scrollableArea->scrollsOverflow()) {
@@ -886,7 +888,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
             context.current.renderingContextId, CompositingReasonNone,
             compositorElementId, context.current.scroll, scrollClip,
             scrollBounds, userScrollableHorizontal, userScrollableVertical,
-            reasons);
+            reasons, scrollableArea);
       }
     }
 

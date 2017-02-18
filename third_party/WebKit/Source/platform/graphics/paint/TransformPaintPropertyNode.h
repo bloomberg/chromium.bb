@@ -61,7 +61,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons) {
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      WebLayerScrollClient* scrollClient) {
     // If this transform is for scroll offset, it should be a 2d translation.
     DCHECK(matrix.isIdentityOr2DTranslation());
     return adoptRef(new TransformPaintPropertyNode(
@@ -69,7 +70,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         renderingContextId, directCompositingReasons, compositorElementId,
         ScrollPaintPropertyNode::create(
             std::move(parentScroll), clip, bounds, userScrollableHorizontal,
-            userScrollableVertical, mainThreadScrollingReasons)));
+            userScrollableVertical, mainThreadScrollingReasons, scrollClient)));
   }
 
   void update(
@@ -104,14 +105,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons) {
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      WebLayerScrollClient* scrollClient) {
     update(std::move(parent), matrix, origin, flattensInheritedTransform,
            renderingContextId, directCompositingReasons, compositorElementId);
     DCHECK(m_scroll);
     DCHECK(matrix.isIdentityOr2DTranslation());
     m_scroll->update(std::move(parentScroll), clip, bounds,
                      userScrollableHorizontal, userScrollableVertical,
-                     mainThreadScrollingReasons);
+                     mainThreadScrollingReasons, scrollClient);
   }
 
   const TransformationMatrix& matrix() const { return m_matrix; }

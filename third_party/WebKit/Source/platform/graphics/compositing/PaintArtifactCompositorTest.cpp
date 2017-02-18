@@ -26,6 +26,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestPaintArtifact.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
+#include "public/platform/WebLayerScrollClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -666,7 +667,22 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
   EXPECT_EQ(convertedEffect3.id, contentLayerAt(2)->effect_tree_index());
 }
 
+class FakeScrollClient : public WebLayerScrollClient {
+ public:
+  FakeScrollClient() : didScrollCount(0) {}
+
+  void didScroll(const gfx::ScrollOffset& scrollOffset) final {
+    didScrollCount++;
+    lastScrollOffset = scrollOffset;
+  };
+
+  gfx::ScrollOffset lastScrollOffset;
+  unsigned didScrollCount;
+};
+
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
+  FakeScrollClient scrollClient;
+
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslation =
       TransformPaintPropertyNode::createScrollTranslation(
@@ -674,7 +690,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
           TransformationMatrix().translate(7, 9), FloatPoint3D(), false, 0,
           CompositingReasonNone, expectedCompositorElementId,
           ScrollPaintPropertyNode::root(), IntSize(11, 13), IntSize(27, 31),
-          true, false, 0 /* mainThreadScrollingReasons */);
+          true, false, 0 /* mainThreadScrollingReasons */, &scrollClient);
 
   TestPaintArtifact artifact;
   artifact
@@ -705,6 +721,17 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             scrollNode.main_thread_scrolling_reasons);
+
+  auto* layer = contentLayerAt(0);
+  EXPECT_EQ(layer->id(), scrollNode.owning_layer_id);
+  auto scrollNodeIndexIt =
+      propertyTrees().layer_id_to_scroll_node_index.find(layer->id());
+  EXPECT_EQ(scrollNodeIndexIt->second, scrollNode.id);
+
+  EXPECT_EQ(0u, scrollClient.didScrollCount);
+  layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));
+  EXPECT_EQ(1u, scrollClient.didScrollCount);
+  EXPECT_EQ(gfx::ScrollOffset(1, 2), scrollClient.lastScrollOffset);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformUnderScrollNode) {
@@ -714,7 +741,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformUnderScrollNode) {
           TransformationMatrix().translate(7, 9), FloatPoint3D(), false, 0,
           CompositingReasonNone, CompositorElementId(),
           ScrollPaintPropertyNode::root(), IntSize(11, 13), IntSize(27, 31),
-          true, false, 0 /* mainThreadScrollingReasons */);
+          true, false, 0 /* mainThreadScrollingReasons */, nullptr);
 
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(
@@ -759,8 +786,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           TransformationMatrix().translate(11, 13), FloatPoint3D(), false, 0,
           CompositingReasonNone, expectedCompositorElementIdA,
           ScrollPaintPropertyNode::root(), IntSize(2, 3), IntSize(5, 7), false,
-          true,
-          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+          true, MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
+          nullptr);
 
   CompositorElementId expectedCompositorElementIdB = CompositorElementId(3, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslationB =
@@ -769,7 +796,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           FloatPoint3D(), false, 0, CompositingReasonNone,
           expectedCompositorElementIdB, scrollTranslationA->scrollNode(),
           IntSize(19, 23), IntSize(29, 31), true, false,
-          0 /* mainThreadScrollingReasons */);
+          0 /* mainThreadScrollingReasons */, nullptr);
   TestPaintArtifact artifact;
   artifact.chunk(scrollTranslationA, ClipPaintPropertyNode::root(), effect)
       .rectDrawing(FloatRect(7, 11, 13, 17), Color::white);
