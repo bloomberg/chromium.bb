@@ -963,6 +963,7 @@
                  file="system_page/system_page.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SETTINGS_HTML"
+                 preprocess="true"
                  file="settings.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_USB_DEVICES_HTML"

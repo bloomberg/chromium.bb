@@ -1,0 +1,41 @@
+import("../vulcanize.gni")
+import("//tools/grit/grit_rule.gni")
+import("//chrome/common/features.gni")
+
+vulcanized_unbuilt = "vulcanized.unbuilt.html"
+
+vulcanize("vulcanize") {
+  host = "md-settings"
+  html_in_file = "settings.html"
+  html_out_file = vulcanized_unbuilt
+  insert_in_head = "<base href=\"chrome://\$i18n{hostname}\">"
+  input = rebase_path(root_gen_dir, root_build_dir) +
+          "/chrome/browser/resources/settings/settings_resources.pak"
+  js_out_file = "crisper.js"
+
+  deps = [
+    ":flattened_resources",
+  ]
+}
+
+polymer_css_build("build") {
+  input_files = [ vulcanized_unbuilt ]
+  output_files = [ "vulcanized.html" ]
+  deps = [
+    ":vulcanize",
+  ]
+}
+
+grit("flattened_resources") {
+  source = "settings_resources.grd"
+
+  # TODO(thestig): use_qualified_include = true
+  defines = chrome_grit_defines
+  outputs = [
+    "grit/settings_resources.h",
+    "grit/settings_resources_map.cc",
+    "grit/settings_resources_map.h",
+    "settings_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome/browser/resources/settings"
+}

@@ -94,7 +94,18 @@ if (!is_ios && !is_android) {
   }
 
   grit("settings_resources") {
-    source = "settings/settings_resources.grd"
+    if (use_vulcanize) {
+      source = "settings/settings_resources_vulcanized.grd"
+      deps = [
+        "//chrome/browser/resources/settings:build",
+      ]
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    } else {
+      source = "settings/settings_resources.grd"
+    }
 
     # TODO(thestig): use_qualified_include = true
     defines = chrome_grit_defines
