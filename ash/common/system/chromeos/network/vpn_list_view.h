@@ -50,8 +50,7 @@ class VPNListView : public NetworkListViewBase,
 
   // NetworkListViewBase:
   void Update() override;
-  bool IsNetworkEntry(views::View* view,
-                      std::string* service_path) const override;
+  bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
@@ -78,9 +77,8 @@ class VPNListView : public NetworkListViewBase,
   // A mapping from each VPN provider's list entry to the provider.
   std::map<const views::View* const, VPNProvider> provider_view_map_;
 
-  // A mapping from each network's list entry to the network's service path.
-  std::map<const views::View* const, std::string>
-      network_view_service_path_map_;
+  // A mapping from each network's list entry to the network's guid.
+  std::map<const views::View* const, std::string> network_view_guid_map_;
 
   // Whether the list is currently empty (i.e., the next entry added will become
   // the topmost entry).

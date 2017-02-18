@@ -100,6 +100,7 @@ class NetworkPortalNotificationControllerTest : public testing::Test {
 
 TEST_F(NetworkPortalNotificationControllerTest, NetworkStateChanged) {
   NetworkState wifi("wifi");
+  wifi.SetGuid("wifi");
   NetworkPortalDetector::CaptivePortalState wifi_state;
 
   // Notification is not displayed for online state.
@@ -123,6 +124,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NetworkStateChanged) {
 
 TEST_F(NetworkPortalNotificationControllerTest, NetworkChanged) {
   NetworkState wifi1("wifi1");
+  wifi1.SetGuid("wifi1");
   NetworkPortalDetector::CaptivePortalState wifi1_state;
   wifi1_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   wifi1_state.response_code = 200;
@@ -138,6 +140,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NetworkChanged) {
   ASSERT_FALSE(HasNotification());
 
   NetworkState wifi2("wifi2");
+  wifi2.SetGuid("wifi2");
   NetworkPortalDetector::CaptivePortalState wifi2_state;
   wifi2_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   wifi2_state.response_code = 204;
@@ -161,6 +164,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NotificationUpdated) {
   // First network is behind a captive portal, so notification should
   // be displayed.
   NetworkState wifi1("wifi1");
+  wifi1.SetGuid("wifi1");
   OnPortalDetectionCompleted(&wifi1, portal_state);
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ(1u, observer().add_count());
@@ -170,6 +174,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NotificationUpdated) {
   // Second network is also behind a captive portal, so notification
   // should be updated.
   NetworkState wifi2("wifi2");
+  wifi2.SetGuid("wifi2");
   OnPortalDetectionCompleted(&wifi2, portal_state);
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ(1u, observer().add_count());

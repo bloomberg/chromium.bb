@@ -285,12 +285,12 @@ void NetworkListViewMd::Update() {
 }
 
 bool NetworkListViewMd::IsNetworkEntry(views::View* view,
-                                       std::string* service_path) const {
+                                       std::string* guid) const {
   std::map<views::View*, std::string>::const_iterator found =
       network_map_.find(view);
   if (found == network_map_.end())
     return false;
-  *service_path = found->second;
+  *guid = found->second;
   return true;
 }
 
@@ -301,7 +301,7 @@ void NetworkListViewMd::UpdateNetworks(
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   for (const auto& network : networks) {
     if (pattern.MatchesType(network->type()))
-      network_list_.push_back(base::MakeUnique<NetworkInfo>(network->path()));
+      network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
   }
 }
 
@@ -314,9 +314,9 @@ void NetworkListViewMd::OrderNetworks() {
     bool operator()(const std::unique_ptr<NetworkInfo>& network1,
                     const std::unique_ptr<NetworkInfo>& network2) {
       const int order1 =
-          GetOrder(handler_->GetNetworkState(network1->service_path));
+          GetOrder(handler_->GetNetworkStateFromGuid(network1->guid));
       const int order2 =
-          GetOrder(handler_->GetNetworkState(network2->service_path));
+          GetOrder(handler_->GetNetworkStateFromGuid(network2->guid));
       if (order1 != order2)
         return order1 < order2;
       if (network1->connected != network2->connected)
@@ -325,7 +325,7 @@ void NetworkListViewMd::OrderNetworks() {
         return network1->connecting;
       if (network1->highlight != network2->highlight)
         return network1->highlight;
-      return network1->service_path.compare(network2->service_path) < 0;
+      return network1->guid.compare(network2->guid) < 0;
     }
 
    private:
@@ -358,7 +358,7 @@ void NetworkListViewMd::UpdateNetworkIcons() {
 
   for (auto& info : network_list_) {
     const chromeos::NetworkState* network =
-        handler->GetNetworkState(info->service_path);
+        handler->GetNetworkStateFromGuid(info->guid);
     if (!network)
       continue;
     bool prohibited_by_policy = IsProhibitedByPolicy(network);
@@ -394,28 +394,27 @@ void NetworkListViewMd::UpdateNetworkListInternal() {
   // Get the updated list entries.
   needs_relayout_ = false;
   network_map_.clear();
-  std::unique_ptr<std::set<std::string>> new_service_paths =
-      UpdateNetworkListEntries();
+  std::unique_ptr<std::set<std::string>> new_guids = UpdateNetworkListEntries();
 
   // Remove old children.
-  std::set<std::string> remove_service_paths;
-  for (const auto& iter : service_path_map_) {
-    if (new_service_paths->find(iter.first) == new_service_paths->end()) {
-      remove_service_paths.insert(iter.first);
+  std::set<std::string> remove_guids;
+  for (const auto& iter : network_guid_map_) {
+    if (new_guids->find(iter.first) == new_guids->end()) {
+      remove_guids.insert(iter.first);
       network_map_.erase(iter.second);
       delete iter.second;
       needs_relayout_ = true;
     }
   }
 
-  for (const auto& remove_iter : remove_service_paths)
-    service_path_map_.erase(remove_iter);
+  for (const auto& remove_iter : remove_guids)
+    network_guid_map_.erase(remove_iter);
 
   if (!needs_relayout_)
     return;
 
   views::View* selected_view = nullptr;
-  for (const auto& iter : service_path_map_) {
+  for (const auto& iter : network_guid_map_) {
     if (delegate_->IsViewHovered(iter.second)) {
       selected_view = iter.second;
       break;
@@ -432,11 +431,11 @@ NetworkListViewMd::UpdateNetworkListEntries() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   // First add high-priority networks (not Wi-Fi nor cellular).
-  std::unique_ptr<std::set<std::string>> new_service_paths =
+  std::unique_ptr<std::set<std::string>> new_guids =
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, 0);
 
   // Keep an index where the next child should be inserted.
-  int index = new_service_paths->size();
+  int index = new_guids->size();
 
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
@@ -459,11 +458,10 @@ NetworkListViewMd::UpdateNetworkListEntries() {
       ++index;
 
     // Add cellular networks.
-    std::unique_ptr<std::set<std::string>> new_cellular_service_paths =
+    std::unique_ptr<std::set<std::string>> new_cellular_guids =
         UpdateNetworkChildren(NetworkInfo::Type::CELLULAR, index);
-    index += new_cellular_service_paths->size();
-    new_service_paths->insert(new_cellular_service_paths->begin(),
-                              new_cellular_service_paths->end());
+    index += new_cellular_guids->size();
+    new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
   }
 
   if (pattern.MatchesPattern(NetworkTypePattern::WiFi())) {
@@ -484,11 +482,10 @@ NetworkListViewMd::UpdateNetworkListEntries() {
       ++index;
 
     // Add Wi-Fi networks.
-    std::unique_ptr<std::set<std::string>> new_wifi_service_paths =
+    std::unique_ptr<std::set<std::string>> new_wifi_guids =
         UpdateNetworkChildren(NetworkInfo::Type::WIFI, index);
-    index += new_wifi_service_paths->size();
-    new_service_paths->insert(new_wifi_service_paths->begin(),
-                              new_wifi_service_paths->end());
+    index += new_wifi_guids->size();
+    new_guids->insert(new_wifi_guids->begin(), new_wifi_guids->end());
   }
 
   // No networks or other messages (fallback).
@@ -497,28 +494,26 @@ NetworkListViewMd::UpdateNetworkListEntries() {
                     &no_wifi_networks_view_);
   }
 
-  return new_service_paths;
+  return new_guids;
 }
 
 std::unique_ptr<std::set<std::string>> NetworkListViewMd::UpdateNetworkChildren(
     NetworkInfo::Type type,
     int index) {
-  std::unique_ptr<std::set<std::string>> new_service_paths(
-      new std::set<std::string>);
+  std::unique_ptr<std::set<std::string>> new_guids(new std::set<std::string>);
   for (const auto& info : network_list_) {
     if (info->type != type)
       continue;
     UpdateNetworkChild(index++, info.get());
-    new_service_paths->insert(info->service_path);
+    new_guids->insert(info->guid);
   }
-  return new_service_paths;
+  return new_guids;
 }
 
 void NetworkListViewMd::UpdateNetworkChild(int index, const NetworkInfo* info) {
   views::View* network_view = nullptr;
-  ServicePathMap::const_iterator found =
-      service_path_map_.find(info->service_path);
-  if (found == service_path_map_.end()) {
+  NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
+  if (found == network_guid_map_.end()) {
     network_view = delegate_->CreateViewForNetwork(*info);
   } else {
     network_view = found->second;
@@ -530,8 +525,8 @@ void NetworkListViewMd::UpdateNetworkChild(int index, const NetworkInfo* info) {
   PlaceViewAtIndex(network_view, index);
   if (info->disable)
     network_view->SetEnabled(false);
-  network_map_[network_view] = info->service_path;
-  service_path_map_[info->service_path] = network_view;
+  network_map_[network_view] = info->guid;
+  network_guid_map_[info->guid] = network_view;
 }
 
 void NetworkListViewMd::PlaceViewAtIndex(views::View* view, int index) {

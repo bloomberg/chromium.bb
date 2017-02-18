@@ -181,9 +181,9 @@ void SystemTrayNotifier::RemoveNetworkPortalDetectorObserver(
 }
 
 void SystemTrayNotifier::NotifyOnCaptivePortalDetected(
-    const std::string& service_path) {
+    const std::string& guid) {
   for (auto& observer : network_portal_detector_observers_)
-    observer.OnCaptivePortalDetected(service_path);
+    observer.OnCaptivePortalDetected(guid);
 }
 
 void SystemTrayNotifier::AddScreenCaptureObserver(

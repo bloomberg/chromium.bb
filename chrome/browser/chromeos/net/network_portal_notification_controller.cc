@@ -275,7 +275,7 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
 
   if (!network ||
       state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
-    last_network_path_.clear();
+    last_network_guid_.clear();
 
     // In browser tests we initiate fake network portal detection, but network
     // state usually stays connected. This way, after dialog is shown, it is
@@ -296,13 +296,13 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
 
   // Don't do anything if notification for |network| already was
   // displayed.
-  if (network->path() == last_network_path_)
+  if (network->guid() == last_network_guid_)
     return;
-  last_network_path_ = network->path();
+  last_network_guid_ = network->guid();
 
   if (ash::WmShell::HasInstance()) {
     ash::WmShell::Get()->system_tray_notifier()->NotifyOnCaptivePortalDetected(
-        network->path());
+        network->guid());
   }
 
   message_center::MessageCenter::Get()->AddNotification(

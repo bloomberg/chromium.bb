@@ -26,11 +26,11 @@ NetworkingConfigDelegateChromeos::~NetworkingConfigDelegateChromeos() {
 
 std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
 NetworkingConfigDelegateChromeos::LookUpExtensionForNetwork(
-    const std::string& service_path) {
+    const std::string& guid) {
   chromeos::NetworkStateHandler* handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
   const chromeos::NetworkState* network_state =
-    handler->GetNetworkState(service_path);
+      handler->GetNetworkStateFromGuid(guid);
   if (!network_state)
     return nullptr;
   std::string hex_ssid = network_state->GetHexSsid();

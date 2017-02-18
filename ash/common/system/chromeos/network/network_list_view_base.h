@@ -28,10 +28,9 @@ class NetworkListViewBase {
   virtual void Update() = 0;
 
   // Checks whether |view| represents a network in the list. If yes, sets
-  // |service_path| to the network's service path and returns |true|. Otherwise,
-  // leaves |sevice_path| unchanged and returns |false|.
-  virtual bool IsNetworkEntry(views::View* view,
-                              std::string* service_path) const = 0;
+  // |guid| to the network's guid and returns |true|. Otherwise,
+  // leaves |guid| unchanged and returns |false|.
+  virtual bool IsNetworkEntry(views::View* view, std::string* guid) const = 0;
 
  protected:
   views::View* container() { return container_; }

@@ -22,7 +22,7 @@ class NetworkingConfigDelegateChromeos : public ash::NetworkingConfigDelegate {
   ~NetworkingConfigDelegateChromeos() override;
 
   std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
-      const std::string& service_path) override;
+      const std::string& guid) override;
 
  private:
   std::string LookUpExtensionName(content::BrowserContext* context,

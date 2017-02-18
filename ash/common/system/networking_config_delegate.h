@@ -15,7 +15,7 @@ namespace ash {
 
 // This delegate allows the UI code in ash, e.g. |NetworkStateListDetailedView|,
 // to access the |NetworkingConfigService| in order to determine whether the
-// configuration of a network identified by its |service_path| is controlled by
+// configuration of a network identified by its |guid| is controlled by
 // an extension.
 // TODO(crbug.com/651157): Eliminate this delegate. Information about extension
 // controlled networks should be provided by a mojo service that caches data at
@@ -34,9 +34,9 @@ class NetworkingConfigDelegate {
   virtual ~NetworkingConfigDelegate() {}
 
   // Returns information about the extension registered to control configuration
-  // of the network |service_path|. Returns null if no extension is registered.
+  // of the network |guid|. Returns null if no extension is registered.
   virtual std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
-      const std::string& service_path) = 0;
+      const std::string& guid) = 0;
 
  private:
   DISALLOW_ASSIGN(NetworkingConfigDelegate);

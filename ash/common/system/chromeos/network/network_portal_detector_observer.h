@@ -13,8 +13,9 @@ class NetworkPortalDetectorObserver {
  public:
   virtual ~NetworkPortalDetectorObserver() {}
 
-  // Called when captive portal is detected for a |network|.
-  virtual void OnCaptivePortalDetected(const std::string& service_path) = 0;
+  // Called when captive portal is detected for the network associated with
+  // |guid|.
+  virtual void OnCaptivePortalDetected(const std::string& guid) = 0;
 };
 
 }  // namespace ash

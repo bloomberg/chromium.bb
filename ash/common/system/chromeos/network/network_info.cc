@@ -13,8 +13,8 @@ NetworkInfo::NetworkInfo()
       connecting(false),
       type(Type::UNKNOWN) {}
 
-NetworkInfo::NetworkInfo(const std::string& path)
-    : service_path(path),
+NetworkInfo::NetworkInfo(const std::string& guid)
+    : guid(guid),
       disable(false),
       highlight(false),
       connected(false),

@@ -403,13 +403,13 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   if (login_ == LoginStatus::LOCKED)
     return;
 
-  std::string service_path;
-  if (!network_list_view_->IsNetworkEntry(view, &service_path))
+  std::string guid;
+  if (!network_list_view_->IsNetworkEntry(view, &guid))
     return;
 
   const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-          service_path);
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          guid);
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
     WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
@@ -652,8 +652,8 @@ views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
   if (!networking_config_delegate)
     return nullptr;
   std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
-      extension_info = networking_config_delegate->LookUpExtensionForNetwork(
-          info.service_path);
+      extension_info =
+          networking_config_delegate->LookUpExtensionForNetwork(info.guid);
   if (!extension_info)
     return nullptr;
 

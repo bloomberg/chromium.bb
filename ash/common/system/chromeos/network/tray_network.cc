@@ -323,8 +323,7 @@ void TrayNetwork::RequestToggleWifi() {
                                 chromeos::network_handler::ErrorCallback());
 }
 
-void TrayNetwork::OnCaptivePortalDetected(
-    const std::string& /* service_path */) {
+void TrayNetwork::OnCaptivePortalDetected(const std::string& /* guid */) {
   NetworkStateChanged();
 }
 

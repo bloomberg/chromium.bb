@@ -163,7 +163,7 @@ class VPNListNetworkEntry : public VPNListEntryBase,
   void SetupConnectingItemMd(const base::string16& text,
                              const gfx::ImageSkia& image);
 
-  const std::string service_path_;
+  const std::string guid_;
 
   views::LabelButton* disconnect_button_ = nullptr;
 
@@ -178,7 +178,7 @@ VPNListEntryBase::VPNListEntryBase(VPNListView* parent)
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* parent,
                                          const chromeos::NetworkState* network)
-    : VPNListEntryBase(parent), service_path_(network->path()) {
+    : VPNListEntryBase(parent), guid_(network->guid()) {
   UpdateFromNetworkState(network);
 }
 
@@ -187,9 +187,9 @@ VPNListNetworkEntry::~VPNListNetworkEntry() {
 }
 
 void VPNListNetworkEntry::NetworkIconChanged() {
-  UpdateFromNetworkState(
-      chromeos::NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-          service_path_));
+  UpdateFromNetworkState(chromeos::NetworkHandler::Get()
+                             ->network_state_handler()
+                             ->GetNetworkStateFromGuid(guid_));
 }
 
 void VPNListNetworkEntry::UpdateFromNetworkState(
@@ -267,7 +267,7 @@ void VPNListView::Update() {
   // Before updating the list, determine whether the user was hovering over one
   // of the VPN provider or network entries.
   std::unique_ptr<VPNProvider> hovered_provider;
-  std::string hovered_network_service_path;
+  std::string hovered_network_guid;
   for (const std::pair<const views::View* const, VPNProvider>& provider :
        provider_view_map_) {
     if (static_cast<const HoverHighlightView*>(provider.first)->hover()) {
@@ -277,9 +277,9 @@ void VPNListView::Update() {
   }
   if (!hovered_provider) {
     for (const std::pair<const views::View*, std::string>& entry :
-         network_view_service_path_map_) {
+         network_view_guid_map_) {
       if (static_cast<const HoverHighlightView*>(entry.first)->hover()) {
-        hovered_network_service_path = entry.second;
+        hovered_network_guid = entry.second;
         break;
       }
     }
@@ -288,7 +288,7 @@ void VPNListView::Update() {
   // Clear the list.
   container()->RemoveAllChildViews(true);
   provider_view_map_.clear();
-  network_view_service_path_map_.clear();
+  network_view_guid_map_.clear();
   list_empty_ = true;
   if (!UseMd()) {
     container()->SetLayoutManager(
@@ -317,10 +317,10 @@ void VPNListView::Update() {
         break;
       }
     }
-  } else if (!hovered_network_service_path.empty()) {
+  } else if (!hovered_network_guid.empty()) {
     for (const std::pair<const views::View*, std::string>& entry :
-         network_view_service_path_map_) {
-      if (entry.second == hovered_network_service_path) {
+         network_view_guid_map_) {
+      if (entry.second == hovered_network_guid) {
         scroll_to_show_view = entry.first;
         break;
       }
@@ -337,12 +337,11 @@ void VPNListView::Update() {
   }
 }
 
-bool VPNListView::IsNetworkEntry(views::View* view,
-                                 std::string* service_path) const {
-  const auto& entry = network_view_service_path_map_.find(view);
-  if (entry == network_view_service_path_map_.end())
+bool VPNListView::IsNetworkEntry(views::View* view, std::string* guid) const {
+  const auto& entry = network_view_guid_map_.find(view);
+  if (entry == network_view_guid_map_.end())
     return false;
-  *service_path = entry->second;
+  *guid = entry->second;
   return true;
 }
 
@@ -378,7 +377,7 @@ void VPNListView::OnViewClicked(views::View* sender) {
 void VPNListView::AddNetwork(const chromeos::NetworkState* network) {
   views::View* entry(new VPNListNetworkEntry(this, network));
   container()->AddChildView(entry);
-  network_view_service_path_map_[entry] = network->path();
+  network_view_guid_map_[entry] = network->guid();
   list_empty_ = false;
 }
 

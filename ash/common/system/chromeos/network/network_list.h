@@ -37,8 +37,7 @@ class NetworkListView : public NetworkListViewBase,
 
   // NetworkListViewBase:
   void Update() override;
-  bool IsNetworkEntry(views::View* view,
-                      std::string* service_path) const override;
+  bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
  private:
   void UpdateNetworks(
@@ -46,8 +45,8 @@ class NetworkListView : public NetworkListViewBase,
   void UpdateNetworkIcons();
   void UpdateNetworkListInternal();
   void HandleRelayout();
-  bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
-  bool UpdateNetworkChildren(std::set<std::string>* new_service_paths,
+  bool UpdateNetworkListEntries(std::set<std::string>* new_guids);
+  bool UpdateNetworkChildren(std::set<std::string>* new_guids,
                              int* child_index,
                              bool highlighted);
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
@@ -68,9 +67,9 @@ class NetworkListView : public NetworkListViewBase,
   typedef std::map<views::View*, std::string> NetworkMap;
   NetworkMap network_map_;
 
-  // A map of network service paths to their view.
-  typedef std::map<std::string, views::View*> ServicePathMap;
-  ServicePathMap service_path_map_;
+  // A map of network guids to their view.
+  typedef std::map<std::string, views::View*> NetworkGuidMap;
+  NetworkGuidMap network_guid_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListView);
 };

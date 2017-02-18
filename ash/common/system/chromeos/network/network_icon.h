@@ -26,9 +26,9 @@ enum IconType {
   ICON_TYPE_MENU_LIST,     // dark icons without VPN badges; separate status
 };
 
-// Gets the image for the network associated with |service_path|. |network| must
-// not be NULL. |icon_type| determines the color theme and whether or not to
-// show the VPN badge. This caches badged icons per network per |icon_type|.
+// Gets the image for provided |network|. |network| must not be NULL.
+// |icon_type| determines the color theme and whether or not to show the VPN
+// badge. This caches badged icons per network per |icon_type|.
 ASH_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);

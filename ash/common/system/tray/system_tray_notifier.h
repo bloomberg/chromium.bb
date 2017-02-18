@@ -95,7 +95,7 @@ class ASH_EXPORT SystemTrayNotifier {
       NetworkPortalDetectorObserver* observer);
   void RemoveNetworkPortalDetectorObserver(
       NetworkPortalDetectorObserver* observer);
-  void NotifyOnCaptivePortalDetected(const std::string& service_path);
+  void NotifyOnCaptivePortalDetected(const std::string& guid);
 
   // Screen capture.
   void AddScreenCaptureObserver(ScreenCaptureObserver* observer);

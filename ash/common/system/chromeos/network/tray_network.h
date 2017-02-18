@@ -46,7 +46,7 @@ class TrayNetwork : public SystemTrayItem,
   void RequestToggleWifi() override;
 
   // NetworkPortalDetectorObserver
-  void OnCaptivePortalDetected(const std::string& service_path) override;
+  void OnCaptivePortalDetected(const std::string& guid) override;
 
   // TrayNetworkStateObserver::Delegate
   void NetworkStateChanged() override;

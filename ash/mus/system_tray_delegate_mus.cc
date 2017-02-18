@@ -19,7 +19,7 @@ class StubNetworkingConfigDelegate : public NetworkingConfigDelegate {
  private:
   // NetworkingConfigDelegate:
   std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
-      const std::string& service_path) override {
+      const std::string& guid) override {
     return nullptr;
   }
 

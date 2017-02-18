@@ -85,12 +85,12 @@ void NetworkListView::Update() {
 }
 
 bool NetworkListView::IsNetworkEntry(views::View* view,
-                                     std::string* service_path) const {
+                                     std::string* guid) const {
   std::map<views::View*, std::string>::const_iterator found =
       network_map_.find(view);
   if (found == network_map_.end())
     return false;
-  *service_path = found->second;
+  *guid = found->second;
   return true;
 }
 
@@ -105,7 +105,7 @@ void NetworkListView::UpdateNetworks(
     const chromeos::NetworkState* network = *iter;
     if (!pattern.MatchesType(network->type()))
       continue;
-    network_list_.push_back(base::MakeUnique<NetworkInfo>(network->path()));
+    network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
   }
 }
 
@@ -118,7 +118,7 @@ void NetworkListView::UpdateNetworkIcons() {
 
   for (auto& info : network_list_) {
     const chromeos::NetworkState* network =
-        handler->GetNetworkState(info->service_path);
+        handler->GetNetworkStateFromGuid(info->guid);
     if (!network)
       continue;
     bool prohibited_by_policy = IsProhibitedByPolicy(network);
@@ -152,25 +152,24 @@ void NetworkListView::UpdateNetworkListInternal() {
   SCOPED_NET_LOG_IF_SLOW();
   // Get the updated list entries
   network_map_.clear();
-  std::set<std::string> new_service_paths;
-  bool needs_relayout = UpdateNetworkListEntries(&new_service_paths);
+  std::set<std::string> new_guids;
+  bool needs_relayout = UpdateNetworkListEntries(&new_guids);
 
   // Remove old children
-  std::set<std::string> remove_service_paths;
-  for (ServicePathMap::const_iterator it = service_path_map_.begin();
-       it != service_path_map_.end(); ++it) {
-    if (new_service_paths.find(it->first) == new_service_paths.end()) {
-      remove_service_paths.insert(it->first);
+  std::set<std::string> remove_guids;
+  for (NetworkGuidMap::const_iterator it = network_guid_map_.begin();
+       it != network_guid_map_.end(); ++it) {
+    if (new_guids.find(it->first) == new_guids.end()) {
+      remove_guids.insert(it->first);
       network_map_.erase(it->second);
       delete it->second;
       needs_relayout = true;
     }
   }
 
-  for (std::set<std::string>::const_iterator remove_it =
-           remove_service_paths.begin();
-       remove_it != remove_service_paths.end(); ++remove_it) {
-    service_path_map_.erase(*remove_it);
+  for (std::set<std::string>::const_iterator remove_it = remove_guids.begin();
+       remove_it != remove_guids.end(); ++remove_it) {
+    network_guid_map_.erase(*remove_it);
   }
 
   if (needs_relayout)
@@ -179,7 +178,7 @@ void NetworkListView::UpdateNetworkListInternal() {
 
 void NetworkListView::HandleRelayout() {
   views::View* selected_view = nullptr;
-  for (auto& iter : service_path_map_) {
+  for (auto& iter : network_guid_map_) {
     if (delegate_->IsViewHovered(iter.second)) {
       selected_view = iter.second;
       break;
@@ -192,7 +191,7 @@ void NetworkListView::HandleRelayout() {
 }
 
 bool NetworkListView::UpdateNetworkListEntries(
-    std::set<std::string>* new_service_paths) {
+    std::set<std::string>* new_guids) {
   bool needs_relayout = false;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
@@ -201,7 +200,7 @@ bool NetworkListView::UpdateNetworkListEntries(
 
   // Highlighted networks
   needs_relayout |=
-      UpdateNetworkChildren(new_service_paths, &index, true /* highlighted */);
+      UpdateNetworkChildren(new_guids, &index, true /* highlighted */);
 
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
@@ -234,8 +233,8 @@ bool NetworkListView::UpdateNetworkListEntries(
   }
 
   // Un-highlighted networks
-  needs_relayout |= UpdateNetworkChildren(new_service_paths, &index,
-                                          false /* not highlighted */);
+  needs_relayout |=
+      UpdateNetworkChildren(new_guids, &index, false /* not highlighted */);
 
   // No networks or other messages (fallback)
   if (index == 0) {
@@ -246,17 +245,16 @@ bool NetworkListView::UpdateNetworkListEntries(
   return needs_relayout;
 }
 
-bool NetworkListView::UpdateNetworkChildren(
-    std::set<std::string>* new_service_paths,
-    int* child_index,
-    bool highlighted) {
+bool NetworkListView::UpdateNetworkChildren(std::set<std::string>* new_guids,
+                                            int* child_index,
+                                            bool highlighted) {
   bool needs_relayout = false;
   int index = *child_index;
   for (auto& info : network_list_) {
     if (info->highlight != highlighted)
       continue;
     needs_relayout |= UpdateNetworkChild(index++, info.get());
-    new_service_paths->insert(info->service_path);
+    new_guids->insert(info->guid);
   }
   *child_index = index;
   return needs_relayout;
@@ -265,9 +263,8 @@ bool NetworkListView::UpdateNetworkChildren(
 bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   bool needs_relayout = false;
   views::View* network_view = nullptr;
-  ServicePathMap::const_iterator found =
-      service_path_map_.find(info->service_path);
-  if (found == service_path_map_.end()) {
+  NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
+  if (found == network_guid_map_.end()) {
     network_view = delegate_->CreateViewForNetwork(*info);
     container()->AddChildViewAt(network_view, index);
     needs_relayout = true;
@@ -281,8 +278,8 @@ bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   }
   if (info->disable)
     network_view->SetEnabled(false);
-  network_map_[network_view] = info->service_path;
-  service_path_map_[info->service_path] = network_view;
+  network_map_[network_view] = info->guid;
+  network_guid_map_[info->guid] = network_view;
   return needs_relayout;
 }
 
