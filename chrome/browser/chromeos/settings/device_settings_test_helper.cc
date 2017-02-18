@@ -200,7 +200,9 @@ void DeviceSettingsTestHelper::SetArcCpuRestriction(
     login_manager::ContainerCpuRestrictionState restriction_state,
     const ArcCallback& callback) {}
 
-void DeviceSettingsTestHelper::EmitArcBooted() {}
+void DeviceSettingsTestHelper::EmitArcBooted(
+    const cryptohome::Identification& cryptohome_id,
+    const ArcCallback& callback) {}
 
 void DeviceSettingsTestHelper::GetArcStartTime(
     const GetArcStartTimeCallback& callback) {}

@@ -362,9 +362,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    callback));
   }
 
-  void EmitArcBooted() override {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerEmitArcBooted);
+  void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
+                     const ArcCallback& callback) override {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerEmitArcBooted);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.id());
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnArcMethod,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerEmitArcBooted, callback));
   }
 
   void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
@@ -962,7 +970,10 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     callback.Run(false);
   }
 
-  void EmitArcBooted() override {}
+  void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
+                     const ArcCallback& callback) override {
+    callback.Run(false);
+  }
 
   void StopArcInstance(const ArcCallback& callback) override {
     callback.Run(false);

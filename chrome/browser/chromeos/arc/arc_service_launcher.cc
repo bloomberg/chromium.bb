@@ -100,8 +100,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcBootErrorNotification>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcBootPhaseMonitorBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcClipboardBridge>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
       arc_bridge_service, arc_service_manager_->blocking_task_runner()));
@@ -145,6 +143,10 @@ void ArcServiceLauncher::Initialize() {
 
 void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   DCHECK(arc_service_manager_);
+  // List in lexicographical order
+  arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
+      arc_service_manager_->arc_bridge_service(),
+      multi_user_util::GetAccountIdFromProfile(profile)));
   arc_service_manager_->AddService(base::MakeUnique<ArcNotificationManager>(
       arc_service_manager_->arc_bridge_service(),
       multi_user_util::GetAccountIdFromProfile(profile)));

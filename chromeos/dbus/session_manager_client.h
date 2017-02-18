@@ -270,7 +270,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       const ArcCallback& callback) = 0;
 
   // Emits the "arc-booted" upstart signal.
-  virtual void EmitArcBooted() = 0;
+  virtual void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
+                             const ArcCallback& callback) = 0;
 
   // Asynchronously retrieves the timestamp which ARC instance is invoked or
   // returns false if there is no ARC instance or ARC is not available.

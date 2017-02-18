@@ -12,6 +12,7 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -25,7 +26,8 @@ class ArcBootPhaseMonitorBridge
       public InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer,
       public mojom::BootPhaseMonitorHost {
  public:
-  explicit ArcBootPhaseMonitorBridge(ArcBridgeService* bridge_service);
+  ArcBootPhaseMonitorBridge(ArcBridgeService* bridge_service,
+                            const AccountId& account_id);
   ~ArcBootPhaseMonitorBridge() override;
 
   // InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer
@@ -36,6 +38,7 @@ class ArcBootPhaseMonitorBridge
   void OnBootCompleted() override;
 
  private:
+  const AccountId account_id_;
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
   std::unique_ptr<ArcInstanceThrottle> throttle_;
 

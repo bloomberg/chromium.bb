@@ -189,7 +189,12 @@ void FakeSessionManagerClient::SetArcCpuRestriction(
       FROM_HERE, base::Bind(callback, arc_available_));
 }
 
-void FakeSessionManagerClient::EmitArcBooted() {}
+void FakeSessionManagerClient::EmitArcBooted(
+    const cryptohome::Identification& cryptohome_id,
+    const ArcCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, arc_available_));
+}
 
 void FakeSessionManagerClient::GetArcStartTime(
     const GetArcStartTimeCallback& callback) {
