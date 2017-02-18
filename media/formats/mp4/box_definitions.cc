@@ -610,11 +610,6 @@ bool AVCDecoderConfigurationRecord::ParseInternal(
     RCHECK(reader->Read2(&sps_length) &&
            reader->ReadVec(&sps_list[i], sps_length));
     RCHECK(sps_list[i].size() > 4);
-
-    if (media_log.get()) {
-      MEDIA_LOG(INFO, media_log) << "Video codec: avc1."
-                                 << base::HexEncode(sps_list[i].data() + 1, 3);
-    }
   }
 
   uint8_t num_pps;
@@ -814,11 +809,6 @@ bool ElementaryStreamDescriptor::Parse(BoxReader* reader) {
   RCHECK(es_desc.Parse(data));
 
   object_type = es_desc.object_type();
-
-  if (object_type != 0x40) {
-    MEDIA_LOG(INFO, reader->media_log()) << "Audio codec: mp4a." << std::hex
-                                         << static_cast<int>(object_type);
-  }
 
   if (es_desc.IsAAC(object_type))
     RCHECK(aac.Parse(es_desc.decoder_specific_info(), reader->media_log()));

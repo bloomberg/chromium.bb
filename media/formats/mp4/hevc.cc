@@ -116,10 +116,6 @@ bool HEVCDecoderConfigurationRecord::ParseInternal(
     }
   }
 
-  if (media_log.get()) {
-    MEDIA_LOG(INFO, media_log) << "Video codec: hevc";
-  }
-
   return true;
 }
 

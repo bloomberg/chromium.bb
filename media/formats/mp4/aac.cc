@@ -149,12 +149,6 @@ bool AAC::Parse(const std::vector<uint8_t>& data,
   }
   DCHECK(channel_layout_ != CHANNEL_LAYOUT_NONE);
 
-  MEDIA_LOG(INFO, media_log)
-      << "Audio codec: mp4a.40." << static_cast<int>(profile_)
-      << ". Sampling frequency: " << frequency_ << "Hz"
-      << ". Sampling frequency(Extension): " << extension_frequency_ << "Hz"
-      << ". Channel layout: " << channel_layout_ << ".";
-
   return true;
 }
 

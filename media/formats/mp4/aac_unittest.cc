@@ -20,26 +20,6 @@ namespace media {
 
 namespace mp4 {
 
-MATCHER_P(AudioProfileLog, profile_string, "") {
-  return CONTAINS_STRING(arg,
-                         "Audio codec: " + std::string(profile_string) + ".");
-}
-
-MATCHER_P(AudioSamplingFrequencyLog, frequency_string, "") {
-  return CONTAINS_STRING(
-      arg, "Sampling frequency: " + std::string(frequency_string) + "Hz.");
-}
-
-MATCHER_P(AudioExtensionSamplingFrequencyLog, ex_string, "") {
-  return CONTAINS_STRING(
-      arg, "Sampling frequency(Extension): " + std::string(ex_string) + "Hz.");
-}
-
-MATCHER_P(AudioChannelLayoutLog, layout_string, "") {
-  return CONTAINS_STRING(
-      arg, "Channel layout: " + std::string(layout_string) + ".");
-}
-
 MATCHER_P(UnsupportedFrequencyIndexLog, frequency_index, "") {
   return CONTAINS_STRING(
       arg,
@@ -85,10 +65,6 @@ TEST_F(AACTest, BasicProfileTest) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("44100"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("3")));
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 44100);
   EXPECT_EQ(aac_.GetChannelLayout(false), CHANNEL_LAYOUT_STEREO);
@@ -100,10 +76,6 @@ TEST_F(AACTest, ExtensionTest) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("24000"),
-                         AudioExtensionSamplingFrequencyLog("48000"),
-                         AudioChannelLayoutLog("3")));
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 48000);
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(true), 48000);
@@ -120,10 +92,6 @@ TEST_F(AACTest, ImplicitSBR_ChannelConfig0) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("24000"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("2")));
   EXPECT_TRUE(Parse(data));
 
   // Test w/o implict SBR.
@@ -142,10 +110,6 @@ TEST_F(AACTest, ImplicitSBR_ChannelConfig1) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("24000"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("3")));
   EXPECT_TRUE(Parse(data));
 
   // Test w/o implict SBR.
@@ -163,10 +127,6 @@ TEST_F(AACTest, SixChannelTest) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("48000"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("12")));
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 48000);
   EXPECT_EQ(aac_.GetChannelLayout(false), CHANNEL_LAYOUT_5_1_BACK);
@@ -191,10 +151,7 @@ TEST_F(AACTest, IncorrectProfileTest) {
   EXPECT_FALSE(Parse(data));
 
   data[0] = 0x08;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.1"),
-                         AudioSamplingFrequencyLog("96000"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("2")));
+
   EXPECT_TRUE(Parse(data));
 
   data[0] = 0x28;
@@ -212,10 +169,6 @@ TEST_F(AACTest, IncorrectFrequencyTest) {
 
   data[0] = 0x0e;
   data[1] = 0x08;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.1"),
-                         AudioSamplingFrequencyLog("7350"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("2")));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -227,10 +180,6 @@ TEST_F(AACTest, IncorrectChannelTest) {
   EXPECT_FALSE(Parse(data));
 
   data[1] = 0x08;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.1"),
-                         AudioSamplingFrequencyLog("7350"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("2")));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -245,10 +194,6 @@ TEST_F(AACTest, UnsupportedProfileTest) {
 
   data[0] = 0x12;
   data[1] = 0x18;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("44100"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("5")));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -262,10 +207,6 @@ TEST_F(AACTest, UnsupportedChannelLayoutTest) {
   EXPECT_FALSE(Parse(data));
 
   data[1] = 0x18;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("44100"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("5")));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -279,10 +220,6 @@ TEST_F(AACTest, UnsupportedFrequencyIndexTest) {
   EXPECT_FALSE(Parse(data));
 
   data[0] = 0x13;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("24000"),
-                         AudioExtensionSamplingFrequencyLog("0"),
-                         AudioChannelLayoutLog("3")));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -296,10 +233,6 @@ TEST_F(AACTest, UnsupportedExFrequencyIndexTest) {
   EXPECT_FALSE(Parse(data));
 
   data[1] = 0x11;
-  EXPECT_MEDIA_LOG(AllOf(AudioProfileLog("mp4a.40.2"),
-                         AudioSamplingFrequencyLog("64000"),
-                         AudioExtensionSamplingFrequencyLog("64000"),
-                         AudioChannelLayoutLog("3")));
   EXPECT_TRUE(Parse(data));
 }
 
