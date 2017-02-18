@@ -174,7 +174,7 @@ void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
     observer.OnCertificatesLoaded(*cert_list_, initial_load);
 }
 
-void CertLoader::OnCertDBChanged(const net::X509Certificate* cert) {
+void CertLoader::OnCertDBChanged() {
   VLOG(1) << "OnCertDBChanged";
   LoadCertificates();
 }

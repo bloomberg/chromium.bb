@@ -104,7 +104,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   void NotifyCertificatesLoaded(bool initial_load);
 
   // net::CertDatabase::Observer
-  void OnCertDBChanged(const net::X509Certificate* cert) override;
+  void OnCertDBChanged() override;
 
   base::ObserverList<Observer> observers_;
 
