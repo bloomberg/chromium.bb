@@ -104,10 +104,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
                                     const ScrollAlignment& alignY,
                                     ScrollType = ProgrammaticScroll);
 
-  // Returns a rect, in the space of the area's backing graphics layer, that
-  // contains the visual region of all scrollbar parts.
-  virtual LayoutRect visualRectForScrollbarParts() const = 0;
-
   static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
   void contentAreaWillPaint() const;

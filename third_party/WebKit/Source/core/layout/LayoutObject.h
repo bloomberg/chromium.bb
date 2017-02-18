@@ -213,7 +213,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   String decoratedName() const;
 
   // DisplayItemClient methods.
-  LayoutRect visualRect() const override;
+  LayoutRect visualRect() const final;
   String debugName() const final;
 
   LayoutObject* parent() const { return m_parent; }

@@ -181,7 +181,9 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
     return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar"
                                                 : "VerticalScrollbar";
   }
-  LayoutRect visualRect() const override;
+  LayoutRect visualRect() const final { return m_visualRect; }
+
+  virtual void setVisualRect(const LayoutRect& r) { m_visualRect = r; }
 
   // Marks the scrollbar as needing to be redrawn.
   //
@@ -255,6 +257,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   int m_themeScrollbarThickness;
   bool m_trackNeedsRepaint;
   bool m_thumbNeedsRepaint;
+  LayoutRect m_visualRect;
 };
 
 DEFINE_TYPE_CASTS(Scrollbar,

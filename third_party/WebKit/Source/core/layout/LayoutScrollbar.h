@@ -67,6 +67,8 @@ class LayoutScrollbar final : public Scrollbar {
 
   void invalidateDisplayItemClientsOfScrollbarParts();
 
+  void setVisualRect(const LayoutRect&) final;
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:

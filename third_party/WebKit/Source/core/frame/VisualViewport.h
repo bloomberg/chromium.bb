@@ -168,10 +168,6 @@ class CORE_EXPORT VisualViewport final
   void setScrollOffset(const ScrollOffset&,
                        ScrollType,
                        ScrollBehavior = ScrollBehaviorInstant) override;
-  LayoutRect visualRectForScrollbarParts() const override {
-    ASSERT_NOT_REACHED();
-    return LayoutRect();
-  }
   bool isActive() const override { return false; }
   int scrollSize(ScrollbarOrientation) const override;
   bool isScrollCornerVisible() const override { return false; }

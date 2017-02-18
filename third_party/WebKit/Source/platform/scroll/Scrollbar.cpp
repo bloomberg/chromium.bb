@@ -629,11 +629,6 @@ float Scrollbar::scrollableAreaTargetPos() const {
          m_scrollableArea->minimumScrollOffset().height();
 }
 
-LayoutRect Scrollbar::visualRect() const {
-  return m_scrollableArea ? m_scrollableArea->visualRectForScrollbarParts()
-                          : LayoutRect();
-}
-
 void Scrollbar::setNeedsPaintInvalidation(ScrollbarPart invalidParts) {
   if (m_theme.shouldRepaintAllPartsOnInvalidation())
     invalidParts = AllParts;

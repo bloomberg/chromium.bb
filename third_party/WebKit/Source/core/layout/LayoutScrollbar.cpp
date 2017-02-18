@@ -381,10 +381,17 @@ int LayoutScrollbar::minimumThumbLength() const {
 }
 
 void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts() {
-  for (auto& part : m_parts)
+  for (auto& part : m_parts) {
     ObjectPaintInvalidator(*part.value)
         .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
             PaintInvalidationScroll);
+  }
+}
+
+void LayoutScrollbar::setVisualRect(const LayoutRect& rect) {
+  Scrollbar::setVisualRect(rect);
+  for (auto& part : m_parts)
+    part.value->setPreviousVisualRect(rect);
 }
 
 }  // namespace blink

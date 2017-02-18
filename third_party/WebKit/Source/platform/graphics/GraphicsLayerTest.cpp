@@ -165,9 +165,6 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
  public:
   static FakeScrollableArea* create() { return new FakeScrollableArea; }
 
-  LayoutRect visualRectForScrollbarParts() const override {
-    return LayoutRect();
-  }
   bool isActive() const override { return false; }
   int scrollSize(ScrollbarOrientation) const override { return 100; }
   bool isScrollCornerVisible() const override { return false; }
