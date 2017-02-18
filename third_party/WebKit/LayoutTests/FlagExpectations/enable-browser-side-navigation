@@ -7,11 +7,6 @@ crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-optio
 #  Console error messages are wrongly ordered.
 crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
-#  We don't report the right initiator type or line number.
-crbug.com/551000 http/tests/inspector/network/network-document-initiator.html [ Failure ]
-crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-document-initiator.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
 
 #  Forward redirect info to the renderer. Fixed by https://codereview.chromium.org/2653953005/.
 crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout ]

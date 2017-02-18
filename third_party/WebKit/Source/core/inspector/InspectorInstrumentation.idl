@@ -258,6 +258,12 @@ class XMLHttpRequest;
     [Page, Network]
     void frameClearedScheduledNavigation([Keep] LocalFrame*);
 
+    [Network]
+    void frameScheduledClientNavigation([Keep] LocalFrame*);
+
+    [Network]
+    void frameClearedScheduledClientNavigation([Keep] LocalFrame*);
+
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
 

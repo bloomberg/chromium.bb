@@ -1246,7 +1246,7 @@ void FrameLoader::stopAllLoaders() {
         ResourceError::cancelledError(String()), StandardCommit);
   }
 
-  m_isNavigationHandledByClient = false;
+  clearNavigationHandledByClient();
 
   for (Frame* child = m_frame->tree().firstChild(); child;
        child = child->tree().nextSibling()) {
@@ -1674,7 +1674,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
   if (policy == NavigationPolicyIgnore)
     return false;
   if (policy == NavigationPolicyHandledByClient) {
-    m_isNavigationHandledByClient = true;
+    setNavigationHandledByClient();
     // Mark the frame as loading since the embedder is handling the navigation.
     m_progressTracker->progressStarted(frameLoadType);
 
@@ -1752,7 +1752,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
       // navigation, record that there is no longer a navigation handled by the
       // client.
       if (!frameLoadRequest.resourceRequest().checkForBrowserSideNavigation()) {
-        m_isNavigationHandledByClient = false;
+        clearNavigationHandledByClient();
       } else {
         DocumentLoader* loader = createDocumentLoader(
             resourceRequest, frameLoadRequest, type, navigationType);
@@ -1796,6 +1796,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   if (frameLoadRequest.form())
     client()->dispatchWillSubmitForm(frameLoadRequest.form());
 
+  bool isNavigationHandledByClient = m_isNavigationHandledByClient;
   // If the loader wasn't waiting for the client to handle a navigation, update
   // the progress tracker. Otherwise don't, as it was already notified before
   // sending the navigation to teh client.
@@ -1813,6 +1814,11 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   DCHECK(m_provisionalDocumentLoader);
 
   m_provisionalDocumentLoader->startLoadingMainResource();
+
+  // This should happen after the request is sent, so we don't use
+  // clearNavigationHandledByClient() above.
+  if (isNavigationHandledByClient)
+    InspectorInstrumentation::frameClearedScheduledClientNavigation(m_frame);
 
   takeObjectSnapshot();
 }
@@ -2018,6 +2024,16 @@ DocumentLoader* FrameLoader::createDocumentLoader(
   loader->setReplacesCurrentHistoryItem(loadType ==
                                         FrameLoadTypeReplaceCurrentItem);
   return loader;
+}
+
+void FrameLoader::setNavigationHandledByClient() {
+  m_isNavigationHandledByClient = true;
+  InspectorInstrumentation::frameScheduledClientNavigation(m_frame);
+}
+
+void FrameLoader::clearNavigationHandledByClient() {
+  m_isNavigationHandledByClient = false;
+  InspectorInstrumentation::frameClearedScheduledClientNavigation(m_frame);
 }
 
 }  // namespace blink

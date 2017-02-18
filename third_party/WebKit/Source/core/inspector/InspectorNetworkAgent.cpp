@@ -1490,14 +1490,36 @@ void InspectorNetworkAgent::didCommitLoad(LocalFrame* frame,
 
 void InspectorNetworkAgent::frameScheduledNavigation(LocalFrame* frame,
                                                      double) {
-  std::unique_ptr<protocol::Network::Initiator> initiator =
-      buildInitiatorObject(frame->document(), FetchInitiatorInfo());
-  m_frameNavigationInitiatorMap.set(IdentifiersFactory::frameId(frame),
-                                    std::move(initiator));
+  String frameId = IdentifiersFactory::frameId(frame);
+  m_framesWithScheduledNavigation.insert(frameId);
+  if (!m_framesWithScheduledClientNavigation.contains(frameId)) {
+    m_frameNavigationInitiatorMap.set(
+        frameId, buildInitiatorObject(frame->document(), FetchInitiatorInfo()));
+  }
 }
 
 void InspectorNetworkAgent::frameClearedScheduledNavigation(LocalFrame* frame) {
-  m_frameNavigationInitiatorMap.erase(IdentifiersFactory::frameId(frame));
+  String frameId = IdentifiersFactory::frameId(frame);
+  m_framesWithScheduledNavigation.erase(frameId);
+  if (!m_framesWithScheduledClientNavigation.contains(frameId))
+    m_frameNavigationInitiatorMap.erase(frameId);
+}
+
+void InspectorNetworkAgent::frameScheduledClientNavigation(LocalFrame* frame) {
+  String frameId = IdentifiersFactory::frameId(frame);
+  m_framesWithScheduledClientNavigation.insert(frameId);
+  if (!m_framesWithScheduledNavigation.contains(frameId)) {
+    m_frameNavigationInitiatorMap.set(
+        frameId, buildInitiatorObject(frame->document(), FetchInitiatorInfo()));
+  }
+}
+
+void InspectorNetworkAgent::frameClearedScheduledClientNavigation(
+    LocalFrame* frame) {
+  String frameId = IdentifiersFactory::frameId(frame);
+  m_framesWithScheduledClientNavigation.erase(frameId);
+  if (!m_framesWithScheduledNavigation.contains(frameId))
+    m_frameNavigationInitiatorMap.erase(frameId);
 }
 
 void InspectorNetworkAgent::setHostId(const String& hostId) {

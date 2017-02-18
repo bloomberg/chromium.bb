@@ -217,9 +217,7 @@ class CORE_EXPORT FrameLoader final {
     return provisionalDocumentLoader() || m_isNavigationHandledByClient;
   }
 
-  void clearNavigationHandledByClient() {
-    m_isNavigationHandledByClient = false;
-  }
+  void clearNavigationHandledByClient();
 
   DECLARE_TRACE();
 
@@ -271,6 +269,8 @@ class CORE_EXPORT FrameLoader final {
                                        const FrameLoadRequest&,
                                        FrameLoadType,
                                        NavigationType);
+
+  void setNavigationHandledByClient();
 
   Member<LocalFrame> m_frame;
   AtomicString m_requiredCSP;
