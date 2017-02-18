@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./automapping-test.js"></script>
+<style>
+body {
+    color: red;
+}
+/*# sourceURL=http://127.0.0.1:8000/simple.css */
+</style>
+<script>
+
+function test()
+{
+    var fsUISourceCode, fs;
+
+    InspectorTest.runTestSuite([
+        function initializeTestFileSystem(next)
+        {
+            InspectorTest.waitForUISourceCode('simple.css')
+                .then(uiSourceCode => uiSourceCode.requestContent())
+                .then(onCSSContent);
+
+            function onCSSContent(content)
+            {
+                fs = new InspectorTest.TestFileSystem("file:///var/www");
+                InspectorTest.addFiles(fs, { "simple.css": { content: content }, });
+                fs.reportCreated(next);
+            }
+        },
+
+        function waitForPersistenceBinding(next)
+        {
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000/", "/");
+            InspectorTest.waitForBinding('simple.css').then(onBinding);
+
+            function onBinding(binding)
+            {
+                fsUISourceCode = binding.fileSystem;
+                fsUISourceCode.requestContent().then(onContent);
+            }
+
+            function onContent(content) {
+                InspectorTest.addResult('Initial content of file:///var/www/simple.css');
+                InspectorTest.addResult('----\n' + content + '\n----');
+                next();
+            }
+        },
+
+        function breakCSSModelProtocol(next)
+        {
+            // Nullify console.error since it dumps style sheet Ids and make test flake.
+            console.error = function() { };
+
+            var styleSheet = InspectorTest.cssModel.styleSheetHeaders().find(header => header.contentURL().endsWith('simple.css'));
+            // Make CSSModel constantly return errors on all getStyleSheetText requests.
+            InspectorTest.override(InspectorTest.cssModel._agent, 'getStyleSheetText', throwProtocolError, true);
+            // Set a new stylesheet text
+            InspectorTest.cssModel.setStyleSheetText(styleSheet.id, 'body {color: blue}');
+            // Expect StylesSourceMapping to sync styleSheet with network UISourceCode.
+            // Persistence acts synchronously.
+            InspectorTest.addSniffer(Bindings.StylesSourceMapping.prototype, '_styleFileSyncedForTest', next);
+
+            function throwProtocolError(styleSheetId, textCallback) {
+                var error = 'FAKE PROTOCOL ERROR';
+                var result = textCallback(error);
+                InspectorTest.addResult('Protocol Error: ' + error);
+                return Promise.resolve(result);
+            }
+        },
+
+        function onStylesSourcemappingSynced(next) {
+            InspectorTest.addResult('Updated content of file:///var/www/simple.css');
+            InspectorTest.addResult('----\n' + fsUISourceCode.content() + '\n----');
+            next()
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that persistence does not overwrite CSS files when CSS model reports error on getStyleSheetText.</p>
+</body>
+</html>
