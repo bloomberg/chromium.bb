@@ -21,7 +21,8 @@ GestureEventDetails::GestureEventDetails(ui::EventType type)
 
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,
-                                         float delta_y)
+                                         float delta_y,
+                                         ScrollUnits units)
     : type_(type),
       device_type_(GestureDeviceType::DEVICE_UNKNOWN),
       touch_points_(1) {
@@ -31,11 +32,13 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
     case ui::ET_GESTURE_SCROLL_BEGIN:
       data_.scroll_begin.x_hint = delta_x;
       data_.scroll_begin.y_hint = delta_y;
+      data_.scroll_begin.delta_hint_units = units;
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
       data_.scroll_update.x = delta_x;
       data_.scroll_update.y = delta_y;
+      data_.scroll_update.delta_units = units;
       break;
 
     case ui::ET_SCROLL_FLING_START:
