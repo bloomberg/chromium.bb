@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -201,6 +202,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     base::scoped_nsobject<GTMFadeTruncatingTextFieldCell> labelCell(
         [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
     [labelCell setControlSize:NSSmallControlSize];
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+      [labelCell setAlignment:NSRightTextAlignment];
     [titleView_ setCell:labelCell];
     titleViewCell_ = labelCell;
 
