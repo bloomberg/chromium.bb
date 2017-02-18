@@ -2570,6 +2570,8 @@ split_static_library("ui") {
         "cocoa/browser_window_fullscreen_transition.mm",
         "cocoa/browser_window_layout.h",
         "cocoa/browser_window_layout.mm",
+        "cocoa/browser_window_touch_bar.h",
+        "cocoa/browser_window_touch_bar.mm",
         "cocoa/browser_window_utils.h",
         "cocoa/browser_window_utils.mm",
         "cocoa/bubble_combobox.h",

@@ -24,6 +24,12 @@ static const NSTouchBarItemPriority NSTouchBarItemPriorityLow = -1000;
 typedef NSString* NSTouchBarItemIdentifier;
 typedef NSString* NSTouchBarCustomizationIdentifier;
 
+static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFixedSpaceSmall =
+    @"NSTouchBarItemIdentifierFixedSpaceSmall";
+
+static const NSTouchBarItemIdentifier NSTouchBarItemIdentifierFlexibleSpace =
+    @"NSTouchBarItemIdentifierFlexibleSpace";
+
 @interface NSTouchBar : NSObject<NSCoding>
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
@@ -103,6 +109,10 @@ typedef NSString* NSTouchBarCustomizationIdentifier;
 @class NSTouchBar;
 @protocol NSTouchBarDelegate;
 @class NSTouchBarItem;
+
+@interface NSWindow (TouchBarSDK)
+@property(strong, readonly) NSTouchBar* touchBar;
+@end
 
 #endif  // MAC_OS_X_VERSION_10_12_1
 

@@ -48,6 +48,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
+#import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
@@ -96,6 +97,7 @@
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -1003,6 +1005,10 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
+
+  [touchBar_ setIsStarred:isStarred];
+  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
+    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 - (void)setCurrentPageIsTranslated:(BOOL)on {
@@ -1144,6 +1150,9 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
   [toolbarController_ setIsLoading:isLoading force:force];
+  [touchBar_ setIsPageLoading:isLoading];
+  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
+    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 // Make the location bar the first responder, if possible.
@@ -1844,6 +1853,15 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (TabAlertState)alertState {
   return static_cast<BrowserWindowCocoa*>([self browserWindow])->alert_state();
+}
+
+- (BrowserWindowTouchBar*)browserWindowTouchBar {
+  if (!touchBar_) {
+    touchBar_.reset(
+        [[BrowserWindowTouchBar alloc] initWithBrowser:browser_.get()]);
+  }
+
+  return touchBar_.get();
 }
 
 @end  // @implementation BrowserWindowController

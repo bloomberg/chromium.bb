@@ -1927,6 +1927,15 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </if>
       </if>
 
+      <!-- Touch Bar-->
+      <if expr="is_macosx">
+        <message name="IDS_TOUCH_BAR_SEARCH"
+                   desc="Text for the search button in the touch bar. Pressing the button will bring focus to the omnibox.">
+          Search or type URL
+        </message>
+
+      </if>
+
       <!-- Remove in-progress downloads confirmation dialog -->
       <if expr="not is_macosx">
       <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">

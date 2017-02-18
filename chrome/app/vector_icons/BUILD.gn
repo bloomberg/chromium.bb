@@ -63,6 +63,10 @@ aggregate_vector_icons("chrome_vector_icons") {
     "zoom_plus.icon",
     "${branding_path_component}/product.icon",
   ]
+
+  if (is_mac) {
+    icons += [ "new_tab_mac_touchbar.icon" ]
+  }
 }
 
 source_set("vector_icons") {

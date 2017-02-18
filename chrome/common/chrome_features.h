@@ -50,6 +50,10 @@ extern const base::Feature kBlockPromptsIfDismissedOften;
 
 extern const base::Feature kBrowserHangFixesExperiment;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kBrowserTouchBar;
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID)
 extern const base::Feature kConsistentOmniboxGeolocation;
 #endif

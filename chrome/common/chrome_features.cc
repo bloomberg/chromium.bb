@@ -70,6 +70,12 @@ const base::Feature kBlockPromptsIfDismissedOften{
 const base::Feature kBrowserHangFixesExperiment{
     "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Enables or disables the browser's touch bar.
+const base::Feature kBrowserTouchBar{"BrowserTouchBar",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID)
 // Experiment to make Geolocation permissions in the omnibox and the default
 // search engine's search page consistent.
