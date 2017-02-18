@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./automapping-test.js"></script>
+<script src="./resources/sourcemap-name-clash/out.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.overrideNetworkModificationTime({
+        "http://127.0.0.1:8000/inspector/persistence/resources/sourcemap-name-clash/out.js": null
+    });
+
+    Promise.all([
+        getResourceContent("out.js"),
+        getResourceContent("out.js? [sm]")
+    ]).then(onResourceContents);
+
+    function onResourceContents(contents)
+    {
+        var fs = new InspectorTest.TestFileSystem("file:///var/www");
+        InspectorTest.addFiles(fs, {
+            "out.js": {
+                content: contents[0],
+                time: new Date("December 1, 1989")
+            },
+            "src/out.js": {
+                content: contents[1],
+                time: new Date("December 1, 1989")
+            }
+        });
+        fs.reportCreated(onFileSystemCreated);
+    }
+
+    function onFileSystemCreated()
+    {
+        var automappingTest = new InspectorTest.AutomappingTest(Workspace.workspace);
+        automappingTest.waitUntilMappingIsStabilized(InspectorTest.completeTest.bind(InspectorTest));
+    }
+
+    function getResourceContent(name)
+    {
+        var fulfill;
+        var promise = new Promise(x => fulfill = x);
+        InspectorTest.waitForScriptSource(name, onSource);
+        return promise;
+
+        function onSource(uiSourceCode)
+        {
+            uiSourceCode.requestContent().then(content => fulfill(content));
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that sourcemap sources are mapped event when sourcemap compiled url matches with one of the
+source urls.</p>
+</body>
+</html>

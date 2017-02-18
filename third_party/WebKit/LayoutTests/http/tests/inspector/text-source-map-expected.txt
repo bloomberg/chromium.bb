@@ -70,7 +70,7 @@ Running: testSourceRoot
 0 === 0
 
 Running: testNameClash
-example.js === example.js [sm]
+example.js === example.js? [sm]
 0 === 0
 9 === 9
 source line 0 has no mappings.
