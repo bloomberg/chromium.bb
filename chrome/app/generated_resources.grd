@@ -5935,10 +5935,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
-        Try Chrome on iPhone
+        Sync this password to your iPhone
       </message>
       <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
-        Never type this password again.  Send a link to install Chrome on your phone.
+        Install Chrome on your phone. We’ll send an SMS to your phone.
       </message>
       <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
         Password saved. To get your passwords on all your devices, sign in to Chrome.
@@ -14868,6 +14868,17 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_CONTROLLED_BY_AUTOMATION" desc="Message shown when the browser session is being controlled by an automated test.">
       Chrome is being controlled by automated test software.
     </message>
+
+    <!-- Desktop iOS promotion chrome://flags strings -->
+    <if expr="is_win">
+      <message name="IDS_FLAGS_ENABLE_DESKTOP_IOS_PROMOTIONS_NAME" desc="Name for the flag to enable desktop to iOS promotions" translateable="false">
+        Desktop to iOS promotions.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DESKTOP_IOS_PROMOTIONS_DESCRIPTION" desc="Description for the flag to enable desktop to iOS promotions" translateable="false">
+        Enable Desktop to iOS promotions, and allow users to see them if they are eligible.
+      </message>
+    </if>
+
   </messages>
  </release>
 </grit>

@@ -2259,6 +2259,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-usb-backend", IDS_FLAGS_NEW_USB_BACKEND_NAME,
      IDS_FLAGS_NEW_USB_BACKEND_DESCRIPTION, kOsWin,
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
+    {"enable-desktop-ios-promotions",
+     IDS_FLAGS_ENABLE_DESKTOP_IOS_PROMOTIONS_NAME,
+     IDS_FLAGS_ENABLE_DESKTOP_IOS_PROMOTIONS_DESCRIPTION, kOsWin,
+     FEATURE_VALUE_TYPE(features::kDesktopIOSPromotion)},
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)

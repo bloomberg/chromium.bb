@@ -4,14 +4,117 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
 
-DesktopIOSPromotionController::DesktopIOSPromotionController() {}
+#include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_view.h"
+#include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
+#include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
+#include "components/prefs/pref_service.h"
 
-DesktopIOSPromotionController::~DesktopIOSPromotionController() {}
+DesktopIOSPromotionController::DesktopIOSPromotionController(
+    Profile* profile,
+    DesktopIOSPromotionView* promotion_view,
+    desktop_ios_promotion::PromotionEntryPoint entry_point)
+    : profile_prefs_(profile->GetPrefs()),
+      entry_point_(entry_point),
+      sms_service_(SMSServiceFactory::GetForProfile(profile)),
+      promotion_view_(promotion_view),
+      dismissal_reason_(
+          desktop_ios_promotion::PromotionDismissalReason::FOCUS_LOST),
+      weak_ptr_factory_(this) {
+  sms_service_->QueryPhoneNumber(
+      base::Bind(&DesktopIOSPromotionController::OnGotPhoneNumber,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+DesktopIOSPromotionController::~DesktopIOSPromotionController() {
+  desktop_ios_promotion::LogDismissalReason(dismissal_reason_, entry_point_);
+}
 
 void DesktopIOSPromotionController::OnSendSMSClicked() {
-  // TODO(crbug.com/676655): Call the growth api to send sms.
+  // TODO(crbug.com/676655): Get the SMS message id from the finch group.
+  std::string sms_message_id = "19001507";
+  sms_service_->SendSMS(sms_message_id,
+                        base::Bind(&DesktopIOSPromotionController::OnSendSMS,
+                                   weak_ptr_factory_.GetWeakPtr()));
+
+  // Update Profile prefs.
+  profile_prefs_->SetInteger(prefs::kIOSPromotionSMSEntryPoint,
+                             static_cast<int>(entry_point_));
+
+  // Update dismissal reason.
+  dismissal_reason_ = desktop_ios_promotion::PromotionDismissalReason::SEND_SMS;
+}
+
+void DesktopIOSPromotionController::OnPromotionShown() {
+  // update the impressions count.
+  PrefService* local_state = g_browser_process->local_state();
+  int impressions = local_state->GetInteger(
+      desktop_ios_promotion::kEntryPointLocalPrefs
+          [static_cast<int>(entry_point_)][static_cast<int>(
+              desktop_ios_promotion::EntryPointLocalPrefType::IMPRESSIONS)]);
+  impressions++;
+  local_state->SetInteger(
+      desktop_ios_promotion::kEntryPointLocalPrefs
+          [static_cast<int>(entry_point_)][static_cast<int>(
+              desktop_ios_promotion::EntryPointLocalPrefType::IMPRESSIONS)],
+      impressions);
+
+  // Update synced profile prefs.
+  int shown_entrypoints =
+      profile_prefs_->GetInteger(prefs::kIOSPromotionShownEntryPoints);
+  shown_entrypoints |= 1 << static_cast<int>(entry_point_);
+  profile_prefs_->SetInteger(prefs::kIOSPromotionShownEntryPoints,
+                             shown_entrypoints);
+
+  // If the promo is seen then it means the SMS was not sent on the last 7 days,
+  // reset the pref.
+  profile_prefs_->SetInteger(prefs::kIOSPromotionSMSEntryPoint, 0);
+
+  double last_impression = base::Time::NowFromSystemTime().ToDoubleT();
+  profile_prefs_->SetDouble(prefs::kIOSPromotionLastImpression,
+                            last_impression);
+  // Update histograms.
+  UMA_HISTOGRAM_ENUMERATION(
+      "DesktopIOSPromotion.ImpressionFromEntryPoint",
+      static_cast<int>(entry_point_),
+      static_cast<int>(
+          desktop_ios_promotion::PromotionEntryPoint::ENTRY_POINT_MAX_VALUE));
 }
 
 void DesktopIOSPromotionController::OnNoThanksClicked() {
-  // TODO(crbug.com/676655): Handle logging & update sync.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(
+      desktop_ios_promotion::kEntryPointLocalPrefs
+          [static_cast<int>(entry_point_)][static_cast<int>(
+              desktop_ios_promotion::EntryPointLocalPrefType::DISMISSED)],
+      true);
+  dismissal_reason_ =
+      desktop_ios_promotion::PromotionDismissalReason::NO_THANKS;
+}
+
+std::string DesktopIOSPromotionController::GetUsersRecoveryPhoneNumber() {
+  return recovery_number_;
+}
+
+void DesktopIOSPromotionController::OnGotPhoneNumber(
+    SMSService::Request* request,
+    bool success,
+    const std::string& number) {
+  if (success) {
+    recovery_number_ = number;
+    promotion_view_->UpdateRecoveryPhoneLabel();
+  }
+  UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.QueryPhoneNumberSucceeded",
+                        success);
+}
+
+void DesktopIOSPromotionController::OnSendSMS(SMSService::Request* request,
+                                              bool success,
+                                              const std::string& number) {
+  UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.SendSMSSucceeded", success);
 }

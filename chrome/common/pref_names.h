@@ -885,6 +885,9 @@ extern const char kWebShareVisitedTargets[];
 #if defined(OS_WIN)
 extern const char kIOSPromotionEligible[];
 extern const char kIOSPromotionDone[];
+extern const char kIOSPromotionSMSEntryPoint[];
+extern const char kIOSPromotionShownEntryPoints[];
+extern const char kIOSPromotionLastImpression[];
 extern const char kNumberSavePasswordsBubbleIOSPromoShown[];
 extern const char kSavePasswordsBubbleIOSPromoDismissed[];
 extern const char kNumberBookmarksBubbleIOSPromoShown[];

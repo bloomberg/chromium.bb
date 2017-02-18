@@ -2408,13 +2408,35 @@ const char kGoogleDSEGeolocationSetting[] = "google_dse_geolocation_setting";
 const char kWebShareVisitedTargets[] = "profile.web_share.visited_targets";
 
 #if defined(OS_WIN)
-// True if the user is eligible to recieve "desktop to iOS" promotion.
+// True if the user is eligible to recieve "desktop to iOS" promotion. This
+// vlaue is set by a job that access the growth table to check users with iOS
+// devices and phone recovery number and update the eligibility on chrome sync.
 const char kIOSPromotionEligible[] = "ios.desktoptomobileeligible";
 
 // True if the "desktop to iOS" promotion was successful, i.e. user installed
-// the application and signed in after seeing the promotion and receiving the
-// SMS.
+// the application and signed in on the iOS client after seeing the promotion
+// and receiving the SMS.
 const char kIOSPromotionDone[] = "ios.desktop_ios_promo_done";
+
+// Index of the entry point that last initiated sending the SMS to the user for
+// the "desktop to iOS" promotion (see DesktopIOSPromotion.IOSSigninReason
+// histogram for details).
+const char kIOSPromotionSMSEntryPoint[] =
+    "ios.desktop_ios_promo_sms_entrypoint";
+
+// Bit mask that represents the Indices of all the entry points shown to the
+// user for "desktop to iOS" promotion. Each entry point is represented by
+// 1<<entrypoint_value using the values from the Enum
+// desktop_ios_promotion::PromotionEntryPoint.
+const char kIOSPromotionShownEntryPoints[] =
+    "ios.desktop_ios_promo_shown_entrypoints";
+
+// Timestamp of the last "desktop to iOS" promotion last impression. If the
+// user sends SMS on that impression then we deal with this timestamp as the
+// SMS sending time because after sending the sms the user shouldn't see the
+// promotion again (Accuracy to the minutes and seconds is not important).
+const char kIOSPromotionLastImpression[] =
+    "ios.desktop_ios_promo_last_impression";
 
 // Number of times user has seen the "desktop to iOS" save passwords bubble
 // promotion.

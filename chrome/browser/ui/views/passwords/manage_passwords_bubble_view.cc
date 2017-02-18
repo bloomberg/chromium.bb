@@ -37,7 +37,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_view.h"
+#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
 #endif
 
 int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
@@ -830,7 +830,8 @@ void ManagePasswordsBubbleView::CreateChild() {
 #if defined(OS_WIN)
   } else if (model_.state() ==
              password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
-    AddChildView(new DesktopIOSPromotionView(
+    AddChildView(new DesktopIOSPromotionBubbleView(
+        model_.GetProfile(),
         desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE));
 #endif
   } else {

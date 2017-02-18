@@ -23,28 +23,42 @@ class PrefService;
 namespace desktop_ios_promotion {
 
 // Represents the reason that the Desktop to iOS promotion was dismissed for.
+// These values are written to logs. New values can be added, but existing
+// values must never be reordered or deleted and reused.
 enum class PromotionDismissalReason {
+  // Focus lost is the default reason and represents no interaction.
   FOCUS_LOST = 0,
-  TAB_SWITCHED,
-  NO_THANKS,
-  CLOSE_BUTTON,
-  SEND_SMS,
-  LEARN_MORE_CLICKED,
+  NO_THANKS = 1,
+  CLOSE_BUTTON = 2,
+  SEND_SMS = 3,
+  // Used for histograms logging.
+  DISMISSAL_REASON_MAX_VALUE = 4
 };
 
+enum class EntryPointLocalPrefType { IMPRESSIONS = 0, DISMISSED = 1 };
+
 // The place where the promotion appeared.
+// Intentionally skipped the = 0 value, as it represents the defaults on the
+// prefs (eg. User didn't recieve SMS).
+// These values are written to logs. New values can be added, but existing
+// values must never be reordered or deleted and reused.
 enum class PromotionEntryPoint {
-  SAVE_PASSWORD_BUBBLE = 0,
-  BOOKMARKS_BUBBLE,
-  BOOKMARKS_FOOTNOTE,
-  HISTORY_PAGE
+  SAVE_PASSWORD_BUBBLE = 1,
+  BOOKMARKS_BUBBLE = 2,
+  BOOKMARKS_FOOTNOTE = 3,
+  HISTORY_PAGE = 4,
+  // Used for histograms logging.
+  ENTRY_POINT_MAX_VALUE = 5
 };
 
 // Entry points local prefs, each entry point has a preference for impressions
 // count and a preference for whether user dismissed it or not.
 // Do not change the order of this array, as it's indexed using
 // desktop_ios_promotion::PromotionEntryPoint.
-const char* const kEntryPointLocalPrefs[4][2] = {
+const char* const kEntryPointLocalPrefs[5][2] = {
+    // The first emtpy value is for padding as PromotionEntryPoints enum starts
+    // from 1.
+    {"", ""},
     {prefs::kNumberSavePasswordsBubbleIOSPromoShown,
      prefs::kSavePasswordsBubbleIOSPromoDismissed},
     {prefs::kNumberBookmarksBubbleIOSPromoShown,
@@ -56,17 +70,20 @@ const char* const kEntryPointLocalPrefs[4][2] = {
 
 bool IsEligibleForIOSPromotion(PrefService* prefs,
                                const syncer::SyncService* sync_service,
-                               desktop_ios_promotion::PromotionEntryPoint);
+                               PromotionEntryPoint entry_point);
 
 // Returns the Bubble text based on the promotion entry point.
-base::string16 GetPromoBubbleText(
-    desktop_ios_promotion::PromotionEntryPoint entry_point);
+base::string16 GetPromoBubbleText(PromotionEntryPoint entry_point);
 
 // Register all Priority Sync preferences.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Register all local only Preferences.
 void RegisterLocalPrefs(PrefRegistrySimple* registry);
+
+// Log promotion dismissal reason for entry points.
+void LogDismissalReason(PromotionDismissalReason reason,
+                        PromotionEntryPoint entry_point);
 
 }  // namespace desktop_ios_promotion
 

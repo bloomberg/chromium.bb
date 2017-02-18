@@ -459,8 +459,6 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
     title_ = l10n_util::GetStringUTF16(
         IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE);
     state_ = password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
-    // TODO(crbug.com/676655): Update impression count.
-    // TODO(crbug.com/676655): Add required logging.
     return true;
   }
 #endif
