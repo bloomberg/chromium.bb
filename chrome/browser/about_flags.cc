@@ -1623,6 +1623,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webvr", IDS_FLAGS_WEBVR_NAME, IDS_FLAGS_WEBVR_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
 #if defined(ENABLE_WEBVR)
+    {"enable-webvr-experimental-rendering",
+     IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_NAME,
+     IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebVRExperimentalRendering)},
     {"enable-vr-shell", IDS_FLAGS_ENABLE_VR_SHELL_NAME,
      IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVrShell)},

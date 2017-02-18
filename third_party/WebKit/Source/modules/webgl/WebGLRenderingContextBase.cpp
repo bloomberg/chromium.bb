@@ -25,6 +25,7 @@
 
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
@@ -47,6 +48,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
 #include "modules/webgl/EXTBlendMinMax.h"
@@ -102,7 +104,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
 
 namespace blink {
 
@@ -611,6 +612,24 @@ createContextProviderOnWorkerThread(
   return std::move(creationInfo.createdContextProvider);
 }
 
+bool WebGLRenderingContextBase::supportOwnOffscreenSurface(
+    ExecutionContext* executionContext) {
+  // If there's a possibility this context may be used with WebVR make sure it
+  // is created with an offscreen surface that can be swapped out for a
+  // VR-specific surface if needed.
+  //
+  // At this time, treat this as an experimental rendering optimization
+  // that needs a separate opt-in. See crbug.com/691102 for details.
+  if (RuntimeEnabledFeatures::webVRExperimentalRenderingEnabled()) {
+    if (RuntimeEnabledFeatures::webVREnabled() ||
+        OriginTrials::webVREnabled(executionContext)) {
+      DVLOG(1) << "Requesting supportOwnOffscreenSurface";
+      return true;
+    }
+  }
+  return false;
+}
+
 std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::createContextProviderInternal(
     HTMLCanvasElement* canvas,
@@ -622,8 +641,11 @@ WebGLRenderingContextBase::createContextProviderInternal(
   // The canvas is only given on the main thread.
   DCHECK(!canvas || isMainThread());
 
-  Platform::ContextAttributes contextAttributes =
-      toPlatformContextAttributes(attributes, webGLVersion);
+  auto executionContext = canvas ? canvas->document().getExecutionContext()
+                                 : scriptState->getExecutionContext();
+  Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(
+      attributes, webGLVersion, supportOwnOffscreenSurface(executionContext));
+
   Platform::GraphicsInfo glInfo;
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
   const auto& url = canvas ? canvas->document().topDocument().url()
@@ -7458,8 +7480,11 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
     m_drawingBuffer.clear();
   }
 
+  auto executionContext = canvas() ? canvas()->document().getExecutionContext()
+                                   : offscreenCanvas()->getExecutionContext();
   Platform::ContextAttributes attributes =
-      toPlatformContextAttributes(creationAttributes(), version());
+      toPlatformContextAttributes(creationAttributes(), version(),
+                                  supportOwnOffscreenSurface(executionContext));
   Platform::GraphicsInfo glInfo;
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
   const auto& url = canvas() ? canvas()->document().topDocument().url()

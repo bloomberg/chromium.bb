@@ -1013,13 +1013,16 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   bool is_software_rendering = gpu_channel_host->gpu_info().software_rendering;
 
-  // This is an offscreen context, which doesn't use the default frame buffer,
-  // so don't request any alpha, depth, stencil, antialiasing.
+  // This is an offscreen context. Generally it won't use the default
+  // frame buffer, in that case don't request any alpha, depth, stencil,
+  // antialiasing. But we do need those attributes for the "own
+  // offscreen surface" optimization which supports directly drawing
+  // to a custom surface backed frame buffer.
   gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
+  attributes.alpha_size = web_attributes.supportAlpha ? 8 : -1;
+  attributes.depth_size = web_attributes.supportDepth ? 24 : 0;
+  attributes.stencil_size = web_attributes.supportStencil ? 8 : 0;
+  attributes.samples = web_attributes.supportAntialias ? 4 : 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   // Prefer discrete GPU for WebGL.

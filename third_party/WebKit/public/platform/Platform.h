@@ -460,6 +460,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   struct ContextAttributes {
     bool failIfMajorPerformanceCaveat = false;
     unsigned webGLVersion = 0;
+    // Offscreen contexts usually share a surface for the default frame buffer
+    // since they aren't rendering to it. Setting any of the following
+    // attributes causes creation of a custom surface owned by the context.
+    bool supportAlpha = false;
+    bool supportDepth = false;
+    bool supportAntialias = false;
+    bool supportStencil = false;
   };
   struct GraphicsInfo {
     unsigned vendorId = 0;

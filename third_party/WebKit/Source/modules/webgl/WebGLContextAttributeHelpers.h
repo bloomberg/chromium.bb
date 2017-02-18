@@ -18,7 +18,8 @@ WebGLContextAttributes toWebGLContextAttributes(
 // Platform API.
 Platform::ContextAttributes toPlatformContextAttributes(
     const CanvasContextCreationAttributes&,
-    unsigned webGLVersion);
+    unsigned webGLVersion,
+    bool supportOwnOffscreenSurface);
 
 }  // namespace blink
 

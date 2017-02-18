@@ -23,10 +23,19 @@ WebGLContextAttributes toWebGLContextAttributes(
 
 Platform::ContextAttributes toPlatformContextAttributes(
     const CanvasContextCreationAttributes& attrs,
-    unsigned webGLVersion) {
+    unsigned webGLVersion,
+    bool supportOwnOffscreenSurface) {
   Platform::ContextAttributes result;
   result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
   result.webGLVersion = webGLVersion;
+  if (supportOwnOffscreenSurface) {
+    // Only ask for alpha/depth/stencil/antialias if we may be using the default
+    // framebuffer. They are not needed for standard offscreen rendering.
+    result.supportAlpha = attrs.alpha();
+    result.supportDepth = attrs.depth();
+    result.supportStencil = attrs.stencil();
+    result.supportAntialias = attrs.antialias();
+  }
   return result;
 }
 

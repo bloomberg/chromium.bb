@@ -915,6 +915,12 @@
       status: "test",
     },
     {
+      name: "WebVRExperimentalRendering",
+      // Don't mark this as depends_on: ["WebVR"], we want to be able to turn
+      // it on for just origin trial sites where the dependency is unset.
+      status: "experimental",
+    },
+    {
       name: "WebVTTRegions",
       status: "experimental",
     },

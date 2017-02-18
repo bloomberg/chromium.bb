@@ -274,6 +274,7 @@ bool ValidateEglConfig(EGLDisplay display,
 EGLConfig ChooseConfig(GLSurfaceFormat format) {
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
+
   std::vector<EGLint> renderable_types;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableES3GLContext)) {
@@ -284,6 +285,9 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
   EGLint buffer_size = format.GetBufferSize();
   EGLint alpha_size = 8;
   bool want_rgb565 = buffer_size == 16;
+  EGLint depth_size = format.GetDepthBits();
+  EGLint stencil_size = format.GetStencilBits();
+  EGLint samples = format.GetSamples();
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   // If we're using ANGLE_NULL, we may not have a display, in which case we
@@ -310,6 +314,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
                                     8,
                                     EGL_RED_SIZE,
                                     8,
+                                    EGL_SAMPLES,
+                                    samples,
+                                    EGL_DEPTH_SIZE,
+                                    depth_size,
+                                    EGL_STENCIL_SIZE,
+                                    stencil_size,
                                     EGL_RENDERABLE_TYPE,
                                     renderable_type,
                                     EGL_SURFACE_TYPE,
@@ -324,6 +334,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
                                    6,
                                    EGL_RED_SIZE,
                                    5,
+                                   EGL_SAMPLES,
+                                   samples,
+                                   EGL_DEPTH_SIZE,
+                                   depth_size,
+                                   EGL_STENCIL_SIZE,
+                                   stencil_size,
                                    EGL_RENDERABLE_TYPE,
                                    renderable_type,
                                    EGL_SURFACE_TYPE,
