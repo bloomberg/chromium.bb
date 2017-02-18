@@ -134,6 +134,7 @@ enum MediaControlsShow {
   MediaControlsShowFullscreen,
   MediaControlsShowNoScript,
   MediaControlsShowNotShown,
+  MediaControlsShowDisabledSettings,
   MediaControlsShowMax
 };
 
@@ -370,6 +371,18 @@ bool HTMLMediaElement::isHLSURL(const KURL& url) {
 bool HTMLMediaElement::mediaTracksEnabledInternally() {
   return RuntimeEnabledFeatures::audioVideoTracksEnabled() ||
          RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled();
+}
+
+void HTMLMediaElement::onMediaControlsEnabledChange(Document* document) {
+  auto it = documentToElementSetMap().find(document);
+  if (it == documentToElementSetMap().end())
+    return;
+  DCHECK(it->value);
+  WeakMediaElementSet& elements = *it->value;
+  for (const auto& element : elements) {
+    element->updateControlsVisibility();
+    element->mediaControls()->onMediaControlsEnabledChange();
+  }
 }
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
@@ -2386,6 +2399,13 @@ void HTMLMediaElement::setLoop(bool b) {
 
 bool HTMLMediaElement::shouldShowControls(
     const RecordMetricsBehavior recordMetrics) const {
+  Settings* settings = document().settings();
+  if (settings && !settings->getMediaControlsEnabled()) {
+    if (recordMetrics == RecordMetricsBehavior::DoRecord)
+      showControlsHistogram().count(MediaControlsShowDisabledSettings);
+    return false;
+  }
+
   if (fastHasAttribute(controlsAttr)) {
     if (recordMetrics == RecordMetricsBehavior::DoRecord)
       showControlsHistogram().count(MediaControlsShowAttribute);

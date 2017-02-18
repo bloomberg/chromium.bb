@@ -193,6 +193,9 @@ class CONTENT_EXPORT WebContentsAndroid
                     const base::android::JavaParamRef<jobject>& jcallback);
   void DismissTextHandles(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
+  void SetHasPersistentVideo(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jboolean value);
 
   void SetMediaSession(
       const base::android::ScopedJavaLocalRef<jobject>& j_media_session);

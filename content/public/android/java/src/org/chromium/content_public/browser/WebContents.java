@@ -372,4 +372,12 @@ public interface WebContents extends Parcelable {
      *                        (e.g. renderer for the currently selected tab)
      */
     public void simulateRendererKilledForTesting(boolean wasOomProtected);
+
+    /**
+     * Notifies the WebContents about the new persistent video status. It should be called whenever
+     * the value changes.
+     *
+     * @param value Whether there is a persistent video associated with this WebContents.
+     */
+    public void setHasPersistentVideo(boolean value);
 }

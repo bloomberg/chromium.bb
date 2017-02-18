@@ -293,6 +293,22 @@ TEST_F(MediaControlsTest, CastOverlayDisableRemotePlaybackAttr) {
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 }
 
+TEST_F(MediaControlsTest, CastOverlayMediaControlsDisabled) {
+  Element* castOverlayButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, castOverlayButton);
+
+  EXPECT_FALSE(isElementVisible(*castOverlayButton));
+  simulateRouteAvailabe();
+  EXPECT_TRUE(isElementVisible(*castOverlayButton));
+
+  document().settings()->setMediaControlsEnabled(false);
+  EXPECT_FALSE(isElementVisible(*castOverlayButton));
+
+  document().settings()->setMediaControlsEnabled(true);
+  EXPECT_TRUE(isElementVisible(*castOverlayButton));
+}
+
 TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
   Element* overflowList = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-overflow-menu-list");

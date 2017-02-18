@@ -572,6 +572,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
   bool HideDownloadUI() const override;
+  bool HasPersistentVideo() const override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -790,6 +791,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Modify the counter of connected devices for this WebContents.
   void IncrementBluetoothConnectedDeviceCount();
   void DecrementBluetoothConnectedDeviceCount();
+
+  // Called when the WebContents gains or loses a persistent video.
+  void SetHasPersistentVideo(bool value);
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.
@@ -1172,6 +1176,10 @@ class CONTENT_EXPORT WebContentsImpl
   // certificate via --allow-insecure-localhost.
   void ShowInsecureLocalhostWarningIfNeeded();
 
+  // Notify this WebContents that the preferences have changed. This will send
+  // an IPC to all the renderer process associated with this WebContents.
+  void NotifyPreferencesChanged();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1501,6 +1509,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool is_overlay_content_;
 
   int currently_playing_video_count_ = 0;
+
+  bool has_persistent_video_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

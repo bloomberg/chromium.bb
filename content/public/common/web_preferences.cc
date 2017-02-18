@@ -227,7 +227,8 @@ WebPreferences::WebPreferences()
       max_keyframe_distance_to_disable_background_video(
           base::TimeDelta::FromSeconds(10)),
       enable_instant_source_buffer_gc(false),
-      presentation_receiver(false) {
+      presentation_receiver(false),
+      media_controls_enabled(true) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

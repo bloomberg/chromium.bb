@@ -724,4 +724,8 @@ void WebSettingsImpl::setExpensiveBackgroundThrottlingMaxDelay(float maxDelay) {
   m_expensiveBackgroundThrottlingMaxDelay = maxDelay;
 }
 
+void WebSettingsImpl::setMediaControlsEnabled(bool enabled) {
+  m_settings->setMediaControlsEnabled(enabled);
+}
+
 }  // namespace blink

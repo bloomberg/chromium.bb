@@ -61,4 +61,8 @@ bool RenderViewHostDelegate::HideDownloadUI() const {
   return false;
 }
 
+bool RenderViewHostDelegate::HasPersistentVideo() const {
+  return false;
+}
+
 }  // namespace content

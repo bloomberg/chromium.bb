@@ -63,6 +63,7 @@ class CORE_EXPORT SettingsDelegate {
     AccessibilityStateChange,
     TextTrackKindUserPreferenceChange,
     DOMWorldsChange,
+    MediaControlsChange,
   };
 
   virtual void settingsChanged(ChangeType) = 0;

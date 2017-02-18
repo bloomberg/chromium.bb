@@ -98,6 +98,10 @@ class CORE_EXPORT HTMLMediaElement
   // by the page).
   static bool mediaTracksEnabledInternally();
 
+  // Notify the HTMLMediaElement that the media controls settings have changed
+  // for the given document.
+  static void onMediaControlsEnabledChange(Document*);
+
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();

@@ -4252,6 +4252,10 @@ bool WebContentsImpl::HideDownloadUI() const {
   return is_overlay_content_;
 }
 
+bool WebContentsImpl::HasPersistentVideo() const {
+  return has_persistent_video_;
+}
+
 bool WebContentsImpl::IsFocusedElementEditable() {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   return frame && frame->has_focused_editable_element();
@@ -5280,6 +5284,14 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
   }
 }
 
+void WebContentsImpl::SetHasPersistentVideo(bool value) {
+  if (has_persistent_video_ == value)
+    return;
+
+  has_persistent_video_ = value;
+  NotifyPreferencesChanged();
+}
+
 #if defined(OS_ANDROID)
 void WebContentsImpl::NotifyFindMatchRectsReply(
     int version,
@@ -5344,19 +5356,7 @@ void WebContentsImpl::UpdateWebContentsVisibility(bool visible) {
 }
 
 void WebContentsImpl::UpdateOverridingUserAgent() {
-  std::set<RenderViewHost*> render_view_host_set;
-  for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    RenderWidgetHost* render_widget_host =
-        node->current_frame_host()->GetRenderWidgetHost();
-    if (!render_widget_host)
-      continue;
-    RenderViewHost* render_view_host = RenderViewHost::From(render_widget_host);
-    if (!render_view_host)
-      continue;
-    render_view_host_set.insert(render_view_host);
-  }
-  for (RenderViewHost* render_view_host : render_view_host_set)
-    render_view_host->OnWebkitPreferencesChanged();
+  NotifyPreferencesChanged();
 }
 
 void WebContentsImpl::SetJavaScriptDialogManagerForTesting(
@@ -5415,6 +5415,22 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
                          "visitors' data is vulnerable to theft and "
                          "tampering. Get a valid SSL certificate before"
                          " releasing your website to the public."));
+}
+
+void WebContentsImpl::NotifyPreferencesChanged() {
+  std::set<RenderViewHost*> render_view_host_set;
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderWidgetHost* render_widget_host =
+        node->current_frame_host()->GetRenderWidgetHost();
+    if (!render_widget_host)
+      continue;
+    RenderViewHost* render_view_host = RenderViewHost::From(render_widget_host);
+    if (!render_view_host)
+      continue;
+    render_view_host_set.insert(render_view_host);
+  }
+  for (RenderViewHost* render_view_host : render_view_host_set)
+    render_view_host->OnWebkitPreferencesChanged();
 }
 
 }  // namespace content

@@ -916,5 +916,12 @@
       name: "presentationReceiver",
       initial: false,
     },
+
+    // Whether Blink should show media controls when `controls` attribute is used.
+    {
+      name: "mediaControlsEnabled",
+      initial: true,
+      invalidate: "MediaControls",
+    },
   ],
 }

@@ -437,6 +437,16 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
         }
       }
     } break;
+    case SettingsDelegate::MediaControlsChange:
+      for (Frame* frame = mainFrame(); frame;
+           frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+          continue;
+        Document* doc = toLocalFrame(frame)->document();
+        if (doc)
+          HTMLMediaElement::onMediaControlsEnabledChange(doc);
+      }
+      break;
   }
 }
 

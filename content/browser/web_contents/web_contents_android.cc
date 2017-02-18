@@ -703,6 +703,13 @@ void WebContentsAndroid::DismissTextHandles(
     view->DismissTextHandles();
 }
 
+void WebContentsAndroid::SetHasPersistentVideo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean value) {
+  web_contents_->SetHasPersistentVideo(value);
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     const JavaRef<jobject>& obj,
     const JavaRef<jobject>& callback,

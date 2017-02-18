@@ -517,6 +517,11 @@ import java.util.UUID;
         nativeDismissTextHandles(mNativeWebContentsAndroid);
     }
 
+    @Override
+    public void setHasPersistentVideo(boolean value) {
+        nativeSetHasPersistentVideo(mNativeWebContentsAndroid, value);
+    }
+
     @CalledByNative
     private final void setMediaSession(MediaSessionImpl mediaSession) {
         mMediaSession = mediaSession;
@@ -604,4 +609,5 @@ import java.util.UUID;
             String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback);
     private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
+    private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
 }

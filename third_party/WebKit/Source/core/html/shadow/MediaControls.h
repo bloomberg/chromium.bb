@@ -110,6 +110,13 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
     refreshCastButtonVisibility();
   }
 
+  // TODO(mlamouri): this method is needed in order to notify the controls that
+  // the `mediaControlsEnabled` setting has changed.
+  void onMediaControlsEnabledChange() {
+    // There is no update because only the overlay is expected to change.
+    refreshCastButtonVisibilityWithoutUpdate();
+  }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

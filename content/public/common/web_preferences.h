@@ -284,6 +284,9 @@ struct CONTENT_EXPORT WebPreferences {
   // Whether it is a presentation receiver.
   bool presentation_receiver;
 
+  // If disabled, media controls should never be used.
+  bool media_controls_enabled;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

@@ -185,6 +185,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Whether download UI should be hidden.
   virtual bool HideDownloadUI() const;
 
+  // Whether the WebContents as a persistent video.
+  virtual bool HasPersistentVideo() const;
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

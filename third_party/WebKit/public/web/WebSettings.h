@@ -295,6 +295,7 @@ class WebSettings {
   virtual void setExpensiveBackgroundThrottlingInitialBudget(float) = 0;
   virtual void setExpensiveBackgroundThrottlingMaxBudget(float) = 0;
   virtual void setExpensiveBackgroundThrottlingMaxDelay(float) = 0;
+  virtual void setMediaControlsEnabled(bool) = 0;
 
  protected:
   ~WebSettings() {}
