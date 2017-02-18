@@ -33,7 +33,8 @@ void PreferencesService::PreferenceChanged(const std::string& preference_name) {
       service_->FindPreference(preference_name);
   std::unique_ptr<base::DictionaryValue> dictionary =
       base::MakeUnique<base::DictionaryValue>();
-  dictionary->Set(preference_name, pref->GetValue()->CreateDeepCopy());
+  dictionary->SetWithoutPathExpansion(preference_name,
+                                      pref->GetValue()->CreateDeepCopy());
   client_->OnPreferencesChanged(std::move(dictionary));
 }
 
@@ -73,7 +74,7 @@ void PreferencesService::Subscribe(
     preferences_change_registrar_->Add(
         it, base::Bind(&PreferencesService::PreferenceChanged,
                        base::Unretained(this)));
-    dictionary->Set(it, pref->GetValue()->CreateDeepCopy());
+    dictionary->SetWithoutPathExpansion(it, pref->GetValue()->CreateDeepCopy());
   }
 
   if (dictionary->empty())

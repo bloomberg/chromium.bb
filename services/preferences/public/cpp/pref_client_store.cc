@@ -82,7 +82,7 @@ void PrefClientStore::SetValueOnPreferenceManager(const std::string& key,
     return;
 
   auto prefs = base::MakeUnique<base::DictionaryValue>();
-  prefs->Set(key, value.CreateDeepCopy());
+  prefs->SetWithoutPathExpansion(key, value.CreateDeepCopy());
   prefs_service_ptr_->SetPreferences(std::move(prefs));
 }
 

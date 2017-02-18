@@ -48,6 +48,7 @@ include_rules = [
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+services/image_decoder/public/cpp",
   "+services/image_decoder/public/interfaces",
+  "+services/preferences/public/cpp",
   "+services/preferences/public/interfaces",
   "+services/service_manager",
   "+services/shape_detection/public/interfaces",

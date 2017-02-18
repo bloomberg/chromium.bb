@@ -2384,7 +2384,11 @@ test("browser_tests") {
         "//chrome/browser/chromeos:arc_test_support",
         "//chromeos/ime:gencode",
         "//components/arc:arc_test_support",
+        "//components/prefs",
         "//components/user_manager:test_support",
+        "//services/preferences/public/cpp",
+        "//services/preferences/public/interfaces",
+        "//services/service_manager/public/cpp",
         "//ui/login:resources",
       ]
 

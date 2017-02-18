@@ -5,10 +5,16 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include <set>
+#include <string>
+
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -20,12 +26,20 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_store.h"
+#include "components/prefs/writeable_pref_store.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
+#include "services/preferences/public/cpp/pref_client_store.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/events/event_utils.h"
@@ -141,6 +155,61 @@ class PreferencesTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);
 };
 
+class PreferencesServiceBrowserTest : public InProcessBrowserTest {
+ public:
+  PreferencesServiceBrowserTest() {}
+
+ protected:
+  static service_manager::Connector* connector() {
+    return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  }
+
+  void WaitForPrefChange(PrefStore* store, const std::string& key) {
+    base::RunLoop run_loop;
+    TestPrefObserver observer(key, run_loop.QuitClosure());
+    store->AddObserver(&observer);
+    run_loop.Run();
+    store->RemoveObserver(&observer);
+  }
+
+  bool GetIntegerPrefValue(PrefStore* store,
+                           const std::string& key,
+                           int* out_value) {
+    const base::Value* value = nullptr;
+    if (!store->GetValue(key, &value))
+      return false;
+    return value->GetAsInteger(out_value);
+  }
+
+ private:
+  class TestPrefObserver : public PrefStore::Observer {
+   public:
+    TestPrefObserver(const std::string& pref_name,
+                     const base::Closure& callback)
+        : pref_name_(pref_name), callback_(callback) {}
+
+    ~TestPrefObserver() override {}
+
+    // PrefStore::Observer:
+    void OnPrefValueChanged(const std::string& key) override {
+      if (key == pref_name_)
+        callback_.Run();
+    }
+
+    void OnInitializationCompleted(bool success) override {
+      ASSERT_TRUE(success);
+    }
+
+   private:
+    const std::string pref_name_;
+    const base::Closure callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestPrefObserver);
+  };
+
+  DISALLOW_COPY_AND_ASSIGN(PreferencesServiceBrowserTest);
+};
+
 IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
   RegisterUser(test_users_[0].GetUserEmail());
   RegisterUser(test_users_[1].GetUserEmail());
@@ -212,6 +281,45 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   user_manager->SwitchActiveUser(test_users_[0]);
   CheckSettingsCorrespondToPrefs(prefs1);
   CheckLocalStateCorrespondsToPrefs(prefs1);
+}
+
+IN_PROC_BROWSER_TEST_F(PreferencesServiceBrowserTest, Basic) {
+  constexpr int kInitialValue = 1;
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetInteger(prefs::kMouseSensitivity, kInitialValue);
+
+  prefs::mojom::PreferencesServiceFactoryPtr factory_a;
+  connector()->BindInterface(prefs::mojom::kServiceName, &factory_a);
+  scoped_refptr<preferences::PrefClientStore> pref_store_a =
+      new preferences::PrefClientStore(std::move(factory_a));
+  pref_store_a->Subscribe({prefs::kMouseSensitivity});
+  WaitForPrefChange(pref_store_a.get(), prefs::kMouseSensitivity);
+
+  prefs::mojom::PreferencesServiceFactoryPtr factory_b;
+  connector()->BindInterface(prefs::mojom::kServiceName, &factory_b);
+  scoped_refptr<preferences::PrefClientStore> pref_store_b =
+      new preferences::PrefClientStore(std::move(factory_b));
+  pref_store_b->Subscribe({prefs::kMouseSensitivity});
+  WaitForPrefChange(pref_store_b.get(), prefs::kMouseSensitivity);
+
+  int value_a = 0;
+  ASSERT_TRUE(GetIntegerPrefValue(pref_store_a.get(), prefs::kMouseSensitivity,
+                                  &value_a));
+  EXPECT_EQ(kInitialValue, value_a);
+
+  int value_b = 0;
+  ASSERT_TRUE(GetIntegerPrefValue(pref_store_b.get(), prefs::kMouseSensitivity,
+                                  &value_b));
+  EXPECT_EQ(kInitialValue, value_b);
+
+  const int kTestValue = 42;
+  pref_store_a->SetValue(prefs::kMouseSensitivity,
+                         base::MakeUnique<base::FundamentalValue>(kTestValue),
+                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  WaitForPrefChange(pref_store_b.get(), prefs::kMouseSensitivity);
+  ASSERT_TRUE(GetIntegerPrefValue(pref_store_b.get(), prefs::kMouseSensitivity,
+                                  &value_b));
+  EXPECT_EQ(kTestValue, value_b);
 }
 
 }  // namespace chromeos
