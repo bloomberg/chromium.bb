@@ -63,8 +63,10 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage,
   // as its height, and Wside as the border image width offset for the side, let
   // f = min(Lwidth/(Wleft+Wright), Lheight/(Wtop+Wbottom)). If f < 1, then all
   // W are reduced by multiplying them by f.
-  int borderSideWidth = std::max(1, m_left.width + m_right.width);
-  int borderSideHeight = std::max(1, m_top.width + m_bottom.width);
+  int borderSideWidth =
+      std::max(1, SaturatedAddition(m_left.width, m_right.width));
+  int borderSideHeight =
+      std::max(1, SaturatedAddition(m_top.width, m_bottom.width));
   float borderSideScaleFactor =
       std::min((float)borderImageArea.width() / borderSideWidth,
                (float)borderImageArea.height() / borderSideHeight);
