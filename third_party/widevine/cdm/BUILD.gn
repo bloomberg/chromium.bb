@@ -37,6 +37,7 @@ if (is_android) {
     widevine_cdm_binary_files = [
       "win/$widevine_arch/widevinecdm.dll",
       "win/$widevine_arch/widevinecdm.dll.lib",
+      "win/$widevine_arch/widevinecdm.dll.sig",
     ]
     widevine_cdm_manifest_file = [ "win/$widevine_arch/manifest.json" ]
   } else if (is_mac) {
