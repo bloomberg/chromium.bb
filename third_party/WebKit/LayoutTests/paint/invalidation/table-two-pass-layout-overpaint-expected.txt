@@ -7,40 +7,17 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 106, 106, 1],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [10, 104, 102, 1],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [11, 45, 100, 25],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [11, 44, 50, 25],
-          "reason": "bounds change"
+          "rect": [61, 44, 50, 25],
+          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTable TABLE",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "bounds change"
+      "reason": "incremental"
     }
   ]
 }

@@ -11,14 +11,8 @@
     <tr>
         <td>
             <div id="target"></div>
-            <div id="dummy"></div>
         </td>
     </tr>
 </table>
 </body>
 </html>
-<!-- crbug.com/690087: We do this to force a two-pass layout so that we get the same height on the table as the reference. -->
-<script>
-  document.body.offsetTop;
-  document.getElementById("dummy").style.display = "none";
-</script>
