@@ -10,11 +10,11 @@ namespace arc {
 // Notifies about changes in ARC related preferences and metrics mode.
 class ArcOptInPreferenceHandlerObserver {
  public:
-  // Notifies that the metrics mode has been changed.
+  // Notifies metrics mode has been changed.
   virtual void OnMetricsModeChanged(bool enabled, bool managed) = 0;
-  // Notifies that the backup and restore mode has been changed.
+  // Notifies use backup and restore preference has been changed.
   virtual void OnBackupAndRestoreModeChanged(bool enabled, bool managed) = 0;
-  // Notifies that the location service mode has been changed.
+  // Notifies location service consent preference has been changed.
   virtual void OnLocationServicesModeChanged(bool enabled, bool managed) = 0;
 
   virtual ~ArcOptInPreferenceHandlerObserver() = default;

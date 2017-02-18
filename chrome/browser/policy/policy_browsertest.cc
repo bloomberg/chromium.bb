@@ -4170,17 +4170,13 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
 
 // Test ArcBackupRestoreEnabled policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
-  PrefService* const pref = browser()->profile()->GetPrefs();
+  const PrefService* const pref = browser()->profile()->GetPrefs();
 
-  // ARC Backup & Restore is switched off by default.
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  // ARC Backup & Restore is switched on by default.
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
 
-  // Switch on ARC Backup & Restore in the user prefs.
-  pref->SetBoolean(prefs::kArcBackupRestoreEnabled, true);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
-
-  // Disable ARC Backup & Restore through the policy.
+  // Disable ARC Backup & Restore.
   PolicyMap policies;
   policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -4189,7 +4185,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
 
-  // Enable ARC Backup & Restore through the policy.
+  // Enable ARC Backup & Restore.
   policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::FundamentalValue>(true), nullptr);
@@ -4201,7 +4197,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
 // Test ArcLocationServiceEnabled policy and its interplay with the
 // DefaultGeolocationSetting policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
-  PrefService* const pref = browser()->profile()->GetPrefs();
+  const PrefService* const pref = browser()->profile()->GetPrefs();
 
   // Values of the ArcLocationServiceEnabled policy to be tested.
   const std::vector<base::Value> test_policy_values = {
@@ -4216,14 +4212,6 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
       base::FundamentalValue(2),  // 'BlockGeolocation'
       base::FundamentalValue(3),  // 'AskGeolocation'
   };
-
-  // The pref is switched off by default.
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
-
-  // Switch on the pref in the user prefs.
-  pref->SetBoolean(prefs::kArcLocationServiceEnabled, true);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
 
   for (const auto& test_policy_value : test_policy_values) {
     for (const auto& test_default_geo_policy_value :

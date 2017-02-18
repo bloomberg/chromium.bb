@@ -65,15 +65,12 @@ bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
   return !host->empty() && *port;
 }
 
-PrefService* GetPrefs() {
-  return ProfileManager::GetActiveUserProfile()->GetPrefs();
-}
-
 // Returns whether kProxy pref proxy config is applied.
 bool IsPrefProxyConfigApplied() {
   net::ProxyConfig config;
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   return PrefProxyConfigTrackerImpl::PrefPrecedes(
-      PrefProxyConfigTrackerImpl::ReadPrefConfig(GetPrefs(), &config));
+      PrefProxyConfigTrackerImpl::ReadPrefConfig(profile->GetPrefs(), &config));
 }
 
 }  // namespace
@@ -115,23 +112,18 @@ class ArcSettingsServiceImpl
   // Stops listening for Chrome settings changes.
   void StopObservingSettingsChanges();
 
-  // Retrieves Chrome's state for the settings that need to be synced on the
-  // initial Android boot and send it to Android.
-  void SyncInitialSettings() const;
   // Retrieves Chrome's state for the settings that need to be synced on each
   // Android boot and send it to Android.
   void SyncRuntimeSettings() const;
-  // Determine whether a particular setting needs to be synced to Android.
-  // Keep these lines ordered lexicographically.
-  bool ShouldSyncBackupEnabled() const;
-  bool ShouldSyncLocationServiceEnabled() const;
-  // Send particular settings to Android.
+  // Send settings that need to be synced only on Android first start to
+  // Android.
   // Keep these lines ordered lexicographically.
   void SyncAccessibilityLargeMouseCursorEnabled() const;
   void SyncAccessibilityVirtualKeyboardEnabled() const;
   void SyncBackupEnabled() const;
   void SyncFocusHighlightEnabled() const;
   void SyncFontSize() const;
+  void SyncInitialSettings() const;
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
@@ -212,11 +204,10 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncSpokenFeedbackEnabled();
   } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
     SyncAccessibilityVirtualKeyboardEnabled();
-  } else if (pref_name == prefs::kArcBackupRestoreEnabled) {
-    if (ShouldSyncBackupEnabled())
-      SyncBackupEnabled();
   } else if (pref_name == prefs::kArcLocationServiceEnabled) {
-    if (ShouldSyncLocationServiceEnabled())
+    const PrefService* const prefs =
+        ProfileManager::GetActiveUserProfile()->GetPrefs();
+    if (prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled))
       SyncLocationServiceEnabled();
   } else if (pref_name == prefs::kUse24HourClock) {
     SyncUse24HourClock();
@@ -258,7 +249,8 @@ void ArcSettingsServiceImpl::DefaultNetworkChanged(
 }
 
 void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
-  registrar_.Init(GetPrefs());
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  registrar_.Init(profile->GetPrefs());
 
   // Keep these lines ordered lexicographically.
   AddPrefToObserve(prefs::kAccessibilityFocusHighlightEnabled);
@@ -301,12 +293,6 @@ void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
       this, FROM_HERE);
 }
 
-void ArcSettingsServiceImpl::SyncInitialSettings() const {
-  // Keep these lines ordered lexicographically.
-  SyncBackupEnabled();
-  SyncLocationServiceEnabled();
-}
-
 void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   // Keep these lines ordered lexicographically.
   SyncAccessibilityLargeMouseCursorEnabled();
@@ -320,26 +306,12 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   SyncTimeZone();
   SyncUse24HourClock();
 
-  if (ShouldSyncBackupEnabled())
+  const PrefService* const prefs =
+      ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled))
     SyncBackupEnabled();
-  if (ShouldSyncLocationServiceEnabled())
+  if (prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled))
     SyncLocationServiceEnabled();
-}
-
-bool ArcSettingsServiceImpl::ShouldSyncBackupEnabled() const {
-  // Always sync the managed setting. Also sync when the pref is unset, which
-  // normally happens once after the pref changes from the managed state to
-  // unmanaged.
-  return GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled) ||
-         !GetPrefs()->HasPrefPath(prefs::kArcBackupRestoreEnabled);
-}
-
-bool ArcSettingsServiceImpl::ShouldSyncLocationServiceEnabled() const {
-  // Always sync the managed setting. Also sync when the pref is unset, which
-  // normally happens once after the pref changes from the managed state to
-  // unmanaged.
-  return GetPrefs()->IsManagedPreference(prefs::kArcLocationServiceEnabled) ||
-         !GetPrefs()->HasPrefPath(prefs::kArcLocationServiceEnabled);
 }
 
 void ArcSettingsServiceImpl::SyncAccessibilityLargeMouseCursorEnabled() const {
@@ -358,15 +330,6 @@ void ArcSettingsServiceImpl::SyncBackupEnabled() const {
   SendBoolPrefSettingsBroadcast(
       prefs::kArcBackupRestoreEnabled,
       "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
-  if (GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled)) {
-    // Unset the user pref so that if the pref becomes unmanaged at some point,
-    // this change will be synced.
-    GetPrefs()->ClearPref(prefs::kArcBackupRestoreEnabled);
-  } else if (!GetPrefs()->HasPrefPath(prefs::kArcBackupRestoreEnabled)) {
-    // Set the pref value in order to prevent the subsequent syncing. The
-    // "false" value is a safe default from the legal/privacy perspective.
-    GetPrefs()->SetBoolean(prefs::kArcBackupRestoreEnabled, false);
-  }
 }
 
 void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
@@ -389,6 +352,11 @@ void ArcSettingsServiceImpl::SyncFontSize() const {
                         extras);
 }
 
+void ArcSettingsServiceImpl::SyncInitialSettings() const {
+  SyncBackupEnabled();
+  SyncLocationServiceEnabled();
+}
+
 void ArcSettingsServiceImpl::SyncLocale() const {
   const PrefService::Preference* pref =
       registrar_.prefs()->FindPreference(prefs::kApplicationLocale);
@@ -405,21 +373,13 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
   SendBoolPrefSettingsBroadcast(
       prefs::kArcLocationServiceEnabled,
       "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
-  if (GetPrefs()->IsManagedPreference(prefs::kArcLocationServiceEnabled)) {
-    // Unset the user pref so that if the pref becomes unmanaged at some point,
-    // this change will be synced.
-    GetPrefs()->ClearPref(prefs::kArcLocationServiceEnabled);
-  } else if (!GetPrefs()->HasPrefPath(prefs::kArcLocationServiceEnabled)) {
-    // Set the pref value in order to prevent the subsequent syncing. The
-    // "false" value is a safe default from the legal/privacy perspective.
-    GetPrefs()->SetBoolean(prefs::kArcLocationServiceEnabled, false);
-  }
 }
 
 void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
       chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
-          GetPrefs(), g_browser_process->local_state());
+          ProfileManager::GetActiveUserProfile()->GetPrefs(),
+          g_browser_process->local_state());
   if (!proxy_config_dict)
     return;
 
