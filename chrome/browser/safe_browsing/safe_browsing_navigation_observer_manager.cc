@@ -334,20 +334,37 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForDownload(
 }
 
 SafeBrowsingNavigationObserverManager::AttributionResult
-SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForPPAPIDownload(
-    const GURL& initiating_frame_url,
-    const GURL& initiating_main_frame_url,
-    int tab_id,
-    bool has_user_gesture,
-    int user_gesture_count_limit,
-    ReferrerChain* out_referrer_chain) {
+SafeBrowsingNavigationObserverManager::
+    IdentifyReferrerChainByDownloadWebContent(
+        content::WebContents* web_contents,
+        int user_gesture_count_limit,
+        ReferrerChain* out_referrer_chain) {
+  if (!web_contents || !web_contents->GetLastCommittedURL().is_valid())
+    return INVALID_URL;
+  bool has_user_gesture = HasUserGesture(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  return IdentifyReferrerChainForDownloadHostingPage(
+      web_contents->GetLastCommittedURL(), GURL(), tab_id, has_user_gesture,
+      user_gesture_count_limit, out_referrer_chain);
+}
+
+SafeBrowsingNavigationObserverManager::AttributionResult
+SafeBrowsingNavigationObserverManager::
+    IdentifyReferrerChainForDownloadHostingPage(
+        const GURL& initiating_frame_url,
+        const GURL& initiating_main_frame_url,
+        int tab_id,
+        bool has_user_gesture,
+        int user_gesture_count_limit,
+        ReferrerChain* out_referrer_chain) {
   if (!initiating_frame_url.is_valid())
     return INVALID_URL;
 
   NavigationEvent* nav_event = navigation_event_list_.FindNavigationEvent(
-      initiating_frame_url, GURL(), tab_id);
+      initiating_frame_url, initiating_main_frame_url, tab_id);
   if (!nav_event) {
-    // We cannot find a single navigation event related to this download.
+    // We cannot find a single navigation event related to this download hosting
+    // page.
     return NAVIGATION_EVENT_NOT_FOUND;
   }
 

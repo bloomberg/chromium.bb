@@ -151,8 +151,8 @@ class SafeBrowsingNavigationObserverManager
   void CleanUpStaleNavigationFootprints();
 
   // Based on the |target_url| and |target_tab_id|, trace back the observed
-  // NavigationEvents in navigation_map_ to identify the sequence of navigations
-  // leading to the target, with the coverage limited to
+  // NavigationEvents in navigation_event_list_ to identify the sequence of
+  // navigations leading to the target, with the coverage limited to
   // |user_gesture_count_limit| number of user gestures. Then convert these
   // identified NavigationEvents into ReferrerChainEntrys and append them to
   // |out_referrer_chain|.
@@ -162,15 +162,26 @@ class SafeBrowsingNavigationObserverManager
       int user_gesture_count_limit,
       ReferrerChain* out_referrer_chain);
 
+  // Based on the |web_contents| associated with a download, trace back the
+  // observed NavigationEvents in navigation_event_list_ to identify the
+  // sequence of navigations leading to the download hosting page, with the
+  // coverage limited to |user_gesture_count_limit| number of user gestures.
+  // Then convert these identified NavigationEvents into ReferrerChainEntrys
+  // and append them to |out_referrer_chain|.
+  AttributionResult IdentifyReferrerChainByDownloadWebContent(
+      content::WebContents* web_contents,
+      int user_gesture_count_limit,
+      ReferrerChain* out_referrer_chain);
+
   // Based on the |initiating_frame_url| and its associated |tab_id|, trace back
-  // the observed NavigationEvents in navigation_map_ to identify the sequence
-  // of navigations leading to this |initiating_frame_url|. If this initiating
+  // the observed NavigationEvents in navigation_event_list_ to identify those
+  // navigations leading to this |initiating_frame_url|. If this initiating
   // frame has a user gesture, we trace back with the coverage limited to
   // |user_gesture_count_limit|-1 number of user gestures, otherwise we trace
   // back |user_gesture_count_limit| number of user gestures. We then convert
   // these identified NavigationEvents into ReferrerChainEntrys and append them
   // to |out_referrer_chain|.
-  AttributionResult IdentifyReferrerChainForPPAPIDownload(
+  AttributionResult IdentifyReferrerChainForDownloadHostingPage(
       const GURL& initiating_frame_url,
       const GURL& initiating_main_frame_url,
       int tab_id,
@@ -210,7 +221,7 @@ class SafeBrowsingNavigationObserverManager
 
   HostToIpMap* host_to_ip_map() { return &host_to_ip_map_; }
 
-  // Remove stale entries from navigation_map_ if they are older than
+  // Remove stale entries from navigation_event_list_ if they are older than
   // kNavigationFootprintTTLInSecond (2 minutes).
   void CleanUpNavigationEvents();
 

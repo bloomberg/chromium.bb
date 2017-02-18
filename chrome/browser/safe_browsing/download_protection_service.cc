@@ -1877,12 +1877,26 @@ std::unique_ptr<ReferrerChain> DownloadProtectionService::IdentifyReferrerChain(
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       download_tab_id == -1);
+  // We look for the referrer chain that leads to the download url first.
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainForDownload(
           download_url,
           download_tab_id,
           kDownloadAttributionUserGestureLimit,
           referrer_chain.get());
+
+  // If no navigation event is found, this download is not triggered by regular
+  // navigation (e.g. html5 file apis, etc). We look for the referrer chain
+  // based on relevant WebContents instead.
+  if (result ==
+          SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND &&
+      web_contents && web_contents->GetLastCommittedURL().is_valid()) {
+    result =
+        navigation_observer_manager_->IdentifyReferrerChainByDownloadWebContent(
+            web_contents, kDownloadAttributionUserGestureLimit,
+            referrer_chain.get());
+  }
+
   UMA_HISTOGRAM_COUNTS_100(
       "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
       referrer_chain->size());
@@ -1908,7 +1922,7 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       tab_id == -1);
   SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager_->IdentifyReferrerChainForPPAPIDownload(
+      navigation_observer_manager_->IdentifyReferrerChainForDownloadHostingPage(
           initiating_frame_url, initiating_main_frame_url, tab_id,
           has_user_gesture, kDownloadAttributionUserGestureLimit,
           out_request->mutable_referrer_chain());
